@@ -78,10 +78,27 @@ func getServicePlanByID(
 	return sp.ServicePlan, nil
 }
 
+// servicePlanInZone reports whether the service plan is available in the cloud
+// (zone) with the given id, based on the zones returned by ListServicePlans when
+// IncludeZones(true) is set.
+func servicePlanInZone(
+	sp sdk.ListServicePlans200ResponseAllOfServicePlansInner,
+	cloudID int64,
+) bool {
+	for _, z := range sp.Zones {
+		if z.Id != nil && *z.Id == cloudID {
+			return true
+		}
+	}
+
+	return false
+}
+
 func getServicePlanByName(
 	ctx context.Context,
 	name string,
 	provisionTypeCode string,
+	cloudID *int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetServicePlans200ResponseServicePlan, error) {
 	pTypes, hresp, err := apiClient.ProvisioningAPI.ListProvisionTypes(ctx).Code(
@@ -111,8 +128,11 @@ func getServicePlanByName(
 		return nil, fmt.Errorf("id not found for provision type with code %s", provisionTypeCode)
 	}
 
+	// IncludeZones(true) returns, for each plan, the clouds (zones) it is available
+	// in, so we can disambiguate plans that share a name across clouds/regions
+	// (e.g. Azure) using the optional cloud_id filter.
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
-		name).ProvisionTypeId(*matchingProvisionTypes[0].Id).Execute()
+		name).ProvisionTypeId(*matchingProvisionTypes[0].Id).IncludeZones(true).Execute()
 	if ps == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for service_plan %s: %s", name, internalErrors.ErrMsg(err, hresp))
@@ -124,6 +144,10 @@ func getServicePlanByName(
 		if sp.Name != nil && sp.ProvisionType != nil && sp.ProvisionType.Code != nil {
 			// now check name and ProvisionType match getplanByName() params
 			if *sp.Name == name && *sp.ProvisionType.Code == provisionTypeCode {
+				// when cloud_id is set, only keep plans available in that cloud
+				if cloudID != nil && !servicePlanInZone(sp, *cloudID) {
+					continue
+				}
 				matchingServicePlans = append(matchingServicePlans, sp)
 			}
 		}
@@ -150,8 +174,13 @@ func getServicePlan(
 	if !data.Id.IsNull() {
 		return getServicePlanByID(ctx, data.Id.ValueInt64(), apiClient)
 	} else if !data.Name.IsNull() && !data.ProvisionTypeCode.IsNull() {
+		var cloudID *int64
+		if !data.CloudId.IsNull() {
+			cloudID = data.CloudId.ValueInt64Pointer()
+		}
+
 		return getServicePlanByName(
-			ctx, data.Name.ValueString(), data.ProvisionTypeCode.ValueString(), apiClient)
+			ctx, data.Name.ValueString(), data.ProvisionTypeCode.ValueString(), cloudID, apiClient)
 	}
 
 	return nil, errors.New(ErrorNoValidSearchTerms)
@@ -264,6 +293,10 @@ func (d *DataSource) Read(
 
 		return
 	}
+
+	// cloud_id is a filter-only input; the API does not return it, so echo the
+	// configured value back into state to keep config and state consistent.
+	apiState.CloudId = data.CloudId
 
 	diags = resp.State.Set(ctx, &apiState)
 	resp.Diagnostics.Append(diags...)

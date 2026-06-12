@@ -19,12 +19,11 @@ resource "hpe_morpheus_instance" "example" {
   instance_context = "dev"
   network_interfaces = [
     {
-      network_id = 28
-      # Some clouds (such as Azure) provision onto a specific subnet. Use subnet_id
-      # instead of network_id (the two, along with network_group_id, are mutually
-      # exclusive). The subnet id is available from the Morpheus
-      # /api/options/zoneNetworkOptions endpoint, e.g.:
-      #   subnet_id = 5
+      # Some clouds (such as Azure) provision onto a specific subnet rather than a
+      # network. Use subnet_id to target a subnet (subnet_id, network_id and
+      # network_group_id are mutually exclusive). The subnet id is available from
+      # the Morpheus /api/options/zoneNetworkOptions endpoint.
+      subnet_id = 1
     }
   ]
 

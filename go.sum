@@ -6,6 +6,8 @@ github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.61.0 h1:8VSh0f0klrcyAXO
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.61.0/go.mod h1:b6E29JKzlWyMCIEjwUz/KstqXIBna2qdcTwvSJQF5bI=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.63.0 h1:7mI2kPn3hFCEEsBF72v9dYtnZ+nyl12YeZrH2WrtRws=
 github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.63.0/go.mod h1:b6E29JKzlWyMCIEjwUz/KstqXIBna2qdcTwvSJQF5bI=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.64.0 h1:+9tQjibBeDKS64qEPANPPZfJy1smQZVhG+WAS4L5Fxg=
+github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.64.0/go.mod h1:b6E29JKzlWyMCIEjwUz/KstqXIBna2qdcTwvSJQF5bI=
 github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERoyfY=
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.4.1 h1:9RfcZHqEQUvP8RzecWEUafnZVtEvrBVL9BiF67IQOfM=
