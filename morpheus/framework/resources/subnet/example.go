@@ -19,7 +19,7 @@ func RenderSubnetConfig(t *testing.T, overrides map[string]string) (string, erro
 	defaults := map[string]string{
 		"Name":       "Example Subnet",
 		"TypeId":     "1",
-		"NetworkId":  "1",
+		"NetworkId":  "84",
 		"Visibility": "private",
 	}
 
