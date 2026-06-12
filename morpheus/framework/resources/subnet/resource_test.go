@@ -87,6 +87,9 @@ func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 
 	createConfig, err := subnet.RenderSubnetConfig(t, map[string]string{
 		"Name": name,
+		// Distinct from ExampleOk's 10.0.250.0/24 to avoid an overlapping-CIDR
+		// collision when the subnet tests run in parallel on network 88.
+		"SubnetCidr": "10.0.251.0/24",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -95,6 +98,7 @@ func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 	updateConfig, err := subnet.RenderSubnetConfig(t, map[string]string{
 		"Name":       name,
 		"Visibility": "public",
+		"SubnetCidr": "10.0.251.0/24",
 	})
 	if err != nil {
 		t.Fatal(err)

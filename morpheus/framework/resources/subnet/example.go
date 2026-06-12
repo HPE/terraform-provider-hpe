@@ -21,6 +21,9 @@ func RenderSubnetConfig(t *testing.T, overrides map[string]string) (string, erro
 		"TypeId":     "8",
 		"NetworkId":  "88",
 		"Visibility": "private",
+		// Azure subnets require config.subnetName + config.subnetCidr; the CIDR
+		// must be a free /24 within network 88's VNet address space (10.0.0.0/16).
+		"SubnetCidr": "10.0.250.0/24",
 	}
 
 	for key, value := range overrides {

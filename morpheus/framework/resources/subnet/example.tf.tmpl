@@ -3,4 +3,11 @@ resource "hpe_morpheus_subnet" "example" {
   type_id    = {{.TypeId}}
   network_id = {{.NetworkId}}
   visibility = "{{.Visibility}}"
+{{- if .SubnetCidr}}
+
+  config = {
+    subnetName = "{{.Name}}"
+    subnetCidr = "{{.SubnetCidr}}"
+  }
+{{- end}}
 }
