@@ -42,7 +42,7 @@ const existingTier0RouterID = "28"
 
 // bgpNeighborSourceAddress is a valid IP on tier-0 28's interface, required for
 // EBGP multihop neighbors (see resource test for details).
-const bgpNeighborSourceAddress = "172.28.103.1"
+const bgpNeighborSourceAddress = "172.28.104.1"
 
 // neighborFixture renders a BGP neighbor on the existing tier-0 router, labelled
 // hpe_morpheus_network_router_bgp_neighbor.example.
