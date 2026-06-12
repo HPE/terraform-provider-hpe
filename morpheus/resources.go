@@ -7,7 +7,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup"
 	backupinstance "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
@@ -123,7 +122,6 @@ func (s SubProvider) GetResources(
 		monitoring_alert.NewResource,
 		monitoring_group.NewResource,
 		budget.NewResource,
-		backup.NewResource,
 		backup_job.NewResource,
 		backupinstance.NewResource,
 
