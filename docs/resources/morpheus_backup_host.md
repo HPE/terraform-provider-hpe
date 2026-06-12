@@ -29,14 +29,16 @@ resource "hpe_morpheus_backup_host" "example" {
 
 ### Required
 
-- `backup_type_code` (String) The backup type code.
+- `backup_type_code` (String) The backup type code. For Host backups, this is either fileBackup or directoryBackup.
 - `host_id` (Number) The ID of the host (server) to backup.
-- `job_id` (Number) The Backup Job that this Backup will use.
+- `job_id` (Number) The Backup Job that this Backup will use. If this is the only Backup referencing the Backup Job, deleting the Backup resource will also delete the Backup Job referenced by job_id.
 - `name` (String) The name of the backup.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the backup is enabled.
+- `path` (String) The file or directory path on the target host to back up.
+- `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 
 ### Read-Only
 

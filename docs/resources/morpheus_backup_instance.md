@@ -28,18 +28,18 @@ resource "hpe_morpheus_backup_instance" "example" {
 ### Required
 
 - `instance_id` (Number) The ID of the instance to backup.
-- `job_id` (Number) The Backup Job that this Backup will use.
+- `job_id` (Number) The Backup Job that this Backup will use. If this is the only Backup referencing the Backup Job, deleting the Backup resource will also delete the Backup Job referenced by job_id.
 - `name` (String) The name of the backup.
 
 ### Optional
 
 - `enabled` (Boolean) Whether the backup is enabled.
-- `storage_bucket_id` (Number) The ID of the storage bucket to save backups to. If omitted, uses the system default.
+- `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 
 ### Read-Only
 
-- `backup_type_code` (String) The backup type code. This is computed based on the Instance.
-- `container_id` (Number) The ID of the container to backup.
+- `backup_type_code` (String) The backup type code. Computed from the Instance.
+- `container_id` (Number) The ID of the container to backup. Computed from the Instance.
 - `id` (Number) The ID of the backup.
 
 ## Import
