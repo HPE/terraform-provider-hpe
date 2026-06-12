@@ -36,7 +36,7 @@ func TestAccMorpheusSecurityGroupDataSourceByNameExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByNameConfig(t, nil)
+	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByNameConfig(t, map[string]string{"Name":"MorpheusUbuntu-nsg"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestAccMorpheusSecurityGroupDataSourceByNameExampleOk(t *testing.T) {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hpe_morpheus_security_group.example", "id"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "name", "default"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "name", "MorpheusUbuntu-nsg"),
 				),
 			},
 		},
@@ -71,7 +71,7 @@ func TestAccMorpheusSecurityGroupDataSourceByIdExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByIDConfig(t, nil)
+	dataSourceConfig, err := securitygroup.RenderSecurityGroupDataSourceByIDConfig(t, map[string]string{"Id":"31"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestAccMorpheusSecurityGroupDataSourceByIdExampleOk(t *testing.T) {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hpe_morpheus_security_group.example", "name"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "id", "1"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_security_group.example", "id", "31"),
 				),
 			},
 		},

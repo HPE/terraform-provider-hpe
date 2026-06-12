@@ -36,7 +36,7 @@ func TestAccMorpheusServerDataSourceByNameExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := server.RenderServerDataSourceByNameConfig(t, nil)
+	dataSourceConfig, err := server.RenderServerDataSourceByNameConfig(t, map[string]string{"Name":"edge01"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestAccMorpheusServerDataSourceByNameExampleOk(t *testing.T) {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hpe_morpheus_server.example", "id"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_server.example", "name", "my-server"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_server.example", "name","edge01"),
 				),
 			},
 		},
@@ -71,7 +71,7 @@ func TestAccMorpheusServerDataSourceByIdExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := server.RenderServerDataSourceByIDConfig(t, nil)
+	dataSourceConfig, err := server.RenderServerDataSourceByIDConfig(t, map[string]string{"Id":"508"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -83,7 +83,7 @@ func TestAccMorpheusServerDataSourceByIdExampleOk(t *testing.T) {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hpe_morpheus_server.example", "name"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_server.example", "id", "1"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_server.example", "id", "508"),
 				),
 			},
 		},

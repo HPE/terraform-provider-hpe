@@ -36,7 +36,7 @@ func TestAccMorpheusNetworkPoolDataSourceByNameExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := networkpool.RenderNetworkPoolDataSourceByNameConfig(t, nil)
+	dataSourceConfig, err := networkpool.RenderNetworkPoolDataSourceByNameConfig(t, map[string]string{"Name":"CAN"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -48,7 +48,7 @@ func TestAccMorpheusNetworkPoolDataSourceByNameExampleOk(t *testing.T) {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet("data.hpe_morpheus_network_pool.example", "id"),
-					resource.TestCheckResourceAttr("data.hpe_morpheus_network_pool.example", "name", "Morpheus"),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network_pool.example", "name", "CAN"),
 				),
 			},
 		},
