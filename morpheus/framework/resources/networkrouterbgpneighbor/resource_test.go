@@ -35,7 +35,7 @@ const existingTier0RouterID = "28"
 // bgpNeighborSourceAddress is a valid IP on tier-0 28's interface. NSX-T requires
 // a source address for EBGP multihop neighbors; without it the create fails with
 // "BGP neighbor source address is mandatory for EBGP Multihop."
-const bgpNeighborSourceAddress = "172.28.104.1"
+const bgpNeighborSourceAddress = "10.100.10.1"
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
