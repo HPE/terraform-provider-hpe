@@ -108,15 +108,15 @@ func createNetworkInterfaceMapper(
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 		var id string
 		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
-			id = "networkGroup-" + in.NetworkGroupId.String()
+			id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 		}
 
 		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
-			id = in.NetworkId.String()
+			id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 		}
 
 		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
-			id = "subnet-" + in.SubnetId.String()
+			id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 		}
 
 		ipPool := &sdk.InstancesNetworkInterfaces2NetworkPool{}
@@ -154,15 +154,15 @@ func updateNetworkInterfaceMapper(
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
 		var id string
 		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
-			id = "networkGroup-" + in.NetworkGroupId.String()
+			id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 		}
 
 		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
-			id = in.NetworkId.String()
+			id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 		}
 
 		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
-			id = "subnet-" + in.SubnetId.String()
+			id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 		}
 
 		ipPool := &sdk.InstancesNetworkInterfaces3NetworkPool{}
@@ -205,15 +205,15 @@ func createChildNetworkInterfaceMapper(
 ) sdk.InstancesNetworkInterfaces2NetworkInterfacesInner {
 	var id string
 	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
-		id = "networkGroup-" + in.NetworkGroupId.String()
+		id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 	}
 
 	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
-		id = in.NetworkId.String()
+		id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 	}
 
 	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
-		id = "subnet-" + in.SubnetId.String()
+		id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 	}
 
 	ipPool := &sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPool{}
@@ -238,15 +238,15 @@ func updateChildNetworkInterfaceMapper(
 ) sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
 	var id string
 	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
-		id = "networkGroup-" + in.NetworkGroupId.String()
+		id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 	}
 
 	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
-		id = in.NetworkId.String()
+		id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 	}
 
 	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
-		id = "subnet-" + in.SubnetId.String()
+		id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 	}
 
 	var intfIdPtr *int64
