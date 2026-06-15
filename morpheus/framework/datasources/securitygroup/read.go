@@ -57,29 +57,11 @@ func getSecurityGroupByID(
 	state.SyncSource = convert.StrToType(sg.SyncSource)
 	state.TenantId = convert.Int64ToType(sg.AccountId)
 
-	if sg.Description.IsSet() {
-		state.Description = types.StringValue(*sg.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
-
-	if sg.ExternalId.IsSet() {
-		state.ExternalId = types.StringValue(*sg.ExternalId.Get())
-	} else {
-		state.ExternalId = types.StringNull()
-	}
-
-	if sg.GroupSource.IsSet() {
-		state.GroupSource = types.StringValue(*sg.GroupSource.Get())
-	} else {
-		state.GroupSource = types.StringNull()
-	}
-
-	if sg.Enabled.IsSet() {
-		state.Enabled = types.StringValue(*sg.Enabled.Get())
-	} else {
-		state.Enabled = types.StringNull()
-	}
+	// NullableString fields
+	state.Description = convert.StrToType(sg.Description.Get())
+	state.ExternalId = convert.StrToType(sg.ExternalId.Get())
+	state.GroupSource = convert.StrToType(sg.GroupSource.Get())
+	state.Enabled = convert.StrToType(sg.Enabled.Get())
 
 	if sg.Zone != nil && sg.Zone.Id != nil {
 		state.CloudId = types.Int64Value(*sg.Zone.Id)

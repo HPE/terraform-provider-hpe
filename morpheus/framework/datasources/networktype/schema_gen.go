@@ -31,6 +31,11 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether the CIDR is editable",
 				MarkdownDescription: "Whether the CIDR is editable",
 			},
+			"cidr_required": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a CIDR is required when creating a network of this type",
+				MarkdownDescription: "Whether a CIDR is required when creating a network of this type",
+			},
 			"code": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The code of the network type",
@@ -51,10 +56,45 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The description of the network type",
 				MarkdownDescription: "The description of the network type",
 			},
+			"dhcp_server_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the DHCP server setting is editable",
+				MarkdownDescription: "Whether the DHCP server setting is editable",
+			},
+			"dns_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the DNS settings are editable",
+				MarkdownDescription: "Whether the DNS settings are editable",
+			},
+			"external_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external type identifier for the network type",
+				MarkdownDescription: "The external type identifier for the network type",
+			},
+			"gateway_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the gateway setting is editable",
+				MarkdownDescription: "Whether the gateway setting is editable",
+			},
 			"has_cidr": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether CIDR is supported",
 				MarkdownDescription: "Whether CIDR is supported",
+			},
+			"has_floating_ips": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether floating IPs are supported",
+				MarkdownDescription: "Whether floating IPs are supported",
+			},
+			"has_network_server": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a network server integration is required",
+				MarkdownDescription: "Whether a network server integration is required",
+			},
+			"has_static_routes": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether static routes are supported",
+				MarkdownDescription: "Whether static routes are supported",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -91,10 +131,20 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether the network name is editable",
 				MarkdownDescription: "Whether the network name is editable",
 			},
+			"network_domain_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the network domain setting is editable",
+				MarkdownDescription: "Whether the network domain setting is editable",
+			},
 			"overlay": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether this network type uses overlay networking",
 				MarkdownDescription: "Whether this network type uses overlay networking",
+			},
+			"static_override_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the static IP override setting is editable",
+				MarkdownDescription: "Whether the static IP override setting is editable",
 			},
 			"vlan_id_editable": schema.BoolAttribute{
 				Computed:            true,
@@ -106,17 +156,27 @@ func NetworkTypeDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkTypeModel struct {
-	CanAssignPool  types.Bool   `tfsdk:"can_assign_pool"`
-	Category       types.String `tfsdk:"category"`
-	CidrEditable   types.Bool   `tfsdk:"cidr_editable"`
-	Code           types.String `tfsdk:"code"`
-	Creatable      types.Bool   `tfsdk:"creatable"`
-	Deletable      types.Bool   `tfsdk:"deletable"`
-	Description    types.String `tfsdk:"description"`
-	HasCidr        types.Bool   `tfsdk:"has_cidr"`
-	Id             types.Int64  `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	NameEditable   types.Bool   `tfsdk:"name_editable"`
-	Overlay        types.Bool   `tfsdk:"overlay"`
-	VlanIdEditable types.Bool   `tfsdk:"vlan_id_editable"`
+	CanAssignPool          types.Bool   `tfsdk:"can_assign_pool"`
+	Category               types.String `tfsdk:"category"`
+	CidrEditable           types.Bool   `tfsdk:"cidr_editable"`
+	CidrRequired           types.Bool   `tfsdk:"cidr_required"`
+	Code                   types.String `tfsdk:"code"`
+	Creatable              types.Bool   `tfsdk:"creatable"`
+	Deletable              types.Bool   `tfsdk:"deletable"`
+	Description            types.String `tfsdk:"description"`
+	DhcpServerEditable     types.Bool   `tfsdk:"dhcp_server_editable"`
+	DnsEditable            types.Bool   `tfsdk:"dns_editable"`
+	ExternalType           types.String `tfsdk:"external_type"`
+	GatewayEditable        types.Bool   `tfsdk:"gateway_editable"`
+	HasCidr                types.Bool   `tfsdk:"has_cidr"`
+	HasFloatingIps         types.Bool   `tfsdk:"has_floating_ips"`
+	HasNetworkServer       types.Bool   `tfsdk:"has_network_server"`
+	HasStaticRoutes        types.Bool   `tfsdk:"has_static_routes"`
+	Id                     types.Int64  `tfsdk:"id"`
+	Name                   types.String `tfsdk:"name"`
+	NameEditable           types.Bool   `tfsdk:"name_editable"`
+	NetworkDomainEditable  types.Bool   `tfsdk:"network_domain_editable"`
+	Overlay                types.Bool   `tfsdk:"overlay"`
+	StaticOverrideEditable types.Bool   `tfsdk:"static_override_editable"`
+	VlanIdEditable         types.Bool   `tfsdk:"vlan_id_editable"`
 }

@@ -55,50 +55,25 @@ func getNetworkPoolByID(
 	state.FreeCount = convert.Int64ToType(pool.FreeCount)
 	state.PoolEnabled = convert.BoolToType(pool.PoolEnabled)
 	state.DhcpServer = convert.BoolToType(pool.DhcpServer)
-
-	if pool.DisplayName.IsSet() {
-		state.DisplayName = types.StringValue(*pool.DisplayName.Get())
-	} else {
-		state.DisplayName = types.StringNull()
-	}
-
-	if pool.Gateway.IsSet() {
-		state.Gateway = types.StringValue(*pool.Gateway.Get())
-	} else {
-		state.Gateway = types.StringNull()
-	}
-
-	if pool.Netmask.IsSet() {
-		state.Netmask = types.StringValue(*pool.Netmask.Get())
-	} else {
-		state.Netmask = types.StringNull()
-	}
-
-	if pool.SubnetAddress.IsSet() {
-		state.SubnetAddress = types.StringValue(*pool.SubnetAddress.Get())
-	} else {
-		state.SubnetAddress = types.StringNull()
-	}
-
-	if pool.DnsDomain.IsSet() {
-		state.DnsDomain = types.StringValue(*pool.DnsDomain.Get())
-	} else {
-		state.DnsDomain = types.StringNull()
-	}
-
-	if pool.DnsSearchPath.IsSet() {
-		state.DnsSearchPath = types.StringValue(*pool.DnsSearchPath.Get())
-	} else {
-		state.DnsSearchPath = types.StringNull()
-	}
-
-	if pool.BootFile.IsSet() {
-		state.BootFile = types.StringValue(*pool.BootFile.Get())
-	} else {
-		state.BootFile = types.StringNull()
-	}
-
 	state.DnsServers = convert.StrSliceToSet(pool.DnsServers)
+	state.DnsSuffixList = convert.StrSliceToSet(pool.DnsSuffixList)
+
+	// NullableString fields
+	state.DisplayName = convert.StrToType(pool.DisplayName.Get())
+	state.Gateway = convert.StrToType(pool.Gateway.Get())
+	state.Netmask = convert.StrToType(pool.Netmask.Get())
+	state.SubnetAddress = convert.StrToType(pool.SubnetAddress.Get())
+	state.DnsDomain = convert.StrToType(pool.DnsDomain.Get())
+	state.DnsSearchPath = convert.StrToType(pool.DnsSearchPath.Get())
+	state.BootFile = convert.StrToType(pool.BootFile.Get())
+	state.Category = convert.StrToType(pool.Category.Get())
+	state.Code = convert.StrToType(pool.Code.Get())
+	state.InternalId = convert.StrToType(pool.InternalId.Get())
+	state.ExternalId = convert.StrToType(pool.ExternalId.Get())
+	state.DhcpIp = convert.StrToType(pool.DhcpIp.Get())
+	state.HostPrefix = convert.StrToType(pool.HostPrefix.Get())
+	state.HttpProxy = convert.StrToType(pool.HttpProxy.Get())
+	state.TftpServer = convert.StrToType(pool.TftpServer.Get())
 
 	if pool.Type != nil && pool.Type.Code != nil {
 		state.TypeCode = types.StringValue(*pool.Type.Code)

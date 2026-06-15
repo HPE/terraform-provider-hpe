@@ -23,8 +23,8 @@ func SecurityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"cloud_id": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "The associated cloud (zone) ID",
-				MarkdownDescription: "The associated cloud (zone) ID",
+				Description:         "The associated cloud ID",
+				MarkdownDescription: "The associated cloud ID",
 			},
 			"description": schema.StringAttribute{
 				Computed:            true,

@@ -37,7 +37,7 @@ data "hpe_morpheus_security_group" "example" {
 ### Read-Only
 
 - `active` (Boolean) Whether the security group is active
-- `cloud_id` (Number) The associated cloud (zone) ID
+- `cloud_id` (Number) The associated cloud ID
 - `description` (String) The description of the security group
 - `enabled` (String) Whether the security group is enabled
 - `external_id` (String) The external ID of the security group

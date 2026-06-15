@@ -37,15 +37,24 @@ data "hpe_morpheus_network_pool" "example" {
 ### Read-Only
 
 - `boot_file` (String) TFTP boot file
+- `category` (String) The category of the network pool
+- `code` (String) The code identifier for the network pool
+- `dhcp_ip` (String) The DHCP server IP address for the pool
 - `dhcp_server` (Boolean) Whether a DHCP server is present
 - `display_name` (String) The display name of the network pool
 - `dns_domain` (String) DNS domain for the pool
 - `dns_search_path` (String) DNS search path
 - `dns_servers` (Set of String) DNS server list
+- `dns_suffix_list` (Set of String) List of DNS suffixes for the pool
+- `external_id` (String) The external ID of the network pool
 - `free_count` (Number) Available IPs in pool
 - `gateway` (String) Gateway address
+- `host_prefix` (String) The host prefix for the network pool
+- `http_proxy` (String) The HTTP proxy for the network pool
+- `internal_id` (String) The internal ID of the network pool
 - `ip_count` (Number) Total IPs in pool
 - `netmask` (String) Subnet mask
 - `pool_enabled` (Boolean) Whether the pool is enabled
 - `subnet_address` (String) Subnet address
+- `tftp_server` (String) The TFTP server address for the pool
 - `type_code` (String) The pool type code

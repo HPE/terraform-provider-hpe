@@ -39,11 +39,21 @@ data "hpe_morpheus_network_type" "example" {
 - `can_assign_pool` (Boolean) Whether a network pool can be assigned
 - `category` (String) The category of the network type
 - `cidr_editable` (Boolean) Whether the CIDR is editable
+- `cidr_required` (Boolean) Whether a CIDR is required when creating a network of this type
 - `code` (String) The code of the network type
 - `creatable` (Boolean) Whether this network type can be created
 - `deletable` (Boolean) Whether this network type can be deleted
 - `description` (String) The description of the network type
+- `dhcp_server_editable` (Boolean) Whether the DHCP server setting is editable
+- `dns_editable` (Boolean) Whether the DNS settings are editable
+- `external_type` (String) The external type identifier for the network type
+- `gateway_editable` (Boolean) Whether the gateway setting is editable
 - `has_cidr` (Boolean) Whether CIDR is supported
+- `has_floating_ips` (Boolean) Whether floating IPs are supported
+- `has_network_server` (Boolean) Whether a network server integration is required
+- `has_static_routes` (Boolean) Whether static routes are supported
 - `name_editable` (Boolean) Whether the network name is editable
+- `network_domain_editable` (Boolean) Whether the network domain setting is editable
 - `overlay` (Boolean) Whether this network type uses overlay networking
+- `static_override_editable` (Boolean) Whether the static IP override setting is editable
 - `vlan_id_editable` (Boolean) Whether the VLAN ID is editable

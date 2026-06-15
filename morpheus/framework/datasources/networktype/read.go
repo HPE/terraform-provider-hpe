@@ -57,22 +57,24 @@ func getNetworkTypeByID(
 	state.Overlay = convert.BoolToType(nt.Overlay)
 	state.NameEditable = convert.BoolToType(nt.NameEditable)
 	state.CidrEditable = convert.BoolToType(nt.CidrEditable)
+	state.CidrRequired = convert.BoolToType(nt.CidrRequired)
 	state.CanAssignPool = convert.BoolToType(nt.CanAssignPool)
 	state.HasCidr = convert.BoolToType(nt.HasCidr)
 	state.VlanIdEditable = convert.BoolToType(nt.VlanIdEditable)
 	state.Deletable = convert.BoolToType(nt.Deletable)
+	state.DhcpServerEditable = convert.BoolToType(nt.DhcpServerEditable)
+	state.DnsEditable = convert.BoolToType(nt.DnsEditable)
+	state.GatewayEditable = convert.BoolToType(nt.GatewayEditable)
+	state.StaticOverrideEditable = convert.BoolToType(nt.StaticOverrideEditable)
+	state.NetworkDomainEditable = convert.BoolToType(nt.NetworkDomainEditable)
+	state.HasNetworkServer = convert.BoolToType(nt.HasNetworkServer)
+	state.HasStaticRoutes = convert.BoolToType(nt.HasStaticRoutes)
+	state.HasFloatingIps = convert.BoolToType(nt.HasFloatingIps)
 
-	if nt.Description.IsSet() {
-		state.Description = types.StringValue(*nt.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
-
-	if nt.Category.IsSet() {
-		state.Category = types.StringValue(*nt.Category.Get())
-	} else {
-		state.Category = types.StringNull()
-	}
+	// NullableString fields
+	state.Description = convert.StrToType(nt.Description.Get())
+	state.Category = convert.StrToType(nt.Category.Get())
+	state.ExternalType = convert.StrToType(nt.ExternalType.Get())
 
 	return state, nil
 }
