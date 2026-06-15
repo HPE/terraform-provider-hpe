@@ -12,20 +12,22 @@ Provides a Morpheus REST option list resource.
 
 ```terraform
 resource "hpe_morpheus_option_list_rest" "tf_example_rest_option_list" {
-  name               = "tf_example_rest_option_list"
-  description        = "Terraform REST option list example"
-  visibility         = "private"
-  source_url         = "https://api.github.com/repos/hashicorp/consul/releases"
-  real_time          = true
-  ignore_ssl_errors  = true
-  source_method      = "GET"
-  initial_dataset    = <<POLICY
+  name                               = "tf_example_rest_option_list"
+  description                        = "Terraform REST option list example"
+  visibility                         = "private"
+  source_url                         = "https://api.github.com/repos/hashicorp/consul/releases"
+  real_time                          = true
+  ignore_ssl_errors                  = true
+  inject_system_authorization_header = true
+  use_owner_auth                     = false
+  source_method                      = "GET"
+  initial_dataset                    = <<POLICY
   [{"name": "Level 1","value":"level1"},
   {"name": "Level 2","value":"level2"},
   {"name": "Level 3","value":"level3"}
   ]
   POLICY
-  translation_script = <<POLICY
+  translation_script                 = <<POLICY
       for(var x=0;x < 5; x++) {
           results.push({name: data[x].name,value:data[x].name});
         }
@@ -54,6 +56,7 @@ resource "hpe_morpheus_option_list_rest" "tf_example_rest_option_list" {
 - `description` (String) The description of the option list
 - `ignore_ssl_errors` (Boolean) Whether to ignore SSL errors with the REST API endpoint
 - `initial_dataset` (String) The initial dataset used to populate the option list
+- `inject_system_authorization_header` (Boolean) When enabled, injects a system execution authorization header so the REST source request can call back into Morpheus APIs
 - `labels` (Set of String) The organization labels associated with the option list (Only supported on Morpheus 5.5.3 or higher)
 - `real_time` (Boolean) Whether the list is refreshed every time an associated option type is requested
 - `request_script` (String) A js script to prepare the API request
@@ -61,6 +64,7 @@ resource "hpe_morpheus_option_list_rest" "tf_example_rest_option_list" {
 - `source_method` (String) The HTTP method used for the API request
 - `source_url` (String) The HTTP URL used for the API request
 - `translation_script` (String) A js script to translate the result data object into an Array containing objects with properties 'name' and 'value'.
+- `use_owner_auth` (Boolean) When enabled alongside inject_system_authorization_header, authenticates as the option list's owner rather than the requesting user
 - `visibility` (String) Whether the option list is visible in sub-tenants or not
 
 ### Read-Only

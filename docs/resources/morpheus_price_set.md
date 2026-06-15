@@ -31,7 +31,7 @@ resource "hpe_morpheus_price_set" "example" {
 - `price_ids` (List of Number) The list of price ids associated with the price set
 - `price_unit` (String) The price unit (minute, hour, day, month, year, two year, three year, four year, five year)
 - `region_code` (String) The region code of the price set
-- `type` (String) The price type (fixed, compute, memory, cores, storage, datastore, platform, software_or_service, load_balancer, load_balancer_virtual_server)
+- `type` (String) The price set type (fixed, compute_plus_storage, component, load_balancer, virtual_image, snapshot, software_or_service)
 
 ### Optional
 

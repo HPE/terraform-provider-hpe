@@ -127,6 +127,20 @@ func ResourceOptionListREST() *schema.Resource {
 				DiffSuppressFunc: helpers.SuppressEquivalentJSONDiffs,
 				Optional:         true,
 			},
+			"inject_system_authorization_header": {
+				Type: schema.TypeBool,
+				Description: "When enabled, injects a system execution authorization header " +
+					"so the REST source request can call back into Morpheus APIs",
+				Optional: true,
+				Default:  false,
+			},
+			"use_owner_auth": {
+				Type: schema.TypeBool,
+				Description: "When enabled alongside inject_system_authorization_header, " +
+					"authenticates as the option list's owner rather than the requesting user",
+				Optional: true,
+				Default:  false,
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -273,21 +287,39 @@ func resourceOptionListRESTCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("request_script", d.Get("request_script")))
 	}
 
+	var injectSystemAuthorizationHeader bool
+	if v, ok := d.Get("inject_system_authorization_header").(bool); ok {
+		injectSystemAuthorizationHeader = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError(
+			"inject_system_authorization_header",
+			d.Get("inject_system_authorization_header")))
+	}
+
+	var useOwnerAuth bool
+	if v, ok := d.Get("use_owner_auth").(bool); ok {
+		useOwnerAuth = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("use_owner_auth", d.Get("use_owner_auth")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"optionTypeList": map[string]any{
-				"name":              name,
-				"description":       description,
-				"labels":            labelsPayload,
-				"type":              "rest",
-				"visibility":        visibility,
-				"sourceUrl":         sourceURL,
-				"realTime":          realTime,
-				"ignoreSSLErrors":   ignoreSSLErrors,
-				"sourceMethod":      sourceMethod,
-				"initialDataset":    initialDataset,
-				"translationScript": translationScript,
-				"requestScript":     requestScript,
+				"name":                     name,
+				"description":              description,
+				"labels":                   labelsPayload,
+				"type":                     "rest",
+				"visibility":               visibility,
+				"sourceUrl":                sourceURL,
+				"realTime":                 realTime,
+				"ignoreSSLErrors":          ignoreSSLErrors,
+				"sourceMethod":             sourceMethod,
+				"initialDataset":           initialDataset,
+				"translationScript":        translationScript,
+				"requestScript":            requestScript,
+				"injectExecutionLeaseAuth": injectSystemAuthorizationHeader,
+				"useOwnerAuth":             useOwnerAuth,
 				"config": map[string]any{
 					"sourceHeaders": sourceHeaders,
 				},
@@ -543,21 +575,39 @@ func resourceOptionListRESTUpdate(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(helpers.TypeAssertFailError("request_script", d.Get("request_script")))
 	}
 
+	var injectSystemAuthorizationHeader bool
+	if v, ok := d.Get("inject_system_authorization_header").(bool); ok {
+		injectSystemAuthorizationHeader = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError(
+			"inject_system_authorization_header",
+			d.Get("inject_system_authorization_header")))
+	}
+
+	var useOwnerAuth bool
+	if v, ok := d.Get("use_owner_auth").(bool); ok {
+		useOwnerAuth = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("use_owner_auth", d.Get("use_owner_auth")))
+	}
+
 	req := &morpheus.Request{
 		Body: map[string]any{
 			"optionTypeList": map[string]any{
-				"name":              name,
-				"description":       description,
-				"labels":            labelsPayload,
-				"type":              "rest",
-				"visibility":        visibility,
-				"sourceUrl":         sourceURL,
-				"realTime":          realTime,
-				"ignoreSSLErrors":   ignoreSSLErrors,
-				"sourceMethod":      sourceMethod,
-				"initialDataset":    initialDataset,
-				"translationScript": translationScript,
-				"requestScript":     requestScript,
+				"name":                     name,
+				"description":              description,
+				"labels":                   labelsPayload,
+				"type":                     "rest",
+				"visibility":               visibility,
+				"sourceUrl":                sourceURL,
+				"realTime":                 realTime,
+				"ignoreSSLErrors":          ignoreSSLErrors,
+				"sourceMethod":             sourceMethod,
+				"initialDataset":           initialDataset,
+				"translationScript":        translationScript,
+				"requestScript":            requestScript,
+				"injectExecutionLeaseAuth": injectSystemAuthorizationHeader,
+				"useOwnerAuth":             useOwnerAuth,
 				"config": map[string]any{
 					"sourceHeaders": sourceHeaders,
 				},
