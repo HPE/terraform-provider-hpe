@@ -21,11 +21,16 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkedgecluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktransportzone"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
@@ -63,5 +68,11 @@ func (SubProvider) GetDataSources(
 		role.NewDataSource,
 		serviceplan.NewDataSource,
 		user.NewDataSource,
+		// hpegl VMaaS parity data sources
+		networkserver.NewDataSource,
+		networkedgecluster.NewDataSource,
+		networktransportzone.NewDataSource,
+		networkpool.NewDataSource,
+		networktype.NewDataSource,
 	}
 }
