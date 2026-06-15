@@ -258,7 +258,7 @@ func (r *Resource) Update(
 	routerID := plan.RouterId.ValueInt64()
 
 	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{}
-	nat.Name = plan.Name.ValueString()
+	nat.Name = plan.Name.ValueStringPointer()
 
 	updateReq := sdk.UpdateNetworkRouterNatRequest{
 		NetworkRouterNAT: &nat,
