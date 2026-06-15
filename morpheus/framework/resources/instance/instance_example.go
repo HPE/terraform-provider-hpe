@@ -19,6 +19,7 @@ import (
 //go:generate ../../../../bin/render example_metal.tf.tmpl Name "TestInstance" CloudName "aCloud" EnvironmentName "anEnvironment" GroupName "aGroup" InstanceTypeLayout "Single ILO Server" Role "aRole" PlanName "G3i"
 //go:generate ../../../../bin/render example_aws.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284"
 //go:generate ../../../../bin/render example_azure.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284" AzureRegion "eastus"
+//go:generate ../../../../bin/render example_azure_subnet.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-12284" AzureRegion "eastus" SubnetId "1"
 
 func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
@@ -85,6 +86,41 @@ func RenderInstanceAzureConfig(t *testing.T, overrides map[string]string) (strin
 	}
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "example_azure.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
+}
+
+func RenderInstanceAzureSubnetConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":         "TestInstance",
+		"InstanceType": "9",
+		"ResourcePool": "pool-12284",
+		"AzureRegion":  "eastus",
+		"SubnetId":     "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	// Get the directory where this source file is located
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example_azure_subnet.tf.tmpl")
 
 	return testhelpers.RenderExample(
 		t,

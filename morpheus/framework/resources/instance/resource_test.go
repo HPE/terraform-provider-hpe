@@ -157,6 +157,86 @@ func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 	})
 }
 
+func TestAccMorpheusInstanceResourceAzureSubnet(t *testing.T) {
+	if capabilities.Missing(t, capabilities.Azure) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	instanceTypeID := "34"
+	resourcePool := "pool-1"
+	subnetID := "1"
+
+	resourceConfig, err := instance.RenderInstanceAzureSubnetConfig(t, map[string]string{
+		"Name":         name,
+		"InstanceType": instanceTypeID,
+		"ResourcePool": resourcePool,
+		"AzureRegion":  "eastus",
+		"SubnetId":     subnetID,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"instance_type_id",
+			instanceTypeID,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.resource_pool_id",
+			resourcePool,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.create_user",
+			"false",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"config_azure.azure_region",
+			"eastus",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"network_interfaces.0.subnet_id",
+			subnetID,
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")

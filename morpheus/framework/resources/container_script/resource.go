@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -144,6 +145,12 @@ func (r *containerScriptResource) Create(
 	// Read back the full resource
 	if err := readScriptIntoModel(ctx, client, scriptID, &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "container_script", plan.Name.ValueString(), err, nil)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "container_script",
+			ResourceID:   scriptID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}

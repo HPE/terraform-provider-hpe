@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -82,13 +83,31 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sv := result.StorageVolume
-	if sv == nil {
+	var id int64
+	if result.StorageVolume != nil && result.StorageVolume.Id != nil {
+		id = *result.StorageVolume.Id
+	}
+	idParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_volume", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "storage_volume",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.StorageVolume == nil {
 		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
 
 		return
 	}
-	mapCreateResponseToModel(&plan, sv)
+	mapGetResponseToModel(&plan, readResult.StorageVolume)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -170,6 +189,22 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	readIdParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, readIdParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_volume", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.StorageVolume == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageVolume is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageVolume)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -210,29 +245,6 @@ func (r *storageVolumeResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapCreateResponseToModel(model *storageVolumeModel, sv *sdk.AddStorageVolumes200ResponseAllOfStorageVolume) {
-	if sv.Id != nil {
-		model.ID = types.Int64Value(*sv.Id)
-	}
-	if sv.Name != nil {
-		model.Name = types.StringValue(*sv.Name)
-	}
-	if sv.TypeId != nil {
-		model.TypeId = types.Int64Value(*sv.TypeId)
-	}
-	if storageServer := sv.StorageServer; storageServer != nil {
-		if id, ok := storageServer["id"].(float64); ok {
-			model.StorageServerID = types.Int64Value(int64(id))
-		}
-	}
-	if sv.MaxStorage != nil {
-		model.MaxStorage = types.Int64Value(*sv.MaxStorage)
-	}
-	if sv.Status != nil {
-		model.Status = types.StringValue(*sv.Status)
-	}
 }
 
 func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes200ResponseStorageVolume) {

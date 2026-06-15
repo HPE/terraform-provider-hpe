@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -103,14 +104,43 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
-	license := result.License
-	if license == nil {
+	var id int64
+	if result.License != nil && result.License.Id != nil {
+		id = *result.License.Id
+	}
+
+	readResult, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "provisioning_license", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "provisioning_license",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readLicense := readResult.License
+	if readLicense == nil {
 		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
 
 		return
 	}
-	if license.Id != nil {
-		plan.ID = types.Int64Value(*license.Id)
+	if readLicense.Id != nil {
+		plan.ID = types.Int64Value(*readLicense.Id)
+	}
+	if readLicense.Name != nil {
+		plan.Name = types.StringValue(*readLicense.Name)
+	}
+	if readLicense.Description != nil {
+		plan.Description = types.StringValue(*readLicense.Description)
+	} else {
+		plan.Description = types.StringNull()
+	}
+	if readLicense.LicenseType != nil && readLicense.LicenseType.Code != nil {
+		plan.LicenseType = types.StringValue(*readLicense.LicenseType.Code)
 	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
@@ -239,6 +269,33 @@ func (r *provisioningLicenseResource) Update(
 		return
 	}
 
+	readResult, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "provisioning_license", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readLicense := readResult.License
+	if readLicense == nil {
+		resp.Diagnostics.AddError("API returned nil", "License is nil in the response")
+
+		return
+	}
+	if readLicense.Id != nil {
+		plan.ID = types.Int64Value(*readLicense.Id)
+	}
+	if readLicense.Name != nil {
+		plan.Name = types.StringValue(*readLicense.Name)
+	}
+	if readLicense.Description != nil {
+		plan.Description = types.StringValue(*readLicense.Description)
+	} else {
+		plan.Description = types.StringNull()
+	}
+	if readLicense.LicenseType != nil && readLicense.LicenseType.Code != nil {
+		plan.LicenseType = types.StringValue(*readLicense.LicenseType.Code)
+	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

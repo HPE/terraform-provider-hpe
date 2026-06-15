@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -150,6 +151,13 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 	state, diags := r.getVdiPoolAsState(ctx, poolID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_pool",
+			ResourceID:   poolID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 
