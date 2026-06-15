@@ -5,5 +5,5 @@
 package backuphost
 
 import (
-	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_host/sweep"
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost/sweep"
 )

@@ -5,5 +5,5 @@
 package backupinstance
 
 import (
-	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_instance/sweep"
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance/sweep"
 )
