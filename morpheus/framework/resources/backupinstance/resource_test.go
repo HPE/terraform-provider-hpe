@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	backupinstance "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_instance"
+	backupinstance "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"

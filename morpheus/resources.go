@@ -7,9 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	backuphost "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_host"
-	backupinstance "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
