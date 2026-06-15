@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -83,8 +84,35 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
+	var id int64
 	if result.AffinityGroup != nil && result.AffinityGroup.Id != nil {
-		plan.ID = types.Int64Value(*result.AffinityGroup.Id)
+		id = *result.AffinityGroup.Id
+	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "cluster_affinity_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readAg := readResult.AffinityGroup
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	if readAg.Id != nil {
+		plan.ID = types.Int64Value(*readAg.Id)
+	}
+	if readAg.Name != nil {
+		plan.Name = types.StringValue(*readAg.Name)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -173,6 +201,26 @@ func (r *clusterAffinityGroupResource) Update(
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
 
 		return
+	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readAg := readResult.AffinityGroup
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	if readAg.Id != nil {
+		plan.ID = types.Int64Value(*readAg.Id)
+	}
+	if readAg.Name != nil {
+		plan.Name = types.StringValue(*readAg.Name)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

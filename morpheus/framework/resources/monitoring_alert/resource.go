@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -87,13 +88,30 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	alert := result.Alert
-	if alert == nil {
+	var id int64
+	if result.Alert != nil && result.Alert.Id != nil {
+		id = *result.Alert.Id
+	}
+
+	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_alert",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Alert == nil {
 		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
 
 		return
 	}
-	mapAlertResponseToModel(&plan, alert)
+	mapGetAlertResponseToModel(&plan, readResult.Alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -177,7 +195,7 @@ func (r *monitoringAlertResource) Update(
 		body.AllGroups = plan.AllGroups.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.AlertsAPI.UpdateAlerts(ctx, id).UpdateAlertsRequest(sdk.UpdateAlertsRequest{
+	_, httpResp, err := client.AlertsAPI.UpdateAlerts(ctx, id).UpdateAlertsRequest(sdk.UpdateAlertsRequest{
 		Alert: body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -186,13 +204,19 @@ func (r *monitoringAlertResource) Update(
 		return
 	}
 
-	alert := result.Alert
-	if alert == nil {
+	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_alert", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.Alert == nil {
 		resp.Diagnostics.AddError("API returned nil", "Alert is nil in the response")
 
 		return
 	}
-	mapGetAlertResponseToModel(&plan, alert)
+	mapGetAlertResponseToModel(&plan, readResult.Alert)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -237,30 +261,6 @@ func (r *monitoringAlertResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapAlertResponseToModel(model *monitoringAlertModel, alert *sdk.AddAlerts200ResponseAllOfAlert) {
-	if alert.Id != nil {
-		model.ID = types.Int64Value(*alert.Id)
-	}
-	if alert.Name != nil {
-		model.Name = types.StringValue(*alert.Name)
-	}
-	if alert.MinSeverity != nil {
-		model.MinSeverity = types.StringValue(*alert.MinSeverity)
-	}
-	if alert.MinDuration != nil {
-		model.MinDuration = types.Int64Value(*alert.MinDuration)
-	}
-	if alert.Active != nil {
-		model.Active = types.BoolValue(*alert.Active)
-	}
-	if alert.AllChecks != nil {
-		model.AllChecks = types.BoolValue(*alert.AllChecks)
-	}
-	if alert.AllGroups != nil {
-		model.AllGroups = types.BoolValue(*alert.AllGroups)
-	}
 }
 
 func mapGetAlertResponseToModel(model *monitoringAlertModel, alert *sdk.GetAlerts200ResponseAllOfAlert) {

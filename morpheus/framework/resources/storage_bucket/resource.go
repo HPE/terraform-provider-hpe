@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -93,13 +94,30 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	sb := result.StorageBucket
-	if sb == nil {
+	var id int64
+	if result.StorageBucket != nil && result.StorageBucket.Id != nil {
+		id = *result.StorageBucket.Id
+	}
+
+	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "storage_bucket",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.StorageBucket == nil {
 		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
 
 		return
 	}
-	mapCreateResponseToModel(&plan, sb)
+	mapGetResponseToModel(&plan, readResult.StorageBucket)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -197,6 +215,20 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "storage_bucket", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.StorageBucket == nil {
+		resp.Diagnostics.AddError("API returned nil", "StorageBucket is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.StorageBucket)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -236,26 +268,6 @@ func (r *storageBucketResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapCreateResponseToModel(model *storageBucketModel, sb *sdk.AddStorageBuckets200ResponseAllOfStorageBucket) {
-	if sb.Id != nil {
-		model.ID = types.Int64Value(*sb.Id)
-	}
-	if sb.Name != nil {
-		model.Name = types.StringValue(*sb.Name)
-	}
-	if sb.ProviderType != nil {
-		model.ProviderType = types.StringValue(*sb.ProviderType)
-	}
-	if sb.BucketName != nil {
-		model.BucketName = types.StringValue(*sb.BucketName)
-	} else {
-		model.BucketName = types.StringNull()
-	}
-	if sb.DefaultBackupTarget != nil {
-		model.DefaultBackupTarget = types.BoolValue(*sb.DefaultBackupTarget)
-	}
 }
 
 func mapGetResponseToModel(model *storageBucketModel, sb *sdk.GetStorageBuckets200ResponseStorageBucket) {
