@@ -46,6 +46,7 @@ data "hpe_morpheus_network_edge_cluster" "example" {
 
 - `active` (Boolean) Whether the edge cluster is active
 - `config` (Dynamic) Edge cluster configuration object
+- `description` (String) The description of the edge cluster
 - `display_name` (String) The display name of the edge cluster
 - `enabled` (Boolean) Whether the edge cluster is enabled
 - `external_id` (String) The external identifier of the edge cluster in the network provider

@@ -26,6 +26,11 @@ func NetworkTransportZoneDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Transport zone configuration object",
 				MarkdownDescription: "Transport zone configuration object",
 			},
+			"description": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The description of the transport zone",
+				MarkdownDescription: "The description of the transport zone",
+			},
 			"display_name": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The display name of the transport zone",
@@ -96,6 +101,7 @@ func NetworkTransportZoneDataSourceSchema(ctx context.Context) schema.Schema {
 type NetworkTransportZoneModel struct {
 	Active          types.Bool    `tfsdk:"active"`
 	Config          types.Dynamic `tfsdk:"config"`
+	Description     types.String  `tfsdk:"description"`
 	DisplayName     types.String  `tfsdk:"display_name"`
 	Enabled         types.Bool    `tfsdk:"enabled"`
 	ExternalId      types.String  `tfsdk:"external_id"`

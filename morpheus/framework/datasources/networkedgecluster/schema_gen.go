@@ -26,6 +26,11 @@ func NetworkEdgeClusterDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Edge cluster configuration object",
 				MarkdownDescription: "Edge cluster configuration object",
 			},
+			"description": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The description of the edge cluster",
+				MarkdownDescription: "The description of the edge cluster",
+			},
 			"display_name": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The display name of the edge cluster",
@@ -86,6 +91,7 @@ func NetworkEdgeClusterDataSourceSchema(ctx context.Context) schema.Schema {
 type NetworkEdgeClusterModel struct {
 	Active          types.Bool    `tfsdk:"active"`
 	Config          types.Dynamic `tfsdk:"config"`
+	Description     types.String  `tfsdk:"description"`
 	DisplayName     types.String  `tfsdk:"display_name"`
 	Enabled         types.Bool    `tfsdk:"enabled"`
 	ExternalId      types.String  `tfsdk:"external_id"`

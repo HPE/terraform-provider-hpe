@@ -4,7 +4,6 @@ package networkedgecluster
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -145,25 +144,9 @@ func getEdgeClusterByName(
 		)
 	}
 
-	// The LIST response returns networkEdgeClusters as interface{}.
-	// We need to JSON roundtrip to extract individual items for exact name matching.
-	type listItem struct {
-		ID   *int64  `json:"id"`
-		Name *string `json:"name"`
-	}
-
-	raw, marshalErr := json.Marshal(rs.NetworkEdgeClusters)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("failed to marshal edge clusters list: %w", marshalErr)
-	}
-
-	var items []listItem
-	if unmarshalErr := json.Unmarshal(raw, &items); unmarshalErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal edge clusters list: %w", unmarshalErr)
-	}
-
-	var matched []listItem
-	for _, item := range items {
+	// The LIST response returns typed networkEdgeClusters; match by exact name.
+	var matched []sdk.GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner
+	for _, item := range rs.NetworkEdgeClusters {
 		if item.Name != nil && *item.Name == name {
 			matched = append(matched, item)
 		}
@@ -177,11 +160,11 @@ func getEdgeClusterByName(
 		return nil, errors.New(ErrorMultipleFound)
 	}
 
-	if matched[0].ID == nil {
+	if matched[0].Id == nil {
 		return nil, fmt.Errorf("edge cluster %q has nil id", name)
 	}
 
-	return getEdgeClusterByID(ctx, *matched[0].ID, serverID, client)
+	return getEdgeClusterByID(ctx, *matched[0].Id, serverID, client)
 }
 
 func edgeClusterAsState(
@@ -191,15 +174,9 @@ func edgeClusterAsState(
 ) NetworkEdgeClusterModel {
 	state := NetworkEdgeClusterModel{}
 
-	// ID field is *int32 in the SDK — convert to int64.
-	if ec.Id != nil {
-		id64 := int64(*ec.Id)
-		state.Id = convert.Int64ToType(&id64)
-	} else {
-		state.Id = types.Int64Null()
-	}
-
+	state.Id = convert.Int64ToType(ec.Id)
 	state.Name = convert.StrToType(ec.Name)
+	state.Description = convert.StrToType(ec.Description)
 	state.NetworkServerId = types.Int64Value(serverID)
 	state.ProviderId = convert.StrToType(ec.ProviderId)
 	state.ExternalId = convert.StrToType(ec.ExternalId)

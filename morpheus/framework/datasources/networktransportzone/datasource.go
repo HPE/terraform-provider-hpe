@@ -4,7 +4,6 @@ package networktransportzone
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -145,25 +144,9 @@ func getTransportZoneByName(
 		)
 	}
 
-	// The LIST response returns networkScopes as interface{}.
-	// JSON roundtrip to extract individual items for exact name matching.
-	type listItem struct {
-		ID   *int64  `json:"id"`
-		Name *string `json:"name"`
-	}
-
-	raw, marshalErr := json.Marshal(rs.NetworkScopes)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("failed to marshal transport zones list: %w", marshalErr)
-	}
-
-	var items []listItem
-	if unmarshalErr := json.Unmarshal(raw, &items); unmarshalErr != nil {
-		return nil, fmt.Errorf("failed to unmarshal transport zones list: %w", unmarshalErr)
-	}
-
-	var matched []listItem
-	for _, item := range items {
+	// The LIST response returns typed networkScopes; match by exact name.
+	var matched []sdk.GetNetworkTransportZones200ResponseAllOfNetworkScopesInner
+	for _, item := range rs.NetworkScopes {
 		if item.Name != nil && *item.Name == name {
 			matched = append(matched, item)
 		}
@@ -177,11 +160,11 @@ func getTransportZoneByName(
 		return nil, errors.New(ErrorMultipleFound)
 	}
 
-	if matched[0].ID == nil {
+	if matched[0].Id == nil {
 		return nil, fmt.Errorf("transport zone %q has nil id", name)
 	}
 
-	return getTransportZoneByID(ctx, *matched[0].ID, serverID, client)
+	return getTransportZoneByID(ctx, *matched[0].Id, serverID, client)
 }
 
 func transportZoneAsState(
@@ -193,6 +176,7 @@ func transportZoneAsState(
 
 	state.Id = convert.Int64ToType(tz.Id)
 	state.Name = convert.StrToType(tz.Name)
+	state.Description = convert.StrToType(tz.Description)
 	state.NetworkServerId = types.Int64Value(serverID)
 	state.ProviderId = convert.StrToType(tz.ProviderId)
 	state.ExternalId = convert.StrToType(tz.ExternalId)

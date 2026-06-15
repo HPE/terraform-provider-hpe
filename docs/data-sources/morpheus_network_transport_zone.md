@@ -46,6 +46,7 @@ data "hpe_morpheus_network_transport_zone" "example" {
 
 - `active` (Boolean) Whether the transport zone is active
 - `config` (Dynamic) Transport zone configuration object
+- `description` (String) The description of the transport zone
 - `display_name` (String) The display name of the transport zone
 - `enabled` (Boolean) Whether the transport zone is enabled
 - `external_id` (String) The external identifier of the transport zone in the network provider
