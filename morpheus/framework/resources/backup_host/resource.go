@@ -63,6 +63,13 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	// ssh_password_wo is write-only, so its value is only available from config.
+	var config BackupHostModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	host := sdk.BackupServerHost{
 		Name:         plan.Name.ValueString(),
 		LocationType: "server",
@@ -76,6 +83,12 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	if !plan.Path.IsNull() {
 		host.TargetPath = plan.Path.ValueStringPointer()
+	}
+	if !plan.SshUsername.IsNull() {
+		host.SshUsername = plan.SshUsername.ValueStringPointer()
+	}
+	if !config.SshPasswordWo.IsNull() {
+		host.SshPassword = config.SshPasswordWo.ValueStringPointer()
 	}
 
 	backup := sdk.AddBackupsRequestBackup{
@@ -146,6 +159,16 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	// ssh_password_wo is write-only, so its value is only available from config.
+	// Prior state is used to detect whether ssh_password_wo_version changed.
+	var config BackupHostModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	var priorState BackupHostModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateBackupsRequestBackup{
@@ -162,6 +185,22 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 	if !plan.Path.IsNull() {
 		body.TargetPath = plan.Path.ValueStringPointer()
+	}
+	if !plan.SshUsername.IsNull() {
+		body.TargetUsername = plan.SshUsername.ValueStringPointer()
+	}
+	// The write-only ssh_password_wo cannot be diffed by Terraform, so it is only
+	// re-sent when ssh_password_wo_version changes.
+	if !plan.SshPasswordWoVersion.Equal(priorState.SshPasswordWoVersion) {
+		if config.SshPasswordWo.IsNull() {
+			resp.Diagnostics.AddError(
+				updateOperation,
+				"'ssh_password_wo_version' changed, but 'ssh_password_wo' is not set",
+			)
+
+			return
+		}
+		body.TargetPassword = config.SshPasswordWo.ValueStringPointer()
 	}
 
 	_, httpResp, err := client.BackupsAPI.UpdateBackups(ctx, id).UpdateBackupsRequest(sdk.UpdateBackupsRequest{
@@ -282,6 +321,15 @@ func getBackupAsState(
 	if v := b.TargetPath.Get(); v != nil {
 		state.Path = convert.StrToType(v)
 	}
+
+	// ssh_username can be read back from the API. ssh_password_wo is write-only
+	// (never stored in state) and ssh_password_wo_version is not returned by the
+	// API, so preserve it from plan/state.
+	state.SshUsername = plan.SshUsername
+	if v := b.TargetUsername.Get(); v != nil {
+		state.SshUsername = convert.StrToType(v)
+	}
+	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
 
 	return state, diags
 }

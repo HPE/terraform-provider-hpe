@@ -4,7 +4,9 @@ package backuphost
 
 import (
 	"context"
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -39,6 +41,9 @@ func BackupHostResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The ID of the host (server) to backup.",
 				MarkdownDescription: "The ID of the host (server) to backup.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -63,6 +68,31 @@ func BackupHostResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The file or directory path on the target host to back up.",
 				MarkdownDescription: "The file or directory path on the target host to back up.",
 			},
+			"ssh_password_wo": schema.StringAttribute{
+				Optional:            true,
+				Sensitive:           true,
+				WriteOnly:           true,
+				Description:         "SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.",
+				MarkdownDescription: "SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NullableStringUpdateModifier{},
+				},
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.Expressions{
+						path.MatchRoot("ssh_username"),
+					}...),
+				},
+			},
+			"ssh_password_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "SSH password version. Used to determine if ssh_password_wo has been updated.",
+				MarkdownDescription: "SSH password version. Used to determine if ssh_password_wo has been updated.",
+			},
+			"ssh_username": schema.StringAttribute{
+				Optional:            true,
+				Description:         "SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.",
+				MarkdownDescription: "SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.",
+			},
 			"storage_provider_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -79,12 +109,15 @@ func BackupHostResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type BackupHostModel struct {
-	BackupTypeCode    types.String `tfsdk:"backup_type_code"`
-	Enabled           types.Bool   `tfsdk:"enabled"`
-	HostId            types.Int64  `tfsdk:"host_id"`
-	Id                types.Int64  `tfsdk:"id"`
-	JobId             types.Int64  `tfsdk:"job_id"`
-	Name              types.String `tfsdk:"name"`
-	Path              types.String `tfsdk:"path"`
-	StorageProviderId types.Int64  `tfsdk:"storage_provider_id"`
+	BackupTypeCode       types.String `tfsdk:"backup_type_code"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	HostId               types.Int64  `tfsdk:"host_id"`
+	Id                   types.Int64  `tfsdk:"id"`
+	JobId                types.Int64  `tfsdk:"job_id"`
+	Name                 types.String `tfsdk:"name"`
+	Path                 types.String `tfsdk:"path"`
+	SshPasswordWo        types.String `tfsdk:"ssh_password_wo"`
+	SshPasswordWoVersion types.Int64  `tfsdk:"ssh_password_wo_version"`
+	SshUsername          types.String `tfsdk:"ssh_username"`
+	StorageProviderId    types.Int64  `tfsdk:"storage_provider_id"`
 }
