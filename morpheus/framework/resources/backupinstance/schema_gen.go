@@ -21,9 +21,14 @@ func BackupInstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The backup type code. Computed from the Instance.",
 			},
 			"container_id": schema.Int64Attribute{
+				Optional:            true,
 				Computed:            true,
-				Description:         "The ID of the container to backup. Computed from the Instance.",
-				MarkdownDescription: "The ID of the container to backup. Computed from the Instance.",
+				Description:         "The ID of the container to backup. Computed from the Instance if not provided.",
+				MarkdownDescription: "The ID of the container to backup. Computed from the Instance if not provided.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+					int64planmodifier.RequiresReplace(),
+				},
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,

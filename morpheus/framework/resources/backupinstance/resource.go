@@ -88,35 +88,39 @@ func (r *backupInstanceResource) Create(
 		instance.Target = plan.StorageProviderId.ValueInt64Pointer()
 	}
 
-	// The backup POST requires a containerId. Look up the instance to
-	// resolve its container so we can populate it on the request.
-	// This is effectively the same as the API does on a dry-run create to /api/backups/create.
-	instResult, instHResp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
-	if err != nil || instHResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(createOperation, errfmt.ErrMsg(err, instHResp))
+	// container_id is optional/computed. Use the user-supplied value when set;
+	// otherwise resolve it from the instance's container list (the same thing
+	// the API does on a dry-run create to /api/backups/create).
+	if !plan.ContainerId.IsNull() && !plan.ContainerId.IsUnknown() {
+		instance.ContainerId = plan.ContainerId.ValueInt64()
+	} else {
+		instResult, instHResp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
+		if err != nil || instHResp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(createOperation, errfmt.ErrMsg(err, instHResp))
 
-		return
+			return
+		}
+
+		if instResult.Instance == nil {
+			resp.Diagnostics.AddError(
+				createOperation,
+				fmt.Sprintf("instance %d returned no instance", instanceID),
+			)
+
+			return
+		}
+
+		if len(instResult.Instance.Containers) == 0 {
+			resp.Diagnostics.AddError(
+				createOperation,
+				fmt.Sprintf("instance %d has no containers", instanceID),
+			)
+
+			return
+		}
+
+		instance.ContainerId = instResult.Instance.Containers[0]
 	}
-
-	if instResult.Instance == nil {
-		resp.Diagnostics.AddError(
-			createOperation,
-			fmt.Sprintf("instance %d returned no instance", instanceID),
-		)
-
-		return
-	}
-
-	if len(instResult.Instance.Containers) == 0 {
-		resp.Diagnostics.AddError(
-			createOperation,
-			fmt.Sprintf("instance %d has no containers", instanceID),
-		)
-
-		return
-	}
-
-	instance.ContainerId = instResult.Instance.Containers[0]
 
 	backup := sdk.AddBackupsRequestBackup{
 		BackupInstance: &instance,
@@ -307,7 +311,10 @@ func getBackupAsState(
 	state.Id = convert.Int64ToType(b.Id)
 	state.Name = convert.StrToType(b.Name)
 	state.Enabled = convert.BoolToType(b.Enabled)
-	state.ContainerId = convert.Int64ToType(b.ContainerId.Get())
+
+	if v := b.ContainerId.Get(); v != nil {
+		state.ContainerId = convert.Int64ToType(v)
+	}
 
 	if b.BackupType != nil {
 		state.BackupTypeCode = convert.StrToType(b.BackupType.Code)
