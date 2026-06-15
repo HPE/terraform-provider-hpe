@@ -136,7 +136,7 @@ func (r *backupInstanceResource) Create(
 	}
 
 	if result.Backup == nil || result.Backup.Id == nil {
-		resp.Diagnostics.AddError("API returned nil", "Backup ID is nil in the create response")
+		resp.Diagnostics.AddError(createOperation, "Backup ID is nil in the create response")
 
 		return
 	}
