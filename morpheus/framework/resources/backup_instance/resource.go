@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package backupinstance
 
 import (
@@ -13,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -138,6 +141,15 @@ func (r *backupInstanceResource) Create(
 	state, diags := getBackupAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		// The backup was created, but reading it back failed. Taint the resource
+		// so the created backup is not leaked from Terraform's perspective.
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "backup_instance",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 
