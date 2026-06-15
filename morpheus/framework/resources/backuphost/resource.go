@@ -192,7 +192,7 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.StorageProviderId.IsNull() && !plan.StorageProviderId.IsUnknown() {
+	if !plan.StorageProviderId.IsUnknown() {
 		body.StorageProviderId = *sdk.NewNullableInt64(plan.StorageProviderId.ValueInt64Pointer())
 	}
 	if !plan.Path.IsNull() {
