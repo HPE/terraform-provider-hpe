@@ -36,20 +36,40 @@ data "hpe_morpheus_server" "example" {
 
 ### Read-Only
 
+- `account_id` (Number) The ID of the account that owns the server
+- `agent_installed` (Boolean) Whether the Morpheus agent is installed on the server
+- `agent_version` (String) The version of the Morpheus agent installed on the server
 - `cloud_id` (Number) The associated cloud ID
 - `cores_per_socket` (Number) Number of cores per socket
+- `date_created` (String) The date the server was created (RFC3339)
 - `description` (String) The description of the server
+- `enable_logs` (Boolean) Whether logging is enabled for the server
+- `enabled` (Boolean) Whether the server is enabled
+- `error_message` (String) The last error message for the server
 - `external_id` (String) The external/hypervisor ID of the server
 - `external_ip` (String) The external IP address
+- `external_name` (String) The external name of the server as known to the cloud provider
+- `folder_id` (Number) The ID of the folder the server is placed in
 - `group_id` (Number) The ID of the group the server belongs to
 - `hostname` (String) The hostname of the server
+- `internal_id` (String) The internal Morpheus ID of the server
 - `internal_ip` (String) The internal IP address
+- `last_updated` (String) The date the server was last updated (RFC3339)
+- `manage_internal_firewall` (Boolean) Whether Morpheus manages the internal firewall for the server
 - `max_cores` (Number) Number of allocated CPU cores
+- `max_cpu` (Number) Maximum number of CPUs allocated to the server
 - `max_memory` (Number) Allocated memory in bytes
 - `max_storage` (Number) Total allocated storage in bytes
+- `os_device` (String) The OS device path on the server
 - `os_type` (String) The OS type of the server
 - `platform` (String) The platform/OS type
 - `platform_version` (String) The platform/OS version
 - `power_state` (String) The power state of the server
+- `resource_pool_id` (Number) The ID of the resource pool the server is provisioned in
+- `ssh_host` (String) The SSH host address for the server
+- `ssh_port` (Number) The SSH port for the server
 - `status` (String) The server status
+- `status_message` (String) The current status message for the server
+- `tag_compliant` (Boolean) Whether the server is compliant with tag policies
 - `uuid` (String) The UUID of the server
+- `visibility` (String) The visibility of the server (public or private)

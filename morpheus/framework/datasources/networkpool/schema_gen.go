@@ -21,6 +21,21 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "TFTP boot file",
 				MarkdownDescription: "TFTP boot file",
 			},
+			"category": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The category of the network pool",
+				MarkdownDescription: "The category of the network pool",
+			},
+			"code": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The code identifier for the network pool",
+				MarkdownDescription: "The code identifier for the network pool",
+			},
+			"dhcp_ip": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The DHCP server IP address for the pool",
+				MarkdownDescription: "The DHCP server IP address for the pool",
+			},
 			"dhcp_server": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether a DHCP server is present",
@@ -47,6 +62,17 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "DNS server list",
 				MarkdownDescription: "DNS server list",
 			},
+			"dns_suffix_list": schema.SetAttribute{
+				Computed:            true,
+				ElementType:         types.StringType,
+				Description:         "List of DNS suffixes for the pool",
+				MarkdownDescription: "List of DNS suffixes for the pool",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the network pool",
+				MarkdownDescription: "The external ID of the network pool",
+			},
 			"free_count": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "Available IPs in pool",
@@ -56,6 +82,16 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Gateway address",
 				MarkdownDescription: "Gateway address",
+			},
+			"host_prefix": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The host prefix for the network pool",
+				MarkdownDescription: "The host prefix for the network pool",
+			},
+			"http_proxy": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The HTTP proxy for the network pool",
+				MarkdownDescription: "The HTTP proxy for the network pool",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -71,6 +107,11 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 						path.MatchRoot("name"),
 					}...),
 				},
+			},
+			"internal_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal ID of the network pool",
+				MarkdownDescription: "The internal ID of the network pool",
 			},
 			"ip_count": schema.Int64Attribute{
 				Computed:            true,
@@ -107,6 +148,11 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Subnet address",
 				MarkdownDescription: "Subnet address",
 			},
+			"tftp_server": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The TFTP server address for the pool",
+				MarkdownDescription: "The TFTP server address for the pool",
+			},
 			"type_code": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The pool type code",
@@ -118,18 +164,27 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 
 type NetworkPoolModel struct {
 	BootFile      types.String `tfsdk:"boot_file"`
+	Category      types.String `tfsdk:"category"`
+	Code          types.String `tfsdk:"code"`
+	DhcpIp        types.String `tfsdk:"dhcp_ip"`
 	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
 	DisplayName   types.String `tfsdk:"display_name"`
 	DnsDomain     types.String `tfsdk:"dns_domain"`
 	DnsSearchPath types.String `tfsdk:"dns_search_path"`
 	DnsServers    types.Set    `tfsdk:"dns_servers"`
+	DnsSuffixList types.Set    `tfsdk:"dns_suffix_list"`
+	ExternalId    types.String `tfsdk:"external_id"`
 	FreeCount     types.Int64  `tfsdk:"free_count"`
 	Gateway       types.String `tfsdk:"gateway"`
+	HostPrefix    types.String `tfsdk:"host_prefix"`
+	HttpProxy     types.String `tfsdk:"http_proxy"`
 	Id            types.Int64  `tfsdk:"id"`
+	InternalId    types.String `tfsdk:"internal_id"`
 	IpCount       types.Int64  `tfsdk:"ip_count"`
 	Name          types.String `tfsdk:"name"`
 	Netmask       types.String `tfsdk:"netmask"`
 	PoolEnabled   types.Bool   `tfsdk:"pool_enabled"`
 	SubnetAddress types.String `tfsdk:"subnet_address"`
+	TftpServer    types.String `tfsdk:"tftp_server"`
 	TypeCode      types.String `tfsdk:"type_code"`
 }

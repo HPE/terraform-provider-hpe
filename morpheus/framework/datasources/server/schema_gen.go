@@ -16,6 +16,21 @@ import (
 func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"account_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the account that owns the server",
+				MarkdownDescription: "The ID of the account that owns the server",
+			},
+			"agent_installed": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the Morpheus agent is installed on the server",
+				MarkdownDescription: "Whether the Morpheus agent is installed on the server",
+			},
+			"agent_version": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The version of the Morpheus agent installed on the server",
+				MarkdownDescription: "The version of the Morpheus agent installed on the server",
+			},
 			"cloud_id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The associated cloud ID",
@@ -26,10 +41,30 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Number of cores per socket",
 				MarkdownDescription: "Number of cores per socket",
 			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the server was created (RFC3339)",
+				MarkdownDescription: "The date the server was created (RFC3339)",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the server",
 				MarkdownDescription: "The description of the server",
+			},
+			"enable_logs": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether logging is enabled for the server",
+				MarkdownDescription: "Whether logging is enabled for the server",
+			},
+			"enabled": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the server is enabled",
+				MarkdownDescription: "Whether the server is enabled",
+			},
+			"error_message": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The last error message for the server",
+				MarkdownDescription: "The last error message for the server",
 			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
@@ -40,6 +75,16 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The external IP address",
 				MarkdownDescription: "The external IP address",
+			},
+			"external_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external name of the server as known to the cloud provider",
+				MarkdownDescription: "The external name of the server as known to the cloud provider",
+			},
+			"folder_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the folder the server is placed in",
+				MarkdownDescription: "The ID of the folder the server is placed in",
 			},
 			"group_id": schema.Int64Attribute{
 				Computed:            true,
@@ -66,15 +111,35 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"internal_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal Morpheus ID of the server",
+				MarkdownDescription: "The internal Morpheus ID of the server",
+			},
 			"internal_ip": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The internal IP address",
 				MarkdownDescription: "The internal IP address",
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the server was last updated (RFC3339)",
+				MarkdownDescription: "The date the server was last updated (RFC3339)",
+			},
+			"manage_internal_firewall": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether Morpheus manages the internal firewall for the server",
+				MarkdownDescription: "Whether Morpheus manages the internal firewall for the server",
+			},
 			"max_cores": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "Number of allocated CPU cores",
 				MarkdownDescription: "Number of allocated CPU cores",
+			},
+			"max_cpu": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Maximum number of CPUs allocated to the server",
+				MarkdownDescription: "Maximum number of CPUs allocated to the server",
 			},
 			"max_memory": schema.Int64Attribute{
 				Computed:            true,
@@ -101,6 +166,11 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"os_device": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The OS device path on the server",
+				MarkdownDescription: "The OS device path on the server",
+			},
 			"os_type": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The OS type of the server",
@@ -121,38 +191,88 @@ func ServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The power state of the server",
 				MarkdownDescription: "The power state of the server",
 			},
+			"resource_pool_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the resource pool the server is provisioned in",
+				MarkdownDescription: "The ID of the resource pool the server is provisioned in",
+			},
+			"ssh_host": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The SSH host address for the server",
+				MarkdownDescription: "The SSH host address for the server",
+			},
+			"ssh_port": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The SSH port for the server",
+				MarkdownDescription: "The SSH port for the server",
+			},
 			"status": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The server status",
 				MarkdownDescription: "The server status",
+			},
+			"status_message": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The current status message for the server",
+				MarkdownDescription: "The current status message for the server",
+			},
+			"tag_compliant": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the server is compliant with tag policies",
+				MarkdownDescription: "Whether the server is compliant with tag policies",
 			},
 			"uuid": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The UUID of the server",
 				MarkdownDescription: "The UUID of the server",
 			},
+			"visibility": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The visibility of the server (public or private)",
+				MarkdownDescription: "The visibility of the server (public or private)",
+			},
 		},
 	}
 }
 
 type ServerModel struct {
-	CloudId         types.Int64  `tfsdk:"cloud_id"`
-	CoresPerSocket  types.Int64  `tfsdk:"cores_per_socket"`
-	Description     types.String `tfsdk:"description"`
-	ExternalId      types.String `tfsdk:"external_id"`
-	ExternalIp      types.String `tfsdk:"external_ip"`
-	GroupId         types.Int64  `tfsdk:"group_id"`
-	Hostname        types.String `tfsdk:"hostname"`
-	Id              types.Int64  `tfsdk:"id"`
-	InternalIp      types.String `tfsdk:"internal_ip"`
-	MaxCores        types.Int64  `tfsdk:"max_cores"`
-	MaxMemory       types.Int64  `tfsdk:"max_memory"`
-	MaxStorage      types.Int64  `tfsdk:"max_storage"`
-	Name            types.String `tfsdk:"name"`
-	OsType          types.String `tfsdk:"os_type"`
-	Platform        types.String `tfsdk:"platform"`
-	PlatformVersion types.String `tfsdk:"platform_version"`
-	PowerState      types.String `tfsdk:"power_state"`
-	Status          types.String `tfsdk:"status"`
-	Uuid            types.String `tfsdk:"uuid"`
+	AccountId              types.Int64  `tfsdk:"account_id"`
+	AgentInstalled         types.Bool   `tfsdk:"agent_installed"`
+	AgentVersion           types.String `tfsdk:"agent_version"`
+	CloudId                types.Int64  `tfsdk:"cloud_id"`
+	CoresPerSocket         types.Int64  `tfsdk:"cores_per_socket"`
+	DateCreated            types.String `tfsdk:"date_created"`
+	Description            types.String `tfsdk:"description"`
+	EnableLogs             types.Bool   `tfsdk:"enable_logs"`
+	Enabled                types.Bool   `tfsdk:"enabled"`
+	ErrorMessage           types.String `tfsdk:"error_message"`
+	ExternalId             types.String `tfsdk:"external_id"`
+	ExternalIp             types.String `tfsdk:"external_ip"`
+	ExternalName           types.String `tfsdk:"external_name"`
+	FolderId               types.Int64  `tfsdk:"folder_id"`
+	GroupId                types.Int64  `tfsdk:"group_id"`
+	Hostname               types.String `tfsdk:"hostname"`
+	Id                     types.Int64  `tfsdk:"id"`
+	InternalId             types.String `tfsdk:"internal_id"`
+	InternalIp             types.String `tfsdk:"internal_ip"`
+	LastUpdated            types.String `tfsdk:"last_updated"`
+	ManageInternalFirewall types.Bool   `tfsdk:"manage_internal_firewall"`
+	MaxCores               types.Int64  `tfsdk:"max_cores"`
+	MaxCpu                 types.Int64  `tfsdk:"max_cpu"`
+	MaxMemory              types.Int64  `tfsdk:"max_memory"`
+	MaxStorage             types.Int64  `tfsdk:"max_storage"`
+	Name                   types.String `tfsdk:"name"`
+	OsDevice               types.String `tfsdk:"os_device"`
+	OsType                 types.String `tfsdk:"os_type"`
+	Platform               types.String `tfsdk:"platform"`
+	PlatformVersion        types.String `tfsdk:"platform_version"`
+	PowerState             types.String `tfsdk:"power_state"`
+	ResourcePoolId         types.Int64  `tfsdk:"resource_pool_id"`
+	SshHost                types.String `tfsdk:"ssh_host"`
+	SshPort                types.Int64  `tfsdk:"ssh_port"`
+	Status                 types.String `tfsdk:"status"`
+	StatusMessage          types.String `tfsdk:"status_message"`
+	TagCompliant           types.Bool   `tfsdk:"tag_compliant"`
+	Uuid                   types.String `tfsdk:"uuid"`
+	Visibility             types.String `tfsdk:"visibility"`
 }

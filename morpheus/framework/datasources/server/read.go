@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,6 +17,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
+
+func timeToType(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(t.Format(time.RFC3339))
+}
 
 func getServer(
 	ctx context.Context,
@@ -59,52 +68,43 @@ func getServerByID(
 	state.PowerState = convert.StrToType(server.PowerState)
 	state.Uuid = convert.StrToType(server.Uuid)
 	state.OsType = convert.StrToType(server.OsType)
+	state.OsDevice = convert.StrToType(server.OsDevice)
 	state.MaxCores = convert.Int64ToType(server.MaxCores)
 	state.MaxMemory = convert.Int64ToType(server.MaxMemory)
 	state.MaxStorage = convert.Int64ToType(server.MaxStorage)
 	state.GroupId = convert.Int64ToType(server.SiteId)
+	state.AccountId = convert.Int64ToType(server.AccountId)
+	state.Visibility = convert.StrToType(server.Visibility)
+	state.ExternalName = convert.StrToType(server.ExternalName)
+	state.AgentInstalled = convert.BoolToType(server.AgentInstalled)
+	state.Enabled = convert.BoolToType(server.Enabled)
+	state.ManageInternalFirewall = convert.BoolToType(server.ManageInternalFirewall)
+	state.EnableLogs = convert.BoolToType(server.EnableLogs)
+	state.SshPort = convert.Int64ToType(server.SshPort)
+	state.DateCreated = timeToType(server.DateCreated)
+	state.LastUpdated = timeToType(server.LastUpdated)
 
-	if server.ExternalIp.IsSet() {
-		state.ExternalIp = types.StringValue(*server.ExternalIp.Get())
-	} else {
-		state.ExternalIp = types.StringNull()
-	}
+	// NullableString fields
+	state.ExternalIp = convert.StrToType(server.ExternalIp.Get())
+	state.InternalIp = convert.StrToType(server.InternalIp.Get())
+	state.Platform = convert.StrToType(server.Platform.Get())
+	state.PlatformVersion = convert.StrToType(server.PlatformVersion.Get())
+	state.Description = convert.StrToType(server.Description.Get())
+	state.ExternalId = convert.StrToType(server.ExternalId.Get())
+	state.InternalId = convert.StrToType(server.InternalId.Get())
+	state.SshHost = convert.StrToType(server.SshHost.Get())
+	state.StatusMessage = convert.StrToType(server.StatusMessage.Get())
+	state.ErrorMessage = convert.StrToType(server.ErrorMessage.Get())
+	state.AgentVersion = convert.StrToType(server.AgentVersion.Get())
 
-	if server.InternalIp.IsSet() {
-		state.InternalIp = types.StringValue(*server.InternalIp.Get())
-	} else {
-		state.InternalIp = types.StringNull()
-	}
+	// NullableInt64 fields
+	state.CoresPerSocket = convert.Int64ToType(server.CoresPerSocket.Get())
+	state.ResourcePoolId = convert.Int64ToType(server.ResourcePoolId.Get())
+	state.FolderId = convert.Int64ToType(server.FolderId.Get())
+	state.MaxCpu = convert.Int64ToType(server.MaxCpu.Get())
 
-	if server.Platform.IsSet() {
-		state.Platform = types.StringValue(*server.Platform.Get())
-	} else {
-		state.Platform = types.StringNull()
-	}
-
-	if server.PlatformVersion.IsSet() {
-		state.PlatformVersion = types.StringValue(*server.PlatformVersion.Get())
-	} else {
-		state.PlatformVersion = types.StringNull()
-	}
-
-	if server.Description.IsSet() {
-		state.Description = types.StringValue(*server.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
-
-	if server.ExternalId.IsSet() {
-		state.ExternalId = types.StringValue(*server.ExternalId.Get())
-	} else {
-		state.ExternalId = types.StringNull()
-	}
-
-	if server.CoresPerSocket.IsSet() {
-		state.CoresPerSocket = convert.Int64ToType(server.CoresPerSocket.Get())
-	} else {
-		state.CoresPerSocket = types.Int64Null()
-	}
+	// NullableBool fields
+	state.TagCompliant = convert.BoolToType(server.TagCompliant.Get())
 
 	if server.Zone != nil {
 		state.CloudId = convert.Int64ToType(server.Zone.Id)
