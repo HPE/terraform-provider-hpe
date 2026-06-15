@@ -103,13 +103,16 @@ func (r *clusterAffinityGroupResource) Create(
 	}
 
 	readAg := readResult.AffinityGroup
-	if readAg != nil {
-		if readAg.Id != nil {
-			plan.ID = types.Int64Value(*readAg.Id)
-		}
-		if readAg.Name != nil {
-			plan.Name = types.StringValue(*readAg.Name)
-		}
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	if readAg.Id != nil {
+		plan.ID = types.Int64Value(*readAg.Id)
+	}
+	if readAg.Name != nil {
+		plan.Name = types.StringValue(*readAg.Name)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -208,13 +211,16 @@ func (r *clusterAffinityGroupResource) Update(
 	}
 
 	readAg := readResult.AffinityGroup
-	if readAg != nil {
-		if readAg.Id != nil {
-			plan.ID = types.Int64Value(*readAg.Id)
-		}
-		if readAg.Name != nil {
-			plan.Name = types.StringValue(*readAg.Name)
-		}
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	if readAg.Id != nil {
+		plan.ID = types.Int64Value(*readAg.Id)
+	}
+	if readAg.Name != nil {
+		plan.Name = types.StringValue(*readAg.Name)
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

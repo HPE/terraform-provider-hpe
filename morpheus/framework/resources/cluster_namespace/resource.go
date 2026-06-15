@@ -109,18 +109,21 @@ func (r *clusterNamespaceResource) Create(
 	}
 
 	readNs := readResult.Namespace
-	if readNs != nil {
-		if readNs.Id != nil {
-			plan.ID = types.Int64Value(*readNs.Id)
-		}
-		if readNs.Name != nil {
-			plan.Name = types.StringValue(*readNs.Name)
-		}
-		if readNs.Description != nil {
-			plan.Description = types.StringValue(*readNs.Description)
-		}
-		// NOTE: Active is not in the API GET at all.
+	if readNs == nil {
+		resp.Diagnostics.AddError("API returned nil", "Namespace is nil in the response")
+
+		return
 	}
+	if readNs.Id != nil {
+		plan.ID = types.Int64Value(*readNs.Id)
+	}
+	if readNs.Name != nil {
+		plan.Name = types.StringValue(*readNs.Name)
+	}
+	if readNs.Description != nil {
+		plan.Description = types.StringValue(*readNs.Description)
+	}
+	// NOTE: Active is not in the API GET at all.
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -225,18 +228,21 @@ func (r *clusterNamespaceResource) Update(
 	}
 
 	readNs := readResult.Namespace
-	if readNs != nil {
-		if readNs.Id != nil {
-			plan.ID = types.Int64Value(*readNs.Id)
-		}
-		if readNs.Name != nil {
-			plan.Name = types.StringValue(*readNs.Name)
-		}
-		if readNs.Description != nil {
-			plan.Description = types.StringValue(*readNs.Description)
-		}
-		// NOTE: Active is not in the API GET at all.
+	if readNs == nil {
+		resp.Diagnostics.AddError("API returned nil", "Namespace is nil in the response")
+
+		return
 	}
+	if readNs.Id != nil {
+		plan.ID = types.Int64Value(*readNs.Id)
+	}
+	if readNs.Name != nil {
+		plan.Name = types.StringValue(*readNs.Name)
+	}
+	if readNs.Description != nil {
+		plan.Description = types.StringValue(*readNs.Description)
+	}
+	// NOTE: Active is not in the API GET at all.
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
