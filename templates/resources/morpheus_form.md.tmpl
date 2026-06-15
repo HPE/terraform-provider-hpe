@@ -107,7 +107,16 @@ and all inputs or option types must be defined in the form.
 
 ### Cloud (cloud)
 
+~> **Note:** For the `cloud` option type, set `group_field` (with `group_field_type = "field"`)
+to the code of the upstream group form field that drives the group→cloud cascade. Morpheus's cloud
+input uses the plain `group` config key for this dependency; the provider maps `group_field` to it
+automatically.
+
 {{tffile "examples/resources/morpheus_form/resource_cloud.tf"}}
+
+#### Cloud with Group Cascade
+
+{{tffile "examples/resources/morpheus_form/resource_cloud_cascade.tf"}}
 
 ### Layout (layout)
 
@@ -142,6 +151,11 @@ and all inputs or option types must be defined in the form.
 {{tffile "examples/resources/morpheus_form/resource_resource_pool.tf"}}
 
 ### Security Group (secGroup)
+
+~> **Note:** The `secGroup` option type supports only cloud and resource-pool cascades:
+`cloud_field` / `cloud_field_type` / `cloud_id` and `pool_field`. Other cascade keys such as
+`group_field`, `group_field_type`, `pool_field_type`, and the layout/plan fields are not
+supported and will produce a validation error.
 
 {{tffile "examples/resources/morpheus_form/resource_sec_group.tf"}}
 

@@ -3,6 +3,7 @@
 package plan_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -102,6 +103,38 @@ func TestAccMorpheusPriceSetExampleOk(t *testing.T) {
 				Config:             providerConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusPriceSetInvalidTypeRejected(t *testing.T) {
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// Use an invalid type that was previously accepted by the provider but
+	// rejected by the API (a price type, not a price-set type).
+	invalidConfig := `
+resource "hpe_morpheus_price_set" "bad" {
+  name        = "invalid-type-test"
+  code        = "invalid-type-test"
+  region_code = "us-west-2"
+  type        = "compute"
+  price_unit  = "hour"
+  price_ids   = [1]
+}
+`
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + invalidConfig,
+				ExpectError: regexp.MustCompile(`expected type to be one of`),
 			},
 		},
 	})

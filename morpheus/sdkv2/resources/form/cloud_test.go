@@ -3,6 +3,7 @@
 package form_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -82,6 +83,77 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 			},
 			{
 				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusFormCloudGroupCascadeOk verifies the group→cloud cascade:
+// group_field on a cloud option type maps to config.group (not groupField),
+// and round-trips cleanly without drift.
+func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	defer testhelpers.RecordResult(t)
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	code := toCode(name)
+
+	// A form with a group field + cloud field using field-mode cascade.
+	cascadeConfig := fmt.Sprintf(`
+resource "hpe_morpheus_form" "cascade" {
+  name        = %q
+  code        = %q
+  description = "cloud cascade test"
+
+  option_type {
+    name        = "Group Selector"
+    code        = "%s-grp"
+    type        = "group"
+    field_label = "Group"
+    field_name  = "fGroups"
+  }
+
+  option_type {
+    name             = "Cloud Selector"
+    code             = "%s-cld"
+    type             = "cloud"
+    field_label      = "Cloud"
+    field_name       = "fClouds"
+    group_field_type = "field"
+    group_field      = "fGroups"
+  }
+}
+`, name, code, code, code)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			// Apply
+			{
+				Config:             providerConfig + cascadeConfig,
+				ExpectNonEmptyPlan: false,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_form.cascade", "option_type.0.type", "group"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.cascade", "option_type.1.type", "cloud"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.cascade", "option_type.1.group_field_type", "field"),
+					resource.TestCheckResourceAttr("hpe_morpheus_form.cascade", "option_type.1.group_field", "fGroups"),
+				),
+			},
+			// Plan after apply — no drift
+			{
+				Config:             providerConfig + cascadeConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
