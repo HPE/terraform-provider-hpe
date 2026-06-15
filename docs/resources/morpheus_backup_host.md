@@ -36,8 +36,13 @@ resource "hpe_morpheus_backup_host" "example" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `enabled` (Boolean) Whether the backup is enabled.
 - `path` (String) The file or directory path on the target host to back up.
+- `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.
+- `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
+- `ssh_username` (String) SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.
 - `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 
 ### Read-Only
