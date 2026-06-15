@@ -142,7 +142,7 @@ func (r *backupInstanceResource) Create(
 	}
 	id := *result.Backup.Id
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, diags := getBackupAsState(ctx, id, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		// The backup was created, but reading it back failed. Taint the resource
@@ -176,7 +176,7 @@ func (r *backupInstanceResource) Read(ctx context.Context, req resource.ReadRequ
 
 	id := state.Id.ValueInt64()
 
-	state, diags := getBackupAsState(ctx, id, client, state)
+	state, diags := getBackupAsState(ctx, id, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -227,7 +227,7 @@ func (r *backupInstanceResource) Update(
 		return
 	}
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, diags := getBackupAsState(ctx, id, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -257,6 +257,11 @@ func (r *backupInstanceResource) Delete(
 	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.BackupsAPI.RemoveBackups(ctx, id).Execute()
+	// A 404 means the backup is already gone, so treat it as a successful
+	// delete rather than an error.
+	if errfmt.IsNotFound(httpResp) {
+		return
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(deleteOperation, errfmt.ErrMsg(err, httpResp))
 
@@ -286,7 +291,6 @@ func getBackupAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-	plan BackupInstanceModel,
 ) (BackupInstanceModel, diag.Diagnostics) {
 	var state BackupInstanceModel
 	var diags diag.Diagnostics
