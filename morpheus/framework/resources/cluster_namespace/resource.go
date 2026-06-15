@@ -123,7 +123,7 @@ func (r *clusterNamespaceResource) Create(
 	if readNs.Description != nil {
 		plan.Description = types.StringValue(*readNs.Description)
 	}
-	// NOTE: Active is not in the API GET at all.
+	// NOTE: Active is not in the API GET at all. Config value is preserved in state
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -168,7 +168,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		if ns.Description != nil {
 			state.Description = types.StringValue(*ns.Description)
 		}
-		// NOTE: Active is not in the API GET at all.
+		// NOTE: Active is not in the API GET at all. Config value is preserved in state
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -242,7 +242,7 @@ func (r *clusterNamespaceResource) Update(
 	if readNs.Description != nil {
 		plan.Description = types.StringValue(*readNs.Description)
 	}
-	// NOTE: Active is not in the API GET at all.
+	// NOTE: Active is not in the API GET at all. Config value is preserved in state
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
