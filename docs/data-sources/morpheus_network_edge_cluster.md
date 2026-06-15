@@ -2,13 +2,13 @@
 page_title: "hpe_morpheus_network_edge_cluster Data Source - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Reads a Morpheus network edge cluster (NSX-T).
+  Reads a Morpheus network edge cluster from a network server that supports them (e.g. NSX-T, VCD).
 ---
 # hpe_morpheus_network_edge_cluster (Data Source)
 
-Reads a Morpheus network edge cluster (NSX-T). This data source can be used to look up an existing edge cluster by ID or name to reference its attributes in other resources.
+Reads a Morpheus network edge cluster from a network server that supports them — for example NSX-T or VMware Cloud Director (VCD). This data source can be used to look up an existing edge cluster by ID or name to reference its attributes in other resources.
 
-The `config` attribute contains the full configuration object returned by the API (e.g. `clusterProfileBindings`, `members`, `deploymentType`, `memberNodeType`).
+The `config` attribute contains the full configuration object returned by the API (for NSX-T, e.g. `clusterProfileBindings`, `members`, `deploymentType`, `memberNodeType`).
 
 ## Example Usage
 

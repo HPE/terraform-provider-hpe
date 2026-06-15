@@ -2,13 +2,13 @@
 page_title: "hpe_morpheus_network_transport_zone Data Source - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Reads a Morpheus network transport zone (NSX-T).
+  Reads a Morpheus network transport zone from a network server that supports them (e.g. NSX-T, VCD).
 ---
 # hpe_morpheus_network_transport_zone (Data Source)
 
-Reads a Morpheus network transport zone (NSX-T). This data source can be used to look up an existing transport zone by ID or name to reference its attributes in other resources.
+Reads a Morpheus network transport zone (internally a network *scope*) from a network server that supports them — for example NSX-T or VMware Cloud Director (VCD). This data source can be used to look up an existing transport zone by ID or name to reference its attributes in other resources.
 
-The `config` attribute contains the full configuration object returned by the API (e.g. `nvdsName`, `hostMembershipCriteria`).
+The `config` attribute contains the full configuration object returned by the API (for NSX-T, e.g. `nvdsName`, `hostMembershipCriteria`).
 
 ## Example Usage
 
