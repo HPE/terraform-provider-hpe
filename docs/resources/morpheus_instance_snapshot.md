@@ -43,9 +43,17 @@ resource "hpe_morpheus_instance_snapshot" "example" {
 
 ### Read-Only
 
+- `cloud_id` (Number) The ID of the cloud (zone) the snapshot belongs to.
+- `currently_active` (Boolean) Whether this snapshot is the currently active snapshot for the instance.
+- `datastore` (String) The datastore the snapshot resides on, if reported by the platform.
 - `date_created` (String) When the snapshot was created.
 - `external_id` (String) The external (cloud-provider) identifier of the snapshot.
+- `for_backup` (Boolean) Whether the snapshot was created as part of a backup operation.
 - `id` (Number) The ID of the snapshot.
+- `parent_snapshot` (String) The ID of the parent snapshot in the snapshot lineage, if any.
+- `snapshot_created` (String) When the snapshot was taken on the underlying platform.
+- `snapshot_type` (String) The type of the snapshot (cloud/provider specific).
+- `state` (String) The lifecycle state of the snapshot.
 - `status` (String) The status of the snapshot.
 
 <a id="nestedatt--timeouts"></a>

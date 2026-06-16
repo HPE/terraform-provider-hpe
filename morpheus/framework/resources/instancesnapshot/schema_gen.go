@@ -18,6 +18,30 @@ import (
 func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"cloud_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the cloud (zone) the snapshot belongs to.",
+				MarkdownDescription: "The ID of the cloud (zone) the snapshot belongs to.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"currently_active": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether this snapshot is the currently active snapshot for the instance.",
+				MarkdownDescription: "Whether this snapshot is the currently active snapshot for the instance.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"datastore": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The datastore the snapshot resides on, if reported by the platform.",
+				MarkdownDescription: "The datastore the snapshot resides on, if reported by the platform.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"date_created": schema.StringAttribute{
 				Computed:            true,
 				Description:         "When the snapshot was created.",
@@ -40,6 +64,14 @@ func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The external (cloud-provider) identifier of the snapshot.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"for_backup": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the snapshot was created as part of a backup operation.",
+				MarkdownDescription: "Whether the snapshot was created as part of a backup operation.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"for_export": schema.BoolAttribute{
@@ -86,10 +118,42 @@ func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"parent_snapshot": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The ID of the parent snapshot in the snapshot lineage, if any.",
+				MarkdownDescription: "The ID of the parent snapshot in the snapshot lineage, if any.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"retain_on_delete": schema.BoolAttribute{
 				Optional:            true,
 				Description:         "When true, the snapshot is left in Morpheus when the resource is destroyed (removed from Terraform state only). Defaults to false.",
 				MarkdownDescription: "When true, the snapshot is left in Morpheus when the resource is destroyed (removed from Terraform state only). Defaults to false.",
+			},
+			"snapshot_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "When the snapshot was taken on the underlying platform.",
+				MarkdownDescription: "When the snapshot was taken on the underlying platform.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"snapshot_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The type of the snapshot (cloud/provider specific).",
+				MarkdownDescription: "The type of the snapshot (cloud/provider specific).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"state": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The lifecycle state of the snapshot.",
+				MarkdownDescription: "The lifecycle state of the snapshot.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -107,15 +171,23 @@ func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceSnapshotModel struct {
-	DateCreated    types.String   `tfsdk:"date_created"`
-	Description    types.String   `tfsdk:"description"`
-	ExternalId     types.String   `tfsdk:"external_id"`
-	ForExport      types.Bool     `tfsdk:"for_export"`
-	Id             types.Int64    `tfsdk:"id"`
-	InstanceId     types.Int64    `tfsdk:"instance_id"`
-	MemorySnapshot types.Bool     `tfsdk:"memory_snapshot"`
-	Name           types.String   `tfsdk:"name"`
-	RetainOnDelete types.Bool     `tfsdk:"retain_on_delete"`
-	Status         types.String   `tfsdk:"status"`
-	Timeouts       timeouts.Value `tfsdk:"timeouts"`
+	CloudId         types.Int64    `tfsdk:"cloud_id"`
+	CurrentlyActive types.Bool     `tfsdk:"currently_active"`
+	Datastore       types.String   `tfsdk:"datastore"`
+	DateCreated     types.String   `tfsdk:"date_created"`
+	Description     types.String   `tfsdk:"description"`
+	ExternalId      types.String   `tfsdk:"external_id"`
+	ForBackup       types.Bool     `tfsdk:"for_backup"`
+	ForExport       types.Bool     `tfsdk:"for_export"`
+	Id              types.Int64    `tfsdk:"id"`
+	InstanceId      types.Int64    `tfsdk:"instance_id"`
+	MemorySnapshot  types.Bool     `tfsdk:"memory_snapshot"`
+	Name            types.String   `tfsdk:"name"`
+	ParentSnapshot  types.String   `tfsdk:"parent_snapshot"`
+	RetainOnDelete  types.Bool     `tfsdk:"retain_on_delete"`
+	SnapshotCreated types.String   `tfsdk:"snapshot_created"`
+	SnapshotType    types.String   `tfsdk:"snapshot_type"`
+	State           types.String   `tfsdk:"state"`
+	Status          types.String   `tfsdk:"status"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }

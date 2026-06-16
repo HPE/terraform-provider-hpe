@@ -264,6 +264,23 @@ func (r *Resource) Create(
 		plan.DateCreated = types.StringValue(snap.DateCreated.Format(time.RFC3339))
 	}
 
+	// Additional read-only fields reported by the platform. These are computed,
+	// so they must be known after apply.
+	plan.CloudId = types.Int64Null()
+	if snap.Zone.IsSet() && snap.Zone.Get() != nil {
+		plan.CloudId = convert.Int64ToType(snap.Zone.Get().Id)
+	}
+	plan.State = convert.StrToType(snap.State.Get())
+	plan.SnapshotType = convert.StrToType(snap.SnapshotType)
+	plan.SnapshotCreated = types.StringNull()
+	if snap.SnapshotCreated.IsSet() && snap.SnapshotCreated.Get() != nil {
+		plan.SnapshotCreated = types.StringValue(snap.SnapshotCreated.Get().Format(time.RFC3339))
+	}
+	plan.Datastore = convert.StrToType(snap.Datastore.Get())
+	plan.ParentSnapshot = convert.StrToType(snap.ParentSnapshot.Get())
+	plan.CurrentlyActive = convert.BoolToType(snap.CurrentlyActive)
+	plan.ForBackup = convert.BoolToType(snap.ForBackup)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -330,6 +347,24 @@ func (r *Resource) Read(
 		state.DateCreated = types.StringValue(snap.DateCreated.Format(time.RFC3339))
 	}
 
+	// Additional read-only fields reported by the platform.
+	if snap.Zone != nil {
+		state.CloudId = convert.Int64ToType(snap.Zone.Id)
+	} else {
+		state.CloudId = types.Int64Null()
+	}
+	state.State = convert.StrToType(snap.State.Get())
+	state.SnapshotType = convert.StrToType(snap.SnapshotType)
+	if snap.SnapshotCreated.IsSet() && snap.SnapshotCreated.Get() != nil {
+		state.SnapshotCreated = types.StringValue(snap.SnapshotCreated.Get().Format(time.RFC3339))
+	} else {
+		state.SnapshotCreated = types.StringNull()
+	}
+	state.Datastore = convert.StrToType(snap.Datastore.Get())
+	state.ParentSnapshot = convert.StrToType(snap.ParentSnapshot.Get())
+	state.CurrentlyActive = convert.BoolToType(snap.CurrentlyActive)
+	state.ForBackup = convert.BoolToType(snap.ForBackup)
+
 	// Refresh config-driven fields from the API so out-of-band changes are
 	// detected. name, description and memory_snapshot are RequiresReplace, so a
 	// difference between the API and the configuration triggers a replacement.
@@ -367,6 +402,14 @@ func (r *Resource) Update(
 	plan.Status = state.Status
 	plan.ExternalId = state.ExternalId
 	plan.DateCreated = state.DateCreated
+	plan.CloudId = state.CloudId
+	plan.State = state.State
+	plan.SnapshotType = state.SnapshotType
+	plan.SnapshotCreated = state.SnapshotCreated
+	plan.Datastore = state.Datastore
+	plan.ParentSnapshot = state.ParentSnapshot
+	plan.CurrentlyActive = state.CurrentlyActive
+	plan.ForBackup = state.ForBackup
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
