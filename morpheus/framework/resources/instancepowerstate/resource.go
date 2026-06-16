@@ -26,6 +26,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 // Interface compliance assertions.
@@ -257,16 +258,16 @@ func (r *Resource) Read(
 		return
 	}
 
-	if getResp.Instance == nil || getResp.Instance.Status == nil {
+	if getResp.Instance == nil {
 		resp.Diagnostics.AddError(
 			"failed to read instance status",
-			fmt.Sprintf("instance %d: response or status is nil", instanceID),
+			fmt.Sprintf("instance %d: response is nil", instanceID),
 		)
 
 		return
 	}
 
-	state.CurrentState = types.StringValue(*getResp.Instance.Status)
+	state.CurrentState = convert.StrToType(getResp.Instance.Status)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
