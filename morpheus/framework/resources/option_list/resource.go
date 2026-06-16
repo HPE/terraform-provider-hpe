@@ -133,9 +133,13 @@ func (r *optionListResource) Create(
 		}
 	} else {
 		ol := optionLists[0]
-		if ol.Id != nil {
-			id = *ol.Id
+		if ol.Id == nil {
+			resp.Diagnostics.AddError("API returned nil ID", "OptionList ID is nil in the list response")
+
+			return
 		}
+
+		id = *ol.Id
 	}
 
 	// GET by ID with SDK mismatch workaround (same as Read)

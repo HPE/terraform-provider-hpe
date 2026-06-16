@@ -85,10 +85,13 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	var id int64
-	if result.CheckGroup != nil && result.CheckGroup.Id != nil {
-		id = *result.CheckGroup.Id
+	if result.CheckGroup == nil || result.CheckGroup.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "CheckGroup ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.CheckGroup.Id
 
 	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

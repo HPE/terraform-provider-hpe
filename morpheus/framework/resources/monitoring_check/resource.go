@@ -112,10 +112,13 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	var id int64
-	if result.Check != nil && result.Check.Id != nil {
-		id = *result.Check.Id
+	if result.Check == nil || result.Check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Check ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Check.Id
 
 	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

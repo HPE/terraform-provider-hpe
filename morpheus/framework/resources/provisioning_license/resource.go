@@ -104,10 +104,13 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
-	var id int64
-	if result.License != nil && result.License.Id != nil {
-		id = *result.License.Id
+	if result.License == nil || result.License.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "License ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.License.Id
 
 	readResult, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

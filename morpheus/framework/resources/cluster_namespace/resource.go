@@ -90,10 +90,13 @@ func (r *clusterNamespaceResource) Create(
 		return
 	}
 
-	var id int64
-	if result.Namespace != nil && result.Namespace.Id != nil {
-		id = *result.Namespace.Id
+	if result.Namespace == nil || result.Namespace.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Namespace ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Namespace.Id
 
 	readResult, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

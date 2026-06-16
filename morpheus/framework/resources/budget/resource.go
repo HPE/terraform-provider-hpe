@@ -79,10 +79,13 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var id int64
-	if result.Budget != nil && result.Budget.Id != nil {
-		id = *result.Budget.Id
+	if result.Budget == nil || result.Budget.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Budget ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Budget.Id
 
 	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

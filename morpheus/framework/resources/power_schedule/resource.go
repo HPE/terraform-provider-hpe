@@ -121,10 +121,13 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var id int64
-	if result.Schedule != nil && result.Schedule.Id != nil {
-		id = *result.Schedule.Id
+	if result.Schedule == nil || result.Schedule.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Schedule ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Schedule.Id
 
 	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

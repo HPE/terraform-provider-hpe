@@ -84,10 +84,13 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
-	var id int64
-	if result.AffinityGroup != nil && result.AffinityGroup.Id != nil {
-		id = *result.AffinityGroup.Id
+	if result.AffinityGroup == nil || result.AffinityGroup.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "AffinityGroup ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.AffinityGroup.Id
 
 	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

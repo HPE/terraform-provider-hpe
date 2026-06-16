@@ -94,10 +94,13 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var id int64
-	if result.StorageBucket != nil && result.StorageBucket.Id != nil {
-		id = *result.StorageBucket.Id
+	if result.StorageBucket == nil || result.StorageBucket.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "StorageBucket ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.StorageBucket.Id
 
 	readResult, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

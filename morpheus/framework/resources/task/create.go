@@ -181,11 +181,6 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 	plan.Id = convert.Int64ToType(taskResp.Task.Id)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
 	state, diag := getTaskAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
