@@ -76,10 +76,13 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var id int64
-	if result.Certificate != nil && result.Certificate.Id != nil {
-		id = *result.Certificate.Id
+	if result.Certificate == nil || result.Certificate.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Certificate ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Certificate.Id
 
 	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

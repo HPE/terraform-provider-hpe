@@ -88,10 +88,13 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	var id int64
-	if result.Alert != nil && result.Alert.Id != nil {
-		id = *result.Alert.Id
+	if result.Alert == nil || result.Alert.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Alert ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Alert.Id
 
 	readResult, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

@@ -105,10 +105,13 @@ func (r *securityGroupRuleResource) Create(
 		return
 	}
 
-	var id int64
-	if result.Rule != nil && result.Rule.Id != nil {
-		id = *result.Rule.Id
+	if result.Rule == nil || result.Rule.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Rule ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Rule.Id
 	ruleIDParam := float32(id) //nolint:gosec // value range is safe
 
 	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleIDParam).Execute()
