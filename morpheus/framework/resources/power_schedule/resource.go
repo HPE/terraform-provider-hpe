@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -120,14 +121,33 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	schedule := result.Schedule
-	if schedule == nil {
-		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+	if result.Schedule == nil || result.Schedule.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Schedule ID is nil in the create response")
 
 		return
 	}
 
-	mapAddResponseToModel(&plan, schedule)
+	id := *result.Schedule.Id
+
+	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "power_schedule", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "power_schedule",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -246,7 +266,7 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
+	_, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
 		UpdatePowerSchedulesRequest(sdk.UpdatePowerSchedulesRequest{
 			Schedule: body,
 		}).Execute()
@@ -256,14 +276,19 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	schedule := result.Schedule
-	if schedule == nil {
-		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+	readResult, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "power_schedule", plan.Name.ValueString(), err, httpResp)
 
 		return
 	}
 
-	mapUpdateResponseToModel(&plan, schedule)
+	if readResult.Schedule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Schedule is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Schedule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -306,81 +331,7 @@ func (r *powerScheduleResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *powerScheduleModel, schedule *sdk.AddPowerSchedules200ResponseAllOfSchedule) {
-	if schedule.Id != nil {
-		model.ID = types.Int64Value(*schedule.Id)
-	}
-	if schedule.Name != nil {
-		model.Name = types.StringValue(*schedule.Name)
-	}
-	if desc := schedule.Description.Get(); desc != nil {
-		model.Description = types.StringValue(*desc)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if schedule.ScheduleType != nil {
-		model.ScheduleType = types.StringValue(*schedule.ScheduleType)
-	}
-	if schedule.ScheduleTimezone != nil {
-		model.ScheduleTimezone = types.StringValue(*schedule.ScheduleTimezone)
-	}
-	if schedule.Enabled != nil {
-		model.Enabled = types.BoolValue(*schedule.Enabled)
-	}
-	mapTimeFields(model,
-		schedule.MondayOnTime, schedule.MondayOffTime,
-		schedule.TuesdayOnTime, schedule.TuesdayOffTime,
-		schedule.WednesdayOnTime, schedule.WednesdayOffTime,
-		schedule.ThursdayOnTime, schedule.ThursdayOffTime,
-		schedule.FridayOnTime, schedule.FridayOffTime,
-		schedule.SaturdayOnTime, schedule.SaturdayOffTime,
-		schedule.SundayOnTime, schedule.SundayOffTime,
-	)
-	if schedule.TotalMonthlyHoursSaved != nil {
-		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
-	} else {
-		model.TotalMonthlyHoursSaved = types.Float64Null()
-	}
-}
-
 func mapGetResponseToModel(model *powerScheduleModel, schedule *sdk.GetPowerSchedules200ResponseAllOfSchedule) {
-	if schedule.Id != nil {
-		model.ID = types.Int64Value(*schedule.Id)
-	}
-	if schedule.Name != nil {
-		model.Name = types.StringValue(*schedule.Name)
-	}
-	if desc := schedule.Description.Get(); desc != nil {
-		model.Description = types.StringValue(*desc)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if schedule.ScheduleType != nil {
-		model.ScheduleType = types.StringValue(*schedule.ScheduleType)
-	}
-	if schedule.ScheduleTimezone != nil {
-		model.ScheduleTimezone = types.StringValue(*schedule.ScheduleTimezone)
-	}
-	if schedule.Enabled != nil {
-		model.Enabled = types.BoolValue(*schedule.Enabled)
-	}
-	mapTimeFields(model,
-		schedule.MondayOnTime, schedule.MondayOffTime,
-		schedule.TuesdayOnTime, schedule.TuesdayOffTime,
-		schedule.WednesdayOnTime, schedule.WednesdayOffTime,
-		schedule.ThursdayOnTime, schedule.ThursdayOffTime,
-		schedule.FridayOnTime, schedule.FridayOffTime,
-		schedule.SaturdayOnTime, schedule.SaturdayOffTime,
-		schedule.SundayOnTime, schedule.SundayOffTime,
-	)
-	if schedule.TotalMonthlyHoursSaved != nil {
-		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
-	} else {
-		model.TotalMonthlyHoursSaved = types.Float64Null()
-	}
-}
-
-func mapUpdateResponseToModel(model *powerScheduleModel, schedule *sdk.UpdatePowerSchedules200ResponseAllOfSchedule) {
 	if schedule.Id != nil {
 		model.ID = types.Int64Value(*schedule.Id)
 	}

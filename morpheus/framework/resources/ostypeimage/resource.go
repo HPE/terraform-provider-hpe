@@ -19,6 +19,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -183,6 +184,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	state, diags := getOsTypeImageAsState(ctx, createResp.ID, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "ostypeimage",
+			ResourceID:   createResp.ID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 

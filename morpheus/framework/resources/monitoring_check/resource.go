@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -111,35 +112,34 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	check := result.Check
+	if result.Check == nil || result.Check.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Check ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Check.Id
+
+	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_check",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	check := readResult.Check
 	if check == nil {
 		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
 
 		return
 	}
-
-	if check.Id == nil {
-		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
-
-		return
-	}
-
-	plan.ID = types.Int64Value(*check.Id)
-	if check.Name != nil {
-		plan.Name = types.StringValue(*check.Name)
-	}
-	if check.CheckInterval.IsSet() {
-		plan.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
-	}
-	if check.InUptime != nil {
-		plan.InUptime = types.BoolValue(*check.InUptime)
-	}
-	if check.Active != nil {
-		plan.Active = types.BoolValue(*check.Active)
-	}
-	if check.Severity != nil {
-		plan.Severity = types.StringValue(*check.Severity)
-	}
+	mapGetResponseToModel(&plan, check)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -178,32 +178,7 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 
 		return
 	}
-	if check.Id != nil {
-		state.ID = types.Int64Value(*check.Id)
-	}
-	if check.Name != nil {
-		state.Name = types.StringValue(*check.Name)
-	}
-	if check.Description.IsSet() && check.Description.Get() != nil {
-		state.Description = types.StringValue(*check.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
-	if check.CheckInterval.IsSet() {
-		state.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
-	}
-	if check.InUptime != nil {
-		state.InUptime = types.BoolValue(*check.InUptime)
-	}
-	if check.Active != nil {
-		state.Active = types.BoolValue(*check.Active)
-	}
-	if check.Severity != nil {
-		state.Severity = types.StringValue(*check.Severity)
-	}
-	if check.CheckType != nil && check.CheckType.Id != nil {
-		state.CheckTypeID = types.Int64Value(*check.CheckType.Id)
-	}
+	mapGetResponseToModel(&state, check)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -251,7 +226,7 @@ func (r *monitoringCheckResource) Update(
 
 	checkReq := sdk.UpdateChecksRequestCheck{WebCheck1: &checkBody}
 
-	result, httpResp, err := client.ChecksAPI.UpdateChecks(ctx, id).UpdateChecksRequest(sdk.UpdateChecksRequest{
+	_, httpResp, err := client.ChecksAPI.UpdateChecks(ctx, id).UpdateChecksRequest(sdk.UpdateChecksRequest{
 		Check: checkReq,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -260,35 +235,20 @@ func (r *monitoringCheckResource) Update(
 		return
 	}
 
-	check := result.Check
+	readResult, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_check", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	check := readResult.Check
 	if check == nil {
 		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck is nil in the response")
 
 		return
 	}
-
-	if check.Id == nil {
-		resp.Diagnostics.AddError("API returned nil", "MonitoringCheck ID is nil in the response")
-
-		return
-	}
-
-	plan.ID = types.Int64Value(*check.Id)
-	if check.Name != nil {
-		plan.Name = types.StringValue(*check.Name)
-	}
-	if check.CheckInterval.IsSet() {
-		plan.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
-	}
-	if check.InUptime != nil {
-		plan.InUptime = types.BoolValue(*check.InUptime)
-	}
-	if check.Active != nil {
-		plan.Active = types.BoolValue(*check.Active)
-	}
-	if check.Severity != nil {
-		plan.Severity = types.StringValue(*check.Severity)
-	}
+	mapGetResponseToModel(&plan, check)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -333,4 +293,33 @@ func (r *monitoringCheckResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+}
+
+func mapGetResponseToModel(model *monitoringCheckModel, check *sdk.GetChecks200ResponseCheck) {
+	if check.Id != nil {
+		model.ID = types.Int64Value(*check.Id)
+	}
+	if check.Name != nil {
+		model.Name = types.StringValue(*check.Name)
+	}
+	if check.Description.IsSet() && check.Description.Get() != nil {
+		model.Description = types.StringValue(*check.Description.Get())
+	} else {
+		model.Description = types.StringNull()
+	}
+	if check.CheckInterval.IsSet() {
+		model.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
+	}
+	if check.InUptime != nil {
+		model.InUptime = types.BoolValue(*check.InUptime)
+	}
+	if check.Active != nil {
+		model.Active = types.BoolValue(*check.Active)
+	}
+	if check.Severity != nil {
+		model.Severity = types.StringValue(*check.Severity)
+	}
+	if check.CheckType != nil && check.CheckType.Id != nil {
+		model.CheckTypeID = types.Int64Value(*check.CheckType.Id)
+	}
 }

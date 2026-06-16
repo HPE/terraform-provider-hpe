@@ -8,6 +8,6 @@ resource "hpe_morpheus_load_balancer" "lb" {
     admin_state   = {{ .AdminState }}
     log_level     = "{{ .LogLevel }}"
     size          = "{{ .Size }}"
-    tier1_gateway = "{{ .Tier1Gateway }}"
+    tier1_gateway = {{ .Tier1Gateway }}
   }
 }

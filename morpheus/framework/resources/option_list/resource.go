@@ -6,12 +6,14 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -94,7 +96,7 @@ func (r *optionListResource) Create(
 		return
 	}
 
-	// Find the created resource by listing
+	// Find the created resource by listing to extract the ID
 	listResult, httpResp, err := client.LibraryAPI.ListOptionLists(ctx).Name(plan.Name.ValueString()).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
@@ -108,30 +110,35 @@ func (r *optionListResource) Create(
 	}
 
 	// SDK field mismatch: API returns "optionTypeLists" but SDK expects "optionTypes"
-	optionLists := listResult.OptionTypes
-	if len(optionLists) == 0 {
-		if rawLists, ok := listResult.AdditionalProperties["optionTypeLists"]; ok {
-			if listsSlice, ok := rawLists.([]interface{}); ok && len(listsSlice) > 0 {
-				if firstMap, ok := listsSlice[0].(map[string]interface{}); ok {
-					mapOptionTypeListFromRaw(&plan, firstMap)
-					resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	id := extractOptionListID(listResult, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-					return
-				}
-			}
-		}
+	// GET by ID with SDK mismatch workaround (same as Read)
+	readResult, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "option_list", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "option_list",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if !applyGetOptionListResponse(readResult, &plan) {
 		resp.Diagnostics.AddError(
 			"Not Found After Create",
-			"Option type list was created successfully but could not be found by name. "+
-				"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+			"Option type list was created but could not be read by ID. "+
+				"The resource may exist in Morpheus. Import manually if needed: "+
 				"'terraform import <resource_type>.<name> <id>'",
 		)
 
 		return
 	}
-
-	ol := optionLists[0]
-	mapListOptionListToModel(&plan, &ol)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -168,24 +175,11 @@ func (r *optionListResource) Read(
 		return
 	}
 
-	optionTypes := result.OptionTypes
-	if len(optionTypes) == 0 {
-		// SDK field mismatch: API returns "optionTypeList" but SDK expects "optionTypes"
-		if rawOL, ok := result.AdditionalProperties["optionTypeList"]; ok {
-			if olMap, ok := rawOL.(map[string]interface{}); ok {
-				mapOptionTypeListFromRaw(&state, olMap)
-				resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-
-				return
-			}
-		}
+	if !applyGetOptionListResponse(result, &state) {
 		resp.State.RemoveResource(ctx)
 
 		return
 	}
-
-	ol := optionTypes[0]
-	mapGetOptionListToModel(&state, &ol)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -242,6 +236,23 @@ func (r *optionListResource) Update(
 		return
 	}
 
+	// GET by ID with SDK mismatch workaround (same as Read)
+	readResult, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "option_list", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if !applyGetOptionListResponse(readResult, &plan) {
+		resp.Diagnostics.AddError(
+			"Read Error After Update",
+			"Option type list was updated successfully but could not be read back by ID.",
+		)
+
+		return
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -285,44 +296,6 @@ func (r *optionListResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapListOptionListToModel(
-	model *optionListModel,
-	ol *sdk.ListOptionLists200ResponseAllOfOptionTypesInner,
-) {
-	if ol.Id != nil {
-		model.ID = types.Int64Value(*ol.Id)
-	}
-	if ol.Name != nil {
-		model.Name = types.StringValue(*ol.Name)
-	}
-	if v := ol.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if ol.Type != nil {
-		model.Type = types.StringValue(*ol.Type)
-	} else {
-		model.Type = types.StringNull()
-	}
-	if ol.SourceUrl != nil {
-		model.SourceURL = types.StringValue(*ol.SourceUrl)
-	} else {
-		model.SourceURL = types.StringNull()
-	}
-	if ol.Visibility != nil {
-		model.Visibility = types.StringValue(*ol.Visibility)
-	}
-	if v := ol.ApiType.Get(); v != nil {
-		model.ApiType = types.StringValue(*v)
-	} else {
-		model.ApiType = types.StringNull()
-	}
-	if ol.RealTime != nil {
-		model.RealTime = types.BoolValue(*ol.RealTime)
-	}
 }
 
 func mapGetOptionListToModel(model *optionListModel, ol *sdk.GetOptionList200ResponseOptionTypesInner) {
@@ -402,4 +375,63 @@ func mapOptionTypeListFromRaw(model *optionListModel, m map[string]interface{}) 
 	if v, ok := m["realTime"].(bool); ok {
 		model.RealTime = types.BoolValue(v)
 	}
+}
+
+// extractOptionListID extracts the option list ID from a list-by-name response,
+// handling the SDK field mismatch where the API may return "optionTypeLists" instead of "optionTypes".
+// Returns 0 and appends to diags on failure.
+func extractOptionListID(result *sdk.ListOptionLists200Response, diags *diag.Diagnostics) int64 {
+	if len(result.OptionTypes) > 0 {
+		ol := result.OptionTypes[0]
+		if ol.Id == nil {
+			diags.AddError("API returned nil ID", "OptionList ID is nil in the list response")
+
+			return 0
+		}
+
+		return *ol.Id
+	}
+
+	// Fallback: SDK field mismatch - API returns "optionTypeLists", SDK expects "optionTypes"
+	if rawLists, ok := result.AdditionalProperties["optionTypeLists"]; ok {
+		if listsSlice, ok := rawLists.([]interface{}); ok && len(listsSlice) > 0 {
+			if firstMap, ok := listsSlice[0].(map[string]interface{}); ok {
+				if v, ok := firstMap["id"].(float64); ok {
+					return int64(v)
+				}
+			}
+		}
+	}
+
+	diags.AddError(
+		"Not Found After Create",
+		"Option type list was created successfully but could not be found by name. "+
+			"The resource may exist in Morpheus. Check the Morpheus UI and import manually if needed: "+
+			"'terraform import <resource_type>.<name> <id>'",
+	)
+
+	return 0
+}
+
+// applyGetOptionListResponse populates model from a GetOptionList response,
+// handling the SDK field mismatch where the API returns "optionTypeList" instead of "optionTypes".
+// Returns true if the model was populated (caller should set state).
+// Returns false if not found (caller handles via AddError or RemoveResource).
+func applyGetOptionListResponse(result *sdk.GetOptionList200Response, model *optionListModel) bool {
+	if len(result.OptionTypes) > 0 {
+		mapGetOptionListToModel(model, &result.OptionTypes[0])
+
+		return true
+	}
+
+	// Fallback: SDK field mismatch - API returns "optionTypeList", SDK expects "optionTypes"
+	if rawOL, ok := result.AdditionalProperties["optionTypeList"]; ok {
+		if olMap, ok := rawOL.(map[string]interface{}); ok {
+			mapOptionTypeListFromRaw(model, olMap)
+
+			return true
+		}
+	}
+
+	return false
 }

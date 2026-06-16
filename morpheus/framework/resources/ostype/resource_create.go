@@ -9,6 +9,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 func (r *Resource) Create(
@@ -109,6 +110,13 @@ func (r *Resource) Create(
 
 	state, diag := getOsTypeAsState(ctx, createdID, client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "ostype",
+			ResourceID:   createdID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 

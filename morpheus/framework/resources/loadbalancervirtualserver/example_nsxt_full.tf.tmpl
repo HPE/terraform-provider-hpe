@@ -14,6 +14,8 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
     persistence         = "{{.Persistence}}"
     persistence_profile = {{.PersistenceProfile}}
     ssl_client_profile  = {{.SslClientProfile}}
+{{- if .SslServerProfile}}
     ssl_server_profile  = {{.SslServerProfile}}
+{{- end}}
   }
 }

@@ -7,10 +7,13 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
+	fwruleresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
+	fwrulegroupresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -19,6 +22,33 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
+}
+
+// firewallRulePrereq renders a self-contained firewall rule group plus a firewall
+// rule that references it. The data source tests read this freshly created rule
+// instead of relying on a hard-coded rule ID that may not exist on the target
+// environment.
+func firewallRulePrereq(t *testing.T, name string) string {
+	t.Helper()
+
+	groupConfig, err := fwrulegroupresource.RenderNetworkFirewallRuleGroupConfig(t, map[string]string{
+		"Name": name + "-group",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ruleConfig, err := fwruleresource.RenderNetworkFirewallRuleConfig(t, map[string]string{
+		"Name":        name,
+		"Priority":    "10",
+		"Description": "data source acceptance test rule",
+		"RuleGroupId": "hpe_morpheus_network_firewall_rule_group.example.id",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return groupConfig + ruleConfig
 }
 
 const providerConfigOffline = `
@@ -46,11 +76,17 @@ func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	prereq := firewallRulePrereq(t, name)
 
-	dataSourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleByNameConfig(t, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Read back the freshly created rule by name. Referencing the rule resource's
+	// name attribute guarantees an exact match and an implicit dependency.
+	dataSourceConfig := `
+data "hpe_morpheus_network_firewall_rule" "example" {
+  name                   = hpe_morpheus_network_firewall_rule.example.name
+  network_integration_id = hpe_morpheus_network_firewall_rule.example.network_integration_id
+}
+`
 
 	checks := networkFirewallRuleChecks()
 
@@ -60,7 +96,7 @@ func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + prereq + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -82,11 +118,17 @@ func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	prereq := firewallRulePrereq(t, name)
 
-	dataSourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleByIdConfig(t, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Read back the freshly created rule by ID. The id reference creates an
+	// implicit dependency so the rule exists before the data source is read.
+	dataSourceConfig := `
+data "hpe_morpheus_network_firewall_rule" "example" {
+  id                     = hpe_morpheus_network_firewall_rule.example.id
+  network_integration_id = hpe_morpheus_network_firewall_rule.example.network_integration_id
+}
+`
 
 	checks := networkFirewallRuleChecks()
 
@@ -96,7 +138,7 @@ func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + prereq + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
