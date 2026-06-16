@@ -33,13 +33,13 @@ resource "hpe_morpheus_backup_instance" "example" {
 
 ### Optional
 
+- `backup_type_code` (String) The backup type code. Computed from the Instance if not provided.
 - `container_id` (Number) The ID of the container to backup. Computed from the Instance if not provided.
 - `enabled` (Boolean) Whether the backup is enabled.
 - `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 
 ### Read-Only
 
-- `backup_type_code` (String) The backup type code. Computed from the Instance.
 - `id` (Number) The ID of the backup.
 
 ## Import
