@@ -7,8 +7,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
@@ -17,25 +15,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/provider"
 )
 
 func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
-}
-
-func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
-
-	return providerserver.NewProtocol6WithError(providerInstance)()
-}
-
-var testAccProtoV6ProviderFactories = map[string]func() (
-	tfprotov6.ProviderServer, error,
-){
-	"hpe": newProviderWithError,
 }
 
 func TestAccMorpheusInstanceSnapshotResource(t *testing.T) {
@@ -66,7 +51,7 @@ func TestAccMorpheusInstanceSnapshotResource(t *testing.T) {
 	resourceName := "hpe_morpheus_instance_snapshot.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: testhelpers.ProviderBlock() + config,
