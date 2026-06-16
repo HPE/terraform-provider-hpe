@@ -42,6 +42,16 @@ func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"for_export": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "When true, the snapshot is created in an exportable form (a full, standalone disk image) rather than a lightweight in-place snapshot. Supported on MVM/KVM and VMware. Defaults to false.",
+				MarkdownDescription: "When true, the snapshot is created in an exportable form (a full, standalone disk image) rather than a lightweight in-place snapshot. Supported on MVM/KVM and VMware. Defaults to false.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
+				},
+				Default: booldefault.StaticBool(false),
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the snapshot.",
@@ -100,6 +110,7 @@ type InstanceSnapshotModel struct {
 	DateCreated    types.String   `tfsdk:"date_created"`
 	Description    types.String   `tfsdk:"description"`
 	ExternalId     types.String   `tfsdk:"external_id"`
+	ForExport      types.Bool     `tfsdk:"for_export"`
 	Id             types.Int64    `tfsdk:"id"`
 	InstanceId     types.Int64    `tfsdk:"instance_id"`
 	MemorySnapshot types.Bool     `tfsdk:"memory_snapshot"`

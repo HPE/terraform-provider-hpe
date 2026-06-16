@@ -36,6 +36,7 @@ resource "hpe_morpheus_instance_snapshot" "example" {
 ### Optional
 
 - `description` (String) A description of the snapshot.
+- `for_export` (Boolean) When true, the snapshot is created in an exportable form (a full, standalone disk image) rather than a lightweight in-place snapshot. Supported on MVM/KVM and VMware. Defaults to false.
 - `memory_snapshot` (Boolean) Whether to include the instance's memory in the snapshot.
 - `retain_on_delete` (Boolean) When true, the snapshot is left in Morpheus when the resource is destroyed (removed from Terraform state only). Defaults to false.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

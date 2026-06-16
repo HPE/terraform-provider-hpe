@@ -21,6 +21,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -137,6 +138,7 @@ func (r *Resource) Create(
 			Name:           plan.Name.ValueStringPointer(),
 			Description:    plan.Description.ValueStringPointer(),
 			MemorySnapshot: plan.MemorySnapshot.ValueBoolPointer(),
+			ForExport:      plan.ForExport.ValueBoolPointer(),
 		},
 	}
 
@@ -328,8 +330,15 @@ func (r *Resource) Read(
 		state.DateCreated = types.StringValue(snap.DateCreated.Format(time.RFC3339))
 	}
 
-	// Preserve config-driven fields from prior state (these are RequiresReplace):
-	// instance_id, name, description, memory_snapshot, retain_on_delete are kept as-is.
+	// Refresh config-driven fields from the API so out-of-band changes are
+	// detected. name, description and memory_snapshot are RequiresReplace, so a
+	// difference between the API and the configuration triggers a replacement.
+	// instance_id and retain_on_delete are not returned by the API, so they are
+	// preserved from prior state.
+	state.Name = convert.StrToType(snap.Name)
+	state.Description = convert.StrToType(snap.Description.Get())
+	state.MemorySnapshot = convert.BoolToType(snap.MemorySnapshot)
+	state.ForExport = convert.BoolToType(snap.ForExport)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
