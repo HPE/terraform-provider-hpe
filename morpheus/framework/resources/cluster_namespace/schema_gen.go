@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -15,12 +16,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
 )
 
+// ClusterNsPermissionsAttrTypes defines the attr.Type map for the resource_permissions object.
+var ClusterNsPermissionsAttrTypes = map[string]attr.Type{
+	"all":      types.BoolType,
+	"all_plans": types.BoolType,
+	"site_ids": types.SetType{ElemType: types.Int64Type},
+	"plan_ids": types.SetType{ElemType: types.Int64Type},
+}
+
 type clusterNamespaceModel struct {
-	ID          types.Int64  `tfsdk:"id"`
-	ClusterID   types.Int64  `tfsdk:"cluster_id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Active      types.Bool   `tfsdk:"active"`
+	ID                  types.Int64  `tfsdk:"id"`
+	ClusterID           types.Int64  `tfsdk:"cluster_id"`
+	Name                types.String `tfsdk:"name"`
+	Description         types.String `tfsdk:"description"`
+	Active              types.Bool   `tfsdk:"active"`
+	ResourcePermissions types.Object `tfsdk:"resource_permissions"`
 }
 
 func ClusterNamespaceSchema(_ context.Context) schema.Schema {
@@ -60,6 +70,35 @@ func ClusterNamespaceSchema(_ context.Context) schema.Schema {
 				Description: "Whether the namespace is active.",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"resource_permissions": schema.SingleNestedAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Resource permissions controlling group and plan access for this namespace.",
+				Attributes: map[string]schema.Attribute{
+					"all": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Pass true to allow access to all groups",
+					},
+					"all_plans": schema.BoolAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "Pass true to allow access to all plans",
+					},
+					"site_ids": schema.SetAttribute{
+						ElementType: types.Int64Type,
+						Optional:    true,
+						Computed:    true,
+						Description: "Array of group (site) IDs that are allowed access",
+					},
+					"plan_ids": schema.SetAttribute{
+						ElementType: types.Int64Type,
+						Optional:    true,
+						Computed:    true,
+						Description: "Array of service plan IDs that are allowed access",
+					},
 				},
 			},
 		},

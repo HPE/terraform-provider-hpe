@@ -24,6 +24,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
+// ServicePlanPermissionsAttrTypes defines the attr.Type map for the flat permissions object.
+var ServicePlanPermissionsAttrTypes = map[string]attr.Type{
+	"all_sites":          types.BoolType,
+	"site_ids":           types.SetType{ElemType: types.Int64Type},
+	"tenant_account_ids": types.SetType{ElemType: types.Int64Type},
+}
+
 func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -218,6 +225,34 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Service plan name",
 				MarkdownDescription: "Service plan name",
 			},
+			"permissions": schema.SingleNestedAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Resource and tenant permissions for the service plan.",
+				MarkdownDescription: "Resource and tenant permissions for the service plan.",
+				Attributes: map[string]schema.Attribute{
+					"all_sites": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Pass true to allow access to all groups (sites)",
+						MarkdownDescription: "Pass true to allow access to all groups (sites)",
+					},
+					"site_ids": schema.SetAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Array of group (site) IDs that are allowed access",
+						MarkdownDescription: "Array of group (site) IDs that are allowed access",
+					},
+					"tenant_account_ids": schema.SetAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Array of tenant account IDs with permission to view this service plan when visibility is private",
+						MarkdownDescription: "Array of tenant account IDs with permission to view this service plan when visibility is private",
+					},
+				},
+			},
 			"price_set_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
 				Optional:    true,
@@ -275,6 +310,7 @@ type ServicePlanModel struct {
 	MaxStorage        types.Int64       `tfsdk:"max_storage"`
 	MemorySizeType    types.String      `tfsdk:"memory_size_type"`
 	Name              types.String      `tfsdk:"name"`
+	Permissions       types.Object      `tfsdk:"permissions"`
 	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
 	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
 	SortOrder         types.Int64       `tfsdk:"sort_order"`

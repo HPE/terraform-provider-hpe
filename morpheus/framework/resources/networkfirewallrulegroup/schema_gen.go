@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -66,6 +67,19 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network firewall rule group priority",
 				MarkdownDescription: "Network firewall rule group priority",
 			},
+			"tenant_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Description:         "Set of tenant IDs that are allowed access to the firewall rule group. Master account only.",
+				MarkdownDescription: "Set of tenant IDs that are allowed access to the firewall rule group. Master account only.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Default:             stringdefault.StaticString("private"),
+				Description:         "Visibility of the firewall rule group (`private` or `public`).",
+				MarkdownDescription: "Visibility of the firewall rule group (`private` or `public`).",
+			},
 		},
 	}
 }
@@ -78,4 +92,6 @@ type NetworkFirewallRuleGroupModel struct {
 	Name                 types.String `tfsdk:"name"`
 	NetworkIntegrationId types.Int64  `tfsdk:"network_integration_id"`
 	Priority             types.Int64  `tfsdk:"priority"`
+	TenantIds            types.Set    `tfsdk:"tenant_ids"`
+	Visibility           types.String `tfsdk:"visibility"`
 }

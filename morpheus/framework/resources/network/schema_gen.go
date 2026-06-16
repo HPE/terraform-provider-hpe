@@ -215,27 +215,30 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "IPv6 Network Pool ID",
 				MarkdownDescription: "IPv6 Network Pool ID",
 			},
-			"resource_permissions": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{
-					"all": schema.BoolAttribute{
-						Computed:            true,
-						Description:         "Pass true to allow access all groups",
-						MarkdownDescription: "Pass true to allow access all groups",
-					},
-					"group_ids": schema.SetAttribute{
-						ElementType:         types.Int64Type,
-						Computed:            true,
-						Description:         "Array of group (site) IDs that are allowed access",
-						MarkdownDescription: "Array of group (site) IDs that are allowed access",
-					},
+		"resource_permissions": schema.SingleNestedAttribute{
+			Attributes: map[string]schema.Attribute{
+				"all": schema.BoolAttribute{
+					Optional:            true,
+					Computed:            true,
+					Description:         "Pass true to allow access all groups",
+					MarkdownDescription: "Pass true to allow access all groups",
 				},
-				CustomType: ResourcePermissionsType{
-					ObjectType: types.ObjectType{
-						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
-					},
+				"group_ids": schema.SetAttribute{
+					ElementType:         types.Int64Type,
+					Optional:            true,
+					Computed:            true,
+					Description:         "Array of group (site) IDs that are allowed access",
+					MarkdownDescription: "Array of group (site) IDs that are allowed access",
 				},
-				Computed: true,
 			},
+			CustomType: ResourcePermissionsType{
+				ObjectType: types.ObjectType{
+					AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
+				},
+			},
+			Optional: true,
+			Computed: true,
+		},
 			"search_domains": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,

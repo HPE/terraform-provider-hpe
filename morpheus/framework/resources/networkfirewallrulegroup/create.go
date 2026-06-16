@@ -54,6 +54,27 @@ func (r *Resource) Create(
 		ruleGroup.GroupLayer = plan.GroupLayer.ValueStringPointer()
 	}
 
+	// tenant_ids and visibility are not first-class SDK fields; inject via AdditionalProperties.
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]map[string]interface{}, len(ids))
+		for i, id := range ids {
+			tenants[i] = map[string]interface{}{"id": id}
+		}
+		additionalProps["tenants"] = tenants
+	}
+	if len(additionalProps) > 0 {
+		ruleGroup.AdditionalProperties = additionalProps
+	}
+
 	createReq := &sdk.CreateNetworkFirewallRuleGroupRequest{
 		RuleGroup: ruleGroup,
 	}

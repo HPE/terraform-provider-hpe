@@ -144,6 +144,48 @@ func getServicePlanAsState(
 		state.ProvisionTypeCode = convert.StrToType(sp.ServicePlan.ProvisionType.Code)
 	}
 
+	// permissions
+	if sp.ServicePlan.Permissions != nil {
+		p := sp.ServicePlan.Permissions
+
+		allSitesVal := types.BoolNull()
+		if p.ResourcePermissions != nil && p.ResourcePermissions.All != nil {
+			allSitesVal = types.BoolValue(*p.ResourcePermissions.All)
+		}
+
+		siteIDSet := types.SetNull(types.Int64Type)
+		if p.ResourcePermissions != nil && len(p.ResourcePermissions.Sites) > 0 {
+			siteVals := make([]attr.Value, 0, len(p.ResourcePermissions.Sites))
+			for _, s := range p.ResourcePermissions.Sites {
+				if s.Id != nil {
+					siteVals = append(siteVals, types.Int64Value(*s.Id))
+				}
+			}
+			if len(siteVals) > 0 {
+				siteIDSet, _ = types.SetValue(types.Int64Type, siteVals)
+			}
+		}
+
+		tenantAccountIDSet := types.SetNull(types.Int64Type)
+		if p.TenantPermissions != nil && len(p.TenantPermissions.Accounts) > 0 {
+			accountVals := make([]attr.Value, 0, len(p.TenantPermissions.Accounts))
+			for _, a := range p.TenantPermissions.Accounts {
+				accountVals = append(accountVals, types.Int64Value(a))
+			}
+			tenantAccountIDSet, _ = types.SetValue(types.Int64Type, accountVals)
+		}
+
+		permObj, d := types.ObjectValue(ServicePlanPermissionsAttrTypes, map[string]attr.Value{
+			"all_sites":          allSitesVal,
+			"site_ids":           siteIDSet,
+			"tenant_account_ids": tenantAccountIDSet,
+		})
+		diags.Append(d...)
+		state.Permissions = permObj
+	} else {
+		state.Permissions = types.ObjectNull(ServicePlanPermissionsAttrTypes)
+	}
+
 	return state, diags
 }
 
@@ -466,6 +508,45 @@ func (r *Resource) Create(
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		attrs := plan.Permissions.Attributes()
+
+		rp := &sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissions{}
+		if allSites, ok := attrs["all_sites"].(types.Bool); ok && !allSites.IsNull() {
+			rp.AllSites = allSites.ValueBoolPointer()
+		}
+		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+			var siteIDs []int64
+			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner, 0, len(siteIDs))
+			for _, sid := range siteIDs {
+				sid := sid
+				sites = append(sites, sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner{Id: &sid})
+			}
+			rp.Sites = sites
+		}
+
+		perms := &sdk.AddServicePlansRequestServicePlanPermissions{
+			ResourcePermissions: rp,
+		}
+		if tenantIDsVal, ok := attrs["tenant_account_ids"].(types.Set); ok && !tenantIDsVal.IsNull() {
+			var accounts []int64
+			d := tenantIDsVal.ElementsAs(ctx, &accounts, false)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			perms.TenantPermissions = &sdk.AddServicePlansRequestServicePlanPermissionsTenantPermissions{
+				Accounts: accounts,
+			}
+		}
+		addServicePlan.Permissions = perms
+	}
+
 	addServicePlanRequest := &sdk.AddServicePlansRequest{ServicePlan: *addServicePlan}
 
 	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(
@@ -620,6 +701,47 @@ func (r *Resource) Update(
 	}
 
 	setConfigInUpdate(ctx, &plan, servicePlan)
+
+	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
+		attrs := plan.Permissions.Attributes()
+
+		rpMap := map[string]any{}
+		if allSites, ok := attrs["all_sites"].(types.Bool); ok && !allSites.IsNull() {
+			rpMap["allSites"] = allSites.ValueBool()
+		}
+		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+			var siteIDs []int64
+			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]any, 0, len(siteIDs))
+			for _, sid := range siteIDs {
+				sites = append(sites, map[string]any{"id": sid})
+			}
+			rpMap["sites"] = sites
+		}
+
+		tpMap := map[string]any{}
+		if tenantIDsVal, ok := attrs["tenant_account_ids"].(types.Set); ok && !tenantIDsVal.IsNull() {
+			var accounts []int64
+			d := tenantIDsVal.ElementsAs(ctx, &accounts, false)
+			resp.Diagnostics.Append(d...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			tpMap["accounts"] = accounts
+		}
+
+		if servicePlan.AdditionalProperties == nil {
+			servicePlan.AdditionalProperties = map[string]any{}
+		}
+		servicePlan.AdditionalProperties["permissions"] = map[string]any{
+			"resourcePermissions": rpMap,
+			"tenantPermissions":   tpMap,
+		}
+	}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

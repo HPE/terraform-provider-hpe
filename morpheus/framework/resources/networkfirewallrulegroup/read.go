@@ -103,5 +103,18 @@ func getNetworkFirewallRuleGroupAsState(
 	state.NetworkIntegrationId = prior.NetworkIntegrationId
 	state.ExternalType = prior.ExternalType
 
+	// tenant_ids and visibility are not returned in the GET response; preserve from prior state.
+	// On import (prior is zero value), fall back to safe defaults.
+	if prior.TenantIds.IsNull() || prior.TenantIds.IsUnknown() {
+		state.TenantIds = types.SetNull(types.Int64Type)
+	} else {
+		state.TenantIds = prior.TenantIds
+	}
+	if prior.Visibility.IsNull() || prior.Visibility.IsUnknown() || prior.Visibility.ValueString() == "" {
+		state.Visibility = types.StringValue("private")
+	} else {
+		state.Visibility = prior.Visibility
+	}
+
 	return state, false, diags
 }
