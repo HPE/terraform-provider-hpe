@@ -60,11 +60,11 @@ Optional:
 
 ## Import
 
-Import is supported using the composite format `<instance_id>/<snapshot_id>`:
+Import is supported using the composite format `<instance_id>.<snapshot_id>`:
 
 ```shell
-# Import format: <instance_id>/<snapshot_id>
-terraform import hpe_morpheus_instance_snapshot.example 123/456
+# Import format: <instance_id>.<snapshot_id>
+terraform import hpe_morpheus_instance_snapshot.example 123.456
 ```
 
 The composite import format is required because the snapshot read API does not

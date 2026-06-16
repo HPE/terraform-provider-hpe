@@ -436,13 +436,13 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Import format: "<instance_id>/<snapshot_id>"
-	parts := strings.Split(req.ID, "/")
+	// Import format: "<instance_id>.<snapshot_id>"
+	parts := strings.Split(req.ID, ".")
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import instance snapshot",
 			fmt.Sprintf(
-				"invalid import ID format %q, expected \"<instance_id>/<snapshot_id>\"",
+				"invalid import ID format %q, expected \"<instance_id>.<snapshot_id>\"",
 				req.ID,
 			),
 		)
