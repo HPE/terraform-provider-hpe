@@ -75,10 +75,10 @@ func getLoadBalancerByID(
 		return nil, fmt.Errorf("load balancer %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	lb, ok := resp.GetLoadBalancerOk()
-	if !ok {
+	if resp == nil || resp.LoadBalancer == nil {
 		return nil, fmt.Errorf("load balancer %d is nil", id)
 	}
+	lb := resp.LoadBalancer
 
 	state := &LoadBalancerModel{}
 	populateLoadBalancerState(ctx, state, lb)
@@ -98,9 +98,11 @@ func getLoadBalancerByName(
 	}
 
 	var matching []sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner
-	for _, lb := range lbs.GetLoadBalancers() {
-		if lbName, ok := lb.GetNameOk(); ok && *lbName == name {
-			matching = append(matching, lb)
+	if lbs != nil {
+		for _, lb := range lbs.LoadBalancers {
+			if lb.Name != nil && *lb.Name == name {
+				matching = append(matching, lb)
+			}
 		}
 	}
 
@@ -111,8 +113,8 @@ func getLoadBalancerByName(
 	if len(matching) > 1 {
 		var ids []string
 		for _, lb := range matching {
-			if id, ok := lb.GetIdOk(); ok {
-				ids = append(ids, fmt.Sprintf("%d", *id))
+			if lb.Id != nil {
+				ids = append(ids, fmt.Sprintf("%d", *lb.Id))
 			}
 		}
 
@@ -124,8 +126,8 @@ func getLoadBalancerByName(
 		)
 	}
 
-	id, ok := matching[0].GetIdOk()
-	if !ok {
+	id := matching[0].Id
+	if id == nil {
 		return nil, fmt.Errorf("load balancer %s has missing ID", name)
 	}
 

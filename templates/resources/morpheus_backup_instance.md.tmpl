@@ -1,0 +1,25 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+!> **Warning** When a `hpe_morpheus_backup_instance` resource is deleted, Morpheus will also delete its associated Backup Job (referenced by `job_id`) if no other backups are using it. If that Backup Job is also managed by Terraform (e.g.,via `hpe_morpheus_backup_job`), it will be removed outside of Terraform's control, leaving stale state. After destroying a `hpe_morpheus_backup_instance` that is the sole backup on a job, run `terraform apply -refresh-only` to reconcile the state.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_backup_instance/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the resource ID.
+
+```bash
+terraform import hpe_morpheus_backup_instance.example 123
+```

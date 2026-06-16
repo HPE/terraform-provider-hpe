@@ -77,6 +77,7 @@ resource "hpe_morpheus_subnet" "azure_example" {
 - `description` (String) The description of the subnet.
 - `dhcp_server` (Boolean) Whether DHCP server is enabled.
 - `labels` (Set of String) Labels for the subnet.
+- `name` (String) The name of the subnet.
 - `pool_id` (Number) The ID of the network pool.
 - `resource_permission_group_ids` (Set of Number) Set of group IDs that have access to the subnet. Only applicable when resource_permission_groups_all is false.
 - `resource_permission_groups_all` (Boolean) Whether all groups have access to the subnet.
@@ -88,7 +89,6 @@ resource "hpe_morpheus_subnet" "azure_example" {
 - `cloud_id` (Number) The ID of the cloud the subnet belongs to.
 - `gateway` (String) The gateway of the subnet.
 - `id` (Number) The ID of the subnet.
-- `name` (String) The name of the subnet.
 - `netmask` (String) The netmask of the subnet.
 - `subnet_address` (String) The subnet address.
 

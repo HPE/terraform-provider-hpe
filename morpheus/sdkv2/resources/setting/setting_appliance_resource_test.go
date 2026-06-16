@@ -29,8 +29,6 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to API error")
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())

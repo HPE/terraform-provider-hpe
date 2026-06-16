@@ -46,9 +46,18 @@ func getCloudAsState(
 		return state, diags
 	}
 
-	cloud := c.GetZone()
+	if c.Zone == nil {
+		diags.AddError(
+			readOperation,
+			fmt.Sprintf("cloud %d missing zone", id),
+		)
 
-	if !cloud.IsSetConfig() {
+		return state, diags
+	}
+
+	cloud := c.Zone
+
+	if cloud.Config == nil {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cloud %d missing config", id),
@@ -72,7 +81,7 @@ func getCloudAsState(
 
 	state.AgentInstallMode = convert.StrToType(cloud.AgentMode)
 	state.AutoRecoverPowerState = convert.BoolToType(cloud.AutoRecoverPowerState)
-	if cloud.GetCode() != "standard" { // workaround an API bug
+	if cloud.Code == nil || *cloud.Code != "standard" { // workaround an API bug
 		state.Code = convert.StrToType(cloud.Code)
 	}
 	state.CostingMode = convert.StrToType(cloud.CostingMode.Get())
@@ -94,7 +103,7 @@ func getCloudAsState(
 
 	switch {
 	case cloudType == awsCloud && (!plan.ConfigAws.IsNull() || importing):
-		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf2
+		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf2
 
 		// Move these common fields up
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
@@ -311,7 +320,7 @@ func getCloudAsState(
 		state.ConfigAws = configAws
 
 	case cloudType == standardCloud && (!plan.ConfigHvm.IsNull() || importing):
-		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf
+		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf
 
 		// Move these common fields up
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
@@ -349,7 +358,7 @@ func getCloudAsState(
 		state.ConfigHvm = configHvm
 
 	case cloudType == vmwareCloud && (!plan.ConfigVmware.IsNull() || importing):
-		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf1
+		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf1
 
 		// Move these common fields up
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
@@ -468,7 +477,7 @@ func getCloudAsState(
 		// Azure read uses GetClouds200ResponseZoneConfigAnyOf3 (the GET response model),
 		// while create uses AddCloudsRequestZoneConfigAnyOf1 (the POST request model).
 		// The AnyOf index differs between request/response specs but both are Azure.
-		cfg := cloud.GetConfig().GetClouds200ResponseZoneConfigAnyOf3
+		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf3
 
 		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
 		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
@@ -555,7 +564,7 @@ func getCloudAsState(
 
 		state.Config = types.DynamicNull()
 
-		cfg := cloud.GetConfig().MapmapOfStringAny
+		cfg := cloud.Config.MapmapOfStringAny
 		if cfg == nil {
 			diags.AddError(
 				readOperation,
@@ -592,7 +601,7 @@ func getCloudAsState(
 		if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 			state.Config = plan.Config
 		} else {
-			cfg := cloud.GetConfig().MapmapOfStringAny
+			cfg := cloud.Config.MapmapOfStringAny
 
 			cfgValue := *cfg
 

@@ -34,17 +34,20 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 	}
 
 	itID := its.InstanceTypes[len(its.InstanceTypes)-1].Id
+	if itID == nil {
+		return nil, errors.New("instance type id was nil")
+	}
 
 	var layouts []sdk.AddLayout200ResponseInstanceTypeLayout
 
 	for i := range count {
-		addLayout := sdk.NewAddLayoutRequestInstanceTypeLayoutWithDefaults()
-		addLayout.SetName(name)
-		addLayout.SetInstanceVersion("1")
-		addLayout.SetProvisionTypeCode("kvm")
-		addLayout.SetSortOrder(i)
+		addLayout := &sdk.AddLayoutRequestInstanceTypeLayout{}
+		addLayout.Name = name
+		addLayout.InstanceVersion = "1"
+		addLayout.ProvisionTypeCode = "kvm"
+		addLayout.SortOrder = &i
 
-		addLayoutReq := sdk.NewAddLayoutRequest()
+		addLayoutReq := &sdk.AddLayoutRequest{}
 		addLayoutReq.InstanceTypeLayout = addLayout
 
 		req := client.LibraryAPI.AddLayout(ctx, *itID).AddLayoutRequest(*addLayoutReq)
@@ -53,8 +56,11 @@ func CreateInstanceTypeLayout(t *testing.T, count int64) (
 		if err != nil || resp.StatusCode != http.StatusOK {
 			return nil, fmt.Errorf("POST failed for instance layout %w", err)
 		}
+		if l == nil || l.InstanceTypeLayout == nil {
+			return nil, errors.New("POST returned no instance layout")
+		}
 
-		layouts = append(layouts, l.GetInstanceTypeLayout())
+		layouts = append(layouts, *l.InstanceTypeLayout)
 	}
 
 	return layouts, nil

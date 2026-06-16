@@ -7,10 +7,13 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
+	routeresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
+	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -31,6 +34,42 @@ provider "hpe" {
 }
 `
 
+// routerFixture renders a self-contained NSX-T network router that NAT/route
+// resources are proven to create on the QA appliance (group 3, NSX-T
+// integration 5, tier-1 gateway type). The router is labelled
+// hpe_morpheus_network_router.example.
+func routerFixture(t *testing.T, name string) string {
+	t.Helper()
+
+	cfg, err := networkrouterresource.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cfg
+}
+
+// routeFixture renders a route on the router fixture, labelled
+// hpe_morpheus_network_router_route.example.
+func routeFixture(t *testing.T, name string) string {
+	t.Helper()
+
+	cfg, err := routeresource.RenderNetworkRouterRouteConfig(t, map[string]string{
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cfg
+}
+
 func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
@@ -46,24 +85,26 @@ func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkrouterroute.RenderRouteByNameConfig(t, map[string]string{
-		"Name":     "mh-route",
-		"RouterId": "19779",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Look up the route created in the same config by name. depends_on defers
+	// the data source read until the route exists (router_id only creates a
+	// dependency on the router, not the route).
+	dataSourceConfig := `
+data "hpe_morpheus_network_router_route" "example" {
+  name       = "` + name + `"
+  router_id  = hpe_morpheus_network_router.example.id
+  depends_on = [hpe_morpheus_network_router_route.example]
+}
+`
 
-	checks := routeChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(routeChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + routerFixture(t, name) + routeFixture(t, name) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -85,24 +126,25 @@ func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
+	// Both id and router_id reference the created resources, so the data
+	// source read is deferred until they exist.
 	dataSourceConfig, err := networkrouterroute.RenderRouteByIdConfig(t, map[string]string{
-		"Id":       "33935",
-		"RouterId": "19779",
+		"Id":       "hpe_morpheus_network_router_route.example.id",
+		"RouterId": "hpe_morpheus_network_router.example.id",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	checks := routeChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(routeChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + routerFixture(t, name) + routeFixture(t, name) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -124,16 +166,16 @@ func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkrouterroute.RenderRouteByNameConfig(t,
-		map[string]string{
-			"Name":     "nonexistent-route-name-that-should-not-exist",
-			"RouterId": "19779",
-		},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Search a real (created) router for a route name that does not exist.
+	// router_id references the router so the read is deferred until it exists.
+	dataSourceConfig := `
+data "hpe_morpheus_network_router_route" "example" {
+  name      = "nonexistent-route-name-that-should-not-exist"
+  router_id = hpe_morpheus_network_router.example.id
+}
+`
 
 	expected := regexp.MustCompile(`no network router route found`)
 
@@ -141,7 +183,7 @@ func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + dataSourceConfig,
+				Config:      providerConfig + routerFixture(t, name) + dataSourceConfig,
 				ExpectError: expected,
 			},
 		},
@@ -183,7 +225,8 @@ func routeChecks() []resource.TestCheckFunc {
 		resource.TestCheckResourceAttrSet(ds, "id"),
 		resource.TestCheckResourceAttrSet(ds, "router_id"),
 		resource.TestCheckResourceAttrSet(ds, "name"),
-		resource.TestCheckResourceAttrSet(ds, "code"),
+		// 'code' is not populated for a freshly-created route (only synced/seeded
+		// routes have it), so it is not asserted here.
 		resource.TestCheckResourceAttrSet(ds, "route_type"),
 		resource.TestCheckResourceAttrSet(ds, "source_type"),
 		resource.TestCheckResourceAttrSet(ds, "external_id"),

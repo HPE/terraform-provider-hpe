@@ -139,9 +139,7 @@ func getNetworkDomainByID(
 		return nil, fmt.Errorf("GET failed for network domain %d: %s", id, providererrors.ErrMsg(err, hresp))
 	}
 
-	domain := r.GetNetworkDomain()
-
-	return &domain, nil
+	return r.NetworkDomain, nil
 }
 
 func getNetworkDomainByName(
@@ -154,7 +152,7 @@ func getNetworkDomainByName(
 		return nil, fmt.Errorf("GET failed for network domain %s: %s", name, providererrors.ErrMsg(err, hresp))
 	}
 
-	raw, err := json.Marshal(rs.GetNetworkDomains())
+	raw, err := json.Marshal(rs.NetworkDomains)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling network domains list: %w", err)
 	}

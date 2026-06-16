@@ -32,7 +32,11 @@ func TestAccMorpheusClusterResourceHVMExampleOk(t *testing.T) {
 
 		return
 	}
-	skip.SkipByDefault(t)
+	if skip.SkipByDefault(t) {
+		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 
@@ -217,7 +221,11 @@ func TestAccMorpheusClusterResourceGenericExampleOk(t *testing.T) {
 
 		return
 	}
-	skip.SkipByDefault(t)
+	if skip.SkipByDefault(t) {
+		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 
@@ -389,7 +397,11 @@ func TestAccMorpheusClusterResourceHVMUpdateOk(t *testing.T) {
 
 		return
 	}
-	skip.SkipByDefault(t)
+	if skip.SkipByDefault(t) {
+		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 
@@ -575,7 +587,11 @@ func TestAccMorpheusClusterResourceGenericUpdateOk(t *testing.T) {
 
 		return
 	}
-	skip.SkipByDefault(t)
+	if skip.SkipByDefault(t) {
+		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
+
+		return
+	}
 
 	defer testhelpers.RecordResult(t)
 

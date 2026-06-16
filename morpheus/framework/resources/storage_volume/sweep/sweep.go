@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -31,30 +30,28 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetHits(), hresp, err
+			return resp.Hits, hresp, err
 		},
 		// is this
 		func(item sdk.Search200ResponseHitsInner) bool {
-			name, ok := item.GetNameOk()
-			if !ok || name == nil {
+			if item.Name == nil {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(*item.Name, testsweep.TestResourcePrefix)
 		},
 		// delete
 		func(ctx context.Context, client *sdk.APIClient, item sdk.Search200ResponseHitsInner) (*http.Response, error) {
-			idStr, ok := item.GetIdOk()
-			if !ok || idStr == nil {
+			if item.Id == nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
-			id, err := strconv.ParseInt(*idStr, 10, 64)
+			id, err := strconv.ParseInt(*item.Id, 10, 64)
 			if err != nil {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
-			idParam := sdk.Int64AsUpdateStorageVolumesIdParameter(&id)
+			idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
 			_, hresp, delErr := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
 			if delErr != nil && hresp != nil && hresp.StatusCode == http.StatusNotFound {

@@ -19,30 +19,30 @@ func createVolumeMapper(
 ) sdk.AddInstanceRequestVolumesInner {
 	volume := sdk.AddInstanceRequestVolumesInner{}
 	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
-		volume.SetId(vol.Id.ValueInt64())
+		volume.Id = vol.Id.ValueInt64Pointer()
 	} else {
-		volume.SetId(-1)
+		volume.Id = sdk.PtrInt64(-1)
 	}
 
 	if !vol.Name.IsNull() && !vol.Name.IsUnknown() {
-		volume.SetName(vol.Name.ValueString())
+		volume.Name = vol.Name.ValueStringPointer()
 	}
 
 	if !vol.RootVolume.IsNull() && !vol.RootVolume.IsUnknown() {
-		volume.SetRootVolume(vol.RootVolume.ValueBool())
+		volume.RootVolume = vol.RootVolume.ValueBoolPointer()
 	}
 
 	if !vol.Size.IsNull() && !vol.Size.IsUnknown() {
-		volume.SetSize(vol.Size.ValueInt64())
+		volume.Size = vol.Size.ValueInt64Pointer()
 	}
 
 	if !vol.StorageTypeId.IsNull() && !vol.StorageTypeId.IsUnknown() {
-		volume.SetStorageType(vol.StorageTypeId.ValueInt64())
+		volume.StorageType.Set(vol.StorageTypeId.ValueInt64Pointer())
 	}
 
 	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			AddInstanceRequestVolumesInnerDatastoreId{}
+			InstanceConfigObject1VolumesInnerDatastoreId{}
 
 		id := strconv.Itoa(int(vol.DatastoreId.ValueInt64()))
 		volume.DatastoreId.String = &id
@@ -50,7 +50,7 @@ func createVolumeMapper(
 
 	if !vol.DatastoreAutoSelection.IsNull() && !vol.DatastoreAutoSelection.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			AddInstanceRequestVolumesInnerDatastoreId{}
+			InstanceConfigObject1VolumesInnerDatastoreId{}
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
 	}
 
@@ -63,25 +63,25 @@ func updateVolumeMapper(
 ) sdk.ResizeInstanceRequestVolumesInner {
 	volume := sdk.ResizeInstanceRequestVolumesInner{}
 	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
-		volume.SetId(vol.Id.ValueInt64())
+		volume.Id = vol.Id.ValueInt64Pointer()
 	} else {
-		volume.SetId(-1)
+		volume.Id = sdk.PtrInt64(-1)
 	}
 
 	if !vol.Name.IsNull() && !vol.Name.IsUnknown() {
-		volume.SetName(vol.Name.ValueString())
+		volume.Name = vol.Name.ValueStringPointer()
 	}
 
 	if !vol.RootVolume.IsNull() && !vol.RootVolume.IsUnknown() {
-		volume.SetRootVolume(vol.RootVolume.ValueBool())
+		volume.RootVolume = vol.RootVolume.ValueBoolPointer()
 	}
 
 	if !vol.Size.IsNull() && !vol.Size.IsUnknown() {
-		volume.SetSize(vol.Size.ValueInt64())
+		volume.Size = vol.Size.ValueInt64Pointer()
 	}
 
 	if !vol.StorageTypeId.IsNull() && !vol.StorageTypeId.IsUnknown() {
-		volume.SetStorageType(vol.StorageTypeId.ValueInt64())
+		volume.StorageType.Set(vol.StorageTypeId.ValueInt64Pointer())
 	}
 
 	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
@@ -107,17 +107,21 @@ func createNetworkInterfaceMapper(
 ) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces2 {
 		var id string
-		if !in.NetworkGroupId.IsNull() {
-			id = "networkGroup-" + in.NetworkGroupId.String()
+		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
+			id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 		}
 
-		if !in.NetworkId.IsNull() {
-			id = in.NetworkId.String()
+		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
+			id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 		}
 
-		ipPool := sdk.NewInstancesNetworkInterfaces2NetworkPoolWithDefaults()
+		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
+			id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
+		}
+
+		ipPool := &sdk.InstancesNetworkInterfaces1NetworkPool{}
 		if !in.IpPool.IsNull() {
-			ipPool.SetId(in.IpPool.ValueInt64())
+			ipPool.Id = in.IpPool.ValueInt64Pointer()
 		}
 
 		childNetworkInterfaces, diags := convert.FromListType(
@@ -131,7 +135,7 @@ func createNetworkInterfaceMapper(
 
 		return sdk.InstancesNetworkInterfaces2{
 			Network: sdk.
-				InstancesNetworkInterfaces2Network{
+				InstancesNetworkInterfaces1Network{
 				Id:   id,
 				Pool: ipPool,
 			},
@@ -149,17 +153,21 @@ func updateNetworkInterfaceMapper(
 ) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
 	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
 		var id string
-		if !in.NetworkGroupId.IsNull() {
-			id = "networkGroup-" + in.NetworkGroupId.String()
+		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
+			id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 		}
 
-		if !in.NetworkId.IsNull() {
-			id = in.NetworkId.String()
+		if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
+			id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 		}
 
-		ipPool := sdk.NewInstancesNetworkInterfaces3NetworkPoolWithDefaults()
+		if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
+			id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
+		}
+
+		ipPool := &sdk.InstancesNetworkInterfaces3NetworkPool{}
 		if !in.IpPool.IsNull() {
-			ipPool.SetId(in.IpPool.ValueInt64())
+			ipPool.Id = in.IpPool.ValueInt64Pointer()
 		}
 
 		var intfIdPtr *int64
@@ -194,23 +202,27 @@ func updateNetworkInterfaceMapper(
 // Map Child Virtual Network interface if it exists
 func createChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
-) sdk.InstancesNetworkInterfaces2NetworkInterfacesInner {
+) sdk.InstancesNetworkInterfaces1NetworkInterfacesInner {
 	var id string
-	if !in.NetworkGroupId.IsNull() {
-		id = "networkGroup-" + in.NetworkGroupId.String()
+	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
+		id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 	}
 
-	if !in.NetworkId.IsNull() {
-		id = in.NetworkId.String()
+	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
+		id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
 	}
 
-	ipPool := sdk.NewInstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPoolWithDefaults()
+	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
+		id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
+	}
+
+	ipPool := &sdk.InstancesNetworkInterfaces1NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
-		ipPool.SetId(in.IpPool.ValueInt64())
+		ipPool.Id = in.IpPool.ValueInt64Pointer()
 	}
 
-	return sdk.InstancesNetworkInterfaces2NetworkInterfacesInner{
-		Network: sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetwork{
+	return sdk.InstancesNetworkInterfaces1NetworkInterfacesInner{
+		Network: sdk.InstancesNetworkInterfaces1NetworkInterfacesInnerNetwork{
 			Id:   id,
 			Pool: ipPool,
 		},
@@ -225,12 +237,16 @@ func updateChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
 ) sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
 	var id string
-	if !in.NetworkGroupId.IsNull() {
-		id = "networkGroup-" + in.NetworkGroupId.String()
+	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
+		id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
 	}
 
-	if !in.NetworkId.IsNull() {
-		id = in.NetworkId.String()
+	if !in.NetworkId.IsNull() && !in.NetworkId.IsUnknown() {
+		id = strconv.FormatInt(in.NetworkId.ValueInt64(), 10)
+	}
+
+	if !in.SubnetId.IsNull() && !in.SubnetId.IsUnknown() {
+		id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 	}
 
 	var intfIdPtr *int64
@@ -238,9 +254,9 @@ func updateChildNetworkInterfaceMapper(
 		intfIdPtr = in.Id.ValueInt64Pointer()
 	}
 
-	ipPool := sdk.NewInstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPoolWithDefaults()
+	ipPool := &sdk.InstancesNetworkInterfaces3NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
-		ipPool.SetId(in.IpPool.ValueInt64())
+		ipPool.Id = in.IpPool.ValueInt64Pointer()
 	}
 
 	return sdk.InstancesNetworkInterfaces3NetworkInterfacesInner{

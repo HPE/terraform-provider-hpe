@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -99,7 +100,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		oneOf.AllocationTimeoutMinutes = &v
 	}
 
-	vdiPool := sdk.AddVDIPoolsRequestVdiPoolOneOfAsAddVDIPoolsRequestVdiPool(&oneOf)
+	vdiPool := sdk.AddVDIPoolsRequestVdiPool{AddVDIPoolsRequestVdiPoolOneOf: &oneOf}
 
 	_, httpResp, err := client.VDIAPI.AddVDIPools(ctx).AddVDIPoolsRequest(sdk.AddVDIPoolsRequest{
 		VdiPool: vdiPool,
@@ -124,7 +125,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	pools := listResult.GetVdiPools()
+	pools := listResult.VdiPools
 	if len(pools) == 0 {
 		resp.Diagnostics.AddError(
 			"VDI Pool Not Found",
@@ -136,11 +137,27 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	poolID := pools[0].GetId()
+	if pools[0].Id == nil {
+		resp.Diagnostics.AddError(
+			"VDI Pool ID Not Returned",
+			"VDI pool was created successfully but the API did not return an ID.",
+		)
+
+		return
+	}
+
+	poolID := *pools[0].Id
 
 	state, diags := r.getVdiPoolAsState(ctx, poolID)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_pool",
+			ResourceID:   poolID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 
@@ -315,9 +332,14 @@ func (r *vdiPoolResource) getVdiPoolAsState(
 		return nil, diags
 	}
 
-	pool := result.GetVdiPool()
+	pool := result.VdiPool
+	if pool == nil {
+		diags.AddError("API returned nil", "VdiPool is nil in the response")
+
+		return nil, diags
+	}
 	var model vdiPoolModel
-	mapGetResponseToModel(&model, &pool)
+	mapGetResponseToModel(&model, pool)
 
 	return &model, diags
 }

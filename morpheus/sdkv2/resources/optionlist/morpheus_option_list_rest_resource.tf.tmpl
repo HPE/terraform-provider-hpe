@@ -1,11 +1,13 @@
 resource "hpe_morpheus_option_list_rest" "tf_example_rest_option_list" {
-  name               = "{{.Name}}"
-  description        = "{{.Description}}"
-  visibility         = "{{.Visibility}}"
-  source_url         = "{{.SourceUrl}}"
-  real_time          = {{.RealTime}}
-  ignore_ssl_errors  = {{.IgnoreSslErrors}}
-  source_method      = "{{.SourceMethod}}"
+  name                                 = "{{.Name}}"
+  description                          = "{{.Description}}"
+  visibility                           = "{{.Visibility}}"
+  source_url                           = "{{.SourceUrl}}"
+  real_time                            = {{.RealTime}}
+  ignore_ssl_errors                    = {{.IgnoreSslErrors}}
+  inject_system_authorization_header   = {{.InjectSystemAuthorizationHeader}}
+  use_owner_auth                       = {{.UseOwnerAuth}}
+  source_method                        = "{{.SourceMethod}}"
   initial_dataset    = <<POLICY
 {{.InitialDataset}}
   POLICY

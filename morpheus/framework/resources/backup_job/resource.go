@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -73,8 +74,33 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapAddResponseToModel(&plan, &job)
+	if result.Job == nil || result.Job.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Job ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Job.Id
+
+	readResult, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup_job", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "backup_job",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -107,8 +133,13 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	job := result.GetJob()
-	mapGetResponseToModel(&state, &job)
+	job := result.Job
+	if job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -143,7 +174,7 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
 	}
 
-	result, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
+	_, httpResp, err := client.BackupsAPI.UpdateBackupJobs(ctx, id).
 		UpdateBackupJobsRequest(sdk.UpdateBackupJobsRequest{
 			Job: body,
 		}).Execute()
@@ -153,8 +184,19 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	job := result.GetJob()
-	mapUpdateResponseToModel(&plan, &job)
+	readResult, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "backup_job", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.Job == nil {
+		resp.Diagnostics.AddError("API returned nil", "Job is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Job)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -197,23 +239,6 @@ func (r *backupJobResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *backupJobModel, job *sdk.AddBackupJobs200ResponseAllOfJob) {
-	if job.Id != nil {
-		model.ID = types.Int64Value(*job.Id)
-	}
-	if job.Name != nil {
-		model.Name = types.StringValue(*job.Name)
-	}
-	if v := job.RetentionCount.Get(); v != nil {
-		model.RetentionCount = types.Int64Value(*v)
-	} else {
-		model.RetentionCount = types.Int64Null()
-	}
-	if job.Enabled != nil {
-		model.Enabled = types.BoolValue(*job.Enabled)
-	}
-}
-
 func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200ResponseJob) {
 	if job.Id != nil {
 		model.ID = types.Int64Value(*job.Id)
@@ -240,17 +265,5 @@ func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200Respo
 		model.ScheduleID = types.Int64Value(*job.Schedule.Id)
 	} else {
 		model.ScheduleID = types.Int64Null()
-	}
-}
-
-func mapUpdateResponseToModel(model *backupJobModel, job *sdk.UpdateBackupJobs200ResponseAllOfJob) {
-	if job.Id != nil {
-		model.ID = types.Int64Value(*job.Id)
-	}
-	if job.Name != nil {
-		model.Name = types.StringValue(*job.Name)
-	}
-	if job.Enabled != nil {
-		model.Enabled = types.BoolValue(*job.Enabled)
 	}
 }

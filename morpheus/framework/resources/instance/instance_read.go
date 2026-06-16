@@ -33,6 +33,14 @@ const (
 
 type apiConfigType = sdk.GetInstance200ResponseInstanceConfig
 
+func instanceIDValue(instance sdk.GetInstance200ResponseInstance) int64 {
+	if instance.Id == nil {
+		return 0
+	}
+
+	return *instance.Id
+}
+
 // Read implements resource.Resource.
 func (g *Resource) Read(
 	ctx context.Context,
@@ -98,7 +106,16 @@ func getInstanceAsState(
 		return state, diags
 	}
 
-	instance := resp.GetInstance()
+	if resp.Instance == nil {
+		diags.AddError(
+			"populate instance resource",
+			fmt.Sprintf("instance %d GET returned empty instance", id),
+		)
+
+		return state, diags
+	}
+
+	instance := *resp.Instance
 
 	// cloud_id
 	state.CloudId = convert.Int64ToType(instance.Cloud.Id)
@@ -188,9 +205,8 @@ func getInstanceAsState(
 	state.ConnectionInfo = cInfo
 
 	// description
-	description, ok := instance.GetDescriptionOk()
-	if ok {
-		state.Description = convert.StrToType(description)
+	if instance.Description.IsSet() {
+		state.Description = convert.StrToType(instance.Description.Get())
 	}
 
 	// evars
@@ -219,7 +235,9 @@ func getInstanceAsState(
 	state.Evars = evars
 
 	// group_id
-	state.GroupId = convert.Int64ToType(instance.GetGroup().Id)
+	if instance.Group.IsSet() && instance.Group.Get() != nil {
+		state.GroupId = convert.Int64ToType(instance.Group.Get().Id)
+	}
 
 	// id
 	state.Id = convert.Int64ToType(instance.Id)
@@ -237,10 +255,8 @@ func getInstanceAsState(
 	state.LayoutId = convert.Int64ToType(instance.Layout.Id)
 
 	// layout_size - from Config
-	if config, ok := instance.GetConfigOk(); ok {
-		if layoutSize, ok := config.GetLayoutSizeOk(); ok {
-			state.LayoutSize = convert.Int64ToType(layoutSize)
-		}
+	if instance.Config != nil {
+		state.LayoutSize = convert.Int64ToType(instance.Config.LayoutSize)
 	} else if !plan.LayoutSize.IsNull() && !plan.LayoutSize.IsUnknown() {
 		// fallback to instance.layoutSize
 		state.LayoutSize = plan.LayoutSize
@@ -300,7 +316,7 @@ func getInstanceAsState(
 
 	tags, d := convert.ToSetType(
 		ctx,
-		resp.GetInstance().Tags,
+		instance.Tags,
 		func(
 			in sdk.AddInstance200ResponseAllOfOneOfInstanceTagsInner,
 		) TagsValue {
@@ -346,27 +362,21 @@ func getInstanceNetworkDomainId(
 	}
 
 	// on import, get the network domain id from the config in the API response
-	apiConfig, ok := instance.GetConfigOk()
-	if !ok {
+	apiConfig := instance.Config
+	if apiConfig == nil {
 		diags.AddError(
 			"get network_domain_id",
-			fmt.Sprintf("instance %d config GET failed", instance.Id),
+			fmt.Sprintf("instance %d config GET failed", instanceIDValue(instance)),
 		)
 
 		return types.Int64Null(), diags
 	}
 
-	networkDomain, ok := apiConfig.GetNetworkDomainOk()
-	if !ok {
+	if apiConfig.NetworkDomain == nil {
 		return types.Int64Null(), diags
 	}
 
-	networkDomainId, ok := networkDomain.GetIdOk()
-	if !ok {
-		return types.Int64Null(), diags
-	}
-
-	return convert.Int64ToType(networkDomainId), diags
+	return convert.Int64ToType(apiConfig.NetworkDomain.Id), diags
 }
 
 func getInstanceAzureConfig(
@@ -443,7 +453,7 @@ func getInstanceVMwareConfig(
 	}
 
 	// VMwareFolderId
-	folderId, _ := apiConfig.GetVmwareFolderIdOk()
+	folderId := apiConfig.VmwareFolderId
 
 	configVmware.CreateUser = convert.BoolToType(createUser)
 	configVmware.NoAgent = convert.BoolToType(noAgent)
@@ -488,7 +498,10 @@ func getInstanceHVMConfig(
 	}
 
 	// KvmHostId
-	kvmHostId, _ := apiConfig.GetKvmHostIdOk()
+	var kvmHostId *int64
+	if apiConfig.KvmHostId.IsSet() {
+		kvmHostId = apiConfig.KvmHostId.Get()
+	}
 
 	configHvm.CreateUser = convert.BoolToType(createUser)
 	configHvm.NoAgent = convert.BoolToType(noAgent)
@@ -527,27 +540,39 @@ func getInstanceAWSConfig(
 	}
 
 	// isEC2
-	isEC2, _ := apiConfig.GetIsEC2Ok()
+	isEC2 := apiConfig.IsEC2
 
 	// PublicIpType
-	publicIpType, _ := apiConfig.GetPublicIpTypeOk()
+	var publicIpType *string
+	if apiConfig.PublicIpType.IsSet() {
+		publicIpType = apiConfig.PublicIpType.Get()
+	}
 
 	// InstanceProfile
-	instanceProfile, _ := apiConfig.GetInstanceProfileOk()
+	var instanceProfile *string
+	if apiConfig.InstanceProfile.IsSet() {
+		instanceProfile = apiConfig.InstanceProfile.Get()
+	}
 
 	// KmsKeyId
-	kmsKeyId, _ := apiConfig.GetKmsKeyIdOk()
+	var kmsKeyId *string
+	if apiConfig.KmsKeyId.IsSet() {
+		kmsKeyId = apiConfig.KmsKeyId.Get()
+	}
 
 	// AvailabilityId
-	availabilityId, _ := apiConfig.GetAvailabilityIdOk()
+	var availabilityId *string
+	if apiConfig.AvailabilityId.IsSet() {
+		availabilityId = apiConfig.AvailabilityId.Get()
+	}
 
 	// SecGroups
 	secGroupsList := types.ListNull(SecurityGroupsValue{}.Type(ctx))
 	var sd diag.Diagnostics
-	if secGroups, ok := apiConfig.GetSecurityGroupsOk(); ok {
+	if apiConfig.SecurityGroups != nil {
 		secGroupsList, sd = convert.ToListType(
 			ctx,
-			secGroups,
+			apiConfig.SecurityGroups,
 			func(
 				in sdk.AddInstance200ResponseAllOfOneOfInstanceConfigSecurityGroupsInner,
 			) SecurityGroupsValue {
@@ -593,8 +618,8 @@ func getCreateUser(
 	apiConfig *apiConfigType,
 ) (*bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	createUser, ok := apiConfig.GetCreateUserOk()
-	if !ok {
+	createUser := apiConfig.CreateUser
+	if createUser == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config createUser", id),
@@ -611,8 +636,8 @@ func getNoAgent(
 	apiConfig *apiConfigType,
 ) (*bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	noAgent, ok := apiConfig.GetNoAgentOk()
-	if !ok {
+	noAgent := apiConfig.NoAgent
+	if noAgent == nil || noAgent.Bool == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config noAgent", id),
@@ -630,8 +655,7 @@ func getNestedVirtualization(
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	nestedVirtualization, ok := apiConfig.GetNestedVirtualizationOk()
-	if !ok {
+	if !apiConfig.NestedVirtualization.IsSet() {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config nestedVirtualization", id),
@@ -640,7 +664,7 @@ func getNestedVirtualization(
 		return nil, diags
 	}
 
-	return nestedVirtualization, nil
+	return apiConfig.NestedVirtualization.Get(), nil
 }
 
 func getResourcePoolId(
@@ -648,8 +672,8 @@ func getResourcePoolId(
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	resourcePoolId, ok := apiConfig.GetResourcePoolIdOk()
-	if !ok {
+	resourcePoolId := apiConfig.ResourcePoolId
+	if resourcePoolId == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config resourcePoolId", id),
@@ -670,8 +694,8 @@ func getCodeAndConfig(
 	var diags diag.Diagnostics
 
 	// Get layout first
-	layout, ok := instance.GetLayoutOk()
-	if !ok {
+	layout := instance.Layout
+	if layout == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get layout", id),
@@ -680,12 +704,14 @@ func getCodeAndConfig(
 		return nil, nil, diags
 	}
 
-	provisionTypeCode, ok := layout.GetProvisionTypeCodeOk()
-	if !ok {
+	provisionTypeCode := layout.ProvisionTypeCode
+	if provisionTypeCode == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get layout provision type code", id),
 		)
+
+		return nil, nil, diags
 	}
 
 	var code string
@@ -694,8 +720,8 @@ func getCodeAndConfig(
 		// If it's a kvm cluster, we need to check the cluster type code to see if it's actually an hvm cluster.
 		// This is because the API returns "kvm" as the provision type code for both kvm and hvm clusters,
 		// and we need to check the cluster type code to differentiate between them.
-		cluster, ok := instance.GetClusterOk()
-		if !ok {
+		cluster := instance.Cluster
+		if cluster == nil {
 			code = kvmCode
 
 			break
@@ -714,8 +740,8 @@ func getCodeAndConfig(
 		code = *provisionTypeCode
 	}
 
-	apiConfig, ok := instance.GetConfigOk()
-	if !ok {
+	apiConfig := instance.Config
+	if apiConfig == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get instance config", id),
@@ -735,8 +761,8 @@ func getClusterCode(
 ) (*string, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	clusterType, ok := cluster.GetTypeOk()
-	if !ok {
+	clusterType := cluster.Type
+	if clusterType == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get cluster type", id),
@@ -745,8 +771,8 @@ func getClusterCode(
 		return nil, diags
 	}
 
-	clusterCode, ok := clusterType.GetCodeOk()
-	if !ok {
+	clusterCode := clusterType.Code
+	if clusterCode == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get cluster type code", id),
@@ -856,7 +882,7 @@ func getInstanceEnvVars(
 	// return nil, diags
 	// }
 
-	return resp.GetEnvs(), diags
+	return resp.Envs, diags
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes
@@ -868,31 +894,31 @@ func getVolumes(
 	diags := diag.Diagnostics{}
 
 	// Get volumes from instance.containerDetails.server.volumes
-	contDetails, ok := instance.GetContainerDetailsOk()
-	if !ok || len(contDetails) == 0 {
+	contDetails := instance.ContainerDetails
+	if len(contDetails) == 0 {
 		diags.AddError(
 			"cannot get instance containerDetails",
-			fmt.Sprintf("instance %d GET containerDetails failed", instance.GetId()),
+			fmt.Sprintf("instance %d GET containerDetails failed", instanceIDValue(instance)),
 		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
 
-	server, ok := contDetails[0].GetServerOk()
-	if !ok {
+	server := contDetails[0].Server
+	if server == nil {
 		diags.AddError(
 			"cannot get instance containerDetails server",
-			fmt.Sprintf("instance %d GET containerDetails.server failed", instance.GetId()),
+			fmt.Sprintf("instance %d GET containerDetails.server failed", instanceIDValue(instance)),
 		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
 
-	serverVolumes, ok := server.GetVolumesOk()
-	if !ok {
+	serverVolumes := server.Volumes
+	if serverVolumes == nil {
 		diags.AddError(
 			"cannot get instance containerDetails server volumes",
-			fmt.Sprintf("instance %d GET containerDetails.server.volumes failed", instance.GetId()),
+			fmt.Sprintf("instance %d GET containerDetails.server.volumes failed", instanceIDValue(instance)),
 		)
 
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
@@ -1192,11 +1218,11 @@ func getConnectionInfo(
 	instance sdk.GetInstance200ResponseInstance,
 ) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	cInfo, ok := instance.GetConnectionInfoOk()
-	if !ok {
+	cInfo := instance.ConnectionInfo
+	if cInfo == nil {
 		diags.AddError(
 			"cannot get instance connectionInfo",
-			fmt.Sprintf("instance %d GET connectionInfo failed", instance.GetId()),
+			fmt.Sprintf("instance %d GET connectionInfo failed", instanceIDValue(instance)),
 		)
 
 		return types.ListNull(types.StringType), diags
@@ -1208,8 +1234,8 @@ func getConnectionInfo(
 
 	var vals []attr.Value
 	for _, c := range cInfo {
-		if ip, ok := c.GetIpOk(); ok {
-			vals = append(vals, types.StringValue(*ip))
+		if c.Ip != nil {
+			vals = append(vals, types.StringValue(*c.Ip))
 		}
 	}
 
@@ -1253,7 +1279,10 @@ func getStateInterfaces(
 		return nil, pd
 	}
 
-	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same
+	// Compare intfsFromServer against intfsFromPlan, to see if the "shapes" are the same.
+	// subnet_id is read back from the server interface itself (see
+	// getStateInterfacesFromInstanceServer / getChildNetworks), so no plan-preservation
+	// is required.
 	if compareServerPlanIntfs(intfsFromServer, intfsFromPlan) {
 		return intfsFromServer, diags
 	}
@@ -1302,11 +1331,11 @@ func getStateInterfacesFromInstance(
 ) ([]NetworkInterfacesValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
-	instIntfs, ok := instance.GetInterfacesOk()
-	if !ok {
+	instIntfs := instance.Interfaces
+	if instIntfs == nil {
 		diags.AddError(
 			"instance GetInterfaces failed",
-			fmt.Sprintf("instance %d GET interfaces failed", instance.GetId()),
+			fmt.Sprintf("instance %d GET interfaces failed", instanceIDValue(instance)),
 		)
 
 		return nil, diags
@@ -1321,22 +1350,23 @@ func getStateInterfacesFromInstance(
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
-		if net, ok := instIntf.GetNetworkOk(); ok {
+		// subnet_id is not recoverable on import: the instance.interfaces list used
+		// here does not include the subnet (only the server-interface read path does).
+		ifaceVal.SubnetId = types.Int64Null()
+		if net := instIntf.Network; net != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
 			ifaceVal.IpPool = types.Int64Null()
-			if pool, ok := net.GetPoolOk(); ok {
+			if pool := net.Pool; pool != nil {
 				ifaceVal.IpPool = convert.Int64ToType(pool.Id)
 			}
 			ifaceVal.NetworkGroupId = convert.Int64ToType(net.Group)
 		}
 		ifaceVal.NetworkTypeId = networkTypeId(instIntf.NetworkInterfaceTypeId)
 		ifaceVal.ChildVirtualNetworks = types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
-		if cnets, ok := instIntf.GetNetworkInterfacesOk(); ok {
-			if len(cnets) > 0 {
-				childNetworks, cd := getInstanceInterfacesChildNetworks(ctx, cnets)
-				ifaceVal.ChildVirtualNetworks = childNetworks
-				diags = append(diags, cd...)
-			}
+		if len(instIntf.NetworkInterfaces) > 0 {
+			childNetworks, cd := getInstanceInterfacesChildNetworks(ctx, instIntf.NetworkInterfaces)
+			ifaceVal.ChildVirtualNetworks = childNetworks
+			diags = append(diags, cd...)
 		}
 		ifaceVal.state = attr.ValueStateKnown
 
@@ -1372,10 +1402,13 @@ func getInstanceInterfacesChildNetworks(
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
-		if net, ok := instIntf.GetNetworkOk(); ok {
+		// subnet_id is not recoverable on import: the instance.interfaces list used
+		// here does not include the subnet (only the server-interface read path does).
+		ifaceVal.SubnetId = types.Int64Null()
+		if net := instIntf.Network; net != nil {
 			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
 			ifaceVal.IpPool = types.Int64Null()
-			if pool, ok := net.GetPoolOk(); ok {
+			if pool := net.Pool; pool != nil {
 				ifaceVal.IpPool = convert.Int64ToType(pool.Id)
 			}
 			ifaceVal.NetworkGroupId = convert.Int64ToType(net.Group)
@@ -1416,14 +1449,21 @@ func getStateInterfacesFromInstanceServer(
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
-		if group, ok := iface.GetNetworkGroupOk(); ok {
-			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
+		if iface.NetworkGroup != nil {
+			ifaceVal.NetworkGroupId = convert.Int64ToType(iface.NetworkGroup.Id)
 		}
-		if pool, ok := iface.GetNetworkPoolOk(); ok {
-			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+		if iface.NetworkPool != nil {
+			ifaceVal.IpPool = convert.Int64ToType(iface.NetworkPool.Id)
 		}
-		if net, ok := iface.GetNetworkOk(); ok {
-			ifaceVal.NetworkId = convert.Int64ToType(net.Id)
+		if iface.Network != nil {
+			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		}
+		// subnet_id is read back from the interface's subnet association. The API
+		// resolves a subnet to its parent network (reported as network_id) but also
+		// returns the subnet itself, so subnet_id round-trips on refresh.
+		ifaceVal.SubnetId = types.Int64Null()
+		if iface.Subnet != nil {
+			ifaceVal.SubnetId = convert.Int64ToType(iface.Subnet.Id)
 		}
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
@@ -1471,15 +1511,18 @@ func getAllServerInterfaces(
 	// Key here is the "UniqueId".  If an interface doesn't have a value for that or for Network then all
 	// it has is an IP address that will be assigned to the interface with the same name (eth0, eth1, etc)
 	for _, container := range instance.ContainerDetails {
-		server, _ := container.GetServerOk()
-		serverIntfList, _ := server.GetInterfacesOk()
+		server := container.Server
+		if server == nil {
+			continue
+		}
+		serverIntfList := server.Interfaces
 		serverIntfsNameMap := make(map[string][]sdk.InstanceContainerServerInterfacesInner1)
 		serverIntfsNameListPosition := make([]string, 0)
 		serverIntfsNameListMap := make(map[string]struct{})
 		serverIntfsMergedNameMap := make(map[string]sdk.InstanceContainerServerInterfacesInner1)
 		for _, serverIntf := range serverIntfList {
 			// Skip this list entry if it doesn't have a name
-			if _, ok := serverIntf.GetNameOk(); !ok {
+			if serverIntf.Name == nil {
 				continue
 			}
 
@@ -1506,15 +1549,15 @@ func getAllServerInterfaces(
 			var cumulativeIntf sdk.InstanceContainerServerInterfacesInner1
 			var ipAddress *string
 			for _, serverIntf := range v {
-				if _, ok := serverIntf.GetNetworkOk(); ok {
+				if serverIntf.Network != nil {
 					cumulativeIntf = serverIntf
 
 					break
 				}
 			}
 			for _, serverIntf := range v {
-				if ip, ok := serverIntf.GetIpAddressOk(); ok {
-					ipAddress = ip
+				if serverIntf.IpAddress != nil {
+					ipAddress = serverIntf.IpAddress
 
 					break
 				}
@@ -1532,15 +1575,22 @@ func getAllServerInterfaces(
 
 	// Build the maps that we're going to return
 	for _, serverInterface := range serverIntfsList {
-		serverIntfsMap[serverInterface.GetId()] = serverInterface
-		if subIntfs, ok := serverInterface.GetInterfacesOk(); ok {
+		if serverInterface.Id == nil {
+			continue
+		}
+
+		serverIntfsMap[*serverInterface.Id] = serverInterface
+		if serverInterface.Interfaces != nil {
 			intfList := make([]int64, 0)
-			for _, subIntf := range subIntfs {
-				intfList = append(intfList, subIntf.GetId())
-				isSubIntf[subIntf.GetId()] = true
+			for _, subIntf := range serverInterface.Interfaces {
+				if subIntf.Id == nil {
+					continue
+				}
+				intfList = append(intfList, *subIntf.Id)
+				isSubIntf[*subIntf.Id] = true
 			}
 			if len(intfList) > 0 {
-				subIntfsMap[serverInterface.GetId()] = intfList
+				subIntfsMap[*serverInterface.Id] = intfList
 			}
 		}
 	}
@@ -1577,13 +1627,19 @@ func getChildNetworks(
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
-		if group, ok := iface.GetNetworkGroupOk(); ok {
-			ifaceVal.NetworkGroupId = convert.Int64ToType(group.Id)
+		if iface.NetworkGroup != nil {
+			ifaceVal.NetworkGroupId = convert.Int64ToType(iface.NetworkGroup.Id)
 		}
-		if pool, ok := iface.GetNetworkPoolOk(); ok {
-			ifaceVal.IpPool = convert.Int64ToType(pool.Id)
+		if iface.NetworkPool != nil {
+			ifaceVal.IpPool = convert.Int64ToType(iface.NetworkPool.Id)
 		}
 		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		// subnet_id round-trips from the interface's subnet association (see
+		// getStateInterfacesFromInstanceServer).
+		ifaceVal.SubnetId = types.Int64Null()
+		if iface.Subnet != nil {
+			ifaceVal.SubnetId = convert.Int64ToType(iface.Subnet.Id)
+		}
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 		ifaceVal.state = attr.ValueStateKnown

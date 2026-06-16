@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -105,8 +106,33 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	pool := result.GetNetworkPool()
-	mapCreateResponseToModel(&plan, &pool)
+	if result.NetworkPool == nil || result.NetworkPool.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "NetworkPool ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.NetworkPool.Id
+
+	readResult, httpResp, err := client.NetworksAPI.GetNetworkPool(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_pool",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.NetworkPool == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&plan, readResult.NetworkPool)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -139,8 +165,13 @@ func (r *networkPoolResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	pool := result.GetNetworkPool()
-	mapReadResponseToModel(&state, &pool)
+	pool := result.NetworkPool
+	if pool == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&state, pool)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -214,8 +245,13 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	pool := readResult.GetNetworkPool()
-	mapReadResponseToModel(&plan, &pool)
+	pool := readResult.NetworkPool
+	if pool == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPool is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&plan, pool)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -258,47 +294,6 @@ func (r *networkPoolResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *networkPoolModel, pool *sdk.CreateNetworkPool200ResponseNetworkPool) {
-	if pool.Id != nil {
-		model.ID = types.Int64Value(*pool.Id)
-	}
-	if pool.Name != nil {
-		model.Name = types.StringValue(*pool.Name)
-	}
-	if pool.IpCount != nil {
-		model.IpCount = types.Int64Value(*pool.IpCount)
-	}
-	if pool.FreeCount != nil {
-		model.FreeCount = types.Int64Value(*pool.FreeCount)
-	}
-	if pool.PoolEnabled != nil {
-		model.PoolEnabled = types.BoolValue(*pool.PoolEnabled)
-	}
-	if pool.DhcpServer != nil {
-		model.DhcpServer = types.BoolValue(*pool.DhcpServer)
-	}
-	if pool.DnsDomain.IsSet() && pool.DnsDomain.Get() != nil {
-		model.DNSDomain = types.StringValue(*pool.DnsDomain.Get())
-	} else {
-		model.DNSDomain = types.StringNull()
-	}
-	if pool.Gateway.IsSet() && pool.Gateway.Get() != nil {
-		model.Gateway = types.StringValue(*pool.Gateway.Get())
-	} else {
-		model.Gateway = types.StringNull()
-	}
-	if pool.Netmask.IsSet() && pool.Netmask.Get() != nil {
-		model.Netmask = types.StringValue(*pool.Netmask.Get())
-	} else {
-		model.Netmask = types.StringNull()
-	}
-	if pool.SubnetAddress.IsSet() && pool.SubnetAddress.Get() != nil {
-		model.SubnetAddress = types.StringValue(*pool.SubnetAddress.Get())
-	} else {
-		model.SubnetAddress = types.StringNull()
-	}
-}
-
 func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) {
 	if pool.Id != nil {
 		model.ID = types.Int64Value(*pool.Id)
@@ -318,26 +313,26 @@ func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200
 	if pool.PoolEnabled != nil {
 		model.PoolEnabled = types.BoolValue(*pool.PoolEnabled)
 	}
-	if v, ok := pool.GetDnsDomainOk(); ok && v != nil {
-		model.DNSDomain = types.StringValue(*v)
+	if pool.DnsDomain.IsSet() && pool.DnsDomain.Get() != nil {
+		model.DNSDomain = types.StringValue(*pool.DnsDomain.Get())
 	} else {
 		model.DNSDomain = types.StringNull()
 	}
 	if pool.DhcpServer != nil {
 		model.DhcpServer = types.BoolValue(*pool.DhcpServer)
 	}
-	if v, ok := pool.GetGatewayOk(); ok && v != nil {
-		model.Gateway = types.StringValue(*v)
+	if pool.Gateway.IsSet() && pool.Gateway.Get() != nil {
+		model.Gateway = types.StringValue(*pool.Gateway.Get())
 	} else {
 		model.Gateway = types.StringNull()
 	}
-	if v, ok := pool.GetNetmaskOk(); ok && v != nil {
-		model.Netmask = types.StringValue(*v)
+	if pool.Netmask.IsSet() && pool.Netmask.Get() != nil {
+		model.Netmask = types.StringValue(*pool.Netmask.Get())
 	} else {
 		model.Netmask = types.StringNull()
 	}
-	if v, ok := pool.GetSubnetAddressOk(); ok && v != nil {
-		model.SubnetAddress = types.StringValue(*v)
+	if pool.SubnetAddress.IsSet() && pool.SubnetAddress.Get() != nil {
+		model.SubnetAddress = types.StringValue(*pool.SubnetAddress.Get())
 	} else {
 		model.SubnetAddress = types.StringNull()
 	}

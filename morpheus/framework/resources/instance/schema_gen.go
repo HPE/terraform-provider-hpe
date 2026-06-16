@@ -447,6 +447,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Validators: []validator.Int64{
 											int64validator.ConflictsWith(path.Expressions{
 												path.MatchRelative().AtParent().AtName("network_id"),
+												path.MatchRelative().AtParent().AtName("subnet_id"),
 											}...),
 										},
 									},
@@ -455,6 +456,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
 										MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.Expressions{
+												path.MatchRelative().AtParent().AtName("network_group_id"),
+												path.MatchRelative().AtParent().AtName("subnet_id"),
+											}...),
+										},
 									},
 									"network_type_id": schema.Int64Attribute{
 										Optional:            true,
@@ -466,6 +473,18 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 										Computed:            true,
 										Description:         "Is this interface the 'primary interface'?",
 										MarkdownDescription: "Is this interface the 'primary interface'?",
+									},
+									"subnet_id": schema.Int64Attribute{
+										Optional:            true,
+										Computed:            true,
+										Description:         "id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.",
+										MarkdownDescription: "id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.",
+										Validators: []validator.Int64{
+											int64validator.ConflictsWith(path.Expressions{
+												path.MatchRelative().AtParent().AtName("network_id"),
+												path.MatchRelative().AtParent().AtName("network_group_id"),
+											}...),
+										},
 									},
 								},
 								CustomType: ChildVirtualNetworksType{
@@ -526,6 +545,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Validators: []validator.Int64{
 								int64validator.ConflictsWith(path.Expressions{
 									path.MatchRelative().AtParent().AtName("network_id"),
+									path.MatchRelative().AtParent().AtName("subnet_id"),
 								}...),
 							},
 						},
@@ -534,6 +554,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "id of the network to be used.  This cannot be used with 'network_group_id'",
 							MarkdownDescription: "id of the network to be used.  This cannot be used with 'network_group_id'",
+							Validators: []validator.Int64{
+								int64validator.ConflictsWith(path.Expressions{
+									path.MatchRelative().AtParent().AtName("network_group_id"),
+									path.MatchRelative().AtParent().AtName("subnet_id"),
+								}...),
+							},
 						},
 						"network_type_id": schema.Int64Attribute{
 							Optional:            true,
@@ -545,6 +571,18 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "Is this interface the 'primary interface'?",
 							MarkdownDescription: "Is this interface the 'primary interface'?",
+						},
+						"subnet_id": schema.Int64Attribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.",
+							MarkdownDescription: "id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.",
+							Validators: []validator.Int64{
+								int64validator.ConflictsWith(path.Expressions{
+									path.MatchRelative().AtParent().AtName("network_id"),
+									path.MatchRelative().AtParent().AtName("network_group_id"),
+								}...),
+							},
 						},
 					},
 					CustomType: NetworkInterfacesType{
@@ -4488,6 +4526,24 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
 	}
 
+	subnetIdAttribute, ok := attributes["subnet_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIdVal, ok := subnetIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_id expected to be basetypes.Int64Value, was: %T`, subnetIdAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -4503,6 +4559,7 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 		NetworkId:            networkIdVal,
 		NetworkTypeId:        networkTypeIdVal,
 		PrimaryInterface:     primaryInterfaceVal,
+		SubnetId:             subnetIdVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -4750,6 +4807,24 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
 	}
 
+	subnetIdAttribute, ok := attributes["subnet_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_id is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	subnetIdVal, ok := subnetIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_id expected to be basetypes.Int64Value, was: %T`, subnetIdAttribute))
+	}
+
 	if diags.HasError() {
 		return NewNetworkInterfacesValueUnknown(), diags
 	}
@@ -4765,6 +4840,7 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 		NetworkId:            networkIdVal,
 		NetworkTypeId:        networkTypeIdVal,
 		PrimaryInterface:     primaryInterfaceVal,
+		SubnetId:             subnetIdVal,
 		state:                attr.ValueStateKnown,
 	}, diags
 }
@@ -4847,11 +4923,12 @@ type NetworkInterfacesValue struct {
 	NetworkId            basetypes.Int64Value  `tfsdk:"network_id"`
 	NetworkTypeId        basetypes.Int64Value  `tfsdk:"network_type_id"`
 	PrimaryInterface     basetypes.BoolValue   `tfsdk:"primary_interface"`
+	SubnetId             basetypes.Int64Value  `tfsdk:"subnet_id"`
 	state                attr.ValueState
 }
 
 func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 11)
 
 	var val tftypes.Value
 	var err error
@@ -4868,12 +4945,13 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 	attrTypes["network_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["network_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["primary_interface"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["subnet_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 11)
 
 		val, err = v.ChildVirtualNetworks.ToTerraformValue(ctx)
 
@@ -4955,6 +5033,14 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 
 		vals["primary_interface"] = val
 
+		val, err = v.SubnetId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_id"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5026,6 +5112,7 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 		"network_id":        basetypes.Int64Type{},
 		"network_type_id":   basetypes.Int64Type{},
 		"primary_interface": basetypes.BoolType{},
+		"subnet_id":         basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -5049,6 +5136,7 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 			"network_id":             v.NetworkId,
 			"network_type_id":        v.NetworkTypeId,
 			"primary_interface":      v.PrimaryInterface,
+			"subnet_id":              v.SubnetId,
 		})
 
 	return objVal, diags
@@ -5109,6 +5197,10 @@ func (v NetworkInterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SubnetId.Equal(other.SubnetId) {
+		return false
+	}
+
 	return true
 }
 
@@ -5134,6 +5226,7 @@ func (v NetworkInterfacesValue) AttributeTypes(ctx context.Context) map[string]a
 		"network_id":        basetypes.Int64Type{},
 		"network_type_id":   basetypes.Int64Type{},
 		"primary_interface": basetypes.BoolType{},
+		"subnet_id":         basetypes.Int64Type{},
 	}
 }
 
@@ -5332,6 +5425,24 @@ func (t ChildVirtualNetworksType) ValueFromObject(ctx context.Context, in basety
 			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
 	}
 
+	subnetIdAttribute, ok := attributes["subnet_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIdVal, ok := subnetIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_id expected to be basetypes.Int64Value, was: %T`, subnetIdAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -5346,6 +5457,7 @@ func (t ChildVirtualNetworksType) ValueFromObject(ctx context.Context, in basety
 		NetworkId:        networkIdVal,
 		NetworkTypeId:    networkTypeIdVal,
 		PrimaryInterface: primaryInterfaceVal,
+		SubnetId:         subnetIdVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -5575,6 +5687,24 @@ func NewChildVirtualNetworksValue(attributeTypes map[string]attr.Type, attribute
 			fmt.Sprintf(`primary_interface expected to be basetypes.BoolValue, was: %T`, primaryInterfaceAttribute))
 	}
 
+	subnetIdAttribute, ok := attributes["subnet_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_id is missing from object`)
+
+		return NewChildVirtualNetworksValueUnknown(), diags
+	}
+
+	subnetIdVal, ok := subnetIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_id expected to be basetypes.Int64Value, was: %T`, subnetIdAttribute))
+	}
+
 	if diags.HasError() {
 		return NewChildVirtualNetworksValueUnknown(), diags
 	}
@@ -5589,6 +5719,7 @@ func NewChildVirtualNetworksValue(attributeTypes map[string]attr.Type, attribute
 		NetworkId:        networkIdVal,
 		NetworkTypeId:    networkTypeIdVal,
 		PrimaryInterface: primaryInterfaceVal,
+		SubnetId:         subnetIdVal,
 		state:            attr.ValueStateKnown,
 	}, diags
 }
@@ -5670,11 +5801,12 @@ type ChildVirtualNetworksValue struct {
 	NetworkId        basetypes.Int64Value  `tfsdk:"network_id"`
 	NetworkTypeId    basetypes.Int64Value  `tfsdk:"network_type_id"`
 	PrimaryInterface basetypes.BoolValue   `tfsdk:"primary_interface"`
+	SubnetId         basetypes.Int64Value  `tfsdk:"subnet_id"`
 	state            attr.ValueState
 }
 
 func (v ChildVirtualNetworksValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 9)
+	attrTypes := make(map[string]tftypes.Type, 10)
 
 	var val tftypes.Value
 	var err error
@@ -5688,12 +5820,13 @@ func (v ChildVirtualNetworksValue) ToTerraformValue(ctx context.Context) (tftype
 	attrTypes["network_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["network_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["primary_interface"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["subnet_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 9)
+		vals := make(map[string]tftypes.Value, 10)
 
 		val, err = v.Id.ToTerraformValue(ctx)
 
@@ -5767,6 +5900,14 @@ func (v ChildVirtualNetworksValue) ToTerraformValue(ctx context.Context) (tftype
 
 		vals["primary_interface"] = val
 
+		val, err = v.SubnetId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_id"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5806,6 +5947,7 @@ func (v ChildVirtualNetworksValue) ToObjectValue(ctx context.Context) (basetypes
 		"network_id":        basetypes.Int64Type{},
 		"network_type_id":   basetypes.Int64Type{},
 		"primary_interface": basetypes.BoolType{},
+		"subnet_id":         basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -5828,6 +5970,7 @@ func (v ChildVirtualNetworksValue) ToObjectValue(ctx context.Context) (basetypes
 			"network_id":        v.NetworkId,
 			"network_type_id":   v.NetworkTypeId,
 			"primary_interface": v.PrimaryInterface,
+			"subnet_id":         v.SubnetId,
 		})
 
 	return objVal, diags
@@ -5884,6 +6027,10 @@ func (v ChildVirtualNetworksValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SubnetId.Equal(other.SubnetId) {
+		return false
+	}
+
 	return true
 }
 
@@ -5906,6 +6053,7 @@ func (v ChildVirtualNetworksValue) AttributeTypes(ctx context.Context) map[strin
 		"network_id":        basetypes.Int64Type{},
 		"network_type_id":   basetypes.Int64Type{},
 		"primary_interface": basetypes.BoolType{},
+		"subnet_id":         basetypes.Int64Type{},
 	}
 }
 

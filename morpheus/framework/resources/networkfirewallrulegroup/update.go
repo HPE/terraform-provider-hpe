@@ -38,24 +38,28 @@ func (r *Resource) Update(
 	id := currentState.Id.ValueInt64()
 	serverID := currentState.NetworkIntegrationId.ValueInt64()
 
-	ruleGroup := sdk.NewUpdateNetworkFirewallRuleGroupRequestRuleGroupWithDefaults()
-
-	ruleGroup.SetName(plan.Name.ValueString())
+	name := plan.Name.ValueString()
+	ruleGroup := &sdk.UpdateNetworkFirewallRuleGroupRequestRuleGroup{
+		Name: &name,
+	}
 
 	if plan.Description.IsNull() {
-		ruleGroup.SetDescriptionNil()
+		ruleGroup.Description.Set(nil)
 	} else if !plan.Description.IsUnknown() {
-		ruleGroup.SetDescription(plan.Description.ValueString())
+		desc := plan.Description.ValueString()
+		ruleGroup.Description.Set(&desc)
 	}
 
 	if plan.Priority.IsNull() {
-		ruleGroup.SetPriorityNil()
+		ruleGroup.Priority.Set(nil)
 	} else if !plan.Priority.IsUnknown() {
-		ruleGroup.SetPriority(plan.Priority.ValueInt64())
+		priority := plan.Priority.ValueInt64()
+		ruleGroup.Priority.Set(&priority)
 	}
 
-	updateReq := sdk.NewUpdateNetworkFirewallRuleGroupRequestWithDefaults()
-	updateReq.SetRuleGroup(*ruleGroup)
+	updateReq := &sdk.UpdateNetworkFirewallRuleGroupRequest{
+		RuleGroup: ruleGroup,
+	}
 
 	_, httpResp, err := client.NetworksAPI.
 		UpdateNetworkFirewallRuleGroup(ctx, id, serverID).

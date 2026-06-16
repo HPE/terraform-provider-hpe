@@ -28,7 +28,7 @@ func (r *Resource) Create(
 	}
 
 	name := plan.Name.ValueString()
-	addPolicy := sdk.NewAddPoliciesRequestPolicyWithDefaults()
+	addPolicy := &sdk.AddPoliciesRequestPolicy{}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -41,38 +41,38 @@ func (r *Resource) Create(
 	}
 
 	// Set required fields
-	addPolicy.SetName(name)
+	addPolicy.Name = name
 
 	policyTypeCode := plan.PolicyType.Code.ValueString()
-	policyType := sdk.NewAddPoliciesRequestPolicyPolicyTypeWithDefaults()
-	policyType.SetCode(policyTypeCode)
-	addPolicy.SetPolicyType(*policyType)
+	policyType := &sdk.AddPoliciesRequestPolicyPolicyType{}
+	policyType.Code = sdk.PtrString(policyTypeCode)
+	addPolicy.PolicyType = *policyType
 
 	// When associated_resource_type is "Global", leave refType null (null defaults to Global)
 	associatedResourceType := plan.AssociatedResourceType.ValueString()
 	if associatedResourceType != AssociatedResourceTypeGlobal {
 		// Convert user-facing resource type to API type
 		apiType := resourceTypeToAPIType(associatedResourceType)
-		addPolicy.SetRefType(apiType)
+		addPolicy.RefType.Set(sdk.PtrString(apiType))
 	}
 
 	// Set AssociatedResourceId if provided - required when RefType is not Global
 	// This is validated in ValidateConfig
 	if !plan.AssociatedResourceId.IsNull() && !plan.AssociatedResourceId.IsUnknown() {
-		addPolicy.SetRefId(plan.AssociatedResourceId.ValueInt64())
+		addPolicy.RefId = plan.AssociatedResourceId.ValueInt64Pointer()
 	}
 
 	// Set optional fields
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		addPolicy.SetDescription(plan.Description.ValueString())
+		addPolicy.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		addPolicy.SetEnabled(plan.Enabled.ValueBool())
+		addPolicy.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.EachUser.IsNull() && !plan.EachUser.IsUnknown() {
-		addPolicy.SetEachUser(plan.EachUser.ValueBool())
+		addPolicy.EachUser = plan.EachUser.ValueBoolPointer()
 	}
 
 	// Set tenant IDs if provided
@@ -84,7 +84,7 @@ func (r *Resource) Create(
 
 			return
 		}
-		addPolicy.SetAccounts(tenantIDs)
+		addPolicy.Accounts = tenantIDs
 	}
 
 	// Set Config - convert state config fields to SDK config structure
@@ -95,10 +95,10 @@ func (r *Resource) Create(
 		return
 	}
 	if sdkConfig != nil {
-		addPolicy.SetConfig(*sdkConfig)
+		addPolicy.Config = *sdkConfig
 	}
 
-	addPolicyRequest := sdk.NewAddPoliciesRequest(*addPolicy)
+	addPolicyRequest := &sdk.AddPoliciesRequest{Policy: *addPolicy}
 
 	policy, hresp, err := client.PoliciesAPI.AddPolicies(ctx).AddPoliciesRequest(*addPolicyRequest).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {

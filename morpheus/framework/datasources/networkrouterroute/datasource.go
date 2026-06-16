@@ -104,9 +104,7 @@ func getRouteByID(
 		)
 	}
 
-	route := r.GetNetworkRoute()
-
-	return &route, nil
+	return r.NetworkRoute, nil
 }
 
 func getRouteByName(
@@ -125,7 +123,7 @@ func getRouteByName(
 		)
 	}
 
-	items := rs.GetNetworkRoutes()
+	items := rs.NetworkRoutes
 	if len(items) == 0 {
 		return nil, errors.New(ErrorNoNetworkRouterRouteFound)
 	}
@@ -133,11 +131,14 @@ func getRouteByName(
 	var matchedIDs []int64
 
 	for i := range items {
-		if items[i].GetName() != name {
+		if items[i].Name == nil || *items[i].Name != name {
+			continue
+		}
+		if items[i].Id == nil {
 			continue
 		}
 
-		matchedIDs = append(matchedIDs, items[i].GetId())
+		matchedIDs = append(matchedIDs, *items[i].Id)
 	}
 
 	if len(matchedIDs) == 0 {

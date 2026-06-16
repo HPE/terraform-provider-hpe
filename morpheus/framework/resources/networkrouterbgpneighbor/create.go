@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -30,6 +31,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	// password_wo is a write-only attribute: its value is only present in the
+	// configuration, never in the plan or state. Read it from req.Config.
+	var passwordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("password_wo"), &passwordWo)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -42,82 +53,80 @@ func (r *Resource) Create(
 
 	routerID := plan.RouterId.ValueInt64()
 
-	neighbor := sdk.NewCreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor(
-		plan.IpAddress.ValueString(),
-	)
+	neighbor := &sdk.CreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor{
+		IpAddress: plan.IpAddress.ValueString(),
+	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		neighbor.SetDescription(plan.Description.ValueString())
+		neighbor.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.ForwardingAddress.IsNull() && !plan.ForwardingAddress.IsUnknown() {
-		neighbor.SetForwardingAddress(plan.ForwardingAddress.ValueString())
+		neighbor.ForwardingAddress = plan.ForwardingAddress.ValueStringPointer()
 	}
 
 	if !plan.ProtocolAddress.IsNull() && !plan.ProtocolAddress.IsUnknown() {
-		neighbor.SetProtocolAddress(plan.ProtocolAddress.ValueString())
+		neighbor.ProtocolAddress = plan.ProtocolAddress.ValueStringPointer()
 	}
 
 	if !plan.RemoteAs.IsNull() && !plan.RemoteAs.IsUnknown() {
-		neighbor.SetRemoteAs(plan.RemoteAs.ValueString())
+		neighbor.RemoteAs = plan.RemoteAs.ValueStringPointer()
 	}
 
 	if !plan.Weight.IsNull() && !plan.Weight.IsUnknown() {
-		neighbor.SetWeight(plan.Weight.ValueInt64())
+		neighbor.Weight = plan.Weight.ValueInt64Pointer()
 	}
 
 	if !plan.KeepAlive.IsNull() && !plan.KeepAlive.IsUnknown() {
-		neighbor.SetKeepAlive(plan.KeepAlive.ValueInt64())
+		neighbor.KeepAlive = plan.KeepAlive.ValueInt64Pointer()
 	}
 
 	if !plan.HoldDown.IsNull() && !plan.HoldDown.IsUnknown() {
-		neighbor.SetHoldDown(plan.HoldDown.ValueInt64())
+		neighbor.HoldDown = plan.HoldDown.ValueInt64Pointer()
 	}
 
-	if !plan.PasswordWo.IsNull() && !plan.PasswordWo.IsUnknown() {
-		neighbor.SetPassword(plan.PasswordWo.ValueString())
+	if !passwordWo.IsNull() && !passwordWo.IsUnknown() {
+		neighbor.Password = passwordWo.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringType.IsNull() && !plan.RouteFilteringType.IsUnknown() {
-		neighbor.SetRouteFilteringType(plan.RouteFilteringType.ValueString())
+		neighbor.RouteFilteringType = plan.RouteFilteringType.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringIn.IsNull() && !plan.RouteFilteringIn.IsUnknown() {
-		neighbor.SetRouteFilteringIn(plan.RouteFilteringIn.ValueString())
+		neighbor.RouteFilteringIn = plan.RouteFilteringIn.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringOut.IsNull() && !plan.RouteFilteringOut.IsUnknown() {
-		neighbor.SetRouteFilteringOut(plan.RouteFilteringOut.ValueString())
+		neighbor.RouteFilteringOut = plan.RouteFilteringOut.ValueStringPointer()
 	}
 
 	if !plan.BfdEnabled.IsNull() && !plan.BfdEnabled.IsUnknown() {
 		bfdVal := sdk.CreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborBfdEnabled{}
-		boolVal := plan.BfdEnabled.ValueBool()
-		bfdVal.Bool = &boolVal
-		neighbor.SetBfdEnabled(bfdVal)
+		bfdVal.Bool = plan.BfdEnabled.ValueBoolPointer()
+		neighbor.BfdEnabled = &bfdVal
 	}
 
 	if !plan.BfdInterval.IsNull() && !plan.BfdInterval.IsUnknown() {
-		neighbor.SetBfdInterval(plan.BfdInterval.ValueInt64())
+		neighbor.BfdInterval = plan.BfdInterval.ValueInt64Pointer()
 	}
 
 	if !plan.BfdMultiple.IsNull() && !plan.BfdMultiple.IsUnknown() {
-		neighbor.SetBfdMultiple(plan.BfdMultiple.ValueInt64())
+		neighbor.BfdMultiple = plan.BfdMultiple.ValueInt64Pointer()
 	}
 
 	if !plan.AllowAsIn.IsNull() && !plan.AllowAsIn.IsUnknown() {
 		allowVal := sdk.CreateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborAllowAsIn{}
-		boolVal := plan.AllowAsIn.ValueBool()
-		allowVal.Bool = &boolVal
-		neighbor.SetAllowAsIn(allowVal)
+		allowVal.Bool = plan.AllowAsIn.ValueBoolPointer()
+		neighbor.AllowAsIn = &allowVal
 	}
 
 	if !plan.HopLimit.IsNull() && !plan.HopLimit.IsUnknown() {
-		neighbor.SetHopLimit(plan.HopLimit.ValueInt64())
+		neighbor.HopLimit = plan.HopLimit.ValueInt64Pointer()
 	}
 
 	if !plan.RestartMode.IsNull() && !plan.RestartMode.IsUnknown() {
-		neighbor.SetRestartMode(plan.RestartMode.ValueString())
+		neighbor.RestartMode = plan.RestartMode.ValueStringPointer()
 	}
 
 	config := buildCreateConfig(ctx, plan, resp)
@@ -126,11 +135,11 @@ func (r *Resource) Create(
 	}
 
 	if config != nil {
-		neighbor.SetConfig(*config)
+		neighbor.Config = config
 	}
 
-	createReq := sdk.NewCreateNetworkRouterBgpNeighborRequest()
-	createReq.SetNetworkRouterBgpNeighbor(*neighbor)
+	createReq := &sdk.CreateNetworkRouterBgpNeighborRequest{}
+	createReq.NetworkRouterBgpNeighbor = neighbor
 
 	result, hresp, err := client.NetworksAPI.
 		CreateNetworkRouterBgpNeighbor(ctx, routerID).
@@ -145,7 +154,17 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	idPtr := result.Id.Get()
+	if idPtr == nil {
+		resp.Diagnostics.AddError(
+			createOperation,
+			fmt.Sprintf("router %d bgp neighbor POST succeeded but response id was missing", routerID),
+		)
+
+		return
+	}
+
+	id := *idPtr
 	plan.Id = types.Int64Value(id)
 
 	taintResourceState := func(id int64) {
@@ -190,7 +209,7 @@ func buildCreateConfig(
 
 	switch {
 	case !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown():
-		nsxtConfig := sdk.NewNSXTBGPNeighborConfig1()
+		nsxtConfig := &sdk.NSXTBGPNeighborConfig1{}
 
 		if !plan.ConfigNsxt.SourceAddresses.IsNull() &&
 			!plan.ConfigNsxt.SourceAddresses.IsUnknown() {
@@ -208,22 +227,22 @@ func buildCreateConfig(
 				}
 			}
 
-			nsxtConfig.SetSourceAddresses(strAddrs)
+			nsxtConfig.SourceAddresses = strAddrs
 		}
 
 		config.NSXTBGPNeighborConfig1 = nsxtConfig
 
 	case !plan.ConfigNsxv.IsNull() && !plan.ConfigNsxv.IsUnknown():
-		nsxvConfig := sdk.NewNSXVBGPNeighborConfig1()
+		nsxvConfig := &sdk.NSXVBGPNeighborConfig1{}
 
 		if !plan.ConfigNsxv.RouterId.IsNull() &&
 			!plan.ConfigNsxv.RouterId.IsUnknown() {
-			nsxvConfig.SetRouterId(plan.ConfigNsxv.RouterId.ValueString())
+			nsxvConfig.RouterId = plan.ConfigNsxv.RouterId.ValueStringPointer()
 		}
 
 		if !plan.ConfigNsxv.Interface.IsNull() &&
 			!plan.ConfigNsxv.Interface.IsUnknown() {
-			nsxvConfig.SetInterface(plan.ConfigNsxv.Interface.ValueString())
+			nsxvConfig.Interface = plan.ConfigNsxv.Interface.ValueStringPointer()
 		}
 
 		config.NSXVBGPNeighborConfig1 = nsxvConfig

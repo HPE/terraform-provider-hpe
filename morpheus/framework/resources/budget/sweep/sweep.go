@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -14,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_budget"
@@ -32,11 +32,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetBudgets(), hresp, err
+			return getsafe.Get(&resp.Budgets), hresp, err
 		},
 		// Is this a test budget?
 		func(item sdk.ListBudgets200ResponseAllOfBudgetsInner) bool {
-			name, ok := item.GetNameOk()
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -49,7 +49,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListBudgets200ResponseAllOfBudgetsInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}

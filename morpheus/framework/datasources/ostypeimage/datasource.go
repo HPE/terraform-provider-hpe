@@ -83,7 +83,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	osType := osTypeResp.GetOsType()
+	osType := osTypeResp.OsType
 
 	virtualImageName := data.VirtualImageName.ValueString()
 
@@ -91,14 +91,18 @@ func (d *DataSource) Read(
 	// if multiple images have the same virtual_image_name
 	var matchedSystemImageID int64
 	var matchedTenantImageID int64
-	for _, img := range osType.GetImages() {
-		if img.GetVirtualImageName() == virtualImageName && img.GetAccount() > 0 {
-			matchedTenantImageID = img.GetId()
+	for _, img := range osType.Images {
+		if img.VirtualImageName == nil || img.Id == nil || *img.VirtualImageName != virtualImageName {
+			continue
+		}
+
+		if account := img.Account.Get(); account != nil && *account > 0 {
+			matchedTenantImageID = *img.Id
 
 			break
-		} else if img.GetVirtualImageName() == virtualImageName {
-			matchedSystemImageID = img.GetId()
 		}
+
+		matchedSystemImageID = *img.Id
 	}
 
 	if matchedSystemImageID == 0 && matchedTenantImageID == 0 {
@@ -129,27 +133,34 @@ func (d *DataSource) Read(
 		return
 	}
 
-	img := imgResp.GetOsTypeImage()
+	img := imgResp.OsTypeImage
+	if img == nil {
+		resp.Diagnostics.AddError("API returned nil", "OsTypeImage is nil in the response")
+
+		return
+	}
 
 	data.Id = convert.Int64ToType(img.Id)
 	data.VirtualImageId = convert.Int64ToType(img.VirtualImageId)
 	data.VirtualImageName = types.StringValue(virtualImageName)
 	data.OsTypeId = types.Int64Value(osTypeID)
 
-	if img.Zone.IsSet() {
-		data.CloudId = types.Int64Value(img.GetZone())
+	if zone := img.Zone.Get(); zone != nil {
+		data.CloudId = types.Int64Value(*zone)
 	}
 
-	if img.ComputeZoneType.IsSet() {
-		data.CloudTypeId = types.Int64Value(img.GetComputeZoneType())
+	if computeZoneType := img.ComputeZoneType.Get(); computeZoneType != nil {
+		data.CloudTypeId = types.Int64Value(*computeZoneType)
 	}
 
-	if img.ProvisionType.IsSet() {
-		data.ProvisionTypeId = types.Int64Value(img.GetProvisionType())
+	if provisionType := img.ProvisionType.Get(); provisionType != nil {
+		data.ProvisionTypeId = types.Int64Value(*provisionType)
 	}
 
-	if img.Account.IsSet() {
-		data.TenantId = types.Int64Value(img.GetAccount())
+	if account := img.Account.Get(); account != nil {
+		data.TenantId = types.Int64Value(*account)
+	} else {
+		data.TenantId = types.Int64Value(0)
 	}
 
 	diags = resp.State.Set(ctx, &data)

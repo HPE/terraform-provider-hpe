@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -33,19 +34,24 @@ func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	routerID := os.Getenv("TF_ACC_MORPHEUS_ROUTER_ID")
-	if routerID == "" {
-		t.Skip("TF_ACC_MORPHEUS_ROUTER_ID not set")
-	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_route.example"
 
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resourceConfig, err := network_router_route.RenderNetworkRouterRouteConfig(t, map[string]string{
-		"RouterId": routerID,
+		"RouterId": "hpe_morpheus_network_router.example.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -53,7 +59,7 @@ func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
@@ -68,11 +74,11 @@ func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + routerConfig + resourceConfig,
 				Check:  checks,
 			},
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + routerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
@@ -104,19 +110,24 @@ func TestAccMorpheusNetworkRouterRouteResourceUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	routerID := os.Getenv("TF_ACC_MORPHEUS_ROUTER_ID")
-	if routerID == "" {
-		t.Skip("TF_ACC_MORPHEUS_ROUTER_ID not set")
-	}
-
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_route.example"
 
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	createConfig, err := network_router_route.RenderNetworkRouterRouteConfig(t, map[string]string{
-		"RouterId": routerID,
+		"RouterId": "hpe_morpheus_network_router.example.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -125,7 +136,7 @@ func TestAccMorpheusNetworkRouterRouteResourceUpdateOk(t *testing.T) {
 
 	updateConfig := `
 resource "hpe_morpheus_network_router_route" "example" {
-  router_id     = ` + routerID + `
+  router_id     = hpe_morpheus_network_router.example.id
   name          = "` + name + `"
   source        = "10.0.0.0/24"
   destination   = "10.0.0.1"
@@ -137,7 +148,7 @@ resource "hpe_morpheus_network_router_route" "example" {
 `
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
@@ -148,7 +159,7 @@ resource "hpe_morpheus_network_router_route" "example" {
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttr(resourceName, "router_id", routerID),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
@@ -158,18 +169,20 @@ resource "hpe_morpheus_network_router_route" "example" {
 		resource.TestCheckResourceAttr(resourceName, "default_route", "false"),
 	)
 
-	checkInPlaceUpdate := resource.ConfigPlanChecks{
+	// The route resource is replace-only: its Update is not supported, so any
+	// attribute change forces destroy-and-recreate.
+	checkReplace := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
 		},
 	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
-			{Config: providerConfig + createConfig, Check: createChecks},
-			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
-			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkReplace},
+			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
 }

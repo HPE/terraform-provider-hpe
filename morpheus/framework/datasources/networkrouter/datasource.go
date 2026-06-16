@@ -248,7 +248,7 @@ func setInterfacesState(
 		return nil
 	}
 
-	ifaceValues := make([]attr.Value, 0, len(router.Interfaces))
+	ifaceValues := make([]InterfacesValue, 0, len(router.Interfaces))
 
 	for _, iface := range router.Interfaces {
 		iv, diags := NewInterfacesValue(
@@ -263,15 +263,10 @@ func setInterfacesState(
 			return fmt.Errorf("error creating interface value")
 		}
 
-		objVal, diags := iv.ToObjectValue(ctx)
-		if diags.HasError() {
-			return fmt.Errorf("error converting interface to object")
-		}
-
-		ifaceValues = append(ifaceValues, objVal)
+		ifaceValues = append(ifaceValues, iv)
 	}
 
-	setVal, diags := types.SetValue(InterfacesValue{}.Type(ctx), ifaceValues)
+	setVal, diags := types.SetValueFrom(ctx, InterfacesValue{}.Type(ctx), ifaceValues)
 	if diags.HasError() {
 		return fmt.Errorf("error creating interfaces set")
 	}
@@ -294,7 +289,11 @@ func getNetworkRouterByID(
 		)
 	}
 
-	router := r.GetNetworkRouter()
+	if r.NetworkRouter == nil {
+		return nil, fmt.Errorf("GET failed for network router %d: missing networkRouter payload", id)
+	}
+
+	router := *r.NetworkRouter
 
 	return &router, nil
 }
@@ -312,7 +311,7 @@ func getNetworkRouterByName(
 		)
 	}
 
-	raw, err := json.Marshal(rs.GetNetworkRouters())
+	raw, err := json.Marshal(rs.NetworkRouters)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling network routers list: %w", err)
 	}

@@ -55,12 +55,15 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	body := sdk.NewCreateSubnetRequestSubnetWithDefaults()
+	body := &sdk.CreateSubnetRequestSubnet{}
 	body.Type = &sdk.CreateSubnetRequestSubnetType{
 		Id: plan.TypeId.ValueInt64Pointer(),
 	}
 	body.NetworkId = plan.NetworkId.ValueInt64Pointer()
 
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		body.Name = plan.Name.ValueStringPointer()
+	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
@@ -105,8 +108,15 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 		body.Tenants = tenants
 	}
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configValue := plan.Config.UnderlyingValue()
+	// config is a write-only attribute, so its value is null in the plan; it must
+	// be read from the request config instead.
+	var configWO types.Dynamic
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("config"), &configWO)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if !configWO.IsNull() && !configWO.IsUnknown() {
+		configValue := configWO.UnderlyingValue()
 		configAny, err := convert.ValueToAny(ctx, configValue)
 		if err != nil {
 			resp.Diagnostics.AddError(
@@ -161,7 +171,12 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	subnet := result.GetSubnet()
+	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
 	if subnet.Id == nil {
 		resp.Diagnostics.AddError("create subnet resource", "API returned a subnet with no ID")
 
@@ -188,8 +203,14 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	readSubnet := readResult.GetSubnet()
-	mapResponseToModel(&plan, &readSubnet)
+	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
+	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -222,8 +243,13 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	subnet := result.GetSubnet()
-	mapResponseToModel(&state, &subnet)
+	subnet := result.Subnet
+	if subnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&state, subnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -244,8 +270,11 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
-	body := sdk.NewUpdateSubnetRequestSubnetWithDefaults()
+	body := &sdk.UpdateSubnetRequestSubnet{}
 
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		body.Name = plan.Name.ValueStringPointer()
+	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
@@ -334,8 +363,14 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	readSubnet := readResult.GetSubnet()
-	mapResponseToModel(&plan, &readSubnet)
+	readSubnet := readResult.Subnet
+	if readSubnet == nil {
+		resp.Diagnostics.AddError("API returned nil", "Subnet is nil in the response")
+
+		return
+	}
+
+	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -432,9 +467,16 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 	} else {
 		model.CloudId = types.Int64Null()
 	}
-	if subnet.Labels != nil {
+	// labels is Optional-only (not Computed): the applied value must equal the
+	// config value. The API returns a non-nil empty slice when no labels are
+	// set, so guarding on len (not nil) and falling back to null keeps a null
+	// plan consistent with the response (avoids "inconsistent result after
+	// apply: .labels was null, but now cty.SetValEmpty").
+	if len(subnet.Labels) > 0 {
 		labels, _ := types.SetValueFrom(context.Background(), types.StringType, subnet.Labels)
 		model.Labels = labels
+	} else {
+		model.Labels = types.SetNull(types.StringType)
 	}
 
 	// Tenants — intentionally not updated from the API response.

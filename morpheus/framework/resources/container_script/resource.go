@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -118,8 +119,8 @@ func (r *containerScriptResource) Create(
 	// Extract ID from response — SDK may not deserialize correctly due to account field mismatch
 	var scriptID int64
 	if result != nil {
-		script := result.GetContainerScript()
-		if script.Id != nil {
+		script := result.ContainerScript
+		if script != nil && script.Id != nil {
 			scriptID = *script.Id
 		}
 	}
@@ -144,6 +145,12 @@ func (r *containerScriptResource) Create(
 	// Read back the full resource
 	if err := readScriptIntoModel(ctx, client, scriptID, &plan, &resp.Diagnostics); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "container_script", plan.Name.ValueString(), err, nil)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "container_script",
+			ResourceID:   scriptID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
@@ -325,8 +332,8 @@ func mapGetResponseToModel(
 	} else {
 		model.Labels = types.ListNull(types.StringType)
 	}
-	if v, ok := script.GetCategoryOk(); ok && v != nil {
-		model.Category = types.StringValue(*v)
+	if script.Category.IsSet() && script.Category.Get() != nil {
+		model.Category = types.StringValue(*script.Category.Get())
 	} else {
 		model.Category = types.StringNull()
 	}
@@ -344,8 +351,8 @@ func mapGetResponseToModel(
 	} else {
 		model.Script = types.StringNull()
 	}
-	if v, ok := script.GetRunAsUserOk(); ok && v != nil {
-		model.RunAsUser = types.StringValue(*v)
+	if script.RunAsUser.IsSet() && script.RunAsUser.Get() != nil {
+		model.RunAsUser = types.StringValue(*script.RunAsUser.Get())
 	} else {
 		model.RunAsUser = types.StringNull()
 	}
@@ -374,10 +381,12 @@ func readScriptIntoModel(
 
 	// If SDK deserialization succeeded, use typed response
 	if err == nil && result != nil {
-		script := result.GetContainerScript()
-		mapGetResponseToModel(ctx, model, &script, diags)
+		script := result.ContainerScript
+		if script != nil {
+			mapGetResponseToModel(ctx, model, script, diags)
 
-		return nil
+			return nil
+		}
 	}
 
 	// SDK deserialization failed (likely due to 'account' field type mismatch).

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -70,8 +71,33 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapAddResponseToModel(&plan, &dep)
+	if result.Deployment == nil || result.Deployment.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Deployment ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Deployment.Id
+
+	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "deployment", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "deployment",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Deployment == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Deployment)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -104,8 +130,13 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapGetResponseToModel(&state, &dep)
+	dep := result.Deployment
+	if dep == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, dep)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -133,7 +164,7 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
+	_, httpResp, err := client.DeploymentsAPI.UpdateDeployment(ctx, id).
 		UpdateDeploymentRequest(sdk.UpdateDeploymentRequest{
 			Deployment: &body,
 		}).Execute()
@@ -143,8 +174,19 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	dep := result.GetDeployment()
-	mapUpdateResponseToModel(&plan, &dep)
+	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "deployment", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.Deployment == nil {
+		resp.Diagnostics.AddError("API returned nil", "Deployment is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Deployment)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -187,35 +229,7 @@ func (r *deploymentResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *deploymentModel, dep *sdk.AddDeployments200ResponseAllOfDeployment) {
-	if dep.Id != nil {
-		model.ID = types.Int64Value(*dep.Id)
-	}
-	if dep.Name != nil {
-		model.Name = types.StringValue(*dep.Name)
-	}
-	if dep.Description != nil {
-		model.Description = types.StringValue(*dep.Description)
-	} else {
-		model.Description = types.StringNull()
-	}
-}
-
 func mapGetResponseToModel(model *deploymentModel, dep *sdk.GetDeployment200ResponseDeployment) {
-	if dep.Id != nil {
-		model.ID = types.Int64Value(*dep.Id)
-	}
-	if dep.Name != nil {
-		model.Name = types.StringValue(*dep.Name)
-	}
-	if dep.Description != nil {
-		model.Description = types.StringValue(*dep.Description)
-	} else {
-		model.Description = types.StringNull()
-	}
-}
-
-func mapUpdateResponseToModel(model *deploymentModel, dep *sdk.UpdateDeployment200ResponseAllOfDeployment) {
 	if dep.Id != nil {
 		model.ID = types.Int64Value(*dep.Id)
 	}

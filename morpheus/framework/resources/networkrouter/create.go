@@ -44,14 +44,13 @@ func (r *Resource) Create(
 
 	name := plan.Name.ValueString()
 
-	router := sdk.NewCreateNetworkRouterRequestNetworkRouterWithDefaults()
-	router.SetName(name)
+	router := &sdk.CreateNetworkRouterRequestNetworkRouter{}
+	router.Name = name
 
 	// Set type (required)
 	switch {
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
-		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(plan.TypeId.ValueInt64())
-		router.SetType(*routerType)
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: plan.TypeId.ValueInt64()}
 	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
 		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier0Gateway)
 		if err != nil {
@@ -62,8 +61,7 @@ func (r *Resource) Create(
 
 			return
 		}
-		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(*typeId)
-		router.SetType(*routerType)
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
 
 	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
 		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier1Gateway)
@@ -75,34 +73,40 @@ func (r *Resource) Create(
 
 			return
 		}
-		routerType := sdk.NewCreateNetworkRouterRequestNetworkRouterType(*typeId)
-		router.SetType(*routerType)
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
 	}
 
 	// Set site (group_id)
 	groupID := plan.GroupId.ValueInt64()
-	site := sdk.NewCreateNetworkRouterRequestNetworkRouterSite(
-		sdk.Int64AsCreateNetworkRouterRequestNetworkRouterSiteId(&groupID),
-	)
-	router.SetSite(*site)
+	router.Site = sdk.CreateNetworkRouterRequestNetworkRouterSite{
+		Id: sdk.CreateNetworkRouterRequestNetworkRouterSiteId{Int64: &groupID},
+	}
 
 	// Set enabled
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		router.SetEnabled(plan.Enabled.ValueBool())
+		router.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+
+	// Set enable_bgp. The API stores this on the router (and syncs it from the
+	// gateway BGP config), so it must be sent at create time; otherwise the API
+	// defaults it to false and the GET read-back conflicts with a plan that set
+	// enable_bgp = true ("inconsistent result after apply").
+	if !plan.EnableBgp.IsNull() && !plan.EnableBgp.IsUnknown() {
+		router.EnableBgp = plan.EnableBgp.ValueBoolPointer()
 	}
 
 	// Set zone (cloud_id) if provided
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
-		zone := sdk.NewCreateNetworkRouterRequestNetworkRouterZoneWithDefaults()
-		zone.SetId(plan.CloudId.ValueInt64())
-		router.SetZone(*zone)
+		router.Zone = &sdk.CreateNetworkRouterRequestNetworkRouterZone{
+			Id: plan.CloudId.ValueInt64(),
+		}
 	}
 
 	// Set networkServer (network_integration_id) if provided
 	if !plan.NetworkIntegrationId.IsNull() && !plan.NetworkIntegrationId.IsUnknown() {
-		ns := sdk.NewCreateNetworkRouterRequestNetworkRouterNetworkServerWithDefaults()
-		ns.SetId(plan.NetworkIntegrationId.ValueInt64())
-		router.SetNetworkServer(*ns)
+		router.NetworkServer = &sdk.CreateNetworkRouterRequestNetworkRouterNetworkServer{
+			Id: plan.NetworkIntegrationId.ValueInt64(),
+		}
 	}
 
 	// Set config from the dynamic config attribute or typed config blocks
@@ -113,11 +117,11 @@ func (r *Resource) Create(
 	}
 
 	if routerConfig != nil {
-		router.SetConfig(*routerConfig)
+		router.Config = routerConfig
 	}
 
-	createReq := sdk.NewCreateNetworkRouterRequestWithDefaults()
-	createReq.SetNetworkRouter(*router)
+	createReq := &sdk.CreateNetworkRouterRequest{}
+	createReq.NetworkRouter = router
 
 	result, hresp, err := client.NetworksAPI.CreateNetworkRouter(ctx).
 		CreateNetworkRouterRequest(*createReq).Execute()
@@ -131,7 +135,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	if !result.IsSetId() || result.GetId() == 0 {
+	if !result.Id.IsSet() || result.Id.Get() == nil || *result.Id.Get() == 0 {
 		resp.Diagnostics.AddError(
 			createOperation,
 			"network router "+name+": id is nil or zero",
@@ -140,7 +144,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
 	taintResourceState := func(id int64) {
@@ -242,14 +246,13 @@ func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*i
 		)
 	}
 
-	types := res.GetNetworkRouterTypes()
-	for _, t := range types {
-		if t.GetCode() == code {
-			if id, ok := t.GetIdOk(); ok {
-				return id, nil
-			} else {
-				return nil, fmt.Errorf("Network router type id for code %s is nil", code)
+	for _, t := range res.NetworkRouterTypes {
+		if t.Code != nil && *t.Code == code {
+			if t.Id != nil {
+				return t.Id, nil
 			}
+
+			return nil, fmt.Errorf("Network router type id for code %s is nil", code)
 		}
 	}
 

@@ -1,6 +1,5 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-
 //go:build sweep
 
 package sweep
@@ -20,6 +19,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const (
@@ -46,11 +46,11 @@ func init() {
 				return nil, hresp, err
 			}
 
-			return resp.GetLoadBalancers(), hresp, err
+			return getsafe.Get(&resp.LoadBalancers), hresp, err
 		},
 		// Is this a test load balancer?
 		func(item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner) bool {
-			name, ok := item.GetNameOk()
+			name, ok := getsafe.GetOk(item.Name)
 			if !ok || name == nil {
 				return false
 			}
@@ -63,7 +63,7 @@ func init() {
 			client *sdk.APIClient,
 			item sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner,
 		) (*http.Response, error) {
-			id, ok := item.GetIdOk()
+			id, ok := getsafe.GetOk(item.Id)
 			if !ok || id == nil {
 				return nil, fmt.Errorf("could not get ID")
 			}
@@ -151,16 +151,16 @@ func findOrphanedInstances(
 			return nil, fmt.Errorf("failed to search for orphaned instances: %s", errfmt.ErrMsg(err, hresp))
 		}
 
-		hits := resp.GetHits()
+		hits := resp.Hits
 		result = append(result, hits...)
 
-		meta, ok := resp.GetMetaOk()
+		meta, ok := getsafe.GetOk(resp.Meta)
 		if !ok || meta == nil {
 			break
 		}
 
 		offset += int64(len(hits))
-		if offset >= meta.GetTotal() {
+		if offset >= getsafe.Get(meta.Total) {
 			break
 		}
 	}
@@ -176,17 +176,17 @@ func sweepHitIfInstance(
 	client *sdk.APIClient,
 	hit *sdk.Search200ResponseHitsInner,
 ) (swept, errored int) {
-	hitType, ok := hit.GetTypeOk()
+	hitType, ok := getsafe.GetOk(hit.Type)
 	if !ok || hitType == nil || *hitType != "Instance" {
 		return 0, 0
 	}
 
-	name, ok := hit.GetNameOk()
+	name, ok := getsafe.GetOk(hit.Name)
 	if !ok || name == nil || !lbTestInstanceNameRe.MatchString(*name) {
 		return 0, 0
 	}
 
-	idStr, ok := hit.GetIdOk()
+	idStr, ok := getsafe.GetOk(hit.Id)
 	if !ok || idStr == nil {
 		return 0, 0
 	}

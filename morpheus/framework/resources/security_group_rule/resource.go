@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -104,8 +105,34 @@ func (r *securityGroupRuleResource) Create(
 		return
 	}
 
-	rule := result.GetRule()
-	mapCreateResponseToModel(&plan, &rule)
+	if result.Rule == nil || result.Rule.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Rule ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Rule.Id
+	ruleIDParam := float32(id) //nolint:gosec // value range is safe
+
+	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleIDParam).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group_rule", "", err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "security_group_rule",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Rule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&plan, readResult.Rule)
 	plan.SecurityGroupID = types.Int64Value(sgID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -140,8 +167,13 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	rule := result.GetRule()
-	mapResponseToModel(&state, &rule)
+	rule := result.Rule
+	if rule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&state, rule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -196,7 +228,7 @@ func (r *securityGroupRuleResource) Update(
 		body.Policy = plan.Policy.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).
+	_, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroupRules(ctx, sgID, ruleID).
 		UpdateSecurityGroupRulesRequest(sdk.UpdateSecurityGroupRulesRequest{
 			Rule: body,
 		}).Execute()
@@ -206,8 +238,19 @@ func (r *securityGroupRuleResource) Update(
 		return
 	}
 
-	rule := result.GetRule()
-	mapUpdateResponseToModel(&plan, &rule)
+	readResult, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleID).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "security_group_rule", "", err, httpResp)
+
+		return
+	}
+
+	if readResult.Rule == nil {
+		resp.Diagnostics.AddError("API returned nil", "Rule is nil in the response")
+
+		return
+	}
+	mapResponseToModel(&plan, readResult.Rule)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -272,95 +315,7 @@ func (r *securityGroupRuleResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), ruleID)...)
 }
 
-func mapCreateResponseToModel(model *securityGroupRuleModel, rule *sdk.AddSecurityGroupRules200ResponseAllOfRule) {
-	if rule.Id != nil {
-		model.ID = types.Int64Value(*rule.Id)
-	}
-	if rule.Name.IsSet() && rule.Name.Get() != nil {
-		model.Name = types.StringValue(*rule.Name.Get())
-	} else {
-		model.Name = types.StringNull()
-	}
-	if rule.RuleType != nil {
-		model.RuleType = types.StringValue(*rule.RuleType)
-	}
-	if rule.Direction != nil {
-		model.Direction = types.StringValue(*rule.Direction)
-	}
-	if rule.Policy != nil {
-		model.Policy = types.StringValue(*rule.Policy)
-	}
-	if rule.Protocol != nil {
-		model.Protocol = types.StringValue(*rule.Protocol)
-	}
-	if rule.SourceType != nil {
-		model.SourceType = types.StringValue(*rule.SourceType)
-	}
-	if rule.Source.IsSet() && rule.Source.Get() != nil {
-		model.Source = types.StringValue(*rule.Source.Get())
-	} else {
-		model.Source = types.StringNull()
-	}
-	if rule.DestinationType != nil {
-		model.DestinationType = types.StringValue(*rule.DestinationType)
-	}
-	if rule.Destination.IsSet() && rule.Destination.Get() != nil {
-		model.Destination = types.StringValue(*rule.Destination.Get())
-	} else {
-		model.Destination = types.StringNull()
-	}
-	if rule.PortRange.IsSet() && rule.PortRange.Get() != nil {
-		model.PortRange = types.StringValue(*rule.PortRange.Get())
-	} else {
-		model.PortRange = types.StringNull()
-	}
-}
-
 func mapResponseToModel(model *securityGroupRuleModel, rule *sdk.GetSecurityGroupRules200ResponseRule) {
-	if rule.Id != nil {
-		model.ID = types.Int64Value(*rule.Id)
-	}
-	if rule.Name.IsSet() && rule.Name.Get() != nil {
-		model.Name = types.StringValue(*rule.Name.Get())
-	} else {
-		model.Name = types.StringNull()
-	}
-	if rule.RuleType != nil {
-		model.RuleType = types.StringValue(*rule.RuleType)
-	}
-	if rule.Direction != nil {
-		model.Direction = types.StringValue(*rule.Direction)
-	}
-	if rule.Policy != nil {
-		model.Policy = types.StringValue(*rule.Policy)
-	}
-	if rule.Protocol != nil {
-		model.Protocol = types.StringValue(*rule.Protocol)
-	}
-	if rule.SourceType != nil {
-		model.SourceType = types.StringValue(*rule.SourceType)
-	}
-	if rule.Source.IsSet() && rule.Source.Get() != nil {
-		model.Source = types.StringValue(*rule.Source.Get())
-	} else {
-		model.Source = types.StringNull()
-	}
-	if rule.DestinationType != nil {
-		model.DestinationType = types.StringValue(*rule.DestinationType)
-	}
-	if rule.Destination.IsSet() && rule.Destination.Get() != nil {
-		model.Destination = types.StringValue(*rule.Destination.Get())
-	} else {
-		model.Destination = types.StringNull()
-	}
-	if rule.PortRange.IsSet() && rule.PortRange.Get() != nil {
-		model.PortRange = types.StringValue(*rule.PortRange.Get())
-	} else {
-		model.PortRange = types.StringNull()
-	}
-}
-
-func mapUpdateResponseToModel(model *securityGroupRuleModel, rule *sdk.UpdateSecurityGroupRules200ResponseAllOfRule) {
 	if rule.Id != nil {
 		model.ID = types.Int64Value(*rule.Id)
 	}

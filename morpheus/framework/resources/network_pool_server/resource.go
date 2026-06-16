@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -62,11 +63,21 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
+	// service_password_wo is a write-only attribute: its value is only present in
+	// the configuration, never in the plan or state. Read it from req.Config.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// The SDK uses a oneOf union for this request. We use InfobloxNetworkPoolServer as the
 	// concrete type because it is the superset of all pool server types (Infoblox, Bluecat,
 	// phpIPAM, SolarWinds). The API resolves the actual type from type_id, not from the
 	// "type" field in the request body. All common fields are accepted regardless of type.
-	infoblox := sdk.NewInfobloxNetworkPoolServerWithDefaults()
+	infoblox := &sdk.InfobloxNetworkPoolServer{}
 	infoblox.Type = "infoblox"
 	infoblox.Name = plan.Name.ValueString()
 	if !plan.ServiceUrl.IsNull() {
@@ -75,8 +86,8 @@ func (r *networkPoolServerResource) Create(
 	if !plan.ServiceUsername.IsNull() {
 		infoblox.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		infoblox.ServicePassword = *sdk.NewNullableString(plan.ServicePasswordWo.ValueStringPointer())
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		infoblox.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
 		infoblox.IgnoreSsl = plan.IgnoreSsl.ValueBoolPointer()
@@ -104,7 +115,7 @@ func (r *networkPoolServerResource) Create(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		cred := sdk.NewInfobloxNetworkPoolServerCredentialWithDefaults()
+		cred := &sdk.InfobloxNetworkPoolServerCredential{}
 		cred.Type = &idStr
 		infoblox.Credential = cred
 	}
@@ -123,8 +134,33 @@ func (r *networkPoolServerResource) Create(
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapCreateResponseToModel(&plan, &server)
+	if result.NetworkPoolServer == nil || result.NetworkPoolServer.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "NetworkPoolServer ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.NetworkPoolServer.Id
+
+	readResult, httpResp, err := client.NetworksAPI.GetNetworkPoolServer(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "network_pool_server", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_pool_server",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.NetworkPoolServer == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&plan, readResult.NetworkPoolServer)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -157,8 +193,13 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	server := result.GetNetworkPoolServer()
-	mapReadResponseToModel(&state, &server)
+	server := result.NetworkPoolServer
+	if server == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&state, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -181,9 +222,18 @@ func (r *networkPoolServerResource) Update(
 		return
 	}
 
+	// service_password_wo is a write-only attribute: read it from req.Config.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...,
+	)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id := plan.Id.ValueInt64()
 
-	infobloxUpdate := sdk.NewInfobloxNetworkPoolServerUpdateWithDefaults()
+	infobloxUpdate := &sdk.InfobloxNetworkPoolServerUpdate{}
 	infobloxUpdate.Name = plan.Name.ValueStringPointer()
 	if !plan.ServiceUrl.IsNull() {
 		infobloxUpdate.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
@@ -191,8 +241,8 @@ func (r *networkPoolServerResource) Update(
 	if !plan.ServiceUsername.IsNull() {
 		infobloxUpdate.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		infobloxUpdate.ServicePassword = *sdk.NewNullableString(plan.ServicePasswordWo.ValueStringPointer())
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		infobloxUpdate.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
 		infobloxUpdate.IgnoreSsl = plan.IgnoreSsl.ValueBoolPointer()
@@ -220,12 +270,14 @@ func (r *networkPoolServerResource) Update(
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
-		cred := sdk.NewInfobloxNetworkPoolServerUpdateCredentialWithDefaults()
+		cred := &sdk.InfobloxNetworkPoolServerUpdateCredential{}
 		cred.Type = &idStr
 		infobloxUpdate.Credential = cred
 	}
 
-	serverReq := sdk.InfobloxNetworkPoolServerUpdateAsUpdateNetworkPoolServerRequestNetworkPoolServer(infobloxUpdate)
+	serverReq := sdk.UpdateNetworkPoolServerRequestNetworkPoolServer{
+		InfobloxNetworkPoolServerUpdate: infobloxUpdate,
+	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkPoolServer(ctx, id).
 		UpdateNetworkPoolServerRequest(sdk.UpdateNetworkPoolServerRequest{
@@ -245,8 +297,13 @@ func (r *networkPoolServerResource) Update(
 		return
 	}
 
-	server := readResult.GetNetworkPoolServer()
-	mapReadResponseToModel(&plan, &server)
+	server := readResult.NetworkPoolServer
+	if server == nil {
+		resp.Diagnostics.AddError("API returned nil", "NetworkPoolServer is nil in the response")
+
+		return
+	}
+	mapReadResponseToModel(&plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -291,67 +348,6 @@ func (r *networkPoolServerResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
-}
-
-func mapCreateResponseToModel(
-	model *NetworkPoolServerModel,
-	server *sdk.CreateNetworkPoolServer200ResponseAllOfNetworkPoolServer,
-) {
-	if server.Id != nil {
-		model.Id = types.Int64Value(*server.Id)
-	}
-	if server.Name != nil {
-		model.Name = types.StringValue(*server.Name)
-	}
-	if t := server.Type; t != nil && t.Id != nil {
-		model.TypeId = types.Int64Value(*t.Id)
-	}
-	if server.ServiceUrl.IsSet() && server.ServiceUrl.Get() != nil {
-		model.ServiceUrl = types.StringValue(*server.ServiceUrl.Get())
-	}
-	if server.IgnoreSsl.IsSet() && server.IgnoreSsl.Get() != nil {
-		model.IgnoreSsl = types.BoolValue(*server.IgnoreSsl.Get())
-	}
-	if server.Enabled != nil {
-		model.Enabled = types.BoolValue(*server.Enabled)
-	}
-	if server.Status != nil {
-		model.Status = types.StringValue(*server.Status)
-	} else {
-		model.Status = types.StringNull()
-	}
-	if server.NetworkFilter.IsSet() && server.NetworkFilter.Get() != nil {
-		model.NetworkFilter = types.StringValue(*server.NetworkFilter.Get())
-	} else {
-		model.NetworkFilter = types.StringNull()
-	}
-	if server.ZoneFilter.IsSet() && server.ZoneFilter.Get() != nil {
-		model.ZoneFilter = types.StringValue(*server.ZoneFilter.Get())
-	} else {
-		model.ZoneFilter = types.StringNull()
-	}
-	if server.TenantMatch.IsSet() && server.TenantMatch.Get() != nil {
-		model.TenantMatch = types.StringValue(*server.TenantMatch.Get())
-	} else {
-		model.TenantMatch = types.StringNull()
-	}
-	if server.ServiceMode.IsSet() && server.ServiceMode.Get() != nil {
-		model.ServiceMode = types.StringValue(*server.ServiceMode.Get())
-	} else {
-		model.ServiceMode = types.StringNull()
-	}
-	if server.ServiceThrottleRate.IsSet() && server.ServiceThrottleRate.Get() != nil {
-		model.ServiceThrottleRate = types.Int64Value(*server.ServiceThrottleRate.Get())
-	} else {
-		model.ServiceThrottleRate = types.Int64Null()
-	}
-
-	// Credential: extract ID from response if it's a stored credential
-	if server.Credential != nil && server.Credential.Type != nil && *server.Credential.Type != "local" {
-		if id := server.Credential.Id.Get(); id != nil {
-			model.CredentialId = types.Int64Value(*id)
-		}
-	}
 }
 
 func mapReadResponseToModel(

@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
@@ -20,6 +22,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancepowerstate"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerpool"
@@ -88,6 +92,8 @@ func (s SubProvider) GetResources(
 		serviceplan.NewResource,
 		task.NewResource,
 		instance.NewResource,
+		instancepowerstate.NewResource,
+		instancesnapshot.NewResource,
 		policy.NewResource,
 		cluster.NewResource,
 
@@ -124,6 +130,8 @@ func (s SubProvider) GetResources(
 		monitoring_group.NewResource,
 		budget.NewResource,
 		backup_job.NewResource,
+		backuphost.NewResource,
+		backupinstance.NewResource,
 
 		// Sprint 6: Library & Provisioning
 		option_list.NewResource,

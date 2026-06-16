@@ -13,6 +13,7 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -40,11 +41,11 @@ func (r *Resource) Create(
 		return
 	}
 
-	monitor := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorWithDefaults()
-	monitor.SetName(plan.Name.ValueString())
+	monitor := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitor{}
+	monitor.Name = plan.Name.ValueStringPointer()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.SetDescription(plan.Description.ValueString())
+		monitor.Description = plan.Description.ValueStringPointer()
 	}
 
 	loadBalancerID := plan.LoadBalancerId.ValueInt64()
@@ -64,7 +65,7 @@ func (r *Resource) Create(
 	}
 
 	lbTypeCode := ""
-	if lb := lbResp.GetLoadBalancer(); lb.Type != nil {
+	if lb := lbResp.LoadBalancer; lb != nil && lb.Type != nil {
 		if code := lb.Type.Code; code != nil {
 			lbTypeCode = *code
 		}
@@ -98,67 +99,76 @@ func (r *Resource) Create(
 			}
 		}
 
-		monitor.SetMonitorType(monitorType)
+		val := monitorType
+		monitor.MonitorType = &val
 	}
 
 	if !plan.MonitorInterval.IsNull() && !plan.MonitorInterval.IsUnknown() {
-		monitor.SetMonitorInterval(plan.MonitorInterval.ValueInt64())
+		monitor.MonitorInterval = plan.MonitorInterval.ValueInt64Pointer()
 	}
 
 	if !plan.MonitorTimeout.IsNull() && !plan.MonitorTimeout.IsUnknown() {
-		monitor.SetMonitorTimeout(plan.MonitorTimeout.ValueInt64())
+		monitor.MonitorTimeout = plan.MonitorTimeout.ValueInt64Pointer()
 	}
 
 	if !plan.SendData.IsNull() && !plan.SendData.IsUnknown() {
-		monitor.SetSendData(plan.SendData.ValueString())
+		val := plan.SendData.ValueString()
+		monitor.SendData.Set(&val)
 	}
 
 	if !plan.SendVersion.IsNull() && !plan.SendVersion.IsUnknown() {
-		monitor.SetSendVersion(plan.SendVersion.ValueString())
+		val := plan.SendVersion.ValueString()
+		monitor.SendVersion.Set(&val)
 	}
 
 	if !plan.SendType.IsNull() && !plan.SendType.IsUnknown() {
-		monitor.SetSendType(plan.SendType.ValueString())
+		val := plan.SendType.ValueString()
+		monitor.SendType.Set(&val)
 	}
 
 	if !plan.ReceiveData.IsNull() && !plan.ReceiveData.IsUnknown() {
-		monitor.SetReceiveData(plan.ReceiveData.ValueString())
+		val := plan.ReceiveData.ValueString()
+		monitor.ReceiveData.Set(&val)
 	}
 
 	if !plan.ReceiveCode.IsNull() && !plan.ReceiveCode.IsUnknown() {
-		monitor.SetReceiveCode(plan.ReceiveCode.ValueString())
+		val := plan.ReceiveCode.ValueString()
+		monitor.ReceiveCode.Set(&val)
 	}
 
 	if !plan.MonitorUsername.IsNull() && !plan.MonitorUsername.IsUnknown() {
-		monitor.SetMonitorUsername(plan.MonitorUsername.ValueString())
+		val := plan.MonitorUsername.ValueString()
+		monitor.MonitorUsername.Set(&val)
 	}
 
 	if !config.MonitorPasswordWo.IsNull() && !config.MonitorPasswordWo.IsUnknown() {
-		monitor.SetMonitorPassword(config.MonitorPasswordWo.ValueString())
+		val := config.MonitorPasswordWo.ValueString()
+		monitor.MonitorPassword.Set(&val)
 	}
 
 	if !plan.MonitorDestination.IsNull() && !plan.MonitorDestination.IsUnknown() {
-		monitor.SetMonitorDestination(plan.MonitorDestination.ValueString())
+		val := plan.MonitorDestination.ValueString()
+		monitor.MonitorDestination.Set(&val)
 	}
 
 	if !plan.FallCount.IsNull() && !plan.FallCount.IsUnknown() {
-		monitor.SetFallCount(plan.FallCount.ValueInt64())
+		monitor.FallCount = plan.FallCount.ValueInt64Pointer()
 	}
 
 	if !plan.RiseCount.IsNull() && !plan.RiseCount.IsUnknown() {
-		monitor.SetRiseCount(plan.RiseCount.ValueInt64())
+		monitor.RiseCount = plan.RiseCount.ValueInt64Pointer()
 	}
 
 	if !plan.AliasPort.IsNull() && !plan.AliasPort.IsUnknown() {
-		monitor.SetAliasPort(plan.AliasPort.ValueInt64())
+		monitor.AliasPort = plan.AliasPort.ValueInt64Pointer()
 	}
 
 	if !plan.DataLength.IsNull() && !plan.DataLength.IsUnknown() {
-		monitor.SetDataLength(plan.DataLength.ValueInt64())
+		monitor.DataLength = plan.DataLength.ValueInt64Pointer()
 	}
 
 	if !plan.MaxRetry.IsNull() && !plan.MaxRetry.IsUnknown() {
-		monitor.SetMaxRetry(plan.MaxRetry.ValueInt64())
+		monitor.MaxRetry = plan.MaxRetry.ValueInt64Pointer()
 	}
 
 	// TODO: extraConfig is a write-only String field on the domain object
@@ -169,19 +179,21 @@ func (r *Resource) Create(
 	// GSON response template). The state value is preserved from the plan on
 	// read to avoid drift.
 	if !plan.ExtraConfig.IsNull() && !plan.ExtraConfig.IsUnknown() {
-		monitor.SetExtraConfig(plan.ExtraConfig.ValueString())
+		val := plan.ExtraConfig.ValueString()
+		monitor.ExtraConfig.Set(&val)
 	}
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		sdkConfig := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigWithDefaults()
+		sdkConfig := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
 
 		if !plan.Config.Monitor.IsNull() && !plan.Config.Monitor.IsUnknown() {
 			attrs := plan.Config.Monitor.Attributes()
 			if idAttr, ok := attrs["id"]; ok {
 				if idVal, ok := idAttr.(basetypes.Int64Value); ok && !idVal.IsNull() && !idVal.IsUnknown() {
-					configMonitor := sdk.NewCreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitorWithDefaults()
-					configMonitor.SetId(idVal.ValueInt64())
-					sdkConfig.SetMonitor(*configMonitor)
+					configMonitor := &sdk.CreateLoadBalancerMonitorRequestLoadBalancerMonitorConfigMonitor{}
+					val := idVal.ValueInt64()
+					configMonitor.Id = &val
+					sdkConfig.Monitor = configMonitor
 				}
 			}
 		}
@@ -198,15 +210,15 @@ func (r *Resource) Create(
 			}
 
 			if s, ok := mcAny.(string); ok {
-				sdkConfig.SetMonitorConfig(s)
+				sdkConfig.MonitorConfig.Set(&s)
 			}
 		}
 
-		monitor.SetConfig(*sdkConfig)
+		monitor.Config = sdkConfig
 	}
 
-	createReq := sdk.NewCreateLoadBalancerMonitorRequestWithDefaults()
-	createReq.SetLoadBalancerMonitor(*monitor)
+	createReq := &sdk.CreateLoadBalancerMonitorRequest{}
+	createReq.LoadBalancerMonitor = monitor
 
 	createResp, httpResp, err := client.LoadBalancersAPI.
 		CreateLoadBalancerMonitor(ctx, loadBalancerID).
@@ -222,8 +234,8 @@ func (r *Resource) Create(
 		return
 	}
 
-	created := createResp.GetLoadBalancerMonitor()
-	if created.Id == nil {
+	created := createResp.LoadBalancerMonitor
+	if created == nil || created.Id == nil {
 		resp.Diagnostics.AddError(
 			"error creating load balancer monitor",
 			"load balancer monitor "+plan.Name.ValueString()+": id is nil",
@@ -236,6 +248,13 @@ func (r *Resource) Create(
 		ctx, loadBalancerID, *created.Id, client,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "loadbalancermonitor",
+			ResourceID:   *created.Id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 

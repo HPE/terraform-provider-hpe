@@ -205,6 +205,23 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			"cloud_field_type", "cloud_field", "cloud_id"); err != nil {
 			return err
 		}
+
+		// secGroup supports only cloud + resource-pool cascades (Morpheus security-group-input.jsx.es6).
+		// Reject unsupported cascade keys that would be silently dropped.
+		unsupportedSecGroupAttrs := []string{
+			"group_field", "group_field_type", "group_id",
+			"pool_field_type",
+			"layout_field", "layout_field_type", "layout_id",
+			"plan_field", "plan_field_type", "plan_id",
+			"instance_type_field_type", "instance_type_field_code", "instance_type_code",
+			"virtual_image_field_type", "image_field", "image_id",
+			"disk_field",
+		}
+		for _, attr := range unsupportedSecGroupAttrs {
+			if err := rejectUnsupportedAttr(optionType, path, index, "secGroup", attr); err != nil {
+				return err
+			}
+		}
 	case typeTag:
 		if err := validateLayoutFieldTypePair(optionType, path, index,
 			"group_field_type", "group_field", "group_id"); err != nil {
@@ -243,6 +260,20 @@ func validateOptionTypeConfig(optionType cty.Value, path string, index int) erro
 			"plan_field_type", "plan_field", "plan_id"); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+// rejectUnsupportedAttr returns an error if the given attribute is set (non-null, known)
+// on an option type that does not support it. Used to prevent silent drift.
+func rejectUnsupportedAttr(optionType cty.Value, path string, index int, typeName, attr string) error {
+	val := optionType.GetAttr(attr)
+	if val.IsKnown() && !val.IsNull() {
+		return fmt.Errorf(
+			"%s is not supported for %s option types at %s[%d]; "+
+				"secGroup supports only cloud_field/cloud_field_type/cloud_id and pool_field (resource pool)",
+			attr, typeName, path, index)
 	}
 
 	return nil
@@ -353,7 +384,9 @@ func applyOptionTypeConfigByType(row map[string]any, optionTypeConfig map[string
 		row["defaultValue"] = optionTypeConfig["default_value"]
 		config := make(map[string]any)
 		config["groupFieldType"] = optionTypeConfig["group_field_type"]
-		config["groupField"] = optionTypeConfig["group_field"]
+		// The cloud option type uses the plain "group" key for its cascade
+		// (not "groupField" like other types). See cloud-input.jsx.es6:222.
+		config["group"] = optionTypeConfig["group_field"]
 		config["groupId"] = optionTypeConfig["group_id"]
 		config["instanceTypeFieldType"] = optionTypeConfig["instance_type_field_type"]
 		config["instanceTypeFieldCode"] = optionTypeConfig["instance_type_field_code"]
@@ -630,7 +663,9 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 	case typeCloud:
 		row["filter_from_resource"] = optionType.Config.FilterResource
 		row["group_field_type"] = optionType.Config.GroupFieldType
-		row["group_field"] = optionType.Config.GroupField
+		// The cloud option type uses the plain "group" key (Config.Group),
+		// not "groupField" (Config.GroupField). See cloud-input.jsx.es6:222.
+		row["group_field"] = optionType.Config.Group
 		row["group_id"] = optionType.Config.GroupId
 		row["instance_type_field_type"] = optionType.Config.InstanceTypeFieldType
 		row["instance_type_field_code"] = optionType.Config.InstanceTypeFieldCode
@@ -789,6 +824,39 @@ func applyReadOptionTypeByType(row map[string]any, optionType morpheus.Option, l
 	case typeLogoSelector:
 		// Logo selector default value is handled by the read function
 	}
+}
+
+// buildOptionTypeRow constructs a map row from an API option type for state.
+func buildOptionTypeRow(optionType morpheus.Option, logHidden bool) map[string]any {
+	row := make(map[string]any)
+	applyReadOptionTypeByType(row, optionType, logHidden)
+	row["remove_select_option"] = optionType.NoBlank
+	row["name"] = optionType.Name
+	row["description"] = optionType.Description
+	row["code"] = optionType.Code
+	row["type"] = optionType.Type
+	row["field_label"] = optionType.FieldLabel
+	row["field_name"] = optionType.FieldName
+	// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence
+	if optionType.Config.DefaultValue != "" {
+		row["default_value"] = optionType.Config.DefaultValue
+	} else {
+		row["default_value"] = optionType.DefaultValue
+	}
+	row["placeholder"] = optionType.PlaceHolder
+	row["help_block"] = optionType.HelpBlock
+	row["required"] = optionType.Required
+	row["export_meta"] = optionType.ExportMeta
+	row["display_value_on_details"] = optionType.DisplayValueOnDetails
+	row["locked"] = optionType.IsLocked
+	row["hidden"] = optionType.IsHidden
+	row["exclude_from_search"] = optionType.ExcludeFromSearch
+	row["dependent_field"] = optionType.DependsOnCode
+	row["visibility_field"] = optionType.VisibleOnCode
+	row["verify_pattern"] = optionType.VerifyPattern
+	row["require_field"] = optionType.RequireOnCode
+
+	return row
 }
 
 func ResourceForm() *schema.Resource {
@@ -1623,39 +1691,37 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("description", form.Description)
 	d.Set("labels", form.Labels)
 
-	// Option Types
+	// Option Types — match by code to preserve config order (the form GET API
+	// does not sort by displayOrder, so positional mapping causes field leakage).
 	var optionTypes []map[string]any
 	if len(form.Options) != 0 {
-		// optionTypeList := d.Get("option_type").([]any)
-		for _, optionType := range form.Options {
-			row := make(map[string]any)
-			applyReadOptionTypeByType(row, optionType, true)
-			row["remove_select_option"] = optionType.NoBlank
-			row["name"] = optionType.Name
-			row["description"] = optionType.Description
-			row["code"] = optionType.Code
-			row["type"] = optionType.Type
-			row["field_label"] = optionType.FieldLabel
-			row["field_name"] = optionType.FieldName
-			// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
-			if optionType.Config.DefaultValue != "" {
-				row["default_value"] = optionType.Config.DefaultValue
-			} else {
-				row["default_value"] = optionType.DefaultValue
+		// Build a map of API options keyed by code for O(1) lookup.
+		apiOptionsByCode := make(map[string]morpheus.Option, len(form.Options))
+		for _, opt := range form.Options {
+			if opt.Code != "" {
+				apiOptionsByCode[opt.Code] = opt
 			}
-			row["placeholder"] = optionType.PlaceHolder
-			row["help_block"] = optionType.HelpBlock
-			row["required"] = optionType.Required
-			row["export_meta"] = optionType.ExportMeta
-			row["display_value_on_details"] = optionType.DisplayValueOnDetails
-			row["locked"] = optionType.IsLocked
-			row["hidden"] = optionType.IsHidden
-			row["exclude_from_search"] = optionType.ExcludeFromSearch
-			row["dependent_field"] = optionType.DependsOnCode
-			row["visibility_field"] = optionType.VisibleOnCode
-			row["verify_pattern"] = optionType.VerifyPattern
-			row["require_field"] = optionType.RequireOnCode
-			optionTypes = append(optionTypes, row)
+		}
+
+		// Emit in state/config order first (match by code).
+		stateOptionTypes, _ := d.Get("option_type").([]any)
+		emitted := make(map[string]bool, len(stateOptionTypes))
+		for _, stateOpt := range stateOptionTypes {
+			if m, ok := stateOpt.(map[string]any); ok {
+				if code, ok := m["code"].(string); ok && code != "" {
+					if apiOpt, found := apiOptionsByCode[code]; found {
+						optionTypes = append(optionTypes, buildOptionTypeRow(apiOpt, true))
+						emitted[code] = true
+					}
+				}
+			}
+		}
+
+		// Append any new options from API not in state (sorted by DisplayOrder).
+		for _, opt := range form.Options {
+			if opt.Code != "" && !emitted[opt.Code] {
+				optionTypes = append(optionTypes, buildOptionTypeRow(opt, true))
+			}
 		}
 	}
 	d.Set("option_type", optionTypes)
@@ -1663,45 +1729,50 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	// Field Groups
 	var fieldGroups []map[string]any
 	if len(form.FieldGroups) != 0 {
-		for _, fieldGroup := range form.FieldGroups {
+		stateFieldGroups, _ := d.Get("field_group").([]any)
+		for fgIdx, fieldGroup := range form.FieldGroups {
 			row := make(map[string]any)
 			row["name"] = fieldGroup.Name
 			row["description"] = fieldGroup.Description
 			row["collapsible"] = fieldGroup.Collapsible
 			row["collapsed_by_default"] = fieldGroup.DefaultCollapsed
 			row["visibility_field"] = fieldGroup.VisibleOnCode
+
 			var fgOptionTypes []map[string]any
 			if len(fieldGroup.Options) != 0 {
-				for _, optionType := range fieldGroup.Options {
-					optionTypeRow := make(map[string]any)
-					// Check if the input uses an existing input or not
-					applyReadOptionTypeByType(optionTypeRow, optionType, false)
-					optionTypeRow["remove_select_option"] = optionType.NoBlank
-					optionTypeRow["name"] = optionType.Name
-					optionTypeRow["description"] = optionType.Description
-					optionTypeRow["code"] = optionType.Code
-					optionTypeRow["type"] = optionType.Type
-					optionTypeRow["field_label"] = optionType.FieldLabel
-					optionTypeRow["field_name"] = optionType.FieldName
-					// Mirror JSX getDefaultValueForOptionType: config.defaultValue takes precedence over top-level defaultValue
-					if optionType.Config.DefaultValue != "" {
-						optionTypeRow["default_value"] = optionType.Config.DefaultValue
-					} else {
-						optionTypeRow["default_value"] = optionType.DefaultValue
+				// Build code map for this field group's options.
+				fgAPIByCode := make(map[string]morpheus.Option, len(fieldGroup.Options))
+				for _, opt := range fieldGroup.Options {
+					if opt.Code != "" {
+						fgAPIByCode[opt.Code] = opt
 					}
-					optionTypeRow["placeholder"] = optionType.PlaceHolder
-					optionTypeRow["help_block"] = optionType.HelpBlock
-					optionTypeRow["required"] = optionType.Required
-					optionTypeRow["export_meta"] = optionType.ExportMeta
-					optionTypeRow["display_value_on_details"] = optionType.DisplayValueOnDetails
-					optionTypeRow["locked"] = optionType.IsLocked
-					optionTypeRow["hidden"] = optionType.IsHidden
-					optionTypeRow["exclude_from_search"] = optionType.ExcludeFromSearch
-					optionTypeRow["dependent_field"] = optionType.DependsOnCode
-					optionTypeRow["visibility_field"] = optionType.VisibleOnCode
-					optionTypeRow["verify_pattern"] = optionType.VerifyPattern
-					optionTypeRow["require_field"] = optionType.RequireOnCode
-					fgOptionTypes = append(fgOptionTypes, optionTypeRow)
+				}
+
+				// Get state order for this field group's options.
+				var stateFGOpts []any
+				if fgIdx < len(stateFieldGroups) {
+					if fgMap, ok := stateFieldGroups[fgIdx].(map[string]any); ok {
+						stateFGOpts, _ = fgMap["option_type"].([]any)
+					}
+				}
+
+				emitted := make(map[string]bool, len(stateFGOpts))
+				for _, stateOpt := range stateFGOpts {
+					if m, ok := stateOpt.(map[string]any); ok {
+						if code, ok := m["code"].(string); ok && code != "" {
+							if apiOpt, found := fgAPIByCode[code]; found {
+								fgOptionTypes = append(fgOptionTypes, buildOptionTypeRow(apiOpt, false))
+								emitted[code] = true
+							}
+						}
+					}
+				}
+
+				// Append new options not in state.
+				for _, opt := range fieldGroup.Options {
+					if opt.Code != "" && !emitted[opt.Code] {
+						fgOptionTypes = append(fgOptionTypes, buildOptionTypeRow(opt, false))
+					}
 				}
 			}
 			row["option_type"] = fgOptionTypes

@@ -108,8 +108,11 @@ func getLoadBalancerMonitorByID(
 		return nil, fmt.Errorf("load balancer monitor %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	m := resp.GetLoadBalancerMonitor()
-	state := populateLoadBalancerMonitorState(ctx, loadBalancerID, &m)
+	if resp.LoadBalancerMonitor == nil {
+		return nil, fmt.Errorf("load balancer monitor %d response missing loadBalancerMonitor", id)
+	}
+
+	state := populateLoadBalancerMonitorState(ctx, loadBalancerID, resp.LoadBalancerMonitor)
 
 	return state, nil
 }
@@ -128,8 +131,8 @@ func getLoadBalancerMonitorByName(
 	}
 
 	var matching []sdk.ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInner
-	for _, m := range monitors.GetLoadBalancerMonitors() {
-		if mName, ok := m.GetNameOk(); ok && *mName == name {
+	for _, m := range monitors.LoadBalancerMonitors {
+		if m.Name != nil && *m.Name == name {
 			matching = append(matching, m)
 		}
 	}
@@ -141,8 +144,8 @@ func getLoadBalancerMonitorByName(
 	if len(matching) > 1 {
 		var ids []string
 		for _, m := range matching {
-			if id, ok := m.GetIdOk(); ok {
-				ids = append(ids, fmt.Sprintf("%d", *id))
+			if m.Id != nil {
+				ids = append(ids, fmt.Sprintf("%d", *m.Id))
 			}
 		}
 
@@ -154,12 +157,11 @@ func getLoadBalancerMonitorByName(
 		)
 	}
 
-	id, ok := matching[0].GetIdOk()
-	if !ok {
+	if matching[0].Id == nil {
 		return nil, fmt.Errorf("load balancer monitor %s has missing ID", name)
 	}
 
-	return getLoadBalancerMonitorByID(ctx, loadBalancerID, *id, client)
+	return getLoadBalancerMonitorByID(ctx, loadBalancerID, *matching[0].Id, client)
 }
 
 //nolint:funlen,cyclop // mapping all fields requires length
@@ -209,11 +211,11 @@ func populateLoadBalancerMonitorState(
 
 	// Config — structured nested object.
 	if m.Config != nil {
-		cfg := m.GetConfig()
+		cfg := m.Config
 
 		var monitorObjVal basetypes.ObjectValue
 		if cfg.Monitor != nil {
-			monitorInner := cfg.GetMonitor()
+			monitorInner := cfg.Monitor
 			monitorObjVal = types.ObjectValueMust(
 				MonitorValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{

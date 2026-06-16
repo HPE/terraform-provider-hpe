@@ -121,9 +121,11 @@ func getDhcpServerByID(
 		)
 	}
 
-	dhcp := r.GetNetworkDhcpServer()
+	if r.NetworkDhcpServer == nil {
+		return nil, fmt.Errorf("GET failed for network DHCP server %d: empty response", id)
+	}
 
-	return &dhcp, nil
+	return r.NetworkDhcpServer, nil
 }
 
 func getDhcpServerByName(
@@ -144,7 +146,7 @@ func getDhcpServerByName(
 		)
 	}
 
-	items := rs.GetNetworkDhcpServers()
+	items := rs.NetworkDhcpServers
 	if len(items) == 0 {
 		return nil, errors.New(ErrorNoNetworkDhcpServerFound)
 	}
@@ -152,11 +154,14 @@ func getDhcpServerByName(
 	var matchedIDs []int64
 
 	for i := range items {
-		if items[i].GetName() != name {
+		if items[i].Name == nil || *items[i].Name != name {
+			continue
+		}
+		if items[i].Id == nil {
 			continue
 		}
 
-		matchedIDs = append(matchedIDs, items[i].GetId())
+		matchedIDs = append(matchedIDs, *items[i].Id)
 	}
 
 	if len(matchedIDs) == 0 {

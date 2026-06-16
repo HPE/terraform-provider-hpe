@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -78,8 +79,33 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapAddResponseToModel(&plan, &budget)
+	if result.Budget == nil || result.Budget.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Budget ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Budget.Id
+
+	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "budget", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "budget",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -112,8 +138,13 @@ func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	budget := result.GetBudget()
-	mapGetResponseToModel(&state, &budget)
+	budget := result.Budget
+	if budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&state, budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -153,7 +184,7 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.BudgetsAPI.UpdateBudgets(ctx, id).UpdateBudgetsRequest(sdk.UpdateBudgetsRequest{
+	_, httpResp, err := client.BudgetsAPI.UpdateBudgets(ctx, id).UpdateBudgetsRequest(sdk.UpdateBudgetsRequest{
 		Budget: body,
 	}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -162,8 +193,19 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	budget := result.GetBudget()
-	mapUpdateResponseToModel(&plan, &budget)
+	readResult, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "budget", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.Budget == nil {
+		resp.Diagnostics.AddError("API returned nil", "Budget is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readResult.Budget)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -206,29 +248,6 @@ func (r *budgetResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *budgetModel, b *sdk.AddBudgets200ResponseAllOfBudget) {
-	if b.Id != nil {
-		model.ID = types.Int64Value(*b.Id)
-	}
-	if b.Name != nil {
-		model.Name = types.StringValue(*b.Name)
-	}
-	if v := b.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if b.Interval != nil {
-		model.Interval = types.StringValue(*b.Interval)
-	}
-	if b.RefScope != nil {
-		model.Scope = types.StringValue(*b.RefScope)
-	}
-	if b.Enabled != nil {
-		model.Enabled = types.BoolValue(*b.Enabled)
-	}
-}
-
 func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOfBudget) {
 	if b.Id != nil {
 		model.ID = types.Int64Value(*b.Id)
@@ -254,28 +273,5 @@ func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOf
 		if v, err := strconv.ParseInt(*b.Year, 10, 64); err == nil {
 			model.Year = types.Int64Value(v)
 		}
-	}
-}
-
-func mapUpdateResponseToModel(model *budgetModel, b *sdk.UpdateBudgets200ResponseAllOfBudget) {
-	if b.Id != nil {
-		model.ID = types.Int64Value(*b.Id)
-	}
-	if b.Name != nil {
-		model.Name = types.StringValue(*b.Name)
-	}
-	if v := b.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if b.Interval != nil {
-		model.Interval = types.StringValue(*b.Interval)
-	}
-	if b.RefScope != nil {
-		model.Scope = types.StringValue(*b.RefScope)
-	}
-	if b.Enabled != nil {
-		model.Enabled = types.BoolValue(*b.Enabled)
 	}
 }

@@ -19,6 +19,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -83,27 +84,28 @@ func (r *Resource) Create(
 	routerID := plan.RouterId.ValueInt64()
 
 	route := sdk.CreateNetworkRouterRouteRequestNetworkRoute{}
-	route.SetSource(plan.Source.ValueString())
-	route.SetDestination(plan.Destination.ValueString())
+	route.Source = plan.Source.ValueString()
+	route.Destination = plan.Destination.ValueString()
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		route.SetName(plan.Name.ValueString())
+		route.Name = plan.Name.ValueStringPointer()
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		route.SetDescription(plan.Description.ValueString())
+		route.Description = plan.Description.ValueStringPointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		route.SetEnabled(plan.Enabled.ValueBool())
+		route.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.DefaultRoute.IsNull() && !plan.DefaultRoute.IsUnknown() {
-		route.SetDefaultRoute(plan.DefaultRoute.ValueBool())
+		route.DefaultRoute = plan.DefaultRoute.ValueBoolPointer()
 	}
 
 	if !plan.NetworkMtu.IsNull() && !plan.NetworkMtu.IsUnknown() {
-		route.SetNetworkMtu(float32(plan.NetworkMtu.ValueFloat64()))
+		networkMtu := float32(plan.NetworkMtu.ValueFloat64())
+		route.NetworkMtu = &networkMtu
 	}
 
 	createReq := sdk.CreateNetworkRouterRouteRequest{
@@ -122,12 +124,24 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	if !result.Id.IsSet() || result.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
+	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getRouteAsState(ctx, id, routerID, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_router_route",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
@@ -160,7 +174,12 @@ func getRouteAsState(
 		return state, diags
 	}
 
-	route := resp.GetNetworkRoute()
+	route := resp.NetworkRoute
+	if route == nil {
+		diags.AddError("API returned nil", "NetworkRoute is nil in the response")
+
+		return state, diags
+	}
 
 	if route.Id != nil {
 		state.Id = types.Int64Value(*route.Id)

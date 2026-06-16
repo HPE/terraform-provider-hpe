@@ -19,6 +19,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -86,13 +87,11 @@ func (r *Resource) Create(
 	rule.Name = plan.Name.ValueString()
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		priority := plan.Priority.ValueInt64()
-		rule.Priority = &priority
+		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	createReq := sdk.CreateNetworkRouterFirewallRuleRequest{
@@ -111,12 +110,24 @@ func (r *Resource) Create(
 		return
 	}
 
-	id := result.GetId()
+	if !result.Id.IsSet() || result.Id.Get() == nil {
+		resp.Diagnostics.AddError("API returned nil", "ID is nil in the response")
+
+		return
+	}
+
+	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
 	state, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_router_firewall_rule",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
@@ -149,47 +160,47 @@ func getFirewallRuleAsState(
 		return state, diags
 	}
 
-	rule := resp.GetRule()
+	rule := resp.Rule
 
-	if rule.Id != nil {
+	if rule != nil && rule.Id != nil {
 		state.Id = types.Int64Value(*rule.Id)
 	}
 
 	state.RouterId = plan.RouterId
 
-	if rule.Name != nil {
+	if rule != nil && rule.Name != nil {
 		state.Name = types.StringValue(*rule.Name)
 	}
 
-	if rule.Enabled != nil {
+	if rule != nil && rule.Enabled != nil {
 		state.Enabled = types.BoolValue(*rule.Enabled)
 	}
 
-	if rule.Priority != nil {
+	if rule != nil && rule.Priority != nil {
 		state.Priority = types.Int64Value(*rule.Priority)
 	} else {
 		state.Priority = types.Int64Null()
 	}
 
-	if rule.Direction != nil {
+	if rule != nil && rule.Direction != nil {
 		state.Direction = types.StringValue(*rule.Direction)
 	} else {
 		state.Direction = types.StringNull()
 	}
 
-	if rule.Policy != nil {
+	if rule != nil && rule.Policy != nil {
 		state.Policy = types.StringValue(*rule.Policy)
 	} else {
 		state.Policy = types.StringNull()
 	}
 
-	if rule.Protocol.IsSet() {
+	if rule != nil && rule.Protocol.IsSet() {
 		state.Protocol = types.StringValue(*rule.Protocol.Get())
 	} else {
 		state.Protocol = types.StringNull()
 	}
 
-	if rule.PortRange.IsSet() {
+	if rule != nil && rule.PortRange.IsSet() {
 		state.PortRange = types.StringValue(*rule.PortRange.Get())
 	} else {
 		state.PortRange = types.StringNull()
@@ -254,13 +265,11 @@ func (r *Resource) Update(
 	rule.Name = plan.Name.ValueString()
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
-		enabled := plan.Enabled.ValueBool()
-		rule.Enabled = &enabled
+		rule.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
-		priority := plan.Priority.ValueInt64()
-		rule.Priority = &priority
+		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
 	updateReq := sdk.UpdateNetworkRouterFirewallRuleRequest{

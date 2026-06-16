@@ -29,8 +29,6 @@ func TestAccMorpheusOptionTypeTypeaheadExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())

@@ -38,20 +38,28 @@ func getImageAsState(
 		return state, diags
 	}
 
-	image := resp.GetVirtualImage()
+	image := resp.VirtualImage
+	if image == nil {
+		diags.AddError(
+			"populate image resource",
+			fmt.Sprintf("image %d GET returned no virtualImage", id),
+		)
+
+		return state, diags
+	}
 
 	// auto_join_domain
 	state.AutoJoinDomain = convert.BoolToType(image.IsAutoJoinDomain)
 
 	// config_azure
-	if image.GetImageType() == "azure-reference" {
-		if image.GetConfig().AzureReferenceVirtualImageConfiguration3 != nil {
+	if image.ImageType != nil && *image.ImageType == "azure-reference" {
+		if image.Config != nil && image.Config.AzureReferenceVirtualImageConfiguration3 != nil {
 			state.ConfigAzure.Publisher = convert.StrToType(
-				&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Publisher,
+				&image.Config.AzureReferenceVirtualImageConfiguration3.Publisher,
 			)
-			state.ConfigAzure.Offer = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Offer)
-			state.ConfigAzure.Version = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Version)
-			state.ConfigAzure.Sku = convert.StrToType(&image.GetConfig().AzureReferenceVirtualImageConfiguration3.Sku)
+			state.ConfigAzure.Offer = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Offer)
+			state.ConfigAzure.Version = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Version)
+			state.ConfigAzure.Sku = convert.StrToType(&image.Config.AzureReferenceVirtualImageConfiguration3.Sku)
 		}
 
 		state.ConfigAzure.state = attr.ValueStateKnown
@@ -84,7 +92,7 @@ func getImageAsState(
 	state.InstallAgent = convert.BoolToType(image.InstallAgent)
 
 	// labels
-	respLabels := image.GetLabels()
+	respLabels := image.Labels
 
 	labels, err := convert.SetToStrSlice(plan.Labels)
 	if err != nil {
@@ -131,7 +139,11 @@ func getImageAsState(
 	state.Name = convert.StrToType(image.Name)
 
 	// os_type_id
-	state.OsTypeId = convert.Int64ToType(image.GetOsType().Id)
+	if image.OsType != nil {
+		state.OsTypeId = convert.Int64ToType(image.OsType.Id)
+	} else {
+		state.OsTypeId = types.Int64Null()
+	}
 
 	// owner_id
 	state.OwnerId = convert.Int64ToType(image.OwnerId)
@@ -146,7 +158,11 @@ func getImageAsState(
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
 
 	// storage_provider_id
-	state.StorageProviderId = convert.Int64ToType(image.GetStorageProvider().Id)
+	if image.StorageProvider != nil {
+		state.StorageProviderId = convert.Int64ToType(image.StorageProvider.Id)
+	} else {
+		state.StorageProviderId = types.Int64Null()
+	}
 
 	// sysprep
 	state.Sysprep = convert.BoolToType(image.IsSysprep)
