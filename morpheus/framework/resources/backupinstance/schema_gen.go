@@ -16,9 +16,10 @@ func BackupInstanceResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"backup_type_code": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
-				Description:         "The backup type code. Computed from the Instance.",
-				MarkdownDescription: "The backup type code. Computed from the Instance.",
+				Description:         "The backup type code. Computed from the Instance if not provided.",
+				MarkdownDescription: "The backup type code. Computed from the Instance if not provided.",
 			},
 			"container_id": schema.Int64Attribute{
 				Optional:            true,

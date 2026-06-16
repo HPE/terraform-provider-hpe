@@ -84,6 +84,46 @@ func (r *backupInstanceResource) Create(
 		BackupInstance: &instance,
 	}
 
+	// Compute the backup_type_code with the /api/backups/create endpoint if it's null in config.
+	if plan.BackupTypeCode.IsNull() || plan.BackupTypeCode.IsUnknown() {
+		validateBackupInstanceReq := createToValidateBackupInstance(backup.BackupInstance)
+		result, httpResp, err := client.BackupsAPI.ValidateBackupCreate(ctx).ValidateBackupCreateRequest(sdk.ValidateBackupCreateRequest{
+			Backup: sdk.ValidateBackupCreateRequestBackup{
+				BackupInstance1: validateBackupInstanceReq,
+			},
+		}).Execute()
+		if err != nil || httpResp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(createOperation, errfmt.ErrMsg(err, httpResp))
+
+			return
+		}
+
+		// if this is non-nil, request was a success...
+		if result.Backup == nil {
+			resp.Diagnostics.AddError(createOperation, "Backup is nil in the create validation response")
+
+			return
+		}
+		// ...and result.BackupTypes should be populated with a single computed code.
+		if len(result.BackupTypes) != 1 {
+			resp.Diagnostics.AddError(createOperation, "BackupTypes does not have 1 computed backup type")
+
+			return
+		}
+
+		if result.BackupTypes[0].Code == nil {
+			resp.Diagnostics.AddError(createOperation, "BackupTypes contains nil code")
+
+			return
+		}
+
+		backup.BackupInstance.BackupType = *result.BackupTypes[0].Code
+
+	} else if !plan.BackupTypeCode.IsNull() && !plan.BackupTypeCode.IsUnknown() {
+		// otherwise, set it as normal
+		backup.BackupInstance.BackupType = plan.BackupTypeCode.ValueString()
+	}
+
 	result, httpResp, err := client.BackupsAPI.AddBackups(ctx).AddBackupsRequest(sdk.AddBackupsRequest{
 		Backup: backup,
 	}).Execute()
@@ -116,4 +156,59 @@ func (r *backupInstanceResource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func createToValidateBackupInstance(source *sdk.BackupInstance) *sdk.BackupInstance1 {
+	if source == nil {
+		return nil
+	}
+
+	target := &sdk.BackupInstance1{
+		LocationType: source.LocationType,
+		Name:         source.Name,
+		InstanceId:   source.InstanceId,
+		ContainerId:  source.ContainerId,
+		BackupType:   source.BackupType,
+		JobAction:    source.JobAction,
+	}
+
+	if source.JobId != nil {
+		target.JobId = source.JobId
+	}
+
+	if source.JobName != nil {
+		target.JobName = source.JobName
+	}
+
+	if source.JobSchedule != nil {
+		target.JobSchedule = source.JobSchedule
+	}
+
+	if source.RetentionCount != nil {
+		target.RetentionCount = source.RetentionCount
+	}
+
+	if source.Target != nil {
+		target.Target = source.Target
+	}
+
+	if source.BackupRepository != nil {
+		target.BackupRepository = source.BackupRepository
+	}
+
+	if source.ProviderBackupType != nil {
+		target.ProviderBackupType = source.ProviderBackupType
+	}
+
+	if source.BackupJob != nil {
+		target.BackupJob = &sdk.BackupInstance1BackupJob{
+			SyntheticFullEnabled:  source.BackupJob.SyntheticFullEnabled,
+			SyntheticFullSchedule: source.BackupJob.SyntheticFullSchedule,
+			AdditionalProperties:  source.BackupJob.AdditionalProperties,
+		}
+	}
+
+	target.AdditionalProperties = source.AdditionalProperties
+
+	return target
 }
