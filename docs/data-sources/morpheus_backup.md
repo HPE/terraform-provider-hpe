@@ -100,8 +100,8 @@ Read-Only:
 
 Read-Only:
 
-- `id` (Number) Server ID
-- `name` (String) Server Name
+- `id` (Number) Host (server) ID
+- `name` (String) Host (server) name
 
 
 <a id="nestedatt--instance"></a>
