@@ -111,12 +111,7 @@ func (r *clusterAffinityGroupResource) Create(
 
 		return
 	}
-	if readAg.Id != nil {
-		plan.ID = types.Int64Value(*readAg.Id)
-	}
-	if readAg.Name != nil {
-		plan.Name = types.StringValue(*readAg.Name)
-	}
+	mapGetResponseToModel(&plan, readAg)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -155,14 +150,13 @@ func (r *clusterAffinityGroupResource) Read(
 	}
 
 	ag := result.AffinityGroup
-	if ag != nil {
-		if ag.Id != nil {
-			state.ID = types.Int64Value(*ag.Id)
-		}
-		if ag.Name != nil {
-			state.Name = types.StringValue(*ag.Name)
-		}
+	if ag == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
 	}
+
+	mapGetResponseToModel(&state, ag)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -219,12 +213,7 @@ func (r *clusterAffinityGroupResource) Update(
 
 		return
 	}
-	if readAg.Id != nil {
-		plan.ID = types.Int64Value(*readAg.Id)
-	}
-	if readAg.Name != nil {
-		plan.Name = types.StringValue(*readAg.Name)
-	}
+	mapGetResponseToModel(&plan, readAg)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -290,3 +279,12 @@ func (r *clusterAffinityGroupResource) ImportState(
 
 // Ensure unused imports are satisfied.
 var _ *http.Response
+
+func mapGetResponseToModel(model *clusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+	if ag.Id != nil {
+		model.ID = types.Int64Value(*ag.Id)
+	}
+	if ag.Name != nil {
+		model.Name = types.StringValue(*ag.Name)
+	}
+}

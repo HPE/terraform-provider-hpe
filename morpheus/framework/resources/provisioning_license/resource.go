@@ -131,20 +131,7 @@ func (r *provisioningLicenseResource) Create(
 
 		return
 	}
-	if readLicense.Id != nil {
-		plan.ID = types.Int64Value(*readLicense.Id)
-	}
-	if readLicense.Name != nil {
-		plan.Name = types.StringValue(*readLicense.Name)
-	}
-	if readLicense.Description != nil {
-		plan.Description = types.StringValue(*readLicense.Description)
-	} else {
-		plan.Description = types.StringNull()
-	}
-	if readLicense.LicenseType != nil && readLicense.LicenseType.Code != nil {
-		plan.LicenseType = types.StringValue(*readLicense.LicenseType.Code)
-	}
+	mapGetResponseToModel(&plan, readLicense)
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -184,20 +171,7 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 
 		return
 	}
-	if license.Id != nil {
-		state.ID = types.Int64Value(*license.Id)
-	}
-	if license.Name != nil {
-		state.Name = types.StringValue(*license.Name)
-	}
-	if license.Description != nil {
-		state.Description = types.StringValue(*license.Description)
-	} else {
-		state.Description = types.StringNull()
-	}
-	if license.LicenseType != nil && license.LicenseType.Code != nil {
-		state.LicenseType = types.StringValue(*license.LicenseType.Code)
-	}
+	mapGetResponseToModel(&state, license)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -285,20 +259,7 @@ func (r *provisioningLicenseResource) Update(
 
 		return
 	}
-	if readLicense.Id != nil {
-		plan.ID = types.Int64Value(*readLicense.Id)
-	}
-	if readLicense.Name != nil {
-		plan.Name = types.StringValue(*readLicense.Name)
-	}
-	if readLicense.Description != nil {
-		plan.Description = types.StringValue(*readLicense.Description)
-	} else {
-		plan.Description = types.StringNull()
-	}
-	if readLicense.LicenseType != nil && readLicense.LicenseType.Code != nil {
-		plan.LicenseType = types.StringValue(*readLicense.LicenseType.Code)
-	}
+	mapGetResponseToModel(&plan, readLicense)
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -344,4 +305,21 @@ func (r *provisioningLicenseResource) ImportState(
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+}
+
+func mapGetResponseToModel(model *provisioningLicenseModel, license *sdk.GetProvisioningLicense200ResponseLicense) {
+	if license.Id != nil {
+		model.ID = types.Int64Value(*license.Id)
+	}
+	if license.Name != nil {
+		model.Name = types.StringValue(*license.Name)
+	}
+	if license.Description != nil {
+		model.Description = types.StringValue(*license.Description)
+	} else {
+		model.Description = types.StringNull()
+	}
+	if license.LicenseType != nil && license.LicenseType.Code != nil {
+		model.LicenseType = types.StringValue(*license.LicenseType.Code)
+	}
 }
