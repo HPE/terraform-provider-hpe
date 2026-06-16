@@ -1,0 +1,7 @@
+resource "hpe_morpheus_backup_instance" "example" {
+  name                = "{{.Name}}"
+  instance_id         = {{.InstanceId}}
+  job_id              = {{.JobId}}
+  storage_provider_id = {{.StorageProviderId}}
+  enabled             = {{.Enabled}}
+}

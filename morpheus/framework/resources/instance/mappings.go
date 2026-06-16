@@ -42,7 +42,7 @@ func createVolumeMapper(
 
 	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			AddInstanceRequestVolumesInnerDatastoreId{}
+			InstanceConfigObject1VolumesInnerDatastoreId{}
 
 		id := strconv.Itoa(int(vol.DatastoreId.ValueInt64()))
 		volume.DatastoreId.String = &id
@@ -50,7 +50,7 @@ func createVolumeMapper(
 
 	if !vol.DatastoreAutoSelection.IsNull() && !vol.DatastoreAutoSelection.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			AddInstanceRequestVolumesInnerDatastoreId{}
+			InstanceConfigObject1VolumesInnerDatastoreId{}
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
 	}
 
@@ -119,7 +119,7 @@ func createNetworkInterfaceMapper(
 			id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 		}
 
-		ipPool := &sdk.InstancesNetworkInterfaces2NetworkPool{}
+		ipPool := &sdk.InstancesNetworkInterfaces1NetworkPool{}
 		if !in.IpPool.IsNull() {
 			ipPool.Id = in.IpPool.ValueInt64Pointer()
 		}
@@ -135,7 +135,7 @@ func createNetworkInterfaceMapper(
 
 		return sdk.InstancesNetworkInterfaces2{
 			Network: sdk.
-				InstancesNetworkInterfaces2Network{
+				InstancesNetworkInterfaces1Network{
 				Id:   id,
 				Pool: ipPool,
 			},
@@ -202,7 +202,7 @@ func updateNetworkInterfaceMapper(
 // Map Child Virtual Network interface if it exists
 func createChildNetworkInterfaceMapper(
 	in ChildVirtualNetworksValue,
-) sdk.InstancesNetworkInterfaces2NetworkInterfacesInner {
+) sdk.InstancesNetworkInterfaces1NetworkInterfacesInner {
 	var id string
 	if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 		id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
@@ -216,13 +216,13 @@ func createChildNetworkInterfaceMapper(
 		id = "subnet-" + strconv.FormatInt(in.SubnetId.ValueInt64(), 10)
 	}
 
-	ipPool := &sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetworkPool{}
+	ipPool := &sdk.InstancesNetworkInterfaces1NetworkInterfacesInnerNetworkPool{}
 	if !in.IpPool.IsNull() {
 		ipPool.Id = in.IpPool.ValueInt64Pointer()
 	}
 
-	return sdk.InstancesNetworkInterfaces2NetworkInterfacesInner{
-		Network: sdk.InstancesNetworkInterfaces2NetworkInterfacesInnerNetwork{
+	return sdk.InstancesNetworkInterfaces1NetworkInterfacesInner{
+		Network: sdk.InstancesNetworkInterfaces1NetworkInterfacesInnerNetwork{
 			Id:   id,
 			Pool: ipPool,
 		},
