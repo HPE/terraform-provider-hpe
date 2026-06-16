@@ -70,11 +70,14 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var id int64
 	anyOf := result.AddVDIApps200ResponseAnyOf
-	if anyOf != nil && anyOf.VdiApp != nil && anyOf.VdiApp.Id != nil {
-		id = *anyOf.VdiApp.Id
+	if anyOf == nil || anyOf.VdiApp == nil || anyOf.VdiApp.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "VdiApp ID is nil in the create response")
+
+		return
 	}
+
+	id := *anyOf.VdiApp.Id
 
 	readResult, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

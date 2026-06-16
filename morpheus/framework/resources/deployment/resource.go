@@ -71,10 +71,13 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var id int64
-	if result.Deployment != nil && result.Deployment.Id != nil {
-		id = *result.Deployment.Id
+	if result.Deployment == nil || result.Deployment.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Deployment ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Deployment.Id
 
 	readResult, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

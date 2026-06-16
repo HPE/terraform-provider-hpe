@@ -83,10 +83,13 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var id int64
-	if result.StorageVolume != nil && result.StorageVolume.Id != nil {
-		id = *result.StorageVolume.Id
+	if result.StorageVolume == nil || result.StorageVolume.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "StorageVolume ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.StorageVolume.Id
 	idParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
 
 	readResult, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()

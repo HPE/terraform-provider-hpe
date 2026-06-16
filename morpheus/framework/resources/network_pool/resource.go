@@ -106,10 +106,13 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var id int64
-	if result.NetworkPool != nil && result.NetworkPool.Id != nil {
-		id = *result.NetworkPool.Id
+	if result.NetworkPool == nil || result.NetworkPool.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "NetworkPool ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.NetworkPool.Id
 
 	readResult, httpResp, err := client.NetworksAPI.GetNetworkPool(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {

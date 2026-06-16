@@ -72,11 +72,14 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var id int64
 	anyOf := result.AddVDIGateways200ResponseAnyOf
-	if anyOf != nil && anyOf.VdiGateway != nil && anyOf.VdiGateway.Id != nil {
-		id = *anyOf.VdiGateway.Id
+	if anyOf == nil || anyOf.VdiGateway == nil || anyOf.VdiGateway.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "VdiGateway ID is nil in the create response")
+
+		return
 	}
+
+	id := *anyOf.VdiGateway.Id
 
 	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
