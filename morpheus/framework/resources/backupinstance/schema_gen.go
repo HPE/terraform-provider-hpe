@@ -7,6 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -20,6 +21,10 @@ func BackupInstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The backup type code. Computed from the Instance if not provided.",
 				MarkdownDescription: "The backup type code. Computed from the Instance if not provided.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"container_id": schema.Int64Attribute{
 				Optional:            true,
