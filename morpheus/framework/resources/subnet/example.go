@@ -11,15 +11,19 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_subnet/example.tf example.tf.tmpl Name "Example Subnet" TypeId "1" Visibility "private"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_subnet/example.tf example.tf.tmpl Name "Example Subnet" TypeId "1" NetworkId "1" Visibility "private"
 
 func RenderSubnetConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":       "Example Subnet",
-		"TypeId":     "1",
+		"TypeId":     "8",
+		"NetworkId":  "88",
 		"Visibility": "private",
+		// Azure subnets require config.subnetName + config.subnetCidr; the CIDR
+		// must be a free /24 within network 88's VNet address space (10.0.0.0/16).
+		"SubnetCidr": "10.0.250.0/24",
 	}
 
 	for key, value := range overrides {

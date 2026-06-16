@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -71,13 +72,34 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	gw := result.AddVDIGateways200ResponseAnyOf.VdiGateway
-	if gw == nil {
+	anyOf := result.AddVDIGateways200ResponseAnyOf
+	if anyOf == nil || anyOf.VdiGateway == nil || anyOf.VdiGateway.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "VdiGateway ID is nil in the create response")
+
+		return
+	}
+
+	id := *anyOf.VdiGateway.Id
+
+	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "vdi_gateway",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.VdiGateway == nil {
 		resp.Diagnostics.AddError("API returned nil", "VdiGateway is nil in the response")
 
 		return
 	}
-	mapCreateResponseToModel(&plan, gw)
+	mapGetResponseToModel(&plan, readResult.VdiGateway)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -145,7 +167,7 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
+	_, httpResp, err := client.VDIAPI.UpdateVDIGateways(ctx, id).
 		UpdateVDIGatewaysRequest(sdk.UpdateVDIGatewaysRequest{
 			VdiGateway: sdk.UpdateVDIGatewaysRequestVdiGateway{UpdateVDIGatewaysRequestVdiGatewayOneOf: &body},
 		}).Execute()
@@ -155,13 +177,19 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	gw := result.UpdateVDIGateways200ResponseAnyOf.VdiGateway
-	if gw == nil {
+	readResult, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "vdi_gateway", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.VdiGateway == nil {
 		resp.Diagnostics.AddError("API returned nil", "VdiGateway is nil in the response")
 
 		return
 	}
-	mapUpdateResponseToModel(&plan, gw)
+	mapGetResponseToModel(&plan, readResult.VdiGateway)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -204,41 +232,7 @@ func (r *vdiGatewayResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapCreateResponseToModel(model *vdiGatewayModel, gw *sdk.AddVDIGateways200ResponseAnyOfVdiGateway) {
-	if gw.Id != nil {
-		model.ID = types.Int64Value(*gw.Id)
-	}
-	if gw.Name != nil {
-		model.Name = types.StringValue(*gw.Name)
-	}
-	if v := gw.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if v := gw.GatewayUrl.Get(); v != nil {
-		model.GatewayUrl = types.StringValue(*v)
-	}
-}
-
 func mapGetResponseToModel(model *vdiGatewayModel, gw *sdk.GetVDIGateways200ResponseVdiGateway) {
-	if gw.Id != nil {
-		model.ID = types.Int64Value(*gw.Id)
-	}
-	if gw.Name != nil {
-		model.Name = types.StringValue(*gw.Name)
-	}
-	if v := gw.Description.Get(); v != nil {
-		model.Description = types.StringValue(*v)
-	} else {
-		model.Description = types.StringNull()
-	}
-	if v := gw.GatewayUrl.Get(); v != nil {
-		model.GatewayUrl = types.StringValue(*v)
-	}
-}
-
-func mapUpdateResponseToModel(model *vdiGatewayModel, gw *sdk.UpdateVDIGateways200ResponseAnyOfVdiGateway) {
 	if gw.Id != nil {
 		model.ID = types.Int64Value(*gw.Id)
 	}

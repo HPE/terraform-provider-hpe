@@ -7,10 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
+	fwrulegroupresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -46,17 +48,30 @@ func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByIDConfig(t, nil)
+	groupConfig, err := fwrulegroupresource.RenderNetworkFirewallRuleGroupConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Read back the freshly created group by its ID. The id reference creates an
+	// implicit dependency so the group exists before the data source is read,
+	// keeping the test independent of any pre-existing group.
+	dataSourceConfig := `
+data "hpe_morpheus_network_firewall_rule_group" "example" {
+  network_integration_id = hpe_morpheus_network_firewall_rule_group.example.network_integration_id
+  id                     = hpe_morpheus_network_firewall_rule_group.example.id
+}
+`
 
 	ds := "data.hpe_morpheus_network_firewall_rule_group.example"
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
-		resource.TestCheckResourceAttrSet(ds, "name"),
+		resource.TestCheckResourceAttr(ds, "name", name),
 		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
 	}
 
@@ -66,7 +81,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + groupConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -88,17 +103,29 @@ func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
 
-	dataSourceConfig, err := networkfirewallrulegroup.RenderDataSourceByNameConfig(t, nil)
+	groupConfig, err := fwrulegroupresource.RenderNetworkFirewallRuleGroupConfig(t, map[string]string{
+		"Name": name,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Read back the freshly created group by its name. Referencing the resource's
+	// name attribute guarantees an exact match and an implicit dependency.
+	dataSourceConfig := `
+data "hpe_morpheus_network_firewall_rule_group" "example" {
+  network_integration_id = hpe_morpheus_network_firewall_rule_group.example.network_integration_id
+  name                   = hpe_morpheus_network_firewall_rule_group.example.name
+}
+`
 
 	ds := "data.hpe_morpheus_network_firewall_rule_group.example"
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(ds, "id"),
-		resource.TestCheckResourceAttrSet(ds, "name"),
+		resource.TestCheckResourceAttr(ds, "name", name),
 		resource.TestCheckResourceAttrSet(ds, "network_integration_id"),
 	}
 
@@ -108,7 +135,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + groupConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},

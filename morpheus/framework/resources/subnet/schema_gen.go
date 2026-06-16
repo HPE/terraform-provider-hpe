@@ -105,6 +105,7 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Labels for the subnet.",
 			},
 			"name": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The name of the subnet.",
 				MarkdownDescription: "The name of the subnet.",

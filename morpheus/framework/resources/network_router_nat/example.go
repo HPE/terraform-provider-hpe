@@ -11,16 +11,18 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_nat/example.tf example.tf.tmpl RouterId "1" Name "Example NAT Rule" SourceNetwork "10.0.0.0/24" Description "Example SNAT rule"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_nat/example.tf example.tf.tmpl RouterId "1" Name "Example NAT Rule" Action "SNAT" SourceNetwork "10.0.0.0/24" TranslatedNetwork "192.168.1.1" Description "Example SNAT rule"
 
 func RenderNetworkRouterNatConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"RouterId":      "1",
-		"Name":          "Example NAT Rule",
-		"SourceNetwork": "10.0.0.0/24",
-		"Description":   "Example SNAT rule",
+		"RouterId":          "1",
+		"Name":              "Example NAT Rule",
+		"Action":            "SNAT",
+		"SourceNetwork":     "10.0.0.0/24",
+		"TranslatedNetwork": "192.168.1.1",
+		"Description":       "Example SNAT rule",
 	}
 
 	for key, value := range overrides {

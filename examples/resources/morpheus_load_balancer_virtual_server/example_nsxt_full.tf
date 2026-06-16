@@ -14,6 +14,5 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt" {
     persistence         = "COOKIE"
     persistence_profile = 16
     ssl_client_profile  = 19
-    ssl_server_profile  = 0
   }
 }

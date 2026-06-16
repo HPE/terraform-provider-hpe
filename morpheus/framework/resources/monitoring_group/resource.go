@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -84,13 +85,33 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	group := result.CheckGroup
-	if group == nil {
+	if result.CheckGroup == nil || result.CheckGroup.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "CheckGroup ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.CheckGroup.Id
+
+	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "monitoring_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.CheckGroup == nil {
 		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
 
 		return
 	}
-	mapAddGroupResponseToModel(&plan, group)
+	mapGetGroupResponseToModel(&plan, readResult.CheckGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -171,7 +192,7 @@ func (r *monitoringGroupResource) Update(
 		body.InUptime = plan.InUptime.ValueBoolPointer()
 	}
 
-	result, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
+	_, httpResp, err := client.ChecksAPI.UpdateCheckGroups(ctx, id).
 		UpdateCheckGroupsRequest(sdk.UpdateCheckGroupsRequest{
 			CheckGroup: body,
 		}).Execute()
@@ -181,13 +202,19 @@ func (r *monitoringGroupResource) Update(
 		return
 	}
 
-	group := result.CheckGroup
-	if group == nil {
+	readResult, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "monitoring_group", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.CheckGroup == nil {
 		resp.Diagnostics.AddError("API returned nil", "CheckGroup is nil in the response")
 
 		return
 	}
-	mapUpdateGroupResponseToModel(&plan, group)
+	mapGetGroupResponseToModel(&plan, readResult.CheckGroup)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -234,64 +261,7 @@ func (r *monitoringGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddGroupResponseToModel(model *monitoringGroupModel, group *sdk.AddCheckGroups200ResponseAllOfCheckGroup) {
-	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
-	}
-	if group.Name != nil {
-		model.Name = types.StringValue(*group.Name)
-	}
-	if group.Description.IsSet() && group.Description.Get() != nil {
-		model.Description = types.StringValue(*group.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	if group.MinHappy != nil {
-		model.MinHappy = types.Int64Value(*group.MinHappy)
-	} else {
-		model.MinHappy = types.Int64Null()
-	}
-	if group.Severity != nil {
-		model.Severity = types.StringValue(*group.Severity)
-	} else {
-		model.Severity = types.StringNull()
-	}
-	if group.InUptime != nil {
-		model.InUptime = types.BoolValue(*group.InUptime)
-	}
-}
-
 func mapGetGroupResponseToModel(model *monitoringGroupModel, group *sdk.GetCheckGroups200ResponseCheckGroup) {
-	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
-	}
-	if group.Name != nil {
-		model.Name = types.StringValue(*group.Name)
-	}
-	if group.Description.IsSet() && group.Description.Get() != nil {
-		model.Description = types.StringValue(*group.Description.Get())
-	} else {
-		model.Description = types.StringNull()
-	}
-	if group.MinHappy != nil {
-		model.MinHappy = types.Int64Value(*group.MinHappy)
-	} else {
-		model.MinHappy = types.Int64Null()
-	}
-	if group.Severity != nil {
-		model.Severity = types.StringValue(*group.Severity)
-	} else {
-		model.Severity = types.StringNull()
-	}
-	if group.InUptime != nil {
-		model.InUptime = types.BoolValue(*group.InUptime)
-	}
-}
-
-func mapUpdateGroupResponseToModel(
-	model *monitoringGroupModel,
-	group *sdk.UpdateCheckGroups200ResponseAllOfCheckGroup,
-) {
 	if group.Id != nil {
 		model.ID = types.Int64Value(*group.Id)
 	}

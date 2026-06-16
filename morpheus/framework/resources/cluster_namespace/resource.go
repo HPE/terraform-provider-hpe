@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -89,9 +90,34 @@ func (r *clusterNamespaceResource) Create(
 		return
 	}
 
-	if result.Namespace != nil && result.Namespace.Id != nil {
-		plan.ID = types.Int64Value(*result.Namespace.Id)
+	if result.Namespace == nil || result.Namespace.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Namespace ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.Namespace.Id
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "cluster_namespace",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readNs := readResult.Namespace
+	if readNs == nil {
+		resp.Diagnostics.AddError("API returned nil", "Namespace is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readNs)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -126,18 +152,13 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	ns := result.Namespace
-	if ns != nil {
-		if ns.Id != nil {
-			state.ID = types.Int64Value(*ns.Id)
-		}
-		if ns.Name != nil {
-			state.Name = types.StringValue(*ns.Name)
-		}
-		if ns.Description != nil {
-			state.Description = types.StringValue(*ns.Description)
-		}
-		// NOTE: Active is not in the API GET at all.
+	if ns == nil {
+		resp.Diagnostics.AddError("API returned nil", "Namespace is nil in the response")
+
+		return
 	}
+
+	mapGetResponseToModel(&state, ns)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -187,6 +208,21 @@ func (r *clusterNamespaceResource) Update(
 
 		return
 	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_namespace", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readNs := readResult.Namespace
+	if readNs == nil {
+		resp.Diagnostics.AddError("API returned nil", "Namespace is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readNs)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -252,3 +288,16 @@ func (r *clusterNamespaceResource) ImportState(
 
 // Ensure unused imports are satisfied.
 var _ *http.Response
+
+func mapGetResponseToModel(model *clusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) {
+	if ns.Id != nil {
+		model.ID = types.Int64Value(*ns.Id)
+	}
+	if ns.Name != nil {
+		model.Name = types.StringValue(*ns.Name)
+	}
+	if ns.Description != nil {
+		model.Description = types.StringValue(*ns.Description)
+	}
+	// NOTE: Active is not in the API GET at all. Config value is preserved in state.
+}

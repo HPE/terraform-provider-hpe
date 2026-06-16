@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -119,6 +120,13 @@ func (r *Resource) Create(
 
 	state, _, _, diags := getVirtualServerAsState(ctx, lbID, *createdInstance.Id, client)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "loadbalancervirtualserver",
+			ResourceID:   *createdInstance.Id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
 		return
 	}
 

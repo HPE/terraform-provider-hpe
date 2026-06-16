@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -26,6 +27,16 @@ func (r *Resource) Create(
 	var plan NetworkRouterBgpNeighborModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// password_wo is a write-only attribute: its value is only present in the
+	// configuration, never in the plan or state. Read it from req.Config.
+	var passwordWo types.String
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("password_wo"), &passwordWo)...,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -74,8 +85,8 @@ func (r *Resource) Create(
 		neighbor.HoldDown = plan.HoldDown.ValueInt64Pointer()
 	}
 
-	if !plan.PasswordWo.IsNull() && !plan.PasswordWo.IsUnknown() {
-		neighbor.Password = plan.PasswordWo.ValueStringPointer()
+	if !passwordWo.IsNull() && !passwordWo.IsUnknown() {
+		neighbor.Password = passwordWo.ValueStringPointer()
 	}
 
 	if !plan.RouteFilteringType.IsNull() && !plan.RouteFilteringType.IsUnknown() {

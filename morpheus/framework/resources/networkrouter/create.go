@@ -87,6 +87,14 @@ func (r *Resource) Create(
 		router.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
+	// Set enable_bgp. The API stores this on the router (and syncs it from the
+	// gateway BGP config), so it must be sent at create time; otherwise the API
+	// defaults it to false and the GET read-back conflicts with a plan that set
+	// enable_bgp = true ("inconsistent result after apply").
+	if !plan.EnableBgp.IsNull() && !plan.EnableBgp.IsUnknown() {
+		router.EnableBgp = plan.EnableBgp.ValueBoolPointer()
+	}
+
 	// Set zone (cloud_id) if provided
 	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
 		router.Zone = &sdk.CreateNetworkRouterRequestNetworkRouterZone{

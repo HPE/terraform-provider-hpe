@@ -94,6 +94,15 @@ func TestAccMorpheusNetworkDhcpServerResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
+				// The DHCP GET response does not echo the NSX-T config or
+				// leaseTime back, so these cannot be reconstructed on import
+				// (create/update/read preserve them from prior state instead).
+				ImportStateVerifyIgnore: []string{
+					"config_nsxt.edge_cluster",
+					"config_nsxt.active_edge_node",
+					"config_nsxt.standby_edge_node",
+					"lease_time",
+				},
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_dhcp_server.example"]
 					if !ok {

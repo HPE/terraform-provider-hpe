@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -75,13 +76,33 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	cert := result.Certificate
-	if cert == nil {
+	if result.Certificate == nil || result.Certificate.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "Certificate ID is nil in the create response")
+
+		return
+	}
+
+	id := *result.Certificate.Id
+
+	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "certificate", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "certificate",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	if readResult.Certificate == nil {
 		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
 
 		return
 	}
-	mapAddResponseToModel(&plan, cert)
+	mapGetResponseToModel(&plan, readResult.Certificate)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -153,7 +174,7 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		body.DomainName = plan.DomainName.ValueStringPointer()
 	}
 
-	result, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).
+	_, httpResp, err := client.SSLCertificatesAPI.UpdateCertificate(ctx, id).
 		UpdateCertificateRequest(sdk.UpdateCertificateRequest{
 			Certificate: &body,
 		}).Execute()
@@ -163,13 +184,19 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	cert := result.Certificate
-	if cert == nil {
+	readResult, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "certificate", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	if readResult.Certificate == nil {
 		resp.Diagnostics.AddError("API returned nil", "Certificate is nil in the response")
 
 		return
 	}
-	mapUpdateResponseToModel(&plan, cert)
+	mapGetResponseToModel(&plan, readResult.Certificate)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -212,29 +239,6 @@ func (r *certificateResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapAddResponseToModel(model *certificateModel, cert *sdk.AddCertificate200ResponseAllOfCertificate) {
-	if cert.Id != nil {
-		model.ID = types.Int64Value(*cert.Id)
-	}
-	if cert.Name != nil {
-		model.Name = types.StringValue(*cert.Name)
-	}
-	// Only update description if the API returns a value; otherwise keep the
-	// plan value (no-op by not modifying model.Description).
-	if cert.Description.IsSet() && cert.Description.Get() != nil {
-		model.Description = types.StringValue(*cert.Description.Get())
-	}
-	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
-		model.DomainName = types.StringValue(*cert.DomainName.Get())
-	} else {
-		model.DomainName = types.StringNull()
-	}
-	if cert.Enabled != nil {
-		model.Enabled = types.BoolValue(*cert.Enabled)
-	}
-	// cert_file and key_file are not returned by the API; keep plan values
-}
-
 func mapGetResponseToModel(model *certificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
 	if cert.Id != nil {
 		model.ID = types.Int64Value(*cert.Id)
@@ -256,27 +260,4 @@ func mapGetResponseToModel(model *certificateModel, cert *sdk.GetCertificate200R
 		model.Enabled = types.BoolValue(*cert.Enabled)
 	}
 	// cert_file and key_file are not returned by the API; keep existing state values
-}
-
-func mapUpdateResponseToModel(model *certificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
-	if cert.Id != nil {
-		model.ID = types.Int64Value(*cert.Id)
-	}
-	if cert.Name != nil {
-		model.Name = types.StringValue(*cert.Name)
-	}
-	// Only update description if the API returns a value; otherwise keep the
-	// plan value (no-op by not modifying model.Description).
-	if cert.Description.IsSet() && cert.Description.Get() != nil {
-		model.Description = types.StringValue(*cert.Description.Get())
-	}
-	if cert.DomainName.IsSet() && cert.DomainName.Get() != nil && *cert.DomainName.Get() != "" {
-		model.DomainName = types.StringValue(*cert.DomainName.Get())
-	} else {
-		model.DomainName = types.StringNull()
-	}
-	if cert.Enabled != nil {
-		model.Enabled = types.BoolValue(*cert.Enabled)
-	}
-	// cert_file and key_file are not returned by the API; keep plan values
 }

@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 var (
@@ -83,9 +84,34 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
-	if result.AffinityGroup != nil && result.AffinityGroup.Id != nil {
-		plan.ID = types.Int64Value(*result.AffinityGroup.Id)
+	if result.AffinityGroup == nil || result.AffinityGroup.Id == nil {
+		resp.Diagnostics.AddError("API returned nil ID", "AffinityGroup ID is nil in the create response")
+
+		return
 	}
+
+	id := *result.AffinityGroup.Id
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "cluster_affinity_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+
+		return
+	}
+
+	readAg := readResult.AffinityGroup
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readAg)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -124,14 +150,13 @@ func (r *clusterAffinityGroupResource) Read(
 	}
 
 	ag := result.AffinityGroup
-	if ag != nil {
-		if ag.Id != nil {
-			state.ID = types.Int64Value(*ag.Id)
-		}
-		if ag.Name != nil {
-			state.Name = types.StringValue(*ag.Name)
-		}
+	if ag == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
 	}
+
+	mapGetResponseToModel(&state, ag)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -174,6 +199,21 @@ func (r *clusterAffinityGroupResource) Update(
 
 		return
 	}
+
+	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", plan.Name.ValueString(), err, httpResp)
+
+		return
+	}
+
+	readAg := readResult.AffinityGroup
+	if readAg == nil {
+		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return
+	}
+	mapGetResponseToModel(&plan, readAg)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -239,3 +279,12 @@ func (r *clusterAffinityGroupResource) ImportState(
 
 // Ensure unused imports are satisfied.
 var _ *http.Response
+
+func mapGetResponseToModel(model *clusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+	if ag.Id != nil {
+		model.ID = types.Int64Value(*ag.Id)
+	}
+	if ag.Name != nil {
+		model.Name = types.StringValue(*ag.Name)
+	}
+}
