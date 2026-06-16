@@ -8,6 +8,8 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> **Note:** Not all cloud types support the `suspended` state. Setting `desired_state = "suspended"` on an instance whose cloud does not support suspend fails at apply time with the underlying API error.
+
 ## Example Usage
 
 {{tffile "examples/resources/morpheus_instance_power_state/example.tf"}}

@@ -8,6 +8,8 @@ description: |-
 
 Manages the power state of an existing Morpheus instance. This resource does not create or destroy instances — it only transitions them between `running`, `stopped`, and `suspended` states.
 
+~> **Note:** Not all cloud types support the `suspended` state. Setting `desired_state = "suspended"` on an instance whose cloud does not support suspend fails at apply time with the underlying API error.
+
 ## Example Usage
 
 ```terraform
