@@ -40,9 +40,9 @@ func init() {
 
 			var items []loadBalancerPoolSweepItem
 
-			for _, lb := range lbResp.GetLoadBalancers() {
-				lbID, ok := lb.GetIdOk()
-				if !ok || lbID == nil {
+			for _, lb := range lbResp.LoadBalancers {
+				lbID := lb.Id
+				if lbID == nil {
 					continue
 				}
 
@@ -52,14 +52,14 @@ func init() {
 					continue
 				}
 
-				for _, pool := range poolResp.GetLoadBalancerPools() {
-					id, ok := pool.GetIdOk()
-					if !ok || id == nil {
+				for _, pool := range poolResp.LoadBalancerPools {
+					id := pool.Id
+					if id == nil {
 						continue
 					}
 
-					name, ok := pool.GetNameOk()
-					if !ok || name == nil {
+					name := pool.Name
+					if name == nil {
 						continue
 					}
 

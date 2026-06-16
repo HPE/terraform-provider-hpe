@@ -72,7 +72,15 @@ func getLoadBalancerPoolAsState(
 		return state, diags
 	}
 
-	p := poolResp.GetLoadBalancerPool()
+	p := poolResp.LoadBalancerPool
+	if p == nil {
+		diags.AddError(
+			"error reading load balancer pool",
+			fmt.Sprintf("load balancer pool %d GET returned no pool", id),
+		)
+
+		return state, diags
+	}
 
 	// Core fields
 	state.Id = convert.Int64ToType(p.Id)
@@ -208,14 +216,14 @@ func getLoadBalancerPoolAsState(
 	state.Enabled = convert.BoolToType(p.Enabled)
 
 	// *time.Time fields
-	if dc, ok := p.GetDateCreatedOk(); ok && dc != nil {
-		state.DateCreated = types.StringValue(dc.String())
+	if p.DateCreated != nil {
+		state.DateCreated = types.StringValue(p.DateCreated.String())
 	} else {
 		state.DateCreated = types.StringNull()
 	}
 
-	if lu, ok := p.GetLastUpdatedOk(); ok && lu != nil {
-		state.LastUpdated = types.StringValue(lu.String())
+	if p.LastUpdated != nil {
+		state.LastUpdated = types.StringValue(p.LastUpdated.String())
 	} else {
 		state.LastUpdated = types.StringNull()
 	}
@@ -233,12 +241,12 @@ func getLoadBalancerPoolAsState(
 
 	// Config: parse the config map from the API response into the appropriate
 	// typed block (config_nsxt) or dynamic fallback (config).
-	configMap := p.GetConfig()
+	configMap := p.Config
 
 	lbTypeCode := ""
 	if p.LoadBalancer != nil {
-		if lbType, ok := p.LoadBalancer.GetTypeOk(); ok && lbType != nil {
-			if code, ok := lbType.GetCodeOk(); ok && code != nil {
+		if lbType := p.LoadBalancer.Type; lbType != nil {
+			if code := lbType.Code; code != nil {
 				lbTypeCode = *code
 			}
 		}
@@ -283,7 +291,7 @@ func buildLoadBalancerValue(
 	// Build the nested type object
 	typeVal := types.ObjectNull(TypeValue{}.AttributeTypes(ctx))
 
-	if lbType, ok := lb.GetTypeOk(); ok && lbType != nil {
+	if lbType := lb.Type; lbType != nil {
 		tv, d := NewTypeValue(
 			TypeValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
@@ -409,12 +417,12 @@ func parseConfigNsxt(ctx context.Context, configMap map[string]interface{}) Conf
 	nsxtVal, d := NewConfigNsxtValue(
 		ConfigNsxtValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
-			"active_monitor_paths":  activeMonitorPaths,
-			"member_group":          memberGroupObjVal,
-			"passive_monitor_path":  passiveMonitorPath,
-			"snat_ip_addresses":     snatIpAddresses,
-			"snat_translation_type": snatTranslationType,
-			"tcp_multiplexing":      tcpMultiplexing,
+			"active_monitor_paths":    activeMonitorPaths,
+			"member_group":            memberGroupObjVal,
+			"passive_monitor_path":    passiveMonitorPath,
+			"snat_ip_addresses":       snatIpAddresses,
+			"snat_translation_type":   snatTranslationType,
+			"tcp_multiplexing":        tcpMultiplexing,
 			"tcp_multiplexing_number": tcpMultiplexingNumber,
 		},
 	)

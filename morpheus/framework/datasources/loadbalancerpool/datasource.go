@@ -110,8 +110,15 @@ func getLoadBalancerPoolByID(
 		)
 	}
 
-	p := resp.GetLoadBalancerPool()
-	state := populateLoadBalancerPoolState(ctx, loadBalancerID, &p)
+	p := resp.LoadBalancerPool
+	if p == nil {
+		return nil, fmt.Errorf(
+			"load balancer %d pool %d GET returned no pool",
+			loadBalancerID, id,
+		)
+	}
+
+	state := populateLoadBalancerPoolState(ctx, loadBalancerID, p)
 
 	return state, nil
 }
@@ -133,8 +140,8 @@ func getLoadBalancerPoolByName(
 	}
 
 	var matching []sdk.ListLoadBalancerPools200ResponseAllOfLoadBalancerPoolsInner
-	for _, p := range pools.GetLoadBalancerPools() {
-		if pName, ok := p.GetNameOk(); ok && *pName == name {
+	for _, p := range pools.LoadBalancerPools {
+		if p.Name != nil && *p.Name == name {
 			matching = append(matching, p)
 		}
 	}
@@ -149,8 +156,8 @@ func getLoadBalancerPoolByName(
 	if len(matching) > 1 {
 		var ids []string
 		for _, p := range matching {
-			if id, ok := p.GetIdOk(); ok {
-				ids = append(ids, fmt.Sprintf("%d", *id))
+			if p.Id != nil {
+				ids = append(ids, fmt.Sprintf("%d", *p.Id))
 			}
 		}
 
@@ -162,8 +169,8 @@ func getLoadBalancerPoolByName(
 		)
 	}
 
-	id, ok := matching[0].GetIdOk()
-	if !ok {
+	id := matching[0].Id
+	if id == nil {
 		return nil, fmt.Errorf(
 			"load balancer %d pool with name %q has missing ID",
 			loadBalancerID, name,
@@ -311,14 +318,14 @@ func populateLoadBalancerPoolState(
 	state.Enabled = convert.BoolToType(p.Enabled)
 
 	// *time.Time fields
-	if dc, ok := p.GetDateCreatedOk(); ok && dc != nil {
-		state.DateCreated = types.StringValue(dc.String())
+	if p.DateCreated != nil {
+		state.DateCreated = types.StringValue(p.DateCreated.String())
 	} else {
 		state.DateCreated = types.StringNull()
 	}
 
-	if lu, ok := p.GetLastUpdatedOk(); ok && lu != nil {
-		state.LastUpdated = types.StringValue(lu.String())
+	if p.LastUpdated != nil {
+		state.LastUpdated = types.StringValue(p.LastUpdated.String())
 	} else {
 		state.LastUpdated = types.StringNull()
 	}
@@ -329,7 +336,7 @@ func populateLoadBalancerPoolState(
 
 		typeVal := types.ObjectNull(TypeValue{}.AttributeTypes(ctx))
 
-		if lbType, ok := lb.GetTypeOk(); ok && lbType != nil {
+		if lbType := lb.Type; lbType != nil {
 			tv, d := NewTypeValue(
 				TypeValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
@@ -462,14 +469,14 @@ func populateLoadBalancerPoolState(
 	// Config — NSX-T typed vs generic dynamic.
 	lbTypeCode := ""
 	if p.LoadBalancer != nil {
-		if lbType, ok := p.LoadBalancer.GetTypeOk(); ok && lbType != nil {
-			if code, ok := lbType.GetCodeOk(); ok && code != nil {
+		if lbType := p.LoadBalancer.Type; lbType != nil {
+			if code := lbType.Code; code != nil {
 				lbTypeCode = *code
 			}
 		}
 	}
 
-	configMap := p.GetConfig()
+	configMap := p.Config
 
 	switch lbTypeCode {
 	case "nsx-t":
@@ -560,13 +567,13 @@ func populateLoadBalancerPoolState(
 			nsxtVal, d := NewConfigNsxtValue(
 				ConfigNsxtValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{
-					"active_monitor_paths":            activeMonitorPaths,
-					"member_group":          memberGroupObjVal,
-					"passive_monitor_path":            passiveMonitorPath,
-					"snat_ip_addresses":               snatIpAddresses,
-					"snat_translation_type":           snatTranslationType,
-					"tcp_multiplexing":                tcpMultiplexing,
-					"tcp_multiplexing_number":         tcpMultiplexingNumber,
+					"active_monitor_paths":    activeMonitorPaths,
+					"member_group":            memberGroupObjVal,
+					"passive_monitor_path":    passiveMonitorPath,
+					"snat_ip_addresses":       snatIpAddresses,
+					"snat_translation_type":   snatTranslationType,
+					"tcp_multiplexing":        tcpMultiplexing,
+					"tcp_multiplexing_number": tcpMultiplexingNumber,
 				},
 			)
 			if !d.HasError() {

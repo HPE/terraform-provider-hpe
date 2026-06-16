@@ -41,38 +41,38 @@ func (r *Resource) Update(
 		return
 	}
 
-	pool := sdk.NewUpdateLoadBalancerPoolRequestLoadBalancerPoolWithDefaults()
+	pool := &sdk.UpdateLoadBalancerPoolRequestLoadBalancerPool{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
-		pool.SetName(plan.Name.ValueString())
+		pool.Name = sdk.PtrString(plan.Name.ValueString())
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		pool.SetDescription(plan.Description.ValueString())
+		pool.Description = sdk.PtrString(plan.Description.ValueString())
 	}
 
 	if !plan.VipBalance.IsNull() && !plan.VipBalance.IsUnknown() {
-		pool.SetVipBalance(plan.VipBalance.ValueString())
+		pool.VipBalance = sdk.PtrString(plan.VipBalance.ValueString())
 	}
 
 	if !plan.MinActive.IsNull() && !plan.MinActive.IsUnknown() {
-		pool.SetMinActive(plan.MinActive.ValueInt64())
+		pool.MinActive = sdk.PtrInt64(plan.MinActive.ValueInt64())
 	}
 
 	if !plan.Port.IsNull() && !plan.Port.IsUnknown() {
-		pool.SetPort(plan.Port.ValueInt64())
+		pool.Port = sdk.PtrInt64(plan.Port.ValueInt64())
 	}
 
 	if !plan.VipSticky.IsNull() && !plan.VipSticky.IsUnknown() {
-		pool.SetVipSticky(plan.VipSticky.ValueString())
+		pool.VipSticky = sdk.PtrString(plan.VipSticky.ValueString())
 	}
 
 	if !plan.VipClientIpMode.IsNull() && !plan.VipClientIpMode.IsUnknown() {
-		pool.SetVipClientIpMode(plan.VipClientIpMode.ValueString())
+		pool.VipClientIpMode = sdk.PtrString(plan.VipClientIpMode.ValueString())
 	}
 
 	if !plan.Partition.IsNull() && !plan.Partition.IsUnknown() {
-		pool.SetPartition(plan.Partition.ValueString())
+		pool.Partition = sdk.PtrString(plan.Partition.ValueString())
 	}
 
 	if err := setUpdateConfig(ctx, pool, plan); err != nil {
@@ -84,8 +84,8 @@ func (r *Resource) Update(
 	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
 	id := currentState.Id.ValueInt64()
 
-	updateReq := sdk.NewUpdateLoadBalancerPoolRequestWithDefaults()
-	updateReq.SetLoadBalancerPool(*pool)
+	updateReq := &sdk.UpdateLoadBalancerPoolRequest{}
+	updateReq.LoadBalancerPool = pool
 
 	_, httpResp, err := client.LoadBalancersAPI.
 		UpdateLoadBalancerPool(ctx, loadBalancerID, id).
@@ -120,18 +120,18 @@ func setUpdateConfig(
 	plan LoadBalancerPoolModel,
 ) error {
 	if !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown() {
-		nsxConfig := sdk.NewNSXTLoadBalancerPoolConfigObject1WithDefaults()
+		nsxConfig := &sdk.NSXTLoadBalancerPoolConfigObject1{}
 
 		if !plan.ConfigNsxt.ActiveMonitorPaths.IsNull() && !plan.ConfigNsxt.ActiveMonitorPaths.IsUnknown() {
-			nsxConfig.SetActiveMonitorPaths(plan.ConfigNsxt.ActiveMonitorPaths.ValueInt64())
+			nsxConfig.ActiveMonitorPaths.Set(sdk.PtrInt64(plan.ConfigNsxt.ActiveMonitorPaths.ValueInt64()))
 		}
 
 		if !plan.ConfigNsxt.PassiveMonitorPath.IsNull() && !plan.ConfigNsxt.PassiveMonitorPath.IsUnknown() {
-			nsxConfig.SetPassiveMonitorPath(plan.ConfigNsxt.PassiveMonitorPath.ValueInt64())
+			nsxConfig.PassiveMonitorPath.Set(sdk.PtrInt64(plan.ConfigNsxt.PassiveMonitorPath.ValueInt64()))
 		}
 
 		if !plan.ConfigNsxt.SnatTranslationType.IsNull() && !plan.ConfigNsxt.SnatTranslationType.IsUnknown() {
-			nsxConfig.SetSnatTranslationType(plan.ConfigNsxt.SnatTranslationType.ValueString())
+			nsxConfig.SnatTranslationType = sdk.PtrString(plan.ConfigNsxt.SnatTranslationType.ValueString())
 		}
 
 		if !plan.ConfigNsxt.SnatIpAddresses.IsNull() && !plan.ConfigNsxt.SnatIpAddresses.IsUnknown() {
@@ -142,15 +142,15 @@ func setUpdateConfig(
 				}
 			}
 
-			nsxConfig.SetSnatIpAddresses(addrs)
+			nsxConfig.SnatIpAddresses = addrs
 		}
 
 		if !plan.ConfigNsxt.TcpMultiplexing.IsNull() && !plan.ConfigNsxt.TcpMultiplexing.IsUnknown() {
-			nsxConfig.SetTcpMultiplexing(plan.ConfigNsxt.TcpMultiplexing.ValueBool())
+			nsxConfig.TcpMultiplexing = sdk.PtrBool(plan.ConfigNsxt.TcpMultiplexing.ValueBool())
 		}
 
 		if !plan.ConfigNsxt.TcpMultiplexingNumber.IsNull() && !plan.ConfigNsxt.TcpMultiplexingNumber.IsUnknown() {
-			nsxConfig.SetTcpMultiplexingNumber(plan.ConfigNsxt.TcpMultiplexingNumber.ValueInt64())
+			nsxConfig.TcpMultiplexingNumber.Set(sdk.PtrInt64(plan.ConfigNsxt.TcpMultiplexingNumber.ValueInt64()))
 		}
 
 		// Build nested memberGroup if member_group is set.
@@ -162,31 +162,31 @@ func setUpdateConfig(
 				return fmt.Errorf("failed to extract member_group: %s", diags.Errors()[0].Detail())
 			}
 
-			mg := sdk.NewNSXTLoadBalancerPoolConfigObject1MemberGroupWithDefaults()
+			mg := &sdk.NSXTLoadBalancerPoolConfigObject1MemberGroup{}
 
 			if !memberGroup.Path.IsNull() && !memberGroup.Path.IsUnknown() {
-				mg.SetPath(memberGroup.Path.ValueString())
+				mg.Path = sdk.PtrString(memberGroup.Path.ValueString())
 			}
 
 			if !memberGroup.IpRevisionFilter.IsNull() && !memberGroup.IpRevisionFilter.IsUnknown() {
-				mg.SetIpRevisionFilter(memberGroup.IpRevisionFilter.ValueString())
+				mg.IpRevisionFilter = sdk.PtrString(memberGroup.IpRevisionFilter.ValueString())
 			}
 
 			if !memberGroup.MaxIpListSize.IsNull() && !memberGroup.MaxIpListSize.IsUnknown() {
-				mg.SetMaxIpListSize(memberGroup.MaxIpListSize.ValueInt64())
+				mg.MaxIpListSize.Set(sdk.PtrInt64(memberGroup.MaxIpListSize.ValueInt64()))
 			}
 
 			if !memberGroup.Port.IsNull() && !memberGroup.Port.IsUnknown() {
-				mg.SetPort(memberGroup.Port.ValueInt64())
+				mg.Port.Set(sdk.PtrInt64(memberGroup.Port.ValueInt64()))
 			}
 
-			nsxConfig.SetMemberGroup(*mg)
+			nsxConfig.MemberGroup = mg
 		}
 
 		cfg := sdk.UpdateLoadBalancerPoolRequestLoadBalancerPoolConfig{
 			NSXTLoadBalancerPoolConfigObject1: nsxConfig,
 		}
-		pool.SetConfig(cfg)
+		pool.Config = &cfg
 
 		return nil
 	}
@@ -209,7 +209,7 @@ func setUpdateConfig(
 	cfg := sdk.UpdateLoadBalancerPoolRequestLoadBalancerPoolConfig{
 		MapmapOfStringAny: &configDataMap,
 	}
-	pool.SetConfig(cfg)
+	pool.Config = &cfg
 
 	return nil
 }
