@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf example_nsxt_full.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip-ssl-client" Description "Example NSX-T virtual server" VipAddress "10.0.0.5" VipPort 443 VipProtocol "http" PoolId 11 SslCert 12 SslServerCert 0 ApplicationProfile 13 Persistence "COOKIE" PersistenceProfile 16 SslClientProfile 19 SslServerProfile 0
+//go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_full.tf example_nsxt_full.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip-ssl-client" Description "Example NSX-T virtual server" VipAddress "10.0.0.5" VipPort 443 VipProtocol "http" PoolId 11 SslCert 12 SslServerCert 0 ApplicationProfile 13 Persistence "COOKIE" PersistenceProfile 16 SslClientProfile 19 SslServerProfile ""
 //go:generate ../../../../bin/render -out examples/resources/morpheus_load_balancer_virtual_server/example_nsxt_minimal.tf example_nsxt_minimal.tf.tmpl LoadBalancerId 1 VipName "example-nsxt-vip" Description "Example NSX-T virtual server" VipAddress "10.0.0.4" VipPort 443 VipProtocol "http" PoolId 11 ApplicationProfile 13
 
 func RenderLoadBalancerVirtualServerNsxtFullConfig(t *testing.T, overrides map[string]string) (string, error) {
@@ -31,7 +31,10 @@ func RenderLoadBalancerVirtualServerNsxtFullConfig(t *testing.T, overrides map[s
 		"Persistence":        "COOKIE",
 		"PersistenceProfile": "16",
 		"SslClientProfile":   "19",
-		"SslServerProfile":   "0",
+		// ssl_server_profile is omitted by default: setting it (even to 0)
+		// requires a non-zero ssl_server_cert per the resource's cross-field
+		// validator. Provide a valid non-zero pair to exercise server SSL.
+		"SslServerProfile": "",
 	}
 
 	for key, value := range overrides {

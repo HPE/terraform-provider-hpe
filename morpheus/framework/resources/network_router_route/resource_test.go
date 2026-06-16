@@ -169,9 +169,11 @@ resource "hpe_morpheus_network_router_route" "example" {
 		resource.TestCheckResourceAttr(resourceName, "default_route", "false"),
 	)
 
-	checkInPlaceUpdate := resource.ConfigPlanChecks{
+	// The route resource is replace-only: its Update is not supported, so any
+	// attribute change forces destroy-and-recreate.
+	checkReplace := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
 		},
 	}
 
@@ -179,7 +181,7 @@ resource "hpe_morpheus_network_router_route" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
-			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkReplace},
 			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})

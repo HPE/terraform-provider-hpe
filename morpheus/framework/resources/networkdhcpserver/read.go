@@ -152,7 +152,7 @@ func resolveConfigState(
 
 	switch {
 	case planHasNsxt:
-		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig)
+		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig, plan.ConfigNsxt)
 		diags.Append(nsxtDiags...)
 
 		return configResult{
@@ -172,17 +172,34 @@ func resolveConfigState(
 	}
 }
 
-// buildNsxtConfigValue unmarshals raw config JSON into a ConfigNsxtValue.
+// knownOrNull returns the value when it is known (not null and not unknown),
+// otherwise a null string. It prevents unknown plan values (e.g. computed
+// fields that were never set) from leaking into state.
+func knownOrNull(v types.String) types.String {
+	if v.IsNull() || v.IsUnknown() {
+		return types.StringNull()
+	}
+
+	return v
+}
+
+// buildNsxtConfigValue reconstructs a ConfigNsxtValue for state.
+//
+// The DHCP GET response does not reliably echo the NSX-T config back (notably
+// edge_cluster), so rebuilding purely from the API response would null these
+// fields out and cause a perpetual diff. We therefore start from the known
+// plan/state values and only override a field when the API actually returns it.
 func buildNsxtConfigValue(
 	ctx context.Context,
 	id int64,
 	rawConfig json.RawMessage,
+	planNsxt ConfigNsxtValue,
 ) (ConfigNsxtValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	edgeCluster := types.StringNull()
-	activeEdgeNode := types.StringNull()
-	standbyEdgeNode := types.StringNull()
+	edgeCluster := knownOrNull(planNsxt.EdgeCluster)
+	activeEdgeNode := knownOrNull(planNsxt.ActiveEdgeNode)
+	standbyEdgeNode := knownOrNull(planNsxt.StandbyEdgeNode)
 
 	if len(rawConfig) > 0 {
 		var nsxCfg sdk.NetworkDhcpServerConfigNSX
@@ -195,13 +212,15 @@ func buildNsxtConfigValue(
 				),
 			)
 		} else {
-			edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
-			activeEdgeNode = convert.StrToType(
-				nsxCfg.PreferredEdgeNode1.Get(),
-			)
-			standbyEdgeNode = convert.StrToType(
-				nsxCfg.PreferredEdgeNode2.Get(),
-			)
+			if nsxCfg.EdgeCluster.IsSet() {
+				edgeCluster = convert.StrToType(nsxCfg.EdgeCluster.Get())
+			}
+			if nsxCfg.PreferredEdgeNode1.IsSet() {
+				activeEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode1.Get())
+			}
+			if nsxCfg.PreferredEdgeNode2.IsSet() {
+				standbyEdgeNode = convert.StrToType(nsxCfg.PreferredEdgeNode2.Get())
+			}
 		}
 	}
 
@@ -240,7 +259,7 @@ func detectConfigFromResponse(
 
 	var nsxCfg sdk.NetworkDhcpServerConfigNSX
 	if err := json.Unmarshal(rawConfig, &nsxCfg); err == nil && isNsxtConfig(&nsxCfg) {
-		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig)
+		nsxt, nsxtDiags := buildNsxtConfigValue(ctx, id, rawConfig, NewConfigNsxtValueNull())
 		diags.Append(nsxtDiags...)
 		result.configNsxt = nsxt
 

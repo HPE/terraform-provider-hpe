@@ -7,10 +7,12 @@ import (
 	"regexp"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
+	bgpresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -31,6 +33,35 @@ provider "hpe" {
 }
 `
 
+// existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
+// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
+// BGP neighbors attach to the tier-0's locale-services, which are only populated
+// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
+// races that sync, so we reference this existing gateway.
+const existingTier0RouterID = "28"
+
+// bgpNeighborSourceAddress is a valid IP on tier-0 28's interface, required for
+// EBGP multihop neighbors (see resource test for details).
+const bgpNeighborSourceAddress = "10.100.10.1"
+
+// neighborFixture renders a BGP neighbor on the existing tier-0 router, labelled
+// hpe_morpheus_network_router_bgp_neighbor.example.
+func neighborFixture(t *testing.T, name, ipAddress string) string {
+	t.Helper()
+
+	cfg, err := bgpresource.RenderBgpNeighborConfig(t, map[string]string{
+		"RouterId":        existingTier0RouterID,
+		"IpAddress":       ipAddress,
+		"Description":     name,
+		"SourceAddresses": bgpNeighborSourceAddress,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return cfg
+}
+
 func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
@@ -46,21 +77,26 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	ipAddress := "192.168.50." + acctest.RandStringFromCharSet(2, "123456789")
 
-	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t, nil)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Look up the neighbor created in the same config by IP. depends_on defers
+	// the data source read until the neighbor exists.
+	dataSourceConfig := `
+data "hpe_morpheus_network_router_bgp_neighbor" "example" {
+  ip_address = "` + ipAddress + `"
+  router_id  = 28
+  depends_on = [hpe_morpheus_network_router_bgp_neighbor.example]
+}
+`
 
-	checks := bgpNeighborChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(bgpNeighborChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -82,21 +118,25 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	ipAddress := "192.168.51." + acctest.RandStringFromCharSet(2, "123456789")
 
-	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, nil)
+	// id and router_id reference the created resources, deferring the read.
+	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, map[string]string{
+		"Id":       "hpe_morpheus_network_router_bgp_neighbor.example.id",
+		"RouterId": "28",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	checks := bgpNeighborChecks()
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	checkFn := resource.ComposeAggregateTestCheckFunc(bgpNeighborChecks()...)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dataSourceConfig,
+				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -119,14 +159,13 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIpAddressConfig(t,
-		map[string]string{
-			"IpAddress": "0.0.0.0",
-		},
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// Search a real (existing) router for a neighbor IP that does not exist.
+	dataSourceConfig := `
+data "hpe_morpheus_network_router_bgp_neighbor" "example" {
+  ip_address = "0.0.0.0"
+  router_id  = 28
+}
+`
 
 	expected := regexp.MustCompile(`no network router BGP neighbor found`)
 

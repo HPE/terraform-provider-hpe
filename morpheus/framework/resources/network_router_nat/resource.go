@@ -83,8 +83,33 @@ func (r *Resource) Create(
 
 	routerID := plan.RouterId.ValueInt64()
 
-	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{}
-	nat.Name = plan.Name.ValueString()
+	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{
+		Name: plan.Name.ValueString(),
+		Config: sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
+			Action: plan.Action.ValueString(),
+		},
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		nat.Description = plan.Description.ValueStringPointer()
+	}
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		nat.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+	if !plan.SourceNetwork.IsNull() && !plan.SourceNetwork.IsUnknown() {
+		nat.SourceNetwork = plan.SourceNetwork.ValueStringPointer()
+	}
+	if !plan.DestinationNetwork.IsNull() && !plan.DestinationNetwork.IsUnknown() {
+		nat.DestinationNetwork = plan.DestinationNetwork.ValueStringPointer()
+	}
+	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
+		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
+	}
+	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
+		nat.Priority = plan.Priority.ValueInt64Pointer()
+	}
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		nat.Protocol = plan.Protocol.ValueStringPointer()
+	}
 
 	createReq := sdk.CreateNetworkRouterNatRequest{
 		NetworkRouterNAT: &nat,
@@ -167,6 +192,12 @@ func getNatAsState(
 
 	if nat.Name != nil {
 		state.Name = types.StringValue(*nat.Name)
+	}
+
+	if nat.Action != nil {
+		state.Action = types.StringValue(*nat.Action)
+	} else {
+		state.Action = plan.Action
 	}
 
 	if nat.Description != nil {
@@ -264,8 +295,33 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
-	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{}
-	nat.Name = plan.Name.ValueString()
+	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{
+		Name: plan.Name.ValueStringPointer(),
+		Config: &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
+			Action: plan.Action.ValueStringPointer(),
+		},
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		nat.Description = plan.Description.ValueStringPointer()
+	}
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		nat.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+	if !plan.SourceNetwork.IsNull() && !plan.SourceNetwork.IsUnknown() {
+		nat.SourceNetwork = plan.SourceNetwork.ValueStringPointer()
+	}
+	if !plan.DestinationNetwork.IsNull() && !plan.DestinationNetwork.IsUnknown() {
+		nat.DestinationNetwork = plan.DestinationNetwork.ValueStringPointer()
+	}
+	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
+		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
+	}
+	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
+		nat.Priority = plan.Priority.ValueInt64Pointer()
+	}
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		nat.Protocol = plan.Protocol.ValueStringPointer()
+	}
 
 	updateReq := sdk.UpdateNetworkRouterNatRequest{
 		NetworkRouterNAT: &nat,

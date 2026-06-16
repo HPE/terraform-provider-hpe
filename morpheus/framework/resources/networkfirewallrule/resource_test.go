@@ -17,6 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
@@ -26,6 +27,42 @@ func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
+}
+
+// firewallRuleConfigWithGroup renders a self-contained firewall rule group plus a
+// firewall rule that references it via rule_group_id. The Morpheus API resolves
+// the rule's security group from rule.ruleGroup.id (see NetworkFirewallRulesController
+// .save -> ruleParams.securityGroupId), so a real, freshly created group is required;
+// hard-coding a group ID fails with "no security group specified" on environments
+// where that ID does not exist.
+func firewallRuleConfigWithGroup(
+	t *testing.T,
+	groupName string,
+	ruleOverrides map[string]string,
+) string {
+	t.Helper()
+
+	groupConfig, err := networkfirewallrulegroup.RenderNetworkFirewallRuleGroupConfig(
+		t,
+		map[string]string{
+			"Name": groupName,
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ruleOverrides == nil {
+		ruleOverrides = map[string]string{}
+	}
+	ruleOverrides["RuleGroupId"] = "hpe_morpheus_network_firewall_rule_group.example.id"
+
+	ruleConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(t, ruleOverrides)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return groupConfig + ruleConfig
 }
 
 func checkDestroy(t *testing.T) resource.TestCheckFunc {
@@ -87,17 +124,15 @@ func TestAccMorpheusNetworkFirewallRuleResourceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	resourceConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name":        name,
 			"Description": "test description",
 			"Priority":    "10",
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -188,22 +223,21 @@ func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	createConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	createConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name":        name,
 			"Description": "initial description",
 			"Priority":    "5",
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	updatedName := name + "-updated"
 
-	updateConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	updateConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name":        updatedName,
 			"Direction":   "Egress",
@@ -213,9 +247,6 @@ func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
 			"Priority":    "20",
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	baseChecks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -335,16 +366,14 @@ func TestAccMorpheusNetworkFirewallRuleResourceNestedAttributesOk(t *testing.T) 
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	resourceConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name":           name,
 			"DestinationIds": `"ANY"`,
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -391,15 +420,13 @@ func TestAccMorpheusNetworkFirewallRuleResourceImportBadIDError(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	resourceConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name": name,
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
@@ -436,15 +463,13 @@ func TestAccMorpheusNetworkFirewallRuleResourceImportNonNumericIDError(t *testin
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := networkfirewallrule.RenderNetworkFirewallRuleConfig(
+	resourceConfig := firewallRuleConfigWithGroup(
 		t,
+		name+"-group",
 		map[string]string{
 			"Name": name,
 		},
 	)
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),

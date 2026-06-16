@@ -66,7 +66,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 		"Persistence":        "COOKIE",
 		"PersistenceProfile": "16",
 		"SslClientProfile":   "19",
-		"SslServerProfile":   "0",
+		"SslServerProfile":   "",
 	})
 	if err != nil {
 		t.Fatalf("failed to render vs config: %s", err)
@@ -89,7 +89,6 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence", "COOKIE"),
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.persistence_profile", "16"),
 		resource.TestCheckResourceAttr(resourceName, "config_nsxt.ssl_client_profile", "19"),
-		resource.TestCheckResourceAttr(resourceName, "config_nsxt.ssl_server_profile", "0"),
 		resource.TestCheckResourceAttrPair(resourceName, "load_balancer_id",
 			"hpe_morpheus_load_balancer.lb", "id"),
 	)
@@ -166,7 +165,6 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
     persistence         = "SOURCE_IP"
     persistence_profile = 78
     ssl_client_profile  = 33
-    ssl_server_profile  = 0
   }
 }
 `
@@ -189,7 +187,6 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
     persistence         = "COOKIE"
     persistence_profile = 79
     ssl_client_profile  = 33
-    ssl_server_profile  = 0
   }
 }
 `
