@@ -7,6 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuptype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
@@ -45,6 +47,8 @@ func (SubProvider) GetDataSources(
 	_ context.Context,
 ) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		backup.NewDataSource,
+		backuptype.NewDataSource,
 		cluster.NewDataSource,
 		cloud.NewDataSource,
 		datastore.NewDataSource,
