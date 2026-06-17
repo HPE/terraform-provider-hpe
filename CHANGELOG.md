@@ -73,6 +73,8 @@ In this release (v1.4.0) we have added the following data sources:
 - hpe_morpheus_network_router
 - hpe_morpheus_network_router_bgp_neighbor
 - hpe_morpheus_network_router_route
+- hpe_morpheus_security_group
+- hpe_morpheus_security_groups
 
 ## Enhancements to existing resources
 
