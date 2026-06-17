@@ -1,0 +1,33 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Note:** The clone operation is asynchronous. Terraform polls for the new
+instance to appear and reach a stable status (`running` or `stopped`).
+`source_instance_id` is an input that the read API does not echo back as a
+top-level field; on import Terraform recovers it from the clone's
+`cloneInstanceId` configuration value, which Morpheus records when an instance
+is cloned.
+
+## Example Usage
+
+{{tffile "examples/resources/morpheus_instance_clone/example.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the cloned instance ID:
+
+```shell
+terraform import hpe_morpheus_instance_clone.example 42
+```
+
+On import, Terraform recovers `source_instance_id` from the clone's
+`cloneInstanceId` configuration value, which Morpheus records during cloning.
