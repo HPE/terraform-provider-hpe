@@ -23,6 +23,8 @@ func ResourceOptionTypeRadioList() *schema.Resource {
 		UpdateContext: resourceOptionTypeRadioListUpdate,
 		DeleteContext: resourceOptionTypeRadioListDelete,
 
+		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

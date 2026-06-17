@@ -23,6 +23,8 @@ func ResourceOptionTypeTextarea() *schema.Resource {
 		UpdateContext: resourceOptionTypeTextareaUpdate,
 		DeleteContext: resourceOptionTypeTextareaDelete,
 
+		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

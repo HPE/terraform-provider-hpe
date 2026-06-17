@@ -54,9 +54,42 @@ const (
 	typeVMWFolders     = "vmwFolders"
 )
 
+// validateDependentFieldNotSelf rejects a form option type whose dependent_field
+// equals its own field_name. Such a self-reference produces a circular
+// dependsOnCode and an unstable form reload; Morpheus stores a submitted value
+// verbatim with no guard, so the provider rejects it at plan time.
+func validateDependentFieldNotSelf(optionType cty.Value, path string, index int) error {
+	fieldNameVal := optionType.GetAttr("field_name")
+	dependentFieldVal := optionType.GetAttr("dependent_field")
+	if !fieldNameVal.IsKnown() || fieldNameVal.IsNull() ||
+		!dependentFieldVal.IsKnown() || dependentFieldVal.IsNull() {
+		return nil
+	}
+
+	fieldName := fieldNameVal.AsString()
+	dependentField := dependentFieldVal.AsString()
+	if dependentField != "" && dependentField == fieldName {
+		return fmt.Errorf(
+			"dependent_field must not equal field_name (%q) at %s[%d]: a field "+
+				"cannot depend on itself, which creates a circular dependsOnCode; "+
+				"point dependent_field at a different field",
+			fieldName, path, index,
+		)
+	}
+
+	return nil
+}
+
 func validateOptionTypeConfig(optionType cty.Value, path string, index int) error {
 	if !optionType.IsKnown() || optionType.IsNull() {
 		return nil
+	}
+
+	// A field cannot depend on itself: dependent_field (-> dependsOnCode) must
+	// not equal field_name, otherwise the form reload is circular. This applies
+	// to every option type, regardless of its type.
+	if err := validateDependentFieldNotSelf(optionType, path, index); err != nil {
+		return err
 	}
 
 	optionTypeValue := optionType.GetAttr("type")

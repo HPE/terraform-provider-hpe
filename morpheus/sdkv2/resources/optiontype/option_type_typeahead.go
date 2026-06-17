@@ -28,6 +28,8 @@ func ResourceOptionTypeTypeahead() *schema.Resource {
 		UpdateContext: resourceOptionTypeTypeaheadUpdate,
 		DeleteContext: resourceOptionTypeTypeaheadDelete,
 
+		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

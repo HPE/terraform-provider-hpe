@@ -3,6 +3,7 @@
 package optiontype_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -171,6 +172,38 @@ func TestAccMorpheusOptionTypeTextExampleOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusOptionTypeTextRejectsSelfReferentialDependentField verifies the
+// plan-time guard that rejects dependent_field == field_name (a field cannot
+// depend on itself, which would create a circular dependsOnCode). This is a
+// pure plan-time validation, so it needs no live appliance.
+func TestAccMorpheusOptionTypeTextRejectsSelfReferentialDependentField(t *testing.T) {
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	invalidConfig := `
+resource "hpe_morpheus_option_type_text" "bad_self_ref" {
+  name            = "bad-self-ref-test"
+  field_name      = "myField"
+  field_label     = "My Field"
+  dependent_field = "myField"
+}
+`
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + invalidConfig,
+				ExpectError: regexp.MustCompile(`dependent_field must not equal field_name`),
 			},
 		},
 	})
