@@ -3,16 +3,47 @@
 // Hand-written schema for the plural hpe_morpheus_security_groups data source.
 // Unlike the singular data source, this list/filter shape is not produced by the
 // code-spec generator, so the schema is maintained here directly.
+//
+// The filter input follows the SDKv2 plural convention used by data sources such
+// as hpe_morpheus_clouds and hpe_morpheus_networks:
+//
+//	filter {
+//	  name   = "name"
+//	  values = ["<regex>", ...]
+//	}
+//
+// implemented here as a terraform-plugin-framework SetNestedBlock.
 
 package securitygroups
 
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
+
+// Allow-listed field names usable in a filter block's `name` argument.
+const (
+	filterFieldName       = "name"
+	filterFieldVisibility = "visibility"
+	filterFieldCloudID    = "cloud_id"
+	filterFieldActive     = "active"
+)
+
+// filterFieldNames returns the allow-list of fields a filter block may match on.
+func filterFieldNames() []string {
+	return []string{
+		filterFieldName,
+		filterFieldVisibility,
+		filterFieldCloudID,
+		filterFieldActive,
+	}
+}
 
 // securityGroupObjectAttrTypes is the single source of truth for the attribute
 // types of each element in the security_groups list. The schema's nested object
@@ -38,40 +69,18 @@ func securityGroupObjectAttrTypes() map[string]attr.Type {
 
 func SecurityGroupsDataSourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Retrieves a list of Morpheus security groups, optionally filtered by " +
-			"name, phrase, cloud, visibility, or active state.",
-		MarkdownDescription: "Retrieves a list of Morpheus security groups, optionally filtered by " +
-			"name, phrase, cloud, visibility, or active state.",
+		Description: "Retrieves a list of Morpheus security groups, optionally filtered using one " +
+			"or more filter blocks.",
+		MarkdownDescription: "Retrieves a list of Morpheus security groups, optionally filtered using " +
+			"one or more filter blocks.",
 		Attributes: map[string]schema.Attribute{
-			// Filter inputs.
-			"name": schema.StringAttribute{
-				Optional:            true,
-				Description:         "Filter by exact security group name (server-side).",
-				MarkdownDescription: "Filter by exact security group name (server-side).",
-			},
-			"phrase": schema.StringAttribute{
+			"sort_ascending": schema.BoolAttribute{
 				Optional: true,
-				Description: "Filter by a search phrase matched against name or description " +
-					"(server-side, partial match).",
-				MarkdownDescription: "Filter by a search phrase matched against name or description " +
-					"(server-side, partial match).",
+				Description: "Whether to sort the returned security groups by id in ascending order. " +
+					"Defaults to true.",
+				MarkdownDescription: "Whether to sort the returned security groups by id in ascending " +
+					"order. Defaults to true.",
 			},
-			"cloud_id": schema.Int64Attribute{
-				Optional:            true,
-				Description:         "Filter to security groups belonging to this cloud (zone) ID.",
-				MarkdownDescription: "Filter to security groups belonging to this cloud (zone) ID.",
-			},
-			"visibility": schema.StringAttribute{
-				Optional:            true,
-				Description:         "Filter by visibility (e.g. public or private).",
-				MarkdownDescription: "Filter by visibility (e.g. public or private).",
-			},
-			"active": schema.BoolAttribute{
-				Optional:            true,
-				Description:         "Filter by active state.",
-				MarkdownDescription: "Filter by active state.",
-			},
-			// Result.
 			"security_groups": schema.ListNestedAttribute{
 				Computed:            true,
 				Description:         "The list of security groups matching the supplied filters.",
@@ -154,14 +163,51 @@ func SecurityGroupsDataSourceSchema(_ context.Context) schema.Schema {
 				},
 			},
 		},
+		Blocks: map[string]schema.Block{
+			"filter": schema.SetNestedBlock{
+				Description: "Filter block. Repeat to apply multiple filters (all are ANDed together). " +
+					"Filter values are case-sensitive and support Go regular expressions " +
+					"(https://regex101.com/).",
+				MarkdownDescription: "Filter block. Repeat to apply multiple filters (all are ANDed " +
+					"together). Filter values are case-sensitive and support Go regular expressions " +
+					"(https://regex101.com/).",
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Required: true,
+							Description: "The name of the field to filter on. Valid names are: " +
+								"name, visibility, cloud_id, active.",
+							MarkdownDescription: "The name of the field to filter on. Valid names are: " +
+								"`name`, `visibility`, `cloud_id`, `active`.",
+							Validators: []validator.String{
+								stringvalidator.OneOf(filterFieldNames()...),
+							},
+						},
+						"values": schema.SetAttribute{
+							ElementType: types.StringType,
+							Required:    true,
+							Description: "The filter values. A security group matches the block if the " +
+								"chosen field matches ANY value (Go regular expression).",
+							MarkdownDescription: "The filter values. A security group matches the block if " +
+								"the chosen field matches ANY value (Go regular expression).",
+							Validators: []validator.Set{
+								setvalidator.SizeAtLeast(1),
+							},
+						},
+					},
+				},
+			},
+		},
 	}
 }
 
 type SecurityGroupsModel struct {
-	Name           types.String `tfsdk:"name"`
-	Phrase         types.String `tfsdk:"phrase"`
-	CloudId        types.Int64  `tfsdk:"cloud_id"`
-	Visibility     types.String `tfsdk:"visibility"`
-	Active         types.Bool   `tfsdk:"active"`
-	SecurityGroups types.List   `tfsdk:"security_groups"`
+	Filter         []securityGroupsFilterModel `tfsdk:"filter"`
+	SortAscending  types.Bool                  `tfsdk:"sort_ascending"`
+	SecurityGroups types.List                  `tfsdk:"security_groups"`
+}
+
+type securityGroupsFilterModel struct {
+	Name   types.String `tfsdk:"name"`
+	Values types.Set    `tfsdk:"values"`
 }

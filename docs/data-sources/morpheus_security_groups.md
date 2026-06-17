@@ -2,17 +2,69 @@
 page_title: "hpe_morpheus_security_groups Data Source - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Retrieves a list of Morpheus security groups, optionally filtered by name, phrase, cloud, visibility, or active state.
+  Retrieves a list of Morpheus security groups, optionally filtered using one or more filter blocks.
 ---
 # hpe_morpheus_security_groups (Data Source)
 
-Retrieves a list of Morpheus security groups, optionally filtered by name, phrase, cloud, visibility, or active state.
+Retrieves a list of Morpheus security groups, optionally filtered using one or more filter blocks.
 
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_security_groups" "example" {
-  phrase = "web"
+# Filter by name. Values are Go regular expressions; a security group matches
+# the block if its name matches ANY value.
+data "hpe_morpheus_security_groups" "by_name" {
+  filter {
+    name   = "name"
+    values = ["^web-", "-prod$"]
+  }
+}
+
+# Filter by visibility ("public" or "private").
+data "hpe_morpheus_security_groups" "public" {
+  filter {
+    name   = "visibility"
+    values = ["public"]
+  }
+}
+
+# Filter by cloud (zone) id.
+data "hpe_morpheus_security_groups" "by_cloud" {
+  filter {
+    name   = "cloud_id"
+    values = ["^3$"]
+  }
+}
+
+# Filter by active state.
+data "hpe_morpheus_security_groups" "active_only" {
+  filter {
+    name   = "active"
+    values = ["true"]
+  }
+}
+
+# Multiple filter blocks are ANDed together. Sort the results by id descending.
+data "hpe_morpheus_security_groups" "combined" {
+  filter {
+    name   = "name"
+    values = ["web"]
+  }
+
+  filter {
+    name   = "visibility"
+    values = ["public"]
+  }
+
+  sort_ascending = false
+}
+
+# No filter blocks returns all security groups (up to 250).
+data "hpe_morpheus_security_groups" "all" {}
+
+# Consume the full objects returned in `security_groups`.
+output "web_security_group_ids" {
+  value = data.hpe_morpheus_security_groups.by_name.security_groups[*].id
 }
 ```
 
@@ -21,15 +73,21 @@ data "hpe_morpheus_security_groups" "example" {
 
 ### Optional
 
-- `active` (Boolean) Filter by active state.
-- `cloud_id` (Number) Filter to security groups belonging to this cloud (zone) ID.
-- `name` (String) Filter by exact security group name (server-side).
-- `phrase` (String) Filter by a search phrase matched against name or description (server-side, partial match).
-- `visibility` (String) Filter by visibility (e.g. public or private).
+- `filter` (Block Set) Filter block. Repeat to apply multiple filters (all are ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/). (see [below for nested schema](#nestedblock--filter))
+- `sort_ascending` (Boolean) Whether to sort the returned security groups by id in ascending order. Defaults to true.
 
 ### Read-Only
 
 - `security_groups` (Attributes List) The list of security groups matching the supplied filters. (see [below for nested schema](#nestedatt--security_groups))
+
+<a id="nestedblock--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- `name` (String) The name of the field to filter on. Valid names are: `name`, `visibility`, `cloud_id`, `active`.
+- `values` (Set of String) The filter values. A security group matches the block if the chosen field matches ANY value (Go regular expression).
+
 
 <a id="nestedatt--security_groups"></a>
 ### Nested Schema for `security_groups`

@@ -6,6 +6,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
+	"strconv"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -57,6 +59,13 @@ func (d *DataSource) Schema(
 	resp.Schema = SecurityGroupsDataSourceSchema(ctx)
 }
 
+// compiledFilter is a filter block with its values pre-compiled as regular
+// expressions.
+type compiledFilter struct {
+	field string
+	res   []*regexp.Regexp
+}
+
 // Read refreshes the Terraform state with the latest data.
 func (d *DataSource) Read(
 	ctx context.Context,
@@ -70,6 +79,11 @@ func (d *DataSource) Read(
 		return
 	}
 
+	filters := compileFilters(ctx, config.Filter, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	apiClient, err := d.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(summary, "could not create sdk client")
@@ -77,15 +91,17 @@ func (d *DataSource) Read(
 		return
 	}
 
-	listReq := apiClient.SecurityGroupsAPI.ListSecurityGroups(ctx).Max(listMax)
-	if !config.Name.IsNull() {
-		listReq = listReq.Name(config.Name.ValueString())
-	}
-	if !config.Phrase.IsNull() {
-		listReq = listReq.Phrase(config.Phrase.ValueString())
+	// Sort ascending by default; only descending when explicitly set to false.
+	direction := "asc"
+	if !config.SortAscending.IsNull() && !config.SortAscending.ValueBool() {
+		direction = "desc"
 	}
 
-	rs, hresp, err := listReq.Execute()
+	rs, hresp, err := apiClient.SecurityGroupsAPI.ListSecurityGroups(ctx).
+		Max(listMax).
+		Sort("id").
+		Direction(direction).
+		Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(summary, fmt.Sprintf("LIST failed for security groups: %s",
 			providererrors.ErrMsg(err, hresp)))
@@ -98,7 +114,7 @@ func (d *DataSource) Read(
 
 	for i := range rs.SecurityGroups {
 		sg := rs.SecurityGroups[i]
-		if !matchesClientFilters(&config, &sg) {
+		if !securityGroupMatchesFilters(&sg, filters) {
 			continue
 		}
 
@@ -122,31 +138,97 @@ func (d *DataSource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
 }
 
-// matchesClientFilters applies the filters that the list API does not support
-// natively (cloud_id, visibility, active).
-func matchesClientFilters(
-	config *SecurityGroupsModel,
+// compileFilters converts the filter blocks from configuration into compiled
+// regular expressions. Invalid patterns are reported as diagnostics.
+func compileFilters(
+	ctx context.Context,
+	blocks []securityGroupsFilterModel,
+	diags *diag.Diagnostics,
+) []compiledFilter {
+	filters := make([]compiledFilter, 0, len(blocks))
+
+	for _, b := range blocks {
+		field := b.Name.ValueString()
+
+		var values []string
+		diags.Append(b.Values.ElementsAs(ctx, &values, false)...)
+		if diags.HasError() {
+			return nil
+		}
+
+		res := make([]*regexp.Regexp, 0, len(values))
+		for _, v := range values {
+			re, err := regexp.Compile(v)
+			if err != nil {
+				diags.AddError(summary,
+					fmt.Sprintf("invalid regular expression %q for filter %q: %s", v, field, err))
+
+				return nil
+			}
+			res = append(res, re)
+		}
+
+		filters = append(filters, compiledFilter{field: field, res: res})
+	}
+
+	return filters
+}
+
+// securityGroupMatchesFilters reports whether sg satisfies every filter block.
+// Within a block, the field must match ANY value (OR); across blocks all must
+// match (AND).
+func securityGroupMatchesFilters(
 	sg *sdk.ListSecurityGroups200ResponseAllOfSecurityGroupsInner,
+	filters []compiledFilter,
 ) bool {
-	if !config.CloudId.IsNull() {
-		if sg.Zone == nil || sg.Zone.Id == nil || *sg.Zone.Id != config.CloudId.ValueInt64() {
+	for _, f := range filters {
+		val, ok := securityGroupFieldValue(sg, f.field)
+		if !ok {
 			return false
 		}
-	}
 
-	if !config.Visibility.IsNull() {
-		if sg.Visibility == nil || *sg.Visibility != config.Visibility.ValueString() {
-			return false
+		matched := false
+		for _, re := range f.res {
+			if re.MatchString(val) {
+				matched = true
+
+				break
+			}
 		}
-	}
-
-	if !config.Active.IsNull() {
-		if sg.Active == nil || *sg.Active != config.Active.ValueBool() {
+		if !matched {
 			return false
 		}
 	}
 
 	return true
+}
+
+// securityGroupFieldValue returns the string representation of the named field
+// for regex matching, and whether the field is present.
+func securityGroupFieldValue(
+	sg *sdk.ListSecurityGroups200ResponseAllOfSecurityGroupsInner,
+	field string,
+) (string, bool) {
+	switch field {
+	case filterFieldName:
+		if sg.Name != nil {
+			return *sg.Name, true
+		}
+	case filterFieldVisibility:
+		if sg.Visibility != nil {
+			return *sg.Visibility, true
+		}
+	case filterFieldCloudID:
+		if sg.Zone != nil && sg.Zone.Id != nil {
+			return strconv.FormatInt(*sg.Zone.Id, 10), true
+		}
+	case filterFieldActive:
+		if sg.Active != nil {
+			return strconv.FormatBool(*sg.Active), true
+		}
+	}
+
+	return "", false
 }
 
 func securityGroupInnerToObject(

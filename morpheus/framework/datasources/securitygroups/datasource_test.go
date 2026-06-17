@@ -45,7 +45,10 @@ resource "hpe_morpheus_security_group" "test" {
 
 	dataSourceConfig := createConfig + `
 data "hpe_morpheus_security_groups" "example" {
-  name = hpe_morpheus_security_group.test.name
+  filter {
+    name   = "name"
+    values = ["^` + name + `$"]
+  }
 }`
 
 	checks := []resource.TestCheckFunc{
@@ -57,6 +60,67 @@ data "hpe_morpheus_security_groups" "example" {
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_security_groups.example", "security_groups.0.id",
+		),
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: createConfig,
+			},
+			{
+				Config: dataSourceConfig,
+				Check:  resource.ComposeAggregateTestCheckFunc(checks...),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusSecurityGroupsMultiFilter exercises multiple filter blocks,
+// which are ANDed together. A new security group defaults to private visibility.
+func TestAccMorpheusSecurityGroupsMultiFilter(t *testing.T) {
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix("tf-acc-sgs-ds")
+
+	createConfig := providerConfig + `
+resource "hpe_morpheus_security_group" "test" {
+  name = "` + name + `"
+}`
+
+	dataSourceConfig := createConfig + `
+data "hpe_morpheus_security_groups" "example" {
+  filter {
+    name   = "name"
+    values = ["^` + name + `$"]
+  }
+
+  filter {
+    name   = "visibility"
+    values = ["private"]
+  }
+}`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_security_groups.example", "security_groups.#", "1",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_security_groups.example", "security_groups.0.visibility", "private",
 		),
 	}
 
@@ -91,7 +155,10 @@ func TestAccMorpheusSecurityGroupsEmptyResult(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	config := providerConfig + `
       data "hpe_morpheus_security_groups" "test" {
-        name = "this-name-should-not-exist-______"
+        filter {
+          name   = "name"
+          values = ["this-name-should-not-exist-______"]
+        }
       }`
 
 	checks := []resource.TestCheckFunc{
