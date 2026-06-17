@@ -1,0 +1,25 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus backup type.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus backup type by its ID or name. Backup types define the kind of
+backup that can be performed (for example snapshot, file backup, or database
+backup) and the restore capabilities each one supports.
+
+Exactly one of `id` or `name` must be specified.
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_backup_type/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_backup_type/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

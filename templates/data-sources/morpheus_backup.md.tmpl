@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus backup.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus Backup resource by its ID or name.
+
+In Terraform Provider terms, this can be used to fetch information about existing `hpe_morpheus_backup_instance` or `hpe_morpheus_backup_host` resources.
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_backup/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_backup/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
