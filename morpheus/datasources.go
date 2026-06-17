@@ -16,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancermonitor"
@@ -78,5 +79,6 @@ func (SubProvider) GetDataSources(
 		networktransportzone.NewDataSource,
 		networkpool.NewDataSource,
 		networktype.NewDataSource,
+		instancesnapshot.NewDataSource,
 	}
 }
