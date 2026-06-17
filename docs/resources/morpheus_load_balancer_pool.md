@@ -55,8 +55,6 @@ resource "hpe_morpheus_load_balancer_pool" "nsxt" {
 - `allow_nat` (String)
 - `allow_snat` (String)
 - `category` (String)
-- `created_by` (String)
-- `date_created` (String)
 - `down_action` (String)
 - `enabled` (Boolean)
 - `error_penalty` (Number)

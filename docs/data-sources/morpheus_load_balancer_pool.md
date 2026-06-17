@@ -49,7 +49,6 @@ data "hpe_morpheus_load_balancer_pool" "example" {
 - `category` (String)
 - `config` (Dynamic) Generic pool configuration object. Settings vary by load balancer type.
 - `config_nsxt` (Attributes) NSX-T load balancer pool configuration (see [below for nested schema](#nestedatt--config_nsxt))
-- `created_by` (String)
 - `date_created` (String)
 - `description` (String) A description of the load balancer pool
 - `down_action` (String)
