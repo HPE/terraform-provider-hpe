@@ -5,8 +5,7 @@ package network
 import (
 	"context"
 	"fmt"
-	"strings"
-
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,8 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	morpheusvalidators "github.com/HPE/terraform-provider-hpe/utils/validators"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -82,7 +80,7 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object. Settings vary by type.",
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
-					morpheusvalidators.ValidObjectMap(),
+					validators.ValidObjectMap(),
 				},
 			},
 			"description": schema.StringAttribute{
@@ -215,30 +213,30 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "IPv6 Network Pool ID",
 				MarkdownDescription: "IPv6 Network Pool ID",
 			},
-		"resource_permissions": schema.SingleNestedAttribute{
-			Attributes: map[string]schema.Attribute{
-				"all": schema.BoolAttribute{
-					Optional:            true,
-					Computed:            true,
-					Description:         "Pass true to allow access all groups",
-					MarkdownDescription: "Pass true to allow access all groups",
+			"resource_permissions": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"all": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Pass true to allow access all groups",
+						MarkdownDescription: "Pass true to allow access all groups",
+					},
+					"group_ids": schema.SetAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Computed:            true,
+						Description:         "Array of group (site) IDs that are allowed access",
+						MarkdownDescription: "Array of group (site) IDs that are allowed access",
+					},
 				},
-				"group_ids": schema.SetAttribute{
-					ElementType:         types.Int64Type,
-					Optional:            true,
-					Computed:            true,
-					Description:         "Array of group (site) IDs that are allowed access",
-					MarkdownDescription: "Array of group (site) IDs that are allowed access",
+				CustomType: ResourcePermissionsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
+					},
 				},
+				Optional: true,
+				Computed: true,
 			},
-			CustomType: ResourcePermissionsType{
-				ObjectType: types.ObjectType{
-					AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
-				},
-			},
-			Optional: true,
-			Computed: true,
-		},
 			"search_domains": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -372,8 +370,7 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`all is missing from object`,
-		)
+			`all is missing from object`)
 
 		return nil, diags
 	}
@@ -383,8 +380,7 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute),
-		)
+			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
 	groupIdsAttribute, ok := attributes["group_ids"]
@@ -392,8 +388,7 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`group_ids is missing from object`,
-		)
+			`group_ids is missing from object`)
 
 		return nil, diags
 	}
@@ -403,8 +398,7 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute),
-		)
+			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -486,8 +480,7 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`all is missing from object`,
-		)
+			`all is missing from object`)
 
 		return NewResourcePermissionsValueUnknown(), diags
 	}
@@ -497,8 +490,7 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute),
-		)
+			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
 	groupIdsAttribute, ok := attributes["group_ids"]
@@ -506,8 +498,7 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`group_ids is missing from object`,
-		)
+			`group_ids is missing from object`)
 
 		return NewResourcePermissionsValueUnknown(), diags
 	}
@@ -517,8 +508,7 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute),
-		)
+			fmt.Sprintf(`group_ids expected to be basetypes.SetValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -544,8 +534,7 @@ func NewResourcePermissionsValueMust(attributeTypes map[string]attr.Type, attrib
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewResourcePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -576,12 +565,14 @@ func (t ResourcePermissionsType) ValueFromTerraform(ctx context.Context, in tfty
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -622,6 +613,7 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.All.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -629,6 +621,7 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["all"] = val
 
 		val, err = v.GroupIds.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -705,8 +698,7 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 		map[string]attr.Value{
 			"all":       v.All,
 			"group_ids": groupIdsVal,
-		},
-	)
+		})
 
 	return objVal, diags
 }

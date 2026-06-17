@@ -4,11 +4,12 @@ package networkfirewallrulegroup
 
 import (
 	"context"
-
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -16,8 +17,6 @@ import (
 
 func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description:         "Manages a network firewall rule group resource in Morpheus.",
-		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -70,17 +69,26 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
-				Description:         "Set of tenant IDs that are allowed access to the firewall rule group. Master account only.",
-				MarkdownDescription: "Set of tenant IDs that are allowed access to the firewall rule group. Master account only.",
+				Computed:            true,
+				Description:         "List of tenant account IDs that are allowed access",
+				MarkdownDescription: "List of tenant account IDs that are allowed access",
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Default:             stringdefault.StaticString("private"),
 				Description:         "Visibility of the firewall rule group (`private` or `public`).",
 				MarkdownDescription: "Visibility of the firewall rule group (`private` or `public`).",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"private",
+						"public",
+					),
+				},
+				Default: stringdefault.StaticString("private"),
 			},
 		},
+		Description:         "Manages a network firewall rule group resource in Morpheus.",
+		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
 	}
 }
 

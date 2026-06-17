@@ -46,7 +46,7 @@ func (r *clusterNamespaceResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = ClusterNamespaceSchema(ctx)
+	resp.Schema = ClusterNamespaceResourceSchema(ctx)
 }
 
 func (r *clusterNamespaceResource) Create(
@@ -61,13 +61,13 @@ func (r *clusterNamespaceResource) Create(
 		return
 	}
 
-	var plan clusterNamespaceModel
+	var plan ClusterNamespaceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
 
 	ns := sdk.AddClusterNamespaceRequestNamespace{
 		Name: plan.Name.ValueString(),
@@ -81,17 +81,16 @@ func (r *clusterNamespaceResource) Create(
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
-		attrs := plan.ResourcePermissions.Attributes()
 		rp := sdk.AddClusterNamespaceRequestNamespaceResourcePermissions{}
-		if allVal, ok := attrs["all"].(types.Bool); ok && !allVal.IsNull() {
-			rp.All = allVal.ValueBoolPointer()
+		if !plan.ResourcePermissions.All.IsNull() {
+			rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		}
-		if allPlans, ok := attrs["all_plans"].(types.Bool); ok && !allPlans.IsNull() {
-			rp.AllPlans = allPlans.ValueBoolPointer()
+		if !plan.ResourcePermissions.AllPlans.IsNull() {
+			rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
 		}
-		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+		if !plan.ResourcePermissions.SiteIds.IsNull() {
 			var siteIDs []int64
-			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			d := plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -103,9 +102,9 @@ func (r *clusterNamespaceResource) Create(
 			}
 			rp.Sites = sites
 		}
-		if planIDsVal, ok := attrs["plan_ids"].(types.Set); ok && !planIDsVal.IsNull() {
+		if !plan.ResourcePermissions.PlanIds.IsNull() {
 			var planIDs []int64
-			d := planIDsVal.ElementsAs(ctx, &planIDs, false)
+			d := plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -159,7 +158,7 @@ func (r *clusterNamespaceResource) Create(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readNs, &resp.Diagnostics)
+	mapGetResponseToModel(ctx, &plan, readNs, &resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -172,14 +171,14 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	var state clusterNamespaceModel
+	var state ClusterNamespaceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -200,7 +199,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	mapGetResponseToModel(&state, ns, &resp.Diagnostics)
+	mapGetResponseToModel(ctx, &state, ns, &resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -217,14 +216,14 @@ func (r *clusterNamespaceResource) Update(
 		return
 	}
 
-	var plan clusterNamespaceModel
+	var plan ClusterNamespaceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
-	id := plan.ID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	ns := sdk.UpdateClusterNamespaceRequestNamespace{}
 	if !plan.Name.IsNull() {
@@ -240,17 +239,16 @@ func (r *clusterNamespaceResource) Update(
 	}
 
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
-		attrs := plan.ResourcePermissions.Attributes()
 		rp := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
-		if allVal, ok := attrs["all"].(types.Bool); ok && !allVal.IsNull() {
-			rp.All = allVal.ValueBoolPointer()
+		if !plan.ResourcePermissions.All.IsNull() {
+			rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		}
-		if allPlans, ok := attrs["all_plans"].(types.Bool); ok && !allPlans.IsNull() {
-			rp.AllPlans = allPlans.ValueBoolPointer()
+		if !plan.ResourcePermissions.AllPlans.IsNull() {
+			rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
 		}
-		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+		if !plan.ResourcePermissions.SiteIds.IsNull() {
 			var siteIDs []int64
-			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			d := plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -262,9 +260,9 @@ func (r *clusterNamespaceResource) Update(
 			}
 			rp.Sites = sites
 		}
-		if planIDsVal, ok := attrs["plan_ids"].(types.Set); ok && !planIDsVal.IsNull() {
+		if !plan.ResourcePermissions.PlanIds.IsNull() {
 			var planIDs []int64
-			d := planIDsVal.ElementsAs(ctx, &planIDs, false)
+			d := plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -306,7 +304,7 @@ func (r *clusterNamespaceResource) Update(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readNs, &resp.Diagnostics)
+	mapGetResponseToModel(ctx, &plan, readNs, &resp.Diagnostics)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -323,14 +321,14 @@ func (r *clusterNamespaceResource) Delete(
 		return
 	}
 
-	var state clusterNamespaceModel
+	var state ClusterNamespaceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ClustersAPI.DeleteClusterNamespace(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -373,9 +371,9 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *clusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace, diags *diag.Diagnostics) {
+func mapGetResponseToModel(ctx context.Context, model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace, diags *diag.Diagnostics) {
 	if ns.Id != nil {
-		model.ID = types.Int64Value(*ns.Id)
+		model.Id = types.Int64Value(*ns.Id)
 	}
 	if ns.Name != nil {
 		model.Name = types.StringValue(*ns.Name)
@@ -427,15 +425,15 @@ func mapGetResponseToModel(model *clusterNamespaceModel, ns *sdk.GetClusterNames
 			}
 		}
 
-		permObj, d := types.ObjectValue(ClusterNsPermissionsAttrTypes, map[string]attr.Value{
+		permVal, d := NewResourcePermissionsValue(ResourcePermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
 			"all":      allVal,
 			"all_plans": allPlansVal,
 			"site_ids": siteIDSet,
 			"plan_ids": planIDSet,
 		})
 		diags.Append(d...)
-		model.ResourcePermissions = permObj
+		model.ResourcePermissions = permVal
 	} else {
-		model.ResourcePermissions = types.ObjectNull(ClusterNsPermissionsAttrTypes)
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
 }

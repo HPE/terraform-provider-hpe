@@ -175,15 +175,15 @@ func getServicePlanAsState(
 			tenantAccountIDSet, _ = types.SetValue(types.Int64Type, accountVals)
 		}
 
-		permObj, d := types.ObjectValue(ServicePlanPermissionsAttrTypes, map[string]attr.Value{
+		permVal, d := NewPermissionsValue(PermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
 			"all_sites":          allSitesVal,
 			"site_ids":           siteIDSet,
 			"tenant_account_ids": tenantAccountIDSet,
 		})
 		diags.Append(d...)
-		state.Permissions = permObj
+		state.Permissions = permVal
 	} else {
-		state.Permissions = types.ObjectNull(ServicePlanPermissionsAttrTypes)
+		state.Permissions = NewPermissionsValueNull()
 	}
 
 	return state, diags
@@ -509,15 +509,13 @@ func (r *Resource) Create(
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
-		attrs := plan.Permissions.Attributes()
-
 		rp := &sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissions{}
-		if allSites, ok := attrs["all_sites"].(types.Bool); ok && !allSites.IsNull() {
-			rp.AllSites = allSites.ValueBoolPointer()
+		if !plan.Permissions.AllSites.IsNull() {
+			rp.AllSites = plan.Permissions.AllSites.ValueBoolPointer()
 		}
-		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+		if !plan.Permissions.SiteIds.IsNull() {
 			var siteIDs []int64
-			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			d := plan.Permissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -533,9 +531,9 @@ func (r *Resource) Create(
 		perms := &sdk.AddServicePlansRequestServicePlanPermissions{
 			ResourcePermissions: rp,
 		}
-		if tenantIDsVal, ok := attrs["tenant_account_ids"].(types.Set); ok && !tenantIDsVal.IsNull() {
+		if !plan.Permissions.TenantAccountIds.IsNull() {
 			var accounts []int64
-			d := tenantIDsVal.ElementsAs(ctx, &accounts, false)
+			d := plan.Permissions.TenantAccountIds.ElementsAs(ctx, &accounts, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -703,15 +701,13 @@ func (r *Resource) Update(
 	setConfigInUpdate(ctx, &plan, servicePlan)
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
-		attrs := plan.Permissions.Attributes()
-
 		rpMap := map[string]any{}
-		if allSites, ok := attrs["all_sites"].(types.Bool); ok && !allSites.IsNull() {
-			rpMap["allSites"] = allSites.ValueBool()
+		if !plan.Permissions.AllSites.IsNull() {
+			rpMap["allSites"] = plan.Permissions.AllSites.ValueBool()
 		}
-		if siteIDsVal, ok := attrs["site_ids"].(types.Set); ok && !siteIDsVal.IsNull() {
+		if !plan.Permissions.SiteIds.IsNull() {
 			var siteIDs []int64
-			d := siteIDsVal.ElementsAs(ctx, &siteIDs, false)
+			d := plan.Permissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return
@@ -724,9 +720,9 @@ func (r *Resource) Update(
 		}
 
 		tpMap := map[string]any{}
-		if tenantIDsVal, ok := attrs["tenant_account_ids"].(types.Set); ok && !tenantIDsVal.IsNull() {
+		if !plan.Permissions.TenantAccountIds.IsNull() {
 			var accounts []int64
-			d := tenantIDsVal.ElementsAs(ctx, &accounts, false)
+			d := plan.Permissions.TenantAccountIds.ElementsAs(ctx, &accounts, false)
 			resp.Diagnostics.Append(d...)
 			if resp.Diagnostics.HasError() {
 				return

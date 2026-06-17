@@ -5,8 +5,6 @@ package serviceplan
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -20,16 +18,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
-
-// ServicePlanPermissionsAttrTypes defines the attr.Type map for the flat permissions object.
-var ServicePlanPermissionsAttrTypes = map[string]attr.Type{
-	"all_sites":          types.BoolType,
-	"site_ids":           types.SetType{ElemType: types.Int64Type},
-	"tenant_account_ids": types.SetType{ElemType: types.Int64Type},
-}
 
 func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
@@ -226,10 +218,6 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Service plan name",
 			},
 			"permissions": schema.SingleNestedAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Resource and tenant permissions for the service plan.",
-				MarkdownDescription: "Resource and tenant permissions for the service plan.",
 				Attributes: map[string]schema.Attribute{
 					"all_sites": schema.BoolAttribute{
 						Optional:            true,
@@ -252,6 +240,15 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Array of tenant account IDs with permission to view this service plan when visibility is private",
 					},
 				},
+				CustomType: PermissionsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: PermissionsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Computed:            true,
+				Description:         "Resource and tenant permissions for the service plan.",
+				MarkdownDescription: "Resource and tenant permissions for the service plan.",
 			},
 			"price_set_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
@@ -310,7 +307,7 @@ type ServicePlanModel struct {
 	MaxStorage        types.Int64       `tfsdk:"max_storage"`
 	MemorySizeType    types.String      `tfsdk:"memory_size_type"`
 	Name              types.String      `tfsdk:"name"`
-	Permissions       types.Object      `tfsdk:"permissions"`
+	Permissions       PermissionsValue  `tfsdk:"permissions"`
 	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
 	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
 	SortOrder         types.Int64       `tfsdk:"sort_order"`
@@ -355,8 +352,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores is missing from object`,
-		)
+			`max_cores is missing from object`)
 
 		return nil, diags
 	}
@@ -366,8 +362,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute),
-		)
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
 	}
 
 	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
@@ -375,8 +370,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores_per_socket is missing from object`,
-		)
+			`max_cores_per_socket is missing from object`)
 
 		return nil, diags
 	}
@@ -386,8 +380,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute),
-		)
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -395,8 +388,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_memory is missing from object`,
-		)
+			`max_memory is missing from object`)
 
 		return nil, diags
 	}
@@ -406,8 +398,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute),
-		)
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
 	}
 
 	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
@@ -415,8 +406,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_per_disk_size is missing from object`,
-		)
+			`max_per_disk_size is missing from object`)
 
 		return nil, diags
 	}
@@ -426,8 +416,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute),
-		)
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
 	}
 
 	maxSocketsAttribute, ok := attributes["max_sockets"]
@@ -435,8 +424,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_sockets is missing from object`,
-		)
+			`max_sockets is missing from object`)
 
 		return nil, diags
 	}
@@ -446,8 +434,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute),
-		)
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -455,8 +442,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_storage is missing from object`,
-		)
+			`max_storage is missing from object`)
 
 		return nil, diags
 	}
@@ -466,8 +452,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute),
-		)
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
 	}
 
 	minCoresAttribute, ok := attributes["min_cores"]
@@ -475,8 +460,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores is missing from object`,
-		)
+			`min_cores is missing from object`)
 
 		return nil, diags
 	}
@@ -486,8 +470,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute),
-		)
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
 	}
 
 	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
@@ -495,8 +478,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores_per_socket is missing from object`,
-		)
+			`min_cores_per_socket is missing from object`)
 
 		return nil, diags
 	}
@@ -506,8 +488,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute),
-		)
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
 	}
 
 	minMemoryAttribute, ok := attributes["min_memory"]
@@ -515,8 +496,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_memory is missing from object`,
-		)
+			`min_memory is missing from object`)
 
 		return nil, diags
 	}
@@ -526,8 +506,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute),
-		)
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
 	}
 
 	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
@@ -535,8 +514,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_per_disk_size is missing from object`,
-		)
+			`min_per_disk_size is missing from object`)
 
 		return nil, diags
 	}
@@ -546,8 +524,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute),
-		)
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
 	}
 
 	minSocketsAttribute, ok := attributes["min_sockets"]
@@ -555,8 +532,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_sockets is missing from object`,
-		)
+			`min_sockets is missing from object`)
 
 		return nil, diags
 	}
@@ -566,8 +542,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute),
-		)
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
 	}
 
 	minStorageAttribute, ok := attributes["min_storage"]
@@ -575,8 +550,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_storage is missing from object`,
-		)
+			`min_storage is missing from object`)
 
 		return nil, diags
 	}
@@ -586,8 +560,7 @@ func (t ConfigRangesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute),
-		)
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
 	}
 
 	if diags.HasError() {
@@ -679,8 +652,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores is missing from object`,
-		)
+			`max_cores is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -690,8 +662,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute),
-		)
+			fmt.Sprintf(`max_cores expected to be basetypes.Int64Value, was: %T`, maxCoresAttribute))
 	}
 
 	maxCoresPerSocketAttribute, ok := attributes["max_cores_per_socket"]
@@ -699,8 +670,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_cores_per_socket is missing from object`,
-		)
+			`max_cores_per_socket is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -710,8 +680,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute),
-		)
+			fmt.Sprintf(`max_cores_per_socket expected to be basetypes.Int64Value, was: %T`, maxCoresPerSocketAttribute))
 	}
 
 	maxMemoryAttribute, ok := attributes["max_memory"]
@@ -719,8 +688,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_memory is missing from object`,
-		)
+			`max_memory is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -730,8 +698,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute),
-		)
+			fmt.Sprintf(`max_memory expected to be basetypes.Int64Value, was: %T`, maxMemoryAttribute))
 	}
 
 	maxPerDiskSizeAttribute, ok := attributes["max_per_disk_size"]
@@ -739,8 +706,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_per_disk_size is missing from object`,
-		)
+			`max_per_disk_size is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -750,8 +716,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute),
-		)
+			fmt.Sprintf(`max_per_disk_size expected to be basetypes.Int64Value, was: %T`, maxPerDiskSizeAttribute))
 	}
 
 	maxSocketsAttribute, ok := attributes["max_sockets"]
@@ -759,8 +724,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_sockets is missing from object`,
-		)
+			`max_sockets is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -770,8 +734,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute),
-		)
+			fmt.Sprintf(`max_sockets expected to be basetypes.Int64Value, was: %T`, maxSocketsAttribute))
 	}
 
 	maxStorageAttribute, ok := attributes["max_storage"]
@@ -779,8 +742,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`max_storage is missing from object`,
-		)
+			`max_storage is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -790,8 +752,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute),
-		)
+			fmt.Sprintf(`max_storage expected to be basetypes.Int64Value, was: %T`, maxStorageAttribute))
 	}
 
 	minCoresAttribute, ok := attributes["min_cores"]
@@ -799,8 +760,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores is missing from object`,
-		)
+			`min_cores is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -810,8 +770,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute),
-		)
+			fmt.Sprintf(`min_cores expected to be basetypes.Int64Value, was: %T`, minCoresAttribute))
 	}
 
 	minCoresPerSocketAttribute, ok := attributes["min_cores_per_socket"]
@@ -819,8 +778,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_cores_per_socket is missing from object`,
-		)
+			`min_cores_per_socket is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -830,8 +788,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute),
-		)
+			fmt.Sprintf(`min_cores_per_socket expected to be basetypes.Int64Value, was: %T`, minCoresPerSocketAttribute))
 	}
 
 	minMemoryAttribute, ok := attributes["min_memory"]
@@ -839,8 +796,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_memory is missing from object`,
-		)
+			`min_memory is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -850,8 +806,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute),
-		)
+			fmt.Sprintf(`min_memory expected to be basetypes.Int64Value, was: %T`, minMemoryAttribute))
 	}
 
 	minPerDiskSizeAttribute, ok := attributes["min_per_disk_size"]
@@ -859,8 +814,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_per_disk_size is missing from object`,
-		)
+			`min_per_disk_size is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -870,8 +824,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute),
-		)
+			fmt.Sprintf(`min_per_disk_size expected to be basetypes.Int64Value, was: %T`, minPerDiskSizeAttribute))
 	}
 
 	minSocketsAttribute, ok := attributes["min_sockets"]
@@ -879,8 +832,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_sockets is missing from object`,
-		)
+			`min_sockets is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -890,8 +842,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute),
-		)
+			fmt.Sprintf(`min_sockets expected to be basetypes.Int64Value, was: %T`, minSocketsAttribute))
 	}
 
 	minStorageAttribute, ok := attributes["min_storage"]
@@ -899,8 +850,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`min_storage is missing from object`,
-		)
+			`min_storage is missing from object`)
 
 		return NewConfigRangesValueUnknown(), diags
 	}
@@ -910,8 +860,7 @@ func NewConfigRangesValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute),
-		)
+			fmt.Sprintf(`min_storage expected to be basetypes.Int64Value, was: %T`, minStorageAttribute))
 	}
 
 	if diags.HasError() {
@@ -947,8 +896,7 @@ func NewConfigRangesValueMust(attributeTypes map[string]attr.Type, attributes ma
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigRangesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -979,12 +927,14 @@ func (t ConfigRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
+
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
 		if err != nil {
 			return nil, err
 		}
@@ -1043,6 +993,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.MaxCores.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1050,6 +1001,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores"] = val
 
 		val, err = v.MaxCoresPerSocket.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1057,6 +1009,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores_per_socket"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1064,6 +1017,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_memory"] = val
 
 		val, err = v.MaxPerDiskSize.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1071,6 +1025,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_per_disk_size"] = val
 
 		val, err = v.MaxSockets.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1078,6 +1033,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_sockets"] = val
 
 		val, err = v.MaxStorage.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1085,6 +1041,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_storage"] = val
 
 		val, err = v.MinCores.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1092,6 +1049,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores"] = val
 
 		val, err = v.MinCoresPerSocket.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1099,6 +1057,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores_per_socket"] = val
 
 		val, err = v.MinMemory.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1106,6 +1065,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_memory"] = val
 
 		val, err = v.MinPerDiskSize.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1113,6 +1073,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_per_disk_size"] = val
 
 		val, err = v.MinSockets.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1120,6 +1081,7 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_sockets"] = val
 
 		val, err = v.MinStorage.ToTerraformValue(ctx)
+
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1193,8 +1155,7 @@ func (v ConfigRangesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"min_per_disk_size":    v.MinPerDiskSize,
 			"min_sockets":          v.MinSockets,
 			"min_storage":          v.MinStorage,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -1287,5 +1248,507 @@ func (v ConfigRangesValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"min_per_disk_size":    basetypes.Int64Type{},
 		"min_sockets":          basetypes.Int64Type{},
 		"min_storage":          basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = PermissionsType{}
+
+type PermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t PermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(PermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PermissionsType) String() string {
+	return "PermissionsType"
+}
+
+func (t PermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	allSitesAttribute, ok := attributes["all_sites"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`all_sites is missing from object`)
+
+		return nil, diags
+	}
+
+	allSitesVal, ok := allSitesAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`all_sites expected to be basetypes.BoolValue, was: %T`, allSitesAttribute))
+	}
+
+	siteIdsAttribute, ok := attributes["site_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`site_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	siteIdsVal, ok := siteIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`site_ids expected to be basetypes.SetValue, was: %T`, siteIdsAttribute))
+	}
+
+	tenantAccountIdsAttribute, ok := attributes["tenant_account_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_account_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	tenantAccountIdsVal, ok := tenantAccountIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_account_ids expected to be basetypes.SetValue, was: %T`, tenantAccountIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PermissionsValue{
+		AllSites:         allSitesVal,
+		SiteIds:          siteIdsVal,
+		TenantAccountIds: tenantAccountIdsVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPermissionsValueNull() PermissionsValue {
+	return PermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPermissionsValueUnknown() PermissionsValue {
+	return PermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PermissionsValue Attribute Value",
+				"While creating a PermissionsValue value, a missing attribute value was detected. "+
+					"A PermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PermissionsValue Attribute Type",
+				"While creating a PermissionsValue value, an invalid attribute value was detected. "+
+					"A PermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PermissionsValue Attribute Value",
+				"While creating a PermissionsValue value, an extra attribute value was detected. "+
+					"A PermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	allSitesAttribute, ok := attributes["all_sites"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`all_sites is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	allSitesVal, ok := allSitesAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`all_sites expected to be basetypes.BoolValue, was: %T`, allSitesAttribute))
+	}
+
+	siteIdsAttribute, ok := attributes["site_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`site_ids is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	siteIdsVal, ok := siteIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`site_ids expected to be basetypes.SetValue, was: %T`, siteIdsAttribute))
+	}
+
+	tenantAccountIdsAttribute, ok := attributes["tenant_account_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_account_ids is missing from object`)
+
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	tenantAccountIdsVal, ok := tenantAccountIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_account_ids expected to be basetypes.SetValue, was: %T`, tenantAccountIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPermissionsValueUnknown(), diags
+	}
+
+	return PermissionsValue{
+		AllSites:         allSitesVal,
+		SiteIds:          siteIdsVal,
+		TenantAccountIds: tenantAccountIdsVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PermissionsValue {
+	object, diags := NewPermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPermissionsValueMust(PermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PermissionsType) ValueType(ctx context.Context) attr.Value {
+	return PermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = PermissionsValue{}
+
+type PermissionsValue struct {
+	AllSites         basetypes.BoolValue `tfsdk:"all_sites"`
+	SiteIds          basetypes.SetValue  `tfsdk:"site_ids"`
+	TenantAccountIds basetypes.SetValue  `tfsdk:"tenant_account_ids"`
+	state            attr.ValueState
+}
+
+func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["all_sites"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["site_ids"] = basetypes.SetType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+	attrTypes["tenant_account_ids"] = basetypes.SetType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.AllSites.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["all_sites"] = val
+
+		val, err = v.SiteIds.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["site_ids"] = val
+
+		val, err = v.TenantAccountIds.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tenant_account_ids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PermissionsValue) String() string {
+	return "PermissionsValue"
+}
+
+func (v PermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var siteIdsVal basetypes.SetValue
+	switch {
+	case v.SiteIds.IsUnknown():
+		siteIdsVal = types.SetUnknown(types.Int64Type)
+	case v.SiteIds.IsNull():
+		siteIdsVal = types.SetNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		siteIdsVal, d = types.SetValue(types.Int64Type, v.SiteIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"all_sites": basetypes.BoolType{},
+			"site_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+			"tenant_account_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
+	var tenantAccountIdsVal basetypes.SetValue
+	switch {
+	case v.TenantAccountIds.IsUnknown():
+		tenantAccountIdsVal = types.SetUnknown(types.Int64Type)
+	case v.TenantAccountIds.IsNull():
+		tenantAccountIdsVal = types.SetNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		tenantAccountIdsVal, d = types.SetValue(types.Int64Type, v.TenantAccountIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"all_sites": basetypes.BoolType{},
+			"site_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+			"tenant_account_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"all_sites": basetypes.BoolType{},
+		"site_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+		"tenant_account_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"all_sites":          v.AllSites,
+			"site_ids":           siteIdsVal,
+			"tenant_account_ids": tenantAccountIdsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v PermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(PermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AllSites.Equal(other.AllSites) {
+		return false
+	}
+
+	if !v.SiteIds.Equal(other.SiteIds) {
+		return false
+	}
+
+	if !v.TenantAccountIds.Equal(other.TenantAccountIds) {
+		return false
+	}
+
+	return true
+}
+
+func (v PermissionsValue) Type(ctx context.Context) attr.Type {
+	return PermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"all_sites": basetypes.BoolType{},
+		"site_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+		"tenant_account_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
 	}
 }
