@@ -73,3 +73,8 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+// TODO(load_balancer_pool): interim — points at the locally regenerated SDK
+// with the createdBy object fix. Remove once a new oapigen version is published
+// and the require above is bumped to it.
+replace github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen => ../hpe-morpheus-go-sdk/oapigen

@@ -239,12 +239,6 @@ func populateLoadBalancerPoolState(
 		state.Category = types.StringNull()
 	}
 
-	if p.CreatedBy.IsSet() {
-		state.CreatedBy = convert.StrToType(p.CreatedBy.Get())
-	} else {
-		state.CreatedBy = types.StringNull()
-	}
-
 	if p.DownAction.IsSet() {
 		state.DownAction = convert.StrToType(p.DownAction.Get())
 	} else {

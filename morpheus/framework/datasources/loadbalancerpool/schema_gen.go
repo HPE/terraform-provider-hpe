@@ -111,9 +111,6 @@ func LoadBalancerPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "NSX-T load balancer pool configuration",
 				MarkdownDescription: "NSX-T load balancer pool configuration",
 			},
-			"created_by": schema.StringAttribute{
-				Computed: true,
-			},
 			"date_created": schema.StringAttribute{
 				Computed: true,
 			},
@@ -338,7 +335,6 @@ type LoadBalancerPoolModel struct {
 	Category         types.String      `tfsdk:"category"`
 	Config           types.Dynamic     `tfsdk:"config"`
 	ConfigNsxt       ConfigNsxtValue   `tfsdk:"config_nsxt"`
-	CreatedBy        types.String      `tfsdk:"created_by"`
 	DateCreated      types.String      `tfsdk:"date_created"`
 	Description      types.String      `tfsdk:"description"`
 	DownAction       types.String      `tfsdk:"down_action"`

@@ -418,7 +418,7 @@ func addNetworkInterfacesToResizeRequest(
 
 	if resizing {
 		mapper := updateNetworkInterfaceMapper(ctx)
-		intfsForRequest := make([]sdk.InstancesNetworkInterfaces3, len(intfs))
+		intfsForRequest := make([]sdk.InstancesNetworkInterfaces4, len(intfs))
 		for i, intf := range intfs {
 			intfsForRequest[i] = mapper(intf)
 		}
