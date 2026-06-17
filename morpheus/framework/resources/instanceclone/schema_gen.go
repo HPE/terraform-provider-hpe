@@ -80,6 +80,11 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 								),
 							},
 						},
+						"mac_address": schema.StringAttribute{
+							Optional:            true,
+							Description:         "A specific MAC address to assign to the interface. Not returned by the API.",
+							MarkdownDescription: "A specific MAC address to assign to the interface. Not returned by the API.",
+						},
 						"network_id": schema.Int64Attribute{
 							Required:            true,
 							Description:         "The ID of the network to attach the interface to.",
@@ -135,6 +140,12 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"controller_mount_point": schema.StringAttribute{
+							Optional:            true,
+							Computed:            true,
+							Description:         "The storage controller mount point for this volume, in the format \"id:busNumber:typeId:unitNumber\".\nFor a new controller the id is -1, e.g. \"-1:1:6:0\". Use /api/provision-types?code=vmware for controller types.\n",
+							MarkdownDescription: "The storage controller mount point for this volume, in the format \"id:busNumber:typeId:unitNumber\".\nFor a new controller the id is -1, e.g. \"-1:1:6:0\". Use /api/provision-types?code=vmware for controller types.\n",
+						},
 						"datastore_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
@@ -161,6 +172,11 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 							Required:            true,
 							Description:         "Size of the volume in GB. Must be greater than or equal to the source volume size (shrink is silently ignored).",
 							MarkdownDescription: "Size of the volume in GB. Must be greater than or equal to the source volume size (shrink is silently ignored).",
+						},
+						"size_id": schema.Int64Attribute{
+							Optional:            true,
+							Description:         "Selects a pre-existing logical volume size choice from Morpheus. Not returned by the API.",
+							MarkdownDescription: "Selects a pre-existing logical volume size choice from Morpheus. Not returned by the API.",
 						},
 						"storage_type": schema.Int64Attribute{
 							Optional:            true,
@@ -286,6 +302,24 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
 	}
 
+	macAddressAttribute, ok := attributes["mac_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mac_address is missing from object`)
+
+		return nil, diags
+	}
+
+	macAddressVal, ok := macAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mac_address expected to be basetypes.StringValue, was: %T`, macAddressAttribute))
+	}
+
 	networkIdAttribute, ok := attributes["network_id"]
 
 	if !ok {
@@ -330,6 +364,7 @@ func (t NetworkInterfacesType) ValueFromObject(ctx context.Context, in basetypes
 		Id:                     idVal,
 		IpAddress:              ipAddressVal,
 		IpMode:                 ipModeVal,
+		MacAddress:             macAddressVal,
 		NetworkId:              networkIdVal,
 		NetworkInterfaceTypeId: networkInterfaceTypeIdVal,
 		state:                  attr.ValueStateKnown,
@@ -453,6 +488,24 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 			fmt.Sprintf(`ip_mode expected to be basetypes.StringValue, was: %T`, ipModeAttribute))
 	}
 
+	macAddressAttribute, ok := attributes["mac_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mac_address is missing from object`)
+
+		return NewNetworkInterfacesValueUnknown(), diags
+	}
+
+	macAddressVal, ok := macAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mac_address expected to be basetypes.StringValue, was: %T`, macAddressAttribute))
+	}
+
 	networkIdAttribute, ok := attributes["network_id"]
 
 	if !ok {
@@ -497,6 +550,7 @@ func NewNetworkInterfacesValue(attributeTypes map[string]attr.Type, attributes m
 		Id:                     idVal,
 		IpAddress:              ipAddressVal,
 		IpMode:                 ipModeVal,
+		MacAddress:             macAddressVal,
 		NetworkId:              networkIdVal,
 		NetworkInterfaceTypeId: networkInterfaceTypeIdVal,
 		state:                  attr.ValueStateKnown,
@@ -574,13 +628,14 @@ type NetworkInterfacesValue struct {
 	Id                     basetypes.Int64Value  `tfsdk:"id"`
 	IpAddress              basetypes.StringValue `tfsdk:"ip_address"`
 	IpMode                 basetypes.StringValue `tfsdk:"ip_mode"`
+	MacAddress             basetypes.StringValue `tfsdk:"mac_address"`
 	NetworkId              basetypes.Int64Value  `tfsdk:"network_id"`
 	NetworkInterfaceTypeId basetypes.Int64Value  `tfsdk:"network_interface_type_id"`
 	state                  attr.ValueState
 }
 
 func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 5)
+	attrTypes := make(map[string]tftypes.Type, 6)
 
 	var val tftypes.Value
 	var err error
@@ -588,6 +643,7 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["ip_address"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["ip_mode"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["mac_address"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["network_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["network_interface_type_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 
@@ -595,7 +651,7 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 5)
+		vals := make(map[string]tftypes.Value, 6)
 
 		val, err = v.Id.ToTerraformValue(ctx)
 
@@ -620,6 +676,14 @@ func (v NetworkInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		}
 
 		vals["ip_mode"] = val
+
+		val, err = v.MacAddress.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["mac_address"] = val
 
 		val, err = v.NetworkId.ToTerraformValue(ctx)
 
@@ -670,6 +734,7 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 		"id":                        basetypes.Int64Type{},
 		"ip_address":                basetypes.StringType{},
 		"ip_mode":                   basetypes.StringType{},
+		"mac_address":               basetypes.StringType{},
 		"network_id":                basetypes.Int64Type{},
 		"network_interface_type_id": basetypes.Int64Type{},
 	}
@@ -688,6 +753,7 @@ func (v NetworkInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.Ob
 			"id":                        v.Id,
 			"ip_address":                v.IpAddress,
 			"ip_mode":                   v.IpMode,
+			"mac_address":               v.MacAddress,
 			"network_id":                v.NetworkId,
 			"network_interface_type_id": v.NetworkInterfaceTypeId,
 		})
@@ -722,6 +788,10 @@ func (v NetworkInterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.MacAddress.Equal(other.MacAddress) {
+		return false
+	}
+
 	if !v.NetworkId.Equal(other.NetworkId) {
 		return false
 	}
@@ -746,6 +816,7 @@ func (v NetworkInterfacesValue) AttributeTypes(ctx context.Context) map[string]a
 		"id":                        basetypes.Int64Type{},
 		"ip_address":                basetypes.StringType{},
 		"ip_mode":                   basetypes.StringType{},
+		"mac_address":               basetypes.StringType{},
 		"network_id":                basetypes.Int64Type{},
 		"network_interface_type_id": basetypes.Int64Type{},
 	}
@@ -783,6 +854,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	attributes := in.Attributes()
+
+	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`controller_mount_point is missing from object`)
+
+		return nil, diags
+	}
+
+	controllerMountPointVal, ok := controllerMountPointAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`controller_mount_point expected to be basetypes.StringValue, was: %T`, controllerMountPointAttribute))
+	}
 
 	datastoreIdAttribute, ok := attributes["datastore_id"]
 
@@ -874,6 +963,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`size expected to be basetypes.Int64Value, was: %T`, sizeAttribute))
 	}
 
+	sizeIdAttribute, ok := attributes["size_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`size_id is missing from object`)
+
+		return nil, diags
+	}
+
+	sizeIdVal, ok := sizeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
+	}
+
 	storageTypeAttribute, ok := attributes["storage_type"]
 
 	if !ok {
@@ -897,13 +1004,15 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	return VolumesValue{
-		DatastoreId: datastoreIdVal,
-		Id:          idVal,
-		Name:        nameVal,
-		RootVolume:  rootVolumeVal,
-		Size:        sizeVal,
-		StorageType: storageTypeVal,
-		state:       attr.ValueStateKnown,
+		ControllerMountPoint: controllerMountPointVal,
+		DatastoreId:          datastoreIdVal,
+		Id:                   idVal,
+		Name:                 nameVal,
+		RootVolume:           rootVolumeVal,
+		Size:                 sizeVal,
+		SizeId:               sizeIdVal,
+		StorageType:          storageTypeVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -970,6 +1079,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		return NewVolumesValueUnknown(), diags
 	}
 
+	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`controller_mount_point is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	controllerMountPointVal, ok := controllerMountPointAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`controller_mount_point expected to be basetypes.StringValue, was: %T`, controllerMountPointAttribute))
+	}
+
 	datastoreIdAttribute, ok := attributes["datastore_id"]
 
 	if !ok {
@@ -1060,6 +1187,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`size expected to be basetypes.Int64Value, was: %T`, sizeAttribute))
 	}
 
+	sizeIdAttribute, ok := attributes["size_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`size_id is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	sizeIdVal, ok := sizeIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`size_id expected to be basetypes.Int64Value, was: %T`, sizeIdAttribute))
+	}
+
 	storageTypeAttribute, ok := attributes["storage_type"]
 
 	if !ok {
@@ -1083,13 +1228,15 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	return VolumesValue{
-		DatastoreId: datastoreIdVal,
-		Id:          idVal,
-		Name:        nameVal,
-		RootVolume:  rootVolumeVal,
-		Size:        sizeVal,
-		StorageType: storageTypeVal,
-		state:       attr.ValueStateKnown,
+		ControllerMountPoint: controllerMountPointVal,
+		DatastoreId:          datastoreIdVal,
+		Id:                   idVal,
+		Name:                 nameVal,
+		RootVolume:           rootVolumeVal,
+		Size:                 sizeVal,
+		SizeId:               sizeIdVal,
+		StorageType:          storageTypeVal,
+		state:                attr.ValueStateKnown,
 	}, diags
 }
 
@@ -1161,33 +1308,45 @@ func (t VolumesType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = VolumesValue{}
 
 type VolumesValue struct {
-	DatastoreId basetypes.Int64Value  `tfsdk:"datastore_id"`
-	Id          basetypes.Int64Value  `tfsdk:"id"`
-	Name        basetypes.StringValue `tfsdk:"name"`
-	RootVolume  basetypes.BoolValue   `tfsdk:"root_volume"`
-	Size        basetypes.Int64Value  `tfsdk:"size"`
-	StorageType basetypes.Int64Value  `tfsdk:"storage_type"`
-	state       attr.ValueState
+	ControllerMountPoint basetypes.StringValue `tfsdk:"controller_mount_point"`
+	DatastoreId          basetypes.Int64Value  `tfsdk:"datastore_id"`
+	Id                   basetypes.Int64Value  `tfsdk:"id"`
+	Name                 basetypes.StringValue `tfsdk:"name"`
+	RootVolume           basetypes.BoolValue   `tfsdk:"root_volume"`
+	Size                 basetypes.Int64Value  `tfsdk:"size"`
+	SizeId               basetypes.Int64Value  `tfsdk:"size_id"`
+	StorageType          basetypes.Int64Value  `tfsdk:"storage_type"`
+	state                attr.ValueState
 }
 
 func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 8)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["controller_mount_point"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["datastore_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["root_volume"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["size"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["size_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["storage_type"] = basetypes.Int64Type{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 8)
+
+		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["controller_mount_point"] = val
 
 		val, err = v.DatastoreId.ToTerraformValue(ctx)
 
@@ -1229,6 +1388,14 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 		vals["size"] = val
 
+		val, err = v.SizeId.ToTerraformValue(ctx)
+
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["size_id"] = val
+
 		val, err = v.StorageType.ToTerraformValue(ctx)
 
 		if err != nil {
@@ -1267,12 +1434,14 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"datastore_id": basetypes.Int64Type{},
-		"id":           basetypes.Int64Type{},
-		"name":         basetypes.StringType{},
-		"root_volume":  basetypes.BoolType{},
-		"size":         basetypes.Int64Type{},
-		"storage_type": basetypes.Int64Type{},
+		"controller_mount_point": basetypes.StringType{},
+		"datastore_id":           basetypes.Int64Type{},
+		"id":                     basetypes.Int64Type{},
+		"name":                   basetypes.StringType{},
+		"root_volume":            basetypes.BoolType{},
+		"size":                   basetypes.Int64Type{},
+		"size_id":                basetypes.Int64Type{},
+		"storage_type":           basetypes.Int64Type{},
 	}
 
 	if v.IsNull() {
@@ -1286,12 +1455,14 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"datastore_id": v.DatastoreId,
-			"id":           v.Id,
-			"name":         v.Name,
-			"root_volume":  v.RootVolume,
-			"size":         v.Size,
-			"storage_type": v.StorageType,
+			"controller_mount_point": v.ControllerMountPoint,
+			"datastore_id":           v.DatastoreId,
+			"id":                     v.Id,
+			"name":                   v.Name,
+			"root_volume":            v.RootVolume,
+			"size":                   v.Size,
+			"size_id":                v.SizeId,
+			"storage_type":           v.StorageType,
 		})
 
 	return objVal, diags
@@ -1310,6 +1481,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.ControllerMountPoint.Equal(other.ControllerMountPoint) {
+		return false
 	}
 
 	if !v.DatastoreId.Equal(other.DatastoreId) {
@@ -1332,6 +1507,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.SizeId.Equal(other.SizeId) {
+		return false
+	}
+
 	if !v.StorageType.Equal(other.StorageType) {
 		return false
 	}
@@ -1349,11 +1528,13 @@ func (v VolumesValue) Type(ctx context.Context) attr.Type {
 
 func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"datastore_id": basetypes.Int64Type{},
-		"id":           basetypes.Int64Type{},
-		"name":         basetypes.StringType{},
-		"root_volume":  basetypes.BoolType{},
-		"size":         basetypes.Int64Type{},
-		"storage_type": basetypes.Int64Type{},
+		"controller_mount_point": basetypes.StringType{},
+		"datastore_id":           basetypes.Int64Type{},
+		"id":                     basetypes.Int64Type{},
+		"name":                   basetypes.StringType{},
+		"root_volume":            basetypes.BoolType{},
+		"size":                   basetypes.Int64Type{},
+		"size_id":                basetypes.Int64Type{},
+		"storage_type":           basetypes.Int64Type{},
 	}
 }

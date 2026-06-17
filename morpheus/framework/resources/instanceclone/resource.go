@@ -77,6 +77,18 @@ func checkStatusDone(status string, targetStatuses, errorStatuses []string) erro
 	return fmt.Errorf("instance status %q not yet in target set", status)
 }
 
+// pollAPIError classifies an error hit while polling. Client errors (4xx) are
+// permanent - retrying will not help - while 5xx responses and transport errors
+// are returned as-is so backoff retries them.
+func pollAPIError(msg string, err error, hresp *http.Response) error {
+	e := fmt.Errorf("%s: %s", msg, errfmt.ErrMsg(err, hresp))
+	if hresp != nil && hresp.StatusCode >= 400 && hresp.StatusCode < 500 {
+		return backoff.Permanent(e)
+	}
+
+	return e
+}
+
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -177,9 +189,7 @@ func (r *Resource) Create(
 		listResp, hresp, err := client.InstancesAPI.ListInstances(ctx).
 			Name(cloneName).Execute()
 		if err != nil {
-			return nil, backoff.Permanent(
-				fmt.Errorf("failed to list instances: %s", errfmt.ErrMsg(err, hresp)),
-			)
+			return nil, pollAPIError("failed to list instances", err, hresp)
 		}
 
 		if listResp == nil {
@@ -227,10 +237,8 @@ func (r *Resource) Create(
 	waitForStatus := func() (*pollResult, error) {
 		getResp, hresp, err := client.InstancesAPI.GetInstance(ctx, cloneID).Execute()
 		if err != nil {
-			return nil, backoff.Permanent(
-				fmt.Errorf("failed to get clone instance %d: %s",
-					cloneID, errfmt.ErrMsg(err, hresp)),
-			)
+			return nil, pollAPIError(
+				fmt.Sprintf("failed to get clone instance %d", cloneID), err, hresp)
 		}
 
 		if getResp == nil || getResp.Instance == nil {
@@ -415,8 +423,11 @@ func (r *Resource) Read(
 	state.Name = convert.StrToType(inst.Name)
 
 	// Refresh volumes and network interfaces from API
-	state.Volumes = mapVolumesFromGetInstance(ctx, inst)
-	state.NetworkInterfaces = mapInterfacesFromGetInstance(ctx, inst)
+	// Refresh volumes and network interfaces from the API for drift detection,
+	// preserving the write-only inputs (size_id, mac_address) that the read API
+	// does not return.
+	state.Volumes = mergeVolumesForRead(ctx, state.Volumes, inst.Volumes)
+	state.NetworkInterfaces = mergeInterfacesForRead(ctx, state.NetworkInterfaces, inst.Interfaces)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -489,10 +500,8 @@ func (r *Resource) Update(
 	waitForStatus := func() (*string, error) {
 		getResp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
 		if err != nil {
-			return nil, backoff.Permanent(
-				fmt.Errorf("failed to get instance %d: %s",
-					instanceID, errfmt.ErrMsg(err, hresp)),
-			)
+			return nil, pollAPIError(
+				fmt.Sprintf("failed to get instance %d", instanceID), err, hresp)
 		}
 
 		if getResp == nil || getResp.Instance == nil {
@@ -689,8 +698,8 @@ func refreshStateFromAPI(
 	}
 
 	inst := getResp.Instance
-	state.Volumes = mapVolumesFromGetInstance(ctx, inst)
-	state.NetworkInterfaces = mapInterfacesFromGetInstance(ctx, inst)
+	state.Volumes = mergeVolumesFromAPI(ctx, state.Volumes, inst.Volumes)
+	state.NetworkInterfaces = mergeInterfacesFromAPI(ctx, state.NetworkInterfaces, inst.Interfaces)
 
 	return diags
 }
@@ -725,6 +734,15 @@ func buildCloneVolumes(ctx context.Context, volumesList types.List) []sdk.CloneI
 			vol.DatastoreId = &sdk.CloneInstanceRequestVolumesInnerDatastoreId{
 				Int64: &dsID,
 			}
+		}
+
+		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
+			siVal := v.SizeId.ValueInt64()
+			vol.SizeId.Set(&siVal)
+		}
+
+		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {
+			vol.ControllerMountPoint = v.ControllerMountPoint.ValueStringPointer()
 		}
 
 		if !v.Id.IsNull() && !v.Id.IsUnknown() {
@@ -766,6 +784,10 @@ func buildCloneNetworkInterfaces(
 
 		if !ni.IpAddress.IsNull() && !ni.IpAddress.IsUnknown() {
 			iface.IpAddress = ni.IpAddress.ValueStringPointer()
+		}
+
+		if !ni.MacAddress.IsNull() && !ni.MacAddress.IsUnknown() {
+			iface.MacAddress = ni.MacAddress.ValueStringPointer()
 		}
 
 		if !ni.Id.IsNull() && !ni.Id.IsUnknown() {
@@ -812,6 +834,15 @@ func buildResizeVolumes(
 			}
 		}
 
+		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
+			siVal := v.SizeId.ValueInt64()
+			vol.SizeId.Set(&siVal)
+		}
+
+		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {
+			vol.ControllerMountPoint = v.ControllerMountPoint.ValueStringPointer()
+		}
+
 		if !v.Id.IsNull() && !v.Id.IsUnknown() {
 			vol.Id = v.Id.ValueInt64Pointer()
 		}
@@ -853,6 +884,10 @@ func buildResizeNetworkInterfaces(
 			iface.IpAddress = ni.IpAddress.ValueStringPointer()
 		}
 
+		if !ni.MacAddress.IsNull() && !ni.MacAddress.IsUnknown() {
+			iface.MacAddress = ni.MacAddress.ValueStringPointer()
+		}
+
 		if !ni.Id.IsNull() && !ni.Id.IsUnknown() {
 			iface.Id = ni.Id.ValueInt64Pointer()
 		}
@@ -863,94 +898,286 @@ func buildResizeNetworkInterfaces(
 	return sdkIfaces
 }
 
-// mapVolumesFromGetInstance maps volumes from GetInstance response.
-func mapVolumesFromGetInstance(
-	ctx context.Context, inst *sdk.GetInstance200ResponseInstance,
-) types.List {
-	if len(inst.Volumes) == 0 {
-		return types.ListNull(VolumesValue{}.Type(ctx))
+// volumeValueFromAPI maps a single API volume into a VolumesValue.
+func volumeValueFromAPI(
+	v sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
+) VolumesValue {
+	vol := VolumesValue{
+		state: attr.ValueStateKnown,
 	}
 
-	volumeObjValues := make([]attr.Value, 0, len(inst.Volumes))
-	for _, v := range inst.Volumes {
-		vol := VolumesValue{
-			state: attr.ValueStateKnown,
+	vol.Id = convert.Int64ToType(v.Id)
+	vol.Name = convert.StrToType(v.Name)
+	vol.Size = convert.Int64ToType(v.Size)
+	vol.RootVolume = convert.BoolToType(v.RootVolume)
+	vol.StorageType = convert.Int64ToType(v.StorageType)
+
+	// DatastoreId in this response is *string; parse to int64 if present.
+	vol.DatastoreId = types.Int64Null()
+	if v.DatastoreId != nil {
+		if dsInt, parseErr := strconv.ParseInt(*v.DatastoreId, 10, 64); parseErr == nil {
+			vol.DatastoreId = types.Int64Value(dsInt)
+		}
+	}
+
+	vol.ControllerMountPoint = convert.StrToType(v.ControllerMountPoint)
+	// size_id is a write-only input and is not returned by the read API.
+	vol.SizeId = types.Int64Null()
+
+	return vol
+}
+
+// mergeVolumesFromAPI builds the post-apply volume state: it preserves the
+// user-configured Required fields (name, size) from the plan and fills the
+// computed / computed-optional fields from the API, matched positionally. This
+// keeps the final state structurally identical to the plan - avoiding
+// "Provider produced inconsistent result after apply" when the platform reports
+// a value that differs from the request (e.g. a silently-ignored shrink) - while
+// still resolving the computed fields.
+func mergeVolumesFromAPI(
+	ctx context.Context,
+	planVolumes types.List,
+	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
+) types.List {
+	if planVolumes.IsNull() || planVolumes.IsUnknown() {
+		listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), mapVolumeObjs(ctx, apiVolumes))
+
+		return listVal
+	}
+
+	var pv []VolumesValue
+	planVolumes.ElementsAs(ctx, &pv, false)
+
+	values := make([]attr.Value, 0, len(pv))
+	for i := range pv {
+		api := VolumesValue{
+			state:                attr.ValueStateKnown,
+			Id:                   types.Int64Null(),
+			RootVolume:           types.BoolNull(),
+			DatastoreId:          types.Int64Null(),
+			StorageType:          types.Int64Null(),
+			ControllerMountPoint: types.StringNull(),
+			SizeId:               types.Int64Null(),
+		}
+		if i < len(apiVolumes) {
+			api = volumeValueFromAPI(apiVolumes[i])
 		}
 
-		vol.Id = convert.Int64ToType(v.Id)
-		vol.Name = convert.StrToType(v.Name)
-		vol.Size = convert.Int64ToType(v.Size)
-		vol.RootVolume = convert.BoolToType(v.RootVolume)
-		vol.StorageType = convert.Int64ToType(v.StorageType)
-
-		// DatastoreId in this response is *string; parse to int64 if present
-		if v.DatastoreId != nil {
-			if dsInt, parseErr := strconv.ParseInt(*v.DatastoreId, 10, 64); parseErr == nil {
-				vol.DatastoreId = types.Int64Value(dsInt)
-			} else {
-				vol.DatastoreId = types.Int64Null()
-			}
-		} else {
-			vol.DatastoreId = types.Int64Null()
+		vol := VolumesValue{
+			state: attr.ValueStateKnown,
+			// Required fields come from the plan so the final state matches it.
+			Name: pv[i].Name,
+			Size: pv[i].Size,
+			// size_id is a write-only input; keep the plan value.
+			SizeId: pv[i].SizeId,
+			// Computed id always comes from the API.
+			Id: api.Id,
+			// Computed-optional fields keep the user's value when set.
+			RootVolume:           preferKnownBool(pv[i].RootVolume, api.RootVolume),
+			DatastoreId:          preferKnownInt64(pv[i].DatastoreId, api.DatastoreId),
+			StorageType:          preferKnownInt64(pv[i].StorageType, api.StorageType),
+			ControllerMountPoint: preferKnownString(pv[i].ControllerMountPoint, api.ControllerMountPoint),
 		}
 
 		objVal, _ := vol.ToObjectValue(ctx)
-		volumeObjValues = append(volumeObjValues, objVal)
+		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(
-		VolumesValue{}.Type(ctx),
-		volumeObjValues,
-	)
+	listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), values)
 
 	return listVal
 }
 
-// mapInterfacesFromGetInstance maps network interfaces from GetInstance response.
-func mapInterfacesFromGetInstance(
-	ctx context.Context, inst *sdk.GetInstance200ResponseInstance,
+func mapVolumeObjs(
+	ctx context.Context,
+	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
+) []attr.Value {
+	values := make([]attr.Value, 0, len(apiVolumes))
+	for _, v := range apiVolumes {
+		objVal, _ := volumeValueFromAPI(v).ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	return values
+}
+
+// mergeVolumesForRead builds Read state: it refreshes the API-backed fields (for
+// drift detection) while preserving the write-only input (size_id) that the read
+// API does not return, taken from the prior state positionally.
+func mergeVolumesForRead(
+	ctx context.Context,
+	priorVolumes types.List,
+	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
 ) types.List {
-	if len(inst.Interfaces) == 0 {
+	if len(apiVolumes) == 0 {
+		return types.ListNull(VolumesValue{}.Type(ctx))
+	}
+
+	var prior []VolumesValue
+	if !priorVolumes.IsNull() && !priorVolumes.IsUnknown() {
+		priorVolumes.ElementsAs(ctx, &prior, false)
+	}
+
+	values := make([]attr.Value, 0, len(apiVolumes))
+	for i, v := range apiVolumes {
+		vol := volumeValueFromAPI(v)
+		if i < len(prior) {
+			vol.SizeId = prior[i].SizeId
+		}
+
+		objVal, _ := vol.ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), values)
+
+	return listVal
+}
+
+// mergeInterfacesForRead builds Read state: it refreshes the API-backed fields
+// while preserving the write-only input (mac_address) from prior state.
+func mergeInterfacesForRead(
+	ctx context.Context,
+	priorInterfaces types.List,
+	apiInterfaces []sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
+) types.List {
+	if len(apiInterfaces) == 0 {
 		return types.ListNull(NetworkInterfacesValue{}.Type(ctx))
 	}
 
-	ifaceObjValues := make([]attr.Value, 0, len(inst.Interfaces))
-	for _, iface := range inst.Interfaces {
-		ni := NetworkInterfacesValue{
-			state: attr.ValueStateKnown,
-		}
-
-		// Interface Id is an anyOf type (Int64 | String)
-		if iface.Id != nil && iface.Id.Int64 != nil {
-			ni.Id = types.Int64Value(*iface.Id.Int64)
-		} else {
-			ni.Id = types.Int64Null()
-		}
-
-		// Network ID from nested network object
-		if iface.Network != nil && iface.Network.Id != nil {
-			ni.NetworkId = types.Int64Value(*iface.Network.Id)
-		} else {
-			ni.NetworkId = types.Int64Null()
-		}
-
-		// NetworkInterfaceTypeId is *int64 in this response type
-		ni.NetworkInterfaceTypeId = convert.Int64ToType(iface.NetworkInterfaceTypeId)
-
-		// IpMode is *string in this response type
-		ni.IpMode = convert.StrToType(iface.IpMode)
-
-		// IpAddress is *string in this response type
-		ni.IpAddress = convert.StrToType(iface.IpAddress)
-
-		objVal, _ := ni.ToObjectValue(ctx)
-		ifaceObjValues = append(ifaceObjValues, objVal)
+	var prior []NetworkInterfacesValue
+	if !priorInterfaces.IsNull() && !priorInterfaces.IsUnknown() {
+		priorInterfaces.ElementsAs(ctx, &prior, false)
 	}
 
-	listVal, _ := types.ListValue(
-		NetworkInterfacesValue{}.Type(ctx),
-		ifaceObjValues,
-	)
+	values := make([]attr.Value, 0, len(apiInterfaces))
+	for i, iface := range apiInterfaces {
+		ni := interfaceValueFromAPI(iface)
+		if i < len(prior) {
+			ni.MacAddress = prior[i].MacAddress
+		}
+
+		objVal, _ := ni.ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+
+	return listVal
+}
+
+// preferKnownInt64 / preferKnownBool / preferKnownString return the plan value
+// when the user supplied one (known), otherwise the value resolved from the API.
+// This keeps user-configured values stable in state while still resolving
+// computed-optional fields the user left unset.
+func preferKnownInt64(plan, api types.Int64) types.Int64 {
+	if !plan.IsUnknown() {
+		return plan
+	}
+
+	return api
+}
+
+func preferKnownBool(plan, api types.Bool) types.Bool {
+	if !plan.IsUnknown() {
+		return plan
+	}
+
+	return api
+}
+
+func preferKnownString(plan, api types.String) types.String {
+	if !plan.IsUnknown() {
+		return plan
+	}
+
+	return api
+}
+
+// interfaceValueFromAPI maps a single API interface into a NetworkInterfacesValue.
+func interfaceValueFromAPI(
+	iface sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
+) NetworkInterfacesValue {
+	ni := NetworkInterfacesValue{
+		state: attr.ValueStateKnown,
+	}
+
+	// Interface Id is an anyOf type (Int64 | String).
+	ni.Id = types.Int64Null()
+	if iface.Id != nil && iface.Id.Int64 != nil {
+		ni.Id = types.Int64Value(*iface.Id.Int64)
+	}
+
+	// Network ID from the nested network object.
+	ni.NetworkId = types.Int64Null()
+	if iface.Network != nil && iface.Network.Id != nil {
+		ni.NetworkId = types.Int64Value(*iface.Network.Id)
+	}
+
+	ni.NetworkInterfaceTypeId = convert.Int64ToType(iface.NetworkInterfaceTypeId)
+	ni.IpMode = convert.StrToType(iface.IpMode)
+	ni.IpAddress = convert.StrToType(iface.IpAddress)
+	// mac_address is a write-only input and is not returned by the read API.
+	ni.MacAddress = types.StringNull()
+
+	return ni
+}
+
+// mergeInterfacesFromAPI builds the post-apply interface state: it preserves the
+// user-configured Required field (network_id) from the plan and fills the
+// computed / computed-optional fields from the API, matched positionally.
+func mergeInterfacesFromAPI(
+	ctx context.Context,
+	planInterfaces types.List,
+	apiInterfaces []sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
+) types.List {
+	if planInterfaces.IsNull() || planInterfaces.IsUnknown() {
+		values := make([]attr.Value, 0, len(apiInterfaces))
+		for _, iface := range apiInterfaces {
+			objVal, _ := interfaceValueFromAPI(iface).ToObjectValue(ctx)
+			values = append(values, objVal)
+		}
+		listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+
+		return listVal
+	}
+
+	var pi []NetworkInterfacesValue
+	planInterfaces.ElementsAs(ctx, &pi, false)
+
+	values := make([]attr.Value, 0, len(pi))
+	for i := range pi {
+		api := NetworkInterfacesValue{
+			state:                  attr.ValueStateKnown,
+			Id:                     types.Int64Null(),
+			IpMode:                 types.StringNull(),
+			IpAddress:              types.StringNull(),
+			MacAddress:             types.StringNull(),
+			NetworkInterfaceTypeId: types.Int64Null(),
+		}
+		if i < len(apiInterfaces) {
+			api = interfaceValueFromAPI(apiInterfaces[i])
+		}
+
+		ni := NetworkInterfacesValue{
+			state: attr.ValueStateKnown,
+			// Required field comes from the plan so the final state matches it.
+			NetworkId: pi[i].NetworkId,
+			// mac_address is a write-only input; keep the plan value.
+			MacAddress: pi[i].MacAddress,
+			// Computed id always comes from the API.
+			Id: api.Id,
+			// Computed-optional fields keep the user's value when set.
+			IpMode:                 preferKnownString(pi[i].IpMode, api.IpMode),
+			IpAddress:              preferKnownString(pi[i].IpAddress, api.IpAddress),
+			NetworkInterfaceTypeId: preferKnownInt64(pi[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
+		}
+
+		objVal, _ := ni.ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
 
 	return listVal
 }

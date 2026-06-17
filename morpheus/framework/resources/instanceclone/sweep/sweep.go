@@ -7,84 +7,60 @@ package sweep
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 )
 
 const sweeperName = "hpe_morpheus_instance_clone"
 
 func init() {
-	resource.AddTestSweepers(
+	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
-		&resource.Sweeper{
-			Name: sweeperName,
-			F:    sweepClones,
-		},
-	)
-}
-
-func sweepClones(system string) error {
-	ctx := context.Background()
-
-	client, err := testhelpers.NewClientForServer(ctx, system)
-	if err != nil {
-		log.Printf("[WARN] Cannot create sweep client for %q: %v", system, err)
-
-		return nil
-	}
-
-	instancesResp, hresp, err := client.InstancesAPI.ListInstances(ctx).Execute()
-	if err != nil {
-		if hresp != nil && (hresp.StatusCode == http.StatusNotFound ||
-			hresp.StatusCode == http.StatusForbidden) {
-			log.Printf("[INFO] No instances accessible for clone sweep")
-
-			return nil
-		}
-
-		return fmt.Errorf("failed to list instances for clone sweep: %v", err)
-	}
-
-	if instancesResp == nil {
-		return nil
-	}
-
-	var sweepErr error
-	sweptCount := 0
-
-	for _, inst := range instancesResp.Instances {
-		if inst.Id == nil || inst.Name == nil {
-			continue
-		}
-
-		if !strings.HasPrefix(*inst.Name, testsweep.TestResourcePrefix) {
-			continue
-		}
-
-		instanceID := *inst.Id
-		log.Printf("[INFO] Sweeping clone instance %d (%s)", instanceID, *inst.Name)
-
-		_, hresp, err := client.InstancesAPI.DeleteInstance(ctx, instanceID).Execute()
-		if err != nil {
-			if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-				continue
+		// List instances (a clone is an instance).
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]sdk.ListInstances200ResponseAllOfInstancesInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.InstancesAPI.ListInstances(ctx).Execute()
+			if resp == nil {
+				return nil, hresp, err
 			}
-			log.Printf("[ERROR] Failed to delete clone instance %d: %v", instanceID, err)
-			sweepErr = fmt.Errorf("failed to delete clone instance %d: %v", instanceID, err)
 
-			continue
-		}
+			return getsafe.Get(&resp.Instances), hresp, err
+		},
+		// Is this a test clone instance?
+		func(item sdk.ListInstances200ResponseAllOfInstancesInner) bool {
+			name, ok := getsafe.GetOk(item.Name)
+			if !ok || name == nil {
+				return false
+			}
 
-		sweptCount++
-	}
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+		},
+		// Delete the test clone instance.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListInstances200ResponseAllOfInstancesInner,
+		) (*http.Response, error) {
+			id, ok := getsafe.GetOk(item.Id)
+			if !ok || id == nil {
+				return nil, fmt.Errorf("could not get ID")
+			}
 
-	log.Printf("[INFO] Instance clone sweep completed. Resources swept: %d", sweptCount)
+			_, hresp, err := client.InstancesAPI.DeleteInstance(ctx, *id).Execute()
 
-	return sweepErr
+			return hresp, err
+		},
+		testsweep.WithIgnoreListStatuses[sdk.ListInstances200ResponseAllOfInstancesInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
+	)
 }

@@ -71,6 +71,7 @@ Optional:
 
 - `ip_address` (String) The static IP address. Only applicable when ip_mode is static.
 - `ip_mode` (String) The mode for determining the IP address. One of static, dhcp or an empty string (IP pool).
+- `mac_address` (String) A specific MAC address to assign to the interface. Not returned by the API.
 - `network_interface_type_id` (Number) The ID of the network interface type.
 
 Read-Only:
@@ -88,8 +89,11 @@ Required:
 
 Optional:
 
+- `controller_mount_point` (String) The storage controller mount point for this volume, in the format "id:busNumber:typeId:unitNumber".
+For a new controller the id is -1, e.g. "-1:1:6:0". Use /api/provision-types?code=vmware for controller types.
 - `datastore_id` (Number) The ID of the datastore to place the volume on.
 - `root_volume` (Boolean) Whether this is the root volume. Exactly one volume must be the root volume.
+- `size_id` (Number) Selects a pre-existing logical volume size choice from Morpheus. Not returned by the API.
 - `storage_type` (Number) The storage volume type ID.
 
 Read-Only:
