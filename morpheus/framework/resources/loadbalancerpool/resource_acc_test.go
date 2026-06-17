@@ -36,7 +36,10 @@ func TestAccMorpheusLoadBalancerPoolResourceNsxtExampleOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
+	// (unrealized) and can be pruned by a Morpheus/NSX-T inventory sync that
+	// fires when a concurrent test tears down its load balancer on the shared
+	// integration. Run these pool tests sequentially to avoid that.
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -110,7 +113,10 @@ func TestAccMorpheusLoadBalancerPoolResourceNsxtUpdateOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	t.Parallel()
+	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
+	// (unrealized) and can be pruned by a Morpheus/NSX-T inventory sync that
+	// fires when a concurrent test tears down its load balancer on the shared
+	// integration. Run these pool tests sequentially to avoid that.
 
 	providerConfig := testhelpers.ProviderBlock()
 
