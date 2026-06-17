@@ -4,7 +4,7 @@ go 1.25.8
 
 require (
 	github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy v0.0.0-20260519114622-05016d74fdfe
-	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.69.0
+	github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen v0.72.0
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -73,8 +73,3 @@ require (
 	gopkg.in/validator.v2 v2.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-// TODO(load_balancer_pool): interim — points at the locally regenerated SDK
-// with the createdBy object fix. Remove once a new oapigen version is published
-// and the require above is bumped to it.
-replace github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen => ../hpe-morpheus-go-sdk/oapigen
