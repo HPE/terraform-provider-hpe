@@ -74,8 +74,20 @@ func (g *Resource) Read(
 	// servicePlanOptions is not returned by the API
 	servicePlanOptions := data.ServicePlanOptions
 
-	state, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The instance was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next apply recreates it instead of erroring.
+	if !found {
+		tflog.Warn(
+			ctx,
+			fmt.Sprintf("instance %d not found, removing from state", data.Id.ValueInt64()),
+		)
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -92,18 +104,24 @@ func getInstanceAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan InstanceModel,
-) (InstanceModel, diag.Diagnostics) {
+) (InstanceModel, bool, diag.Diagnostics) {
 	var state InstanceModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.InstancesAPI.GetInstance(ctx, id).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
+		// The instance no longer exists in Morpheus (e.g. deleted out of band).
+		// Signal not-found (without an error) so the caller can remove it from state.
+		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
+			return state, false, diags
+		}
+
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if resp.Instance == nil {
@@ -112,7 +130,7 @@ func getInstanceAsState(
 			fmt.Sprintf("instance %d GET returned empty instance", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	instance := *resp.Instance
@@ -132,7 +150,7 @@ func getInstanceAsState(
 		code, apiConfig, gdiags := getCodeAndConfig(id, instance)
 		diags.Append(gdiags...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		switch *code {
@@ -140,7 +158,7 @@ func getInstanceAsState(
 			configAws, cdiags := getInstanceAWSConfig(ctx, id, apiConfig)
 			diags = append(diags, cdiags...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.ConfigAws = configAws
 
@@ -148,7 +166,7 @@ func getInstanceAsState(
 			configAzure, cdiags := getInstanceAzureConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.ConfigAzure = configAzure
 
@@ -156,7 +174,7 @@ func getInstanceAsState(
 			configHvm, cdiags := getInstanceHVMConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.ConfigHvm = configHvm
 
@@ -164,7 +182,7 @@ func getInstanceAsState(
 			configVMware, cdiags := getInstanceVMwareConfig(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.ConfigVmware = configVMware
 
@@ -172,7 +190,7 @@ func getInstanceAsState(
 			config, cdiags := getInstanceConfigGeneric(ctx, id, apiConfig)
 			diags.Append(cdiags...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.Config = config
 
@@ -199,7 +217,7 @@ func getInstanceAsState(
 	cInfo, dc := getConnectionInfo(instance)
 	diags.Append(dc...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.ConnectionInfo = cInfo
@@ -215,7 +233,7 @@ func getInstanceAsState(
 	// evars separately.
 	envVars, diags := getInstanceEnvVars(ctx, id, client)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	evars, d := convert.ToSetType(
@@ -265,11 +283,17 @@ func getInstanceAsState(
 	// name
 	state.Name = convert.StrToType(instance.Name)
 
+	// status
+	// Refreshed on every read so an out-of-band deletion of the underlying VM,
+	// which Morpheus reports as "unknown" while retaining the instance record,
+	// surfaces as a change on the next plan.
+	state.Status = convert.StrToType(instance.Status)
+
 	// interfaces
 	ifaces, ifDiags := getStateInterfaces(ctx, instance, plan)
 	diags = append(diags, ifDiags...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	networkInterfacesList, d := types.ListValueFrom(ctx, NetworkInterfacesValue{}.Type(ctx), ifaces)
@@ -278,7 +302,7 @@ func getInstanceAsState(
 	if diags.HasError() {
 		tflog.Error(ctx, "cannot convert network interfaces")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.NetworkInterfaces = networkInterfacesList
@@ -287,7 +311,7 @@ func getInstanceAsState(
 	networkDomainId, ndiags := getInstanceNetworkDomainId(instance, plan)
 	diags = append(diags, ndiags...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 	state.NetworkDomainId = networkDomainId
 
@@ -347,7 +371,7 @@ func getInstanceAsState(
 	diags.Append(d...)
 	state.Volumes = volumes
 
-	return state, diags
+	return state, true, diags
 }
 
 func getInstanceNetworkDomainId(
