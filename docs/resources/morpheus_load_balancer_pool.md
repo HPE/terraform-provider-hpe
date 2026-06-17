@@ -41,11 +41,11 @@ resource "hpe_morpheus_load_balancer_pool" "nsxt" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `config` (Dynamic) Generic pool configuration object. Settings vary by load balancer type.
-- `config_nsxt` (Attributes) NSX-T load balancer pool configuration (see [below for nested schema](#nestedatt--config_nsxt))
+- `config_nsxt` (Attributes) Configuration object for NSX-T load balancer pool type. (see [below for nested schema](#nestedatt--config_nsxt))
 - `description` (String) A description of the load balancer pool
 - `min_active` (Number) Minimum number of active pool members
 - `partition` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Partition identifier
-- `port` (String) The port number for the pool
+- `port` (Number) The port number for the pool
 - `vip_balance` (String) The balance algorithm for the pool (e.g. ROUND_ROBIN, LEAST_CONNECTION, IP_HASH)
 - `vip_client_ip_mode` (String) VIP client IP mode
 - `vip_sticky` (String) Session persistence mode for the pool
@@ -87,16 +87,26 @@ resource "hpe_morpheus_load_balancer_pool" "nsxt" {
 
 Optional:
 
-- `active_monitor_paths` (Number) The ID of the active health monitor (NetworkLoadBalancerMonitor). The Options API `/api/options/nsxt/nsxtLBPoolActiveMonitor?loadBalancerId={id}` can be used to see which options are available.
-- `member_group_ip_revision_filter` (String) IP revision filter for member group
-- `member_group_max_ip_list_size` (Number) Maximum IP list size for member group
-- `member_group_path` (String) NSX-T member group path. When set, pool membership is determined by group membership instead of explicit nodes.
-- `member_group_port` (Number) Port for member group
-- `passive_monitor_path` (Number) The ID of the passive health monitor (NetworkLoadBalancerMonitor). The Options API `/api/options/nsxt/nsxtLBPoolPassiveMonitor?loadBalancerId={id}` can be used to see which options are available.
-- `snat_ip_addresses` (List of String) List of SNAT IP addresses. Required when snat_translation_type is LBSnatIpPool.
+- `active_monitor_paths` (Number) The ID of the active health monitor (NetworkLoadBalancerMonitor).
+The Options API `/api/options/nsxt/nsxtLBPoolActiveMonitor?loadBalancerId={id}` can be used to see which options are available.
+- `member_group` (Attributes) NSX-T member group configuration. When set, pool membership is determined by group membership instead of explicit nodes. (see [below for nested schema](#nestedatt--config_nsxt--member_group))
+- `passive_monitor_path` (Number) The ID of the passive health monitor (NetworkLoadBalancerMonitor).
+The Options API `/api/options/nsxt/nsxtLBPoolPassiveMonitor?loadBalancerId={id}` can be used to see which options are available.
+- `snat_ip_addresses` (Set of String) List of SNAT IP addresses. Required when snatTranslationType is LBSnatIpPool.
 - `snat_translation_type` (String) SNAT translation type. Determines how source NAT is applied to pool traffic.
-- `tcp_multiplexing` (Boolean) Whether TCP multiplexing is enabled for the pool
+- `tcp_multiplexing` (Boolean) Whether TCP multiplexing is enabled for the pool.
 - `tcp_multiplexing_number` (Number) Maximum number of TCP multiplexing connections. Defaults to 6.
+
+<a id="nestedatt--config_nsxt--member_group"></a>
+### Nested Schema for `config_nsxt.member_group`
+
+Optional:
+
+- `ip_revision_filter` (String) IP revision filter for the member group.
+- `max_ip_list_size` (Number) Maximum IP list size for the member group.
+- `path` (String) NSX-T member group path.
+- `port` (Number) Port number for the member group.
+
 
 
 <a id="nestedatt--load_balancer"></a>

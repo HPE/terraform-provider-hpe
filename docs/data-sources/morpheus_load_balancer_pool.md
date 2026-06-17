@@ -90,15 +90,23 @@ data "hpe_morpheus_load_balancer_pool" "example" {
 Read-Only:
 
 - `active_monitor_paths` (Number) The ID of the active health monitor
-- `member_group_ip_revision_filter` (String) IP revision filter for member group
-- `member_group_max_ip_list_size` (Number) Maximum IP list size for member group
-- `member_group_path` (String) NSX-T member group path
-- `member_group_port` (Number) Port for member group
+- `member_group` (Attributes) NSX-T member group configuration (see [below for nested schema](#nestedatt--config_nsxt--member_group))
 - `passive_monitor_path` (Number) The ID of the passive health monitor
 - `snat_ip_addresses` (List of String) List of SNAT IP addresses
 - `snat_translation_type` (String) SNAT translation type
 - `tcp_multiplexing` (Boolean) Whether TCP multiplexing is enabled
 - `tcp_multiplexing_number` (Number) Maximum number of TCP multiplexing connections
+
+<a id="nestedatt--config_nsxt--member_group"></a>
+### Nested Schema for `config_nsxt.member_group`
+
+Read-Only:
+
+- `ip_revision_filter` (String) IP revision filter for member group
+- `max_ip_list_size` (Number) Maximum IP list size for member group
+- `path` (String) NSX-T member group path
+- `port` (Number) Port for member group
+
 
 
 <a id="nestedatt--load_balancer"></a>
