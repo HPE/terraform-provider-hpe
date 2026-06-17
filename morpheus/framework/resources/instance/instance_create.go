@@ -501,8 +501,8 @@ func (g *Resource) Create(
 	}
 
 	// Read the instance state
-	state, d := getInstanceAsState(ctx, instanceId, client, plan)
-	if d.HasError() {
+	state, found, d := getInstanceAsState(ctx, instanceId, client, plan)
+	if d.HasError() || !found {
 		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(
 			"failed to read instance state",
