@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -668,6 +669,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Custom options for selected service plan - the supported options depend on the service plan selected",
 				MarkdownDescription: "Custom options for selected service plan - the supported options depend on the service plan selected",
 			},
+			"status": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The status of the instance (e.g. running, stopped, failed, unknown). The provider\nrefreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus\nreports as \"unknown\" while retaining the instance record - surfaces as a change on the next plan.\n",
+				MarkdownDescription: "The status of the instance (e.g. running, stopped, failed, unknown). The provider\nrefreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus\nreports as \"unknown\" while retaining the instance record - surfaces as a change on the next plan.\n",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"tags": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -795,6 +804,7 @@ type InstanceModel struct {
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
 	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
+	Status             types.String            `tfsdk:"status"`
 	Tags               types.Set               `tfsdk:"tags"`
 	TaskSetId          types.Int64             `tfsdk:"task_set_id"`
 	Timeouts           timeouts.Value          `tfsdk:"timeouts"`

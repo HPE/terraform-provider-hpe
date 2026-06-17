@@ -899,6 +899,9 @@ The layout may have default ports, which are defined in node types, that are alw
 
 - `connection_info` (List of String) List of IP addresses to use when connecting to instance
 - `id` (Number) The ID of this resource.
+- `status` (String) The status of the instance (e.g. running, stopped, failed, unknown). The provider
+refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
+reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
 
 <a id="nestedatt--network_interfaces"></a>
 ### Nested Schema for `network_interfaces`
