@@ -21,6 +21,100 @@ is cloned.
 
 {{ .SchemaMarkdown | trimspace }}
 
+## How cloning works
+
+A clone copies the disk **contents** (OS, installed software and data) from the
+source instance. The `volumes` and `network_interfaces` blocks describe the
+**complete** set for the clone and **replace** the source's configuration — they
+define infrastructure only (size, datastore, network, IP mode); the data always
+comes from the source.
+
+### Volumes
+
+- Provide **exactly one** volume with `root_volume = true`.
+- A volume's `name` should match the corresponding source volume name. On some
+  platforms (notably MVM/KVM) disks are matched to the source **by name** to copy
+  their contents — a mismatched name yields a blank disk instead of a copy.
+- `size` may be **grown** relative to the source; shrink requests are silently
+  ignored. Where a platform only resizes the root disk during the clone (e.g.
+  VMware), the provider automatically issues a follow-up resize so data disks
+  reach the size you requested.
+
+How disks are matched to the source — and how sizing behaves — varies by platform:
+
+| Platform | Disks matched to source | Sizing during clone |
+|---|---|---|
+| VMware (same cloud) | by position | root only; the provider grows data disks afterwards |
+| MVM / KVM | by volume **name** | resized during the clone |
+| Amazon | data disks by **size** | changing a data disk's size can break the match |
+| Azure | by order; volume types must match the source | governed by the source snapshot |
+| OpenStack | from source snapshots | limited |
+
+### Network interfaces
+
+- Use `ip_mode = ""` (IP pool) or `ip_mode = "dhcp"` so the clone receives a
+  **new** IP address.
+- `ip_mode = "static"` reuses the **source's** IP address. Supply an explicit
+  `ip_address` in that case to avoid an address conflict with the source.
+- When cloning into a different `cloud_id`, the chosen networks must exist in the
+  target cloud — networks are not remapped automatically.
+
+## Additional examples
+
+### Multiple volumes with datastore placement and a second interface
+
+```terraform
+resource "hpe_morpheus_instance_clone" "staging" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "staging-copy"
+
+  # Volume names match the source so their contents are cloned.
+  volumes {
+    name         = "root"
+    root_volume  = true
+    size         = 50 # grown from the source's 40 GB
+    datastore_id = 12
+  }
+  volumes {
+    name         = "data"
+    size         = 500 # grown from the source's 200 GB (resized after the clone)
+    datastore_id = 14
+    storage_type = 1
+  }
+
+  network_interfaces {
+    network_id = 7
+    ip_mode    = "" # IP pool - the clone gets a new address
+  }
+  network_interfaces {
+    network_id = 9
+    ip_mode    = "dhcp"
+  }
+}
+```
+
+### Clone into a different group and cloud
+
+```terraform
+resource "hpe_morpheus_instance_clone" "dr_copy" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "dr-copy"
+  group_id           = 3
+  cloud_id           = 5 # the networks below must exist in this cloud
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+
+  network_interfaces {
+    network_id = 21
+    ip_mode    = ""
+  }
+}
+```
+
 ## Import
 
 Import is supported using the cloned instance ID:
