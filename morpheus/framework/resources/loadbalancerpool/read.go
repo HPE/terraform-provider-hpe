@@ -112,12 +112,6 @@ func getLoadBalancerPoolAsState(
 		state.Category = types.StringNull()
 	}
 
-	if p.CreatedBy.IsSet() {
-		state.CreatedBy = convert.StrToType(p.CreatedBy.Get())
-	} else {
-		state.CreatedBy = types.StringNull()
-	}
-
 	if p.DownAction.IsSet() {
 		state.DownAction = convert.StrToType(p.DownAction.Get())
 	} else {
@@ -216,12 +210,6 @@ func getLoadBalancerPoolAsState(
 	state.Enabled = convert.BoolToType(p.Enabled)
 
 	// *time.Time fields
-	if p.DateCreated != nil {
-		state.DateCreated = types.StringValue(p.DateCreated.String())
-	} else {
-		state.DateCreated = types.StringNull()
-	}
-
 	if p.LastUpdated != nil {
 		state.LastUpdated = types.StringValue(p.LastUpdated.String())
 	} else {

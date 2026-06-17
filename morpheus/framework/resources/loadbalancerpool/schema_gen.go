@@ -148,12 +148,6 @@ func LoadBalancerPoolResourceSchema(ctx context.Context) schema.Schema {
 					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
 				},
 			},
-			"created_by": schema.StringAttribute{
-				Computed: true,
-			},
-			"date_created": schema.StringAttribute{
-				Computed: true,
-			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -329,8 +323,6 @@ type LoadBalancerPoolModel struct {
 	Category         types.String      `tfsdk:"category"`
 	Config           types.Dynamic     `tfsdk:"config"`
 	ConfigNsxt       ConfigNsxtValue   `tfsdk:"config_nsxt"`
-	CreatedBy        types.String      `tfsdk:"created_by"`
-	DateCreated      types.String      `tfsdk:"date_created"`
 	Description      types.String      `tfsdk:"description"`
 	DownAction       types.String      `tfsdk:"down_action"`
 	Enabled          types.Bool        `tfsdk:"enabled"`
