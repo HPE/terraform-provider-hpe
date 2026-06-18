@@ -23,7 +23,7 @@ func ResourceOptionTypeNumber() *schema.Resource {
 		UpdateContext: resourceOptionTypeNumberUpdate,
 		DeleteContext: resourceOptionTypeNumberDelete,
 
-		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+		CustomizeDiff: validateDependentFieldNotSelf,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

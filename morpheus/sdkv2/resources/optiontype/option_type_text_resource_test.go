@@ -184,10 +184,6 @@ func TestAccMorpheusOptionTypeTextExampleOk(t *testing.T) {
 func TestAccMorpheusOptionTypeTextRejectsSelfReferentialDependentField(t *testing.T) {
 	t.Parallel()
 
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
 	providerConfig := testhelpers.ProviderBlock()
 
 	invalidConfig := `

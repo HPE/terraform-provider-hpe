@@ -23,7 +23,7 @@ func ResourceOptionTypeSelectList() *schema.Resource {
 		UpdateContext: resourceOptionTypeSelectListUpdate,
 		DeleteContext: resourceOptionTypeSelectListDelete,
 
-		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+		CustomizeDiff: validateDependentFieldNotSelf,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

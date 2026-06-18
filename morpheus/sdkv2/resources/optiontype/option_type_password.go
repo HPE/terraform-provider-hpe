@@ -23,7 +23,7 @@ func ResourceOptionTypePassword() *schema.Resource {
 		UpdateContext: resourceOptionTypePasswordUpdate,
 		DeleteContext: resourceOptionTypePasswordDelete,
 
-		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+		CustomizeDiff: validateDependentFieldNotSelf,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

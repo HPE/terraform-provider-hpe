@@ -23,7 +23,7 @@ func ResourceOptionTypeCheckbox() *schema.Resource {
 		UpdateContext: resourceOptionTypeCheckboxUpdate,
 		DeleteContext: resourceOptionTypeCheckboxDelete,
 
-		CustomizeDiff: helpers.ValidateDependentFieldNotSelf,
+		CustomizeDiff: validateDependentFieldNotSelf,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

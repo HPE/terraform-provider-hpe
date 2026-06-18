@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package helpers
+package optiontype
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-// ValidateDependentFieldNotSelf is a CustomizeDiff function for option type
+// validateDependentFieldNotSelf is a CustomizeDiff function for option type
 // resources that expose both field_name and dependent_field. It rejects a
 // configuration where dependent_field equals field_name: a field cannot depend
 // on itself, which produces a circular dependsOnCode and an unstable form
@@ -18,7 +18,7 @@ import (
 //
 // The check reads the raw config, so it never fires on a computed read-back of
 // dependent_field.
-func ValidateDependentFieldNotSelf(
+func validateDependentFieldNotSelf(
 	_ context.Context, d *schema.ResourceDiff, _ any,
 ) error {
 	raw := d.GetRawConfig()
