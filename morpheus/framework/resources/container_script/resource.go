@@ -45,7 +45,7 @@ func (r *containerScriptResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = ContainerScriptSchema(ctx)
+	resp.Schema = ContainerScriptResourceSchema(ctx)
 }
 
 func (r *containerScriptResource) Create(
@@ -60,7 +60,7 @@ func (r *containerScriptResource) Create(
 		return
 	}
 
-	var plan containerScriptModel
+	var plan ContainerScriptModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -170,13 +170,13 @@ func (r *containerScriptResource) Read(
 		return
 	}
 
-	var state containerScriptModel
+	var state ContainerScriptModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	if err := readScriptIntoModel(ctx, client, id, &state, &resp.Diagnostics); err != nil {
 		if err.Error() == "not found" {
@@ -204,13 +204,13 @@ func (r *containerScriptResource) Update(
 		return
 	}
 
-	var plan containerScriptModel
+	var plan ContainerScriptModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateScriptRequestContainerScript{
 		Name: plan.Name.ValueStringPointer(),
@@ -283,13 +283,13 @@ func (r *containerScriptResource) Delete(
 		return
 	}
 
-	var state containerScriptModel
+	var state ContainerScriptModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.LibraryAPI.DeleteScript(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -315,12 +315,12 @@ func (r *containerScriptResource) ImportState(
 
 func mapGetResponseToModel(
 	ctx context.Context,
-	model *containerScriptModel,
+	model *ContainerScriptModel,
 	script *sdk.GetScript200ResponseContainerScript,
 	diags *diag.Diagnostics,
 ) {
 	if script.Id != nil {
-		model.ID = types.Int64Value(*script.Id)
+		model.Id = types.Int64Value(*script.Id)
 	}
 	if script.Name != nil {
 		model.Name = types.StringValue(*script.Name)
@@ -371,7 +371,7 @@ func readScriptIntoModel(
 	ctx context.Context,
 	client *sdk.APIClient,
 	id int64,
-	model *containerScriptModel,
+	model *ContainerScriptModel,
 	diags *diag.Diagnostics,
 ) error {
 	result, httpResp, err := client.LibraryAPI.GetScript(ctx, id).Execute()
@@ -414,12 +414,12 @@ func readScriptIntoModel(
 
 func mapGenericScriptToModel(
 	ctx context.Context,
-	model *containerScriptModel,
+	model *ContainerScriptModel,
 	m map[string]interface{},
 	diags *diag.Diagnostics,
 ) {
 	if id, ok := m["id"].(float64); ok {
-		model.ID = types.Int64Value(int64(id))
+		model.Id = types.Int64Value(int64(id))
 	}
 	if name, ok := m["name"].(string); ok {
 		model.Name = types.StringValue(name)

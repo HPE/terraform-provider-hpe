@@ -44,7 +44,7 @@ func (r *clusterAffinityGroupResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = ClusterAffinityGroupSchema(ctx)
+	resp.Schema = ClusterAffinityGroupResourceSchema(ctx)
 }
 
 func (r *clusterAffinityGroupResource) Create(
@@ -59,18 +59,19 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
-	var plan clusterAffinityGroupModel
+	var plan ClusterAffinityGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
 
 	name := plan.Name.ValueString()
 	ag := sdk.SaveClusterAffinityGroupRequestAffinityGroup{
 		Name: &name,
 	}
+	ag.Active = plan.Active.ValueBoolPointer()
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -128,14 +129,14 @@ func (r *clusterAffinityGroupResource) Read(
 		return
 	}
 
-	var state clusterAffinityGroupModel
+	var state ClusterAffinityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -173,20 +174,21 @@ func (r *clusterAffinityGroupResource) Update(
 		return
 	}
 
-	var plan clusterAffinityGroupModel
+	var plan ClusterAffinityGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
-	id := plan.ID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	ag := sdk.UpdateCloudAffinityGroupRequestAffinityGroup{}
 	if !plan.Name.IsNull() {
 		v := plan.Name.ValueString()
 		ag.Name = &v
 	}
+	ag.Active = plan.Active.ValueBoolPointer()
 
 	body := sdk.UpdateClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -230,14 +232,14 @@ func (r *clusterAffinityGroupResource) Delete(
 		return
 	}
 
-	var state clusterAffinityGroupModel
+	var state ClusterAffinityGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ClustersAPI.DeleteClusterAffinityGroup(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -280,11 +282,14 @@ func (r *clusterAffinityGroupResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *clusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
 	if ag.Id != nil {
-		model.ID = types.Int64Value(*ag.Id)
+		model.Id = types.Int64Value(*ag.Id)
 	}
 	if ag.Name != nil {
 		model.Name = types.StringValue(*ag.Name)
+	}
+	if ag.Active != nil {
+		model.Active = types.BoolValue(*ag.Active)
 	}
 }

@@ -34,7 +34,7 @@ func (r *vdiAppResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *vdiAppResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = VdiAppSchema(ctx)
+	resp.Schema = VdiAppResourceSchema(ctx)
 }
 
 func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -45,7 +45,7 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var plan vdiAppModel
+	var plan VdiAppModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,13 +110,13 @@ func (r *vdiAppResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var state vdiAppModel
+	var state VdiAppModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.VDIAPI.GetVDIApps(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -149,13 +149,13 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	var plan vdiAppModel
+	var plan VdiAppModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateVDIAppsRequestVdiAppOneOf{
 		Name: plan.Name.ValueStringPointer(),
@@ -201,13 +201,13 @@ func (r *vdiAppResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	var state vdiAppModel
+	var state VdiAppModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -231,9 +231,9 @@ func (r *vdiAppResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *vdiAppModel, app *sdk.GetVDIApps200ResponseVdiApp) {
+func mapGetResponseToModel(model *VdiAppModel, app *sdk.GetVDIApps200ResponseVdiApp) {
 	if app.Id != nil {
-		model.ID = types.Int64Value(*app.Id)
+		model.Id = types.Int64Value(*app.Id)
 	}
 	if app.Name != nil {
 		model.Name = types.StringValue(*app.Name)

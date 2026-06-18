@@ -38,7 +38,7 @@ func (r *deploymentResource) Metadata(
 }
 
 func (r *deploymentResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = DeploymentSchema(ctx)
+	resp.Schema = DeploymentResourceSchema(ctx)
 }
 
 func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *deploymentResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var plan deploymentModel
+	var plan DeploymentModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,13 +110,13 @@ func (r *deploymentResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	var state deploymentModel
+	var state DeploymentModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.DeploymentsAPI.GetDeployment(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -149,13 +149,13 @@ func (r *deploymentResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	var plan deploymentModel
+	var plan DeploymentModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateDeploymentRequestDeployment{
 		Name: plan.Name.ValueStringPointer(),
@@ -199,13 +199,13 @@ func (r *deploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	var state deploymentModel
+	var state DeploymentModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -229,9 +229,9 @@ func (r *deploymentResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *deploymentModel, dep *sdk.GetDeployment200ResponseDeployment) {
+func mapGetResponseToModel(model *DeploymentModel, dep *sdk.GetDeployment200ResponseDeployment) {
 	if dep.Id != nil {
-		model.ID = types.Int64Value(*dep.Id)
+		model.Id = types.Int64Value(*dep.Id)
 	}
 	if dep.Name != nil {
 		model.Name = types.StringValue(*dep.Name)
