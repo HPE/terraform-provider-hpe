@@ -67,6 +67,12 @@ func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 			"config_hvm.resource_pool_id",
 			resourcePool,
 		),
+		// status is a computed attribute, refreshed on read so an out-of-band
+		// deletion of the underlying VM surfaces as a change on the next plan.
+		resource.TestCheckResourceAttrSet(
+			"hpe_morpheus_instance.example",
+			"status",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)

@@ -81,8 +81,17 @@ func (g *Resource) Update(
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
 	tflog.Info(ctx, fmt.Sprintf("Instance update plan: %v", plan.Volumes.Elements()))
 
-	newState, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
+	newState, found, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !found {
+		resp.Diagnostics.AddError(
+			"update instance",
+			fmt.Sprintf("instance %d not found after update", state.Id.ValueInt64()),
+		)
+
 		return
 	}
 

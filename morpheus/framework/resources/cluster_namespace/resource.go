@@ -44,7 +44,7 @@ func (r *clusterNamespaceResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = ClusterNamespaceSchema(ctx)
+	resp.Schema = ClusterNamespaceResourceSchema(ctx)
 }
 
 func (r *clusterNamespaceResource) Create(
@@ -59,13 +59,13 @@ func (r *clusterNamespaceResource) Create(
 		return
 	}
 
-	var plan clusterNamespaceModel
+	var plan ClusterNamespaceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
 
 	ns := sdk.AddClusterNamespaceRequestNamespace{
 		Name: plan.Name.ValueString(),
@@ -130,14 +130,14 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	var state clusterNamespaceModel
+	var state ClusterNamespaceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ClustersAPI.GetClusterNamespace(ctx, clusterID, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -175,14 +175,14 @@ func (r *clusterNamespaceResource) Update(
 		return
 	}
 
-	var plan clusterNamespaceModel
+	var plan ClusterNamespaceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := plan.ClusterID.ValueInt64()
-	id := plan.ID.ValueInt64()
+	clusterID := plan.ClusterId.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	ns := sdk.UpdateClusterNamespaceRequestNamespace{}
 	if !plan.Name.IsNull() {
@@ -239,14 +239,14 @@ func (r *clusterNamespaceResource) Delete(
 		return
 	}
 
-	var state clusterNamespaceModel
+	var state ClusterNamespaceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	clusterID := state.ClusterID.ValueInt64()
-	id := state.ID.ValueInt64()
+	clusterID := state.ClusterId.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ClustersAPI.DeleteClusterNamespace(ctx, clusterID, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -289,9 +289,9 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *clusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) {
+func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) {
 	if ns.Id != nil {
-		model.ID = types.Int64Value(*ns.Id)
+		model.Id = types.Int64Value(*ns.Id)
 	}
 	if ns.Name != nil {
 		model.Name = types.StringValue(*ns.Name)

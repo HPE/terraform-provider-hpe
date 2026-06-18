@@ -27,6 +27,7 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 
 ### Optional
 
+- `active` (Boolean) Whether the affinity group is active.
 - `description` (String) The description of the affinity group.
 
 ### Read-Only

@@ -38,7 +38,7 @@ func (r *monitoringAlertResource) Metadata(
 }
 
 func (r *monitoringAlertResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = MonitoringAlertSchema(ctx)
+	resp.Schema = MonitoringAlertResourceSchema(ctx)
 }
 
 func (r *monitoringAlertResource) Create(
@@ -53,7 +53,7 @@ func (r *monitoringAlertResource) Create(
 		return
 	}
 
-	var plan monitoringAlertModel
+	var plan MonitoringAlertModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -127,13 +127,13 @@ func (r *monitoringAlertResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	var state monitoringAlertModel
+	var state MonitoringAlertModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.AlertsAPI.GetAlerts(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -170,13 +170,13 @@ func (r *monitoringAlertResource) Update(
 		return
 	}
 
-	var plan monitoringAlertModel
+	var plan MonitoringAlertModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateAlertsRequestAlert{
 		Name: plan.Name.ValueStringPointer(),
@@ -236,13 +236,13 @@ func (r *monitoringAlertResource) Delete(
 		return
 	}
 
-	var state monitoringAlertModel
+	var state MonitoringAlertModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.AlertsAPI.DeleteAlerts(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -266,9 +266,9 @@ func (r *monitoringAlertResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetAlertResponseToModel(model *monitoringAlertModel, alert *sdk.GetAlerts200ResponseAllOfAlert) {
+func mapGetAlertResponseToModel(model *MonitoringAlertModel, alert *sdk.GetAlerts200ResponseAllOfAlert) {
 	if alert.Id != nil {
-		model.ID = types.Int64Value(*alert.Id)
+		model.Id = types.Int64Value(*alert.Id)
 	}
 	if alert.Name != nil {
 		model.Name = types.StringValue(*alert.Name)

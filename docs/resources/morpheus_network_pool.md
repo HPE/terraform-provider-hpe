@@ -31,7 +31,7 @@ resource "hpe_morpheus_network_pool" "example" {
 
 ### Required
 
-- `ip_ranges` (Attributes) The IPv4 IP address pool IP ranges. (see [below for nested schema](#nestedatt--ip_ranges))
+- `ip_ranges` (Object) The IPv4 IP address pool IP ranges. (see [below for nested schema](#nestedatt--ip_ranges))
 - `name` (String) The name of the network pool.
 - `type_code` (String) The code of the network pool type. Default available codes are morpheus, morpheusipv6, vcd, and nsx-t. Plugins can add additional pool types.
 
@@ -55,8 +55,8 @@ resource "hpe_morpheus_network_pool" "example" {
 
 Required:
 
-- `ending_address` (String) The ending address of the IPv4 IP address pool IP range.
-- `starting_address` (String) The starting address of the IPv4 IP address pool IP range.
+- `ending_address` (String)
+- `starting_address` (String)
 
 ## Import
 

@@ -5,55 +5,30 @@ package network_router_route
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schema.Int64Attribute{
-				Computed:            true,
-				Description:         "The ID of the route",
-				MarkdownDescription: "The ID of the route",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
-				},
-			},
-			"router_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "The ID of the parent network router",
-				MarkdownDescription: "The ID of the parent network router",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
-			},
-			"name": schema.StringAttribute{
+			"default_route": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Name of the route",
-				MarkdownDescription: "Name of the route",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
+				Description:         "Whether this is the default route",
+				MarkdownDescription: "Whether this is the default route",
+				Default:             booldefault.StaticBool(false),
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Description of the route",
 				MarkdownDescription: "Description of the route",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
-			"source": schema.StringAttribute{
-				Required:            true,
-				Description:         "Source network (CIDR)",
-				MarkdownDescription: "Source network (CIDR)",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
@@ -66,13 +41,6 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"default_route": schema.BoolAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Whether this is the default route",
-				MarkdownDescription: "Whether this is the default route",
-				Default:             booldefault.StaticBool(false),
-			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -80,23 +48,56 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Whether the route is enabled",
 				Default:             booldefault.StaticBool(true),
 			},
+			"id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the route",
+				MarkdownDescription: "The ID of the route",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Name of the route",
+				MarkdownDescription: "Name of the route",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"network_mtu": schema.Float64Attribute{
 				Optional:            true,
 				Description:         "Network MTU",
 				MarkdownDescription: "Network MTU",
+			},
+			"router_id": schema.Int64Attribute{
+				Required:            true,
+				Description:         "The ID of the parent network router",
+				MarkdownDescription: "The ID of the parent network router",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
+			"source": schema.StringAttribute{
+				Required:            true,
+				Description:         "Source network (CIDR)",
+				MarkdownDescription: "Source network (CIDR)",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 		},
 	}
 }
 
 type NetworkRouterRouteModel struct {
-	Id           types.Int64   `tfsdk:"id"`
-	RouterId     types.Int64   `tfsdk:"router_id"`
-	Name         types.String  `tfsdk:"name"`
-	Description  types.String  `tfsdk:"description"`
-	Source       types.String  `tfsdk:"source"`
-	Destination  types.String  `tfsdk:"destination"`
 	DefaultRoute types.Bool    `tfsdk:"default_route"`
+	Description  types.String  `tfsdk:"description"`
+	Destination  types.String  `tfsdk:"destination"`
 	Enabled      types.Bool    `tfsdk:"enabled"`
+	Id           types.Int64   `tfsdk:"id"`
+	Name         types.String  `tfsdk:"name"`
 	NetworkMtu   types.Float64 `tfsdk:"network_mtu"`
+	RouterId     types.Int64   `tfsdk:"router_id"`
+	Source       types.String  `tfsdk:"source"`
 }

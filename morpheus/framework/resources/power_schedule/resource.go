@@ -38,7 +38,7 @@ func (r *powerScheduleResource) Metadata(
 }
 
 func (r *powerScheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = PowerScheduleSchema(ctx)
+	resp.Schema = PowerScheduleResourceSchema(ctx)
 }
 
 func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var plan powerScheduleModel
+	var plan PowerScheduleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -160,13 +160,13 @@ func (r *powerScheduleResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	var state powerScheduleModel
+	var state PowerScheduleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.AutomationAPI.GetPowerSchedules(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -200,13 +200,13 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	var plan powerScheduleModel
+	var plan PowerScheduleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdatePowerSchedulesRequestSchedule{
 		Name: plan.Name.ValueStringPointer(),
@@ -301,13 +301,13 @@ func (r *powerScheduleResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	var state powerScheduleModel
+	var state PowerScheduleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -331,9 +331,9 @@ func (r *powerScheduleResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *powerScheduleModel, schedule *sdk.GetPowerSchedules200ResponseAllOfSchedule) {
+func mapGetResponseToModel(model *PowerScheduleModel, schedule *sdk.GetPowerSchedules200ResponseAllOfSchedule) {
 	if schedule.Id != nil {
-		model.ID = types.Int64Value(*schedule.Id)
+		model.Id = types.Int64Value(*schedule.Id)
 	}
 	if schedule.Name != nil {
 		model.Name = types.StringValue(*schedule.Name)
@@ -369,7 +369,7 @@ func mapGetResponseToModel(model *powerScheduleModel, schedule *sdk.GetPowerSche
 }
 
 func mapTimeFields(
-	model *powerScheduleModel,
+	model *PowerScheduleModel,
 	mondayOn,
 	mondayOff,
 	tuesdayOn,
