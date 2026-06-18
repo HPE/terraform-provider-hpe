@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -19,9 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
-	"github.com/HPE/terraform-provider-hpe/utils/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -232,8 +231,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`conditional_script is missing from object`,
-		)
+			`conditional_script is missing from object`)
 
 		return nil, diags
 	}
@@ -243,8 +241,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`conditional_script expected to be customtypes.TrimmedString, was: %T`, conditionalScriptAttribute),
-		)
+			fmt.Sprintf(`conditional_script expected to be customtypes.TrimmedString, was: %T`, conditionalScriptAttribute))
 	}
 
 	elseOperationalWorkflowIdAttribute, ok := attributes["else_operational_workflow_id"]
@@ -252,8 +249,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`else_operational_workflow_id is missing from object`,
-		)
+			`else_operational_workflow_id is missing from object`)
 
 		return nil, diags
 	}
@@ -263,8 +259,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`else_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, elseOperationalWorkflowIdAttribute),
-		)
+			fmt.Sprintf(`else_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, elseOperationalWorkflowIdAttribute))
 	}
 
 	elseOperationalWorkflowNameAttribute, ok := attributes["else_operational_workflow_name"]
@@ -272,8 +267,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`else_operational_workflow_name is missing from object`,
-		)
+			`else_operational_workflow_name is missing from object`)
 
 		return nil, diags
 	}
@@ -283,8 +277,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`else_operational_workflow_name expected to be basetypes.StringValue, was: %T`, elseOperationalWorkflowNameAttribute),
-		)
+			fmt.Sprintf(`else_operational_workflow_name expected to be basetypes.StringValue, was: %T`, elseOperationalWorkflowNameAttribute))
 	}
 
 	ifOperationalWorkflowIdAttribute, ok := attributes["if_operational_workflow_id"]
@@ -292,8 +285,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`if_operational_workflow_id is missing from object`,
-		)
+			`if_operational_workflow_id is missing from object`)
 
 		return nil, diags
 	}
@@ -303,8 +295,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`if_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, ifOperationalWorkflowIdAttribute),
-		)
+			fmt.Sprintf(`if_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, ifOperationalWorkflowIdAttribute))
 	}
 
 	ifOperationalWorkflowNameAttribute, ok := attributes["if_operational_workflow_name"]
@@ -312,8 +303,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`if_operational_workflow_name is missing from object`,
-		)
+			`if_operational_workflow_name is missing from object`)
 
 		return nil, diags
 	}
@@ -323,8 +313,7 @@ func (t ConfigConditionalWorkflowType) ValueFromObject(ctx context.Context, in b
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`if_operational_workflow_name expected to be basetypes.StringValue, was: %T`, ifOperationalWorkflowNameAttribute),
-		)
+			fmt.Sprintf(`if_operational_workflow_name expected to be basetypes.StringValue, was: %T`, ifOperationalWorkflowNameAttribute))
 	}
 
 	if diags.HasError() {
@@ -409,8 +398,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`conditional_script is missing from object`,
-		)
+			`conditional_script is missing from object`)
 
 		return NewConfigConditionalWorkflowValueUnknown(), diags
 	}
@@ -420,8 +408,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`conditional_script expected to be customtypes.TrimmedString, was: %T`, conditionalScriptAttribute),
-		)
+			fmt.Sprintf(`conditional_script expected to be customtypes.TrimmedString, was: %T`, conditionalScriptAttribute))
 	}
 
 	elseOperationalWorkflowIdAttribute, ok := attributes["else_operational_workflow_id"]
@@ -429,8 +416,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`else_operational_workflow_id is missing from object`,
-		)
+			`else_operational_workflow_id is missing from object`)
 
 		return NewConfigConditionalWorkflowValueUnknown(), diags
 	}
@@ -440,8 +426,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`else_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, elseOperationalWorkflowIdAttribute),
-		)
+			fmt.Sprintf(`else_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, elseOperationalWorkflowIdAttribute))
 	}
 
 	elseOperationalWorkflowNameAttribute, ok := attributes["else_operational_workflow_name"]
@@ -449,8 +434,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`else_operational_workflow_name is missing from object`,
-		)
+			`else_operational_workflow_name is missing from object`)
 
 		return NewConfigConditionalWorkflowValueUnknown(), diags
 	}
@@ -460,8 +444,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`else_operational_workflow_name expected to be basetypes.StringValue, was: %T`, elseOperationalWorkflowNameAttribute),
-		)
+			fmt.Sprintf(`else_operational_workflow_name expected to be basetypes.StringValue, was: %T`, elseOperationalWorkflowNameAttribute))
 	}
 
 	ifOperationalWorkflowIdAttribute, ok := attributes["if_operational_workflow_id"]
@@ -469,8 +452,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`if_operational_workflow_id is missing from object`,
-		)
+			`if_operational_workflow_id is missing from object`)
 
 		return NewConfigConditionalWorkflowValueUnknown(), diags
 	}
@@ -480,8 +462,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`if_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, ifOperationalWorkflowIdAttribute),
-		)
+			fmt.Sprintf(`if_operational_workflow_id expected to be basetypes.Int64Value, was: %T`, ifOperationalWorkflowIdAttribute))
 	}
 
 	ifOperationalWorkflowNameAttribute, ok := attributes["if_operational_workflow_name"]
@@ -489,8 +470,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`if_operational_workflow_name is missing from object`,
-		)
+			`if_operational_workflow_name is missing from object`)
 
 		return NewConfigConditionalWorkflowValueUnknown(), diags
 	}
@@ -500,8 +480,7 @@ func NewConfigConditionalWorkflowValue(attributeTypes map[string]attr.Type, attr
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`if_operational_workflow_name expected to be basetypes.StringValue, was: %T`, ifOperationalWorkflowNameAttribute),
-		)
+			fmt.Sprintf(`if_operational_workflow_name expected to be basetypes.StringValue, was: %T`, ifOperationalWorkflowNameAttribute))
 	}
 
 	if diags.HasError() {
@@ -530,8 +509,7 @@ func NewConfigConditionalWorkflowValueMust(attributeTypes map[string]attr.Type, 
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigConditionalWorkflowValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -699,8 +677,7 @@ func (v ConfigConditionalWorkflowValue) ToObjectValue(ctx context.Context) (base
 			"else_operational_workflow_name": v.ElseOperationalWorkflowName,
 			"if_operational_workflow_id":     v.IfOperationalWorkflowId,
 			"if_operational_workflow_name":   v.IfOperationalWorkflowName,
-		},
-	)
+		})
 
 	return objVal, diags
 }
