@@ -79,3 +79,22 @@ func ProviderBlockLegacy() string {
 func ProviderBlockMixed() string {
 	return providerConfig + providerConfigLegacyProviderBlockOnly
 }
+
+//nolint:lll
+const providerConfigUnitTest = `
+provider "hpe" {
+  morpheus {
+    url          = "http://localhost"
+    access_token = "unit-test"
+  }
+}
+`
+
+// ProviderBlockUnitTest returns a provider block with a placeholder URL and
+// token so that plan-time validation tests (CustomizeDiff / schema) can run as
+// unit tests (IsUnitTest, no TF_ACC) without real credentials. The Morpheus
+// client is created lazily, so no connection is made before the validation
+// under test fires.
+func ProviderBlockUnitTest() string {
+	return providerConfigUnitTest
+}
