@@ -794,10 +794,59 @@ func buildCloneNetworkInterfaces(
 			iface.Id = ni.Id.ValueInt64Pointer()
 		}
 
+		iface.NetworkInterfaces = buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
+
 		sdkIfaces = append(sdkIfaces, iface)
 	}
 
 	return sdkIfaces
+}
+
+// buildChildInterfaces converts plan child virtual networks into the SDK child
+// interface slice. The same element type is shared by clone
+// (InstancesNetworkInterfaces3) and resize (InstancesNetworkInterfaces4).
+func buildChildInterfaces(
+	ctx context.Context, childList types.List,
+) []sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
+	if childList.IsNull() || childList.IsUnknown() {
+		return nil
+	}
+
+	var planChildren []ChildVirtualNetworksValue
+	childList.ElementsAs(ctx, &planChildren, false)
+
+	children := make([]sdk.InstancesNetworkInterfaces3NetworkInterfacesInner, 0, len(planChildren))
+	for _, c := range planChildren {
+		child := sdk.InstancesNetworkInterfaces3NetworkInterfacesInner{
+			Network: sdk.InstancesNetworkInterfaces3NetworkInterfacesInnerNetwork{
+				Id: strconv.FormatInt(c.NetworkId.ValueInt64(), 10),
+			},
+		}
+
+		if !c.NetworkInterfaceTypeId.IsNull() && !c.NetworkInterfaceTypeId.IsUnknown() {
+			child.NetworkInterfaceTypeId = c.NetworkInterfaceTypeId.ValueInt64Pointer()
+		}
+
+		if !c.IpMode.IsNull() && !c.IpMode.IsUnknown() {
+			child.IpMode = c.IpMode.ValueStringPointer()
+		}
+
+		if !c.IpAddress.IsNull() && !c.IpAddress.IsUnknown() {
+			child.IpAddress = c.IpAddress.ValueStringPointer()
+		}
+
+		if !c.MacAddress.IsNull() && !c.MacAddress.IsUnknown() {
+			child.MacAddress = c.MacAddress.ValueStringPointer()
+		}
+
+		if !c.Id.IsNull() && !c.Id.IsUnknown() {
+			child.Id = c.Id.ValueInt64Pointer()
+		}
+
+		children = append(children, child)
+	}
+
+	return children
 }
 
 // buildResizeVolumes converts plan volumes for resize.
@@ -891,6 +940,8 @@ func buildResizeNetworkInterfaces(
 		if !ni.Id.IsNull() && !ni.Id.IsUnknown() {
 			iface.Id = ni.Id.ValueInt64Pointer()
 		}
+
+		iface.NetworkInterfaces = buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
 
 		sdkIfaces = append(sdkIfaces, iface)
 	}
@@ -1052,16 +1103,53 @@ func mergeInterfacesForRead(
 
 	values := make([]attr.Value, 0, len(apiInterfaces))
 	for i, iface := range apiInterfaces {
-		ni := interfaceValueFromAPI(iface)
+		ni := interfaceValueFromAPI(ctx, iface)
+
+		var priorChildren types.List
 		if i < len(prior) {
 			ni.MacAddress = prior[i].MacAddress
+			priorChildren = prior[i].ChildVirtualNetworks
 		}
+		ni.ChildVirtualNetworks = mergeChildInterfacesForRead(ctx, priorChildren, iface.NetworkInterfaces)
 
 		objVal, _ := ni.ToObjectValue(ctx)
 		values = append(values, objVal)
 	}
 
 	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+
+	return listVal
+}
+
+// mergeChildInterfacesForRead refreshes child interface API fields for Read while
+// preserving the write-only input (mac_address) from prior state, matched
+// positionally.
+func mergeChildInterfacesForRead(
+	ctx context.Context,
+	priorChildren types.List,
+	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
+) types.List {
+	if len(apiChildren) == 0 {
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
+	}
+
+	var prior []ChildVirtualNetworksValue
+	if !priorChildren.IsNull() && !priorChildren.IsUnknown() {
+		priorChildren.ElementsAs(ctx, &prior, false)
+	}
+
+	values := make([]attr.Value, 0, len(apiChildren))
+	for i, child := range apiChildren {
+		c := childInterfaceValueFromAPI(child)
+		if i < len(prior) {
+			c.MacAddress = prior[i].MacAddress
+		}
+
+		objVal, _ := c.ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
 
 	return listVal
 }
@@ -1096,6 +1184,7 @@ func preferKnownString(plan, api types.String) types.String {
 
 // interfaceValueFromAPI maps a single API interface into a NetworkInterfacesValue.
 func interfaceValueFromAPI(
+	ctx context.Context,
 	iface sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
 ) NetworkInterfacesValue {
 	ni := NetworkInterfacesValue{
@@ -1119,8 +1208,60 @@ func interfaceValueFromAPI(
 	ni.IpAddress = convert.StrToType(iface.IpAddress)
 	// mac_address is a write-only input and is not returned by the read API.
 	ni.MacAddress = types.StringNull()
+	ni.ChildVirtualNetworks = childInterfacesFromAPI(ctx, iface.NetworkInterfaces)
 
 	return ni
+}
+
+// childInterfaceValueFromAPI maps a single API child interface into a
+// ChildVirtualNetworksValue.
+func childInterfaceValueFromAPI(
+	child sdk.InstanceInterfacesNetworkInterfacesInner1,
+) ChildVirtualNetworksValue {
+	c := ChildVirtualNetworksValue{
+		state: attr.ValueStateKnown,
+	}
+
+	// Interface Id is an anyOf type (Int64 | String).
+	c.Id = types.Int64Null()
+	if child.Id != nil && child.Id.Int64 != nil {
+		c.Id = types.Int64Value(*child.Id.Int64)
+	}
+
+	// Network ID from the nested network object.
+	c.NetworkId = types.Int64Null()
+	if child.Network != nil && child.Network.Id != nil {
+		c.NetworkId = types.Int64Value(*child.Network.Id)
+	}
+
+	c.NetworkInterfaceTypeId = convert.Int64ToType(child.NetworkInterfaceTypeId)
+	c.IpMode = convert.StrToType(child.IpMode)
+	c.IpAddress = convert.StrToType(child.IpAddress)
+	// mac_address is a write-only input and is not returned by the read API.
+	c.MacAddress = types.StringNull()
+
+	return c
+}
+
+// childInterfacesFromAPI maps the API child interfaces of a single parent into a
+// typed list.
+func childInterfacesFromAPI(
+	ctx context.Context,
+	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
+) types.List {
+	if len(apiChildren) == 0 {
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
+	}
+
+	values := make([]attr.Value, 0, len(apiChildren))
+	for _, child := range apiChildren {
+		objVal, _ := childInterfaceValueFromAPI(child).ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+
+	return listVal
 }
 
 // mergeInterfacesFromAPI builds the post-apply interface state: it preserves the
@@ -1134,7 +1275,7 @@ func mergeInterfacesFromAPI(
 	if planInterfaces.IsNull() || planInterfaces.IsUnknown() {
 		values := make([]attr.Value, 0, len(apiInterfaces))
 		for _, iface := range apiInterfaces {
-			objVal, _ := interfaceValueFromAPI(iface).ToObjectValue(ctx)
+			objVal, _ := interfaceValueFromAPI(ctx, iface).ToObjectValue(ctx)
 			values = append(values, objVal)
 		}
 		listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
@@ -1154,9 +1295,13 @@ func mergeInterfacesFromAPI(
 			IpAddress:              types.StringNull(),
 			MacAddress:             types.StringNull(),
 			NetworkInterfaceTypeId: types.Int64Null(),
+			ChildVirtualNetworks:   types.ListNull(ChildVirtualNetworksValue{}.Type(ctx)),
 		}
+
+		var apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1
 		if i < len(apiInterfaces) {
-			api = interfaceValueFromAPI(apiInterfaces[i])
+			api = interfaceValueFromAPI(ctx, apiInterfaces[i])
+			apiChildren = apiInterfaces[i].NetworkInterfaces
 		}
 
 		ni := NetworkInterfacesValue{
@@ -1171,6 +1316,7 @@ func mergeInterfacesFromAPI(
 			IpMode:                 preferKnownString(pi[i].IpMode, api.IpMode),
 			IpAddress:              preferKnownString(pi[i].IpAddress, api.IpAddress),
 			NetworkInterfaceTypeId: preferKnownInt64(pi[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
+			ChildVirtualNetworks:   mergeChildInterfacesFromAPI(ctx, pi[i].ChildVirtualNetworks, apiChildren),
 		}
 
 		objVal, _ := ni.ToObjectValue(ctx)
@@ -1178,6 +1324,59 @@ func mergeInterfacesFromAPI(
 	}
 
 	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+
+	return listVal
+}
+
+// mergeChildInterfacesFromAPI builds the post-apply child interface state: it
+// preserves the user-configured Required field (network_id) and the write-only
+// input (mac_address) from the plan, filling the computed / computed-optional
+// fields from the API, matched positionally. Iterating over the plan children
+// keeps the final state structurally identical to the plan.
+func mergeChildInterfacesFromAPI(
+	ctx context.Context,
+	planChildren types.List,
+	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
+) types.List {
+	if planChildren.IsNull() || planChildren.IsUnknown() {
+		return childInterfacesFromAPI(ctx, apiChildren)
+	}
+
+	var pc []ChildVirtualNetworksValue
+	planChildren.ElementsAs(ctx, &pc, false)
+
+	values := make([]attr.Value, 0, len(pc))
+	for i := range pc {
+		api := ChildVirtualNetworksValue{
+			state:                  attr.ValueStateKnown,
+			Id:                     types.Int64Null(),
+			IpMode:                 types.StringNull(),
+			IpAddress:              types.StringNull(),
+			NetworkInterfaceTypeId: types.Int64Null(),
+		}
+		if i < len(apiChildren) {
+			api = childInterfaceValueFromAPI(apiChildren[i])
+		}
+
+		c := ChildVirtualNetworksValue{
+			state: attr.ValueStateKnown,
+			// Required field comes from the plan so the final state matches it.
+			NetworkId: pc[i].NetworkId,
+			// mac_address is a write-only input; keep the plan value.
+			MacAddress: pc[i].MacAddress,
+			// Computed id always comes from the API.
+			Id: api.Id,
+			// Computed-optional fields keep the user's value when set.
+			IpMode:                 preferKnownString(pc[i].IpMode, api.IpMode),
+			IpAddress:              preferKnownString(pc[i].IpAddress, api.IpAddress),
+			NetworkInterfaceTypeId: preferKnownInt64(pc[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
+		}
+
+		objVal, _ := c.ToObjectValue(ctx)
+		values = append(values, objVal)
+	}
+
+	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
 
 	return listVal
 }

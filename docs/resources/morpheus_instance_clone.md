@@ -69,6 +69,9 @@ Required:
 
 Optional:
 
+- `child_virtual_networks` (Attributes List) Child virtual network interfaces for this interface. Only applies to provision types that
+support virtual interfaces (the VMware family). The Options API
+/api/options/zoneNetworkOptions can be used to see which types support this. (see [below for nested schema](#nestedatt--network_interfaces--child_virtual_networks))
 - `ip_address` (String) The static IP address. Only applicable when ip_mode is static.
 - `ip_mode` (String) The mode for determining the IP address. One of static, dhcp or an empty string (IP pool).
 - `mac_address` (String) A specific MAC address to assign to the interface. Not returned by the API.
@@ -77,6 +80,25 @@ Optional:
 Read-Only:
 
 - `id` (Number) The ID of the network interface after creation.
+
+<a id="nestedatt--network_interfaces--child_virtual_networks"></a>
+### Nested Schema for `network_interfaces.child_virtual_networks`
+
+Required:
+
+- `network_id` (Number) The ID of the network to attach the interface to.
+
+Optional:
+
+- `ip_address` (String) The static IP address. Only applicable when ip_mode is static.
+- `ip_mode` (String) The mode for determining the IP address. One of static, dhcp or an empty string (IP pool).
+- `mac_address` (String) A specific MAC address to assign to the interface. Not returned by the API.
+- `network_interface_type_id` (Number) The ID of the network interface type.
+
+Read-Only:
+
+- `id` (Number) The ID of the network interface after creation.
+
 
 
 <a id="nestedatt--volumes"></a>
