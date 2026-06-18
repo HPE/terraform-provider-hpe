@@ -15,8 +15,6 @@ import (
 
 func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
-		Description:         "Manages a network firewall rule group resource in Morpheus.",
-		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -67,6 +65,8 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Network firewall rule group priority",
 			},
 		},
+		Description:         "Manages a network firewall rule group resource in Morpheus.",
+		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
 	}
 }
 
