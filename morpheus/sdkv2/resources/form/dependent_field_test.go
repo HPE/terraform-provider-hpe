@@ -21,7 +21,7 @@ import (
 func TestAccMorpheusFormRejectsSelfReferentialDependentField(t *testing.T) {
 	t.Parallel()
 
-	providerConfig := testhelpers.ProviderBlock()
+	providerConfig := testhelpers.ProviderBlockUnitTest()
 
 	invalidConfig := `
 resource "hpe_morpheus_form" "bad_self_ref" {
@@ -40,6 +40,7 @@ resource "hpe_morpheus_form" "bad_self_ref" {
 }
 `
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
