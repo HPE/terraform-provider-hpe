@@ -22,6 +22,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/image"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instanceclone"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancepowerstate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
@@ -93,6 +94,7 @@ func (s SubProvider) GetResources(
 		task.NewResource,
 		instance.NewResource,
 		instancepowerstate.NewResource,
+		instanceclone.NewResource,
 		instancesnapshot.NewResource,
 		policy.NewResource,
 		cluster.NewResource,
