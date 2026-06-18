@@ -19,8 +19,6 @@ is cloned.
 
 {{tffile "examples/resources/morpheus_instance_clone/example.tf"}}
 
-{{ .SchemaMarkdown | trimspace }}
-
 ## How cloning works
 
 A clone copies the disk **contents** (OS, installed software and data) from the
@@ -69,7 +67,7 @@ exclusive** (use at most one):
   and `config_hvm`. Use the one that matches the target cloud type. Each exposes
   the same keys as the equivalent block on the `hpe_morpheus_instance` resource.
 - **A dynamic `config` map** — a free-form object for any key not covered by a
-  typed block (for example Google Cloud keys, `customOptions` or `userGroup`).
+  typed block (for example Google Cloud keys or `customOptions`).
 
 **Effect on the source instance.** Unlike `volumes` and `network_interfaces`
 (which *replace* the source's set when provided), `config` is **merged
@@ -85,8 +83,7 @@ consumed when the clone is provisioned and cannot be changed in place; editing a
 every typed block. `resource_pool_id` is **required** inside a typed block and
 may be prefixed with `pool-` (or `poolGroup-` for a resource pool group); for
 Azure it identifies the resource group. Keys that are not modelled as typed
-fields — notably `customOptions` and `userGroup` — are supplied through the
-dynamic `config` map.
+fields — notably `customOptions` — are supplied through the dynamic `config` map.
 
 ## Additional examples
 
@@ -177,6 +174,7 @@ resource "hpe_morpheus_instance_clone" "aws" {
   source_instance_id = hpe_morpheus_instance.production.id
   name               = "aws-clone"
 
+  # Merged over the source config; the source instance is unchanged.
   config_aws {
     resource_pool_id     = "pool-3"
     availability_zone_id = "us-east-1a"
@@ -207,6 +205,7 @@ resource "hpe_morpheus_instance_clone" "azure" {
   source_instance_id = hpe_morpheus_instance.production.id
   name               = "azure-clone"
 
+  # Merged over the source config; the source instance is unchanged.
   config_azure {
     resource_pool_id     = "pool-azure-rg" # the Azure resource group
     azure_region         = "eastus"
@@ -233,6 +232,7 @@ resource "hpe_morpheus_instance_clone" "hvm" {
   source_instance_id = hpe_morpheus_instance.production.id
   name               = "hvm-clone"
 
+  # Merged over the source config; the source instance is unchanged.
   config_hvm {
     resource_pool_id      = "pool-9"
     nested_virtualization = "on"
@@ -254,7 +254,7 @@ resource "hpe_morpheus_instance_clone" "hvm" {
 ### Clone with a generic config override
 
 Use the dynamic `config` map for keys not covered by a typed block — for example
-custom option types, `userGroup`, or Google Cloud keys. It is merged over the
+custom option types or Google Cloud keys. It is merged over the
 source configuration in the same way and is mutually exclusive with the typed
 `config_*` blocks.
 
@@ -263,6 +263,7 @@ resource "hpe_morpheus_instance_clone" "generic" {
   source_instance_id = hpe_morpheus_instance.production.id
   name               = "generic-clone"
 
+  # Merged over the source config; the source instance is unchanged.
   config = {
     resourcePoolId = "pool-5"
     customOptions = {
@@ -281,6 +282,8 @@ resource "hpe_morpheus_instance_clone" "generic" {
   }
 }
 ```
+
+{{ .SchemaMarkdown | trimspace }}
 
 ## Import
 

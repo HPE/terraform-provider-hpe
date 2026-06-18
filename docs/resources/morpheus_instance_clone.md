@@ -35,6 +35,270 @@ resource "hpe_morpheus_instance_clone" "example" {
 }
 ```
 
+## How cloning works
+
+A clone copies the disk **contents** (OS, installed software and data) from the
+source instance. The `volumes` and `network_interfaces` blocks describe the
+**complete** set for the clone and **replace** the source's configuration — they
+define infrastructure only (size, datastore, network, IP mode); the data always
+comes from the source.
+
+### Volumes
+
+- Provide **exactly one** volume with `root_volume = true`.
+- A volume's `name` should match the corresponding source volume name. On some
+  platforms (notably MVM/KVM) disks are matched to the source **by name** to copy
+  their contents — a mismatched name yields a blank disk instead of a copy.
+- `size` may be **grown** relative to the source; shrink requests are silently
+  ignored. Where a platform only resizes the root disk during the clone (e.g.
+  VMware), the provider automatically issues a follow-up resize so data disks
+  reach the size you requested.
+
+How disks are matched to the source — and how sizing behaves — varies by platform:
+
+| Platform | Disks matched to source | Sizing during clone |
+|---|---|---|
+| VMware (same cloud) | by position | root only; the provider grows data disks afterwards |
+| MVM / KVM | by volume **name** | resized during the clone |
+| Amazon | data disks by **size** | changing a data disk's size can break the match |
+| Azure | by order; volume types must match the source | governed by the source snapshot |
+| OpenStack | from source snapshots | limited |
+
+### Network interfaces
+
+- Use `ip_mode = ""` (IP pool) or `ip_mode = "dhcp"` so the clone receives a
+  **new** IP address.
+- `ip_mode = "static"` reuses the **source's** IP address. Supply an explicit
+  `ip_address` in that case to avoid an address conflict with the source.
+- When cloning into a different `cloud_id`, the chosen networks must exist in the
+  target cloud — networks are not remapped automatically.
+
+### Configuration overrides
+
+The optional `config` blocks override the source instance's **configuration**
+when the clone is provisioned. There are two forms and they are **mutually
+exclusive** (use at most one):
+
+- **Typed, per-cloud blocks** — `config_vmware`, `config_aws`, `config_azure`
+  and `config_hvm`. Use the one that matches the target cloud type. Each exposes
+  the same keys as the equivalent block on the `hpe_morpheus_instance` resource.
+- **A dynamic `config` map** — a free-form object for any key not covered by a
+  typed block (for example Google Cloud keys or `customOptions`).
+
+**Effect on the source instance.** Unlike `volumes` and `network_interfaces`
+(which *replace* the source's set when provided), `config` is **merged
+key-by-key over the source instance's configuration**: keys you set override the
+source value, and keys you omit are **inherited** from the source. The merge is
+applied only to the **new clone** — the source instance is **never modified**.
+
+**Clone-time only.** Every `config` block forces replacement. The values are
+consumed when the clone is provisioned and cannot be changed in place; editing a
+`config` value plans a **new** clone.
+
+**Keys shared across clouds.** `resource_pool_id` and `create_user` appear in
+every typed block. `resource_pool_id` is **required** inside a typed block and
+may be prefixed with `pool-` (or `poolGroup-` for a resource pool group); for
+Azure it identifies the resource group. Keys that are not modelled as typed
+fields — notably `customOptions` — are supplied through the dynamic `config` map.
+
+## Additional examples
+
+### Multiple volumes with datastore placement and a second interface
+
+```terraform
+resource "hpe_morpheus_instance_clone" "staging" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "staging-copy"
+
+  # Volume names match the source so their contents are cloned.
+  volumes {
+    name         = "root"
+    root_volume  = true
+    size         = 50 # grown from the source's 40 GB
+    datastore_id = 12
+  }
+  volumes {
+    name         = "data"
+    size         = 500 # grown from the source's 200 GB (resized after the clone)
+    datastore_id = 14
+    storage_type = 1
+  }
+
+  network_interfaces {
+    network_id = 7
+    ip_mode    = "" # IP pool - the clone gets a new address
+  }
+  network_interfaces {
+    network_id = 9
+    ip_mode    = "dhcp"
+  }
+}
+```
+
+### Clone into a different group and cloud
+
+```terraform
+resource "hpe_morpheus_instance_clone" "dr_copy" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "dr-copy"
+  group_id           = 3
+  cloud_id           = 5 # the networks below must exist in this cloud
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+
+  network_interfaces {
+    network_id = 21
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with VMware configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "vmware" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "vmware-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config_vmware {
+    resource_pool_id      = "pool-1"
+    nested_virtualization = "off"
+    vmware_folder_id      = "group-v10"
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 7
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with AWS configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "aws" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "aws-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config_aws {
+    resource_pool_id     = "pool-3"
+    availability_zone_id = "us-east-1a"
+    public_ip_type       = "elasticIp"
+    instance_profile     = "arn:aws:iam::123456789012:instance-profile/example"
+
+    security_groups {
+      id = "sg-0abc123def456"
+    }
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 30
+  }
+  network_interfaces {
+    network_id = 11
+    ip_mode    = "dhcp"
+  }
+}
+```
+
+### Clone with Azure configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "azure" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "azure-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config_azure {
+    resource_pool_id     = "pool-azure-rg" # the Azure resource group
+    azure_region         = "eastus"
+    availability_options = "zone"
+    availability_zone    = "1"
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 31
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with HVM (Morpheus VM) configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "hvm" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "hvm-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config_hvm {
+    resource_pool_id      = "pool-9"
+    nested_virtualization = "on"
+    kvm_host_id           = 4
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 41
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with a generic config override
+
+Use the dynamic `config` map for keys not covered by a typed block — for example
+custom option types or Google Cloud keys. It is merged over the
+source configuration in the same way and is mutually exclusive with the typed
+`config_*` blocks.
+
+```terraform
+resource "hpe_morpheus_instance_clone" "generic" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "generic-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config = {
+    resourcePoolId = "pool-5"
+    customOptions = {
+      myCustomField = "value"
+    }
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 51
+    ip_mode    = ""
+  }
+}
+```
+
 <!-- schema generated by tfplugindocs -->
 ## Schema
 
@@ -52,7 +316,7 @@ Volume specifications define infrastructure parameters only - disk contents are 
 - `cloud_id` (Number) The ID of the cloud to clone into. Defaults to the source instance's cloud.
 - `config` (Dynamic) Generic configuration overrides as a free-form object, merged key-by-key over the source
 instance's configuration at clone time. Use this for clouds or keys not covered by the typed
-config_* blocks (for example custom_options, user_group, or Google Cloud keys). Cannot be
+config_* blocks (for example custom_options or Google Cloud keys). Cannot be
 combined with a typed config_* block.
 - `config_aws` (Attributes) Configuration overrides for AWS clones, merged over the source instance's configuration. (see [below for nested schema](#nestedatt--config_aws))
 - `config_azure` (Attributes) Configuration overrides for Azure clones, merged over the source instance's configuration. (see [below for nested schema](#nestedatt--config_azure))
@@ -219,267 +483,6 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
-
-## How cloning works
-
-A clone copies the disk **contents** (OS, installed software and data) from the
-source instance. The `volumes` and `network_interfaces` blocks describe the
-**complete** set for the clone and **replace** the source's configuration — they
-define infrastructure only (size, datastore, network, IP mode); the data always
-comes from the source.
-
-### Volumes
-
-- Provide **exactly one** volume with `root_volume = true`.
-- A volume's `name` should match the corresponding source volume name. On some
-  platforms (notably MVM/KVM) disks are matched to the source **by name** to copy
-  their contents — a mismatched name yields a blank disk instead of a copy.
-- `size` may be **grown** relative to the source; shrink requests are silently
-  ignored. Where a platform only resizes the root disk during the clone (e.g.
-  VMware), the provider automatically issues a follow-up resize so data disks
-  reach the size you requested.
-
-How disks are matched to the source — and how sizing behaves — varies by platform:
-
-| Platform | Disks matched to source | Sizing during clone |
-|---|---|---|
-| VMware (same cloud) | by position | root only; the provider grows data disks afterwards |
-| MVM / KVM | by volume **name** | resized during the clone |
-| Amazon | data disks by **size** | changing a data disk's size can break the match |
-| Azure | by order; volume types must match the source | governed by the source snapshot |
-| OpenStack | from source snapshots | limited |
-
-### Network interfaces
-
-- Use `ip_mode = ""` (IP pool) or `ip_mode = "dhcp"` so the clone receives a
-  **new** IP address.
-- `ip_mode = "static"` reuses the **source's** IP address. Supply an explicit
-  `ip_address` in that case to avoid an address conflict with the source.
-- When cloning into a different `cloud_id`, the chosen networks must exist in the
-  target cloud — networks are not remapped automatically.
-
-### Configuration overrides
-
-The optional `config` blocks override the source instance's **configuration**
-when the clone is provisioned. There are two forms and they are **mutually
-exclusive** (use at most one):
-
-- **Typed, per-cloud blocks** — `config_vmware`, `config_aws`, `config_azure`
-  and `config_hvm`. Use the one that matches the target cloud type. Each exposes
-  the same keys as the equivalent block on the `hpe_morpheus_instance` resource.
-- **A dynamic `config` map** — a free-form object for any key not covered by a
-  typed block (for example Google Cloud keys, `customOptions` or `userGroup`).
-
-**Effect on the source instance.** Unlike `volumes` and `network_interfaces`
-(which *replace* the source's set when provided), `config` is **merged
-key-by-key over the source instance's configuration**: keys you set override the
-source value, and keys you omit are **inherited** from the source. The merge is
-applied only to the **new clone** — the source instance is **never modified**.
-
-**Clone-time only.** Every `config` block forces replacement. The values are
-consumed when the clone is provisioned and cannot be changed in place; editing a
-`config` value plans a **new** clone.
-
-**Keys shared across clouds.** `resource_pool_id` and `create_user` appear in
-every typed block. `resource_pool_id` is **required** inside a typed block and
-may be prefixed with `pool-` (or `poolGroup-` for a resource pool group); for
-Azure it identifies the resource group. Keys that are not modelled as typed
-fields — notably `customOptions` and `userGroup` — are supplied through the
-dynamic `config` map.
-
-## Additional examples
-
-### Multiple volumes with datastore placement and a second interface
-
-```terraform
-resource "hpe_morpheus_instance_clone" "staging" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "staging-copy"
-
-  # Volume names match the source so their contents are cloned.
-  volumes {
-    name         = "root"
-    root_volume  = true
-    size         = 50 # grown from the source's 40 GB
-    datastore_id = 12
-  }
-  volumes {
-    name         = "data"
-    size         = 500 # grown from the source's 200 GB (resized after the clone)
-    datastore_id = 14
-    storage_type = 1
-  }
-
-  network_interfaces {
-    network_id = 7
-    ip_mode    = "" # IP pool - the clone gets a new address
-  }
-  network_interfaces {
-    network_id = 9
-    ip_mode    = "dhcp"
-  }
-}
-```
-
-### Clone into a different group and cloud
-
-```terraform
-resource "hpe_morpheus_instance_clone" "dr_copy" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "dr-copy"
-  group_id           = 3
-  cloud_id           = 5 # the networks below must exist in this cloud
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-
-  network_interfaces {
-    network_id = 21
-    ip_mode    = ""
-  }
-}
-```
-
-### Clone with VMware configuration overrides
-
-```terraform
-resource "hpe_morpheus_instance_clone" "vmware" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "vmware-clone"
-
-  # Merged over the source config; the source instance is unchanged.
-  config_vmware {
-    resource_pool_id      = "pool-1"
-    nested_virtualization = "off"
-    vmware_folder_id      = "group-v10"
-  }
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 7
-    ip_mode    = ""
-  }
-}
-```
-
-### Clone with AWS configuration overrides
-
-```terraform
-resource "hpe_morpheus_instance_clone" "aws" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "aws-clone"
-
-  config_aws {
-    resource_pool_id     = "pool-3"
-    availability_zone_id = "us-east-1a"
-    public_ip_type       = "elasticIp"
-    instance_profile     = "arn:aws:iam::123456789012:instance-profile/example"
-
-    security_groups {
-      id = "sg-0abc123def456"
-    }
-  }
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 30
-  }
-  network_interfaces {
-    network_id = 11
-    ip_mode    = "dhcp"
-  }
-}
-```
-
-### Clone with Azure configuration overrides
-
-```terraform
-resource "hpe_morpheus_instance_clone" "azure" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "azure-clone"
-
-  config_azure {
-    resource_pool_id     = "pool-azure-rg" # the Azure resource group
-    azure_region         = "eastus"
-    availability_options = "zone"
-    availability_zone    = "1"
-  }
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 31
-    ip_mode    = ""
-  }
-}
-```
-
-### Clone with HVM (Morpheus VM) configuration overrides
-
-```terraform
-resource "hpe_morpheus_instance_clone" "hvm" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "hvm-clone"
-
-  config_hvm {
-    resource_pool_id      = "pool-9"
-    nested_virtualization = "on"
-    kvm_host_id           = 4
-  }
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 41
-    ip_mode    = ""
-  }
-}
-```
-
-### Clone with a generic config override
-
-Use the dynamic `config` map for keys not covered by a typed block — for example
-custom option types, `userGroup`, or Google Cloud keys. It is merged over the
-source configuration in the same way and is mutually exclusive with the typed
-`config_*` blocks.
-
-```terraform
-resource "hpe_morpheus_instance_clone" "generic" {
-  source_instance_id = hpe_morpheus_instance.production.id
-  name               = "generic-clone"
-
-  config = {
-    resourcePoolId = "pool-5"
-    customOptions = {
-      myCustomField = "value"
-    }
-  }
-
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 51
-    ip_mode    = ""
-  }
-}
-```
 
 ## Import
 

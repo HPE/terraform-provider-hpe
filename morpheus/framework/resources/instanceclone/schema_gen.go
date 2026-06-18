@@ -41,8 +41,8 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Generic configuration overrides as a free-form object, merged key-by-key over the source\ninstance's configuration at clone time. Use this for clouds or keys not covered by the typed\nconfig_* blocks (for example custom_options, user_group, or Google Cloud keys). Cannot be\ncombined with a typed config_* block.\n",
-				MarkdownDescription: "Generic configuration overrides as a free-form object, merged key-by-key over the source\ninstance's configuration at clone time. Use this for clouds or keys not covered by the typed\nconfig_* blocks (for example custom_options, user_group, or Google Cloud keys). Cannot be\ncombined with a typed config_* block.\n",
+				Description:         "Generic configuration overrides as a free-form object, merged key-by-key over the source\ninstance's configuration at clone time. Use this for clouds or keys not covered by the typed\nconfig_* blocks (for example custom_options or Google Cloud keys). Cannot be\ncombined with a typed config_* block.\n",
+				MarkdownDescription: "Generic configuration overrides as a free-form object, merged key-by-key over the source\ninstance's configuration at clone time. Use this for clouds or keys not covered by the typed\nconfig_* blocks (for example custom_options or Google Cloud keys). Cannot be\ncombined with a typed config_* block.\n",
 				Validators: []validator.Dynamic{
 					validators.ValidObjectMap(),
 					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure")}...),
