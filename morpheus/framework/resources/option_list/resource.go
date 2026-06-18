@@ -43,7 +43,7 @@ func (r *optionListResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = OptionListSchema(ctx)
+	resp.Schema = OptionListResourceSchema(ctx)
 }
 
 func (r *optionListResource) Create(
@@ -58,7 +58,7 @@ func (r *optionListResource) Create(
 		return
 	}
 
-	var plan optionListModel
+	var plan OptionListModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -73,8 +73,8 @@ func (r *optionListResource) Create(
 	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
 		body.Type = plan.Type.ValueStringPointer()
 	}
-	if !plan.SourceURL.IsNull() && !plan.SourceURL.IsUnknown() {
-		body.SourceUrl = plan.SourceURL.ValueStringPointer()
+	if !plan.SourceUrl.IsNull() && !plan.SourceUrl.IsUnknown() {
+		body.SourceUrl = plan.SourceUrl.ValueStringPointer()
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
@@ -155,13 +155,13 @@ func (r *optionListResource) Read(
 		return
 	}
 
-	var state optionListModel
+	var state OptionListModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.LibraryAPI.GetOptionList(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -196,13 +196,13 @@ func (r *optionListResource) Update(
 		return
 	}
 
-	var plan optionListModel
+	var plan OptionListModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateOptionListRequestOptionTypeList{
 		Name: plan.Name.ValueStringPointer(),
@@ -213,8 +213,8 @@ func (r *optionListResource) Update(
 	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
 		body.Type = plan.Type.ValueStringPointer()
 	}
-	if !plan.SourceURL.IsNull() && !plan.SourceURL.IsUnknown() {
-		body.SourceUrl = plan.SourceURL.ValueStringPointer()
+	if !plan.SourceUrl.IsNull() && !plan.SourceUrl.IsUnknown() {
+		body.SourceUrl = plan.SourceUrl.ValueStringPointer()
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
@@ -268,13 +268,13 @@ func (r *optionListResource) Delete(
 		return
 	}
 
-	var state optionListModel
+	var state OptionListModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.LibraryAPI.DeleteOptionList(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -298,9 +298,9 @@ func (r *optionListResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetOptionListToModel(model *optionListModel, ol *sdk.GetOptionList200ResponseOptionTypesInner) {
+func mapGetOptionListToModel(model *OptionListModel, ol *sdk.GetOptionList200ResponseOptionTypesInner) {
 	if ol.Id != nil {
-		model.ID = types.Int64Value(*ol.Id)
+		model.Id = types.Int64Value(*ol.Id)
 	}
 	if ol.Name != nil {
 		model.Name = types.StringValue(*ol.Name)
@@ -316,9 +316,9 @@ func mapGetOptionListToModel(model *optionListModel, ol *sdk.GetOptionList200Res
 		model.Type = types.StringNull()
 	}
 	if ol.SourceUrl != nil {
-		model.SourceURL = types.StringValue(*ol.SourceUrl)
+		model.SourceUrl = types.StringValue(*ol.SourceUrl)
 	} else {
-		model.SourceURL = types.StringNull()
+		model.SourceUrl = types.StringNull()
 	}
 	if ol.Visibility != nil {
 		model.Visibility = types.StringValue(*ol.Visibility)
@@ -334,9 +334,9 @@ func mapGetOptionListToModel(model *optionListModel, ol *sdk.GetOptionList200Res
 }
 
 // mapOptionTypeListFromRaw maps a raw JSON map to the model (fallback for SDK field mismatch).
-func mapOptionTypeListFromRaw(model *optionListModel, m map[string]interface{}) {
+func mapOptionTypeListFromRaw(model *OptionListModel, m map[string]interface{}) {
 	if v, ok := m["id"].(float64); ok {
-		model.ID = types.Int64Value(int64(v))
+		model.Id = types.Int64Value(int64(v))
 	}
 	if v, ok := m["name"].(string); ok {
 		model.Name = types.StringValue(v)
@@ -356,9 +356,9 @@ func mapOptionTypeListFromRaw(model *optionListModel, m map[string]interface{}) 
 		model.Type = types.StringNull()
 	}
 	if v, ok := m["sourceUrl"].(string); ok {
-		model.SourceURL = types.StringValue(v)
+		model.SourceUrl = types.StringValue(v)
 	} else {
-		model.SourceURL = types.StringNull()
+		model.SourceUrl = types.StringNull()
 	}
 	if v, ok := m["visibility"].(string); ok {
 		model.Visibility = types.StringValue(v)
@@ -417,7 +417,7 @@ func extractOptionListID(result *sdk.ListOptionLists200Response, diags *diag.Dia
 // handling the SDK field mismatch where the API returns "optionTypeList" instead of "optionTypes".
 // Returns true if the model was populated (caller should set state).
 // Returns false if not found (caller handles via AddError or RemoveResource).
-func applyGetOptionListResponse(result *sdk.GetOptionList200Response, model *optionListModel) bool {
+func applyGetOptionListResponse(result *sdk.GetOptionList200Response, model *OptionListModel) bool {
 	if len(result.OptionTypes) > 0 {
 		mapGetOptionListToModel(model, &result.OptionTypes[0])
 

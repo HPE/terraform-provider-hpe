@@ -38,7 +38,7 @@ func (r *networkGroupResource) Metadata(
 }
 
 func (r *networkGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = NetworkGroupSchema(ctx)
+	resp.Schema = NetworkGroupResourceSchema(ctx)
 }
 
 func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	var plan networkGroupModel
+	var plan NetworkGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -135,13 +135,13 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	var state networkGroupModel
+	var state NetworkGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -174,13 +174,13 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	var plan networkGroupModel
+	var plan NetworkGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateNetworkGroupRequestNetworkGroup{
 		Name: plan.Name.ValueStringPointer(),
@@ -237,13 +237,13 @@ func (r *networkGroupResource) Delete(ctx context.Context, req resource.DeleteRe
 		return
 	}
 
-	var state networkGroupModel
+	var state NetworkGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.DeleteNetworkGroup(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -267,9 +267,9 @@ func (r *networkGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapResponseToModel(model *networkGroupModel, group *sdk.GetNetworkGroup200ResponseNetworkGroup) {
+func mapResponseToModel(model *NetworkGroupModel, group *sdk.GetNetworkGroup200ResponseNetworkGroup) {
 	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
+		model.Id = types.Int64Value(*group.Id)
 	}
 	if group.Name != nil {
 		model.Name = types.StringValue(*group.Name)
