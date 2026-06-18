@@ -34,7 +34,7 @@ func (r *budgetResource) Metadata(_ context.Context, req resource.MetadataReques
 }
 
 func (r *budgetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = BudgetSchema(ctx)
+	resp.Schema = BudgetResourceSchema(ctx)
 }
 
 func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -45,7 +45,7 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	var plan budgetModel
+	var plan BudgetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -118,13 +118,13 @@ func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	var state budgetModel
+	var state BudgetModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.BudgetsAPI.GetBudgets(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -157,13 +157,13 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	var plan budgetModel
+	var plan BudgetModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateBudgetsRequestBudget{
 		Name: plan.Name.ValueString(),
@@ -218,13 +218,13 @@ func (r *budgetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	var state budgetModel
+	var state BudgetModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.BudgetsAPI.RemoveBudgets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -248,9 +248,9 @@ func (r *budgetResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *budgetModel, b *sdk.GetBudgets200ResponseAllOfBudget) {
+func mapGetResponseToModel(model *BudgetModel, b *sdk.GetBudgets200ResponseAllOfBudget) {
 	if b.Id != nil {
-		model.ID = types.Int64Value(*b.Id)
+		model.Id = types.Int64Value(*b.Id)
 	}
 	if b.Name != nil {
 		model.Name = types.StringValue(*b.Name)

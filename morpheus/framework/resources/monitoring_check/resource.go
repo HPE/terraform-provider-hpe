@@ -38,7 +38,7 @@ func (r *monitoringCheckResource) Metadata(
 }
 
 func (r *monitoringCheckResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = MonitoringCheckSchema(ctx)
+	resp.Schema = MonitoringCheckResourceSchema(ctx)
 }
 
 func (r *monitoringCheckResource) Create(
@@ -53,7 +53,7 @@ func (r *monitoringCheckResource) Create(
 		return
 	}
 
-	var plan monitoringCheckModel
+	var plan MonitoringCheckModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -62,12 +62,12 @@ func (r *monitoringCheckResource) Create(
 	checkBody := sdk.WebCheck{
 		Name: plan.Name.ValueString(),
 	}
-	if !plan.CheckTypeID.IsNull() && !plan.CheckTypeID.IsUnknown() {
+	if !plan.CheckTypeId.IsNull() && !plan.CheckTypeId.IsUnknown() {
 		// Look up the check type code from the ID since the API requires code
-		ctResult, ctHTTPResp, ctErr := client.ChecksAPI.GetCheckTypes(ctx, plan.CheckTypeID.ValueInt64()).Execute()
+		ctResult, ctHTTPResp, ctErr := client.ChecksAPI.GetCheckTypes(ctx, plan.CheckTypeId.ValueInt64()).Execute()
 		if ctErr != nil || (ctHTTPResp != nil && ctHTTPResp.StatusCode >= 400) {
 			errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "monitoring_check", plan.Name.ValueString(),
-				fmt.Errorf("failed to look up check type %d", plan.CheckTypeID.ValueInt64()), ctHTTPResp)
+				fmt.Errorf("failed to look up check type %d", plan.CheckTypeId.ValueInt64()), ctHTTPResp)
 
 			return
 		}
@@ -152,13 +152,13 @@ func (r *monitoringCheckResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	var state monitoringCheckModel
+	var state MonitoringCheckModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ChecksAPI.GetChecks(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -195,13 +195,13 @@ func (r *monitoringCheckResource) Update(
 		return
 	}
 
-	var plan monitoringCheckModel
+	var plan MonitoringCheckModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	checkBody := sdk.WebCheck1{
 		Name: plan.Name.ValueString(),
@@ -265,13 +265,13 @@ func (r *monitoringCheckResource) Delete(
 		return
 	}
 
-	var state monitoringCheckModel
+	var state MonitoringCheckModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ChecksAPI.DeleteChecks(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -295,9 +295,9 @@ func (r *monitoringCheckResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *monitoringCheckModel, check *sdk.GetChecks200ResponseCheck) {
+func mapGetResponseToModel(model *MonitoringCheckModel, check *sdk.GetChecks200ResponseCheck) {
 	if check.Id != nil {
-		model.ID = types.Int64Value(*check.Id)
+		model.Id = types.Int64Value(*check.Id)
 	}
 	if check.Name != nil {
 		model.Name = types.StringValue(*check.Name)
@@ -320,6 +320,6 @@ func mapGetResponseToModel(model *monitoringCheckModel, check *sdk.GetChecks200R
 		model.Severity = types.StringValue(*check.Severity)
 	}
 	if check.CheckType != nil && check.CheckType.Id != nil {
-		model.CheckTypeID = types.Int64Value(*check.CheckType.Id)
+		model.CheckTypeId = types.Int64Value(*check.CheckType.Id)
 	}
 }

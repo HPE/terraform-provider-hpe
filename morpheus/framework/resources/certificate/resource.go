@@ -38,7 +38,7 @@ func (r *certificateResource) Metadata(
 }
 
 func (r *certificateResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = CertificateSchema(ctx)
+	resp.Schema = CertificateResourceSchema(ctx)
 }
 
 func (r *certificateResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var plan certificateModel
+	var plan CertificateModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -115,13 +115,13 @@ func (r *certificateResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	var state certificateModel
+	var state CertificateModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.SSLCertificatesAPI.GetCertificate(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -154,13 +154,13 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var plan certificateModel
+	var plan CertificateModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateCertificateRequestCertificate{
 		Name:     plan.Name.ValueStringPointer(),
@@ -209,13 +209,13 @@ func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	var state certificateModel
+	var state CertificateModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.SSLCertificatesAPI.DeleteCertificate(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -239,9 +239,9 @@ func (r *certificateResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *certificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
+func mapGetResponseToModel(model *CertificateModel, cert *sdk.GetCertificate200ResponseCertificate) {
 	if cert.Id != nil {
-		model.ID = types.Int64Value(*cert.Id)
+		model.Id = types.Int64Value(*cert.Id)
 	}
 	if cert.Name != nil {
 		model.Name = types.StringValue(*cert.Name)
