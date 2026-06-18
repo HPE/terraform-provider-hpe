@@ -38,7 +38,7 @@ func (r *monitoringGroupResource) Metadata(
 }
 
 func (r *monitoringGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = MonitoringGroupSchema(ctx)
+	resp.Schema = MonitoringGroupResourceSchema(ctx)
 }
 
 func (r *monitoringGroupResource) Create(
@@ -53,7 +53,7 @@ func (r *monitoringGroupResource) Create(
 		return
 	}
 
-	var plan monitoringGroupModel
+	var plan MonitoringGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -124,13 +124,13 @@ func (r *monitoringGroupResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	var state monitoringGroupModel
+	var state MonitoringGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ChecksAPI.GetCheckGroups(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -167,13 +167,13 @@ func (r *monitoringGroupResource) Update(
 		return
 	}
 
-	var plan monitoringGroupModel
+	var plan MonitoringGroupModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateCheckGroupsRequestCheckGroup{
 		Name: plan.Name.ValueStringPointer(),
@@ -231,13 +231,13 @@ func (r *monitoringGroupResource) Delete(
 		return
 	}
 
-	var state monitoringGroupModel
+	var state MonitoringGroupModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ChecksAPI.DeleteCheckGroups(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -261,9 +261,9 @@ func (r *monitoringGroupResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetGroupResponseToModel(model *monitoringGroupModel, group *sdk.GetCheckGroups200ResponseCheckGroup) {
+func mapGetGroupResponseToModel(model *MonitoringGroupModel, group *sdk.GetCheckGroups200ResponseCheckGroup) {
 	if group.Id != nil {
-		model.ID = types.Int64Value(*group.Id)
+		model.Id = types.Int64Value(*group.Id)
 	}
 	if group.Name != nil {
 		model.Name = types.StringValue(*group.Name)

@@ -38,7 +38,7 @@ func (r *vdiGatewayResource) Metadata(
 }
 
 func (r *vdiGatewayResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = VdiGatewaySchema(ctx)
+	resp.Schema = VdiGatewayResourceSchema(ctx)
 }
 
 func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	var plan vdiGatewayModel
+	var plan VdiGatewayModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -112,13 +112,13 @@ func (r *vdiGatewayResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	var state vdiGatewayModel
+	var state VdiGatewayModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.VDIAPI.GetVDIGateways(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -151,13 +151,13 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	var plan vdiGatewayModel
+	var plan VdiGatewayModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateVDIGatewaysRequestVdiGatewayOneOf{
 		Name:       plan.Name.ValueStringPointer(),
@@ -202,13 +202,13 @@ func (r *vdiGatewayResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	var state vdiGatewayModel
+	var state VdiGatewayModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -232,9 +232,9 @@ func (r *vdiGatewayResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *vdiGatewayModel, gw *sdk.GetVDIGateways200ResponseVdiGateway) {
+func mapGetResponseToModel(model *VdiGatewayModel, gw *sdk.GetVDIGateways200ResponseVdiGateway) {
 	if gw.Id != nil {
-		model.ID = types.Int64Value(*gw.Id)
+		model.Id = types.Int64Value(*gw.Id)
 	}
 	if gw.Name != nil {
 		model.Name = types.StringValue(*gw.Name)
