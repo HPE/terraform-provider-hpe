@@ -151,13 +151,15 @@ func cloneNeedsResize(
 	ctx context.Context,
 	planVolumes types.List,
 	actual []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
-) bool {
+) (bool, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if planVolumes.IsNull() || planVolumes.IsUnknown() {
-		return false
+		return false, diags
 	}
 
 	var pv []VolumesValue
-	planVolumes.ElementsAs(ctx, &pv, false)
+	diags.Append(planVolumes.ElementsAs(ctx, &pv, false)...)
 
 	for i, v := range pv {
 		if v.Size.IsNull() || v.Size.IsUnknown() || i >= len(actual) {
@@ -170,11 +172,11 @@ func cloneNeedsResize(
 		}
 
 		if v.Size.ValueInt64() > actualSize {
-			return true
+			return true, diags
 		}
 	}
 
-	return false
+	return false, diags
 }
 
 // buildResizeVolumes converts plan volumes for resize.

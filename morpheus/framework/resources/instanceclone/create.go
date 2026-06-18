@@ -223,9 +223,18 @@ func (r *Resource) Create(
 	// disk during clone, leaving data disks at the source size. If any
 	// requested volume is larger than the actual provisioned volume, issue a
 	// resize so the clone matches the configuration.
-	if getResp, _, gErr := client.InstancesAPI.GetInstance(ctx, cloneID).Execute(); gErr == nil &&
-		getResp != nil && getResp.Instance != nil &&
-		cloneNeedsResize(ctx, plan.Volumes, getResp.Instance.Volumes) {
+	getResp, _, gErr := client.InstancesAPI.GetInstance(ctx, cloneID).Execute()
+	needsResize := false
+	if gErr == nil && getResp != nil && getResp.Instance != nil {
+		resize, nrDiags := cloneNeedsResize(ctx, plan.Volumes, getResp.Instance.Volumes)
+		resp.Diagnostics.Append(nrDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		needsResize = resize
+	}
+
+	if needsResize {
 		resizeVolumes, rvDiags := buildResizeVolumes(ctx, plan.Volumes)
 		resp.Diagnostics.Append(rvDiags...)
 		resizeIfaces, riDiags := buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
