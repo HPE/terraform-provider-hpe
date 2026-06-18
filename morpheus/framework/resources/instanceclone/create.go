@@ -82,10 +82,17 @@ func (r *Resource) Create(
 	cloneReq.Config = cloneConfig
 
 	// Build volumes
-	cloneReq.Volumes = buildCloneVolumes(ctx, plan.Volumes)
+	cloneVolumes, volDiags := buildCloneVolumes(ctx, plan.Volumes)
+	resp.Diagnostics.Append(volDiags...)
+	cloneReq.Volumes = cloneVolumes
 
 	// Build network interfaces
-	cloneReq.NetworkInterfaces = buildCloneNetworkInterfaces(ctx, plan.NetworkInterfaces)
+	cloneIfaces, ifaceDiags := buildCloneNetworkInterfaces(ctx, plan.NetworkInterfaces)
+	resp.Diagnostics.Append(ifaceDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	cloneReq.NetworkInterfaces = cloneIfaces
 
 	// Fire clone request
 	cloneResp, hresp, err := client.InstancesAPI.CloneInstance(ctx, sourceID).
@@ -219,9 +226,16 @@ func (r *Resource) Create(
 	if getResp, _, gErr := client.InstancesAPI.GetInstance(ctx, cloneID).Execute(); gErr == nil &&
 		getResp != nil && getResp.Instance != nil &&
 		cloneNeedsResize(ctx, plan.Volumes, getResp.Instance.Volumes) {
+		resizeVolumes, rvDiags := buildResizeVolumes(ctx, plan.Volumes)
+		resp.Diagnostics.Append(rvDiags...)
+		resizeIfaces, riDiags := buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
+		resp.Diagnostics.Append(riDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 		resizeReq := sdk.ResizeInstanceRequest{
-			Volumes:           buildResizeVolumes(ctx, plan.Volumes),
-			NetworkInterfaces: buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces),
+			Volumes:           resizeVolumes,
+			NetworkInterfaces: resizeIfaces,
 		}
 
 		if _, hresp, rErr := client.InstancesAPI.ResizeInstance(ctx, cloneID).
@@ -302,20 +316,17 @@ func buildCloneConfig(
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
 		noAgent := plan.ConfigAws.NoAgent.ValueBool()
 		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
-		kmsKeyId := plan.ConfigAws.KmsKeyId.ValueString()
-		instanceProfile := plan.ConfigAws.InstanceProfile.ValueString()
 		publicIpType := plan.ConfigAws.PublicIpType.ValueString()
-		availabilityId := plan.ConfigAws.AvailabilityZoneId.ValueString()
 		resourcePoolId := plan.ConfigAws.ResourcePoolId.ValueString()
 
 		configAWS := &sdk.AmazonInstanceConfiguration3{
 			NoAgent:         *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:  &resourcePoolId,
 			IsEC2:           &isEC2,
-			KmsKeyId:        &kmsKeyId,
-			InstanceProfile: &instanceProfile,
+			KmsKeyId:        plan.ConfigAws.KmsKeyId.ValueStringPointer(),
+			InstanceProfile: plan.ConfigAws.InstanceProfile.ValueStringPointer(),
 			PublicIpType:    &publicIpType,
-			AvailabilityId:  &availabilityId,
+			AvailabilityId:  plan.ConfigAws.AvailabilityZoneId.ValueStringPointer(),
 		}
 
 		// The clone request has no top-level security groups field (unlike
@@ -364,14 +375,13 @@ func buildCloneConfig(
 		createUser := plan.ConfigVmware.CreateUser.ValueBool()
 		noAgent := plan.ConfigVmware.NoAgent.ValueBool()
 		resourcePoolId := plan.ConfigVmware.ResourcePoolId.ValueString()
-		vmwareFolderId := plan.ConfigVmware.VmwareFolderId.ValueString()
 
 		configVMware := &sdk.VMWareInstanceConfiguration3{
 			NestedVirtualization: &nestedVirtualization,
 			CreateUser:           *sdk.NewNullableBool(&createUser),
 			NoAgent:              *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:       &resourcePoolId,
-			VmwareFolderId:       &vmwareFolderId,
+			VmwareFolderId:       plan.ConfigVmware.VmwareFolderId.ValueStringPointer(),
 		}
 
 		return &sdk.CloneInstanceRequestConfig{VMWareInstanceConfiguration3: configVMware}, diags
@@ -452,13 +462,17 @@ func buildCloneConfig(
 }
 
 // buildCloneVolumes converts plan volumes to SDK CloneInstanceRequestVolumesInner.
-func buildCloneVolumes(ctx context.Context, volumesList types.List) []sdk.CloneInstanceRequestVolumesInner {
+func buildCloneVolumes(
+	ctx context.Context, volumesList types.List,
+) ([]sdk.CloneInstanceRequestVolumesInner, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if volumesList.IsNull() || volumesList.IsUnknown() {
-		return nil
+		return nil, diags
 	}
 
 	var planVolumes []VolumesValue
-	volumesList.ElementsAs(ctx, &planVolumes, false)
+	diags.Append(volumesList.ElementsAs(ctx, &planVolumes, false)...)
 
 	sdkVolumes := make([]sdk.CloneInstanceRequestVolumesInner, 0, len(planVolumes))
 	for _, v := range planVolumes {
@@ -473,7 +487,7 @@ func buildCloneVolumes(ctx context.Context, volumesList types.List) []sdk.CloneI
 
 		if !v.StorageType.IsNull() && !v.StorageType.IsUnknown() {
 			stVal := v.StorageType.ValueInt64()
-			vol.StorageType.Set(&stVal)
+			vol.StorageType = *sdk.NewNullableInt64(&stVal)
 		}
 
 		if !v.DatastoreId.IsNull() && !v.DatastoreId.IsUnknown() {
@@ -485,7 +499,7 @@ func buildCloneVolumes(ctx context.Context, volumesList types.List) []sdk.CloneI
 
 		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
 			siVal := v.SizeId.ValueInt64()
-			vol.SizeId.Set(&siVal)
+			vol.SizeId = *sdk.NewNullableInt64(&siVal)
 		}
 
 		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {
@@ -499,19 +513,21 @@ func buildCloneVolumes(ctx context.Context, volumesList types.List) []sdk.CloneI
 		sdkVolumes = append(sdkVolumes, vol)
 	}
 
-	return sdkVolumes
+	return sdkVolumes, diags
 }
 
 // buildCloneNetworkInterfaces converts plan to SDK InstancesNetworkInterfaces3.
 func buildCloneNetworkInterfaces(
 	ctx context.Context, ifaceList types.List,
-) []sdk.InstancesNetworkInterfaces3 {
+) ([]sdk.InstancesNetworkInterfaces3, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if ifaceList.IsNull() || ifaceList.IsUnknown() {
-		return nil
+		return nil, diags
 	}
 
 	var planIfaces []NetworkInterfacesValue
-	ifaceList.ElementsAs(ctx, &planIfaces, false)
+	diags.Append(ifaceList.ElementsAs(ctx, &planIfaces, false)...)
 
 	sdkIfaces := make([]sdk.InstancesNetworkInterfaces3, 0, len(planIfaces))
 	for _, ni := range planIfaces {
@@ -541,12 +557,14 @@ func buildCloneNetworkInterfaces(
 			iface.Id = ni.Id.ValueInt64Pointer()
 		}
 
-		iface.NetworkInterfaces = buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
+		children, cd := buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
+		diags.Append(cd...)
+		iface.NetworkInterfaces = children
 
 		sdkIfaces = append(sdkIfaces, iface)
 	}
 
-	return sdkIfaces
+	return sdkIfaces, diags
 }
 
 // buildChildInterfaces converts plan child virtual networks into the SDK child
@@ -554,13 +572,15 @@ func buildCloneNetworkInterfaces(
 // (InstancesNetworkInterfaces3) and resize (InstancesNetworkInterfaces4).
 func buildChildInterfaces(
 	ctx context.Context, childList types.List,
-) []sdk.InstancesNetworkInterfaces3NetworkInterfacesInner {
+) ([]sdk.InstancesNetworkInterfaces3NetworkInterfacesInner, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if childList.IsNull() || childList.IsUnknown() {
-		return nil
+		return nil, diags
 	}
 
 	var planChildren []ChildVirtualNetworksValue
-	childList.ElementsAs(ctx, &planChildren, false)
+	diags.Append(childList.ElementsAs(ctx, &planChildren, false)...)
 
 	children := make([]sdk.InstancesNetworkInterfaces3NetworkInterfacesInner, 0, len(planChildren))
 	for _, c := range planChildren {
@@ -593,5 +613,5 @@ func buildChildInterfaces(
 		children = append(children, child)
 	}
 
-	return children
+	return children, diags
 }

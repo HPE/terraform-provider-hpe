@@ -11,7 +11,6 @@ import (
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -88,51 +87,22 @@ func (r *Resource) Read(
 	state.Status = convert.StrToType(inst.Status)
 	state.Name = convert.StrToType(inst.Name)
 
-	// Refresh volumes and network interfaces from API
 	// Refresh volumes and network interfaces from the API for drift detection,
 	// preserving the write-only inputs (size_id, mac_address) that the read API
 	// does not return.
-	state.Volumes = mergeVolumesForRead(ctx, state.Volumes, inst.Volumes)
-	state.NetworkInterfaces = mergeInterfacesForRead(ctx, state.NetworkInterfaces, inst.Interfaces)
+	volumes, vdiags := mergeVolumesForRead(ctx, state.Volumes, inst.Volumes)
+	resp.Diagnostics.Append(vdiags...)
+	state.Volumes = volumes
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
-}
+	interfaces, idiags := mergeInterfacesForRead(ctx, state.NetworkInterfaces, inst.Interfaces)
+	resp.Diagnostics.Append(idiags...)
+	state.NetworkInterfaces = interfaces
 
-func (r *Resource) ImportState(
-	ctx context.Context,
-	req resource.ImportStateRequest,
-	resp *resource.ImportStateResponse,
-) {
-	instanceID, err := strconv.ParseInt(req.ID, 10, 64)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"import instance clone",
-			fmt.Sprintf("invalid instance id %q: %v", req.ID, err),
-		)
-
+	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), instanceID)...)
-	// source_instance_id is not returned by the clone API as a first-class
-	// field. Set it null here; Read makes a best-effort attempt to recover it
-	// from the clone's config (cloneInstanceId). If the platform does not expose
-	// that field, set source_instance_id in configuration after import.
-	resp.Diagnostics.Append(resp.State.SetAttribute(
-		ctx, path.Root("source_instance_id"), types.Int64Null(),
-	)...)
-}
-
-// sourceInstanceIDFromConfig returns cloneInstanceId - the source instance id
-// that Morpheus stamps onto a clone's config during cloning - from the instance
-// read response. It is absent for instances that were not created via the clone
-// endpoint, in which case the second return value is false.
-func sourceInstanceIDFromConfig(inst *sdk.GetInstance200ResponseInstance) (int64, bool) {
-	if inst == nil || inst.Config == nil || inst.Config.CloneInstanceId == nil {
-		return 0, false
-	}
-
-	return *inst.Config.CloneInstanceId, true
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func refreshStateFromAPI(
@@ -163,8 +133,14 @@ func refreshStateFromAPI(
 	}
 
 	inst := getResp.Instance
-	state.Volumes = mergeVolumesFromAPI(ctx, state.Volumes, inst.Volumes)
-	state.NetworkInterfaces = mergeInterfacesFromAPI(ctx, state.NetworkInterfaces, inst.Interfaces)
+
+	volumes, vdiags := mergeVolumesFromAPI(ctx, state.Volumes, inst.Volumes)
+	diags.Append(vdiags...)
+	state.Volumes = volumes
+
+	interfaces, idiags := mergeInterfacesFromAPI(ctx, state.NetworkInterfaces, inst.Interfaces)
+	diags.Append(idiags...)
+	state.NetworkInterfaces = interfaces
 
 	// config / config_* are clone-time overrides carried from the plan; they are
 	// merged into the source instance's configuration server-side and are not
@@ -218,15 +194,20 @@ func mergeVolumesFromAPI(
 	ctx context.Context,
 	planVolumes types.List,
 	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
-) types.List {
-	if planVolumes.IsNull() || planVolumes.IsUnknown() {
-		listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), mapVolumeObjs(ctx, apiVolumes))
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
 
-		return listVal
+	if planVolumes.IsNull() || planVolumes.IsUnknown() {
+		objs, d := mapVolumeObjs(ctx, apiVolumes)
+		diags.Append(d...)
+		listVal, ld := types.ListValue(VolumesValue{}.Type(ctx), objs)
+		diags.Append(ld...)
+
+		return listVal, diags
 	}
 
 	var pv []VolumesValue
-	planVolumes.ElementsAs(ctx, &pv, false)
+	diags.Append(planVolumes.ElementsAs(ctx, &pv, false)...)
 
 	values := make([]attr.Value, 0, len(pv))
 	for i := range pv {
@@ -259,26 +240,31 @@ func mergeVolumesFromAPI(
 			ControllerMountPoint: preferKnownString(pv[i].ControllerMountPoint, api.ControllerMountPoint),
 		}
 
-		objVal, _ := vol.ToObjectValue(ctx)
+		objVal, d := vol.ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(VolumesValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 func mapVolumeObjs(
 	ctx context.Context,
 	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
-) []attr.Value {
+) ([]attr.Value, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	values := make([]attr.Value, 0, len(apiVolumes))
 	for _, v := range apiVolumes {
-		objVal, _ := volumeValueFromAPI(v).ToObjectValue(ctx)
+		objVal, d := volumeValueFromAPI(v).ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	return values
+	return values, diags
 }
 
 // mergeVolumesForRead builds Read state: it refreshes the API-backed fields (for
@@ -288,14 +274,16 @@ func mergeVolumesForRead(
 	ctx context.Context,
 	priorVolumes types.List,
 	apiVolumes []sdk.AddInstance200ResponseAllOfOneOfInstanceVolumesInner,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(apiVolumes) == 0 {
-		return types.ListNull(VolumesValue{}.Type(ctx))
+		return types.ListNull(VolumesValue{}.Type(ctx)), diags
 	}
 
 	var prior []VolumesValue
 	if !priorVolumes.IsNull() && !priorVolumes.IsUnknown() {
-		priorVolumes.ElementsAs(ctx, &prior, false)
+		diags.Append(priorVolumes.ElementsAs(ctx, &prior, false)...)
 	}
 
 	values := make([]attr.Value, 0, len(apiVolumes))
@@ -305,13 +293,15 @@ func mergeVolumesForRead(
 			vol.SizeId = prior[i].SizeId
 		}
 
-		objVal, _ := vol.ToObjectValue(ctx)
+		objVal, d := vol.ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(VolumesValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(VolumesValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 // mergeInterfacesForRead builds Read state: it refreshes the API-backed fields
@@ -320,34 +310,41 @@ func mergeInterfacesForRead(
 	ctx context.Context,
 	priorInterfaces types.List,
 	apiInterfaces []sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(apiInterfaces) == 0 {
-		return types.ListNull(NetworkInterfacesValue{}.Type(ctx))
+		return types.ListNull(NetworkInterfacesValue{}.Type(ctx)), diags
 	}
 
 	var prior []NetworkInterfacesValue
 	if !priorInterfaces.IsNull() && !priorInterfaces.IsUnknown() {
-		priorInterfaces.ElementsAs(ctx, &prior, false)
+		diags.Append(priorInterfaces.ElementsAs(ctx, &prior, false)...)
 	}
 
 	values := make([]attr.Value, 0, len(apiInterfaces))
 	for i, iface := range apiInterfaces {
-		ni := interfaceValueFromAPI(ctx, iface)
+		ni, d := interfaceValueFromAPI(ctx, iface)
+		diags.Append(d...)
 
 		var priorChildren types.List
 		if i < len(prior) {
 			ni.MacAddress = prior[i].MacAddress
 			priorChildren = prior[i].ChildVirtualNetworks
 		}
-		ni.ChildVirtualNetworks = mergeChildInterfacesForRead(ctx, priorChildren, iface.NetworkInterfaces)
+		children, cd := mergeChildInterfacesForRead(ctx, priorChildren, iface.NetworkInterfaces)
+		diags.Append(cd...)
+		ni.ChildVirtualNetworks = children
 
-		objVal, _ := ni.ToObjectValue(ctx)
+		objVal, od := ni.ToObjectValue(ctx)
+		diags.Append(od...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 // mergeChildInterfacesForRead refreshes child interface API fields for Read while
@@ -357,14 +354,16 @@ func mergeChildInterfacesForRead(
 	ctx context.Context,
 	priorChildren types.List,
 	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(apiChildren) == 0 {
-		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx)), diags
 	}
 
 	var prior []ChildVirtualNetworksValue
 	if !priorChildren.IsNull() && !priorChildren.IsUnknown() {
-		priorChildren.ElementsAs(ctx, &prior, false)
+		diags.Append(priorChildren.ElementsAs(ctx, &prior, false)...)
 	}
 
 	values := make([]attr.Value, 0, len(apiChildren))
@@ -374,13 +373,15 @@ func mergeChildInterfacesForRead(
 			c.MacAddress = prior[i].MacAddress
 		}
 
-		objVal, _ := c.ToObjectValue(ctx)
+		objVal, d := c.ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 // preferKnownInt64 / preferKnownBool / preferKnownString return the plan value
@@ -415,7 +416,9 @@ func preferKnownString(plan, api types.String) types.String {
 func interfaceValueFromAPI(
 	ctx context.Context,
 	iface sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
-) NetworkInterfacesValue {
+) (NetworkInterfacesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	ni := NetworkInterfacesValue{
 		state: attr.ValueStateKnown,
 	}
@@ -437,9 +440,12 @@ func interfaceValueFromAPI(
 	ni.IpAddress = convert.StrToType(iface.IpAddress)
 	// mac_address is a write-only input and is not returned by the read API.
 	ni.MacAddress = types.StringNull()
-	ni.ChildVirtualNetworks = childInterfacesFromAPI(ctx, iface.NetworkInterfaces)
 
-	return ni
+	children, d := childInterfacesFromAPI(ctx, iface.NetworkInterfaces)
+	diags.Append(d...)
+	ni.ChildVirtualNetworks = children
+
+	return ni, diags
 }
 
 // childInterfaceValueFromAPI maps a single API child interface into a
@@ -477,20 +483,24 @@ func childInterfaceValueFromAPI(
 func childInterfacesFromAPI(
 	ctx context.Context,
 	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if len(apiChildren) == 0 {
-		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx))
+		return types.ListNull(ChildVirtualNetworksValue{}.Type(ctx)), diags
 	}
 
 	values := make([]attr.Value, 0, len(apiChildren))
 	for _, child := range apiChildren {
-		objVal, _ := childInterfaceValueFromAPI(child).ToObjectValue(ctx)
+		objVal, d := childInterfaceValueFromAPI(child).ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 // mergeInterfacesFromAPI builds the post-apply interface state: it preserves the
@@ -500,20 +510,26 @@ func mergeInterfacesFromAPI(
 	ctx context.Context,
 	planInterfaces types.List,
 	apiInterfaces []sdk.AddInstance200ResponseAllOfOneOfInstanceInterfacesInner,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if planInterfaces.IsNull() || planInterfaces.IsUnknown() {
 		values := make([]attr.Value, 0, len(apiInterfaces))
 		for _, iface := range apiInterfaces {
-			objVal, _ := interfaceValueFromAPI(ctx, iface).ToObjectValue(ctx)
+			ni, d := interfaceValueFromAPI(ctx, iface)
+			diags.Append(d...)
+			objVal, od := ni.ToObjectValue(ctx)
+			diags.Append(od...)
 			values = append(values, objVal)
 		}
-		listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+		listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+		diags.Append(d...)
 
-		return listVal
+		return listVal, diags
 	}
 
 	var pi []NetworkInterfacesValue
-	planInterfaces.ElementsAs(ctx, &pi, false)
+	diags.Append(planInterfaces.ElementsAs(ctx, &pi, false)...)
 
 	values := make([]attr.Value, 0, len(pi))
 	for i := range pi {
@@ -529,9 +545,14 @@ func mergeInterfacesFromAPI(
 
 		var apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1
 		if i < len(apiInterfaces) {
-			api = interfaceValueFromAPI(ctx, apiInterfaces[i])
+			apiNi, d := interfaceValueFromAPI(ctx, apiInterfaces[i])
+			diags.Append(d...)
+			api = apiNi
 			apiChildren = apiInterfaces[i].NetworkInterfaces
 		}
+
+		children, cd := mergeChildInterfacesFromAPI(ctx, pi[i].ChildVirtualNetworks, apiChildren)
+		diags.Append(cd...)
 
 		ni := NetworkInterfacesValue{
 			state: attr.ValueStateKnown,
@@ -545,16 +566,18 @@ func mergeInterfacesFromAPI(
 			IpMode:                 preferKnownString(pi[i].IpMode, api.IpMode),
 			IpAddress:              preferKnownString(pi[i].IpAddress, api.IpAddress),
 			NetworkInterfaceTypeId: preferKnownInt64(pi[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
-			ChildVirtualNetworks:   mergeChildInterfacesFromAPI(ctx, pi[i].ChildVirtualNetworks, apiChildren),
+			ChildVirtualNetworks:   children,
 		}
 
-		objVal, _ := ni.ToObjectValue(ctx)
+		objVal, od := ni.ToObjectValue(ctx)
+		diags.Append(od...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }
 
 // mergeChildInterfacesFromAPI builds the post-apply child interface state: it
@@ -566,13 +589,15 @@ func mergeChildInterfacesFromAPI(
 	ctx context.Context,
 	planChildren types.List,
 	apiChildren []sdk.InstanceInterfacesNetworkInterfacesInner1,
-) types.List {
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if planChildren.IsNull() || planChildren.IsUnknown() {
 		return childInterfacesFromAPI(ctx, apiChildren)
 	}
 
 	var pc []ChildVirtualNetworksValue
-	planChildren.ElementsAs(ctx, &pc, false)
+	diags.Append(planChildren.ElementsAs(ctx, &pc, false)...)
 
 	values := make([]attr.Value, 0, len(pc))
 	for i := range pc {
@@ -601,11 +626,13 @@ func mergeChildInterfacesFromAPI(
 			NetworkInterfaceTypeId: preferKnownInt64(pc[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
 		}
 
-		objVal, _ := c.ToObjectValue(ctx)
+		objVal, d := c.ToObjectValue(ctx)
+		diags.Append(d...)
 		values = append(values, objVal)
 	}
 
-	listVal, _ := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
+	diags.Append(d...)
 
-	return listVal
+	return listVal, diags
 }

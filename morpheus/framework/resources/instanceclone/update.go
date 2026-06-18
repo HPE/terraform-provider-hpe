@@ -11,6 +11,7 @@ import (
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/cenkalti/backoff/v5"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -65,8 +66,15 @@ func (r *Resource) Update(
 		}
 	}
 
-	resizeReq.Volumes = buildResizeVolumes(ctx, plan.Volumes)
-	resizeReq.NetworkInterfaces = buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
+	resizeVolumes, volDiags := buildResizeVolumes(ctx, plan.Volumes)
+	resp.Diagnostics.Append(volDiags...)
+	resizeIfaces, ifaceDiags := buildResizeNetworkInterfaces(ctx, plan.NetworkInterfaces)
+	resp.Diagnostics.Append(ifaceDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	resizeReq.Volumes = resizeVolumes
+	resizeReq.NetworkInterfaces = resizeIfaces
 
 	_, hresp, err := client.InstancesAPI.ResizeInstance(ctx, instanceID).
 		ResizeInstanceRequest(resizeReq).
@@ -172,13 +180,15 @@ func cloneNeedsResize(
 // buildResizeVolumes converts plan volumes for resize.
 func buildResizeVolumes(
 	ctx context.Context, volumesList types.List,
-) []sdk.ResizeInstanceRequestVolumesInner {
+) ([]sdk.ResizeInstanceRequestVolumesInner, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if volumesList.IsNull() || volumesList.IsUnknown() {
-		return nil
+		return nil, diags
 	}
 
 	var planVolumes []VolumesValue
-	volumesList.ElementsAs(ctx, &planVolumes, false)
+	diags.Append(volumesList.ElementsAs(ctx, &planVolumes, false)...)
 
 	sdkVolumes := make([]sdk.ResizeInstanceRequestVolumesInner, 0, len(planVolumes))
 	for _, v := range planVolumes {
@@ -193,7 +203,7 @@ func buildResizeVolumes(
 
 		if !v.StorageType.IsNull() && !v.StorageType.IsUnknown() {
 			stVal := v.StorageType.ValueInt64()
-			vol.StorageType.Set(&stVal)
+			vol.StorageType = *sdk.NewNullableInt64(&stVal)
 		}
 
 		if !v.DatastoreId.IsNull() && !v.DatastoreId.IsUnknown() {
@@ -205,7 +215,7 @@ func buildResizeVolumes(
 
 		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
 			siVal := v.SizeId.ValueInt64()
-			vol.SizeId.Set(&siVal)
+			vol.SizeId = *sdk.NewNullableInt64(&siVal)
 		}
 
 		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {
@@ -219,19 +229,21 @@ func buildResizeVolumes(
 		sdkVolumes = append(sdkVolumes, vol)
 	}
 
-	return sdkVolumes
+	return sdkVolumes, diags
 }
 
 // buildResizeNetworkInterfaces converts plan network interfaces for resize.
 func buildResizeNetworkInterfaces(
 	ctx context.Context, ifaceList types.List,
-) []sdk.InstancesNetworkInterfaces4 {
+) ([]sdk.InstancesNetworkInterfaces4, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
 	if ifaceList.IsNull() || ifaceList.IsUnknown() {
-		return nil
+		return nil, diags
 	}
 
 	var planIfaces []NetworkInterfacesValue
-	ifaceList.ElementsAs(ctx, &planIfaces, false)
+	diags.Append(ifaceList.ElementsAs(ctx, &planIfaces, false)...)
 
 	sdkIfaces := make([]sdk.InstancesNetworkInterfaces4, 0, len(planIfaces))
 	for _, ni := range planIfaces {
@@ -261,10 +273,12 @@ func buildResizeNetworkInterfaces(
 			iface.Id = ni.Id.ValueInt64Pointer()
 		}
 
-		iface.NetworkInterfaces = buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
+		children, cd := buildChildInterfaces(ctx, ni.ChildVirtualNetworks)
+		diags.Append(cd...)
+		iface.NetworkInterfaces = children
 
 		sdkIfaces = append(sdkIfaces, iface)
 	}
 
-	return sdkIfaces
+	return sdkIfaces, diags
 }
