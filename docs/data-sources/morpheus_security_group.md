@@ -10,11 +10,15 @@ Retrieves information about a single Morpheus security group by id or name.
 
 ## Example Usage
 
+### Look up by ID
+
 ```terraform
 data "hpe_morpheus_security_group" "example" {
   id = 99
 }
 ```
+
+### Look up by Name
 
 ```terraform
 data "hpe_morpheus_security_group" "example" {

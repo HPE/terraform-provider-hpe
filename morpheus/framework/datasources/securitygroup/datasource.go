@@ -57,6 +57,8 @@ func (d *DataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = SecurityGroupDataSourceSchema(ctx)
+	resp.Schema.Description = "Retrieves information about a single Morpheus security group by id or name."
+	resp.Schema.MarkdownDescription = "Retrieves information about a single Morpheus security group by id or name."
 }
 
 // securityGroupAsState maps an API security group into the datasource model.
