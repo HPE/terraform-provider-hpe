@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus load balancer pool.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus load balancer pool. This data source can be used to look up an existing pool by ID or name to reference its attributes in other resources.
+
+For NSX-T load balancers, the `config_nsxt` attribute is automatically populated with the typed configuration. For other load balancer types, the raw configuration is available in the `config` attribute.
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_pool/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_pool/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
