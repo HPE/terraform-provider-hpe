@@ -143,12 +143,12 @@ func (r *Resource) Create(
 		cloneReq.Plan = &sdk.CloneInstanceRequestPlan{Id: &pid}
 	}
 
-	if !plan.ResourcePoolId.IsNull() && !plan.ResourcePoolId.IsUnknown() {
-		rpID := plan.ResourcePoolId.ValueString()
-		cloneReq.Config = &sdk.CloneInstanceRequestConfig{
-			ResourcePoolId: &rpID,
-		}
+	cloneConfig, cfgDiags := buildCloneConfig(ctx, plan)
+	resp.Diagnostics.Append(cfgDiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+	cloneReq.Config = cloneConfig
 
 	// Build volumes
 	cloneReq.Volumes = buildCloneVolumes(ctx, plan.Volumes)
@@ -701,7 +701,181 @@ func refreshStateFromAPI(
 	state.Volumes = mergeVolumesFromAPI(ctx, state.Volumes, inst.Volumes)
 	state.NetworkInterfaces = mergeInterfacesFromAPI(ctx, state.NetworkInterfaces, inst.Interfaces)
 
+	// config / config_* are clone-time overrides carried from the plan; they are
+	// merged into the source instance's configuration server-side and are not
+	// reconciled back from the API. The dynamic config attribute is
+	// computed_optional, so resolve it to null when no generic config block was
+	// supplied to avoid leaving an unknown value in state after apply.
+	if state.Config.IsUnknown() {
+		state.Config = types.DynamicNull()
+	}
+
 	return diags
+}
+
+// buildCloneConfig converts the plan's config / config_* attributes into the
+// clone request config. The config is a clone-time override that the platform
+// merges key-by-key over the source instance's configuration; it never mutates
+// the source instance. Exactly one variant is populated, in the same precedence
+// order as the instance resource. The variants are mutually exclusive at plan
+// time (the dynamic config conflicts with the typed blocks).
+func buildCloneConfig(
+	ctx context.Context, plan InstanceCloneModel,
+) (*sdk.CloneInstanceRequestConfig, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	switch {
+	// AWS config
+	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
+		noAgent := plan.ConfigAws.NoAgent.ValueBool()
+		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
+		kmsKeyId := plan.ConfigAws.KmsKeyId.ValueString()
+		instanceProfile := plan.ConfigAws.InstanceProfile.ValueString()
+		publicIpType := plan.ConfigAws.PublicIpType.ValueString()
+		availabilityId := plan.ConfigAws.AvailabilityZoneId.ValueString()
+		resourcePoolId := plan.ConfigAws.ResourcePoolId.ValueString()
+
+		configAWS := &sdk.AmazonInstanceConfiguration3{
+			NoAgent:         *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:  &resourcePoolId,
+			IsEC2:           &isEC2,
+			KmsKeyId:        &kmsKeyId,
+			InstanceProfile: &instanceProfile,
+			PublicIpType:    &publicIpType,
+			AvailabilityId:  &availabilityId,
+		}
+
+		// The clone request has no top-level security groups field (unlike
+		// instance creation), so AWS security groups are carried inside the
+		// config and merged over the source instance's configuration.
+		if !plan.ConfigAws.SecurityGroups.IsNull() && !plan.ConfigAws.SecurityGroups.IsUnknown() {
+			var sgs []SecurityGroupsValue
+			diags.Append(plan.ConfigAws.SecurityGroups.ElementsAs(ctx, &sgs, false)...)
+			if diags.HasError() {
+				return nil, diags
+			}
+			if len(sgs) > 0 {
+				sgList := make([]map[string]interface{}, 0, len(sgs))
+				for _, sg := range sgs {
+					sgList = append(sgList, map[string]interface{}{"id": sg.Id.ValueString()})
+				}
+				configAWS.AdditionalProperties = map[string]interface{}{"securityGroups": sgList}
+			}
+		}
+
+		return &sdk.CloneInstanceRequestConfig{AmazonInstanceConfiguration3: configAWS}, diags
+
+	// HVM config
+	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
+		createUser := plan.ConfigHvm.CreateUser.ValueBool()
+		nestedVirtualization := plan.ConfigHvm.NestedVirtualization.ValueString()
+		noAgent := plan.ConfigHvm.NoAgent.ValueBool()
+		resourcePoolId := plan.ConfigHvm.ResourcePoolId.ValueString()
+
+		configHvm := &sdk.HVMInstanceConfiguration1{
+			CreateUser:           *sdk.NewNullableBool(&createUser),
+			NestedVirtualization: &nestedVirtualization,
+			NoAgent:              *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:       &resourcePoolId,
+		}
+
+		if !plan.ConfigHvm.KvmHostId.IsNull() {
+			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
+		}
+
+		return &sdk.CloneInstanceRequestConfig{HVMInstanceConfiguration1: configHvm}, diags
+
+	// VMware config
+	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
+		nestedVirtualization := plan.ConfigVmware.NestedVirtualization.ValueString()
+		createUser := plan.ConfigVmware.CreateUser.ValueBool()
+		noAgent := plan.ConfigVmware.NoAgent.ValueBool()
+		resourcePoolId := plan.ConfigVmware.ResourcePoolId.ValueString()
+		vmwareFolderId := plan.ConfigVmware.VmwareFolderId.ValueString()
+
+		configVMware := &sdk.VMWareInstanceConfiguration3{
+			NestedVirtualization: &nestedVirtualization,
+			CreateUser:           *sdk.NewNullableBool(&createUser),
+			NoAgent:              *sdk.NewNullableBool(&noAgent),
+			ResourcePoolId:       &resourcePoolId,
+			VmwareFolderId:       &vmwareFolderId,
+		}
+
+		return &sdk.CloneInstanceRequestConfig{VMWareInstanceConfiguration3: configVMware}, diags
+
+	// Azure config
+	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
+		createUser := plan.ConfigAzure.CreateUser.ValueBool()
+		resourcePoolId := plan.ConfigAzure.ResourcePoolId.ValueString()
+
+		configAzure := &sdk.AzureInstanceConfiguration3{
+			CreateUser:     &createUser,
+			ResourcePoolId: &resourcePoolId,
+		}
+
+		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
+			configAzure.AzureRegion = plan.ConfigAzure.AzureRegion.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.AzuresecurityGroupId.IsNull() && !plan.ConfigAzure.AzuresecurityGroupId.IsUnknown() {
+			configAzure.AzuresecurityGroupId = plan.ConfigAzure.AzuresecurityGroupId.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.AvailabilityOptions.IsNull() && !plan.ConfigAzure.AvailabilityOptions.IsUnknown() {
+			configAzure.AvailabilityOptions = plan.ConfigAzure.AvailabilityOptions.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.AvailabilitySet.IsNull() && !plan.ConfigAzure.AvailabilitySet.IsUnknown() {
+			configAzure.AvailabilitySet = plan.ConfigAzure.AvailabilitySet.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.AvailabilityZone.IsNull() && !plan.ConfigAzure.AvailabilityZone.IsUnknown() {
+			if configAzure.AdditionalProperties == nil {
+				configAzure.AdditionalProperties = make(map[string]interface{})
+			}
+			configAzure.AdditionalProperties["availabilityZone"] = plan.ConfigAzure.AvailabilityZone.ValueString()
+		}
+		if !plan.ConfigAzure.AzurefloatingIp.IsNull() && !plan.ConfigAzure.AzurefloatingIp.IsUnknown() {
+			configAzure.AzurefloatingIp = plan.ConfigAzure.AzurefloatingIp.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.BootDiagnostics.IsNull() && !plan.ConfigAzure.BootDiagnostics.IsUnknown() {
+			configAzure.BootDiagnostics = plan.ConfigAzure.BootDiagnostics.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.OsGuestDiagnostics.IsNull() && !plan.ConfigAzure.OsGuestDiagnostics.IsUnknown() {
+			configAzure.OsGuestDiagnostics = plan.ConfigAzure.OsGuestDiagnostics.ValueStringPointer()
+		}
+		if !plan.ConfigAzure.DiagnosticsStorageAccount.IsNull() && !plan.ConfigAzure.DiagnosticsStorageAccount.IsUnknown() {
+			configAzure.DiagnosticsStorageAccount = plan.ConfigAzure.DiagnosticsStorageAccount.ValueStringPointer()
+		}
+
+		return &sdk.CloneInstanceRequestConfig{AzureInstanceConfiguration3: configAzure}, diags
+
+	// Generic / dynamic config
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		configAny, err := convert.ValueToAny(ctx, plan.Config.UnderlyingValue())
+		if err != nil {
+			diags.AddError(
+				"clone instance resource",
+				"instance_clone: failed to convert config: "+err.Error(),
+			)
+
+			return nil, diags
+		}
+
+		configMap, ok := configAny.(map[string]interface{})
+		if !ok {
+			diags.AddError(
+				"clone instance resource",
+				"instance_clone: could not parse config value",
+			)
+
+			return nil, diags
+		}
+
+		return &sdk.CloneInstanceRequestConfig{
+			GenericInstanceConfiguration3: &sdk.GenericInstanceConfiguration3{
+				AdditionalProperties: configMap,
+			},
+		}, diags
+	}
+
+	return nil, diags
 }
 
 // buildCloneVolumes converts plan volumes to SDK CloneInstanceRequestVolumesInner.

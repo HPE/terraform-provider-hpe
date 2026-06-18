@@ -59,6 +59,35 @@ How disks are matched to the source — and how sizing behaves — varies by pla
 - When cloning into a different `cloud_id`, the chosen networks must exist in the
   target cloud — networks are not remapped automatically.
 
+### Configuration overrides
+
+The optional `config` blocks override the source instance's **configuration**
+when the clone is provisioned. There are two forms and they are **mutually
+exclusive** (use at most one):
+
+- **Typed, per-cloud blocks** — `config_vmware`, `config_aws`, `config_azure`
+  and `config_hvm`. Use the one that matches the target cloud type. Each exposes
+  the same keys as the equivalent block on the `hpe_morpheus_instance` resource.
+- **A dynamic `config` map** — a free-form object for any key not covered by a
+  typed block (for example Google Cloud keys, `customOptions` or `userGroup`).
+
+**Effect on the source instance.** Unlike `volumes` and `network_interfaces`
+(which *replace* the source's set when provided), `config` is **merged
+key-by-key over the source instance's configuration**: keys you set override the
+source value, and keys you omit are **inherited** from the source. The merge is
+applied only to the **new clone** — the source instance is **never modified**.
+
+**Clone-time only.** Every `config` block forces replacement. The values are
+consumed when the clone is provisioned and cannot be changed in place; editing a
+`config` value plans a **new** clone.
+
+**Keys shared across clouds.** `resource_pool_id` and `create_user` appear in
+every typed block. `resource_pool_id` is **required** inside a typed block and
+may be prefixed with `pool-` (or `poolGroup-` for a resource pool group); for
+Azure it identifies the resource group. Keys that are not modelled as typed
+fields — notably `customOptions` and `userGroup` — are supplied through the
+dynamic `config` map.
+
 ## Additional examples
 
 ### Multiple volumes with datastore placement and a second interface
@@ -110,6 +139,144 @@ resource "hpe_morpheus_instance_clone" "dr_copy" {
 
   network_interfaces {
     network_id = 21
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with VMware configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "vmware" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "vmware-clone"
+
+  # Merged over the source config; the source instance is unchanged.
+  config_vmware {
+    resource_pool_id      = "pool-1"
+    nested_virtualization = "off"
+    vmware_folder_id      = "group-v10"
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 7
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with AWS configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "aws" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "aws-clone"
+
+  config_aws {
+    resource_pool_id     = "pool-3"
+    availability_zone_id = "us-east-1a"
+    public_ip_type       = "elasticIp"
+    instance_profile     = "arn:aws:iam::123456789012:instance-profile/example"
+
+    security_groups {
+      id = "sg-0abc123def456"
+    }
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 30
+  }
+  network_interfaces {
+    network_id = 11
+    ip_mode    = "dhcp"
+  }
+}
+```
+
+### Clone with Azure configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "azure" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "azure-clone"
+
+  config_azure {
+    resource_pool_id     = "pool-azure-rg" # the Azure resource group
+    azure_region         = "eastus"
+    availability_options = "zone"
+    availability_zone    = "1"
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 31
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with HVM (Morpheus VM) configuration overrides
+
+```terraform
+resource "hpe_morpheus_instance_clone" "hvm" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "hvm-clone"
+
+  config_hvm {
+    resource_pool_id      = "pool-9"
+    nested_virtualization = "on"
+    kvm_host_id           = 4
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 41
+    ip_mode    = ""
+  }
+}
+```
+
+### Clone with a generic config override
+
+Use the dynamic `config` map for keys not covered by a typed block — for example
+custom option types, `userGroup`, or Google Cloud keys. It is merged over the
+source configuration in the same way and is mutually exclusive with the typed
+`config_*` blocks.
+
+```terraform
+resource "hpe_morpheus_instance_clone" "generic" {
+  source_instance_id = hpe_morpheus_instance.production.id
+  name               = "generic-clone"
+
+  config = {
+    resourcePoolId = "pool-5"
+    customOptions = {
+      myCustomField = "value"
+    }
+  }
+
+  volumes {
+    name        = "root"
+    root_volume = true
+    size        = 40
+  }
+  network_interfaces {
+    network_id = 51
     ip_mode    = ""
   }
 }
