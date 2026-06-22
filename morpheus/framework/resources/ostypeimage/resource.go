@@ -39,7 +39,7 @@ type Resource struct {
 }
 
 func (r *Resource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_os_type_image"
+	resp.TypeName = req.ProviderTypeName + "_" + "os_type_image"
 }
 
 func (r *Resource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

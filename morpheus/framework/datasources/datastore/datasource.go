@@ -57,7 +57,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_datastore"
+	resp.TypeName = req.ProviderTypeName + "_" + "datastore"
 }
 
 // Schema defines the schema for the data source.

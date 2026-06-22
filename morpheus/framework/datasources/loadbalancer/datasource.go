@@ -38,7 +38,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_load_balancer"
+	resp.TypeName = req.ProviderTypeName + "_" + "load_balancer"
 }
 
 func (d *DataSource) Schema(

@@ -49,7 +49,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_router"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_router"
 }
 
 // Schema defines the schema for the data source.

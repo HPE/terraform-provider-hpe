@@ -31,7 +31,7 @@ func (r *settingWhitelabelResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_setting_whitelabel"
+	resp.TypeName = req.ProviderTypeName + "_" + "setting_whitelabel"
 }
 
 func (r *settingWhitelabelResource) Schema(

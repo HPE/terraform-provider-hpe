@@ -28,7 +28,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_dhcp_server"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_dhcp_server"
 }
 
 func (r *Resource) Schema(

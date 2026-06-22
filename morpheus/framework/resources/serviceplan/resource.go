@@ -44,7 +44,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_service_plan"
+	resp.TypeName = req.ProviderTypeName + "_" + "service_plan"
 }
 
 func (r *Resource) Schema(

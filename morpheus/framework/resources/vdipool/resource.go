@@ -32,7 +32,7 @@ func NewResource() resource.Resource {
 }
 
 func (r *vdiPoolResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_vdi_pool"
+	resp.TypeName = req.ProviderTypeName + "_" + "vdi_pool"
 }
 
 func (r *vdiPoolResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

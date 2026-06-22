@@ -45,7 +45,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_transport_zone"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_transport_zone"
 }
 
 // Schema defines the schema for the data source.

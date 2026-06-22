@@ -35,7 +35,7 @@ func (r *certificateResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_certificate"
+	resp.TypeName = req.ProviderTypeName + "_" + "certificate"
 }
 
 func (r *certificateResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

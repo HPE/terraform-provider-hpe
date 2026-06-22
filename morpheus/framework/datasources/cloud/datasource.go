@@ -42,7 +42,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_cloud"
+	resp.TypeName = req.ProviderTypeName + "_" + "cloud"
 }
 
 // Schema defines the schema for the data source.

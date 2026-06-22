@@ -45,7 +45,7 @@ func (g *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_image"
+	resp.TypeName = req.ProviderTypeName + "_" + "" + constants.SubProviderName + "_image"
 	resp.TypeName = strings.Join(
 		[]string{req.ProviderTypeName, constants.SubProviderName, "image"},
 		"_",

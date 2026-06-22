@@ -34,7 +34,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_cluster"
+	resp.TypeName = req.ProviderTypeName + "_" + "cluster"
 }
 
 func (r *Resource) Schema(

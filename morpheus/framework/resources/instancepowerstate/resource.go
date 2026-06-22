@@ -72,7 +72,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_instance_power_state"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance_power_state"
 }
 
 // Schema implements resource.Resource.

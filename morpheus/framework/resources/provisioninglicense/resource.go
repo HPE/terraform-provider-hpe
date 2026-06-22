@@ -35,7 +35,7 @@ func (r *provisioningLicenseResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_provisioning_license"
+	resp.TypeName = req.ProviderTypeName + "_" + "provisioning_license"
 }
 
 func (r *provisioningLicenseResource) Schema(

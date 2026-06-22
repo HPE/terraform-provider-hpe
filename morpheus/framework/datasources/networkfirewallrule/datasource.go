@@ -49,7 +49,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_firewall_rule"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_firewall_rule"
 }
 
 // Schema defines the schema for the data source.

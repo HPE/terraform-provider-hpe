@@ -31,7 +31,7 @@ func NewResource() resource.Resource {
 }
 
 func (r *vdiAppResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_vdi_app"
+	resp.TypeName = req.ProviderTypeName + "_" + "vdi_app"
 }
 
 func (r *vdiAppResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

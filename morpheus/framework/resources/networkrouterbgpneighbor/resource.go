@@ -28,7 +28,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_router_bgp_neighbor"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_router_bgp_neighbor"
 }
 
 func (r *Resource) Schema(

@@ -42,7 +42,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_image"
+	resp.TypeName = req.ProviderTypeName + "_" + "" + constants.SubProviderName + "_image"
 }
 
 // Schema defines the schema for the data source.

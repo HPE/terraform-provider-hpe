@@ -23,7 +23,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_os_type"
+	resp.TypeName = req.ProviderTypeName + "_" + "os_type"
 }
 
 func (r *Resource) Schema(

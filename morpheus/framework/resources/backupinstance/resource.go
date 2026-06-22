@@ -36,7 +36,7 @@ func (r *backupInstanceResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_backup_instance"
+	resp.TypeName = req.ProviderTypeName + "_" + "backup_instance"
 }
 
 func (r *backupInstanceResource) Schema(

@@ -40,7 +40,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_router_route"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_router_route"
 }
 
 func (r *Resource) Schema(

@@ -45,7 +45,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_network_edge_cluster"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_edge_cluster"
 }
 
 // Schema defines the schema for the data source.

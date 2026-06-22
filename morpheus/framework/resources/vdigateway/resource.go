@@ -35,7 +35,7 @@ func (r *vdiGatewayResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_vdi_gateway"
+	resp.TypeName = req.ProviderTypeName + "_" + "vdi_gateway"
 }
 
 func (r *vdiGatewayResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
