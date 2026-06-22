@@ -18,7 +18,6 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -45,7 +44,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + "" + constants.SubProviderName + "_instance"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance"
 }
 
 // Schema defines the schema for the data source.

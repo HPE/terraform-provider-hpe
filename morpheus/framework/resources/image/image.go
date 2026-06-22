@@ -4,12 +4,10 @@ package image
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 var (
@@ -45,11 +43,7 @@ func (g *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + "" + constants.SubProviderName + "_image"
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "image"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_" + "image"
 }
 
 func (g *Resource) Schema(
