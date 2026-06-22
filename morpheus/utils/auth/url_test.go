@@ -17,6 +17,9 @@ func TestNormalizeBaseURL(t *testing.T) {
 		{"single trailing slash", "https://morpheus.example.com/", "https://morpheus.example.com"},
 		{"multiple trailing slashes", "https://morpheus.example.com///", "https://morpheus.example.com"},
 		{"trailing slash with path", "https://morpheus.example.com/sub/", "https://morpheus.example.com/sub"},
+		{"trailing whitespace after slash", "https://morpheus.example.com/ ", "https://morpheus.example.com"},
+		{"leading and trailing whitespace", "  https://morpheus.example.com/  ", "https://morpheus.example.com"},
+		{"whitespace only", "   ", ""},
 		{"empty string", "", ""},
 	}
 	for _, tt := range tests {

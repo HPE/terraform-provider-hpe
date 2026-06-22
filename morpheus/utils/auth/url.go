@@ -18,6 +18,10 @@ import "strings"
 // authentication failure. The same applies to "//api/..." requests once the
 // token is obtained. Trimming trailing slashes keeps every request path
 // single-slashed and routable.
+//
+// Surrounding whitespace is also trimmed first so a misconfigured URL such as
+// "https://morpheus.example.com/ " (note the trailing space) still has its
+// trailing slash removed.
 func NormalizeBaseURL(url string) string {
-	return strings.TrimRight(url, "/")
+	return strings.TrimRight(strings.TrimSpace(url), "/")
 }
