@@ -23,13 +23,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")
@@ -76,13 +75,12 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")
@@ -133,13 +131,12 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 
 // Test validation: permissions.all conflicts with permissions.groups
 func TestAccMorpheusLoadBalancerResourceValidationPermissionsConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())

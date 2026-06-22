@@ -20,12 +20,11 @@ import (
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleResourceUserUpdateAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -802,12 +801,11 @@ resource "hpe_morpheus_role" "update_test" {
 // TODO: Add VDI pool permissions checks once they are fixed in the OpenAPI spec and SDK.
 
 func TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

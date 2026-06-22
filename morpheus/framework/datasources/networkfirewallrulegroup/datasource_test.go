@@ -34,12 +34,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusNetworkFirewallRuleGroupByIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -89,12 +88,11 @@ data "hpe_morpheus_network_firewall_rule_group" "example" {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupByNameOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -143,12 +141,11 @@ data "hpe_morpheus_network_firewall_rule_group" "example" {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -179,12 +176,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -207,12 +203,11 @@ func TestAccMorpheusNetworkFirewallRuleGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkFirewallRuleGroupBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 

@@ -41,12 +41,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreResourceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -149,12 +148,11 @@ func TestAccMorpheusDatastoreResourceExampleOk(t *testing.T) {
 
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.Alletra) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -532,12 +530,11 @@ func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreResourceValidationOneOf(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -663,12 +660,11 @@ func TestAccMorpheusDatastoreResourceValidationOneOf(t *testing.T) {
 }
 
 func TestAccMorpheusDatastoreResourceValidationRequiredAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
