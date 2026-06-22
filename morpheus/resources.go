@@ -148,3 +148,82 @@ func (s SubProvider) GetResources(
 
 	return resources
 }
+
+func (p *MorpheusProvider) Resources(
+	_ context.Context,
+) []func() resource.Resource {
+	resources := []func() resource.Resource{
+		// Existing resources
+		cloud.NewResource,
+		datastore.NewResource,
+		group.NewResource,
+		image.NewResource,
+		loadbalancer.NewResource,
+		loadbalancermonitor.NewResource,
+		loadbalancervirtualserver.NewResource,
+		network.NewResource,
+		networkfirewallrule.NewResource,
+		networkfirewallrulegroup.NewResource,
+		networkdhcpserver.NewResource,
+		networkrouter.NewResource,
+		networkrouterbgpneighbor.NewResource,
+		network_router_route.NewResource,
+		ostype.NewResource,
+		ostypeimage.NewResource,
+		user.NewResource,
+		role.NewResource,
+		serviceplan.NewResource,
+		task.NewResource,
+		instance.NewResource,
+		instancepowerstate.NewResource,
+		instancesnapshot.NewResource,
+		policy.NewResource,
+		cluster.NewResource,
+
+		// Sprint 1: Simple resources
+		certificate.NewResource,
+		power_schedule.NewResource,
+		vdi_app.NewResource,
+		vdi_gateway.NewResource,
+		container_script.NewResource,
+
+		// Sprint 2: Networking
+		network_group.NewResource,
+		network_pool.NewResource,
+		network_pool_server.NewResource,
+		network_router_nat.NewResource,
+		network_router_firewall_rule.NewResource,
+		subnet.NewResource,
+		security_group.NewResource,
+		security_group_rule.NewResource,
+
+		// Sprint 3: Automation & Orchestration
+		deployment.NewResource,
+
+		// Sprint 4: Infrastructure & Compute
+		cluster_namespace.NewResource,
+		cluster_affinity_group.NewResource,
+		storage_server.NewResource,
+		storage_volume.NewResource,
+		storage_bucket.NewResource,
+
+		// Sprint 5: Monitoring & Operations
+		monitoring_check.NewResource,
+		monitoring_alert.NewResource,
+		monitoring_group.NewResource,
+		budget.NewResource,
+		backup_job.NewResource,
+		backuphost.NewResource,
+		backupinstance.NewResource,
+
+		// Sprint 6: Library & Provisioning
+		option_list.NewResource,
+		provisioning_license.NewResource,
+
+		// Sprint 7: Identity, VDI & Governance
+		vdi_pool.NewResource,
+		setting_whitelabel.NewResource,
+	}
+
+	return resources
+}

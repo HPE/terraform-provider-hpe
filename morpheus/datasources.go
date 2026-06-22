@@ -90,3 +90,44 @@ func (SubProvider) GetDataSources(
 		instancesnapshot.NewDataSource,
 	}
 }
+
+func (p *MorpheusProvider) DataSources(
+	_ context.Context,
+) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		backup.NewDataSource,
+		backuptype.NewDataSource,
+		cluster.NewDataSource,
+		cloud.NewDataSource,
+		datastore.NewDataSource,
+		environment.NewDataSource,
+		group.NewDataSource,
+		instance.NewDataSource,
+		instancetypelayout.NewDataSource,
+		image.NewDataSource,
+		loadbalancer.NewDataSource,
+		loadbalancermonitor.NewDataSource,
+		loadbalancervirtualserver.NewDataSource,
+		network.NewDataSource,
+		networkdhcpserver.NewDataSource,
+		networkdomain.NewDataSource,
+		networkfirewallrule.NewDataSource,
+		networkfirewallrulegroup.NewDataSource,
+		networkrouter.NewDataSource,
+		networkrouterbgpneighbor.NewDataSource,
+		networkrouterroute.NewDataSource,
+		ostype.NewDataSource,
+		ostypeimage.NewDataSource,
+		policy.NewDataSource,
+		role.NewDataSource,
+		serviceplan.NewDataSource,
+		user.NewDataSource,
+		// hpegl VMaaS parity data sources
+		networkserver.NewDataSource,
+		networkedgecluster.NewDataSource,
+		networktransportzone.NewDataSource,
+		networkpool.NewDataSource,
+		networktype.NewDataSource,
+		instancesnapshot.NewDataSource,
+	}
+}

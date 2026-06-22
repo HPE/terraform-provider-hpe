@@ -19,32 +19,61 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
 	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	version "github.com/hashicorp/go-version"
 )
 
-var _ provider.Provider = &hpeProvider{}
+var _ provider.Provider = &HpeProvider{}
 
 func New(
 	version string,
 	b ...subprovider.SubProvider,
 ) func() provider.Provider {
 	return func() provider.Provider {
-		return &hpeProvider{
+		return &HpeProvider{
 			version:      version,
 			subproviders: b,
 		}
 	}
 }
 
-type hpeProvider struct {
+func New2(
+	version string,
+	providers ...provider.Provider,
+) func() provider.Provider {
+	return func() provider.Provider {
+		return &HpeProvider2{
+			version: version,
+			childProviders: adapter.NewAdaptedChildProviders(
+				providers...,
+			),
+		}
+	}
+}
+
+type HpeProvider struct {
 	version      string
 	subproviders []subprovider.SubProvider
 }
 
-func (p *hpeProvider) Metadata(
+type HpeProvider2 struct {
+	version        string
+	childProviders []provider.Provider
+}
+
+func (p *HpeProvider) Metadata(
+	_ context.Context,
+	_ provider.MetadataRequest,
+	resp *provider.MetadataResponse,
+) {
+	resp.TypeName = "hpe"
+	resp.Version = p.version
+}
+
+func (p *HpeProvider2) Metadata(
 	_ context.Context,
 	_ provider.MetadataRequest,
 	resp *provider.MetadataResponse,
@@ -75,7 +104,24 @@ func createListNestedBlock(attrmaps []AttrMap) map[string]schema.Block {
 	return blockmap
 }
 
-func (p *hpeProvider) Schema(
+// func createListNestedAttributes(attrmaps []AttrMap) map[string]schema.Attribute {
+// 	blockmap := map[string]schema.Block{}
+// 	for _, attrmap := range attrmaps {
+// 		block := schema.SingleNestedAttribute{
+// 			NestedObject: schema.NestedBlockObject{
+// 				Attributes: attrmap.attributes,
+// 			},
+// 			Validators: []validator.List{
+// 				listvalidator.SizeBetween(0, 1),
+// 			},
+// 		}
+// 		blockmap[attrmap.name] = block
+// 	}
+//
+// 	return blockmap
+// }
+
+func (p *HpeProvider) Schema(
 	ctx context.Context,
 	_ provider.SchemaRequest,
 	resp *provider.SchemaResponse,
@@ -95,7 +141,29 @@ func (p *hpeProvider) Schema(
 	}
 }
 
-func (p *hpeProvider) Configure(
+func (p *HpeProvider2) Schema(
+	ctx context.Context,
+	_ provider.SchemaRequest,
+	resp *provider.SchemaResponse,
+) {
+	resp.Schema = schema.Schema{
+		// Attributes: make(map[string]schema.Attribute),
+		Blocks: make(map[string]schema.Block),
+	}
+
+	for _, s := range p.childProviders {
+		metaResp := &provider.MetadataResponse{}
+		schemaResp := &provider.SchemaResponse{}
+
+		s.Metadata(ctx, provider.MetadataRequest{}, metaResp)
+		s.Schema(ctx, provider.SchemaRequest{}, schemaResp)
+
+		// resp.Schema.Attributes[metaResp.TypeName] = schemaResp.Schema.Attributes[metaResp.TypeName]
+		resp.Schema.Blocks[metaResp.TypeName] = schemaResp.Schema.Blocks[metaResp.TypeName]
+	}
+}
+
+func (p *HpeProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
@@ -174,7 +242,90 @@ func (p *hpeProvider) Configure(
 	wg.Wait()
 }
 
-func (p *hpeProvider) Resources(
+func (p *HpeProvider2) Configure(
+	ctx context.Context,
+	req provider.ConfigureRequest,
+	resp *provider.ConfigureResponse,
+) {
+	var wg sync.WaitGroup
+	// check version if not running on dev or test (accepance test builds)
+	if p.version != "dev" && p.version != "test" && notify.IsEnabled() && notify.TryDial() == nil {
+		// Do this in a separate goroutine while the rest of the Configure method runs.
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			localVer, err := version.NewVersion(strings.ToLower(strings.TrimPrefix(p.version, "v")))
+			if err != nil {
+				// Installed provider version is messed up, so surface an Error Diagnostic.
+				// Terraform should catch this first, though, as it doesn't allow malformed versions.
+				resp.Diagnostics.Append(
+					diag.NewErrorDiagnostic(
+						"failed to convert local version string",
+						err.Error(),
+					),
+				)
+
+				return
+			}
+
+			retry := func() (*version.Version, error) {
+				return notify.GetProviderVersion(notify.RegistryUrl)
+			}
+			// If we passed the TryDial check, we'll probably hit the API relatively quickly.
+			remoteVer, err := backoff.Retry(
+				ctx,
+				retry,
+				backoff.WithMaxElapsedTime(30*time.Second),
+			)
+			if err != nil {
+				// Continue provider execution if this fails.
+				resp.Diagnostics.Append(
+					diag.NewWarningDiagnostic(
+						"failed to fetch latest remote version",
+						err.Error(),
+					),
+				)
+
+				return
+			}
+
+			err = notify.CompareProviderVersion(localVer, remoteVer)
+			if err != nil {
+				// i.e. if localVer < remoteVer
+				resp.Diagnostics.Append(diag.NewWarningDiagnostic("Outdated provider version", err.Error()))
+			}
+		}()
+
+	}
+
+	resourceData := map[string]any{}
+	dataSourceData := map[string]any{}
+
+	for _, s := range p.childProviders {
+		childMetaResp := &provider.MetadataResponse{}
+		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
+
+		childConfigResp := &provider.ConfigureResponse{}
+		s.Configure(ctx, req, childConfigResp)
+
+		resp.Diagnostics.Append(childConfigResp.Diagnostics...)
+
+		if childConfigResp.ResourceData != nil {
+			resourceData[childMetaResp.TypeName] = childConfigResp.ResourceData
+		}
+
+		if childConfigResp.DataSourceData != nil {
+			dataSourceData[childMetaResp.TypeName] = childConfigResp.DataSourceData
+		}
+	}
+
+	resp.ResourceData = resourceData
+	resp.DataSourceData = dataSourceData
+
+	wg.Wait()
+}
+
+func (p *HpeProvider) Resources(
 	ctx context.Context,
 ) []func() resource.Resource {
 	var resources []func() resource.Resource
@@ -185,12 +336,34 @@ func (p *hpeProvider) Resources(
 	return resources
 }
 
-func (p *hpeProvider) DataSources(
+func (p *HpeProvider2) Resources(
+	ctx context.Context,
+) []func() resource.Resource {
+	var resources []func() resource.Resource
+	for _, s := range p.childProviders {
+		resources = append(resources, s.Resources(ctx)...)
+	}
+
+	return resources
+}
+
+func (p *HpeProvider) DataSources(
 	ctx context.Context,
 ) []func() datasource.DataSource {
 	var datasources []func() datasource.DataSource
 	for _, s := range p.subproviders {
 		datasources = append(datasources, s.GetDataSources(ctx)...)
+	}
+
+	return datasources
+}
+
+func (p *HpeProvider2) DataSources(
+	ctx context.Context,
+) []func() datasource.DataSource {
+	var datasources []func() datasource.DataSource
+	for _, s := range p.childProviders {
+		datasources = append(datasources, s.DataSources(ctx)...)
 	}
 
 	return datasources
