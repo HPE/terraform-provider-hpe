@@ -695,15 +695,5 @@ func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string
 		"site_ids": basetypes.SetType{
 			ElemType: types.Int64Type,
 		},
-		Description:         "Manages a Morpheus Cluster Namespace resource.",
-		MarkdownDescription: "Manages a Morpheus Cluster Namespace resource.",
 	}
-}
-
-type ClusterNamespaceModel struct {
-	Active      types.Bool   `tfsdk:"active"`
-	ClusterId   types.Int64  `tfsdk:"cluster_id"`
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
 }

@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type networkGroupModel struct {
 	ID                          types.Int64  `tfsdk:"id"`
@@ -94,9 +96,12 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkGroupModel struct {
-	Active      types.Bool   `tfsdk:"active"`
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Visibility  types.String `tfsdk:"visibility"`
+	Active                      types.Bool   `tfsdk:"active"`
+	Description                 types.String `tfsdk:"description"`
+	Id                          types.Int64  `tfsdk:"id"`
+	Name                        types.String `tfsdk:"name"`
+	Visibility                  types.String `tfsdk:"visibility"`
+	TenantIds                   types.Set    `tfsdk:"tenant_ids"`
+	ResourcePermissionGroupsAll types.Bool   `tfsdk:"resource_permission_groups_all"`
+	ResourcePermissionGroupIds  types.Set    `tfsdk:"resource_permission_group_ids"`
 }

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type powerScheduleModel struct {
 	ID                     types.Int64   `tfsdk:"id"`
@@ -268,6 +269,7 @@ type PowerScheduleModel struct {
 	TotalMonthlyHoursSaved types.Float64 `tfsdk:"total_monthly_hours_saved"`
 	TuesdayOffTime         types.String  `tfsdk:"tuesday_off_time"`
 	TuesdayOnTime          types.String  `tfsdk:"tuesday_on_time"`
+	Visibility             types.String  `tfsdk:"visibility"`
 	WednesdayOffTime       types.String  `tfsdk:"wednesday_off_time"`
 	WednesdayOnTime        types.String  `tfsdk:"wednesday_on_time"`
 }
