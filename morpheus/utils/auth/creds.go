@@ -125,6 +125,7 @@ func NewCredsRoundTripper(
 	username string,
 	password string,
 ) http.RoundTripper {
+	url = NormalizeBaseURL(url)
 	morpheusCfg := sdk.NewConfiguration()
 	morpheusCfg.Servers[0].URL = url
 

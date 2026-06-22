@@ -57,6 +57,33 @@ func TestSecureTLS(t *testing.T) {
 	}
 }
 
+// TestNewClientTrimsTrailingSlashFromURL verifies the appliance URL is
+// normalized so the SDK builds single-slash request paths. A trailing slash
+// would otherwise yield "//oauth/token", which Morpheus 9.0's Spring
+// Authorization Server (mounted at servlet path "/oauth/*") fails to route,
+// breaking authentication with "undefined response type".
+func TestNewClientTrimsTrailingSlashFromURL(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	m := model.SubModel{
+		URL:      types.StringValue("https://morpheus.example.com/"),
+		Username: types.StringValue("user"),
+		Password: types.StringValue("secret"),
+		Insecure: types.BoolValue(false),
+	}
+	cf := clientfactory.New(m)
+	c, err := cf.NewClient(context.Background())
+	if err != nil {
+		t.Fatal("Failed to create client", err)
+	}
+
+	got := c.GetConfig().Servers[0].URL
+	want := "https://morpheus.example.com"
+	if got != want {
+		t.Fatalf("base URL = %q, want %q", got, want)
+	}
+}
+
 func TestInsecureTLS(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 	server := httptest.NewTLSServer(
