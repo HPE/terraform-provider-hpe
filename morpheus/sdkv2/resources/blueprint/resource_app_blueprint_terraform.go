@@ -633,7 +633,7 @@ type AppBlueprintTerraform struct {
 			Config struct {
 				Specs []struct {
 					ID    int    `json:"id"`
-					Value string `json:"value"`
+					Value int    `json:"value"`
 					Name  string `json:"name"`
 				} `json:"specs"`
 			} `json:"config"`

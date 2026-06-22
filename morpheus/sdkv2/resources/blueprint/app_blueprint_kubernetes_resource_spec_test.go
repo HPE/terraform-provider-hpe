@@ -56,7 +56,7 @@ func TestAccMorpheusAppBlueprintKubernetesSpecExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_app_blueprint_kubernetes.example",
 			"name",
-			"tf-kubernetes-app-blueprint-example-spec",
+			name,
 		),
 
 		resource.TestCheckResourceAttr(
@@ -67,8 +67,20 @@ func TestAccMorpheusAppBlueprintKubernetesSpecExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_app_blueprint_kubernetes.example",
-			"spec_template_ids",
-			"[2, 3]",
+			"spec_template_ids.#",
+			"2",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"spec_template_ids.0",
+			"2",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_app_blueprint_kubernetes.example",
+			"spec_template_ids.1",
+			"3",
 		),
 	}
 
