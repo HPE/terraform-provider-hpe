@@ -109,6 +109,26 @@ func ResourceAppBlueprintTerraform() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "Visibility of the blueprint: `private` or `public`. Master-account only.",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+			},
+			"all_group_access": {
+				Type:        schema.TypeBool,
+				Description: "Grant access to all groups (resource permission sites). Defaults to false.",
+				Optional:    true,
+				Default:     false,
+			},
+			"group_access_ids": {
+				Type:        schema.TypeSet,
+				Description: "List of group IDs granted access to this blueprint.",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -299,6 +319,11 @@ func resourceAppBlueprintTerraformCreate(ctx context.Context, d *schema.Resource
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = append(diags, resourceAppBlueprintTerraformRead(ctx, d, meta)...)
 
 	return diags
@@ -387,6 +412,18 @@ func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceDa
 		d.Set("spec_template_ids", specTemplates)
 	}
 
+	d.Set("visibility", terraformBlueprint.Blueprint.Visibility)
+	d.Set("all_group_access", terraformBlueprint.Blueprint.Resourcepermission.All)
+	groupIDs := make([]int, 0, len(terraformBlueprint.Blueprint.Resourcepermission.Sites))
+	for _, s := range terraformBlueprint.Blueprint.Resourcepermission.Sites {
+		if site, ok := s.(map[string]any); ok {
+			if id, ok := site["id"].(float64); ok {
+				groupIDs = append(groupIDs, int(id))
+			}
+		}
+	}
+	d.Set("group_access_ids", groupIDs)
+
 	return diags
 }
 
@@ -397,6 +434,8 @@ func resourceAppBlueprintTerraformUpdate(ctx context.Context, d *schema.Resource
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
+	var diags diag.Diagnostics
 
 	id := d.Id()
 
@@ -571,6 +610,11 @@ func resourceAppBlueprintTerraformUpdate(ctx context.Context, d *schema.Resource
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
 
 	return resourceAppBlueprintTerraformRead(ctx, d, meta)
 }

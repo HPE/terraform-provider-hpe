@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
@@ -66,6 +67,26 @@ func ResourceAppBlueprintHelm() *schema.Resource {
 				Description: "The git reference of the repository to pull (main, master, etc.)",
 				Optional:    true,
 				Default:     "master",
+			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "Visibility of the blueprint: `private` or `public`. Master-account only.",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+			},
+			"all_group_access": {
+				Type:        schema.TypeBool,
+				Description: "Grant access to all groups. Defaults to false.",
+				Optional:    true,
+				Default:     false,
+			},
+			"group_access_ids": {
+				Type:        schema.TypeSet,
+				Description: "List of group IDs granted access to this blueprint.",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -171,6 +192,11 @@ func resourceAppBlueprintHelmCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = append(diags, resourceAppBlueprintHelmRead(ctx, d, meta)...)
 
 	return diags
@@ -233,6 +259,17 @@ func resourceAppBlueprintHelmRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("integration_id", helmBlueprint.Blueprint.Config.Helm.Git.IntegrationId)
 	d.Set("repository_id", helmBlueprint.Blueprint.Config.Helm.Git.RepoId)
 	d.Set("version_ref", helmBlueprint.Blueprint.Config.Helm.Git.Branch)
+	d.Set("visibility", helmBlueprint.Blueprint.Visibility)
+	d.Set("all_group_access", helmBlueprint.Blueprint.Resourcepermission.All)
+	groupIDs := make([]int, 0, len(helmBlueprint.Blueprint.Resourcepermission.Sites))
+	for _, s := range helmBlueprint.Blueprint.Resourcepermission.Sites {
+		if site, ok := s.(map[string]any); ok {
+			if id, ok := site["id"].(float64); ok {
+				groupIDs = append(groupIDs, int(id))
+			}
+		}
+	}
+	d.Set("group_access_ids", groupIDs)
 
 	return diags
 }
@@ -244,6 +281,9 @@ func resourceAppBlueprintHelmUpdate(ctx context.Context, d *schema.ResourceData,
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
+	var diags diag.Diagnostics
+
 	id := d.Id()
 	var name string
 	if v, ok := d.Get("name").(string); ok {
@@ -329,6 +369,11 @@ func resourceAppBlueprintHelmUpdate(ctx context.Context, d *schema.ResourceData,
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
 
 	return resourceAppBlueprintHelmRead(ctx, d, meta)
 }

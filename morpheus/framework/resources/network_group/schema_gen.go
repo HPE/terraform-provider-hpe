@@ -16,11 +16,14 @@ import (
 )
 
 type networkGroupModel struct {
-	ID          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Visibility  types.String `tfsdk:"visibility"`
-	Active      types.Bool   `tfsdk:"active"`
+	ID                          types.Int64  `tfsdk:"id"`
+	Name                        types.String `tfsdk:"name"`
+	Description                 types.String `tfsdk:"description"`
+	Visibility                  types.String `tfsdk:"visibility"`
+	Active                      types.Bool   `tfsdk:"active"`
+	TenantIds                   types.Set    `tfsdk:"tenant_ids"`
+	ResourcePermissionGroupsAll types.Bool   `tfsdk:"resource_permission_groups_all"`
+	ResourcePermissionGroupIds  types.Set    `tfsdk:"resource_permission_group_ids"`
 }
 
 func NetworkGroupSchema(_ context.Context) schema.Schema {
@@ -62,6 +65,23 @@ func NetworkGroupSchema(_ context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
+			},
+			"tenant_ids": schema.SetAttribute{
+				ElementType: types.Int64Type,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of tenant account IDs that are allowed access. Master-account only.",
+			},
+			"resource_permission_groups_all": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Allow access to all groups (sites).",
+			},
+			"resource_permission_group_ids": schema.SetAttribute{
+				ElementType: types.Int64Type,
+				Optional:    true,
+				Computed:    true,
+				Description: "List of group (site) IDs that are allowed access.",
 			},
 		},
 	}

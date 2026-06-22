@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -65,6 +66,23 @@ func ClusterNamespaceResourceSchema(ctx context.Context) schema.Schema {
 					validators.Lowercase(),
 				},
 			},
+			"tenant_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "List of tenant account IDs that are allowed access. Master-account only.",
+				MarkdownDescription: "List of tenant account IDs that are allowed access. Master-account only.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Visibility of the namespace: `private` or `public`. Master-account only.",
+				MarkdownDescription: "Visibility of the namespace: `private` or `public`. Master-account only.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("private", "public"),
+				},
+				Default: stringdefault.StaticString("private"),
+			},
 			"resource_permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"all": schema.BoolAttribute{
@@ -116,6 +134,8 @@ type ClusterNamespaceModel struct {
 	Description         types.String             `tfsdk:"description"`
 	Id                  types.Int64              `tfsdk:"id"`
 	Name                types.String             `tfsdk:"name"`
+	TenantIds           types.Set                `tfsdk:"tenant_ids"`
+	Visibility          types.String             `tfsdk:"visibility"`
 	ResourcePermissions ResourcePermissionsValue `tfsdk:"resource_permissions"`
 }
 

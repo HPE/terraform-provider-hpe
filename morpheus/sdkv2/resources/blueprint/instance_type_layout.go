@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
 	"strings"
 
@@ -193,6 +194,19 @@ func ResourceInstanceTypeLayout() *schema.Resource {
 				},
 				Computed: true,
 			},
+			"all_group_access": {
+				Type:        schema.TypeBool,
+				Description: "Grant access to all groups (resource permission sites). Defaults to false.",
+				Optional:    true,
+				Default:     false,
+			},
+			"group_access_ids": {
+				Type:        schema.TypeSet,
+				Description: "List of group IDs granted access to this instance type layout.",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -375,6 +389,11 @@ func resourceInstanceTypeLayoutCreate(ctx context.Context, d *schema.ResourceDat
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
+	diags = append(diags, applyLayoutPermissions(client, instanceLayoutResponse.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = append(diags, resourceInstanceTypeLayoutRead(ctx, d, meta)...)
 
 	return diags
@@ -554,6 +573,21 @@ func resourceInstanceTypeLayoutRead(ctx context.Context, d *schema.ResourceData,
 	priceSetData := matchTemplatesWithSchema(priceSets, priceSetIDsRaw)
 	d.Set("price_set_ids", priceSetData)
 
+	// resource_permissions read-back
+	var permResp instanceTypeLayoutPermResponse
+	json.Unmarshal(resp.Body, &permResp)
+	rp := permResp.InstanceTypeLayout.Permissions.ResourcePermissions
+	d.Set("all_group_access", rp.All)
+	groupIDs := make([]int, 0, len(rp.Sites))
+	for _, s := range rp.Sites {
+		if site, ok := s.(map[string]any); ok {
+			if id, ok := site["id"].(float64); ok {
+				groupIDs = append(groupIDs, int(id))
+			}
+		}
+	}
+	d.Set("group_access_ids", groupIDs)
+
 	return diags
 }
 
@@ -565,6 +599,8 @@ func resourceInstanceTypeLayoutUpdate(ctx context.Context, d *schema.ResourceDat
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
+	var diags diag.Diagnostics
 
 	id := d.Id()
 
@@ -725,6 +761,11 @@ func resourceInstanceTypeLayoutUpdate(ctx context.Context, d *schema.ResourceDat
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
+	diags = append(diags, applyLayoutPermissions(client, instanceLayoutResponse.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
+
 	return resourceInstanceTypeLayoutRead(ctx, d, meta)
 }
 
@@ -796,4 +837,57 @@ func parseInstanceLayoutEnvironmentVariables(variables []any, d *schema.Resource
 
 type InstanceTypeLayoutPayload struct {
 	morpheus.InstanceLayout `json:"instanceTypeLayout"`
+}
+
+// instanceTypeLayoutPermResponse is used to unmarshal resourcePermissions.Sites from GET
+// response, which is absent from the legacy SDK InstanceLayout struct.
+type instanceTypeLayoutPermResponse struct {
+	InstanceTypeLayout struct {
+		Permissions struct {
+			ResourcePermissions struct {
+				All   bool  `json:"all"`
+				Sites []any `json:"sites"`
+			} `json:"resourcePermissions"`
+		} `json:"permissions"`
+	} `json:"instanceTypeLayout"`
+}
+
+// applyLayoutPermissions sends POST /api/library/layouts/{id}/permissions.
+func applyLayoutPermissions(client *morpheus.Client, id int64, d *schema.ResourceData) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	resourcePermissions := map[string]any{
+		"all": false,
+	}
+	if v, ok := d.Get("all_group_access").(bool); ok {
+		resourcePermissions["all"] = v
+	}
+
+	if attr, ok := d.GetOk("group_access_ids"); ok {
+		if groupSet, ok := attr.(*schema.Set); ok {
+			sites := make([]map[string]any, 0, groupSet.Len())
+			for _, s := range groupSet.List() {
+				if gid, ok := s.(int); ok {
+					sites = append(sites, map[string]any{"id": gid})
+				}
+			}
+			resourcePermissions["sites"] = sites
+		}
+	}
+
+	resp, err := client.Execute(&morpheus.Request{
+		Method: "POST",
+		Path:   fmt.Sprintf("/api/library/layouts/%d/permissions", id),
+		Body: map[string]any{
+			"resourcePermissions": resourcePermissions,
+		},
+	})
+	if err != nil {
+		log.Printf("API FAILURE (layout permissions): %s - %s", resp, err)
+
+		return append(diags, diag.FromErr(err)...)
+	}
+	log.Printf("API RESPONSE (layout permissions): %s", resp)
+
+	return diags
 }

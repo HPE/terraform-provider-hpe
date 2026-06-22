@@ -139,6 +139,7 @@ func getServicePlanAsState(
 	state.AddVolumes = convert.BoolToType(sp.ServicePlan.AddVolumes.Get())
 	state.Description = convert.StrToType(sp.ServicePlan.Description)
 	state.SortOrder = convert.Int64ToType(sp.ServicePlan.SortOrder)
+	state.Visibility = convert.StrToType(sp.ServicePlan.Visibility)
 
 	if sp.ServicePlan.ProvisionType != nil {
 		state.ProvisionTypeCode = convert.StrToType(sp.ServicePlan.ProvisionType.Code)
@@ -508,6 +509,11 @@ func (r *Resource) Create(
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		v := plan.Visibility.ValueString()
+		addServicePlan.Visibility = &v
+	}
+
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		rp := &sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissions{}
 		if !plan.Permissions.AllSites.IsNull() {
@@ -699,6 +705,13 @@ func (r *Resource) Update(
 	}
 
 	setConfigInUpdate(ctx, &plan, servicePlan)
+
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		if servicePlan.AdditionalProperties == nil {
+			servicePlan.AdditionalProperties = map[string]any{}
+		}
+		servicePlan.AdditionalProperties["visibility"] = plan.Visibility.ValueString()
+	}
 
 	if !plan.Permissions.IsNull() && !plan.Permissions.IsUnknown() {
 		rpMap := map[string]any{}

@@ -3,12 +3,14 @@ package power_schedule
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -34,6 +36,7 @@ type powerScheduleModel struct {
 	SundayOnTime           types.String  `tfsdk:"sunday_on_time"`
 	SundayOffTime          types.String  `tfsdk:"sunday_off_time"`
 	TotalMonthlyHoursSaved types.Float64 `tfsdk:"total_monthly_hours_saved"`
+	Visibility             types.String  `tfsdk:"visibility"`
 }
 
 func PowerScheduleSchema(_ context.Context) schema.Schema {
@@ -188,6 +191,15 @@ func PowerScheduleSchema(_ context.Context) schema.Schema {
 			"total_monthly_hours_saved": schema.Float64Attribute{
 				Computed:    true,
 				Description: "The total monthly hours saved by the power schedule.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Visibility of the power schedule: `private` or `public`. Master-account only.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("private", "public"),
+				},
+				Default: stringdefault.StaticString("private"),
 			},
 		},
 	}

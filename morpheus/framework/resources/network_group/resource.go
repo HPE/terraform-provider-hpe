@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -73,10 +74,49 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		body.AdditionalProperties = additionalProps
 	}
 
+	createReq := sdk.CreateNetworkGroupRequest{
+		NetworkGroup: &body,
+	}
+
+	// tenant_ids and resource_permissions go at top-level of request (not inside networkGroup)
+	reqAdditionalProps := map[string]interface{}{}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		reqAdditionalProps["tenantPermissions"] = map[string]interface{}{
+			"accounts": tenantIDs,
+		}
+	}
+
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rpMap := map[string]interface{}{
+			"all": plan.ResourcePermissionGroupsAll.ValueBool(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(groupIDs))
+			for _, gid := range groupIDs {
+				sites = append(sites, map[string]interface{}{"id": gid})
+			}
+			rpMap["sites"] = sites
+		}
+		reqAdditionalProps["resourcePermissions"] = rpMap
+	}
+
+	if len(reqAdditionalProps) > 0 {
+		createReq.AdditionalProperties = reqAdditionalProps
+	}
+
 	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).
-		CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
-			NetworkGroup: &body,
-		}).Execute()
+		CreateNetworkGroupRequest(createReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_group", plan.Name.ValueString(), err, httpResp)
 
@@ -200,10 +240,49 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		body.AdditionalProperties = additionalProps
 	}
 
+	updateReq := sdk.UpdateNetworkGroupRequest{
+		NetworkGroup: &body,
+	}
+
+	// tenant_ids and resource_permissions go at top-level of request (not inside networkGroup)
+	updateReqAdditionalProps := map[string]interface{}{}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		updateReqAdditionalProps["tenantPermissions"] = map[string]interface{}{
+			"accounts": tenantIDs,
+		}
+	}
+
+	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
+		rpMap := map[string]interface{}{
+			"all": plan.ResourcePermissionGroupsAll.ValueBool(),
+		}
+		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+			var groupIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(groupIDs))
+			for _, gid := range groupIDs {
+				sites = append(sites, map[string]interface{}{"id": gid})
+			}
+			rpMap["sites"] = sites
+		}
+		updateReqAdditionalProps["resourcePermissions"] = rpMap
+	}
+
+	if len(updateReqAdditionalProps) > 0 {
+		updateReq.AdditionalProperties = updateReqAdditionalProps
+	}
+
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).
-		UpdateNetworkGroupRequest(sdk.UpdateNetworkGroupRequest{
-			NetworkGroup: &body,
-		}).Execute()
+		UpdateNetworkGroupRequest(updateReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_group", plan.Name.ValueString(), err, httpResp)
 
@@ -284,5 +363,45 @@ func mapResponseToModel(model *networkGroupModel, group *sdk.GetNetworkGroup200R
 	}
 	if group.Active != nil {
 		model.Active = types.BoolValue(*group.Active)
+	}
+
+	// tenant_ids: returned as group.Tenants[*].Id
+	model.TenantIds = types.SetNull(types.Int64Type)
+	if len(group.Tenants) > 0 {
+		vals := make([]attr.Value, 0, len(group.Tenants))
+		for _, t := range group.Tenants {
+			if t.Id != nil {
+				vals = append(vals, types.Int64Value(*t.Id))
+			}
+		}
+		if len(vals) > 0 {
+			tenantSet, _ := types.SetValue(types.Int64Type, vals)
+			model.TenantIds = tenantSet
+		}
+	}
+
+	// resource_permissions: returned as group.AdditionalProperties["resourcePermission"] (singular)
+	model.ResourcePermissionGroupsAll = types.BoolNull()
+	model.ResourcePermissionGroupIds = types.SetNull(types.Int64Type)
+	if rp, ok := group.AdditionalProperties["resourcePermission"]; ok {
+		if rpMap, ok := rp.(map[string]interface{}); ok {
+			if all, ok := rpMap["all"].(bool); ok {
+				model.ResourcePermissionGroupsAll = types.BoolValue(all)
+			}
+			if sites, ok := rpMap["sites"].([]interface{}); ok {
+				siteVals := make([]attr.Value, 0, len(sites))
+				for _, s := range sites {
+					if sMap, ok := s.(map[string]interface{}); ok {
+						if id, ok := sMap["id"].(float64); ok {
+							siteVals = append(siteVals, types.Int64Value(int64(id)))
+						}
+					}
+				}
+				if len(siteVals) > 0 {
+					siteSet, _ := types.SetValue(types.Int64Type, siteVals)
+					model.ResourcePermissionGroupIds = siteSet
+				}
+			}
+		}
 	}
 }

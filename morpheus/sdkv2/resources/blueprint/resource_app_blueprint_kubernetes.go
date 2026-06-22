@@ -107,6 +107,26 @@ func ResourceAppBlueprintKubernetes() *schema.Resource {
 				Elem:        &schema.Schema{Type: schema.TypeInt},
 				Optional:    true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "Visibility of the blueprint: `private` or `public`. Master-account only.",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"private", "public"}, false),
+			},
+			"all_group_access": {
+				Type:        schema.TypeBool,
+				Description: "Grant access to all groups. Defaults to false.",
+				Optional:    true,
+				Default:     false,
+			},
+			"group_access_ids": {
+				Type:        schema.TypeSet,
+				Description: "List of group IDs granted access to this blueprint.",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -260,6 +280,11 @@ func resourceAppBlueprintKubernetesCreate(
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
+
 	diags = append(diags, resourceAppBlueprintKubernetesRead(ctx, d, meta)...)
 
 	return diags
@@ -346,6 +371,18 @@ func resourceAppBlueprintKubernetesRead(
 		d.Set("spec_templates_ids", specTemplates)
 	}
 
+	d.Set("visibility", kubernetesBlueprint.Blueprint.Visibility)
+	d.Set("all_group_access", kubernetesBlueprint.Blueprint.Resourcepermission.All)
+	groupIDs := make([]int, 0, len(kubernetesBlueprint.Blueprint.Resourcepermission.Sites))
+	for _, s := range kubernetesBlueprint.Blueprint.Resourcepermission.Sites {
+		if site, ok := s.(map[string]any); ok {
+			if id, ok := site["id"].(float64); ok {
+				groupIDs = append(groupIDs, int(id))
+			}
+		}
+	}
+	d.Set("group_access_ids", groupIDs)
+
 	return diags
 }
 
@@ -360,6 +397,8 @@ func resourceAppBlueprintKubernetesUpdate(
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
 	}
+
+	var diags diag.Diagnostics
 
 	id := d.Id()
 	var name string
@@ -489,6 +528,11 @@ func resourceAppBlueprintKubernetesUpdate(
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	diags = append(diags, applyBlueprintPermissions(client, blueprint.ID, d)...)
+	if diags.HasError() {
+		return diags
+	}
 
 	return resourceAppBlueprintKubernetesRead(ctx, d, meta)
 }

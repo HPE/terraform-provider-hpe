@@ -285,6 +285,16 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("gb"),
 			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Visibility of the service plan: `private` or `public`. Master-account only.",
+				MarkdownDescription: "Visibility of the service plan: `private` or `public`. Master-account only.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("private", "public"),
+				},
+				Default: stringdefault.StaticString("private"),
+			},
 		},
 	}
 }
@@ -312,6 +322,7 @@ type ServicePlanModel struct {
 	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
 	SortOrder         types.Int64       `tfsdk:"sort_order"`
 	StorageSizeType   types.String      `tfsdk:"storage_size_type"`
+	Visibility        types.String      `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigRangesType{}

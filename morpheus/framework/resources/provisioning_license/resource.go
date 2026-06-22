@@ -322,4 +322,25 @@ func mapGetResponseToModel(model *provisioningLicenseModel, license *sdk.GetProv
 	if license.LicenseType != nil && license.LicenseType.Code != nil {
 		model.LicenseType = types.StringValue(*license.LicenseType.Code)
 	}
+
+	// Read back tenants from the GET response
+	if license.Tenants != nil {
+		tenantIDs := make([]int64, 0, len(license.Tenants))
+		for _, t := range license.Tenants {
+			if idVal, ok := t["id"]; ok {
+				switch v := idVal.(type) {
+				case float64:
+					tenantIDs = append(tenantIDs, int64(v))
+				case int64:
+					tenantIDs = append(tenantIDs, v)
+				}
+			}
+		}
+		listVal, diags := types.ListValueFrom(context.Background(), types.Int64Type, tenantIDs)
+		if !diags.HasError() {
+			model.Tenants = listVal
+		}
+	} else {
+		model.Tenants = types.ListNull(types.Int64Type)
+	}
 }
