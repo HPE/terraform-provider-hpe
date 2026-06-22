@@ -27,6 +27,7 @@ func NewLegacyClient(
 	token string,
 	opts ...sdklegacy.ClientOption,
 ) *sdklegacy.Client {
+	url = auth.NormalizeBaseURL(url)
 	c := sdklegacy.NewClient(url, opts...)
 
 	transport := &http.Transport{
