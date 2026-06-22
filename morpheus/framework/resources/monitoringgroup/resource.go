@@ -35,7 +35,7 @@ func (r *monitoringGroupResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_group"
+	resp.TypeName = req.ProviderTypeName + "_monitoring_group"
 }
 
 func (r *monitoringGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

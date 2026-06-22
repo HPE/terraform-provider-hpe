@@ -37,7 +37,7 @@ func (r *clusterAffinityGroupResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_cluster_affinity_group"
+	resp.TypeName = req.ProviderTypeName + "_cluster_affinity_group"
 }
 
 func (r *clusterAffinityGroupResource) Schema(

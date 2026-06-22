@@ -37,7 +37,7 @@ func (r *networkPoolServerResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_network_pool_server"
+	resp.TypeName = req.ProviderTypeName + "_network_pool_server"
 }
 
 func (r *networkPoolServerResource) Schema(

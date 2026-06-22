@@ -46,7 +46,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_cluster"
+	resp.TypeName = req.ProviderTypeName + "_cluster"
 }
 
 func (d *DataSource) Schema(

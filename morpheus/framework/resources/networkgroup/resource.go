@@ -35,7 +35,7 @@ func (r *networkGroupResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_network_group"
+	resp.TypeName = req.ProviderTypeName + "_network_group"
 }
 
 func (r *networkGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

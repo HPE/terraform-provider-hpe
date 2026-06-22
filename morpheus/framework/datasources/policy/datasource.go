@@ -727,7 +727,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_policy"
+	resp.TypeName = req.ProviderTypeName + "_policy"
 }
 
 // Schema defines the schema for the data source.

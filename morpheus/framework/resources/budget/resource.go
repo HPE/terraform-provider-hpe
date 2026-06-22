@@ -31,7 +31,7 @@ func NewResource() resource.Resource {
 }
 
 func (r *budgetResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_budget"
+	resp.TypeName = req.ProviderTypeName + "_budget"
 }
 
 func (r *budgetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

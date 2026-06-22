@@ -18,7 +18,6 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -41,14 +40,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{
-			req.ProviderTypeName,
-			constants.SubProviderName,
-			"network_router_nat",
-		},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_network_router_nat"
 }
 
 func (r *Resource) Schema(

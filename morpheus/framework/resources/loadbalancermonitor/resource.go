@@ -4,12 +4,10 @@ package loadbalancermonitor
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 type Resource struct {
@@ -27,10 +25,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "load_balancer_monitor"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_load_balancer_monitor"
 }
 
 func (r *Resource) Schema(

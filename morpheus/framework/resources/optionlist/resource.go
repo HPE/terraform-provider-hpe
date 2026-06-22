@@ -36,7 +36,7 @@ func (r *optionListResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_option_list"
+	resp.TypeName = req.ProviderTypeName + "_option_list"
 }
 
 func (r *optionListResource) Schema(

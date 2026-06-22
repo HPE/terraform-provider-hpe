@@ -35,7 +35,7 @@ func (r *monitoringAlertResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_monitoring_alert"
+	resp.TypeName = req.ProviderTypeName + "_monitoring_alert"
 }
 
 func (r *monitoringAlertResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

@@ -6,13 +6,11 @@ import (
 	"context"
 	"errors"
 	"slices"
-	"strings"
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -36,10 +34,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "cluster"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_cluster"
 }
 
 func (r *Resource) Schema(

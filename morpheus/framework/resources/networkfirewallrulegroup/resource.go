@@ -4,12 +4,10 @@ package networkfirewallrulegroup
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 var (
@@ -30,14 +28,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{
-			req.ProviderTypeName,
-			constants.SubProviderName,
-			"network_firewall_rule_group",
-		},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_network_firewall_rule_group"
 }
 
 func (r *Resource) Schema(

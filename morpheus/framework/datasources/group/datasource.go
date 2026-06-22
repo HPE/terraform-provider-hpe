@@ -41,7 +41,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_group"
+	resp.TypeName = req.ProviderTypeName + "_group"
 }
 
 // Schema defines the schema for the data source.

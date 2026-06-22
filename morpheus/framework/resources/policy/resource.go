@@ -35,7 +35,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_policy"
+	resp.TypeName = req.ProviderTypeName + "_policy"
 }
 
 func (r *Resource) Schema(

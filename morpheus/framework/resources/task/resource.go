@@ -2,12 +2,10 @@ package task
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 type Resource struct {
@@ -25,10 +23,7 @@ func (g *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "task"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_task"
 }
 
 func (g *Resource) Schema(
