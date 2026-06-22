@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -23,8 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	"github.com/HPE/terraform-provider-hpe/utils/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -406,8 +405,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`application_profile is missing from object`,
-		)
+			`application_profile is missing from object`)
 
 		return nil, diags
 	}
@@ -417,8 +415,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute),
-		)
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
 	}
 
 	persistenceAttribute, ok := attributes["persistence"]
@@ -426,8 +423,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`persistence is missing from object`,
-		)
+			`persistence is missing from object`)
 
 		return nil, diags
 	}
@@ -437,8 +433,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute),
-		)
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
 	}
 
 	persistenceProfileAttribute, ok := attributes["persistence_profile"]
@@ -446,8 +441,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`persistence_profile is missing from object`,
-		)
+			`persistence_profile is missing from object`)
 
 		return nil, diags
 	}
@@ -457,8 +451,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute),
-		)
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
 	}
 
 	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
@@ -466,8 +459,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ssl_client_profile is missing from object`,
-		)
+			`ssl_client_profile is missing from object`)
 
 		return nil, diags
 	}
@@ -477,8 +469,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute),
-		)
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
 	}
 
 	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
@@ -486,8 +477,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ssl_server_profile is missing from object`,
-		)
+			`ssl_server_profile is missing from object`)
 
 		return nil, diags
 	}
@@ -497,8 +487,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute),
-		)
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
 	}
 
 	if diags.HasError() {
@@ -583,8 +572,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`application_profile is missing from object`,
-		)
+			`application_profile is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -594,8 +582,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute),
-		)
+			fmt.Sprintf(`application_profile expected to be basetypes.Int64Value, was: %T`, applicationProfileAttribute))
 	}
 
 	persistenceAttribute, ok := attributes["persistence"]
@@ -603,8 +590,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`persistence is missing from object`,
-		)
+			`persistence is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -614,8 +600,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute),
-		)
+			fmt.Sprintf(`persistence expected to be basetypes.StringValue, was: %T`, persistenceAttribute))
 	}
 
 	persistenceProfileAttribute, ok := attributes["persistence_profile"]
@@ -623,8 +608,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`persistence_profile is missing from object`,
-		)
+			`persistence_profile is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -634,8 +618,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute),
-		)
+			fmt.Sprintf(`persistence_profile expected to be basetypes.Int64Value, was: %T`, persistenceProfileAttribute))
 	}
 
 	sslClientProfileAttribute, ok := attributes["ssl_client_profile"]
@@ -643,8 +626,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ssl_client_profile is missing from object`,
-		)
+			`ssl_client_profile is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -654,8 +636,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute),
-		)
+			fmt.Sprintf(`ssl_client_profile expected to be basetypes.Int64Value, was: %T`, sslClientProfileAttribute))
 	}
 
 	sslServerProfileAttribute, ok := attributes["ssl_server_profile"]
@@ -663,8 +644,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ssl_server_profile is missing from object`,
-		)
+			`ssl_server_profile is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -674,8 +654,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute),
-		)
+			fmt.Sprintf(`ssl_server_profile expected to be basetypes.Int64Value, was: %T`, sslServerProfileAttribute))
 	}
 
 	if diags.HasError() {
@@ -704,8 +683,7 @@ func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -873,8 +851,7 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 			"persistence_profile": v.PersistenceProfile,
 			"ssl_client_profile":  v.SslClientProfile,
 			"ssl_server_profile":  v.SslServerProfile,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -973,8 +950,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return nil, diags
 	}
@@ -984,8 +960,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	ipAttribute, ok := attributes["ip"]
@@ -993,8 +968,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip is missing from object`,
-		)
+			`ip is missing from object`)
 
 		return nil, diags
 	}
@@ -1004,8 +978,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip expected to be basetypes.StringValue, was: %T`, ipAttribute),
-		)
+			fmt.Sprintf(`ip expected to be basetypes.StringValue, was: %T`, ipAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1013,8 +986,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`,
-		)
+			`name is missing from object`)
 
 		return nil, diags
 	}
@@ -1024,8 +996,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
-		)
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	typeAttribute, ok := attributes["type"]
@@ -1033,8 +1004,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`type is missing from object`,
-		)
+			`type is missing from object`)
 
 		return nil, diags
 	}
@@ -1044,8 +1014,7 @@ func (t LoadBalancerType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`type expected to be basetypes.ObjectValue, was: %T`, typeAttribute),
-		)
+			fmt.Sprintf(`type expected to be basetypes.ObjectValue, was: %T`, typeAttribute))
 	}
 
 	if diags.HasError() {
@@ -1129,8 +1098,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return NewLoadBalancerValueUnknown(), diags
 	}
@@ -1140,8 +1108,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	ipAttribute, ok := attributes["ip"]
@@ -1149,8 +1116,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip is missing from object`,
-		)
+			`ip is missing from object`)
 
 		return NewLoadBalancerValueUnknown(), diags
 	}
@@ -1160,8 +1126,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip expected to be basetypes.StringValue, was: %T`, ipAttribute),
-		)
+			fmt.Sprintf(`ip expected to be basetypes.StringValue, was: %T`, ipAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1169,8 +1134,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`,
-		)
+			`name is missing from object`)
 
 		return NewLoadBalancerValueUnknown(), diags
 	}
@@ -1180,8 +1144,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
-		)
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	typeAttribute, ok := attributes["type"]
@@ -1189,8 +1152,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`type is missing from object`,
-		)
+			`type is missing from object`)
 
 		return NewLoadBalancerValueUnknown(), diags
 	}
@@ -1200,8 +1162,7 @@ func NewLoadBalancerValue(attributeTypes map[string]attr.Type, attributes map[st
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`type expected to be basetypes.ObjectValue, was: %T`, typeAttribute),
-		)
+			fmt.Sprintf(`type expected to be basetypes.ObjectValue, was: %T`, typeAttribute))
 	}
 
 	if diags.HasError() {
@@ -1229,8 +1190,7 @@ func NewLoadBalancerValueMust(attributeTypes map[string]attr.Type, attributes ma
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewLoadBalancerValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -1412,8 +1372,7 @@ func (v LoadBalancerValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"ip":   v.Ip,
 			"name": v.Name,
 			"type": loadBalancerTypeVal,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -1509,8 +1468,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`code is missing from object`,
-		)
+			`code is missing from object`)
 
 		return nil, diags
 	}
@@ -1520,8 +1478,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute),
-		)
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -1529,8 +1486,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return nil, diags
 	}
@@ -1540,8 +1496,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1549,8 +1504,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`,
-		)
+			`name is missing from object`)
 
 		return nil, diags
 	}
@@ -1560,8 +1514,7 @@ func (t TypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue)
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
-		)
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	if diags.HasError() {
@@ -1644,8 +1597,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`code is missing from object`,
-		)
+			`code is missing from object`)
 
 		return NewTypeValueUnknown(), diags
 	}
@@ -1655,8 +1607,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute),
-		)
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
 	}
 
 	idAttribute, ok := attributes["id"]
@@ -1664,8 +1615,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`id is missing from object`,
-		)
+			`id is missing from object`)
 
 		return NewTypeValueUnknown(), diags
 	}
@@ -1675,8 +1625,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute),
-		)
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
 	}
 
 	nameAttribute, ok := attributes["name"]
@@ -1684,8 +1633,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`name is missing from object`,
-		)
+			`name is missing from object`)
 
 		return NewTypeValueUnknown(), diags
 	}
@@ -1695,8 +1643,7 @@ func NewTypeValue(attributeTypes map[string]attr.Type, attributes map[string]att
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute),
-		)
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
 	if diags.HasError() {
@@ -1723,8 +1670,7 @@ func NewTypeValueMust(attributeTypes map[string]attr.Type, attributes map[string
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewTypeValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -1870,8 +1816,7 @@ func (v TypeValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, di
 			"code": v.Code,
 			"id":   v.Id,
 			"name": v.Name,
-		},
-	)
+		})
 
 	return objVal, diags
 }

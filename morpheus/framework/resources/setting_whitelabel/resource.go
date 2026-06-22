@@ -38,7 +38,7 @@ func (r *settingWhitelabelResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = SettingWhitelabelSchema(ctx)
+	resp.Schema = WhitelabelSettingsResourceSchema(ctx)
 }
 
 func (r *settingWhitelabelResource) Create(
@@ -54,7 +54,7 @@ func (r *settingWhitelabelResource) Create(
 		return
 	}
 
-	var plan settingWhitelabelModel
+	var plan WhitelabelSettingsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -70,7 +70,7 @@ func (r *settingWhitelabelResource) Create(
 		return
 	}
 
-	plan.ID = types.StringValue("settings")
+	plan.Id = types.StringValue("settings")
 
 	// Re-read to capture server state
 	r.readIntoModel(ctx, &plan, &resp.Diagnostics)
@@ -89,7 +89,7 @@ func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	var state settingWhitelabelModel
+	var state WhitelabelSettingsModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -125,7 +125,7 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
-	var plan settingWhitelabelModel
+	var plan WhitelabelSettingsModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -141,7 +141,7 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
-	plan.ID = types.StringValue("settings")
+	plan.Id = types.StringValue("settings")
 
 	// Re-read to capture server state
 	r.readIntoModel(ctx, &plan, &resp.Diagnostics)
@@ -192,7 +192,7 @@ func (r *settingWhitelabelResource) Delete(
 
 func (r *settingWhitelabelResource) readIntoModel(
 	ctx context.Context,
-	model *settingWhitelabelModel,
+	model *WhitelabelSettingsModel,
 	diagnostics *diag.Diagnostics,
 ) {
 	client, err := r.NewClient(ctx)
@@ -218,7 +218,7 @@ func (r *settingWhitelabelResource) readIntoModel(
 	mapResponseToModel(model, settings)
 }
 
-func buildUpdateRequest(plan *settingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
+func buildUpdateRequest(plan *WhitelabelSettingsModel) sdk.UpdateWhitelabelSettingsRequest {
 	settings := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
 	if !plan.Enabled.IsNull() {
 		settings.Enabled = plan.Enabled.ValueBoolPointer()
@@ -239,10 +239,10 @@ func buildUpdateRequest(plan *settingWhitelabelModel) sdk.UpdateWhitelabelSettin
 }
 
 func mapResponseToModel(
-	model *settingWhitelabelModel,
+	model *WhitelabelSettingsModel,
 	settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings,
 ) {
-	model.ID = types.StringValue("settings")
+	model.Id = types.StringValue("settings")
 	if settings.Enabled != nil {
 		model.Enabled = types.BoolValue(*settings.Enabled)
 	} else {

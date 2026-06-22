@@ -105,6 +105,7 @@ func NewAPIClient(
 ) *sdk.APIClient {
 	var options clientOpts
 
+	url = auth.NormalizeBaseURL(url)
 	morpheusCfg := sdk.NewConfiguration()
 	morpheusCfg.Servers[0].URL = url
 

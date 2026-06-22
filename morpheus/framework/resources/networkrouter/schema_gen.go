@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -23,8 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-
-	"github.com/HPE/terraform-provider-hpe/utils/validators"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -450,8 +449,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ecmp is missing from object`,
-		)
+			`ecmp is missing from object`)
 
 		return nil, diags
 	}
@@ -461,8 +459,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ecmp expected to be basetypes.BoolValue, was: %T`, ecmpAttribute),
-		)
+			fmt.Sprintf(`ecmp expected to be basetypes.BoolValue, was: %T`, ecmpAttribute))
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -470,8 +467,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return nil, diags
 	}
@@ -481,8 +477,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	failOverAttribute, ok := attributes["fail_over"]
@@ -490,8 +485,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`fail_over is missing from object`,
-		)
+			`fail_over is missing from object`)
 
 		return nil, diags
 	}
@@ -501,8 +495,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute),
-		)
+			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute))
 	}
 
 	haModeAttribute, ok := attributes["ha_mode"]
@@ -510,8 +503,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ha_mode is missing from object`,
-		)
+			`ha_mode is missing from object`)
 
 		return nil, diags
 	}
@@ -521,8 +513,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ha_mode expected to be basetypes.StringValue, was: %T`, haModeAttribute),
-		)
+			fmt.Sprintf(`ha_mode expected to be basetypes.StringValue, was: %T`, haModeAttribute))
 	}
 
 	interSrIbgpAttribute, ok := attributes["inter_sr_ibgp"]
@@ -530,8 +521,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`inter_sr_ibgp is missing from object`,
-		)
+			`inter_sr_ibgp is missing from object`)
 
 		return nil, diags
 	}
@@ -541,8 +531,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`inter_sr_ibgp expected to be basetypes.BoolValue, was: %T`, interSrIbgpAttribute),
-		)
+			fmt.Sprintf(`inter_sr_ibgp expected to be basetypes.BoolValue, was: %T`, interSrIbgpAttribute))
 	}
 
 	ipManagementTypeAttribute, ok := attributes["ip_management_type"]
@@ -550,8 +539,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_management_type is missing from object`,
-		)
+			`ip_management_type is missing from object`)
 
 		return nil, diags
 	}
@@ -561,8 +549,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute),
-		)
+			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute))
 	}
 
 	ipServerIdAttribute, ok := attributes["ip_server_id"]
@@ -570,8 +557,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_server_id is missing from object`,
-		)
+			`ip_server_id is missing from object`)
 
 		return nil, diags
 	}
@@ -581,8 +567,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute),
-		)
+			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute))
 	}
 
 	localAsNumAttribute, ok := attributes["local_as_num"]
@@ -590,8 +575,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`local_as_num is missing from object`,
-		)
+			`local_as_num is missing from object`)
 
 		return nil, diags
 	}
@@ -601,8 +585,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`local_as_num expected to be basetypes.StringValue, was: %T`, localAsNumAttribute),
-		)
+			fmt.Sprintf(`local_as_num expected to be basetypes.StringValue, was: %T`, localAsNumAttribute))
 	}
 
 	multipathRelaxAttribute, ok := attributes["multipath_relax"]
@@ -610,8 +593,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`multipath_relax is missing from object`,
-		)
+			`multipath_relax is missing from object`)
 
 		return nil, diags
 	}
@@ -621,8 +603,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`multipath_relax expected to be basetypes.BoolValue, was: %T`, multipathRelaxAttribute),
-		)
+			fmt.Sprintf(`multipath_relax expected to be basetypes.BoolValue, was: %T`, multipathRelaxAttribute))
 	}
 
 	restartModeAttribute, ok := attributes["restart_mode"]
@@ -630,8 +611,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`restart_mode is missing from object`,
-		)
+			`restart_mode is missing from object`)
 
 		return nil, diags
 	}
@@ -641,8 +621,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`restart_mode expected to be basetypes.StringValue, was: %T`, restartModeAttribute),
-		)
+			fmt.Sprintf(`restart_mode expected to be basetypes.StringValue, was: %T`, restartModeAttribute))
 	}
 
 	restartTimeAttribute, ok := attributes["restart_time"]
@@ -650,8 +629,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`restart_time is missing from object`,
-		)
+			`restart_time is missing from object`)
 
 		return nil, diags
 	}
@@ -661,8 +639,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`restart_time expected to be basetypes.Int64Value, was: %T`, restartTimeAttribute),
-		)
+			fmt.Sprintf(`restart_time expected to be basetypes.Int64Value, was: %T`, restartTimeAttribute))
 	}
 
 	staleRouteTimeAttribute, ok := attributes["stale_route_time"]
@@ -670,8 +647,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`stale_route_time is missing from object`,
-		)
+			`stale_route_time is missing from object`)
 
 		return nil, diags
 	}
@@ -681,8 +657,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`stale_route_time expected to be basetypes.Int64Value, was: %T`, staleRouteTimeAttribute),
-		)
+			fmt.Sprintf(`stale_route_time expected to be basetypes.Int64Value, was: %T`, staleRouteTimeAttribute))
 	}
 
 	tier0DnsForwarderIpAttribute, ok := attributes["tier0_dns_forwarder_ip"]
@@ -690,8 +665,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_dns_forwarder_ip is missing from object`,
-		)
+			`tier0_dns_forwarder_ip is missing from object`)
 
 		return nil, diags
 	}
@@ -701,8 +675,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier0DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier0_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier0DnsForwarderIpAttribute))
 	}
 
 	tier0ExternalInterfaceAttribute, ok := attributes["tier0_external_interface"]
@@ -710,8 +683,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_external_interface is missing from object`,
-		)
+			`tier0_external_interface is missing from object`)
 
 		return nil, diags
 	}
@@ -721,8 +693,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_external_interface expected to be basetypes.BoolValue, was: %T`, tier0ExternalInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_external_interface expected to be basetypes.BoolValue, was: %T`, tier0ExternalInterfaceAttribute))
 	}
 
 	tier0IpsecLocalIpAttribute, ok := attributes["tier0_ipsec_local_ip"]
@@ -730,8 +701,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_ipsec_local_ip is missing from object`,
-		)
+			`tier0_ipsec_local_ip is missing from object`)
 
 		return nil, diags
 	}
@@ -741,8 +711,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_ipsec_local_ip expected to be basetypes.BoolValue, was: %T`, tier0IpsecLocalIpAttribute),
-		)
+			fmt.Sprintf(`tier0_ipsec_local_ip expected to be basetypes.BoolValue, was: %T`, tier0IpsecLocalIpAttribute))
 	}
 
 	tier0LoopbackInterfaceAttribute, ok := attributes["tier0_loopback_interface"]
@@ -750,8 +719,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_loopback_interface is missing from object`,
-		)
+			`tier0_loopback_interface is missing from object`)
 
 		return nil, diags
 	}
@@ -761,8 +729,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_loopback_interface expected to be basetypes.BoolValue, was: %T`, tier0LoopbackInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_loopback_interface expected to be basetypes.BoolValue, was: %T`, tier0LoopbackInterfaceAttribute))
 	}
 
 	tier0NatAttribute, ok := attributes["tier0_nat"]
@@ -770,8 +737,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_nat is missing from object`,
-		)
+			`tier0_nat is missing from object`)
 
 		return nil, diags
 	}
@@ -781,8 +747,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_nat expected to be basetypes.BoolValue, was: %T`, tier0NatAttribute),
-		)
+			fmt.Sprintf(`tier0_nat expected to be basetypes.BoolValue, was: %T`, tier0NatAttribute))
 	}
 
 	tier0SegmentAttribute, ok := attributes["tier0_segment"]
@@ -790,8 +755,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_segment is missing from object`,
-		)
+			`tier0_segment is missing from object`)
 
 		return nil, diags
 	}
@@ -801,8 +765,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_segment expected to be basetypes.BoolValue, was: %T`, tier0SegmentAttribute),
-		)
+			fmt.Sprintf(`tier0_segment expected to be basetypes.BoolValue, was: %T`, tier0SegmentAttribute))
 	}
 
 	tier0ServiceInterfaceAttribute, ok := attributes["tier0_service_interface"]
@@ -810,8 +773,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_service_interface is missing from object`,
-		)
+			`tier0_service_interface is missing from object`)
 
 		return nil, diags
 	}
@@ -821,8 +783,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_service_interface expected to be basetypes.BoolValue, was: %T`, tier0ServiceInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_service_interface expected to be basetypes.BoolValue, was: %T`, tier0ServiceInterfaceAttribute))
 	}
 
 	tier0StaticAttribute, ok := attributes["tier0_static"]
@@ -830,8 +791,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_static is missing from object`,
-		)
+			`tier0_static is missing from object`)
 
 		return nil, diags
 	}
@@ -841,8 +801,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_static expected to be basetypes.BoolValue, was: %T`, tier0StaticAttribute),
-		)
+			fmt.Sprintf(`tier0_static expected to be basetypes.BoolValue, was: %T`, tier0StaticAttribute))
 	}
 
 	tier1DnsForwarderIpAttribute, ok := attributes["tier1_dns_forwarder_ip"]
@@ -850,8 +809,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_dns_forwarder_ip is missing from object`,
-		)
+			`tier1_dns_forwarder_ip is missing from object`)
 
 		return nil, diags
 	}
@@ -861,8 +819,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute))
 	}
 
 	tier1IpsecLocalEndpointAttribute, ok := attributes["tier1_ipsec_local_endpoint"]
@@ -870,8 +827,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_ipsec_local_endpoint is missing from object`,
-		)
+			`tier1_ipsec_local_endpoint is missing from object`)
 
 		return nil, diags
 	}
@@ -881,8 +837,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute),
-		)
+			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute))
 	}
 
 	tier1LbSnatAttribute, ok := attributes["tier1_lb_snat"]
@@ -890,8 +845,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_snat is missing from object`,
-		)
+			`tier1_lb_snat is missing from object`)
 
 		return nil, diags
 	}
@@ -901,8 +855,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute))
 	}
 
 	tier1LbVipAttribute, ok := attributes["tier1_lb_vip"]
@@ -910,8 +863,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_vip is missing from object`,
-		)
+			`tier1_lb_vip is missing from object`)
 
 		return nil, diags
 	}
@@ -921,8 +873,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute))
 	}
 
 	tier1NatAttribute, ok := attributes["tier1_nat"]
@@ -930,8 +881,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_nat is missing from object`,
-		)
+			`tier1_nat is missing from object`)
 
 		return nil, diags
 	}
@@ -941,8 +891,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute),
-		)
+			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute))
 	}
 
 	tier1SegmentAttribute, ok := attributes["tier1_segment"]
@@ -950,8 +899,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_segment is missing from object`,
-		)
+			`tier1_segment is missing from object`)
 
 		return nil, diags
 	}
@@ -961,8 +909,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_segment expected to be basetypes.BoolValue, was: %T`, tier1SegmentAttribute),
-		)
+			fmt.Sprintf(`tier1_segment expected to be basetypes.BoolValue, was: %T`, tier1SegmentAttribute))
 	}
 
 	tier1ServiceInterfaceAttribute, ok := attributes["tier1_service_interface"]
@@ -970,8 +917,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_service_interface is missing from object`,
-		)
+			`tier1_service_interface is missing from object`)
 
 		return nil, diags
 	}
@@ -981,8 +927,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_service_interface expected to be basetypes.BoolValue, was: %T`, tier1ServiceInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier1_service_interface expected to be basetypes.BoolValue, was: %T`, tier1ServiceInterfaceAttribute))
 	}
 
 	tier1StaticAttribute, ok := attributes["tier1_static"]
@@ -990,8 +935,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_static is missing from object`,
-		)
+			`tier1_static is missing from object`)
 
 		return nil, diags
 	}
@@ -1001,8 +945,7 @@ func (t ConfigNsxtGatewayTier0Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_static expected to be basetypes.BoolValue, was: %T`, tier1StaticAttribute),
-		)
+			fmt.Sprintf(`tier1_static expected to be basetypes.BoolValue, was: %T`, tier1StaticAttribute))
 	}
 
 	if diags.HasError() {
@@ -1110,8 +1053,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ecmp is missing from object`,
-		)
+			`ecmp is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1121,8 +1063,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ecmp expected to be basetypes.BoolValue, was: %T`, ecmpAttribute),
-		)
+			fmt.Sprintf(`ecmp expected to be basetypes.BoolValue, was: %T`, ecmpAttribute))
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -1130,8 +1071,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1141,8 +1081,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	failOverAttribute, ok := attributes["fail_over"]
@@ -1150,8 +1089,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`fail_over is missing from object`,
-		)
+			`fail_over is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1161,8 +1099,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute),
-		)
+			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute))
 	}
 
 	haModeAttribute, ok := attributes["ha_mode"]
@@ -1170,8 +1107,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ha_mode is missing from object`,
-		)
+			`ha_mode is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1181,8 +1117,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ha_mode expected to be basetypes.StringValue, was: %T`, haModeAttribute),
-		)
+			fmt.Sprintf(`ha_mode expected to be basetypes.StringValue, was: %T`, haModeAttribute))
 	}
 
 	interSrIbgpAttribute, ok := attributes["inter_sr_ibgp"]
@@ -1190,8 +1125,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`inter_sr_ibgp is missing from object`,
-		)
+			`inter_sr_ibgp is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1201,8 +1135,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`inter_sr_ibgp expected to be basetypes.BoolValue, was: %T`, interSrIbgpAttribute),
-		)
+			fmt.Sprintf(`inter_sr_ibgp expected to be basetypes.BoolValue, was: %T`, interSrIbgpAttribute))
 	}
 
 	ipManagementTypeAttribute, ok := attributes["ip_management_type"]
@@ -1210,8 +1143,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_management_type is missing from object`,
-		)
+			`ip_management_type is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1221,8 +1153,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute),
-		)
+			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute))
 	}
 
 	ipServerIdAttribute, ok := attributes["ip_server_id"]
@@ -1230,8 +1161,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_server_id is missing from object`,
-		)
+			`ip_server_id is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1241,8 +1171,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute),
-		)
+			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute))
 	}
 
 	localAsNumAttribute, ok := attributes["local_as_num"]
@@ -1250,8 +1179,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`local_as_num is missing from object`,
-		)
+			`local_as_num is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1261,8 +1189,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`local_as_num expected to be basetypes.StringValue, was: %T`, localAsNumAttribute),
-		)
+			fmt.Sprintf(`local_as_num expected to be basetypes.StringValue, was: %T`, localAsNumAttribute))
 	}
 
 	multipathRelaxAttribute, ok := attributes["multipath_relax"]
@@ -1270,8 +1197,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`multipath_relax is missing from object`,
-		)
+			`multipath_relax is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1281,8 +1207,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`multipath_relax expected to be basetypes.BoolValue, was: %T`, multipathRelaxAttribute),
-		)
+			fmt.Sprintf(`multipath_relax expected to be basetypes.BoolValue, was: %T`, multipathRelaxAttribute))
 	}
 
 	restartModeAttribute, ok := attributes["restart_mode"]
@@ -1290,8 +1215,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`restart_mode is missing from object`,
-		)
+			`restart_mode is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1301,8 +1225,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`restart_mode expected to be basetypes.StringValue, was: %T`, restartModeAttribute),
-		)
+			fmt.Sprintf(`restart_mode expected to be basetypes.StringValue, was: %T`, restartModeAttribute))
 	}
 
 	restartTimeAttribute, ok := attributes["restart_time"]
@@ -1310,8 +1233,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`restart_time is missing from object`,
-		)
+			`restart_time is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1321,8 +1243,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`restart_time expected to be basetypes.Int64Value, was: %T`, restartTimeAttribute),
-		)
+			fmt.Sprintf(`restart_time expected to be basetypes.Int64Value, was: %T`, restartTimeAttribute))
 	}
 
 	staleRouteTimeAttribute, ok := attributes["stale_route_time"]
@@ -1330,8 +1251,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`stale_route_time is missing from object`,
-		)
+			`stale_route_time is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1341,8 +1261,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`stale_route_time expected to be basetypes.Int64Value, was: %T`, staleRouteTimeAttribute),
-		)
+			fmt.Sprintf(`stale_route_time expected to be basetypes.Int64Value, was: %T`, staleRouteTimeAttribute))
 	}
 
 	tier0DnsForwarderIpAttribute, ok := attributes["tier0_dns_forwarder_ip"]
@@ -1350,8 +1269,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_dns_forwarder_ip is missing from object`,
-		)
+			`tier0_dns_forwarder_ip is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1361,8 +1279,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier0DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier0_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier0DnsForwarderIpAttribute))
 	}
 
 	tier0ExternalInterfaceAttribute, ok := attributes["tier0_external_interface"]
@@ -1370,8 +1287,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_external_interface is missing from object`,
-		)
+			`tier0_external_interface is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1381,8 +1297,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_external_interface expected to be basetypes.BoolValue, was: %T`, tier0ExternalInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_external_interface expected to be basetypes.BoolValue, was: %T`, tier0ExternalInterfaceAttribute))
 	}
 
 	tier0IpsecLocalIpAttribute, ok := attributes["tier0_ipsec_local_ip"]
@@ -1390,8 +1305,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_ipsec_local_ip is missing from object`,
-		)
+			`tier0_ipsec_local_ip is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1401,8 +1315,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_ipsec_local_ip expected to be basetypes.BoolValue, was: %T`, tier0IpsecLocalIpAttribute),
-		)
+			fmt.Sprintf(`tier0_ipsec_local_ip expected to be basetypes.BoolValue, was: %T`, tier0IpsecLocalIpAttribute))
 	}
 
 	tier0LoopbackInterfaceAttribute, ok := attributes["tier0_loopback_interface"]
@@ -1410,8 +1323,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_loopback_interface is missing from object`,
-		)
+			`tier0_loopback_interface is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1421,8 +1333,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_loopback_interface expected to be basetypes.BoolValue, was: %T`, tier0LoopbackInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_loopback_interface expected to be basetypes.BoolValue, was: %T`, tier0LoopbackInterfaceAttribute))
 	}
 
 	tier0NatAttribute, ok := attributes["tier0_nat"]
@@ -1430,8 +1341,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_nat is missing from object`,
-		)
+			`tier0_nat is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1441,8 +1351,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_nat expected to be basetypes.BoolValue, was: %T`, tier0NatAttribute),
-		)
+			fmt.Sprintf(`tier0_nat expected to be basetypes.BoolValue, was: %T`, tier0NatAttribute))
 	}
 
 	tier0SegmentAttribute, ok := attributes["tier0_segment"]
@@ -1450,8 +1359,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_segment is missing from object`,
-		)
+			`tier0_segment is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1461,8 +1369,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_segment expected to be basetypes.BoolValue, was: %T`, tier0SegmentAttribute),
-		)
+			fmt.Sprintf(`tier0_segment expected to be basetypes.BoolValue, was: %T`, tier0SegmentAttribute))
 	}
 
 	tier0ServiceInterfaceAttribute, ok := attributes["tier0_service_interface"]
@@ -1470,8 +1377,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_service_interface is missing from object`,
-		)
+			`tier0_service_interface is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1481,8 +1387,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_service_interface expected to be basetypes.BoolValue, was: %T`, tier0ServiceInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier0_service_interface expected to be basetypes.BoolValue, was: %T`, tier0ServiceInterfaceAttribute))
 	}
 
 	tier0StaticAttribute, ok := attributes["tier0_static"]
@@ -1490,8 +1395,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_static is missing from object`,
-		)
+			`tier0_static is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1501,8 +1405,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_static expected to be basetypes.BoolValue, was: %T`, tier0StaticAttribute),
-		)
+			fmt.Sprintf(`tier0_static expected to be basetypes.BoolValue, was: %T`, tier0StaticAttribute))
 	}
 
 	tier1DnsForwarderIpAttribute, ok := attributes["tier1_dns_forwarder_ip"]
@@ -1510,8 +1413,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_dns_forwarder_ip is missing from object`,
-		)
+			`tier1_dns_forwarder_ip is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1521,8 +1423,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute))
 	}
 
 	tier1IpsecLocalEndpointAttribute, ok := attributes["tier1_ipsec_local_endpoint"]
@@ -1530,8 +1431,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_ipsec_local_endpoint is missing from object`,
-		)
+			`tier1_ipsec_local_endpoint is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1541,8 +1441,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute),
-		)
+			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute))
 	}
 
 	tier1LbSnatAttribute, ok := attributes["tier1_lb_snat"]
@@ -1550,8 +1449,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_snat is missing from object`,
-		)
+			`tier1_lb_snat is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1561,8 +1459,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute))
 	}
 
 	tier1LbVipAttribute, ok := attributes["tier1_lb_vip"]
@@ -1570,8 +1467,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_vip is missing from object`,
-		)
+			`tier1_lb_vip is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1581,8 +1477,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute))
 	}
 
 	tier1NatAttribute, ok := attributes["tier1_nat"]
@@ -1590,8 +1485,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_nat is missing from object`,
-		)
+			`tier1_nat is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1601,8 +1495,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute),
-		)
+			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute))
 	}
 
 	tier1SegmentAttribute, ok := attributes["tier1_segment"]
@@ -1610,8 +1503,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_segment is missing from object`,
-		)
+			`tier1_segment is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1621,8 +1513,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_segment expected to be basetypes.BoolValue, was: %T`, tier1SegmentAttribute),
-		)
+			fmt.Sprintf(`tier1_segment expected to be basetypes.BoolValue, was: %T`, tier1SegmentAttribute))
 	}
 
 	tier1ServiceInterfaceAttribute, ok := attributes["tier1_service_interface"]
@@ -1630,8 +1521,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_service_interface is missing from object`,
-		)
+			`tier1_service_interface is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1641,8 +1531,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_service_interface expected to be basetypes.BoolValue, was: %T`, tier1ServiceInterfaceAttribute),
-		)
+			fmt.Sprintf(`tier1_service_interface expected to be basetypes.BoolValue, was: %T`, tier1ServiceInterfaceAttribute))
 	}
 
 	tier1StaticAttribute, ok := attributes["tier1_static"]
@@ -1650,8 +1539,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_static is missing from object`,
-		)
+			`tier1_static is missing from object`)
 
 		return NewConfigNsxtGatewayTier0ValueUnknown(), diags
 	}
@@ -1661,8 +1549,7 @@ func NewConfigNsxtGatewayTier0Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_static expected to be basetypes.BoolValue, was: %T`, tier1StaticAttribute),
-		)
+			fmt.Sprintf(`tier1_static expected to be basetypes.BoolValue, was: %T`, tier1StaticAttribute))
 	}
 
 	if diags.HasError() {
@@ -1714,8 +1601,7 @@ func NewConfigNsxtGatewayTier0ValueMust(attributeTypes map[string]attr.Type, att
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxtGatewayTier0ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -2136,8 +2022,7 @@ func (v ConfigNsxtGatewayTier0Value) ToObjectValue(ctx context.Context) (basetyp
 			"tier1_segment":              v.Tier1Segment,
 			"tier1_service_interface":    v.Tier1ServiceInterface,
 			"tier1_static":               v.Tier1Static,
-		},
-	)
+		})
 
 	return objVal, diags
 }
@@ -2351,8 +2236,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return nil, diags
 	}
@@ -2362,8 +2246,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	failOverAttribute, ok := attributes["fail_over"]
@@ -2371,8 +2254,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`fail_over is missing from object`,
-		)
+			`fail_over is missing from object`)
 
 		return nil, diags
 	}
@@ -2382,8 +2264,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute),
-		)
+			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute))
 	}
 
 	ipManagementTypeAttribute, ok := attributes["ip_management_type"]
@@ -2391,8 +2272,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_management_type is missing from object`,
-		)
+			`ip_management_type is missing from object`)
 
 		return nil, diags
 	}
@@ -2402,8 +2282,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute),
-		)
+			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute))
 	}
 
 	ipServerIdAttribute, ok := attributes["ip_server_id"]
@@ -2411,8 +2290,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_server_id is missing from object`,
-		)
+			`ip_server_id is missing from object`)
 
 		return nil, diags
 	}
@@ -2422,8 +2300,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute),
-		)
+			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute))
 	}
 
 	tier0GatewayAttribute, ok := attributes["tier0_gateway"]
@@ -2431,8 +2308,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_gateway is missing from object`,
-		)
+			`tier0_gateway is missing from object`)
 
 		return nil, diags
 	}
@@ -2442,8 +2318,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_gateway expected to be basetypes.StringValue, was: %T`, tier0GatewayAttribute),
-		)
+			fmt.Sprintf(`tier0_gateway expected to be basetypes.StringValue, was: %T`, tier0GatewayAttribute))
 	}
 
 	tier1ConnectedAttribute, ok := attributes["tier1_connected"]
@@ -2451,8 +2326,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_connected is missing from object`,
-		)
+			`tier1_connected is missing from object`)
 
 		return nil, diags
 	}
@@ -2462,8 +2336,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_connected expected to be basetypes.BoolValue, was: %T`, tier1ConnectedAttribute),
-		)
+			fmt.Sprintf(`tier1_connected expected to be basetypes.BoolValue, was: %T`, tier1ConnectedAttribute))
 	}
 
 	tier1DnsForwarderIpAttribute, ok := attributes["tier1_dns_forwarder_ip"]
@@ -2471,8 +2344,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_dns_forwarder_ip is missing from object`,
-		)
+			`tier1_dns_forwarder_ip is missing from object`)
 
 		return nil, diags
 	}
@@ -2482,8 +2354,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute))
 	}
 
 	tier1IpsecLocalEndpointAttribute, ok := attributes["tier1_ipsec_local_endpoint"]
@@ -2491,8 +2362,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_ipsec_local_endpoint is missing from object`,
-		)
+			`tier1_ipsec_local_endpoint is missing from object`)
 
 		return nil, diags
 	}
@@ -2502,8 +2372,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute),
-		)
+			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute))
 	}
 
 	tier1LbSnatAttribute, ok := attributes["tier1_lb_snat"]
@@ -2511,8 +2380,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_snat is missing from object`,
-		)
+			`tier1_lb_snat is missing from object`)
 
 		return nil, diags
 	}
@@ -2522,8 +2390,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute))
 	}
 
 	tier1LbVipAttribute, ok := attributes["tier1_lb_vip"]
@@ -2531,8 +2398,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_vip is missing from object`,
-		)
+			`tier1_lb_vip is missing from object`)
 
 		return nil, diags
 	}
@@ -2542,8 +2408,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute))
 	}
 
 	tier1NatAttribute, ok := attributes["tier1_nat"]
@@ -2551,8 +2416,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_nat is missing from object`,
-		)
+			`tier1_nat is missing from object`)
 
 		return nil, diags
 	}
@@ -2562,8 +2426,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute),
-		)
+			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute))
 	}
 
 	tier1StaticRoutesAttribute, ok := attributes["tier1_static_routes"]
@@ -2571,8 +2434,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_static_routes is missing from object`,
-		)
+			`tier1_static_routes is missing from object`)
 
 		return nil, diags
 	}
@@ -2582,8 +2444,7 @@ func (t ConfigNsxtGatewayTier1Type) ValueFromObject(ctx context.Context, in base
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_static_routes expected to be basetypes.BoolValue, was: %T`, tier1StaticRoutesAttribute),
-		)
+			fmt.Sprintf(`tier1_static_routes expected to be basetypes.BoolValue, was: %T`, tier1StaticRoutesAttribute))
 	}
 
 	if diags.HasError() {
@@ -2675,8 +2536,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2686,8 +2546,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	failOverAttribute, ok := attributes["fail_over"]
@@ -2695,8 +2554,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`fail_over is missing from object`,
-		)
+			`fail_over is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2706,8 +2564,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute),
-		)
+			fmt.Sprintf(`fail_over expected to be basetypes.StringValue, was: %T`, failOverAttribute))
 	}
 
 	ipManagementTypeAttribute, ok := attributes["ip_management_type"]
@@ -2715,8 +2572,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_management_type is missing from object`,
-		)
+			`ip_management_type is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2726,8 +2582,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute),
-		)
+			fmt.Sprintf(`ip_management_type expected to be basetypes.StringValue, was: %T`, ipManagementTypeAttribute))
 	}
 
 	ipServerIdAttribute, ok := attributes["ip_server_id"]
@@ -2735,8 +2590,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`ip_server_id is missing from object`,
-		)
+			`ip_server_id is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2746,8 +2600,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute),
-		)
+			fmt.Sprintf(`ip_server_id expected to be basetypes.StringValue, was: %T`, ipServerIdAttribute))
 	}
 
 	tier0GatewayAttribute, ok := attributes["tier0_gateway"]
@@ -2755,8 +2608,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier0_gateway is missing from object`,
-		)
+			`tier0_gateway is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2766,8 +2618,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier0_gateway expected to be basetypes.StringValue, was: %T`, tier0GatewayAttribute),
-		)
+			fmt.Sprintf(`tier0_gateway expected to be basetypes.StringValue, was: %T`, tier0GatewayAttribute))
 	}
 
 	tier1ConnectedAttribute, ok := attributes["tier1_connected"]
@@ -2775,8 +2626,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_connected is missing from object`,
-		)
+			`tier1_connected is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2786,8 +2636,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_connected expected to be basetypes.BoolValue, was: %T`, tier1ConnectedAttribute),
-		)
+			fmt.Sprintf(`tier1_connected expected to be basetypes.BoolValue, was: %T`, tier1ConnectedAttribute))
 	}
 
 	tier1DnsForwarderIpAttribute, ok := attributes["tier1_dns_forwarder_ip"]
@@ -2795,8 +2644,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_dns_forwarder_ip is missing from object`,
-		)
+			`tier1_dns_forwarder_ip is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2806,8 +2654,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute),
-		)
+			fmt.Sprintf(`tier1_dns_forwarder_ip expected to be basetypes.BoolValue, was: %T`, tier1DnsForwarderIpAttribute))
 	}
 
 	tier1IpsecLocalEndpointAttribute, ok := attributes["tier1_ipsec_local_endpoint"]
@@ -2815,8 +2662,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_ipsec_local_endpoint is missing from object`,
-		)
+			`tier1_ipsec_local_endpoint is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2826,8 +2672,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute),
-		)
+			fmt.Sprintf(`tier1_ipsec_local_endpoint expected to be basetypes.BoolValue, was: %T`, tier1IpsecLocalEndpointAttribute))
 	}
 
 	tier1LbSnatAttribute, ok := attributes["tier1_lb_snat"]
@@ -2835,8 +2680,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_snat is missing from object`,
-		)
+			`tier1_lb_snat is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2846,8 +2690,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_snat expected to be basetypes.BoolValue, was: %T`, tier1LbSnatAttribute))
 	}
 
 	tier1LbVipAttribute, ok := attributes["tier1_lb_vip"]
@@ -2855,8 +2698,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_lb_vip is missing from object`,
-		)
+			`tier1_lb_vip is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2866,8 +2708,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute),
-		)
+			fmt.Sprintf(`tier1_lb_vip expected to be basetypes.BoolValue, was: %T`, tier1LbVipAttribute))
 	}
 
 	tier1NatAttribute, ok := attributes["tier1_nat"]
@@ -2875,8 +2716,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_nat is missing from object`,
-		)
+			`tier1_nat is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2886,8 +2726,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute),
-		)
+			fmt.Sprintf(`tier1_nat expected to be basetypes.BoolValue, was: %T`, tier1NatAttribute))
 	}
 
 	tier1StaticRoutesAttribute, ok := attributes["tier1_static_routes"]
@@ -2895,8 +2734,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`tier1_static_routes is missing from object`,
-		)
+			`tier1_static_routes is missing from object`)
 
 		return NewConfigNsxtGatewayTier1ValueUnknown(), diags
 	}
@@ -2906,8 +2744,7 @@ func NewConfigNsxtGatewayTier1Value(attributeTypes map[string]attr.Type, attribu
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`tier1_static_routes expected to be basetypes.BoolValue, was: %T`, tier1StaticRoutesAttribute),
-		)
+			fmt.Sprintf(`tier1_static_routes expected to be basetypes.BoolValue, was: %T`, tier1StaticRoutesAttribute))
 	}
 
 	if diags.HasError() {
@@ -2943,8 +2780,7 @@ func NewConfigNsxtGatewayTier1ValueMust(attributeTypes map[string]attr.Type, att
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxtGatewayTier1ValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -3189,8 +3025,7 @@ func (v ConfigNsxtGatewayTier1Value) ToObjectValue(ctx context.Context) (basetyp
 			"tier1_lb_vip":               v.Tier1LbVip,
 			"tier1_nat":                  v.Tier1Nat,
 			"tier1_static_routes":        v.Tier1StaticRoutes,
-		},
-	)
+		})
 
 	return objVal, diags
 }

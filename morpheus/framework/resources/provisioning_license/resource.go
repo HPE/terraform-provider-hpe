@@ -42,7 +42,7 @@ func (r *provisioningLicenseResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = ProvisioningLicenseSchema(ctx)
+	resp.Schema = ProvisioningLicenseResourceSchema(ctx)
 }
 
 func (r *provisioningLicenseResource) Create(
@@ -57,13 +57,13 @@ func (r *provisioningLicenseResource) Create(
 		return
 	}
 
-	var plan provisioningLicenseModel
+	var plan ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var config provisioningLicenseModel
+	var config ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -145,13 +145,13 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	var state provisioningLicenseModel
+	var state ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -188,25 +188,25 @@ func (r *provisioningLicenseResource) Update(
 		return
 	}
 
-	var plan provisioningLicenseModel
+	var plan ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var config provisioningLicenseModel
+	var config ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var state provisioningLicenseModel
+	var state ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateProvisioningLicenseRequestLicense{
 		Name: plan.Name.ValueStringPointer(),
@@ -277,13 +277,13 @@ func (r *provisioningLicenseResource) Delete(
 		return
 	}
 
-	var state provisioningLicenseModel
+	var state ProvisioningLicenseModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.ProvisioningLicensesAPI.RemoveProvisioningLicense(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -307,9 +307,9 @@ func (r *provisioningLicenseResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *provisioningLicenseModel, license *sdk.GetProvisioningLicense200ResponseLicense) {
+func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProvisioningLicense200ResponseLicense) {
 	if license.Id != nil {
-		model.ID = types.Int64Value(*license.Id)
+		model.Id = types.Int64Value(*license.Id)
 	}
 	if license.Name != nil {
 		model.Name = types.StringValue(*license.Name)

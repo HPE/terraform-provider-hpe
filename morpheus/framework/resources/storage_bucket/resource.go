@@ -38,7 +38,7 @@ func (r *storageBucketResource) Metadata(
 }
 
 func (r *storageBucketResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = StorageBucketSchema(ctx)
+	resp.Schema = StorageBucketResourceSchema(ctx)
 }
 
 func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var plan storageBucketModel
+	var plan StorageBucketModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -133,13 +133,13 @@ func (r *storageBucketResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	var state storageBucketModel
+	var state StorageBucketModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.StorageAPI.GetStorageBuckets(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -172,13 +172,13 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	var plan storageBucketModel
+	var plan StorageBucketModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueStringPointer(),
@@ -243,13 +243,13 @@ func (r *storageBucketResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	var state storageBucketModel
+	var state StorageBucketModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -273,9 +273,9 @@ func (r *storageBucketResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *storageBucketModel, sb *sdk.GetStorageBuckets200ResponseStorageBucket) {
+func mapGetResponseToModel(model *StorageBucketModel, sb *sdk.GetStorageBuckets200ResponseStorageBucket) {
 	if sb.Id != nil {
-		model.ID = types.Int64Value(*sb.Id)
+		model.Id = types.Int64Value(*sb.Id)
 	}
 	if sb.Name != nil {
 		model.Name = types.StringValue(*sb.Name)

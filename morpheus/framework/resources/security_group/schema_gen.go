@@ -6,8 +6,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -16,6 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
@@ -60,15 +62,15 @@ func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
 			"resource_permission_groups_all": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
-				Default: booldefault.StaticBool(false),
 				Description:         "Whether all groups have access to the security group.",
 				MarkdownDescription: "Whether all groups have access to the security group.",
-				Validators: []validator.Bool{
-					boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids")),
-				},
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
 				},
+				Validators: []validator.Bool{
+					boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids")),
+				},
+				Default: booldefault.StaticBool(false),
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
@@ -86,7 +88,13 @@ func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The visibility of the security group.",
 				MarkdownDescription: "The visibility of the security group.",
-				Default:             stringdefault.StaticString("private"),
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"private",
+						"public",
+					),
+				},
+				Default: stringdefault.StaticString("private"),
 			},
 		},
 		Description:         "Manages a Morpheus Security Group resource.",

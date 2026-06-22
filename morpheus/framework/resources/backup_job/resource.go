@@ -34,7 +34,7 @@ func (r *backupJobResource) Metadata(_ context.Context, req resource.MetadataReq
 }
 
 func (r *backupJobResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = BackupJobSchema(ctx)
+	resp.Schema = BackupJobResourceSchema(ctx)
 }
 
 func (r *backupJobResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -45,7 +45,7 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	var plan backupJobModel
+	var plan BackupJobModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -60,8 +60,8 @@ func (r *backupJobResource) Create(ctx context.Context, req resource.CreateReque
 	if !plan.RetentionCount.IsNull() {
 		body.RetentionCount = plan.RetentionCount.ValueInt64Pointer()
 	}
-	if !plan.ScheduleID.IsNull() {
-		scheduleID := plan.ScheduleID.ValueInt64()
+	if !plan.ScheduleId.IsNull() {
+		scheduleID := plan.ScheduleId.ValueInt64()
 		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
 	}
 
@@ -113,13 +113,13 @@ func (r *backupJobResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	var state backupJobModel
+	var state BackupJobModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.BackupsAPI.GetBackupJobs(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -152,13 +152,13 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	var plan backupJobModel
+	var plan BackupJobModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateBackupJobsRequestJob{
 		Name: plan.Name.ValueStringPointer(),
@@ -169,8 +169,8 @@ func (r *backupJobResource) Update(ctx context.Context, req resource.UpdateReque
 	if !plan.RetentionCount.IsNull() {
 		body.RetentionCount = plan.RetentionCount.ValueInt64Pointer()
 	}
-	if !plan.ScheduleID.IsNull() {
-		scheduleID := plan.ScheduleID.ValueInt64()
+	if !plan.ScheduleId.IsNull() {
+		scheduleID := plan.ScheduleId.ValueInt64()
 		body.ScheduleId = *sdk.NewNullableInt64(&scheduleID)
 	}
 
@@ -209,13 +209,13 @@ func (r *backupJobResource) Delete(ctx context.Context, req resource.DeleteReque
 		return
 	}
 
-	var state backupJobModel
+	var state BackupJobModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -239,9 +239,9 @@ func (r *backupJobResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200ResponseJob) {
+func mapGetResponseToModel(model *BackupJobModel, job *sdk.GetBackupJobs200ResponseJob) {
 	if job.Id != nil {
-		model.ID = types.Int64Value(*job.Id)
+		model.Id = types.Int64Value(*job.Id)
 	}
 	if job.Name != nil {
 		model.Name = types.StringValue(*job.Name)
@@ -262,8 +262,8 @@ func mapGetResponseToModel(model *backupJobModel, job *sdk.GetBackupJobs200Respo
 	}
 
 	if job.Schedule != nil && job.Schedule.Id != nil {
-		model.ScheduleID = types.Int64Value(*job.Schedule.Id)
+		model.ScheduleId = types.Int64Value(*job.Schedule.Id)
 	} else {
-		model.ScheduleID = types.Int64Null()
+		model.ScheduleId = types.Int64Null()
 	}
 }

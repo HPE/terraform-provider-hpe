@@ -4,6 +4,7 @@ package storage_bucket
 
 import (
 	"context"
+
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
@@ -15,7 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-func StorageBucketSchema(ctx context.Context) schema.Schema {
+func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"access_key": schema.StringAttribute{
@@ -105,16 +106,16 @@ func StorageBucketSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-type storageBucketModel struct {
-	ID                  types.Int64  `tfsdk:"id"`
-	Name                types.String `tfsdk:"name"`
-	ProviderType        types.String `tfsdk:"provider_type"`
-	BucketName          types.String `tfsdk:"bucket_name"`
+type StorageBucketModel struct {
 	AccessKey           types.String `tfsdk:"access_key"`
 	AccessKeyVersion    types.Int64  `tfsdk:"access_key_version"`
+	BucketName          types.String `tfsdk:"bucket_name"`
+	DefaultBackupTarget types.Bool   `tfsdk:"default_backup_target"`
+	Endpoint            types.String `tfsdk:"endpoint"`
+	Id                  types.Int64  `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	ProviderType        types.String `tfsdk:"provider_type"`
+	RetentionDays       types.Int64  `tfsdk:"retention_days"`
 	SecretKey           types.String `tfsdk:"secret_key"`
 	SecretKeyVersion    types.Int64  `tfsdk:"secret_key_version"`
-	Endpoint            types.String `tfsdk:"endpoint"`
-	DefaultBackupTarget types.Bool   `tfsdk:"default_backup_target"`
-	RetentionDays       types.Int64  `tfsdk:"retention_days"`
 }

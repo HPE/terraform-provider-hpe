@@ -22,6 +22,8 @@ func ResourceOptionTypeHidden() *schema.Resource {
 		UpdateContext: resourceOptionTypeHiddenUpdate,
 		DeleteContext: resourceOptionTypeHiddenDelete,
 
+		CustomizeDiff: validateDependentFieldNotSelf,
+
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:        schema.TypeString,

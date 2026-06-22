@@ -146,8 +146,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`active_edge_node is missing from object`,
-		)
+			`active_edge_node is missing from object`)
 
 		return nil, diags
 	}
@@ -157,8 +156,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute),
-		)
+			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute))
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -166,8 +164,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return nil, diags
 	}
@@ -177,8 +174,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	standbyEdgeNodeAttribute, ok := attributes["standby_edge_node"]
@@ -186,8 +182,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`standby_edge_node is missing from object`,
-		)
+			`standby_edge_node is missing from object`)
 
 		return nil, diags
 	}
@@ -197,8 +192,7 @@ func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.Object
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute),
-		)
+			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute))
 	}
 
 	if diags.HasError() {
@@ -281,8 +275,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`active_edge_node is missing from object`,
-		)
+			`active_edge_node is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -292,8 +285,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute),
-		)
+			fmt.Sprintf(`active_edge_node expected to be basetypes.StringValue, was: %T`, activeEdgeNodeAttribute))
 	}
 
 	edgeClusterAttribute, ok := attributes["edge_cluster"]
@@ -301,8 +293,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`edge_cluster is missing from object`,
-		)
+			`edge_cluster is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -312,8 +303,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute),
-		)
+			fmt.Sprintf(`edge_cluster expected to be basetypes.StringValue, was: %T`, edgeClusterAttribute))
 	}
 
 	standbyEdgeNodeAttribute, ok := attributes["standby_edge_node"]
@@ -321,8 +311,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`standby_edge_node is missing from object`,
-		)
+			`standby_edge_node is missing from object`)
 
 		return NewConfigNsxtValueUnknown(), diags
 	}
@@ -332,8 +321,7 @@ func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[stri
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute),
-		)
+			fmt.Sprintf(`standby_edge_node expected to be basetypes.StringValue, was: %T`, standbyEdgeNodeAttribute))
 	}
 
 	if diags.HasError() {
@@ -360,8 +348,7 @@ func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[
 				"%s | %s | %s",
 				diagnostic.Severity(),
 				diagnostic.Summary(),
-				diagnostic.Detail(),
-			))
+				diagnostic.Detail()))
 		}
 
 		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
@@ -507,8 +494,7 @@ func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 			"active_edge_node":  v.ActiveEdgeNode,
 			"edge_cluster":      v.EdgeCluster,
 			"standby_edge_node": v.StandbyEdgeNode,
-		},
-	)
+		})
 
 	return objVal, diags
 }

@@ -35,7 +35,7 @@ func (r *vdiPoolResource) Metadata(_ context.Context, req resource.MetadataReque
 }
 
 func (r *vdiPoolResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = VdiPoolSchema(ctx)
+	resp.Schema = VdiPoolResourceSchema(ctx)
 }
 
 func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -46,7 +46,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	var plan vdiPoolModel
+	var plan VdiPoolModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -165,13 +165,13 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 }
 
 func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state vdiPoolModel
+	var state VdiPoolModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	model, diags := r.getVdiPoolAsState(ctx, state.ID.ValueInt64())
+	model, diags := r.getVdiPoolAsState(ctx, state.Id.ValueInt64())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -193,13 +193,13 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	var plan vdiPoolModel
+	var plan VdiPoolModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateVDIPoolsRequestVdiPool{}
 	if !plan.Name.IsNull() {
@@ -279,13 +279,13 @@ func (r *vdiPoolResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	var state vdiPoolModel
+	var state VdiPoolModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.VDIAPI.RemoveVDIPools(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -312,7 +312,7 @@ func (r *vdiPoolResource) ImportState(
 func (r *vdiPoolResource) getVdiPoolAsState(
 	ctx context.Context,
 	id int64,
-) (*vdiPoolModel, diag.Diagnostics) {
+) (*VdiPoolModel, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	client, err := r.NewClient(ctx)
@@ -338,15 +338,15 @@ func (r *vdiPoolResource) getVdiPoolAsState(
 
 		return nil, diags
 	}
-	var model vdiPoolModel
+	var model VdiPoolModel
 	mapGetResponseToModel(&model, pool)
 
 	return &model, diags
 }
 
-func mapGetResponseToModel(model *vdiPoolModel, pool *sdk.GetVDIPools200ResponseVdiPool) {
+func mapGetResponseToModel(model *VdiPoolModel, pool *sdk.GetVDIPools200ResponseVdiPool) {
 	if pool.Id != nil {
-		model.ID = types.Int64Value(*pool.Id)
+		model.Id = types.Int64Value(*pool.Id)
 	}
 	if pool.Name != nil {
 		model.Name = types.StringValue(*pool.Name)

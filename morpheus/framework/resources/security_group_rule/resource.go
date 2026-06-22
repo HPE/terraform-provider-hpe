@@ -43,7 +43,7 @@ func (r *securityGroupRuleResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = SecurityGroupRuleSchema(ctx)
+	resp.Schema = SecurityGroupRuleResourceSchema(ctx)
 }
 
 func (r *securityGroupRuleResource) Create(
@@ -58,13 +58,13 @@ func (r *securityGroupRuleResource) Create(
 		return
 	}
 
-	var plan securityGroupRuleModel
+	var plan SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sgID := plan.SecurityGroupID.ValueInt64()
+	sgID := plan.SecurityGroupId.ValueInt64()
 
 	body := sdk.AddSecurityGroupRulesRequestRule{
 		Protocol: plan.Protocol.ValueString(),
@@ -133,7 +133,7 @@ func (r *securityGroupRuleResource) Create(
 		return
 	}
 	mapResponseToModel(&plan, readResult.Rule)
-	plan.SecurityGroupID = types.Int64Value(sgID)
+	plan.SecurityGroupId = types.Int64Value(sgID)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -146,14 +146,14 @@ func (r *securityGroupRuleResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	var state securityGroupRuleModel
+	var state SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sgID := state.SecurityGroupID.ValueInt64()
-	ruleID := float32(state.ID.ValueInt64())
+	sgID := state.SecurityGroupId.ValueInt64()
+	ruleID := float32(state.Id.ValueInt64())
 
 	result, httpResp, err := client.SecurityGroupsAPI.GetSecurityGroupRules(ctx, sgID, ruleID).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -190,14 +190,14 @@ func (r *securityGroupRuleResource) Update(
 		return
 	}
 
-	var plan securityGroupRuleModel
+	var plan SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sgID := plan.SecurityGroupID.ValueInt64()
-	ruleID := float32(plan.ID.ValueInt64())
+	sgID := plan.SecurityGroupId.ValueInt64()
+	ruleID := float32(plan.Id.ValueInt64())
 
 	body := sdk.UpdateSecurityGroupRulesRequestRule{
 		Protocol: plan.Protocol.ValueString(),
@@ -267,14 +267,14 @@ func (r *securityGroupRuleResource) Delete(
 		return
 	}
 
-	var state securityGroupRuleModel
+	var state SecurityGroupRuleModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	sgID := state.SecurityGroupID.ValueInt64()
-	ruleID := float32(state.ID.ValueInt64())
+	sgID := state.SecurityGroupId.ValueInt64()
+	ruleID := float32(state.Id.ValueInt64())
 
 	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -315,9 +315,9 @@ func (r *securityGroupRuleResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), ruleID)...)
 }
 
-func mapResponseToModel(model *securityGroupRuleModel, rule *sdk.GetSecurityGroupRules200ResponseRule) {
+func mapResponseToModel(model *SecurityGroupRuleModel, rule *sdk.GetSecurityGroupRules200ResponseRule) {
 	if rule.Id != nil {
-		model.ID = types.Int64Value(*rule.Id)
+		model.Id = types.Int64Value(*rule.Id)
 	}
 	if rule.Name.IsSet() && rule.Name.Get() != nil {
 		model.Name = types.StringValue(*rule.Name.Get())

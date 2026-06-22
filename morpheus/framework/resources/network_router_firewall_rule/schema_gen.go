@@ -5,17 +5,31 @@ package network_router_firewall_rule
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
 func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"direction": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Direction (ingress or egress)",
+				MarkdownDescription: "Direction (ingress or egress)",
+			},
+			"enabled": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Whether the firewall rule is enabled",
+				MarkdownDescription: "Whether the firewall rule is enabled",
+				Default:             booldefault.StaticBool(true),
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the firewall rule",
@@ -23,6 +37,36 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
+			},
+			"name": schema.StringAttribute{
+				Required:            true,
+				Description:         "Name of the firewall rule",
+				MarkdownDescription: "Name of the firewall rule",
+			},
+			"policy": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Policy action (accept, deny, reject)",
+				MarkdownDescription: "Policy action (accept, deny, reject)",
+				Default:             stringdefault.StaticString("accept"),
+			},
+			"port_range": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Port range",
+				MarkdownDescription: "Port range",
+			},
+			"priority": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Priority of the firewall rule",
+				MarkdownDescription: "Priority of the firewall rule",
+			},
+			"protocol": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Protocol",
+				MarkdownDescription: "Protocol",
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
@@ -32,61 +76,18 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 					int64planmodifier.RequiresReplace(),
 				},
 			},
-			"name": schema.StringAttribute{
-				Required:            true,
-				Description:         "Name of the firewall rule",
-				MarkdownDescription: "Name of the firewall rule",
-			},
-			"enabled": schema.BoolAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Whether the firewall rule is enabled",
-				MarkdownDescription: "Whether the firewall rule is enabled",
-				Default:             booldefault.StaticBool(true),
-			},
-			"priority": schema.Int64Attribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Priority of the firewall rule",
-				MarkdownDescription: "Priority of the firewall rule",
-			},
-			"direction": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Direction (ingress or egress)",
-				MarkdownDescription: "Direction (ingress or egress)",
-			},
-			"policy": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Policy action (accept, deny, reject)",
-				MarkdownDescription: "Policy action (accept, deny, reject)",
-				Default:             stringdefault.StaticString("accept"),
-			},
-			"protocol": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Protocol",
-				MarkdownDescription: "Protocol",
-			},
-			"port_range": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Port range",
-				MarkdownDescription: "Port range",
-			},
 		},
 	}
 }
 
 type NetworkRouterFirewallRuleModel struct {
-	Id        types.Int64  `tfsdk:"id"`
-	RouterId  types.Int64  `tfsdk:"router_id"`
-	Name      types.String `tfsdk:"name"`
-	Enabled   types.Bool   `tfsdk:"enabled"`
-	Priority  types.Int64  `tfsdk:"priority"`
 	Direction types.String `tfsdk:"direction"`
+	Enabled   types.Bool   `tfsdk:"enabled"`
+	Id        types.Int64  `tfsdk:"id"`
+	Name      types.String `tfsdk:"name"`
 	Policy    types.String `tfsdk:"policy"`
-	Protocol  types.String `tfsdk:"protocol"`
 	PortRange types.String `tfsdk:"port_range"`
+	Priority  types.Int64  `tfsdk:"priority"`
+	Protocol  types.String `tfsdk:"protocol"`
+	RouterId  types.Int64  `tfsdk:"router_id"`
 }

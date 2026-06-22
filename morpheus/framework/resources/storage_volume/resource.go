@@ -38,7 +38,7 @@ func (r *storageVolumeResource) Metadata(
 }
 
 func (r *storageVolumeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = StorageVolumeSchema(ctx)
+	resp.Schema = StorageVolumeResourceSchema(ctx)
 }
 
 func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -49,7 +49,7 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	var plan storageVolumeModel
+	var plan StorageVolumeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -61,9 +61,9 @@ func (r *storageVolumeResource) Create(ctx context.Context, req resource.CreateR
 		Name: plan.Name.ValueString(),
 		Type: volumeType,
 	}
-	if !plan.StorageServerID.IsNull() {
+	if !plan.StorageServerId.IsNull() {
 		body.StorageServer = sdk.AddStorageVolumesRequestStorageVolumeStorageServer{
-			Id: plan.StorageServerID.ValueInt64(),
+			Id: plan.StorageServerId.ValueInt64(),
 		}
 	}
 	if !plan.MaxStorage.IsNull() {
@@ -123,13 +123,13 @@ func (r *storageVolumeResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	var state storageVolumeModel
+	var state StorageVolumeModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 	idParam := sdk.GetStorageVolumesIdParameter{Int64: &id}
 
 	result, httpResp, err := client.StorageAPI.GetStorageVolumes(ctx, idParam).Execute()
@@ -163,13 +163,13 @@ func (r *storageVolumeResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	var plan storageVolumeModel
+	var plan StorageVolumeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
 	body := sdk.UpdateStorageVolumesRequestStorageVolume{
@@ -219,13 +219,13 @@ func (r *storageVolumeResource) Delete(ctx context.Context, req resource.DeleteR
 		return
 	}
 
-	var state storageVolumeModel
+	var state StorageVolumeModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
 	_, httpResp, err := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
@@ -250,9 +250,9 @@ func (r *storageVolumeResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes200ResponseStorageVolume) {
+func mapGetResponseToModel(model *StorageVolumeModel, sv *sdk.GetStorageVolumes200ResponseStorageVolume) {
 	if sv.Id != nil {
-		model.ID = types.Int64Value(*sv.Id)
+		model.Id = types.Int64Value(*sv.Id)
 	}
 	if sv.Name != nil {
 		model.Name = types.StringValue(*sv.Name)
@@ -262,7 +262,7 @@ func mapGetResponseToModel(model *storageVolumeModel, sv *sdk.GetStorageVolumes2
 	}
 	if storageServer := sv.StorageServer; storageServer != nil {
 		if id, ok := storageServer["id"].(float64); ok {
-			model.StorageServerID = types.Int64Value(int64(id))
+			model.StorageServerId = types.Int64Value(int64(id))
 		}
 	}
 	if sv.MaxStorage != nil {

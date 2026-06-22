@@ -86,7 +86,7 @@ func updateVolumeMapper(
 
 	if !vol.DatastoreId.IsNull() && !vol.DatastoreId.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			ResizeInstanceRequestVolumesInnerDatastoreId{}
+			CloneInstanceRequestVolumesInnerDatastoreId{}
 
 		id := strconv.Itoa(int(vol.DatastoreId.ValueInt64()))
 		volume.DatastoreId.String = &id
@@ -94,7 +94,7 @@ func updateVolumeMapper(
 
 	if !vol.DatastoreAutoSelection.IsNull() && !vol.DatastoreAutoSelection.IsUnknown() {
 		volume.DatastoreId = &sdk.
-			ResizeInstanceRequestVolumesInnerDatastoreId{}
+			CloneInstanceRequestVolumesInnerDatastoreId{}
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
 	}
 
@@ -150,8 +150,8 @@ func createNetworkInterfaceMapper(
 // Map Terraform network interface value into an API request struct
 func updateNetworkInterfaceMapper(
 	ctx context.Context,
-) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
-	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces3 {
+) func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces4 {
+	return func(in NetworkInterfacesValue) sdk.InstancesNetworkInterfaces4 {
 		var id string
 		if !in.NetworkGroupId.IsNull() && !in.NetworkGroupId.IsUnknown() {
 			id = "networkGroup-" + strconv.FormatInt(in.NetworkGroupId.ValueInt64(), 10)
@@ -184,7 +184,7 @@ func updateNetworkInterfaceMapper(
 			tflog.Error(ctx, "cannot convert child virtual network interfaces")
 		}
 
-		return sdk.InstancesNetworkInterfaces3{
+		return sdk.InstancesNetworkInterfaces4{
 			Network: sdk.
 				InstancesNetworkInterfaces3Network{
 				Id:   id,

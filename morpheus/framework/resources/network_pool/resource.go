@@ -39,7 +39,7 @@ func (r *networkPoolResource) Metadata(
 }
 
 func (r *networkPoolResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resp.Schema = NetworkPoolSchema(ctx)
+	resp.Schema = NetworkPoolResourceSchema(ctx)
 }
 
 func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -50,7 +50,7 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	var plan networkPoolModel
+	var plan NetworkPoolModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -69,8 +69,8 @@ func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateReq
 	if !plan.PoolEnabled.IsNull() && !plan.PoolEnabled.IsUnknown() {
 		additionalProps["poolEnabled"] = plan.PoolEnabled.ValueBool()
 	}
-	if !plan.DNSDomain.IsNull() && !plan.DNSDomain.IsUnknown() {
-		additionalProps["dnsDomain"] = plan.DNSDomain.ValueString()
+	if !plan.DnsDomain.IsNull() && !plan.DnsDomain.IsUnknown() {
+		additionalProps["dnsDomain"] = plan.DnsDomain.ValueString()
 	}
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
 		additionalProps["dhcpServer"] = plan.DhcpServer.ValueBool()
@@ -145,13 +145,13 @@ func (r *networkPoolResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	var state networkPoolModel
+	var state NetworkPoolModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.NetworksAPI.GetNetworkPool(ctx, id).Execute()
 	if errfmt.IsNotFound(httpResp) {
@@ -184,13 +184,13 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	var plan networkPoolModel
+	var plan NetworkPoolModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := plan.ID.ValueInt64()
+	id := plan.Id.ValueInt64()
 
 	poolReq := sdk.UpdateNetworkPoolRequestNetworkPool{
 		Name: plan.Name.ValueStringPointer(),
@@ -200,8 +200,8 @@ func (r *networkPoolResource) Update(ctx context.Context, req resource.UpdateReq
 	if !plan.PoolEnabled.IsNull() && !plan.PoolEnabled.IsUnknown() {
 		additionalProps["poolEnabled"] = plan.PoolEnabled.ValueBool()
 	}
-	if !plan.DNSDomain.IsNull() && !plan.DNSDomain.IsUnknown() {
-		additionalProps["dnsDomain"] = plan.DNSDomain.ValueString()
+	if !plan.DnsDomain.IsNull() && !plan.DnsDomain.IsUnknown() {
+		additionalProps["dnsDomain"] = plan.DnsDomain.ValueString()
 	}
 	if !plan.DhcpServer.IsNull() && !plan.DhcpServer.IsUnknown() {
 		additionalProps["dhcpServer"] = plan.DhcpServer.ValueBool()
@@ -264,13 +264,13 @@ func (r *networkPoolResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	var state networkPoolModel
+	var state NetworkPoolModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.ID.ValueInt64()
+	id := state.Id.ValueInt64()
 
 	_, httpResp, err := client.NetworksAPI.DeleteNetworkPool(ctx, id).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
@@ -294,9 +294,9 @@ func (r *networkPoolResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) {
+func mapReadResponseToModel(model *NetworkPoolModel, pool *sdk.GetNetworkPool200ResponseNetworkPool) {
 	if pool.Id != nil {
-		model.ID = types.Int64Value(*pool.Id)
+		model.Id = types.Int64Value(*pool.Id)
 	}
 	if pool.Name != nil {
 		model.Name = types.StringValue(*pool.Name)
@@ -314,9 +314,9 @@ func mapReadResponseToModel(model *networkPoolModel, pool *sdk.GetNetworkPool200
 		model.PoolEnabled = types.BoolValue(*pool.PoolEnabled)
 	}
 	if pool.DnsDomain.IsSet() && pool.DnsDomain.Get() != nil {
-		model.DNSDomain = types.StringValue(*pool.DnsDomain.Get())
+		model.DnsDomain = types.StringValue(*pool.DnsDomain.Get())
 	} else {
-		model.DNSDomain = types.StringNull()
+		model.DnsDomain = types.StringNull()
 	}
 	if pool.DhcpServer != nil {
 		model.DhcpServer = types.BoolValue(*pool.DhcpServer)
