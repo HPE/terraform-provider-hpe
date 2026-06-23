@@ -469,7 +469,12 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(ctx context.Context, model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace, diags *diag.Diagnostics) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *ClusterNamespaceModel,
+	ns *sdk.GetClusterNamespace200ResponseNamespace,
+	diags *diag.Diagnostics,
+) {
 	if ns.Id != nil {
 		model.Id = types.Int64Value(*ns.Id)
 	}
@@ -558,10 +563,10 @@ func mapGetResponseToModel(ctx context.Context, model *ClusterNamespaceModel, ns
 		}
 
 		permVal, d := NewResourcePermissionsValue(ResourcePermissionsValue{}.AttributeTypes(ctx), map[string]attr.Value{
-			"all":      allVal,
+			"all":       allVal,
 			"all_plans": allPlansVal,
-			"site_ids": siteIDSet,
-			"plan_ids": planIDSet,
+			"site_ids":  siteIDSet,
+			"plan_ids":  planIDSet,
 		})
 		diags.Append(d...)
 		model.ResourcePermissions = permVal
