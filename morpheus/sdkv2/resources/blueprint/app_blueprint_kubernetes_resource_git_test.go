@@ -60,7 +60,7 @@ func TestAccMorpheusAppBlueprintKubernetesGitExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_app_blueprint_kubernetes.example",
 			"name",
-			"tf-kubernetes-app-blueprint-example-git",
+			name,
 		),
 
 		resource.TestCheckResourceAttr(
