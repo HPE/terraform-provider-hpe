@@ -710,8 +710,13 @@ resource "hpe_morpheus_load_balancer_profile" "smoke" {
 						// config defaults that the applied state does not carry where
 						// the user omitted them, so the imported and applied states
 						// legitimately differ on those fields.
-						ImportStateVerifyIgnore: []string{"config_fast_tcp", "config_fast_udp", "config_generic_persistence", "config_server_ssl"},
-						ResourceName:            resourceName,
+						ImportStateVerifyIgnore: []string{
+							"config_fast_tcp",
+							"config_fast_udp",
+							"config_generic_persistence",
+							"config_server_ssl",
+						},
+						ResourceName: resourceName,
 						ImportStateIdFunc: func(s *terraform.State) (string, error) {
 							rs, ok := s.RootModule().Resources[resourceName]
 							if !ok {

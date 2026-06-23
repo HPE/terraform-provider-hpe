@@ -596,7 +596,11 @@ func populateTagsFromHTTP(ctx context.Context, state *LoadBalancerProfileModel, 
 	}
 }
 
-func populateTagsFromFastTCP(ctx context.Context, state *LoadBalancerProfileModel, tags []sdk.LoadBalancerProfileTag25) {
+func populateTagsFromFastTCP(
+	ctx context.Context,
+	state *LoadBalancerProfileModel,
+	tags []sdk.LoadBalancerProfileTag25,
+) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag25) TagsValue {
 		return TagsValue{
 			Name:  convert.StrToType(t.Name),
@@ -609,7 +613,11 @@ func populateTagsFromFastTCP(ctx context.Context, state *LoadBalancerProfileMode
 	}
 }
 
-func populateTagsFromFastUDP(ctx context.Context, state *LoadBalancerProfileModel, tags []sdk.LoadBalancerProfileTag26) {
+func populateTagsFromFastUDP(
+	ctx context.Context,
+	state *LoadBalancerProfileModel,
+	tags []sdk.LoadBalancerProfileTag26,
+) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag26) TagsValue {
 		return TagsValue{
 			Name:  convert.StrToType(t.Name),
