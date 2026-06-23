@@ -107,9 +107,11 @@ resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_git" {
 
 ### Optional
 
+- `all_group_access` (Boolean) Grant access to all groups (resource permission sites). Defaults to false.
 - `blueprint_content` (String) The content of the terraform app blueprint. Used when the hcl or json source types are specified
 - `category` (String) The category of the terraform app blueprint
 - `description` (String) The description of the terraform app blueprint
+- `group_access_ids` (Set of Number) List of group IDs granted access to this blueprint.
 - `integration_id` (Number) The ID of the git integration
 - `repository_id` (Number) The ID of the git repository
 - `spec_template_ids` (List of Number) A list of terraform spec template ids associated with the app blueprint
@@ -117,6 +119,7 @@ resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_git" {
 - `terraform_version` (String) The terraform version associated with the app blueprint
 - `tfvar_secret` (String) The name of the tfvar cypher secret to associate with the app blueprint
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) Visibility of the blueprint: `private` or `public`. Master-account only.
 - `working_path` (String) The path of the terraform code in the git repository
 
 ### Read-Only

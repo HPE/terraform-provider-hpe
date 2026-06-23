@@ -35,9 +35,12 @@ resource "hpe_morpheus_app_blueprint_helm" "example" {
 
 ### Optional
 
+- `all_group_access` (Boolean) Grant access to all groups. Defaults to false.
 - `category` (String) The category of the helm app blueprint
 - `description` (String) The description of the helm app blueprint
+- `group_access_ids` (Set of Number) List of group IDs granted access to this blueprint.
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) Visibility of the blueprint: `private` or `public`. Master-account only.
 - `working_path` (String) The path of the helm chart in the git repository
 
 ### Read-Only

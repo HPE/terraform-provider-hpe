@@ -138,6 +138,7 @@ resource "hpe_morpheus_app_blueprint_cloud_formation" "example" {
 
 ### Optional
 
+- `all_group_access` (Boolean) Grant access to all groups. Defaults to false.
 - `blueprint_content` (String) The content of the cloud formation app blueprint. Used when the yaml or json source types are specified
 - `capability_auto_expand` (Boolean) Whether the auto expand capability is added to the cloud formation
 - `capability_iam` (Boolean) Whether the iam capability is added to the cloud formation
@@ -145,10 +146,12 @@ resource "hpe_morpheus_app_blueprint_cloud_formation" "example" {
 - `category` (String) The category of the cloud formation app blueprint
 - `cloud_init_enabled` (Boolean) Whether cloud init is enabled
 - `description` (String) The description of the cloud formation app blueprint
+- `group_access_ids` (Set of Number) List of group IDs granted access to this blueprint.
 - `install_agent` (Boolean) Whether to install the Morpheus agent
 - `integration_id` (Number) The ID of the git integration
 - `repository_id` (Number) The ID of the git repository
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) Visibility of the blueprint: `private` or `public`. Master-account only.
 - `working_path` (String) The path of the cloud formation chart in the git repository
 
 ### Read-Only

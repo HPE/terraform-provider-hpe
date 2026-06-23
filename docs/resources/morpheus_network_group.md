@@ -30,6 +30,9 @@ resource "hpe_morpheus_network_group" "example" {
 
 - `active` (Boolean) Whether the network group is active.
 - `description` (String) The description of the network group.
+- `resource_permission_group_ids` (Set of Number) List of group (site) IDs that are allowed access.
+- `resource_permission_groups_all` (Boolean) Allow access to all groups (sites).
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access. Master-account only.
 - `visibility` (String) The visibility of the network group.
 
 ### Read-Only

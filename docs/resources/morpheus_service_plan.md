@@ -57,9 +57,11 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 - `max_cpu` (Number) Max CPU's
 - `max_disks` (Number) Max disks allowed
 - `memory_size_type` (String) Specifies range min / max memory multiplier
+- `permissions` (Attributes) Resource and tenant permissions for the service plan. (see [below for nested schema](#nestedatt--permissions))
 - `price_set_ids` (Set of Number)
 - `sort_order` (Number) Sort order
 - `storage_size_type` (String) Specifies range min / max storage multiplier
+- `visibility` (String) Visibility of the service plan: `private` or `public`. Master-account only.
 
 <a id="nestedatt--config_ranges"></a>
 ### Nested Schema for `config_ranges`
@@ -78,6 +80,16 @@ Optional:
 - `min_per_disk_size` (Number) Custom min per disk size in GB
 - `min_sockets` (Number) Custom min sockets
 - `min_storage` (Number) Custom min storage in GB
+
+
+<a id="nestedatt--permissions"></a>
+### Nested Schema for `permissions`
+
+Optional:
+
+- `all_sites` (Boolean) Pass true to allow access to all groups (sites)
+- `site_ids` (Set of Number) Array of group (site) IDs that are allowed access
+- `tenant_account_ids` (Set of Number) Array of tenant account IDs with permission to view this service plan when visibility is private
 
 
 

@@ -133,15 +133,18 @@ resource "hpe_morpheus_app_blueprint_arm" "example" {
 
 ### Optional
 
+- `all_group_access` (Boolean) Grant access to all groups. Defaults to false.
 - `blueprint_content` (String) The content of the arm app blueprint. Used when the json source type is specified
 - `category` (String) The category of the arm app blueprint
 - `cloud_init_enabled` (Boolean) Whether cloud init is enabled
 - `description` (String) The description of the arm app blueprint
+- `group_access_ids` (Set of Number) List of group IDs granted access to this blueprint.
 - `install_agent` (Boolean) Whether to install the Morpheus agent
 - `integration_id` (Number) The ID of the git integration
 - `os_type` (String) The workload operating system type (linux, windows)
 - `repository_id` (Number) The ID of the git repository
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) Visibility of the blueprint: `private` or `public`. Master-account only.
 - `working_path` (String) The path of the arm app blueprint in the git repository
 
 ### Read-Only

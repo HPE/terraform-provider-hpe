@@ -82,13 +82,16 @@ resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_bluep
 
 ### Optional
 
+- `all_group_access` (Boolean) Grant access to all groups. Defaults to false.
 - `blueprint_content` (String) The content of the kubernetes app blueprint. Used when the yaml source type is specified
 - `category` (String) The category of the kubernetes app blueprint
 - `description` (String) The description of the kubernetes app blueprint
+- `group_access_ids` (Set of Number) List of group IDs granted access to this blueprint.
 - `integration_id` (Number) The ID of the git integration
 - `repository_id` (Number) The ID of the git repository
 - `spec_template_ids` (List of Number) A list of kubernetes spec template ids associated with the app blueprint
 - `version_ref` (String) The git reference of the repository to pull (main, master, etc.)
+- `visibility` (String) Visibility of the blueprint: `private` or `public`. Master-account only.
 - `working_path` (String) The path of the kubernetes app blueprint in the git repository
 
 ### Read-Only

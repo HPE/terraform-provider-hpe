@@ -330,6 +330,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
 - `no_proxy` (String) Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.
 - `pool_id` (Number) Network Pool ID
 - `pool_ipv6_id` (Number) IPv6 Network Pool ID
+- `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--resource_permissions))
 - `search_domains` (String) Search Domains
 - `switch_id` (String) Network switch identifier
 - `tenant_ids` (Set of Number) List of tenant account ids that are allowed access
@@ -340,12 +341,11 @@ resource "hpe_morpheus_network" "ovs_port_group" {
 ### Read-Only
 
 - `id` (Number) Network id
-- `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--resource_permissions))
 
 <a id="nestedatt--resource_permissions"></a>
 ### Nested Schema for `resource_permissions`
 
-Read-Only:
+Optional:
 
 - `all` (Boolean) Pass true to allow access all groups
 - `group_ids` (Set of Number) Array of group (site) IDs that are allowed access
