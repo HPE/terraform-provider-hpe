@@ -36,13 +36,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusFindServicePlanById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -91,13 +90,12 @@ resource "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusFindServicePlanByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -156,13 +154,12 @@ resource "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -202,12 +199,11 @@ func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 // The cloud test in comparison just exits with `exit status 1`
 // Is it possibly to do with the additional validators on this data source?
 func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -239,13 +235,12 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -283,13 +278,12 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -325,13 +319,12 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 }
 
 func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -370,12 +363,11 @@ func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 
 // test to verify that all of the attributes from a created service plan can be read
 func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {

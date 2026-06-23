@@ -37,13 +37,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestNetworkDataSourceExample(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.Network) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

@@ -39,12 +39,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 // Test validation: associated_resource_id required when not Global
 func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -80,12 +79,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: invalid policy type code
 func TestAccMorpheusPolicyResourceValidationInvalidPolicyType(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -122,12 +120,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: invalid associated_resource_type
 func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -164,12 +161,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: incompatible policy type and resource type (motd does not support User)
 func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -225,12 +221,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: tenants not supported for policy type
 func TestAccMorpheusPolicyResourceValidationTenantsNotSupported(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -290,12 +285,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_approval flow_id and workflow_id conflict
 func TestAccMorpheusPolicyResourceValidationApprovalWorkflowConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -335,12 +329,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_approval flow_id required when workflow_type is flow
 func TestAccMorpheusPolicyResourceValidationApprovalFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -378,12 +371,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_approval workflow_id required when workflow_type is workflow
 func TestAccMorpheusPolicyResourceValidationApprovalWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -421,12 +413,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_lifecycle flow_id required when workflow_type is flow
 func TestAccMorpheusPolicyResourceValidationLifecycleFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -464,12 +455,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_lifecycle lifecycle_workflow_id required when workflow_type is workflow
 func TestAccMorpheusPolicyResourceValidationLifecycleWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -507,12 +497,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_shutdown flow_id required when workflow_type is flow
 func TestAccMorpheusPolicyResourceValidationShutdownFlowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -550,12 +539,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config_shutdown shutdown_workflow_id required when workflow_type is workflow
 func TestAccMorpheusPolicyResourceValidationShutdownWorkflowIdRequired(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -593,12 +581,11 @@ resource "hpe_morpheus_policy" "validation_test" {
 
 // Test validation: config conflicts with config_* attributes
 func TestAccMorpheusPolicyResourceValidationConfigConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 

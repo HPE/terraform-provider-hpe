@@ -59,12 +59,11 @@ func backupDataSourceChecks(name string) resource.TestCheckFunc {
 // TestAccMorpheusFindBackupById creates a backup (a backup job and an instance
 // backup) and reads it back through the data source by ID.
 func TestAccMorpheusFindBackupById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.Backup) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -124,12 +123,11 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 // TestAccMorpheusFindBackupByName creates a backup (a backup job and an
 // instance backup) and reads it back through the data source by name.
 func TestAccMorpheusFindBackupByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.Backup) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -194,12 +192,11 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 // TestAccMorpheusFindBackupNotFound asserts that looking up a non-existent
 // backup by name surfaces the no-backup-found error.
 func TestAccMorpheusFindBackupNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -228,12 +225,11 @@ data "hpe_morpheus_backup" "example" {
 // TestAccMorpheusFindBackupNoSearchAttrs asserts that omitting both id and name
 // surfaces the no-valid-search-terms error.
 func TestAccMorpheusFindBackupNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -255,12 +251,11 @@ data "hpe_morpheus_backup" "example" {
 // TestAccMorpheusFindBackupBothSearchAttrs asserts that providing both id and
 // name fails the ConflictsWith validation during plan.
 func TestAccMorpheusFindBackupBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `

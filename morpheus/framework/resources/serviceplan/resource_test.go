@@ -38,12 +38,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 
 func TestAccMorpheusServicePlanResourceRequiredAttrsOk(t *testing.T) {
 	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -132,12 +131,11 @@ resource "hpe_morpheus_service_plan" "example_required" {
 
 func TestAccMorpheusServicePlanResourceAllAttrsOk(t *testing.T) {
 	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -369,12 +367,11 @@ resource "hpe_morpheus_service_plan" "example_all" {
 // Tests that our example file template used for docs is a valid config
 func TestAccMorpheusServicePlanResourceExampleOk(t *testing.T) {
 	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

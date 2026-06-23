@@ -16,10 +16,10 @@ import (
 )
 
 func TestAccMorpheusFormServersInputOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
 
@@ -27,7 +27,6 @@ func TestAccMorpheusFormServersInputOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	code := toCode(name)

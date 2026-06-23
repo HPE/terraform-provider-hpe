@@ -33,13 +33,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusFindClusterById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -83,13 +82,12 @@ func TestAccMorpheusFindClusterById(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -133,13 +131,12 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -170,13 +167,12 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_cluster" "test" {
@@ -201,13 +197,12 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	config := providerConfigOffline + `
       data "hpe_morpheus_cluster" "test" {

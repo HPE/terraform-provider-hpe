@@ -16,12 +16,11 @@ import (
 
 // Test update of mutable attributes
 func TestAccMorpheusPolicyResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -117,12 +116,11 @@ resource "hpe_morpheus_policy" "update_test" {
 
 // Test that changing associated_resource_id triggers replacement
 func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -244,12 +242,11 @@ resource "hpe_morpheus_policy" "replace_test" {
 
 // Test that changing associated_resource_type triggers replacement
 func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -364,12 +361,11 @@ resource "hpe_morpheus_policy" "replace_test" {
 
 // Test that changing policy_type.code triggers replacement
 func TestAccMorpheusPolicyResourceTypeCodeChangeRequiresReplace(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
