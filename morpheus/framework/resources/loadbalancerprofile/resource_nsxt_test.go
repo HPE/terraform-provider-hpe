@@ -5,6 +5,7 @@ package loadbalancerprofile_test
 import (
 	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -22,6 +23,60 @@ func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
+}
+
+// TestAccMorpheusLoadBalancerProfileResourceConfigBlockValidation verifies the
+// cross-attribute validator: the config_* block must match service_type. These
+// are plan-time validation errors, so the test does not require NSX-T and never
+// reaches the API.
+func TestAccMorpheusLoadBalancerProfileResourceConfigBlockValidation(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping acceptance test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	missingBlock := providerConfig + `
+resource "hpe_morpheus_load_balancer_profile" "validation" {
+  load_balancer_id = 1
+  name             = "validation-test"
+  service_type     = "LBHttpProfile"
+}
+`
+
+	wrongBlock := providerConfig + `
+resource "hpe_morpheus_load_balancer_profile" "validation" {
+  load_balancer_id = 1
+  name             = "validation-test"
+  service_type     = "LBHttpProfile"
+
+  config_cookie_persistence = {
+    cookie_name = "session"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:   missingBlock,
+				PlanOnly: true,
+				ExpectError: regexp.MustCompile(
+					`config_http must be set when service_type is "LBHttpProfile"`,
+				),
+			},
+			{
+				Config:   wrongBlock,
+				PlanOnly: true,
+				ExpectError: regexp.MustCompile(
+					`config_cookie_persistence cannot be set when service_type is "LBHttpProfile"`,
+				),
+			},
+		},
+	})
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpExampleOk(t *testing.T) {
