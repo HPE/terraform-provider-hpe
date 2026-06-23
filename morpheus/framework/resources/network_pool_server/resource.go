@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -75,10 +77,18 @@ func (r *networkPoolServerResource) Create(
 
 	// The SDK uses a oneOf union for this request. We use InfobloxNetworkPoolServer as the
 	// concrete type because it is the superset of all pool server types (Infoblox, Bluecat,
-	// phpIPAM, SolarWinds). The API resolves the actual type from type_id, not from the
-	// "type" field in the request body. All common fields are accepted regardless of type.
+	// phpIPAM, SolarWinds, EfficientIP/SOLIDserver, ...). All common fields are accepted
+	// regardless of type. The API selects the actual type from the "type" code in the request
+	// body (NetworkPoolServerType.findByCode), which is driven by either type_code (sent
+	// directly) or type_id (resolved to its code below).
+	typeCode, typeDiags := resolveNetworkPoolServerTypeCode(ctx, client, plan.TypeCode, plan.TypeId)
+	resp.Diagnostics.Append(typeDiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	infoblox := &sdk.InfobloxNetworkPoolServer{}
-	infoblox.Type = "infoblox"
+	infoblox.Type = typeCode
 	infoblox.Name = plan.Name.ValueString()
 	if !plan.ServiceUrl.IsNull() {
 		infoblox.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
@@ -110,6 +120,14 @@ func (r *networkPoolServerResource) Create(
 	if !plan.ServiceThrottleRate.IsNull() {
 		rate := plan.ServiceThrottleRate.ValueInt64()
 		infoblox.ServiceThrottleRate = *sdk.NewNullableInt64(&rate)
+	}
+
+	// inventory_existing is a fieldContext=config option (config.inventoryExisting) shared by
+	// all pool server types. It is stored in the integration's generic config map.
+	if !plan.InventoryExisting.IsNull() && !plan.InventoryExisting.IsUnknown() {
+		infoblox.Config = &sdk.InfobloxNetworkPoolServerConfig{
+			InventoryExisting: networkPoolServerCheckboxString(plan.InventoryExisting.ValueBool()),
+		}
 	}
 
 	// Credential: use credential_id for stored credentials
@@ -267,6 +285,13 @@ func (r *networkPoolServerResource) Update(
 		infobloxUpdate.ServiceThrottleRate = *sdk.NewNullableInt64(&rate)
 	}
 
+	// inventory_existing (config.inventoryExisting) is shared by all pool server types.
+	if !plan.InventoryExisting.IsNull() && !plan.InventoryExisting.IsUnknown() {
+		infobloxUpdate.Config = &sdk.InfobloxNetworkPoolServerUpdateConfig{
+			InventoryExisting: networkPoolServerCheckboxString(plan.InventoryExisting.ValueBool()),
+		}
+	}
+
 	// Credential: use credential_id for stored credentials
 	if !plan.CredentialId.IsNull() {
 		idStr := strconv.FormatInt(plan.CredentialId.ValueInt64(), 10)
@@ -360,8 +385,13 @@ func mapReadResponseToModel(
 	if server.Name != nil {
 		model.Name = types.StringValue(*server.Name)
 	}
-	if t := server.Type; t != nil && t.Id != nil {
-		model.TypeId = types.Int64Value(*t.Id)
+	if t := server.Type; t != nil {
+		if t.Id != nil {
+			model.TypeId = types.Int64Value(*t.Id)
+		}
+		if t.Code != nil {
+			model.TypeCode = types.StringValue(*t.Code)
+		}
 	}
 	if server.ServiceUrl.IsSet() && server.ServiceUrl.Get() != nil {
 		model.ServiceUrl = types.StringValue(*server.ServiceUrl.Get())
@@ -413,4 +443,88 @@ func mapReadResponseToModel(
 			model.CredentialId = types.Int64Value(*id)
 		}
 	}
+
+	// inventory_existing: read from the generic config map (config object varies by
+	// pool server type). The stored representation is environment-dependent, so coerce
+	// common truthy forms. When the key is absent, preserve the existing plan/state value
+	// to avoid spurious drift (Morpheus often omits unchecked checkboxes).
+	if server.Config != nil {
+		if v, ok := server.Config["inventoryExisting"]; ok {
+			model.InventoryExisting = types.BoolValue(networkPoolServerConfigBool(v))
+		}
+	}
+}
+
+// resolveNetworkPoolServerTypeCode determines the pool server "type" code to send to the
+// API. type_code and type_id are mutually exclusive: when type_code is set it is used
+// directly; when type_id is set its code is looked up via the pool server types endpoint.
+// The Morpheus API resolves the pool server type by code (NetworkPoolServerType.findByCode).
+func resolveNetworkPoolServerTypeCode(
+	ctx context.Context,
+	client *sdk.APIClient,
+	typeCode types.String,
+	typeID types.Int64,
+) (string, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if !typeCode.IsNull() && !typeCode.IsUnknown() && typeCode.ValueString() != "" {
+		return typeCode.ValueString(), diags
+	}
+
+	if !typeID.IsNull() && !typeID.IsUnknown() {
+		id := typeID.ValueInt64()
+		result, httpResp, err := client.NetworksAPI.GetNetworkPoolServerType(ctx, id).Execute()
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			diags.AddError(
+				"Unable to resolve network pool server type",
+				fmt.Sprintf("Could not look up network pool server type with ID %d: %s", id, err),
+			)
+
+			return "", diags
+		}
+		if result.NetworkPoolServerType == nil || result.NetworkPoolServerType.Code == nil {
+			diags.AddError(
+				"Unable to resolve network pool server type",
+				fmt.Sprintf("Network pool server type %d did not return a type code", id),
+			)
+
+			return "", diags
+		}
+
+		return *result.NetworkPoolServerType.Code, diags
+	}
+
+	diags.AddError(
+		"Missing network pool server type",
+		"Either type_code or type_id must be set to create a network pool server.",
+	)
+
+	return "", diags
+}
+
+// networkPoolServerCheckboxString converts a Terraform bool into the on/off string
+// representation Morpheus uses for checkbox config options (config.inventoryExisting).
+func networkPoolServerCheckboxString(b bool) *string {
+	v := "off"
+	if b {
+		v = "on"
+	}
+
+	return &v
+}
+
+// networkPoolServerConfigBool coerces a generic config map value (string or bool) into a
+// bool, accepting the common truthy representations Morpheus may persist for a checkbox.
+func networkPoolServerConfigBool(v interface{}) bool {
+	switch val := v.(type) {
+	case bool:
+		return val
+	case string:
+		switch strings.ToLower(strings.TrimSpace(val)) {
+		case "on", "true", "1", "yes":
+			return true
+		}
+	}
+
+	return false
 }
