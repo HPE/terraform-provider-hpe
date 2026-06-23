@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
@@ -301,12 +302,59 @@ func (p *HpeProvider2) Configure(
 	resourceData := map[string]any{}
 	dataSourceData := map[string]any{}
 
+	// Navigate the parent raw value as a map of block names → tftypes.Value.
+	parentAttrs := map[string]tftypes.Value{}
+	if err := req.Config.Raw.As(&parentAttrs); err != nil {
+		resp.Diagnostics.AddError("Failed to read provider config", err.Error())
+		wg.Wait()
+
+		return
+	}
+
 	for _, s := range p.childProviders {
 		childMetaResp := &provider.MetadataResponse{}
 		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
 
+		// Since the "hpe" provider is using ListNestedBlock for its configs,
+		// we need to pass the 0th ListNestedBlock to the child provider
+		// so that it can parse its config as a flat map[string]Attribute
+		blocks := req.Config.Schema.GetBlocks()
+		block := blocks[childMetaResp.TypeName]
+		fwAttrs := block.GetNestedObject().GetAttributes()
+
+		schemaAttrs := make(map[string]schema.Attribute)
+		// assert fwschema UnderlyingAttributes to schema Attribute
+		for k, v := range fwAttrs {
+			if schemaAttr, ok := v.(schema.Attribute); ok {
+				schemaAttrs[k] = schemaAttr
+			}
+		}
+
+		// Extract the list tftypes.Value for this child's block.
+		listVal, ok := parentAttrs[childMetaResp.TypeName]
+		if !ok || listVal.IsNull() || !listVal.IsKnown() {
+			continue
+		}
+
+		// Unwrap the list to its elements.
+		var elems []tftypes.Value
+		if err := listVal.As(&elems); err != nil || len(elems) == 0 {
+			continue
+		}
+
+		childProviderConfigReq := provider.ConfigureRequest{
+			TerraformVersion:   req.TerraformVersion,
+			ClientCapabilities: req.ClientCapabilities,
+			Config: tfsdk.Config{
+				Schema: schema.Schema{
+					Attributes: schemaAttrs,
+				},
+				Raw: elems[0], // flat object: {url, username, ...}
+			},
+		}
+
 		childConfigResp := &provider.ConfigureResponse{}
-		s.Configure(ctx, req, childConfigResp)
+		s.Configure(ctx, childProviderConfigReq, childConfigResp)
 
 		resp.Diagnostics.Append(childConfigResp.Diagnostics...)
 

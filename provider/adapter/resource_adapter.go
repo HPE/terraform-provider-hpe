@@ -122,6 +122,13 @@ func (r *AdapterResource) Configure(
 		return
 	}
 
+	// Extract child provider configure data for ConfigureRequest.ProviderData
+	if providerData, ok := req.ProviderData.(map[string]any); ok {
+		metaResp := &provider.MetadataResponse{}
+		r.provider.Metadata(ctx, provider.MetadataRequest{}, metaResp)
+
+		req.ProviderData = providerData[metaResp.TypeName]
+	}
 	r.withConfigure.Configure(ctx, req, resp)
 }
 

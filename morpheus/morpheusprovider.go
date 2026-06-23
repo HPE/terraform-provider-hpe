@@ -50,7 +50,7 @@ func (p *MorpheusProvider) Metadata(ctx context.Context, req provider.MetadataRe
 }
 
 func (p *MorpheusProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var m model.SubModel // Morpheus Provider Model
+	var m model.SubModel
 
 	diags := req.Config.Get(ctx, &m)
 	if diags.HasError() {
@@ -62,22 +62,6 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 	cf := p.newClientFactory(m)
 	resp.ResourceData = cf
 	resp.DataSourceData = cf
-	// // diags := req.Config.GetAttribute(ctx, path.Root(providerName), &m)
-	// resp.Diagnostics.Append(diags...)
-	// if resp.Diagnostics.HasError() {
-	// 	return
-	// }
-	//
-	// switch len(m) {
-	// case 0:
-	// 	return
-	// case 1:
-	// 	cf := p.newClientFactory(m[0])
-	// 	resp.ResourceData = cf
-	// 	resp.DataSourceData = cf
-	// default:
-	// 	resp.Diagnostics.AddError("Failed to configure morpheus", "invalid morpheus provider block length")
-	// }
 }
 
 func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {

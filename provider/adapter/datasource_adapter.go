@@ -80,6 +80,14 @@ func (d *AdapterDataSource) Configure(
 		return
 	}
 
+	// Extract child provider configure data for ConfigureRequest.ProviderData
+	if providerData, ok := req.ProviderData.(map[string]any); ok {
+		metaResp := &provider.MetadataResponse{}
+		d.provider.Metadata(ctx, provider.MetadataRequest{}, metaResp)
+
+		req.ProviderData = providerData[metaResp.TypeName]
+	}
+
 	d.withConfigure.Configure(ctx, req, resp)
 }
 
