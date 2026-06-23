@@ -17,10 +17,10 @@ import (
 )
 
 func TestAccMorpheusFormCloudOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
 
@@ -28,7 +28,6 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	code := toCode(name)
@@ -94,10 +93,10 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 // group_field on a cloud option type maps to config.group (not groupField),
 // and round-trips cleanly without drift.
 func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
 
@@ -105,7 +104,6 @@ func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 	code := toCode(name)

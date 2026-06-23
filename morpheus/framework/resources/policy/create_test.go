@@ -17,12 +17,11 @@ import (
 
 // Test creating a policy with required attributes only
 func TestAccMorpheusPolicyResourceRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -102,12 +101,11 @@ resource "hpe_morpheus_policy" "required" {
 
 // Test creating policies with different policy types which apply to Bare Metal
 func TestAccMorpheusPolicyResourceAllBareMetalPolicyTypesOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -586,12 +584,11 @@ resource "hpe_morpheus_policy" "test" {
 
 // Test creating policies scoped to different resource types (Group, Cloud, User, Role)
 func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -832,12 +829,11 @@ resource "hpe_morpheus_network" "test" {
 
 // Test creating policies using static schema fields (config_* attributes)
 func TestAccMorpheusPolicyResourceAllStaticSchemaOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.ServiceNow) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

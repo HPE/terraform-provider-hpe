@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test docs sweep build-render-tool
+.PHONY: build linter lint test test-json docs sweep build-render-tool
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname
 SWEEP ?= all
@@ -22,6 +22,14 @@ lint:
 test:
 	env TF_ACC=1 \
 	go test -v -cover -count 1 -timeout 60m ./...
+
+# Same as `test` but emits machine-readable `go test -json` on stdout (and
+# nothing else, so the stream stays valid JSON). Used by the nightly runner to
+# capture a full, parseable log including API traces. The leading `@` keeps the
+# recipe command out of stdout.
+test-json:
+	@env TF_ACC=1 \
+	go test -json -cover -count 1 -timeout 60m ./...
 
 unit-tests:
 	# exclude the framework and sdkv2 packages and the

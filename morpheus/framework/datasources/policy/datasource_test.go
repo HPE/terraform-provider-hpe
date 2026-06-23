@@ -50,12 +50,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 }
 
 func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -126,12 +125,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 
 func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -202,12 +200,11 @@ resource "hpe_morpheus_policy" "test" {
 }
 
 func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -245,12 +242,11 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -282,12 +278,11 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -323,12 +318,11 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -736,12 +730,11 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 
 // Test datasource can find policies scoped to different resource types (Group, Cloud, User, Role)
 func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

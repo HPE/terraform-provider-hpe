@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus load balancer profile.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus load balancer profile. This data source can be used to look up an existing profile by ID or name to reference its attributes in other resources.
+
+For NSX-T load balancers, the typed configuration blocks (`config_http`, `config_fast_tcp`, `config_fast_udp`, `config_cookie_persistence`, `config_source_ip_persistence`, `config_generic_persistence`, `config_client_ssl`, `config_server_ssl`) are automatically populated based on the profile's service type.
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_profile/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_load_balancer_profile/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

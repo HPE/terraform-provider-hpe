@@ -43,12 +43,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 // Combining tests for both ID and Name under the same function as instance
 // creation can be time consuming, so we only want to create one instance.
 func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -165,12 +164,11 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 
 // this should fail due to a conflict between id and name
 func TestAccMorpheusInstanceDatasourceBothAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -197,12 +195,11 @@ data "hpe_morpheus_instance" "test" {
 
 // this should fail due to id or name being required
 func TestAccMorpheusInstanceDatasourceNoAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

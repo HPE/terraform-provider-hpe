@@ -24,13 +24,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -96,13 +95,12 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

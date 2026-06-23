@@ -74,12 +74,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusUserResourceExample(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -204,12 +203,11 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 // We may update this test once we can create a second tenant using
 // the provider.
 func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -257,12 +255,11 @@ resource "hpe_morpheus_user" "foo" {
 // Check that we can create a user with only
 // required attributes specified
 func TestAccMorpheusUserResourceRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -378,12 +375,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1078,12 +1074,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1440,12 +1435,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1640,12 +1634,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceMissingRoles(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1681,12 +1674,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceMissingUsername(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1722,12 +1714,11 @@ resource "hpe_morpheus_user" "foo" {
 }
 
 func TestAccMorpheusUserResourceMissingEmail(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1765,12 +1756,11 @@ resource "hpe_morpheus_user" "foo" {
 // password_wo is required for create (but not import) here we check that it is
 // correctly identified as missing during plan (i.e. before Create is called)
 func TestAccMorpheusUserResourceMissingPasswordWo(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1815,12 +1805,11 @@ resource "hpe_morpheus_user" "foo" {
 // are able to run plan after import, having
 // inherited the import state.
 func TestAccMorpheusUserResourceImportOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -2039,12 +2028,11 @@ destroy = false
 // Test that when tenant_id is not set (use state for unknown)
 // updating last_name results in update operation, not delete/recreate
 func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

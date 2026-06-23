@@ -38,12 +38,11 @@ const existingTier0RouterID = "28"
 const bgpNeighborSourceAddress = "10.100.10.1"
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -88,12 +87,11 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -158,12 +156,11 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -277,12 +274,11 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -406,12 +402,11 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NetworkRouter) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -467,12 +462,11 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 }
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -532,12 +526,11 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
 //
 // QA verify: set nsxv_router_id to a valid NSX-V router on the target system.
 func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxvConfig(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXV) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

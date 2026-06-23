@@ -48,7 +48,7 @@ TFEOF
 Creating the Kubernetes app blueprint with Kubernetes spec templates:
 
 ```terraform
-resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_spec" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "example" {
   name              = "tf-kubernetes-app-blueprint-example-spec"
   description       = "tf example kubernetes app blueprint"
   category          = "k8s"
@@ -60,7 +60,7 @@ resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_bluep
 Creating the Kubernetes app blueprint with the blueprint fetched via git:
 
 ```terraform
-resource "hpe_morpheus_app_blueprint_kubernetes" "tfexample_kubernetes_app_blueprint_git" {
+resource "hpe_morpheus_app_blueprint_kubernetes" "example" {
   name           = "tf-kubernetes-app-blueprint-example-git"
   description    = "tf example kubernetes app blueprint"
   category       = "k8s"

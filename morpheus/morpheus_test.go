@@ -102,12 +102,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusSubProviderMissingURL(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -132,12 +131,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -185,12 +183,11 @@ resource "hpe_morpheus_fake" "foo" {
 // TestAccMorpheusSubProviderWithCustomHTTPClient is mainly
 // an example of passing in a custom client
 func TestAccMorpheusSubProviderWithCustomHTTPClient(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	newLocalProviderWithError := func() (tfprotov6.ProviderServer, error) {
 		providerInstance := provider.New("test", NewWithCustomHTTPClient())()
 
@@ -247,12 +244,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderMissingAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -278,12 +274,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderMissingPassword(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -311,12 +306,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderTooMuchAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -347,12 +341,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderStrayResource(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 }
@@ -375,12 +368,11 @@ resource "hpe_morpheus_fake" "foo" {
 }
 
 func TestAccMorpheusSubProviderTooManyBlocks(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 	morpheus {url = "https://example1.com"}
@@ -408,12 +400,11 @@ resource "hpe_morpheus_fake" "foo" {
 // TestAccMorpheusSubProviderEmptyBlock checks that
 // the absence of a block does not raise an error
 func TestAccMorpheusSubProviderEmptyBlock(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := `
 provider "hpe" {
 }

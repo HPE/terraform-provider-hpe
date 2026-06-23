@@ -28,14 +28,13 @@ func TestAccMorpheusInstanceSnapshotDataSource(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	snapshotName := acctest.RandomWithPrefix(t.Name())
 

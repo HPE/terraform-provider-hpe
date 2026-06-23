@@ -26,13 +26,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")
@@ -122,13 +121,12 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")
@@ -240,13 +238,12 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresReplace(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")
@@ -369,13 +366,12 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 }
 
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow acceptance test in short mode")

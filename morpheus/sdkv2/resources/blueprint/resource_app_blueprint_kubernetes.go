@@ -343,7 +343,7 @@ func resourceAppBlueprintKubernetesRead(
 				specTemplates = append(specTemplates, int64(specTemplate.ID))
 			}
 		}
-		d.Set("spec_templates_ids", specTemplates)
+		d.Set("spec_template_ids", specTemplates)
 	}
 
 	return diags
@@ -550,7 +550,7 @@ type AppBlueprintKubernetes struct {
 			Config struct {
 				Specs []struct {
 					ID    int    `json:"id"`
-					Value string `json:"value"`
+					Value int    `json:"value"`
 					Name  string `json:"name"`
 				} `json:"specs"`
 			} `json:"config"`

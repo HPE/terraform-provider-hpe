@@ -22,13 +22,12 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -63,13 +62,12 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -104,13 +102,12 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 }
 
 func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.NSXT) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
