@@ -1,0 +1,15 @@
+resource "hpe_morpheus_instance_clone" "example" {
+  source_instance_id = {{.SourceInstanceId}}
+  name               = "{{.Name}}"
+
+  volumes {
+    name        = "root"
+    size        = 20
+    root_volume = true
+  }
+
+  network_interfaces {
+    network_id = {{.NetworkId}}
+    ip_mode    = ""
+  }
+}
