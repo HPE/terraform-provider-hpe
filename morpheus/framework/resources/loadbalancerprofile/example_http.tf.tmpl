@@ -1,0 +1,26 @@
+resource "hpe_morpheus_load_balancer_profile" "http" {
+  load_balancer_id = {{.LoadBalancerId}}
+  name             = "{{.Name}}"
+  description      = "{{.Description}}"
+  service_type     = "LBHttpProfile"
+
+  config_http = {
+    http_idle_timeout    = {{.HttpIdleTimeout}}
+    request_header_size  = {{.RequestHeaderSize}}
+    response_header_size = 4096
+    response_timeout     = 60
+    https_redirect       = {{.HttpsRedirect}}
+    x_forwarded_for      = "{{.XForwardedFor}}"
+  }
+
+  tags = [
+    {
+      name  = "env"
+      value = "test"
+    },
+    {
+      name  = "app"
+      value = "web"
+    },
+  ]
+}
