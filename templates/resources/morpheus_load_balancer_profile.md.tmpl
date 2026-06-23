@@ -1,0 +1,37 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Manages a Morpheus load balancer profile.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus load balancer profile. Profiles define application-layer behaviour (HTTP, Fast TCP, Fast UDP), session persistence (cookie, source IP, generic), or SSL/TLS settings (client SSL, server SSL) for NSX-T load balancers.
+
+Each profile has a `service_type` that determines which `config_*` block to use. Only one config block may be set per profile.
+
+## Example Usage — HTTP Profile
+
+{{ tffile "examples/resources/morpheus_load_balancer_profile/example_http.tf" }}
+
+## Example Usage — Cookie Persistence Profile
+
+{{ tffile "examples/resources/morpheus_load_balancer_profile/example_cookie.tf" }}
+
+## Example Usage — Client SSL Profile (CUSTOM)
+
+{{ tffile "examples/resources/morpheus_load_balancer_profile/example_client_ssl.tf" }}
+
+## Example Usage — Minimal (Fast TCP)
+
+{{ tffile "examples/resources/morpheus_load_balancer_profile/example_minimal.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Load balancer profiles can be imported using the load balancer ID and profile ID separated by a slash, e.g.
+
+```shell
+terraform import hpe_morpheus_load_balancer_profile.example 1/42
+```

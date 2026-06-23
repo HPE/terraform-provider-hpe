@@ -272,3 +272,42 @@ func FromListType[S attr.Value, O any](
 
 	return out, nil
 }
+
+// CookieTypeToAPI converts the Terraform cookie_type value ("session"/"persistence")
+// to the API representation ("LBSessionCookieTime"/"LBPersistenceCookieTime").
+func CookieTypeToAPI(val types.String) *string {
+	if val.IsNull() || val.IsUnknown() {
+		return nil
+	}
+
+	switch val.ValueString() {
+	case "session":
+		return PtrString("LBSessionCookieTime")
+	case "persistence":
+		return PtrString("LBPersistenceCookieTime")
+	default:
+		return nil
+	}
+}
+
+// CookieTypeFromAPI converts the API cookie_type value ("LBSessionCookieTime"/"LBPersistenceCookieTime")
+// back to the Terraform representation ("session"/"persistence").
+func CookieTypeFromAPI(val *string) types.String {
+	if val == nil {
+		return types.StringNull()
+	}
+
+	switch *val {
+	case "LBSessionCookieTime":
+		return types.StringValue("session")
+	case "LBPersistenceCookieTime":
+		return types.StringValue("persistence")
+	default:
+		return types.StringNull()
+	}
+}
+
+// PtrString is a helper to get a pointer to a string value.
+func PtrString(s string) *string {
+	return &s
+}
