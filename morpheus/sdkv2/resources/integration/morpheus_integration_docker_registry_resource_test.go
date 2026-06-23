@@ -52,7 +52,7 @@ func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_integration_docker_registry.tf_example_docker_registry_integration",
 			"url",
-			"https://index.docker.io/v1/",
+			"https://index.docker.io/v1",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_integration_docker_registry.tf_example_docker_registry_integration",
