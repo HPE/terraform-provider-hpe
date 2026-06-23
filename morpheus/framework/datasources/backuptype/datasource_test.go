@@ -33,12 +33,11 @@ func TestMain(m *testing.M) {
 
 // TestAccMorpheusFindBackupTypeById reads a platform backup type by ID.
 func TestAccMorpheusFindBackupTypeById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -73,12 +72,11 @@ func TestAccMorpheusFindBackupTypeById(t *testing.T) {
 
 // TestAccMorpheusFindBackupTypeByName reads a platform backup type by name.
 func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -116,12 +114,11 @@ func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
 // TestAccMorpheusFindBackupTypeNotFound asserts that looking up a non-existent
 // backup type by name surfaces the no-backup-type-found error.
 func TestAccMorpheusFindBackupTypeNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -150,12 +147,11 @@ data "hpe_morpheus_backup_type" "example" {
 // TestAccMorpheusFindBackupTypeNoSearchAttrs asserts that omitting both id and
 // name surfaces the no-valid-search-terms error.
 func TestAccMorpheusFindBackupTypeNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -177,12 +173,11 @@ data "hpe_morpheus_backup_type" "example" {
 // TestAccMorpheusFindBackupTypeBothSearchAttrs asserts that providing both id
 // and name fails the ConflictsWith validation during plan.
 func TestAccMorpheusFindBackupTypeBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	config := providerConfigOffline + `

@@ -32,12 +32,11 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -81,12 +80,11 @@ func TestAccMorpheusFindNetworkServerByName(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkServerById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -130,12 +128,11 @@ func TestAccMorpheusFindNetworkServerById(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkServerNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -173,12 +170,11 @@ func TestAccMorpheusFindNetworkServerNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkServerNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 
@@ -210,12 +206,11 @@ func TestAccMorpheusFindNetworkServerNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindNetworkServerBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
 

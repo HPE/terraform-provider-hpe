@@ -52,12 +52,11 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 }
 
 func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -91,12 +90,11 @@ func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -131,12 +129,11 @@ func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
 
 // if all access token and creds are provided, then it'll prefer access token
 func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -171,12 +168,11 @@ func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -215,12 +211,11 @@ func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -248,12 +243,11 @@ func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -296,12 +290,11 @@ func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -330,12 +323,11 @@ func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
 }
 
 func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

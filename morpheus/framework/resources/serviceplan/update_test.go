@@ -15,12 +15,11 @@ import (
 // TestAccMorpheusServicePlanResourceUpdateAllAttrsOk tests updating all mutable attributes and detecting changes
 func TestAccMorpheusServicePlanResourceUpdateAllAttrsOk(t *testing.T) {
 	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

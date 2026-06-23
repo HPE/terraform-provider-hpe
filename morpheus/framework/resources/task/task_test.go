@@ -42,12 +42,11 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 }
 
 func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -126,12 +125,11 @@ func TestAccMorpheusTaskResourceExampleConditionalOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -255,12 +253,11 @@ func TestAccMorpheusTaskResourceConditionalWorkflowUpdate(t *testing.T) {
 }
 
 func TestAccMorpheusTaskResourceExampleGenericNestedOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -326,12 +323,11 @@ func TestAccMorpheusTaskResourceExampleGenericNestedOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -405,12 +401,11 @@ func TestAccMorpheusTaskResourceExampleConditionalNullElseOk(t *testing.T) {
 }
 
 func TestAccMorpheusTaskResourceExampleConditionalNullElseUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

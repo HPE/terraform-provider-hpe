@@ -26,13 +26,12 @@ func TestMain(m *testing.M) {
 
 // Tests that our example file template used for docs is a valid config.
 func TestAccMorpheusOsTypeImageResourceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -138,13 +137,12 @@ resource "hpe_morpheus_os_type" "test" {
 
 // Tests creating with only the required attributes.
 func TestAccMorpheusOsTypeImageResourceRequiredAttrsOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
 	t.Parallel()
-	defer testhelpers.RecordResult(t)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

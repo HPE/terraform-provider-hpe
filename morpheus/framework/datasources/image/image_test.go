@@ -38,12 +38,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestAccMorpheusImageDatasourceById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -106,12 +105,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -174,12 +172,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 
 func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	if testing.Short() {
@@ -246,12 +243,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 
 // verify that we get an error if `image_type` is specified without `name`
 func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	dataSourceConfig := `
@@ -275,12 +271,11 @@ data "hpe_morpheus_image" "test" {
 
 // this should fail due to a conflict between id and name/image_type
 func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	if capabilities.Missing(t, capabilities.All) {
 		t.Log("Skipping test due to missing capabilities")
-
-		return
 	}
-	defer testhelpers.RecordResult(t)
 	t.Parallel()
 
 	dataSourceConfig := `
