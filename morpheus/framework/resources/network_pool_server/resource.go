@@ -388,19 +388,13 @@ func mapReadResponseToModel(
 	if server.Name != nil {
 		model.Name = types.StringValue(*server.Name)
 	}
-	// type_id and type_code are mutually exclusive Optional+Computed attributes, so
-	// populate only one — writing both carries both in state and copies them into the
-	// plan via UseStateForUnknown. Prefer the user-configured attribute; default to the
-	// stable type_code. The non-selected attribute is explicitly nulled (never left
-	// unknown, which would fail state.Set on create).
+	// type_id and type_code are mutually exclusive on input, but the API returns both
+	// the numeric id and the stable code for the resolved type, so reflect both actual
+	// values in state. ConflictsWith is config-only (it never inspects state), so having
+	// both populated in state does not trigger a validation error.
 	if t := server.Type; t != nil {
-		if !model.TypeId.IsNull() && !model.TypeId.IsUnknown() {
-			model.TypeId = convert.Int64ToType(t.Id)
-			model.TypeCode = types.StringNull()
-		} else {
-			model.TypeCode = convert.StrToType(t.Code)
-			model.TypeId = types.Int64Null()
-		}
+		model.TypeId = convert.Int64ToType(t.Id)
+		model.TypeCode = convert.StrToType(t.Code)
 	}
 	if server.ServiceUrl.IsSet() && server.ServiceUrl.Get() != nil {
 		model.ServiceUrl = types.StringValue(*server.ServiceUrl.Get())

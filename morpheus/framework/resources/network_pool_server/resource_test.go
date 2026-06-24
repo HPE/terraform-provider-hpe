@@ -56,6 +56,7 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
+		resource.TestCheckResourceAttrSet(resourceName, "type_id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
 		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
