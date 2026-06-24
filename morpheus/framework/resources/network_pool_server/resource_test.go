@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package network_pool_server_test
 
 import (
@@ -53,7 +55,8 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
+		resource.TestCheckResourceAttrSet(resourceName, "type_id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
 		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
@@ -121,7 +124,7 @@ func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 	updateConfig := `
 resource "hpe_morpheus_network_pool_server" "example" {
   name                        = "` + name + `"
-  type_id                     = 1
+  type_code                   = "infoblox"
   enabled                     = false
   service_url                 = "https://infoblox.example.com/wapi/v2.12"
   service_username            = "admin"
@@ -138,7 +141,7 @@ resource "hpe_morpheus_network_pool_server" "example" {
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
 		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),
@@ -152,7 +155,7 @@ resource "hpe_morpheus_network_pool_server" "example" {
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+		resource.TestCheckResourceAttr(resourceName, "type_code", "infoblox"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
 		resource.TestCheckResourceAttr(resourceName, "service_url", "https://infoblox.example.com/wapi/v2.12"),
 		resource.TestCheckResourceAttr(resourceName, "service_username", "admin"),

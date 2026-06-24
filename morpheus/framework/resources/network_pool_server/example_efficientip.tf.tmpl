@@ -1,10 +1,13 @@
-# Bluecat Network Pool Server
+# EfficientIP (SOLIDserver) Network Pool Server
 #
-# Applicable attributes for Bluecat:
+# EfficientIP is provided by the external morpheus-efficientip-plugin and uses the
+# "solidserver" type code. The plugin must be installed for this type to be available.
+#
+# Applicable attributes for EfficientIP:
 #   name, type_code, enabled, service_url, service_username, service_password_wo,
 #   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
-#   network_filter, service_throttle_rate
-resource "hpe_morpheus_network_pool_server" "bluecat" {
+#   service_throttle_rate
+resource "hpe_morpheus_network_pool_server" "efficientip" {
   name                        = "{{.Name}}"
   type_code                   = "{{.TypeCode}}"
   enabled                     = {{.Enabled}}
@@ -13,6 +16,6 @@ resource "hpe_morpheus_network_pool_server" "bluecat" {
   service_password_wo         = "{{.ServicePassword}}"
   service_password_wo_version = {{.ServicePasswordVersion}}
   ignore_ssl                  = {{.IgnoreSsl}}
-  network_filter              = "{{.NetworkFilter}}"
+  inventory_existing          = {{.InventoryExisting}}
   service_throttle_rate       = {{.ServiceThrottleRate}}
 }

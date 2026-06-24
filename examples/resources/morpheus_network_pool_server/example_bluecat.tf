@@ -1,12 +1,12 @@
 # Bluecat Network Pool Server
 #
 # Applicable attributes for Bluecat:
-#   name, type_id, enabled, service_url, service_username, service_password_wo,
-#   service_password_wo_version, credential_id, ignore_ssl, network_filter,
-#   service_throttle_rate
+#   name, type_code, enabled, service_url, service_username, service_password_wo,
+#   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
+#   network_filter, service_throttle_rate
 resource "hpe_morpheus_network_pool_server" "bluecat" {
   name                        = "Bluecat IPAM"
-  type_id                     = 2
+  type_code                   = "bluecat"
   enabled                     = true
   service_url                 = "https://bluecat.example.com/api"
   service_username            = "admin"
