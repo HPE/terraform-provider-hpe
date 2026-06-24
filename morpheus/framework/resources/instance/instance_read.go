@@ -315,6 +315,14 @@ func getInstanceAsState(
 	}
 	state.NetworkDomainId = networkDomainId
 
+	// user_group
+	userGroupId, ugDiags := getInstanceUserGroupId(instance, plan)
+	diags = append(diags, ugDiags...)
+	if diags.HasError() {
+		return state, false, diags
+	}
+	state.UserGroup = userGroupId
+
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
 
@@ -401,6 +409,29 @@ func getInstanceNetworkDomainId(
 	}
 
 	return convert.Int64ToType(apiConfig.NetworkDomain.Id), diags
+}
+
+// getInstanceUserGroupId returns the user_group id. On a normal read the plan
+// value is preserved (user_group is provision-time only, so it never changes
+// after create); on import it is read from the API config.
+func getInstanceUserGroupId(
+	instance sdk.GetInstance200ResponseInstance,
+	plan InstanceModel,
+) (types.Int64, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// if this isn't an import, return the plan value
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		return plan.UserGroup, diags
+	}
+
+	// on import, get the user group id from the config in the API response
+	apiConfig := instance.Config
+	if apiConfig == nil || apiConfig.UserGroup == nil {
+		return types.Int64Null(), diags
+	}
+
+	return convert.Int64ToType(apiConfig.UserGroup.Id), diags
 }
 
 func getInstanceAzureConfig(
@@ -1023,6 +1054,11 @@ func setDatastoreAutoSelectionAndSize(
 			apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
 			// We set this flag to indicate that Terraform set the MaxStorage value
 			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
+
+			// storage_profile is a write-mostly field: preserve the plan value so
+			// that an API-returned default does not produce a spurious diff (or an
+			// inconsistent-result-after-apply error) on a normal read.
+			apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 
@@ -1201,6 +1237,7 @@ func convertAPIVolumesToStateVolumes(
 			v.StorageTypeId = convert.Int64ToType(in.TypeId)
 			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
 			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
+			v.StorageProfile = convert.StrToType(in.StorageProfile)
 
 			// Handle DatastoreAutoSelection and TerraformSetMaxStorage from AdditionalProperties
 			// TerraformSetMaxStorage flag indicates that MaxStorage was set from plan (already in GB)

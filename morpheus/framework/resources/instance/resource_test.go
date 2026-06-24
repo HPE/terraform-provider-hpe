@@ -89,6 +89,76 @@ func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 	})
 }
 
+// TestAccMorpheusInstanceResourceUserGroupStorageProfile provisions an HVM/KVM
+// instance with a user_group and a volume storage_profile and asserts both
+// round-trip into state. user_group is a provision-time, RequiresReplace input
+// read back from the instance config; storage_profile is a write-mostly volume
+// input preserved from the plan on read.
+func TestAccMorpheusInstanceResourceUserGroupStorageProfile(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+	}
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+	// user_group and storage_profile use hard-coded values that exist in the
+	// reference test environment, consistent with the other instance tests
+	// (resource pool, layout, network, datastore). kvm-cache-none is a standard
+	// KVM/HVM storage profile code.
+	userGroup := "1"
+	storageProfile := "kvm-cache-none"
+
+	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":           name,
+		"UserGroup":      userGroup,
+		"StorageProfile": storageProfile,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"name",
+			name,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"user_group",
+			userGroup,
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_instance.example",
+			"volumes.0.storage_profile",
+			storageProfile,
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           false,
+				Check:              checkFn,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 

@@ -83,6 +83,7 @@ func (g *Resource) Create(
 	// AWS config
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
 		noAgent := plan.ConfigAws.NoAgent.ValueBool()
+		createUser := plan.ConfigAws.CreateUser.ValueBool()
 		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
 		kmsKeyId := plan.ConfigAws.KmsKeyId.ValueString()
 		instanceProfile := plan.ConfigAws.InstanceProfile.ValueString()
@@ -92,6 +93,7 @@ func (g *Resource) Create(
 
 		configAWS := &sdk.AmazonInstanceConfiguration2{
 			NoAgent:         *sdk.NewNullableBool(&noAgent),
+			CreateUser:      *sdk.NewNullableBool(&createUser),
 			ResourcePoolId:  &resourcePoolId,
 			IsEC2:           &isEC2,
 			KmsKeyId:        &kmsKeyId,
@@ -387,6 +389,13 @@ func (g *Resource) Create(
 	// task_set_id
 	if !plan.TaskSetId.IsNull() {
 		reqInstance.TaskSetId = plan.TaskSetId.ValueInt64Pointer()
+	}
+
+	// user_group
+	if !plan.UserGroup.IsNull() {
+		reqInstance.Instance.UserGroup = &sdk.AddInstanceRequestInstanceUserGroup{
+			Id: plan.UserGroup.ValueInt64Pointer(),
+		}
 	}
 
 	// volumes

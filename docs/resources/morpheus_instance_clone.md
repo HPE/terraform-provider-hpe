@@ -325,6 +325,7 @@ combined with a typed config_* block.
 - `group_id` (Number) The ID of the group to clone into. Defaults to the source instance's group.
 - `plan_id` (Number) The ID of the service plan override for the clone. Defaults to the source instance's service plan.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `user_group` (Number) The id of the user group to associate with the clone. Can only be set at clone time; changing it forces replacement.
 
 ### Read-Only
 
@@ -387,6 +388,8 @@ For a new controller the id is -1, e.g. "-1:1:6:0". Use /api/provision-types?cod
 - `datastore_id` (Number) The ID of the datastore to place the volume on.
 - `root_volume` (Boolean) Whether this is the root volume. Exactly one volume must be the root volume.
 - `size_id` (Number) Selects a pre-existing logical volume size choice from Morpheus. Not returned by the API.
+- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`.
+Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 - `storage_type` (Number) The storage volume type ID.
 
 Read-Only:

@@ -74,6 +74,11 @@ func (r *Resource) Create(
 		cloneReq.Plan = &sdk.CloneInstanceRequestPlan{Id: &pid}
 	}
 
+	if !plan.UserGroup.IsNull() && !plan.UserGroup.IsUnknown() {
+		ugid := plan.UserGroup.ValueInt64()
+		cloneReq.UserGroup = &sdk.CloneInstanceRequestUserGroup{Id: &ugid}
+	}
+
 	cloneConfig, cfgDiags := buildCloneConfig(ctx, plan)
 	resp.Diagnostics.Append(cfgDiags...)
 	if resp.Diagnostics.HasError() {
@@ -324,12 +329,14 @@ func buildCloneConfig(
 	// AWS config
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
 		noAgent := plan.ConfigAws.NoAgent.ValueBool()
+		createUser := plan.ConfigAws.CreateUser.ValueBool()
 		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
 		publicIpType := plan.ConfigAws.PublicIpType.ValueString()
 		resourcePoolId := plan.ConfigAws.ResourcePoolId.ValueString()
 
 		configAWS := &sdk.AmazonInstanceConfiguration3{
 			NoAgent:         *sdk.NewNullableBool(&noAgent),
+			CreateUser:      *sdk.NewNullableBool(&createUser),
 			ResourcePoolId:  &resourcePoolId,
 			IsEC2:           &isEC2,
 			KmsKeyId:        plan.ConfigAws.KmsKeyId.ValueStringPointer(),
@@ -509,6 +516,11 @@ func buildCloneVolumes(
 		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
 			siVal := v.SizeId.ValueInt64()
 			vol.SizeId = *sdk.NewNullableInt64(&siVal)
+		}
+
+		if !v.StorageProfile.IsNull() && !v.StorageProfile.IsUnknown() {
+			spVal := v.StorageProfile.ValueString()
+			vol.StorageProfile = *sdk.NewNullableString(&spVal)
 		}
 
 		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {

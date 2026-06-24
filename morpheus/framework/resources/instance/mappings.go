@@ -54,6 +54,10 @@ func createVolumeMapper(
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
 	}
 
+	if !vol.StorageProfile.IsNull() && !vol.StorageProfile.IsUnknown() {
+		volume.StorageProfile.Set(vol.StorageProfile.ValueStringPointer())
+	}
+
 	return volume
 }
 
@@ -96,6 +100,10 @@ func updateVolumeMapper(
 		volume.DatastoreId = &sdk.
 			CloneInstanceRequestVolumesInnerDatastoreId{}
 		volume.DatastoreId.String = vol.DatastoreAutoSelection.ValueStringPointer()
+	}
+
+	if !vol.StorageProfile.IsNull() && !vol.StorageProfile.IsUnknown() {
+		volume.StorageProfile.Set(vol.StorageProfile.ValueStringPointer())
 	}
 
 	return volume

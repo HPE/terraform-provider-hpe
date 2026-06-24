@@ -893,6 +893,10 @@ The layout may have default ports, which are defined in node types, that are alw
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `user_group` (Number) The id of the user group to associate with the instance. When create_user is enabled on
+the relevant config_* block, the user group's members can be created as users on the
+provisioned instance. The user group can only be set at provision time; changing it forces
+replacement of the instance.
 - `volumes` (Attributes List) Logical Volume configuration to create additional LVs at provision time (see [below for nested schema](#nestedatt--volumes))
 
 ### Read-Only

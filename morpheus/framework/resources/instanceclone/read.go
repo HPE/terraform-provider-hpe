@@ -83,6 +83,16 @@ func (r *Resource) Read(
 		}
 	}
 
+	// user_group is provision-time only (RequiresReplace) and the clone API does
+	// not return it as a first-class field; Morpheus stamps it onto the config.
+	// On import recover it from config.userGroup.id; on a normal refresh the
+	// value is already set and is left untouched so it is never clobbered.
+	if state.UserGroup.IsNull() || state.UserGroup.IsUnknown() {
+		if inst.Config != nil && inst.Config.UserGroup != nil {
+			state.UserGroup = convert.Int64ToType(inst.Config.UserGroup.Id)
+		}
+	}
+
 	// Update computed fields
 	state.Status = convert.StrToType(inst.Status)
 	state.Name = convert.StrToType(inst.Name)
@@ -177,6 +187,7 @@ func volumeValueFromAPI(
 	}
 
 	vol.ControllerMountPoint = convert.StrToType(v.ControllerMountPoint)
+	vol.StorageProfile = convert.StrToType(v.StorageProfile)
 	// size_id is a write-only input and is not returned by the read API.
 	vol.SizeId = types.Int64Null()
 
@@ -219,6 +230,7 @@ func mergeVolumesFromAPI(
 			StorageType:          types.Int64Null(),
 			ControllerMountPoint: types.StringNull(),
 			SizeId:               types.Int64Null(),
+			StorageProfile:       types.StringNull(),
 		}
 		if i < len(apiVolumes) {
 			api = volumeValueFromAPI(apiVolumes[i])
@@ -231,6 +243,9 @@ func mergeVolumesFromAPI(
 			Size: pv[i].Size,
 			// size_id is a write-only input; keep the plan value.
 			SizeId: pv[i].SizeId,
+			// storage_profile is an optional write field; keep the plan value so
+			// the post-apply state matches the configuration.
+			StorageProfile: pv[i].StorageProfile,
 			// Computed id always comes from the API.
 			Id: api.Id,
 			// Computed-optional fields keep the user's value when set.
@@ -291,6 +306,9 @@ func mergeVolumesForRead(
 		vol := volumeValueFromAPI(v)
 		if i < len(prior) {
 			vol.SizeId = prior[i].SizeId
+			// storage_profile is an optional write field; keep the prior value so
+			// an API-returned default does not produce a spurious diff on read.
+			vol.StorageProfile = prior[i].StorageProfile
 		}
 
 		objVal, d := vol.ToObjectValue(ctx)
