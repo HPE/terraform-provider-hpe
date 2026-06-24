@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"strconv"
-	"strings"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -17,6 +16,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -128,7 +128,7 @@ func (r *networkPoolServerResource) Create(
 	// all pool server types. It is stored in the integration's generic config map.
 	if !plan.InventoryExisting.IsNull() && !plan.InventoryExisting.IsUnknown() {
 		infoblox.Config = &sdk.InfobloxNetworkPoolServerConfig{
-			InventoryExisting: networkPoolServerCheckboxString(plan.InventoryExisting.ValueBool()),
+			InventoryExisting: convert.BoolTypeToStringPointerOnOff(plan.InventoryExisting),
 		}
 	}
 
@@ -180,7 +180,7 @@ func (r *networkPoolServerResource) Create(
 
 		return
 	}
-	mapReadResponseToModel(&plan, readResult.NetworkPoolServer)
+	mapReadResponseToModel(ctx, &plan, readResult.NetworkPoolServer)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -219,7 +219,7 @@ func (r *networkPoolServerResource) Read(ctx context.Context, req resource.ReadR
 
 		return
 	}
-	mapReadResponseToModel(&state, server)
+	mapReadResponseToModel(ctx, &state, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -290,7 +290,7 @@ func (r *networkPoolServerResource) Update(
 	// inventory_existing (config.inventoryExisting) is shared by all pool server types.
 	if !plan.InventoryExisting.IsNull() && !plan.InventoryExisting.IsUnknown() {
 		infobloxUpdate.Config = &sdk.InfobloxNetworkPoolServerUpdateConfig{
-			InventoryExisting: networkPoolServerCheckboxString(plan.InventoryExisting.ValueBool()),
+			InventoryExisting: convert.BoolTypeToStringPointerOnOff(plan.InventoryExisting),
 		}
 	}
 
@@ -330,7 +330,7 @@ func (r *networkPoolServerResource) Update(
 
 		return
 	}
-	mapReadResponseToModel(&plan, server)
+	mapReadResponseToModel(ctx, &plan, server)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -378,6 +378,7 @@ func (r *networkPoolServerResource) ImportState(
 }
 
 func mapReadResponseToModel(
+	ctx context.Context,
 	model *NetworkPoolServerModel,
 	server *sdk.GetNetworkPoolServer200ResponseNetworkPoolServer,
 ) {
@@ -387,12 +388,18 @@ func mapReadResponseToModel(
 	if server.Name != nil {
 		model.Name = types.StringValue(*server.Name)
 	}
+	// type_id and type_code are mutually exclusive Optional+Computed attributes, so
+	// populate only one — writing both carries both in state and copies them into the
+	// plan via UseStateForUnknown. Prefer the user-configured attribute; default to the
+	// stable type_code. The non-selected attribute is explicitly nulled (never left
+	// unknown, which would fail state.Set on create).
 	if t := server.Type; t != nil {
-		if t.Id != nil {
-			model.TypeId = types.Int64Value(*t.Id)
-		}
-		if t.Code != nil {
-			model.TypeCode = types.StringValue(*t.Code)
+		if !model.TypeId.IsNull() && !model.TypeId.IsUnknown() {
+			model.TypeId = convert.Int64ToType(t.Id)
+			model.TypeCode = types.StringNull()
+		} else {
+			model.TypeCode = convert.StrToType(t.Code)
+			model.TypeId = types.Int64Null()
 		}
 	}
 	if server.ServiceUrl.IsSet() && server.ServiceUrl.Get() != nil {
@@ -452,7 +459,12 @@ func mapReadResponseToModel(
 	// to avoid spurious drift (Morpheus often omits unchecked checkboxes).
 	if server.Config != nil {
 		if v, ok := server.Config["inventoryExisting"]; ok {
-			model.InventoryExisting = types.BoolValue(networkPoolServerConfigBool(v))
+			switch val := v.(type) {
+			case bool:
+				model.InventoryExisting = types.BoolValue(val)
+			case string:
+				model.InventoryExisting = types.BoolValue(convert.StringToBool(ctx, val).ValueBool())
+			}
 		}
 	}
 }
@@ -502,31 +514,4 @@ func resolveNetworkPoolServerTypeCode(
 	)
 
 	return "", diags
-}
-
-// networkPoolServerCheckboxString converts a Terraform bool into the on/off string
-// representation Morpheus uses for checkbox config options (config.inventoryExisting).
-func networkPoolServerCheckboxString(b bool) *string {
-	v := "off"
-	if b {
-		v = "on"
-	}
-
-	return &v
-}
-
-// networkPoolServerConfigBool coerces a generic config map value (string or bool) into a
-// bool, accepting the common truthy representations Morpheus may persist for a checkbox.
-func networkPoolServerConfigBool(v interface{}) bool {
-	switch val := v.(type) {
-	case bool:
-		return val
-	case string:
-		switch strings.ToLower(strings.TrimSpace(val)) {
-		case "on", "true", "1", "yes":
-			return true
-		}
-	}
-
-	return false
 }
