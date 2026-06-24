@@ -1,12 +1,12 @@
 # Infoblox Network Pool Server
 #
 # Applicable attributes for Infoblox:
-#   name, type_id, enabled, service_url, service_username, service_password_wo,
-#   service_password_wo_version, credential_id, ignore_ssl, network_filter,
-#   zone_filter, tenant_match, service_mode, service_throttle_rate
+#   name, type_code, enabled, service_url, service_username, service_password_wo,
+#   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
+#   network_filter, zone_filter, tenant_match, service_mode, service_throttle_rate
 resource "hpe_morpheus_network_pool_server" "infoblox" {
   name                        = "Infoblox IPAM"
-  type_id                     = 1
+  type_code                   = "infoblox"
   enabled                     = true
   service_url                 = "https://infoblox.example.com/wapi/v2.12"
   service_username            = "admin"

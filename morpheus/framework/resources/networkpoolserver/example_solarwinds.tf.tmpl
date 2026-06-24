@@ -1,11 +1,12 @@
 # SolarWinds Network Pool Server
 #
 # Applicable attributes for SolarWinds:
-#   name, type_id, enabled, service_url, service_username, service_password_wo,
-#   service_password_wo_version, credential_id, ignore_ssl, service_throttle_rate
+#   name, type_code, enabled, service_url, service_username, service_password_wo,
+#   service_password_wo_version, credential_id, ignore_ssl, inventory_existing,
+#   service_throttle_rate
 resource "hpe_morpheus_network_pool_server" "solarwinds" {
   name                        = "{{.Name}}"
-  type_id                     = {{.TypeId}}
+  type_code                   = "{{.TypeCode}}"
   enabled                     = {{.Enabled}}
   service_url                 = "{{.ServiceUrl}}"
   service_username            = "{{.ServiceUsername}}"

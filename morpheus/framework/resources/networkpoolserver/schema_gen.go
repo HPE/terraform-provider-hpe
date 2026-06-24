@@ -53,6 +53,13 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Whether to ignore SSL certificate errors.",
 				Default:             booldefault.StaticBool(false),
 			},
+			"inventory_existing": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Whether to inventory existing networks from the pool server. Applies to all pool server types.",
+				MarkdownDescription: "Whether to inventory existing networks from the pool server. Applies to all pool server types.",
+				Default:             booldefault.StaticBool(false),
+			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "The name of the network pool server.",
@@ -119,12 +126,31 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Tenant matching expression for multi-tenancy (Infoblox only).",
 				MarkdownDescription: "Tenant matching expression for multi-tenancy (Infoblox only).",
 			},
+			"type_code": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The network pool server type code (e.g. \"infoblox\", \"bluecat\", \"phpipam\", \"solarwindsipam\", \"solidserver\"). Mutually exclusive with type_id.",
+				MarkdownDescription: "The network pool server type code (e.g. \"infoblox\", \"bluecat\", \"phpipam\", \"solarwindsipam\", \"solidserver\"). Mutually exclusive with type_id.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_id")}...),
+				},
+			},
 			"type_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "The ID of the network pool server type.",
-				MarkdownDescription: "The ID of the network pool server type.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The ID of the network pool server type. Mutually exclusive with type_code.",
+				MarkdownDescription: "The ID of the network pool server type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
+					int64planmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.Int64{
+					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("type_id"), path.MatchRoot("type_code")}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
 				},
 			},
 			"zone_filter": schema.StringAttribute{
@@ -143,6 +169,7 @@ type NetworkPoolServerModel struct {
 	Enabled                  types.Bool   `tfsdk:"enabled"`
 	Id                       types.Int64  `tfsdk:"id"`
 	IgnoreSsl                types.Bool   `tfsdk:"ignore_ssl"`
+	InventoryExisting        types.Bool   `tfsdk:"inventory_existing"`
 	Name                     types.String `tfsdk:"name"`
 	NetworkFilter            types.String `tfsdk:"network_filter"`
 	ServiceMode              types.String `tfsdk:"service_mode"`
@@ -153,6 +180,7 @@ type NetworkPoolServerModel struct {
 	ServiceUsername          types.String `tfsdk:"service_username"`
 	Status                   types.String `tfsdk:"status"`
 	TenantMatch              types.String `tfsdk:"tenant_match"`
+	TypeCode                 types.String `tfsdk:"type_code"`
 	TypeId                   types.Int64  `tfsdk:"type_id"`
 	ZoneFilter               types.String `tfsdk:"zone_filter"`
 }
