@@ -31,8 +31,7 @@ func (r *ResourceWithMorpheusConfigure) Configure(
 		return
 	}
 
-	m, _ := req.ProviderData.(map[string]any)
-	cf, ok := m[constants.SubProviderName].(*clientfactory.ClientFactory)
+	cf, ok := req.ProviderData.(*clientfactory.ClientFactory)
 	if !ok {
 		tflog.Debug(ctx, "Nil ProviderData sub block")
 		msg := `
