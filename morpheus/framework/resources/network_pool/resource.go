@@ -9,8 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -42,17 +40,6 @@ func (r *networkPoolResource) Metadata(
 
 func (r *networkPoolResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = NetworkPoolResourceSchema(ctx)
-
-	// The generated schema pins ip_count/free_count with UseStateForUnknown, but
-	// the API recomputes those counts whenever ip_ranges changes. Replace the
-	// modifier so the counts are only carried forward when ip_ranges is
-	// unchanged, avoiding an "inconsistent result after apply" on update.
-	for _, name := range []string{"ip_count", "free_count"} {
-		if a, ok := resp.Schema.Attributes[name].(schema.Int64Attribute); ok {
-			a.PlanModifiers = []planmodifier.Int64{unknownOnIPRangesChange()}
-			resp.Schema.Attributes[name] = a
-		}
-	}
 }
 
 func (r *networkPoolResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

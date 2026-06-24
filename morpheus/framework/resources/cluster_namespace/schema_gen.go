@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -55,6 +56,9 @@ func ClusterNamespaceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The name of the namespace. Must be 63 characters or less. Must be lower case.",
 				MarkdownDescription: "The name of the namespace. Must be 63 characters or less. Must be lower case.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(63),
 					validators.Lowercase(),

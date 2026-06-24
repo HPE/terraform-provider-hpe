@@ -8,8 +8,6 @@ import (
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -41,14 +39,6 @@ func (r *monitoringCheckResource) Metadata(
 
 func (r *monitoringCheckResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = MonitoringCheckResourceSchema(ctx)
-
-	// check_interval is updatable in place (the Update path sends it), so the
-	// generated RequiresReplace plan modifier is incorrect and would force a
-	// destroy/create when only the interval changes.
-	if a, ok := resp.Schema.Attributes["check_interval"].(schema.Int64Attribute); ok {
-		a.PlanModifiers = []planmodifier.Int64{}
-		resp.Schema.Attributes["check_interval"] = a
-	}
 }
 
 func (r *monitoringCheckResource) Create(

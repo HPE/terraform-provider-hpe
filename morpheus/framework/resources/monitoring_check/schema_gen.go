@@ -30,10 +30,7 @@ func MonitoringCheckResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Check interval in seconds.",
 				MarkdownDescription: "Check interval in seconds.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
-				Default: int64default.StaticInt64(300),
+				Default:             int64default.StaticInt64(300),
 			},
 			"check_type_id": schema.Int64Attribute{
 				Required:            true,

@@ -10,8 +10,6 @@ import (
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -47,14 +45,6 @@ func (r *clusterNamespaceResource) Schema(
 	resp *resource.SchemaResponse,
 ) {
 	resp.Schema = ClusterNamespaceResourceSchema(ctx)
-
-	// The Morpheus API does not update the namespace name (it is omitted from
-	// the update payload server-side, matching Kubernetes namespace
-	// immutability). Renaming therefore requires replacing the resource.
-	if a, ok := resp.Schema.Attributes["name"].(schema.StringAttribute); ok {
-		a.PlanModifiers = append(a.PlanModifiers, stringplanmodifier.RequiresReplace())
-		resp.Schema.Attributes["name"] = a
-	}
 }
 
 func (r *clusterNamespaceResource) Create(
