@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	snapshotresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -36,11 +37,20 @@ func TestAccMorpheusInstanceSnapshotDataSource(t *testing.T) {
 
 	t.Parallel()
 
+	instanceName := acctest.RandomWithPrefix(t.Name())
 	snapshotName := acctest.RandomWithPrefix(t.Name())
+
+	// Provision a throwaway instance to snapshot so the test is self-contained.
+	instanceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": instanceName,
+	})
+	if err != nil {
+		t.Fatalf("failed to render instance config: %v", err)
+	}
 
 	resourceConfig, err := snapshotresource.RenderInstanceSnapshotConfig(t, map[string]string{
 		"Name":        snapshotName,
-		"InstanceId":  os.Getenv("TF_ACC_INSTANCE_ID"),
+		"InstanceId":  "hpe_morpheus_instance.example.id",
 		"Description": "Acceptance test snapshot",
 	})
 	if err != nil {
@@ -59,7 +69,7 @@ data "hpe_morpheus_instance_snapshot" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: testhelpers.ProviderBlock() + resourceConfig + dataSourceConfig,
+				Config: testhelpers.ProviderBlock() + instanceConfig + resourceConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(dsName, "id", resourceName, "id"),
 					resource.TestCheckResourceAttr(dsName, "name", snapshotName),
