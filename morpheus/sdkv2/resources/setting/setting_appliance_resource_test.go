@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
 )
 
 func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
@@ -25,6 +26,13 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
+	}
+
+	// This example asserts environment-specific resource IDs (default user and
+	// account roles) that must be pre-seeded, and it mutates global appliance
+	// settings (URL, proxy, SMTP). Skip unless explicitly opted in.
+	if skip.SkipByDefault(t) {
+		t.Skip("set RUN_SKIPPED_BY_DEFAULT to run; needs seeded role IDs and mutates global appliance settings")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
