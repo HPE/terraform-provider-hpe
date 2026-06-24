@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -217,12 +216,14 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"resource_permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"all": schema.BoolAttribute{
+						Optional:            true,
 						Computed:            true,
 						Description:         "Pass true to allow access all groups",
 						MarkdownDescription: "Pass true to allow access all groups",
 					},
 					"group_ids": schema.SetAttribute{
 						ElementType:         types.Int64Type,
+						Optional:            true,
 						Computed:            true,
 						Description:         "Array of group (site) IDs that are allowed access",
 						MarkdownDescription: "Array of group (site) IDs that are allowed access",
@@ -233,6 +234,7 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
 					},
 				},
+				Optional: true,
 				Computed: true,
 			},
 			"search_domains": schema.StringAttribute{
@@ -253,9 +255,6 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "List of tenant account ids that are allowed access",
 				MarkdownDescription: "List of tenant account ids that are allowed access",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(), // force new,
-				},
 			},
 			"type_id": schema.Int64Attribute{
 				Required:            true,

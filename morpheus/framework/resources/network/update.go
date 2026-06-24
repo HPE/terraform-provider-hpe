@@ -172,6 +172,34 @@ func (r *Resource) Update(
 		network.Tenants = tenants
 	}
 
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := &sdk.UpdateNetworkRequestNetworkResourcePermissions{
+			All: plan.ResourcePermissions.All.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissions.GroupIds.IsNull() &&
+			!plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			diags := plan.ResourcePermissions.GroupIds.ElementsAs(
+				ctx, &groupIDs, false,
+			)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			for _, g := range groupIDs {
+				if !g.IsNull() {
+					id := g.ValueInt64()
+					rp.Sites = append(rp.Sites,
+						sdk.UpdateNetworkRequestNetworkResourcePermissionsSitesInner{
+							Id: &id,
+						},
+					)
+				}
+			}
+		}
+		network.ResourcePermissions = rp
+	}
+
 	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
 		networkDomainID := plan.NetworkDomainId.ValueInt64()
 		network.NetworkDomain = &sdk.UpdateNetworkRequestNetworkNetworkDomain{Id: &networkDomainID}

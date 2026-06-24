@@ -265,6 +265,29 @@ func (r *Resource) Create(
 		}
 	}
 
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := &sdk.CreateNetworksRequestNetworkResourcePermission{
+			All: plan.ResourcePermissions.All.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissions.GroupIds.IsNull() &&
+			!plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			diags := plan.ResourcePermissions.GroupIds.ElementsAs(
+				ctx, &groupIDs, false,
+			)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			for _, g := range groupIDs {
+				if !g.IsNull() {
+					rp.Sites = append(rp.Sites, g.ValueInt64())
+				}
+			}
+		}
+		createNetwork.ResourcePermission = rp
+	}
+
 	createNetworkReq := &sdk.CreateNetworksRequest{
 		Network: createNetwork,
 	}
