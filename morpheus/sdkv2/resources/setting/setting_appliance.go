@@ -432,9 +432,10 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.ApplianceSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("ApplianceSettings"))
-	}
+	// The appliance-settings PUT returns only a success envelope (no
+	// applianceSettings object), so do not require it here. State is populated
+	// by the read below, which fetches the settings via GET.
+	_ = result
 
 	d.SetId(convert.Int64ToString(1))
 
