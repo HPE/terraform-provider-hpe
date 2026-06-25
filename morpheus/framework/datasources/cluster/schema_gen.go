@@ -5,6 +5,8 @@ package cluster
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -855,14 +856,12 @@ func (t CloudType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -905,7 +904,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.CloudType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -913,7 +911,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["cloud_type"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -921,7 +918,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1248,14 +1244,12 @@ func (t CloudTypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1292,7 +1286,6 @@ func (v CloudTypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1618,14 +1611,12 @@ func (t CreatedByType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1664,7 +1655,6 @@ func (v CreatedByValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1672,7 +1662,6 @@ func (v CreatedByValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["id"] = val
 
 		val, err = v.Username.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2005,14 +1994,12 @@ func (t GroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2051,7 +2038,6 @@ func (v GroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2059,7 +2045,6 @@ func (v GroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2306,14 +2291,12 @@ func (t IntegrationsType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2690,14 +2673,12 @@ func (t LayoutType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2738,7 +2719,6 @@ func (v LayoutValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2746,7 +2726,6 @@ func (v LayoutValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2754,7 +2733,6 @@ func (v LayoutValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals["name"] = val
 
 		val, err = v.ProvisionTypeCode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3094,14 +3072,12 @@ func (t OwnerType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -3140,7 +3116,6 @@ func (v OwnerValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3148,7 +3123,6 @@ func (v OwnerValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3481,14 +3455,12 @@ func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -3531,7 +3503,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.ResourcePermissions.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3539,7 +3510,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["resource_permissions"] = val
 
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4150,14 +4120,12 @@ func (t ResourcePermissionsType) ValueFromTerraform(ctx context.Context, in tfty
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -4214,7 +4182,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.All.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4222,7 +4189,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["all"] = val
 
 		val, err = v.AllPlans.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4230,7 +4196,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["all_plans"] = val
 
 		val, err = v.CanManage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4238,7 +4203,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["can_manage"] = val
 
 		val, err = v.DefaultStore.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4246,7 +4210,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["default_store"] = val
 
 		val, err = v.DefaultTarget.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4254,7 +4217,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["default_target"] = val
 
 		val, err = v.Groups.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4262,7 +4224,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["groups"] = val
 
 		val, err = v.Plans.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4270,7 +4231,6 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 		vals["plans"] = val
 
 		val, err = v.Tenant.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4650,14 +4610,12 @@ func (t GroupsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -4910,14 +4868,12 @@ func (t PlansType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -5218,14 +5174,12 @@ func (t TenantType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -5262,7 +5216,6 @@ func (v TenantValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5626,14 +5579,12 @@ func (t ResourcePoolType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -5674,7 +5625,6 @@ func (v ResourcePoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5682,7 +5632,6 @@ func (v ResourcePoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5690,7 +5639,6 @@ func (v ResourcePoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["name"] = val
 
 		val, err = v.Visibility.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6106,14 +6054,12 @@ func (t ServersType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -6160,7 +6106,6 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.ComputeServerType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6168,7 +6113,6 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["compute_server_type"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6176,7 +6120,6 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6184,7 +6127,6 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["name"] = val
 
 		val, err = v.TypeSet.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6619,14 +6561,12 @@ func (t ComputeServerTypeType) ValueFromTerraform(ctx context.Context, in tftype
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -6667,7 +6607,6 @@ func (v ComputeServerTypeValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Code.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6675,7 +6614,6 @@ func (v ComputeServerTypeValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["code"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -6683,7 +6621,6 @@ func (v ComputeServerTypeValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals["id"] = val
 
 		val, err = v.NodeType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -7061,14 +6998,12 @@ func (t TypeSetType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -7109,7 +7044,6 @@ func (v TypeSetValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Code.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -7117,7 +7051,6 @@ func (v TypeSetValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["code"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -7125,7 +7058,6 @@ func (v TypeSetValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -7379,14 +7311,12 @@ func (t TenantsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -7725,14 +7655,12 @@ func (t TypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (att
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -7771,7 +7699,6 @@ func (v TypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -7779,7 +7706,6 @@ func (v TypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8340,14 +8266,12 @@ func (t WorkerStatsType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -8398,7 +8322,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.CpuUsage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8406,7 +8329,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["cpu_usage"] = val
 
 		val, err = v.CpuUsageAvg.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8414,7 +8336,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["cpu_usage_avg"] = val
 
 		val, err = v.CpuUsagePeak.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8422,7 +8343,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["cpu_usage_peak"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8430,7 +8350,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["max_memory"] = val
 
 		val, err = v.MaxStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8438,7 +8357,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["max_storage"] = val
 
 		val, err = v.UsedCpu.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8446,7 +8364,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["used_cpu"] = val
 
 		val, err = v.UsedMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -8454,7 +8371,6 @@ func (v WorkerStatsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["used_memory"] = val
 
 		val, err = v.UsedStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

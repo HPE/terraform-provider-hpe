@@ -28,9 +28,7 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Morpheus ID of the Object being referenced",
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
 				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{
-						path.MatchRoot("name"),
-					}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
 			"location": schema.StringAttribute{
@@ -44,9 +42,7 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the Morpheus group",
 				MarkdownDescription: "The name of the Morpheus group",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
 		},

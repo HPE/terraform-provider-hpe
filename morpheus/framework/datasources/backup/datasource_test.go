@@ -13,8 +13,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	databackup "github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backup"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -72,7 +72,7 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	backupJobConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+	backupJobConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
 	})
@@ -136,7 +136,7 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	backupJobConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+	backupJobConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
 	})

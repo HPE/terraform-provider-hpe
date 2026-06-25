@@ -5,12 +5,13 @@ package instancesnapshot
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -631,14 +632,12 @@ func (t SnapshotFilesType) ValueFromTerraform(ctx context.Context, in tftypes.Va
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -691,7 +690,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals := make(map[string]tftypes.Value, 8)
 
 		val, err = v.DiskIndex.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -699,7 +697,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["disk_index"] = val
 
 		val, err = v.ExportPath.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -707,7 +704,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["export_path"] = val
 
 		val, err = v.ExternalId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -715,7 +711,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["external_id"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -723,7 +718,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -731,7 +725,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["name"] = val
 
 		val, err = v.Path.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -739,7 +732,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["path"] = val
 
 		val, err = v.SnapshotFilesType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -747,7 +739,6 @@ func (v SnapshotFilesValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["type"] = val
 
 		val, err = v.Volume.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1109,14 +1100,12 @@ func (t VolumeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1153,7 +1142,6 @@ func (v VolumeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

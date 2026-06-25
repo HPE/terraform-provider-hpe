@@ -5,6 +5,8 @@ package networkrouter
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -446,14 +447,12 @@ func (t CloudType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -494,7 +493,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Code.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -502,7 +500,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["code"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -510,7 +507,6 @@ func (v CloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -850,14 +846,12 @@ func (t GroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (at
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -896,7 +890,6 @@ func (v GroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -904,7 +897,6 @@ func (v GroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1275,14 +1267,12 @@ func (t InterfacesType) ValueFromTerraform(ctx context.Context, in tftypes.Value
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1323,7 +1313,6 @@ func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Cidr.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1331,7 +1320,6 @@ func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["cidr"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1339,7 +1327,6 @@ func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["id"] = val
 
 		val, err = v.IpAddress.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1679,14 +1666,12 @@ func (t NetworkIntegrationType) ValueFromTerraform(ctx context.Context, in tftyp
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1725,7 +1710,6 @@ func (v NetworkIntegrationValue) ToTerraformValue(ctx context.Context) (tftypes.
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1733,7 +1717,6 @@ func (v NetworkIntegrationValue) ToTerraformValue(ctx context.Context) (tftypes.
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2066,14 +2049,12 @@ func (t PermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2114,7 +2095,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.TenantPermissions.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2122,7 +2102,6 @@ func (v PermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["tenant_permissions"] = val
 
 		val, err = v.Visibility.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2442,14 +2421,12 @@ func (t TenantPermissionsType) ValueFromTerraform(ctx context.Context, in tftype
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2488,7 +2465,6 @@ func (v TenantPermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.V
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Accounts.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

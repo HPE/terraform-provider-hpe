@@ -5,12 +5,13 @@ package loadbalancervirtualserver
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -694,14 +695,12 @@ func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -746,7 +745,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals := make(map[string]tftypes.Value, 5)
 
 		val, err = v.ApplicationProfile.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -754,7 +752,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["application_profile"] = val
 
 		val, err = v.Persistence.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -762,7 +759,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["persistence"] = val
 
 		val, err = v.PersistenceProfile.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -770,7 +766,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["persistence_profile"] = val
 
 		val, err = v.SslClientProfile.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -778,7 +773,6 @@ func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		vals["ssl_client_profile"] = val
 
 		val, err = v.SslServerProfile.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1208,14 +1202,12 @@ func (t LoadBalancerType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1260,7 +1252,6 @@ func (v LoadBalancerValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1268,7 +1259,6 @@ func (v LoadBalancerValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["id"] = val
 
 		val, err = v.Ip.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1276,7 +1266,6 @@ func (v LoadBalancerValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["ip"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1284,7 +1273,6 @@ func (v LoadBalancerValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["name"] = val
 
 		val, err = v.LoadBalancerType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1694,14 +1682,12 @@ func (t TypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (att
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -1742,7 +1728,6 @@ func (v TypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals := make(map[string]tftypes.Value, 3)
 
 		val, err = v.Code.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1750,7 +1735,6 @@ func (v TypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["code"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1758,7 +1742,6 @@ func (v TypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2098,14 +2081,12 @@ func (t PoolType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (att
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2144,7 +2125,6 @@ func (v PoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2152,7 +2132,6 @@ func (v PoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) 
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2485,14 +2464,12 @@ func (t SslCertType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2531,7 +2508,6 @@ func (v SslCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2539,7 +2515,6 @@ func (v SslCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2872,14 +2847,12 @@ func (t SslServerCertType) ValueFromTerraform(ctx context.Context, in tftypes.Va
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2918,7 +2891,6 @@ func (v SslServerCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2926,7 +2898,6 @@ func (v SslServerCertValue) ToTerraformValue(ctx context.Context) (tftypes.Value
 		vals["id"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3173,14 +3144,12 @@ func (t VipPoolType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}

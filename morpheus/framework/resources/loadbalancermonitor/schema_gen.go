@@ -5,6 +5,8 @@ package loadbalancermonitor
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -14,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -461,14 +462,12 @@ func (t ConfigType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (a
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -509,7 +508,6 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.Monitor.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -517,7 +515,6 @@ func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error
 		vals["monitor"] = val
 
 		val, err = v.MonitorConfig.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -837,14 +834,12 @@ func (t MonitorType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -881,7 +876,6 @@ func (v MonitorValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		vals := make(map[string]tftypes.Value, 1)
 
 		val, err = v.Id.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
