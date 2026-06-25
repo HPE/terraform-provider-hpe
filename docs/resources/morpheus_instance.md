@@ -1101,8 +1101,10 @@ Use /api/provision-types?code=vmware to see the available controllerTypes for vm
 - `root_volume` (Boolean) If set to false then a non-root LV will be created.
 - `size` (Number) Size of the LV to be created in GBs.  Uses default from service plan.
 - `size_id` (Number) Can be used to select pre-existing LV choices from Morpheus.
-- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`.
-Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
+- `storage_profile` (String) Storage profile code for the volume. The available codes depend on the
+provision type; query `/api/provision-types` to list the `storageProfiles`
+for a type. For example, KVM/HVM volumes use cache-mode profiles such as
+`"kvm-cache-none"` or `"kvm-cache-directsync"` (`/api/provision-types?code=kvm`).
 - `storage_type_id` (Number) Identifier for LV type
 
 Read-Only:

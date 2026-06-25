@@ -392,7 +392,7 @@ func (g *Resource) Create(
 	}
 
 	// user_group
-	if !plan.UserGroup.IsNull() {
+	if !plan.UserGroup.IsNull() && !plan.UserGroup.IsUnknown() {
 		reqInstance.Instance.UserGroup = &sdk.AddInstanceRequestInstanceUserGroup{
 			Id: plan.UserGroup.ValueInt64Pointer(),
 		}

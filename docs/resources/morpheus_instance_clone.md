@@ -388,8 +388,10 @@ For a new controller the id is -1, e.g. "-1:1:6:0". Use /api/provision-types?cod
 - `datastore_id` (Number) The ID of the datastore to place the volume on.
 - `root_volume` (Boolean) Whether this is the root volume. Exactly one volume must be the root volume.
 - `size_id` (Number) Selects a pre-existing logical volume size choice from Morpheus. Not returned by the API.
-- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`.
-Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
+- `storage_profile` (String) Storage profile code for the volume. The available codes depend on the
+provision type; query `/api/provision-types` to list the `storageProfiles`
+for a type. For example, KVM/HVM volumes use cache-mode profiles such as
+`"kvm-cache-none"` or `"kvm-cache-directsync"` (`/api/provision-types?code=kvm`).
 - `storage_type` (Number) The storage volume type ID.
 
 Read-Only:
