@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,6 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -72,6 +75,41 @@ func (r *clusterAffinityGroupResource) Create(
 		Name: &name,
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	ag.Visibility = plan.Visibility.ValueStringPointer()
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		for _, idVal := range tenantIDs {
+			if !idVal.IsNull() {
+				tenantID := idVal.ValueInt64()
+				ag.Tenants = append(ag.Tenants, sdk.SaveClusterAffinityGroupRequestAffinityGroupTenantsInner{Id: &tenantID})
+			}
+		}
+	}
+
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := &sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{
+			All: plan.ResourcePermissions.All.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			for _, g := range groupIDs {
+				if !g.IsNull() {
+					gid := g.ValueInt64()
+					rp.Sites = append(rp.Sites, map[string]interface{}{"id": gid})
+				}
+			}
+		}
+		ag.ResourcePermissions = rp
+	}
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -112,7 +150,10 @@ func (r *clusterAffinityGroupResource) Create(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readAg)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -157,7 +198,10 @@ func (r *clusterAffinityGroupResource) Read(
 		return
 	}
 
-	mapGetResponseToModel(&state, ag)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &state, ag)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -189,6 +233,41 @@ func (r *clusterAffinityGroupResource) Update(
 		ag.Name = &v
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	ag.Visibility = plan.Visibility.ValueStringPointer()
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		for _, idVal := range tenantIDs {
+			if !idVal.IsNull() {
+				tenantID := idVal.ValueInt64()
+				ag.Tenants = append(ag.Tenants, sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner{Id: &tenantID})
+			}
+		}
+	}
+
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := &sdk.UpdateCloudAffinityGroupRequestAffinityGroupResourcePermissions{
+			All: plan.ResourcePermissions.All.ValueBoolPointer(),
+		}
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			for _, g := range groupIDs {
+				if !g.IsNull() {
+					gid := g.ValueInt64()
+					rp.Sites = append(rp.Sites, map[string]interface{}{"id": gid})
+				}
+			}
+		}
+		ag.ResourcePermissions = rp
+	}
 
 	body := sdk.UpdateClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -215,7 +294,10 @@ func (r *clusterAffinityGroupResource) Update(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readAg)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -282,7 +364,13 @@ func (r *clusterAffinityGroupResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *ClusterAffinityGroupModel,
+	ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if ag.Id != nil {
 		model.Id = types.Int64Value(*ag.Id)
 	}
@@ -292,4 +380,80 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 	if ag.Active != nil {
 		model.Active = types.BoolValue(*ag.Active)
 	}
+
+	model.Visibility = convert.StrToType(ag.Visibility)
+
+	// tenant_ids
+	model.TenantIds = types.SetNull(types.Int64Type)
+	if len(ag.Tenants) > 0 {
+		var tenantValues []attr.Value
+		for _, t := range ag.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		if len(tenantValues) > 0 {
+			tenantSet, d := types.SetValue(types.Int64Type, tenantValues)
+			diags.Append(d...)
+			if diags.HasError() {
+				return diags
+			}
+			model.TenantIds = tenantSet
+		}
+	}
+
+	// resource_permissions
+	if ag.ResourcePermissions != nil {
+		rp, d := convertAffinityGroupResourcePermissions(ctx, ag.ResourcePermissions)
+		diags.Append(d...)
+		if diags.HasError() {
+			return diags
+		}
+		model.ResourcePermissions = rp
+	} else {
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
+
+	return diags
+}
+
+func convertAffinityGroupResourcePermissions(
+	ctx context.Context,
+	rp *sdk.GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions,
+) (ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var groupValues []attr.Value
+	for _, site := range rp.Sites {
+		if rawID, ok := site["id"]; ok {
+			switch v := rawID.(type) {
+			case float64:
+				groupValues = append(groupValues, types.Int64Value(int64(v)))
+			case int64:
+				groupValues = append(groupValues, types.Int64Value(v))
+			case *int64:
+				if v != nil {
+					groupValues = append(groupValues, types.Int64Value(*v))
+				}
+			}
+		}
+	}
+
+	var groupIDsSet attr.Value
+	if len(groupValues) > 0 {
+		groupIDsSet, _ = types.SetValue(types.Int64Type, groupValues)
+	} else {
+		groupIDsSet = types.SetNull(types.Int64Type)
+	}
+
+	result, d := NewResourcePermissionsValue(
+		ResourcePermissionsValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"all":       types.BoolValue(rp.All != nil && *rp.All),
+			"group_ids": groupIDsSet,
+		},
+	)
+	diags.Append(d...)
+
+	return result, diags
 }

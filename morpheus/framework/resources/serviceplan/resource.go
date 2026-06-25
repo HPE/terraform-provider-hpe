@@ -144,6 +144,50 @@ func getServicePlanAsState(
 		state.ProvisionTypeCode = convert.StrToType(sp.ServicePlan.ProvisionType.Code)
 	}
 
+	// visibility: typed on GET response
+	state.Visibility = convert.StrToType(sp.ServicePlan.Visibility)
+
+	// tenant_ids → permissions.tenantPermissions.accounts (typed []int64)
+	state.TenantIds = types.ListNull(types.Int64Type)
+	// resource_permissions → permissions.resourcePermissions (typed)
+	state.ResourcePermissions = NewResourcePermissionsValueNull()
+	if sp.ServicePlan.Permissions != nil {
+		perms := sp.ServicePlan.Permissions
+		if perms.TenantPermissions != nil && len(perms.TenantPermissions.Accounts) > 0 {
+			acctVals := make([]attr.Value, 0, len(perms.TenantPermissions.Accounts))
+			for _, a := range perms.TenantPermissions.Accounts {
+				acctVals = append(acctVals, types.Int64Value(a))
+			}
+			tenantList, d := types.ListValue(types.Int64Type, acctVals)
+			diags.Append(d...)
+			if !diags.HasError() {
+				state.TenantIds = tenantList
+			}
+		}
+		if perms.ResourcePermissions != nil {
+			rp := perms.ResourcePermissions
+			allSitesVal := types.BoolNull()
+			if rp.All != nil {
+				allSitesVal = types.BoolValue(*rp.All)
+			}
+			siteIDVals := make([]attr.Value, 0, len(rp.Sites))
+			for _, site := range rp.Sites {
+				if site.Id != nil {
+					siteIDVals = append(siteIDVals, types.Int64Value(*site.Id))
+				}
+			}
+			siteIDSet, d := types.SetValue(types.Int64Type, siteIDVals)
+			diags.Append(d...)
+			if !diags.HasError() {
+				state.ResourcePermissions = ResourcePermissionsValue{
+					AllSites: allSitesVal,
+					SiteIds:  siteIDSet,
+					state:    attr.ValueStateKnown,
+				}
+			}
+		}
+	}
+
 	return state, diags
 }
 
@@ -466,6 +510,52 @@ func (r *Resource) Create(
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 
+	// visibility: typed on AddServicePlansRequestServicePlan
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		addServicePlan.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	// tenant_ids → permissions.tenantPermissions.accounts (typed)
+	// resource_permissions → permissions.resourcePermissions (typed)
+	if (!plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()) ||
+		(!plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown()) {
+		perms := sdk.AddServicePlansRequestServicePlanPermissions{}
+
+		if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+			var accountIDs []int64
+			diags := plan.TenantIds.ElementsAs(ctx, &accountIDs, false)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			perms.TenantPermissions = &sdk.AddServicePlansRequestServicePlanPermissionsTenantPermissions{
+				Accounts: accountIDs,
+			}
+		}
+
+		if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+			rp := sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissions{}
+			if !plan.ResourcePermissions.AllSites.IsNull() && !plan.ResourcePermissions.AllSites.IsUnknown() {
+				rp.AllSites = plan.ResourcePermissions.AllSites.ValueBoolPointer()
+			}
+			if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+				var siteIDs []int64
+				diags := plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
+				resp.Diagnostics.Append(diags...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+				for _, sid := range siteIDs {
+					s := sid
+					rp.Sites = append(rp.Sites, sdk.AddServicePlansRequestServicePlanPermissionsResourcePermissionsSitesInner{Id: &s})
+				}
+			}
+			perms.ResourcePermissions = &rp
+		}
+
+		addServicePlan.Permissions = &perms
+	}
+
 	addServicePlanRequest := &sdk.AddServicePlansRequest{ServicePlan: *addServicePlan}
 
 	servicePlan, hresp, err := client.ServicePlansAPI.AddServicePlans(
@@ -620,6 +710,55 @@ func (r *Resource) Update(
 	}
 
 	setConfigInUpdate(ctx, &plan, servicePlan)
+
+	// visibility, tenant_ids, resource_permissions: no typed fields on UpdateServicePlansRequestServicePlan
+	// Must use AdditionalProperties.
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var accountIDs []int64
+		diags := plan.TenantIds.ElementsAs(ctx, &accountIDs, false)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		additionalProps["permissions"] = map[string]interface{}{
+			"tenantPermissions": map[string]interface{}{
+				"accounts": accountIDs,
+			},
+		}
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := map[string]interface{}{
+			"all": plan.ResourcePermissions.AllSites.ValueBool(),
+		}
+		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+			var siteIDs []int64
+			diags := plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)
+			resp.Diagnostics.Append(diags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(siteIDs))
+			for _, sid := range siteIDs {
+				sites = append(sites, map[string]interface{}{"id": sid})
+			}
+			rp["sites"] = sites
+		}
+		// merge resourcePermissions into existing permissions AdditionalProperties map
+		if existing, ok := additionalProps["permissions"].(map[string]interface{}); ok {
+			existing["resourcePermissions"] = rp
+		} else {
+			additionalProps["permissions"] = map[string]interface{}{
+				"resourcePermissions": rp,
+			}
+		}
+	}
+	if len(additionalProps) > 0 {
+		servicePlan.AdditionalProperties = additionalProps
+	}
 
 	client, err := r.NewClient(ctx)
 	if err != nil {

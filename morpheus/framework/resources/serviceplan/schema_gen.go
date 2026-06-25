@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -231,6 +232,29 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The provision type code of the Morpheus service plan",
 				MarkdownDescription: "The provision type code of the Morpheus service plan",
 			},
+			"resource_permissions": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"all_sites": schema.BoolAttribute{
+						Optional:            true,
+						Description:         "Allow all groups access.",
+						MarkdownDescription: "Allow all groups access.",
+					},
+					"site_ids": schema.SetAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Description:         "Group IDs with access.",
+						MarkdownDescription: "Group IDs with access.",
+					},
+				},
+				CustomType: ResourcePermissionsType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ResourcePermissionsValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Group-level access permissions for the service plan.",
+				MarkdownDescription: "Group-level access permissions for the service plan.",
+			},
 			"sort_order": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -253,32 +277,50 @@ func ServicePlanResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("gb"),
 			},
+			"tenant_ids": schema.ListAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Description:         "Tenant IDs (accounts) with visibility of the plan when private.",
+				MarkdownDescription: "Tenant IDs (accounts) with visibility of the plan when private.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Visibility of the service plan (public or private).",
+				MarkdownDescription: "Visibility of the service plan (public or private).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
 
 type ServicePlanModel struct {
-	AddVolumes        types.Bool        `tfsdk:"add_volumes"`
-	Code              types.String      `tfsdk:"code"`
-	ConfigRanges      ConfigRangesValue `tfsdk:"config_ranges"`
-	CoresPerSocket    types.Int64       `tfsdk:"cores_per_socket"`
-	CustomCores       types.Bool        `tfsdk:"custom_cores"`
-	CustomCpu         types.Bool        `tfsdk:"custom_cpu"`
-	CustomMaxMemory   types.Bool        `tfsdk:"custom_max_memory"`
-	CustomMaxStorage  types.Bool        `tfsdk:"custom_max_storage"`
-	Description       types.String      `tfsdk:"description"`
-	Id                types.Int64       `tfsdk:"id"`
-	MaxCores          types.Int64       `tfsdk:"max_cores"`
-	MaxCpu            types.Int64       `tfsdk:"max_cpu"`
-	MaxDisks          types.Int64       `tfsdk:"max_disks"`
-	MaxMemory         types.Int64       `tfsdk:"max_memory"`
-	MaxStorage        types.Int64       `tfsdk:"max_storage"`
-	MemorySizeType    types.String      `tfsdk:"memory_size_type"`
-	Name              types.String      `tfsdk:"name"`
-	PriceSetIds       types.Set         `tfsdk:"price_set_ids"`
-	ProvisionTypeCode types.String      `tfsdk:"provision_type_code"`
-	SortOrder         types.Int64       `tfsdk:"sort_order"`
-	StorageSizeType   types.String      `tfsdk:"storage_size_type"`
+	AddVolumes          types.Bool               `tfsdk:"add_volumes"`
+	Code                types.String             `tfsdk:"code"`
+	ConfigRanges        ConfigRangesValue        `tfsdk:"config_ranges"`
+	CoresPerSocket      types.Int64              `tfsdk:"cores_per_socket"`
+	CustomCores         types.Bool               `tfsdk:"custom_cores"`
+	CustomCpu           types.Bool               `tfsdk:"custom_cpu"`
+	CustomMaxMemory     types.Bool               `tfsdk:"custom_max_memory"`
+	CustomMaxStorage    types.Bool               `tfsdk:"custom_max_storage"`
+	Description         types.String             `tfsdk:"description"`
+	Id                  types.Int64              `tfsdk:"id"`
+	MaxCores            types.Int64              `tfsdk:"max_cores"`
+	MaxCpu              types.Int64              `tfsdk:"max_cpu"`
+	MaxDisks            types.Int64              `tfsdk:"max_disks"`
+	MaxMemory           types.Int64              `tfsdk:"max_memory"`
+	MaxStorage          types.Int64              `tfsdk:"max_storage"`
+	MemorySizeType      types.String             `tfsdk:"memory_size_type"`
+	Name                types.String             `tfsdk:"name"`
+	PriceSetIds         types.Set                `tfsdk:"price_set_ids"`
+	ProvisionTypeCode   types.String             `tfsdk:"provision_type_code"`
+	ResourcePermissions ResourcePermissionsValue `tfsdk:"resource_permissions"`
+	SortOrder           types.Int64              `tfsdk:"sort_order"`
+	StorageSizeType     types.String             `tfsdk:"storage_size_type"`
+	TenantIds           types.List               `tfsdk:"tenant_ids"`
+	Visibility          types.String             `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigRangesType{}
@@ -1201,5 +1243,415 @@ func (v ConfigRangesValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"min_per_disk_size":    basetypes.Int64Type{},
 		"min_sockets":          basetypes.Int64Type{},
 		"min_storage":          basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ResourcePermissionsType{}
+
+type ResourcePermissionsType struct {
+	basetypes.ObjectType
+}
+
+func (t ResourcePermissionsType) Equal(o attr.Type) bool {
+	other, ok := o.(ResourcePermissionsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ResourcePermissionsType) String() string {
+	return "ResourcePermissionsType"
+}
+
+func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewResourcePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewResourcePermissionsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	allSitesAttribute, ok := attributes["all_sites"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`all_sites is missing from object`)
+
+		return nil, diags
+	}
+
+	allSitesVal, ok := allSitesAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`all_sites expected to be basetypes.BoolValue, was: %T`, allSitesAttribute))
+	}
+
+	siteIdsAttribute, ok := attributes["site_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`site_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	siteIdsVal, ok := siteIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`site_ids expected to be basetypes.SetValue, was: %T`, siteIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ResourcePermissionsValue{
+		AllSites: allSitesVal,
+		SiteIds:  siteIdsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewResourcePermissionsValueNull() ResourcePermissionsValue {
+	return ResourcePermissionsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewResourcePermissionsValueUnknown() ResourcePermissionsValue {
+	return ResourcePermissionsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ResourcePermissionsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ResourcePermissionsValue Attribute Value",
+				"While creating a ResourcePermissionsValue value, a missing attribute value was detected. "+
+					"A ResourcePermissionsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ResourcePermissionsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ResourcePermissionsValue Attribute Type",
+				"While creating a ResourcePermissionsValue value, an invalid attribute value was detected. "+
+					"A ResourcePermissionsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ResourcePermissionsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ResourcePermissionsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ResourcePermissionsValue Attribute Value",
+				"While creating a ResourcePermissionsValue value, an extra attribute value was detected. "+
+					"A ResourcePermissionsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ResourcePermissionsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewResourcePermissionsValueUnknown(), diags
+	}
+
+	allSitesAttribute, ok := attributes["all_sites"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`all_sites is missing from object`)
+
+		return NewResourcePermissionsValueUnknown(), diags
+	}
+
+	allSitesVal, ok := allSitesAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`all_sites expected to be basetypes.BoolValue, was: %T`, allSitesAttribute))
+	}
+
+	siteIdsAttribute, ok := attributes["site_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`site_ids is missing from object`)
+
+		return NewResourcePermissionsValueUnknown(), diags
+	}
+
+	siteIdsVal, ok := siteIdsAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`site_ids expected to be basetypes.SetValue, was: %T`, siteIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewResourcePermissionsValueUnknown(), diags
+	}
+
+	return ResourcePermissionsValue{
+		AllSites: allSitesVal,
+		SiteIds:  siteIdsVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewResourcePermissionsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ResourcePermissionsValue {
+	object, diags := NewResourcePermissionsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewResourcePermissionsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ResourcePermissionsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewResourcePermissionsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewResourcePermissionsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewResourcePermissionsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewResourcePermissionsValueMust(ResourcePermissionsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ResourcePermissionsType) ValueType(ctx context.Context) attr.Value {
+	return ResourcePermissionsValue{}
+}
+
+var _ basetypes.ObjectValuable = ResourcePermissionsValue{}
+
+type ResourcePermissionsValue struct {
+	AllSites basetypes.BoolValue `tfsdk:"all_sites"`
+	SiteIds  basetypes.SetValue  `tfsdk:"site_ids"`
+	state    attr.ValueState
+}
+
+func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["all_sites"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["site_ids"] = basetypes.SetType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.AllSites.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["all_sites"] = val
+
+		val, err = v.SiteIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["site_ids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ResourcePermissionsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ResourcePermissionsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ResourcePermissionsValue) String() string {
+	return "ResourcePermissionsValue"
+}
+
+func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var siteIdsVal basetypes.SetValue
+	switch {
+	case v.SiteIds.IsUnknown():
+		siteIdsVal = types.SetUnknown(types.Int64Type)
+	case v.SiteIds.IsNull():
+		siteIdsVal = types.SetNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		siteIdsVal, d = types.SetValue(types.Int64Type, v.SiteIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"all_sites": basetypes.BoolType{},
+			"site_ids": basetypes.SetType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"all_sites": basetypes.BoolType{},
+		"site_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"all_sites": v.AllSites,
+			"site_ids":  siteIdsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ResourcePermissionsValue) Equal(o attr.Value) bool {
+	other, ok := o.(ResourcePermissionsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AllSites.Equal(other.AllSites) {
+		return false
+	}
+
+	if !v.SiteIds.Equal(other.SiteIds) {
+		return false
+	}
+
+	return true
+}
+
+func (v ResourcePermissionsValue) Type(ctx context.Context) attr.Type {
+	return ResourcePermissionsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"all_sites": basetypes.BoolType{},
+		"site_ids": basetypes.SetType{
+			ElemType: types.Int64Type,
+		},
 	}
 }

@@ -73,6 +73,11 @@ func (r *Resource) Update(
 		cluster.Labels = labels
 	}
 
+	// visibility (stored in plan.Server.Visibility per schema; sent at cluster level on update)
+	if !plan.Server.Visibility.IsNull() && !plan.Server.Visibility.IsUnknown() {
+		cluster.Visibility = plan.Server.Visibility.ValueStringPointer()
+	}
+
 	switch {
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()

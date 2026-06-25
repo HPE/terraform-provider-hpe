@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -86,6 +87,35 @@ func getNetworkByID(
 	state.Cidr = convert.StrToType(net.Cidr.Get())
 	state.Active = convert.BoolToType(net.Active)
 	state.Visibility = convert.StrToType(net.Visibility)
+
+	// tenant_ids
+	state.TenantIds = types.SetNull(types.Int64Type)
+	if len(net.Tenants) > 0 {
+		var tenantValues []attr.Value
+		for _, tenant := range net.Tenants {
+			if tenant.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*tenant.Id))
+			}
+		}
+		if len(tenantValues) > 0 {
+			tenantSet, d := types.SetValue(types.Int64Type, tenantValues)
+			if d.HasError() {
+				return nil, fmt.Errorf("network %d: failed to build tenant_ids set", id)
+			}
+			state.TenantIds = tenantSet
+		}
+	}
+
+	// resource_permissions
+	if net.ResourcePermission != nil {
+		rp, err := convertResourcePermissions(context.Background(), net.ResourcePermission)
+		if err != nil {
+			return nil, fmt.Errorf("network %d: failed to convert resource_permissions: %s", id, err)
+		}
+		state.ResourcePermissions = rp
+	} else {
+		state.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
 
 	return state, nil
 }
@@ -168,4 +198,40 @@ func (d *DataSource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+}
+
+func convertResourcePermissions(
+	ctx context.Context,
+	resourcePermission *sdk.GetNetwork200ResponseNetworkResourcePermission,
+) (ResourcePermissionsValue, error) {
+	var groupValues []attr.Value
+	if resourcePermission.Sites != nil {
+		for _, site := range resourcePermission.Sites {
+			if site.Id != nil {
+				groupValues = append(groupValues, types.Int64Value(*site.Id))
+			}
+		}
+	}
+
+	var groupIDsSet attr.Value
+	if len(groupValues) > 0 {
+		groupIDsSet, _ = types.SetValue(types.Int64Type, groupValues)
+	} else {
+		groupIDsSet = types.SetNull(types.Int64Type)
+	}
+
+	result, d := NewResourcePermissionsValue(
+		ResourcePermissionsValue{}.AttributeTypes(ctx),
+		map[string]attr.Value{
+			"all": types.BoolValue(
+				resourcePermission.All != nil && *resourcePermission.All,
+			),
+			"group_ids": groupIDsSet,
+		},
+	)
+	if d.HasError() {
+		return NewResourcePermissionsValueUnknown(), fmt.Errorf("failed to build ResourcePermissionsValue")
+	}
+
+	return result, nil
 }

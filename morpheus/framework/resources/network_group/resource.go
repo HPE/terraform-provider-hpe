@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -61,11 +62,25 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		for _, idVal := range tenantIDs {
+			if !idVal.IsNull() {
+				tenantID := idVal.ValueInt64()
+				body.Tenants = append(body.Tenants, sdk.CreateNetworkGroupRequestNetworkGroupTenantsInner{Id: &tenantID})
+			}
+		}
+	}
 
 	additionalProps := map[string]interface{}{}
-	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		additionalProps["visibility"] = plan.Visibility.ValueString()
-	}
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		additionalProps["active"] = plan.Active.ValueBool()
 	}
@@ -188,11 +203,25 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		for _, idVal := range tenantIDs {
+			if !idVal.IsNull() {
+				tenantID := idVal.ValueInt64()
+				body.Tenants = append(body.Tenants, sdk.UpdateNetworkGroupRequestNetworkGroupTenantsInner{Id: &tenantID})
+			}
+		}
+	}
 
 	additionalProps := map[string]interface{}{}
-	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		additionalProps["visibility"] = plan.Visibility.ValueString()
-	}
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		additionalProps["active"] = plan.Active.ValueBool()
 	}
@@ -284,5 +313,19 @@ func mapResponseToModel(model *NetworkGroupModel, group *sdk.GetNetworkGroup200R
 	}
 	if group.Active != nil {
 		model.Active = types.BoolValue(*group.Active)
+	}
+
+	model.TenantIds = types.SetNull(types.Int64Type)
+	if len(group.Tenants) > 0 {
+		var tenantValues []attr.Value
+		for _, t := range group.Tenants {
+			if t.Id != nil {
+				tenantValues = append(tenantValues, types.Int64Value(*t.Id))
+			}
+		}
+		if len(tenantValues) > 0 {
+			tenantSet, _ := types.SetValue(types.Int64Type, tenantValues)
+			model.TenantIds = tenantSet
+		}
 	}
 }

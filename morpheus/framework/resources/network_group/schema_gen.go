@@ -49,6 +49,13 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the network group.",
 				MarkdownDescription: "The name of the network group.",
 			},
+			"tenant_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "List of tenant account ids that are allowed access",
+				MarkdownDescription: "List of tenant account ids that are allowed access",
+			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -73,5 +80,6 @@ type NetworkGroupModel struct {
 	Description types.String `tfsdk:"description"`
 	Id          types.Int64  `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
+	TenantIds   types.Set    `tfsdk:"tenant_ids"`
 	Visibility  types.String `tfsdk:"visibility"`
 }

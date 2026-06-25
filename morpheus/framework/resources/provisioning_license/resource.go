@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -321,5 +322,38 @@ func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProv
 	}
 	if license.LicenseType != nil && license.LicenseType.Code != nil {
 		model.LicenseType = types.StringValue(*license.LicenseType.Code)
+	}
+
+	// tenants: API returns []map[string]interface{} with float64 id
+	model.Tenants = types.ListNull(types.Int64Type)
+	if len(license.Tenants) > 0 {
+		tenantVals := make([]attr.Value, 0, len(license.Tenants))
+		for _, t := range license.Tenants {
+			switch id := t["id"].(type) {
+			case float64:
+				tenantVals = append(tenantVals, types.Int64Value(int64(id)))
+			case int64:
+				tenantVals = append(tenantVals, types.Int64Value(id))
+			}
+		}
+		if len(tenantVals) > 0 {
+			tenantList, _ := types.ListValue(types.Int64Type, tenantVals)
+			model.Tenants = tenantList
+		}
+	}
+
+	// virtual_images: typed []...VirtualImagesInner with *int64 Id
+	model.VirtualImages = types.ListNull(types.Int64Type)
+	if len(license.VirtualImages) > 0 {
+		imgVals := make([]attr.Value, 0, len(license.VirtualImages))
+		for _, img := range license.VirtualImages {
+			if img.Id != nil {
+				imgVals = append(imgVals, types.Int64Value(*img.Id))
+			}
+		}
+		if len(imgVals) > 0 {
+			imgList, _ := types.ListValue(types.Int64Type, imgVals)
+			model.VirtualImages = imgList
+		}
 	}
 }

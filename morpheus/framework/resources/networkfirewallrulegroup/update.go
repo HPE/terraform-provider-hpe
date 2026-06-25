@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 
@@ -59,6 +60,29 @@ func (r *Resource) Update(
 
 	updateReq := &sdk.UpdateNetworkFirewallRuleGroupRequest{
 		RuleGroup: ruleGroup,
+	}
+
+	// visibility and tenant_ids: no typed fields; use AdditionalProperties
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]map[string]interface{}, 0, len(tenantIDs))
+		for _, t := range tenantIDs {
+			if !t.IsNull() {
+				tenants = append(tenants, map[string]interface{}{"id": t.ValueInt64()})
+			}
+		}
+		additionalProps["tenants"] = tenants
+	}
+	if len(additionalProps) > 0 {
+		ruleGroup.AdditionalProperties = additionalProps
 	}
 
 	_, httpResp, err := client.NetworksAPI.

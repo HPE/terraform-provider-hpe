@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -102,6 +103,35 @@ func getNetworkFirewallRuleGroupAsState(
 	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.
 	state.NetworkIntegrationId = prior.NetworkIntegrationId
 	state.ExternalType = prior.ExternalType
+
+	// visibility and tenant_ids: in AdditionalProperties on GET response
+	state.Visibility = types.StringNull()
+	if v, ok := ruleGroup.AdditionalProperties["visibility"]; ok {
+		if s, ok := v.(string); ok {
+			state.Visibility = types.StringValue(s)
+		}
+	}
+
+	state.TenantIds = types.ListNull(types.Int64Type)
+	if tenantsRaw, ok := ruleGroup.AdditionalProperties["tenants"]; ok {
+		if tenantsArr, ok := tenantsRaw.([]interface{}); ok {
+			tenantVals := make([]attr.Value, 0, len(tenantsArr))
+			for _, t := range tenantsArr {
+				if tMap, ok := t.(map[string]interface{}); ok {
+					switch id := tMap["id"].(type) {
+					case float64:
+						tenantVals = append(tenantVals, types.Int64Value(int64(id)))
+					case int64:
+						tenantVals = append(tenantVals, types.Int64Value(id))
+					}
+				}
+			}
+			if len(tenantVals) > 0 {
+				tenantList, _ := types.ListValue(types.Int64Type, tenantVals)
+				state.TenantIds = tenantList
+			}
+		}
+	}
 
 	return state, false, diags
 }

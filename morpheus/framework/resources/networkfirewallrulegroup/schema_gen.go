@@ -64,6 +64,21 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network firewall rule group priority",
 				MarkdownDescription: "Network firewall rule group priority",
 			},
+			"tenant_ids": schema.ListAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Description:         "Tenant IDs with access to this firewall rule group.",
+				MarkdownDescription: "Tenant IDs with access to this firewall rule group.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Visibility of the firewall rule group (public or private).",
+				MarkdownDescription: "Visibility of the firewall rule group (public or private).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 		Description:         "Manages a network firewall rule group resource in Morpheus.",
 		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
@@ -78,4 +93,6 @@ type NetworkFirewallRuleGroupModel struct {
 	Name                 types.String `tfsdk:"name"`
 	NetworkIntegrationId types.Int64  `tfsdk:"network_integration_id"`
 	Priority             types.Int64  `tfsdk:"priority"`
+	TenantIds            types.List   `tfsdk:"tenant_ids"`
+	Visibility           types.String `tfsdk:"visibility"`
 }

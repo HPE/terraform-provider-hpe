@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	sdk "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -76,6 +77,55 @@ func (r *clusterNamespaceResource) Create(
 	}
 	if !plan.Active.IsNull() {
 		ns.Active = plan.Active.ValueBoolPointer()
+	}
+
+	// visibility and permissions must be sent via AdditionalProperties on Create:
+	// the typed ResourcePermissions field maps to the wrong JSON path.
+	additionalProps := map[string]interface{}{}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		additionalProps["visibility"] = plan.Visibility.ValueString()
+	}
+
+	permissions := map[string]interface{}{}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := map[string]interface{}{
+			"all": plan.ResourcePermissions.All.ValueBool(),
+		}
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var groupIDs []types.Int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &groupIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(groupIDs))
+			for _, g := range groupIDs {
+				if !g.IsNull() {
+					sites = append(sites, map[string]interface{}{"id": g.ValueInt64()})
+				}
+			}
+			rp["sites"] = sites
+		}
+		permissions["resourcePermissions"] = rp
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]map[string]interface{}, 0, len(tenantIDs))
+		for _, t := range tenantIDs {
+			if !t.IsNull() {
+				tenants = append(tenants, map[string]interface{}{"id": t.ValueInt64()})
+			}
+		}
+		permissions["tenants"] = tenants
+	}
+	if len(permissions) > 0 {
+		additionalProps["permissions"] = permissions
+	}
+	if len(additionalProps) > 0 {
+		ns.AdditionalProperties = additionalProps
 	}
 
 	body := sdk.AddClusterNamespaceRequest{
@@ -197,6 +247,55 @@ func (r *clusterNamespaceResource) Update(
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
 
+	// visibility: no typed field on update model; use AdditionalProperties
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ns.AdditionalProperties = map[string]interface{}{
+			"visibility": plan.Visibility.ValueString(),
+		}
+	}
+
+	// permissions: typed path on update model
+	if !plan.ResourcePermissions.IsNull() || !plan.TenantIds.IsNull() {
+		perms := &sdk.UpdateClusterNamespaceRequestNamespacePermissions{}
+
+		if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+			rp := &sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{
+				All: plan.ResourcePermissions.All.ValueBoolPointer(),
+			}
+			if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+				var groupIDs []types.Int64
+				resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &groupIDs, false)...)
+				if resp.Diagnostics.HasError() {
+					return
+				}
+				for _, g := range groupIDs {
+					if !g.IsNull() {
+						gid := g.ValueInt64()
+						rp.Sites = append(rp.Sites, sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &gid})
+					}
+				}
+			}
+			perms.ResourcePermissions = rp
+		}
+
+		if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+			var tenantIDs []types.Int64
+			resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			tenants := make([]map[string]interface{}, 0, len(tenantIDs))
+			for _, t := range tenantIDs {
+				if !t.IsNull() {
+					tenants = append(tenants, map[string]interface{}{"id": t.ValueInt64()})
+				}
+			}
+			perms.AdditionalProperties = map[string]interface{}{"tenants": tenants}
+		}
+
+		ns.Permissions = perms
+	}
+
 	body := sdk.UpdateClusterNamespaceRequest{
 		Namespace: &ns,
 	}
@@ -299,5 +398,54 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 	if ns.Description != nil {
 		model.Description = types.StringValue(*ns.Description)
 	}
+	if ns.Visibility != nil {
+		model.Visibility = types.StringValue(*ns.Visibility)
+	}
 	// NOTE: Active is not in the API GET at all. Config value is preserved in state.
+
+	// resource_permissions
+	model.ResourcePermissions = NewResourcePermissionsValueNull()
+	if ns.Permissions != nil && ns.Permissions.ResourcePermissions != nil {
+		rp := ns.Permissions.ResourcePermissions
+		allVal := types.BoolNull()
+		if rp.All != nil {
+			allVal = types.BoolValue(*rp.All)
+		}
+		groupIDsVals := make([]attr.Value, 0, len(rp.Sites))
+		for _, site := range rp.Sites {
+			if site.Id != nil {
+				groupIDsVals = append(groupIDsVals, types.Int64Value(*site.Id))
+			}
+		}
+		groupIdsSet, _ := types.SetValue(types.Int64Type, groupIDsVals)
+		model.ResourcePermissions = ResourcePermissionsValue{
+			All:      allVal,
+			GroupIds: groupIdsSet,
+			state:    attr.ValueStateKnown,
+		}
+	}
+
+	// tenant_ids: API bug returns key "tenants" inside permissions (not "tenantPermissions")
+	// tenant_ids is Optional-only (not Computed) to avoid perpetual diffs when not set.
+	if ns.Permissions != nil {
+		if tenantsRaw, ok := ns.Permissions.AdditionalProperties["tenants"]; ok {
+			if tenantsArr, ok := tenantsRaw.([]interface{}); ok {
+				tenantVals := make([]attr.Value, 0, len(tenantsArr))
+				for _, t := range tenantsArr {
+					if tMap, ok := t.(map[string]interface{}); ok {
+						switch id := tMap["id"].(type) {
+						case float64:
+							tenantVals = append(tenantVals, types.Int64Value(int64(id)))
+						case int64:
+							tenantVals = append(tenantVals, types.Int64Value(id))
+						}
+					}
+				}
+				if len(tenantVals) > 0 {
+					tenantList, _ := types.ListValue(types.Int64Type, tenantVals)
+					model.TenantIds = tenantList
+				}
+			}
+		}
+	}
 }
