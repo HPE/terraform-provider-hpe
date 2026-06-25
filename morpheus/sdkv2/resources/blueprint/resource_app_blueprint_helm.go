@@ -75,19 +75,6 @@ func ResourceAppBlueprintHelm() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
 			},
-			"group_access_all": {
-				Type:        schema.TypeBool,
-				Description: "Whether to allow all groups access to the helm app blueprint",
-				Optional:    true,
-				Computed:    true,
-			},
-			"group_ids": {
-				Type:        schema.TypeSet,
-				Description: "A list of group IDs to grant access to the helm app blueprint",
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeInt},
-			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -193,10 +180,6 @@ func resourceAppBlueprintHelmCreate(ctx context.Context, d *schema.ResourceData,
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
-
 	diags = append(diags, resourceAppBlueprintHelmRead(ctx, d, meta)...)
 
 	return diags
@@ -260,10 +243,7 @@ func resourceAppBlueprintHelmRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("repository_id", helmBlueprint.Blueprint.Config.Helm.Git.RepoId)
 	d.Set("version_ref", helmBlueprint.Blueprint.Config.Helm.Git.Branch)
 
-	setBlueprintPermissionsInState(d,
-		helmBlueprint.Blueprint.Visibility,
-		helmBlueprint.Blueprint.Resourcepermission.All,
-		helmBlueprint.Blueprint.Resourcepermission.Sites)
+	d.Set("visibility", helmBlueprint.Blueprint.Visibility)
 
 	return diags
 }
@@ -361,10 +341,6 @@ func resourceAppBlueprintHelmUpdate(ctx context.Context, d *schema.ResourceData,
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
-
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return resourceAppBlueprintHelmRead(ctx, d, meta)
 }

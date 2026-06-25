@@ -111,19 +111,6 @@ func ResourceAppBlueprintARM() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
 			},
-			"group_access_all": {
-				Type:        schema.TypeBool,
-				Description: "Whether to allow all groups access to the arm app blueprint",
-				Optional:    true,
-				Computed:    true,
-			},
-			"group_ids": {
-				Type:        schema.TypeSet,
-				Description: "A list of group IDs to grant access to the arm app blueprint",
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeInt},
-			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -288,10 +275,6 @@ func resourceAppBlueprintARMCreate(ctx context.Context, d *schema.ResourceData, 
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
-
 	diags = append(diags, resourceAppBlueprintARMRead(ctx, d, meta)...)
 
 	return diags
@@ -362,10 +345,7 @@ func resourceAppBlueprintARMRead(ctx context.Context, d *schema.ResourceData, me
 		d.Set("version_ref", armBlueprint.Blueprint.Config.Arm.Git.Branch)
 	}
 
-	setBlueprintPermissionsInState(d,
-		armBlueprint.Blueprint.Visibility,
-		armBlueprint.Blueprint.Resourcepermission.All,
-		armBlueprint.Blueprint.Resourcepermission.Sites)
+	d.Set("visibility", armBlueprint.Blueprint.Visibility)
 
 	return diags
 }
@@ -524,10 +504,6 @@ func resourceAppBlueprintARMUpdate(ctx context.Context, d *schema.ResourceData, 
 	}
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
-
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return resourceAppBlueprintARMRead(ctx, d, meta)
 }

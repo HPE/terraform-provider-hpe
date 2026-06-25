@@ -114,19 +114,6 @@ func ResourceAppBlueprintKubernetes() *schema.Resource {
 				Computed:     true,
 				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
 			},
-			"group_access_all": {
-				Type:        schema.TypeBool,
-				Description: "Whether to allow all groups access to the kubernetes app blueprint",
-				Optional:    true,
-				Computed:    true,
-			},
-			"group_ids": {
-				Type:        schema.TypeSet,
-				Description: "A list of group IDs to grant access to the kubernetes app blueprint",
-				Optional:    true,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeInt},
-			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -281,10 +268,6 @@ func resourceAppBlueprintKubernetesCreate(
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
 
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
-
 	diags = append(diags, resourceAppBlueprintKubernetesRead(ctx, d, meta)...)
 
 	return diags
@@ -371,10 +354,7 @@ func resourceAppBlueprintKubernetesRead(
 		d.Set("spec_template_ids", specTemplates)
 	}
 
-	setBlueprintPermissionsInState(d,
-		kubernetesBlueprint.Blueprint.Visibility,
-		kubernetesBlueprint.Blueprint.Resourcepermission.All,
-		kubernetesBlueprint.Blueprint.Resourcepermission.Sites)
+	d.Set("visibility", kubernetesBlueprint.Blueprint.Visibility)
 
 	return diags
 }
@@ -520,10 +500,6 @@ func resourceAppBlueprintKubernetesUpdate(
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
-
-	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
-		return diag.FromErr(err)
-	}
 
 	return resourceAppBlueprintKubernetesRead(ctx, d, meta)
 }

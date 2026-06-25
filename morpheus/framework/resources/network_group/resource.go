@@ -62,35 +62,42 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
+
+	// Build body AdditionalProperties (active, visibility)
+	bodyProps := map[string]interface{}{}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		bodyProps["active"] = plan.Active.ValueBool()
+	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		body.Visibility = plan.Visibility.ValueStringPointer()
+		bodyProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if len(bodyProps) > 0 {
+		body.AdditionalProperties = bodyProps
 	}
 
+	// tenantPermissions go at the TOP LEVEL of the request body (not inside networkGroup)
+	var outerProps map[string]interface{}
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []types.Int64
 		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
+		accounts := make([]int64, 0, len(tenantIDs))
 		for _, idVal := range tenantIDs {
 			if !idVal.IsNull() {
-				tenantID := idVal.ValueInt64()
-				body.Tenants = append(body.Tenants, sdk.CreateNetworkGroupRequestNetworkGroupTenantsInner{Id: &tenantID})
+				accounts = append(accounts, idVal.ValueInt64())
 			}
 		}
-	}
-
-	additionalProps := map[string]interface{}{}
-	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		additionalProps["active"] = plan.Active.ValueBool()
-	}
-	if len(additionalProps) > 0 {
-		body.AdditionalProperties = additionalProps
+		outerProps = map[string]interface{}{
+			"tenantPermissions": map[string]interface{}{"accounts": accounts},
+		}
 	}
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).
 		CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
-			NetworkGroup: &body,
+			NetworkGroup:         &body,
+			AdditionalProperties: outerProps,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_group", plan.Name.ValueString(), err, httpResp)
@@ -203,35 +210,42 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
+
+	// Build body AdditionalProperties (active, visibility)
+	bodyProps := map[string]interface{}{}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		bodyProps["active"] = plan.Active.ValueBool()
+	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		body.Visibility = plan.Visibility.ValueStringPointer()
+		bodyProps["visibility"] = plan.Visibility.ValueString()
+	}
+	if len(bodyProps) > 0 {
+		body.AdditionalProperties = bodyProps
 	}
 
+	// tenantPermissions go at the TOP LEVEL of the request body (not inside networkGroup)
+	var outerProps map[string]interface{}
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []types.Int64
 		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
+		accounts := make([]int64, 0, len(tenantIDs))
 		for _, idVal := range tenantIDs {
 			if !idVal.IsNull() {
-				tenantID := idVal.ValueInt64()
-				body.Tenants = append(body.Tenants, sdk.UpdateNetworkGroupRequestNetworkGroupTenantsInner{Id: &tenantID})
+				accounts = append(accounts, idVal.ValueInt64())
 			}
 		}
-	}
-
-	additionalProps := map[string]interface{}{}
-	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		additionalProps["active"] = plan.Active.ValueBool()
-	}
-	if len(additionalProps) > 0 {
-		body.AdditionalProperties = additionalProps
+		outerProps = map[string]interface{}{
+			"tenantPermissions": map[string]interface{}{"accounts": accounts},
+		}
 	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).
 		UpdateNetworkGroupRequest(sdk.UpdateNetworkGroupRequest{
-			NetworkGroup: &body,
+			NetworkGroup:         &body,
+			AdditionalProperties: outerProps,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_group", plan.Name.ValueString(), err, httpResp)
