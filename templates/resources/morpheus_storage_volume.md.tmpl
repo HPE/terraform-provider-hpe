@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: "morpheus"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -11,6 +11,32 @@ description: |-
 ## Example Usage
 
 {{ tffile "examples/resources/morpheus_storage_volume/example.tf" }}
+
+### Write-only configuration
+
+-> The `config` and `config_alletramp_bmaas` arguments are
+[write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)
+(Terraform 1.11 and later): their values are sent to the Morpheus API on create
+but are never stored in Terraform state. Because Terraform cannot detect changes
+to a write-only value, each is paired with a companion version argument
+(`config_wo_version` and `config_alletramp_bmaas_wo_version`). Increment the
+version argument whenever you change the corresponding configuration to recreate
+the volume with the new values.
+
+#### Alletra MP BMaaS volume
+
+The typed `config_alletramp_bmaas` block configures an HPE Alletra Storage MP
+Bare Metal (BMaaS) volume. `compute_server_id` and `instance_ids` are mutually
+exclusive.
+
+{{ tffile "examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf" }}
+
+#### Generic write-only config
+
+For storage volume types without a typed config block, use the generic `config`
+map with the storage plugin's native keys.
+
+{{ tffile "examples/resources/morpheus_storage_volume/example_config.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 

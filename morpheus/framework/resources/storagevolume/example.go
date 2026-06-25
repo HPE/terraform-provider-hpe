@@ -12,6 +12,8 @@ import (
 )
 
 //go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeId 1
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf example_alletramp_bmaas.tf.tmpl Name "Example Alletra MP BMaaS Volume" TypeId 1
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_config.tf example_config.tf.tmpl Name "Example Storage Volume" TypeId 1
 
 func RenderStorageVolumeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()

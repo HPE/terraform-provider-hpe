@@ -1,0 +1,17 @@
+resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
+  name              = "Example Alletra MP BMaaS Volume"
+  type_id           = 1
+  storage_server_id = 1
+  max_storage       = 32212254720 # 30 GiB, in bytes
+
+  # config_alletramp_bmaas is a write-only block: its values are sent to the API
+  # on create but are never stored in Terraform state. Because Terraform cannot
+  # detect changes to a write-only value, increment config_alletramp_bmaas_wo_version
+  # whenever you change this block to recreate the volume with the new configuration.
+  config_alletramp_bmaas = {
+    datastore_id      = 5
+    shared            = false
+    compute_server_id = 10
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
