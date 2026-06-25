@@ -74,7 +74,7 @@ func (g *Resource) Read(
 	// servicePlanOptions is not returned by the API
 	servicePlanOptions := data.ServicePlanOptions
 
-	state, found, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data, true)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -104,6 +104,11 @@ func getInstanceAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan InstanceModel,
+	// refresh is true for a plain Read (drift detection): API-backed fields like
+	// volume storage_profile are taken from the API. It is false for create/update
+	// post-apply reads, where the configured value is preferred so the final state
+	// matches the plan.
+	refresh bool,
 ) (InstanceModel, bool, diag.Diagnostics) {
 	var state InstanceModel
 	var diags diag.Diagnostics
@@ -375,7 +380,7 @@ func getInstanceAsState(
 	state.TaskSetId = plan.TaskSetId
 
 	// volumes
-	volumes, d := getVolumes(ctx, instance, plan)
+	volumes, d := getVolumes(ctx, instance, plan, refresh)
 	diags.Append(d...)
 	state.Volumes = volumes
 
@@ -945,6 +950,7 @@ func getVolumes(
 	ctx context.Context,
 	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
+	refresh bool,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -1005,7 +1011,7 @@ func getVolumes(
 
 	// If the number of volumes is the same as the plan, we can do a direct conversion
 	if len(apiVolumes) == len(plan.Volumes.Elements()) {
-		autoselectVolumes := setDatastoreAutoSelectionAndSize(apiVolumes, plan)
+		autoselectVolumes := setDatastoreAutoSelectionAndSize(apiVolumes, plan, refresh)
 
 		return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
 	}
@@ -1014,7 +1020,7 @@ func getVolumes(
 	nonRaidVolumes := removeRaidDisks(apiVolumes)
 	reorderedVolumes := reorderVolumes(nonRaidVolumes, plan)
 	filledVolumes := fillVolumeFieldsFromPlan(reorderedVolumes, plan)
-	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan)
+	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan, refresh)
 
 	return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
 }
@@ -1026,6 +1032,7 @@ func getVolumes(
 func setDatastoreAutoSelectionAndSize(
 	apiVolumes []sdk.InstanceContainerServerVolume1,
 	plan InstanceModel,
+	refresh bool,
 ) []sdk.InstanceContainerServerVolume1 {
 	autoSelection := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
 	planVolumes := plan.Volumes.Elements()
@@ -1055,10 +1062,14 @@ func setDatastoreAutoSelectionAndSize(
 			// We set this flag to indicate that Terraform set the MaxStorage value
 			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
 
-			// storage_profile is a write-mostly field: preserve the plan value so
-			// that an API-returned default does not produce a spurious diff (or an
-			// inconsistent-result-after-apply error) on a normal read.
-			apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
+			// storage_profile: on a post-apply read (create/update) prefer the
+			// configured value so the final state matches the plan, and an
+			// API-side default for an unset volume is absorbed by the computed
+			// attribute. On a plain refresh, leave the API value so a server-side
+			// change is detected as drift.
+			if !refresh && !planVol.StorageProfile.IsNull() && !planVol.StorageProfile.IsUnknown() {
+				apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
+			}
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 

@@ -533,7 +533,7 @@ func (g *Resource) Create(
 	}
 
 	// Read the instance state
-	state, found, d := getInstanceAsState(ctx, instanceId, client, plan)
+	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
 	if d.HasError() || !found {
 		resp.Diagnostics.Append(d...)
 		resp.Diagnostics.AddError(

@@ -767,6 +767,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"storage_profile": schema.StringAttribute{
 							Optional:            true,
+							Computed:            true,
 							Description:         "Storage profile code for the volume. The available codes depend on the\nprovision type; query `/api/provision-types` to list the `storageProfiles`\nfor a type. For example, KVM/HVM volumes use cache-mode profiles such as\n`\"kvm-cache-none\"` or `\"kvm-cache-directsync\"` (`/api/provision-types?code=kvm`).",
 							MarkdownDescription: "Storage profile code for the volume. The available codes depend on the\nprovision type; query `/api/provision-types` to list the `storageProfiles`\nfor a type. For example, KVM/HVM volumes use cache-mode profiles such as\n`\"kvm-cache-none\"` or `\"kvm-cache-directsync\"` (`/api/provision-types?code=kvm`).",
 						},
