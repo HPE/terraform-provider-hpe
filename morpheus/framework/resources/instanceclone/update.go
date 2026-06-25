@@ -220,6 +220,11 @@ func buildResizeVolumes(
 			vol.SizeId = *sdk.NewNullableInt64(&siVal)
 		}
 
+		if !v.StorageProfile.IsNull() && !v.StorageProfile.IsUnknown() {
+			spVal := v.StorageProfile.ValueString()
+			vol.StorageProfile = *sdk.NewNullableString(&spVal)
+		}
+
 		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {
 			vol.ControllerMountPoint = v.ControllerMountPoint.ValueStringPointer()
 		}

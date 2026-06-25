@@ -74,7 +74,7 @@ func (g *Resource) Read(
 	// servicePlanOptions is not returned by the API
 	servicePlanOptions := data.ServicePlanOptions
 
-	state, found, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getInstanceAsState(ctx, data.Id.ValueInt64(), client, data, true)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
@@ -104,6 +104,11 @@ func getInstanceAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan InstanceModel,
+	// refresh is true for a plain Read (drift detection): API-backed fields like
+	// volume storage_profile are taken from the API. It is false for create/update
+	// post-apply reads, where the configured value is preferred so the final state
+	// matches the plan.
+	refresh bool,
 ) (InstanceModel, bool, diag.Diagnostics) {
 	var state InstanceModel
 	var diags diag.Diagnostics
@@ -315,6 +320,14 @@ func getInstanceAsState(
 	}
 	state.NetworkDomainId = networkDomainId
 
+	// user_group
+	userGroupId, ugDiags := getInstanceUserGroupId(instance, plan)
+	diags = append(diags, ugDiags...)
+	if diags.HasError() {
+		return state, false, diags
+	}
+	state.UserGroup = userGroupId
+
 	// plan_id
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
 
@@ -367,7 +380,7 @@ func getInstanceAsState(
 	state.TaskSetId = plan.TaskSetId
 
 	// volumes
-	volumes, d := getVolumes(ctx, instance, plan)
+	volumes, d := getVolumes(ctx, instance, plan, refresh)
 	diags.Append(d...)
 	state.Volumes = volumes
 
@@ -401,6 +414,29 @@ func getInstanceNetworkDomainId(
 	}
 
 	return convert.Int64ToType(apiConfig.NetworkDomain.Id), diags
+}
+
+// getInstanceUserGroupId returns the user_group id. On a normal read the plan
+// value is preserved (user_group is provision-time only, so it never changes
+// after create); on import it is read from the API config.
+func getInstanceUserGroupId(
+	instance sdk.GetInstance200ResponseInstance,
+	plan InstanceModel,
+) (types.Int64, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// if this isn't an import, return the plan value
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
+		return plan.UserGroup, diags
+	}
+
+	// on import, get the user group id from the config in the API response
+	apiConfig := instance.Config
+	if apiConfig == nil || apiConfig.UserGroup == nil {
+		return types.Int64Null(), diags
+	}
+
+	return convert.Int64ToType(apiConfig.UserGroup.Id), diags
 }
 
 func getInstanceAzureConfig(
@@ -914,6 +950,7 @@ func getVolumes(
 	ctx context.Context,
 	instance sdk.GetInstance200ResponseInstance,
 	plan InstanceModel,
+	refresh bool,
 ) (basetypes.ListValue, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
 
@@ -974,7 +1011,7 @@ func getVolumes(
 
 	// If the number of volumes is the same as the plan, we can do a direct conversion
 	if len(apiVolumes) == len(plan.Volumes.Elements()) {
-		autoselectVolumes := setDatastoreAutoSelectionAndSize(apiVolumes, plan)
+		autoselectVolumes := setDatastoreAutoSelectionAndSize(apiVolumes, plan, refresh)
 
 		return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
 	}
@@ -983,7 +1020,7 @@ func getVolumes(
 	nonRaidVolumes := removeRaidDisks(apiVolumes)
 	reorderedVolumes := reorderVolumes(nonRaidVolumes, plan)
 	filledVolumes := fillVolumeFieldsFromPlan(reorderedVolumes, plan)
-	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan)
+	autoselectVolumes := setDatastoreAutoSelectionAndSize(filledVolumes, plan, refresh)
 
 	return convertAPIVolumesToStateVolumes(ctx, autoselectVolumes)
 }
@@ -995,6 +1032,7 @@ func getVolumes(
 func setDatastoreAutoSelectionAndSize(
 	apiVolumes []sdk.InstanceContainerServerVolume1,
 	plan InstanceModel,
+	refresh bool,
 ) []sdk.InstanceContainerServerVolume1 {
 	autoSelection := make([]sdk.InstanceContainerServerVolume1, 0, len(apiVolumes))
 	planVolumes := plan.Volumes.Elements()
@@ -1023,6 +1061,15 @@ func setDatastoreAutoSelectionAndSize(
 			apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
 			// We set this flag to indicate that Terraform set the MaxStorage value
 			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
+
+			// storage_profile: on a post-apply read (create/update) prefer the
+			// configured value so the final state matches the plan, and an
+			// API-side default for an unset volume is absorbed by the computed
+			// attribute. On a plain refresh, leave the API value so a server-side
+			// change is detected as drift.
+			if !refresh && !planVol.StorageProfile.IsNull() && !planVol.StorageProfile.IsUnknown() {
+				apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
+			}
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 
@@ -1201,6 +1248,7 @@ func convertAPIVolumesToStateVolumes(
 			v.StorageTypeId = convert.Int64ToType(in.TypeId)
 			v.DatastoreId = convert.Int64ToType(in.DatastoreId)
 			v.ControllerMountPoint = convert.StrToType(in.ControllerMountPoint)
+			v.StorageProfile = convert.StrToType(in.StorageProfile)
 
 			// Handle DatastoreAutoSelection and TerraformSetMaxStorage from AdditionalProperties
 			// TerraformSetMaxStorage flag indicates that MaxStorage was set from plan (already in GB)

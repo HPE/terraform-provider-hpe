@@ -34,6 +34,8 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		"DatastoreId":     "1",
 		"InstanceContext": "dev",
 		"MultipleTags":    "",
+		"UserGroup":       "",
+		"StorageProfile":  "",
 	}
 
 	for key, value := range overrides {
