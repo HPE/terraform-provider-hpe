@@ -18,8 +18,23 @@ type AdapterResource struct {
 	withMoveState        resource.ResourceWithMoveState
 	withUpgradeState     resource.ResourceWithUpgradeState
 	withValidateConfig   resource.ResourceWithValidateConfig
-	withIdentity         resource.ResourceWithIdentity
-	withUpgradeIdentity  resource.ResourceWithUpgradeIdentity
+	// these two are handled on gRPC server create
+	withIdentity        resource.ResourceWithIdentity
+	withUpgradeIdentity resource.ResourceWithUpgradeIdentity
+}
+
+type AdapterResourceWithConfigure struct {
+	in       resource.ResourceWithConfigure
+	provider provider.Provider
+	resource.Resource
+}
+
+func (r *AdapterResourceWithConfigure) Configure(
+	ctx context.Context,
+	req resource.ConfigureRequest,
+	resp *resource.ConfigureResponse,
+) {
+	r.in.Configure(ctx, req, resp)
 }
 
 var _ resource.Resource = &AdapterResource{}
@@ -30,6 +45,11 @@ var _ resource.ResourceWithModifyPlan = &AdapterResource{}
 var _ resource.ResourceWithMoveState = &AdapterResource{}
 var _ resource.ResourceWithUpgradeState = &AdapterResource{}
 var _ resource.ResourceWithValidateConfig = &AdapterResource{}
+
+// These could possibly be rolled into a separate struct (AdapterResourceWithIdentity)
+// Terraform Plugin Framework checks for Identity Schema support on resource at the server level.
+// So we can't perform any request/response trickery per resource method request to "disable"
+// IdentitySchema.
 var _ resource.ResourceWithIdentity = &AdapterResource{}
 var _ resource.ResourceWithUpgradeIdentity = &AdapterResource{}
 
@@ -43,6 +63,7 @@ func NewAdapterResource(in resource.Resource, p provider.Provider) *AdapterResou
 	r.withMoveState, _ = in.(resource.ResourceWithMoveState)
 	r.withUpgradeState, _ = in.(resource.ResourceWithUpgradeState)
 	r.withValidateConfig, _ = in.(resource.ResourceWithValidateConfig)
+	// these two are handled on gRPC server create
 	r.withIdentity, _ = in.(resource.ResourceWithIdentity)
 	r.withUpgradeIdentity, _ = in.(resource.ResourceWithUpgradeIdentity)
 
