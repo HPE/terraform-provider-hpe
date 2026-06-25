@@ -20,6 +20,8 @@ func RenderInstanceCloneConfig(t *testing.T, overrides map[string]string) (strin
 		"SourceInstanceId": "1",
 		"Name":             "my-clone",
 		"NetworkId":        "1",
+		"UserGroup":        "",
+		"StorageProfile":   "",
 	}
 
 	for key, value := range overrides {

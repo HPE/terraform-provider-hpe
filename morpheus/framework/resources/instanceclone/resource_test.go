@@ -92,3 +92,87 @@ func TestAccMorpheusInstanceCloneResource(t *testing.T) {
 		},
 	})
 }
+
+// TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile clones an instance
+// with a user_group and a volume storage_profile and asserts both round-trip
+// into state, including recovering user_group from the clone config on import.
+func TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping acceptance test in short mode")
+	}
+
+	if capabilities.Missing(t, capabilities.All) {
+		t.Log("Skipping test due to missing capabilities")
+
+		return
+	}
+
+	t.Parallel()
+	defer testhelpers.RecordResult(t)
+
+	cloneName := acctest.RandomWithPrefix(t.Name())
+	sourceInstanceID := os.Getenv("TF_ACC_INSTANCE_ID")
+	networkID := os.Getenv("TF_ACC_NETWORK_ID")
+
+	if sourceInstanceID == "" {
+		t.Skip("TF_ACC_INSTANCE_ID must be set for instance clone tests")
+	}
+
+	if networkID == "" {
+		networkID = "1"
+	}
+
+	// user_group and storage_profile use hard-coded values that exist in the
+	// reference test environment, consistent with the other clone inputs.
+	// kvm-cache-none is a standard KVM/HVM storage profile code.
+	userGroup := "1"
+	storageProfile := "kvm-cache-none"
+
+	config, err := instanceclone.RenderInstanceCloneConfig(t, map[string]string{
+		"Name":             cloneName,
+		"SourceInstanceId": sourceInstanceID,
+		"NetworkId":        networkID,
+		"UserGroup":        userGroup,
+		"StorageProfile":   storageProfile,
+	})
+	if err != nil {
+		t.Fatalf("failed to render config: %v", err)
+	}
+
+	resourceName := "hpe_morpheus_instance_clone.example"
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: testhelpers.ProviderBlock() + config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", cloneName),
+					resource.TestCheckResourceAttr(resourceName, "user_group", userGroup),
+					resource.TestCheckResourceAttr(
+						resourceName, "volumes.0.storage_profile", storageProfile),
+				),
+			},
+			// Import: user_group is recovered from the clone config and verified.
+			{
+				ResourceName: resourceName,
+				ImportState:  true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+
+					return rs.Primary.Attributes["id"], nil
+				},
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"source_instance_id", "timeouts",
+					// storage_profile is a write-mostly volume input recovered
+					// best-effort from the API on import.
+					"volumes.0.storage_profile",
+				},
+			},
+		},
+	})
+}

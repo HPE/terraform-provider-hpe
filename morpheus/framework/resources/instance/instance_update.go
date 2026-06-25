@@ -81,7 +81,7 @@ func (g *Resource) Update(
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
 	tflog.Info(ctx, fmt.Sprintf("Instance update plan: %v", plan.Volumes.Elements()))
 
-	newState, found, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan)
+	newState, found, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan, false)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

@@ -17,6 +17,9 @@ resource "hpe_morpheus_instance" "example" {
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
   instance_context = "{{.InstanceContext}}"
+{{- if .UserGroup}}
+  user_group = {{.UserGroup}}
+{{- end}}
   network_interfaces = [
     {
       network_id = {{.NetworkId}}
@@ -30,6 +33,9 @@ resource "hpe_morpheus_instance" "example" {
       size            = 10
       storage_type_id = 1
       datastore_id    = {{.DatastoreId}}
+{{- if .StorageProfile}}
+      storage_profile = "{{.StorageProfile}}"
+{{- end}}
     },
     {
       root_volume     = false
