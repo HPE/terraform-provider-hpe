@@ -55,6 +55,17 @@ func (g *Resource) Create(
 		return
 	}
 
+	// config is the raw configuration (before schema defaults are applied). It
+	// lets us tell whether the user actually set create_user versus it falling
+	// back to its schema default: when the user did not set it we omit it from
+	// the request so the API applies its own per-cloud default instead of an
+	// explicit value.
+	var config InstanceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Get timeout from HCL if set, the default is 45 minutes
 	createTimeout, diags := plan.Timeouts.Create(ctx, 45*time.Minute)
 	resp.Diagnostics.Append(diags...)
@@ -83,7 +94,6 @@ func (g *Resource) Create(
 	// AWS config
 	case !plan.ConfigAws.IsNull() && !plan.ConfigAws.IsUnknown():
 		noAgent := plan.ConfigAws.NoAgent.ValueBool()
-		createUser := plan.ConfigAws.CreateUser.ValueBool()
 		isEC2 := convert.BoolToStringTrueFalse(plan.ConfigAws.IsEc2.ValueBool()).ValueString()
 		kmsKeyId := plan.ConfigAws.KmsKeyId.ValueString()
 		instanceProfile := plan.ConfigAws.InstanceProfile.ValueString()
@@ -93,13 +103,17 @@ func (g *Resource) Create(
 
 		configAWS := &sdk.AmazonInstanceConfiguration2{
 			NoAgent:         *sdk.NewNullableBool(&noAgent),
-			CreateUser:      *sdk.NewNullableBool(&createUser),
 			ResourcePoolId:  &resourcePoolId,
 			IsEC2:           &isEC2,
 			KmsKeyId:        &kmsKeyId,
 			InstanceProfile: &instanceProfile,
 			PublicIpType:    &publicIpType,
 			AvailabilityId:  &availabilityId,
+		}
+
+		if !config.ConfigAws.CreateUser.IsNull() && !config.ConfigAws.CreateUser.IsUnknown() {
+			createUser := plan.ConfigAws.CreateUser.ValueBool()
+			configAWS.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		// Security Groups
@@ -131,16 +145,19 @@ func (g *Resource) Create(
 	// HVM config
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
 		// The provisionTypeCode default is "mvm" which is the code for the HVM provisioning type.
-		createUser := plan.ConfigHvm.CreateUser.ValueBool()
 		nestedVirtualization := plan.ConfigHvm.NestedVirtualization.ValueString()
 		noAgent := plan.ConfigHvm.NoAgent.ValueBool()
 		resourcePoolId := plan.ConfigHvm.ResourcePoolId.ValueString()
 
 		configHvm := &sdk.HVMInstanceConfiguration{
-			CreateUser:           *sdk.NewNullableBool(&createUser),
 			NestedVirtualization: &nestedVirtualization,
 			NoAgent:              *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:       &resourcePoolId,
+		}
+
+		if !config.ConfigHvm.CreateUser.IsNull() && !config.ConfigHvm.CreateUser.IsUnknown() {
+			createUser := plan.ConfigHvm.CreateUser.ValueBool()
+			configHvm.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
@@ -154,17 +171,20 @@ func (g *Resource) Create(
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		nestedVirtualization := plan.ConfigVmware.NestedVirtualization.ValueString()
-		createUser := plan.ConfigVmware.CreateUser.ValueBool()
 		noAgent := plan.ConfigVmware.NoAgent.ValueBool()
 		resourcePoolId := plan.ConfigVmware.ResourcePoolId.ValueString()
 		vmwareFolderId := plan.ConfigVmware.VmwareFolderId.ValueString()
 
 		configVMware := &sdk.VMWareInstanceConfiguration2{
 			NestedVirtualization: &nestedVirtualization,
-			CreateUser:           *sdk.NewNullableBool(&createUser),
 			NoAgent:              *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:       &resourcePoolId,
 			VmwareFolderId:       &vmwareFolderId,
+		}
+
+		if !config.ConfigVmware.CreateUser.IsNull() && !config.ConfigVmware.CreateUser.IsUnknown() {
+			createUser := plan.ConfigVmware.CreateUser.ValueBool()
+			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
@@ -173,12 +193,15 @@ func (g *Resource) Create(
 
 	// Azure config
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
-		createUser := plan.ConfigAzure.CreateUser.ValueBool()
 		resourcePoolId := plan.ConfigAzure.ResourcePoolId.ValueString()
 
 		configAzure := &sdk.AzureInstanceConfiguration2{
-			CreateUser:     &createUser,
 			ResourcePoolId: &resourcePoolId,
+		}
+
+		if !config.ConfigAzure.CreateUser.IsNull() && !config.ConfigAzure.CreateUser.IsUnknown() {
+			createUser := plan.ConfigAzure.CreateUser.ValueBool()
+			configAzure.CreateUser = &createUser
 		}
 
 		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
