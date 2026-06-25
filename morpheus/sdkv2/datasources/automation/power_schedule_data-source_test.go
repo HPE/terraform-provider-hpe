@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	rpowerschedule "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/power_schedule"
+	rpowerschedule "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/powerschedule"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsautomation "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
