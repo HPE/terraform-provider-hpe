@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	rpowerschedule "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/power_schedule"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsautomation "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
@@ -33,8 +34,16 @@ func TestAccMorpheusDataSourcePowerScheduleExampleOk(t *testing.T) {
 
 	var dependenciesConfig string
 
-	datasourceConfig, err := dsautomation.RenderPowerScheduleConfig(t, map[string]string{
+	if currentDependency, err := rpowerschedule.RenderPowerScheduleConfig(t, map[string]string{
 		"Name": name,
+	}); err != nil {
+		t.Fatal(err)
+	} else {
+		dependenciesConfig += currentDependency
+	}
+
+	datasourceConfig, err := dsautomation.RenderPowerScheduleConfig(t, map[string]string{
+		"Name": "hpe_morpheus_power_schedule.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -46,7 +55,7 @@ func TestAccMorpheusDataSourcePowerScheduleExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_power_schedule.example",
 			"name",
-			"TF Example power schedule",
+			name,
 		),
 	}
 

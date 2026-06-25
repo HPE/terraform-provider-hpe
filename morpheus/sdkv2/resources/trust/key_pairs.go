@@ -238,7 +238,12 @@ func resourceKeyPairRead(ctx context.Context, d *schema.ResourceData, meta any) 
 		d.SetId(convert.Int64ToString(keyPair.ID))
 		d.Set("name", keyPair.Name)
 		d.Set("public_key", keyPair.PublicKey)
-		d.Set("private_key", keyPair.PrivateKeyHash)
+		// Do not set private_key from the API response. The API only returns a
+		// hash of the private key (PrivateKeyHash), which differs from the
+		// sha256 the schema StateFunc/DiffSuppressFunc compute over the
+		// configured PEM. Overwriting state here would re-hash that value and
+		// permanently force replacement. The hashed value stored at create time
+		// is preserved instead.
 	} else {
 		return diag.Errorf("Key pair not found in response data.")
 	}

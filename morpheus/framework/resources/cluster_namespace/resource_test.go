@@ -134,9 +134,11 @@ func TestAccMorpheusClusterNamespaceResourceUpdateOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
 	)
 
+	// The namespace name is immutable server-side, so changing it replaces the
+	// resource rather than updating it in place.
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
 		},
 	}
 
