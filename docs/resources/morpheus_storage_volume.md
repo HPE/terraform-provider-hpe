@@ -27,13 +27,38 @@ resource "hpe_morpheus_storage_volume" "example" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `config` (Dynamic, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Generic write-only configuration options for the storage volume, varies based on the storage volume type. Only sent to the API on create; not stored in state. Increment config_wo_version to apply a change.
+- `config_alletramp_bmaas` (Attributes, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change. (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
+- `config_alletramp_bmaas_wo_version` (Number) Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.
+- `config_wo_version` (Number) Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.
 - `max_storage` (Number) The maximum storage size in bytes.
+- `provision_type` (String) Provision type for storage volume types that support it.
+- `storage_group_id` (Number) The ID of the storage group.
 - `storage_server_id` (Number) The ID of the storage server.
 
 ### Read-Only
 
 - `id` (Number) The ID of the storage volume.
 - `status` (String) The status of the storage volume.
+
+<a id="nestedatt--config_alletramp_bmaas"></a>
+### Nested Schema for `config_alletramp_bmaas`
+
+Required:
+
+- `datastore_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) ID of the Alletra MP BMaaS data store (pool) in which to create the volume.
+
+Optional:
+
+- `compute_server_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Compute server ID to export a non-shared volume to.
+- `instance_ids` (List of Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) List of instance IDs to export a shared volume to.
+- `remote_copy_target_id` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Remote copy (replication) target ID. Required for replicated LUN volume types.
+- `shared` (Boolean, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Whether the volume is shared (multi-attach).
+- `use_existing_volume_set` (Boolean, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Whether to add the volume to an existing, exported volume set rather than creating a new one.
+- `volume_set_id` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) ID of an existing volume set to add the volume to.
+- `volume_set_name` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Base name for a new volume set (a unique suffix is always appended).
 
 ## Import
 
