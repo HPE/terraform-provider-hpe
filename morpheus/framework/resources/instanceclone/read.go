@@ -243,9 +243,6 @@ func mergeVolumesFromAPI(
 			Size: pv[i].Size,
 			// size_id is a write-only input; keep the plan value.
 			SizeId: pv[i].SizeId,
-			// storage_profile is an optional write field; keep the plan value so
-			// the post-apply state matches the configuration.
-			StorageProfile: pv[i].StorageProfile,
 			// Computed id always comes from the API.
 			Id: api.Id,
 			// Computed-optional fields keep the user's value when set.
@@ -253,6 +250,7 @@ func mergeVolumesFromAPI(
 			DatastoreId:          preferKnownInt64(pv[i].DatastoreId, api.DatastoreId),
 			StorageType:          preferKnownInt64(pv[i].StorageType, api.StorageType),
 			ControllerMountPoint: preferKnownString(pv[i].ControllerMountPoint, api.ControllerMountPoint),
+			StorageProfile:       preferKnownString(pv[i].StorageProfile, api.StorageProfile),
 		}
 
 		objVal, d := vol.ToObjectValue(ctx)
@@ -306,9 +304,6 @@ func mergeVolumesForRead(
 		vol := volumeValueFromAPI(v)
 		if i < len(prior) {
 			vol.SizeId = prior[i].SizeId
-			// storage_profile is an optional write field; keep the prior value so
-			// an API-returned default does not produce a spurious diff on read.
-			vol.StorageProfile = prior[i].StorageProfile
 		}
 
 		objVal, d := vol.ToObjectValue(ctx)
