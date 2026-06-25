@@ -104,6 +104,78 @@ func TestNetworkInterfaceMapperNetworkID(t *testing.T) {
 	}
 }
 
+// TestVolumeMapperStorageProfile verifies that storage_profile is forwarded to
+// the create (AddInstanceRequestVolumesInner) and update
+// (ResizeInstanceRequestVolumesInner) volume requests only when the user set it,
+// and is left unset (so the omitempty NullableString is omitted) when the plan
+// value is null or unknown.
+func TestVolumeMapperStorageProfile(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name           string
+		storageProfile types.String
+		wantSet        bool
+		want           string
+	}{
+		{
+			name:           "storage_profile set",
+			storageProfile: types.StringValue("kvm-cache-none"),
+			wantSet:        true,
+			want:           "kvm-cache-none",
+		},
+		{
+			name:           "storage_profile null",
+			storageProfile: types.StringNull(),
+			wantSet:        false,
+		},
+		{
+			name:           "storage_profile unknown",
+			storageProfile: types.StringUnknown(),
+			wantSet:        false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			in := VolumesValue{
+				Id:                     types.Int64Null(),
+				Name:                   types.StringNull(),
+				RootVolume:             types.BoolNull(),
+				Size:                   types.Int64Null(),
+				StorageTypeId:          types.Int64Null(),
+				DatastoreId:            types.Int64Null(),
+				DatastoreAutoSelection: types.StringNull(),
+				StorageProfile:         tt.storageProfile,
+			}
+
+			create := createVolumeMapper(in)
+			if create.StorageProfile.IsSet() != tt.wantSet {
+				t.Errorf("create mapper StorageProfile.IsSet() = %v, want %v",
+					create.StorageProfile.IsSet(), tt.wantSet)
+			}
+			if tt.wantSet {
+				if got := create.StorageProfile.Get(); got == nil || *got != tt.want {
+					t.Errorf("create mapper StorageProfile = %v, want %q", got, tt.want)
+				}
+			}
+
+			update := updateVolumeMapper(in)
+			if update.StorageProfile.IsSet() != tt.wantSet {
+				t.Errorf("update mapper StorageProfile.IsSet() = %v, want %v",
+					update.StorageProfile.IsSet(), tt.wantSet)
+			}
+			if tt.wantSet {
+				if got := update.StorageProfile.Get(); got == nil || *got != tt.want {
+					t.Errorf("update mapper StorageProfile = %v, want %q", got, tt.want)
+				}
+			}
+		})
+	}
+}
+
 // TestChildNetworkInterfaceMapperNetworkID verifies the network.id string sent to
 // the API for child virtual networks is built with the correct prefix for each of
 // network_id, network_group_id and subnet_id.

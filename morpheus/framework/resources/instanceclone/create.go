@@ -32,6 +32,16 @@ func (r *Resource) Create(
 		return
 	}
 
+	// config is the raw configuration (before schema defaults are applied), used
+	// to tell whether the user actually set create_user versus it falling back to
+	// its schema default; when unset we omit it so the API applies its own
+	// per-cloud default.
+	var config InstanceCloneModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	createTimeout, diags := plan.Timeouts.Create(ctx, 15*time.Minute)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -74,7 +84,12 @@ func (r *Resource) Create(
 		cloneReq.Plan = &sdk.CloneInstanceRequestPlan{Id: &pid}
 	}
 
-	cloneConfig, cfgDiags := buildCloneConfig(ctx, plan)
+	if !plan.UserGroup.IsNull() && !plan.UserGroup.IsUnknown() {
+		ugid := plan.UserGroup.ValueInt64()
+		cloneReq.UserGroup = &sdk.CloneInstanceRequestUserGroup{Id: &ugid}
+	}
+
+	cloneConfig, cfgDiags := buildCloneConfig(ctx, plan, config)
 	resp.Diagnostics.Append(cfgDiags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -316,7 +331,7 @@ func (r *Resource) Create(
 // order as the instance resource. The variants are mutually exclusive at plan
 // time (the dynamic config conflicts with the typed blocks).
 func buildCloneConfig(
-	ctx context.Context, plan InstanceCloneModel,
+	ctx context.Context, plan, config InstanceCloneModel,
 ) (*sdk.CloneInstanceRequestConfig, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -336,6 +351,11 @@ func buildCloneConfig(
 			InstanceProfile: plan.ConfigAws.InstanceProfile.ValueStringPointer(),
 			PublicIpType:    &publicIpType,
 			AvailabilityId:  plan.ConfigAws.AvailabilityZoneId.ValueStringPointer(),
+		}
+
+		if !config.ConfigAws.CreateUser.IsNull() && !config.ConfigAws.CreateUser.IsUnknown() {
+			createUser := plan.ConfigAws.CreateUser.ValueBool()
+			configAWS.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		// The clone request has no top-level security groups field (unlike
@@ -360,16 +380,19 @@ func buildCloneConfig(
 
 	// HVM config
 	case !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown():
-		createUser := plan.ConfigHvm.CreateUser.ValueBool()
 		nestedVirtualization := plan.ConfigHvm.NestedVirtualization.ValueString()
 		noAgent := plan.ConfigHvm.NoAgent.ValueBool()
 		resourcePoolId := plan.ConfigHvm.ResourcePoolId.ValueString()
 
 		configHvm := &sdk.HVMInstanceConfiguration1{
-			CreateUser:           *sdk.NewNullableBool(&createUser),
 			NestedVirtualization: &nestedVirtualization,
 			NoAgent:              *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:       &resourcePoolId,
+		}
+
+		if !config.ConfigHvm.CreateUser.IsNull() && !config.ConfigHvm.CreateUser.IsUnknown() {
+			createUser := plan.ConfigHvm.CreateUser.ValueBool()
+			configHvm.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		if !plan.ConfigHvm.KvmHostId.IsNull() {
@@ -381,28 +404,34 @@ func buildCloneConfig(
 	// VMware config
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		nestedVirtualization := plan.ConfigVmware.NestedVirtualization.ValueString()
-		createUser := plan.ConfigVmware.CreateUser.ValueBool()
 		noAgent := plan.ConfigVmware.NoAgent.ValueBool()
 		resourcePoolId := plan.ConfigVmware.ResourcePoolId.ValueString()
 
 		configVMware := &sdk.VMWareInstanceConfiguration3{
 			NestedVirtualization: &nestedVirtualization,
-			CreateUser:           *sdk.NewNullableBool(&createUser),
 			NoAgent:              *sdk.NewNullableBool(&noAgent),
 			ResourcePoolId:       &resourcePoolId,
 			VmwareFolderId:       plan.ConfigVmware.VmwareFolderId.ValueStringPointer(),
+		}
+
+		if !config.ConfigVmware.CreateUser.IsNull() && !config.ConfigVmware.CreateUser.IsUnknown() {
+			createUser := plan.ConfigVmware.CreateUser.ValueBool()
+			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		return &sdk.CloneInstanceRequestConfig{VMWareInstanceConfiguration3: configVMware}, diags
 
 	// Azure config
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
-		createUser := plan.ConfigAzure.CreateUser.ValueBool()
 		resourcePoolId := plan.ConfigAzure.ResourcePoolId.ValueString()
 
 		configAzure := &sdk.AzureInstanceConfiguration3{
-			CreateUser:     &createUser,
 			ResourcePoolId: &resourcePoolId,
+		}
+
+		if !config.ConfigAzure.CreateUser.IsNull() && !config.ConfigAzure.CreateUser.IsUnknown() {
+			createUser := plan.ConfigAzure.CreateUser.ValueBool()
+			configAzure.CreateUser = &createUser
 		}
 
 		if !plan.ConfigAzure.AzureRegion.IsNull() && !plan.ConfigAzure.AzureRegion.IsUnknown() {
@@ -509,6 +538,11 @@ func buildCloneVolumes(
 		if !v.SizeId.IsNull() && !v.SizeId.IsUnknown() {
 			siVal := v.SizeId.ValueInt64()
 			vol.SizeId = *sdk.NewNullableInt64(&siVal)
+		}
+
+		if !v.StorageProfile.IsNull() && !v.StorageProfile.IsUnknown() {
+			spVal := v.StorageProfile.ValueString()
+			vol.StorageProfile = *sdk.NewNullableString(&spVal)
 		}
 
 		if !v.ControllerMountPoint.IsNull() && !v.ControllerMountPoint.IsUnknown() {

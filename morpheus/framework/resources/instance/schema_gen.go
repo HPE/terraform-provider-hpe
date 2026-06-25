@@ -704,6 +704,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The Workflow ID to execute.",
 			},
 			"timeouts": timeouts.AttributesAll(ctx),
+			"user_group": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "The id of the user group to associate with the instance. When create_user is enabled on\nthe relevant config_* block, the user group's members can be created as users on the\nprovisioned instance. The user group can only be set at provision time; changing it forces\nreplacement of the instance.\n",
+				MarkdownDescription: "The id of the user group to associate with the instance. When create_user is enabled on\nthe relevant config_* block, the user group's members can be created as users on the\nprovisioned instance. The user group can only be set at provision time; changing it forces\nreplacement of the instance.\n",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -759,8 +767,9 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"storage_profile": schema.StringAttribute{
 							Optional:            true,
-							Description:         "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`.\nUse `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
-							MarkdownDescription: "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`.\nUse `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+							Computed:            true,
+							Description:         "Storage profile code for the volume. The available codes depend on the\nprovision type; query `/api/provision-types` to list the `storageProfiles`\nfor a type. For example, KVM/HVM volumes use cache-mode profiles such as\n`\"kvm-cache-none\"` or `\"kvm-cache-directsync\"` (`/api/provision-types?code=kvm`).",
+							MarkdownDescription: "Storage profile code for the volume. The available codes depend on the\nprovision type; query `/api/provision-types` to list the `storageProfiles`\nfor a type. For example, KVM/HVM volumes use cache-mode profiles such as\n`\"kvm-cache-none\"` or `\"kvm-cache-directsync\"` (`/api/provision-types?code=kvm`).",
 						},
 						"storage_type_id": schema.Int64Attribute{
 							Optional:            true,
@@ -809,6 +818,7 @@ type InstanceModel struct {
 	Tags               types.Set               `tfsdk:"tags"`
 	TaskSetId          types.Int64             `tfsdk:"task_set_id"`
 	Timeouts           timeouts.Value          `tfsdk:"timeouts"`
+	UserGroup          types.Int64             `tfsdk:"user_group"`
 	Volumes            types.List              `tfsdk:"volumes"`
 }
 
