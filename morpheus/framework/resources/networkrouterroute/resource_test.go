@@ -1,0 +1,186 @@
+package networkrouterroute_test
+
+import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+)
+
+func TestMain(m *testing.M) {
+	code := testhelpers.TestMain(m)
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+	}
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_route.example"
+
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceConfig, err := networkrouterroute.RenderNetworkRouterRouteConfig(t, map[string]string{
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Example route"),
+		resource.TestCheckResourceAttr(resourceName, "network_mtu", "1500"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "default_route", "false"),
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + routerConfig + resourceConfig,
+				Check:  checks,
+			},
+			{
+				Config:             providerConfig + routerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_network_router_route.example",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_route.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkRouterRouteResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if capabilities.Missing(t, capabilities.NetworkRouter) {
+		t.Log("Skipping test due to missing capabilities")
+	}
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_route.example"
+
+	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
+		"Name":                 name + "-router",
+		"TypeId":               "9",
+		"GroupId":              "3",
+		"NetworkIntegrationId": "5",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createConfig, err := networkrouterroute.RenderNetworkRouterRouteConfig(t, map[string]string{
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateConfig := `
+resource "hpe_morpheus_network_router_route" "example" {
+  router_id     = hpe_morpheus_network_router.example.id
+  name          = "` + name + `"
+  source        = "10.0.0.0/24"
+  destination   = "10.0.0.1"
+  description   = "Updated route"
+  network_mtu   = 1400
+  enabled       = false
+  default_route = false
+}
+`
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Example route"),
+		resource.TestCheckResourceAttr(resourceName, "network_mtu", "1500"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+		resource.TestCheckResourceAttr(resourceName, "default_route", "false"),
+	)
+
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source", "10.0.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "destination", "10.0.0.1"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated route"),
+		resource.TestCheckResourceAttr(resourceName, "network_mtu", "1400"),
+		resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+		resource.TestCheckResourceAttr(resourceName, "default_route", "false"),
+	)
+
+	// The route resource is replace-only: its Update is not supported, so any
+	// attribute change forces destroy-and-recreate.
+	checkReplace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionDestroyBeforeCreate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkReplace},
+			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}

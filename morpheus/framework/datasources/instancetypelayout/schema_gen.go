@@ -38,9 +38,7 @@ func InstanceTypeLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the Morpheus instance layout",
 				MarkdownDescription: "The name of the Morpheus instance layout",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
 			"sort_order": schema.Int64Attribute{

@@ -49,9 +49,7 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Morpheus ID of the Object being referenced",
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
 				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{
-						path.MatchRoot("name"),
-					}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
 			"inventory_level": schema.StringAttribute{
@@ -76,9 +74,7 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the Morpheus cloud",
 				MarkdownDescription: "The name of the Morpheus cloud",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
 			"time_zone": schema.StringAttribute{

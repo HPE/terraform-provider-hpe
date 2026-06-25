@@ -5,6 +5,8 @@ package serviceplan
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -14,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -143,10 +144,7 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Morpheus ID of the Object being referenced",
 				MarkdownDescription: "Morpheus ID of the Object being referenced",
 				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{
-						path.MatchRoot("name"),
-						path.MatchRoot("provision_type_code"),
-					}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name"), path.MatchRoot("provision_type_code")}...),
 				},
 			},
 			"max_cores": schema.Int64Attribute{
@@ -183,9 +181,7 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the Morpheus service plan",
 				MarkdownDescription: "The name of the Morpheus service plan",
 				Validators: []validator.String{
-					stringvalidator.AlsoRequires(path.Expressions{
-						path.MatchRoot("provision_type_code"),
-					}...),
+					stringvalidator.AlsoRequires(path.Expressions{path.MatchRoot("provision_type_code")}...),
 				},
 			},
 			"price_set_ids": schema.SetAttribute{
@@ -853,14 +849,12 @@ func (t ConfigRangesType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -919,7 +913,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.MaxCores.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -927,7 +920,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores"] = val
 
 		val, err = v.MaxCoresPerSocket.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -935,7 +927,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_cores_per_socket"] = val
 
 		val, err = v.MaxMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -943,7 +934,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_memory"] = val
 
 		val, err = v.MaxPerDiskSize.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -951,7 +941,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_per_disk_size"] = val
 
 		val, err = v.MaxSockets.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -959,7 +948,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_sockets"] = val
 
 		val, err = v.MaxStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -967,7 +955,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["max_storage"] = val
 
 		val, err = v.MinCores.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -975,7 +962,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores"] = val
 
 		val, err = v.MinCoresPerSocket.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -983,7 +969,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_cores_per_socket"] = val
 
 		val, err = v.MinMemory.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -991,7 +976,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_memory"] = val
 
 		val, err = v.MinPerDiskSize.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -999,7 +983,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_per_disk_size"] = val
 
 		val, err = v.MinSockets.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -1007,7 +990,6 @@ func (v ConfigRangesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["min_sockets"] = val
 
 		val, err = v.MinStorage.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}

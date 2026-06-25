@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	morpheusvalidators "github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -86,7 +86,7 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Configuration object. Settings vary by type.",
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
-					morpheusvalidators.ValidObjectMap(),
+					validators.ValidObjectMap(),
 				},
 			},
 			"config_group": schema.StringAttribute{

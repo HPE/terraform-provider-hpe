@@ -5,6 +5,8 @@ package cloud
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -19,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -2091,14 +2092,12 @@ func (t ConfigAwsType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -2197,7 +2196,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 32)
 
 		val, err = v.AccessKey.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2205,7 +2203,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["access_key"] = val
 
 		val, err = v.ApiProxy.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2213,7 +2210,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["api_proxy"] = val
 
 		val, err = v.BackupProvider.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2221,7 +2217,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["backup_provider"] = val
 
 		val, err = v.BypassProxy.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2229,7 +2224,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["bypass_proxy"] = val
 
 		val, err = v.ChangeManagementConfig.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2237,7 +2231,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["change_management_config"] = val
 
 		val, err = v.CmdbConfig.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2245,7 +2238,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["cmdb_config"] = val
 
 		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2253,7 +2245,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["cmdb_discovery"] = val
 
 		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2261,7 +2252,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["config_management_id"] = val
 
 		val, err = v.Costing.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2269,7 +2259,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing"] = val
 
 		val, err = v.CostingBucket.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2277,7 +2266,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_bucket"] = val
 
 		val, err = v.CostingFolder.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2285,7 +2273,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_folder"] = val
 
 		val, err = v.CostingKey.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2293,7 +2280,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_key"] = val
 
 		val, err = v.CostingReportName.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2301,7 +2287,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_report_name"] = val
 
 		val, err = v.CostingSecret.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2309,7 +2294,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["costing_secret"] = val
 
 		val, err = v.Credentials.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2317,7 +2301,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["credentials"] = val
 
 		val, err = v.DarkModeLogo.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2325,7 +2308,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["dark_mode_logo"] = val
 
 		val, err = v.Domain.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2333,7 +2315,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["domain"] = val
 
 		val, err = v.EbsEncryption.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2341,7 +2322,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["ebs_encryption"] = val
 
 		val, err = v.Endpoint.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2349,7 +2329,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["endpoint"] = val
 
 		val, err = v.Guidance.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2357,7 +2336,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["guidance"] = val
 
 		val, err = v.Logo.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2365,7 +2343,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["logo"] = val
 
 		val, err = v.NetworkMode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2373,7 +2350,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["network_mode"] = val
 
 		val, err = v.NoProxy.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2381,7 +2357,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["no_proxy"] = val
 
 		val, err = v.Proxy.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2389,7 +2364,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["proxy"] = val
 
 		val, err = v.Region.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2397,7 +2371,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["region"] = val
 
 		val, err = v.ReplicationProvider.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2405,7 +2378,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["replication_provider"] = val
 
 		val, err = v.RoleArn.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2413,7 +2385,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["role_arn"] = val
 
 		val, err = v.SecretKey.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2421,7 +2392,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["secret_key"] = val
 
 		val, err = v.Timezone.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2429,7 +2399,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["timezone"] = val
 
 		val, err = v.UserData.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2437,7 +2406,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["user_data"] = val
 
 		val, err = v.VdiGateway.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -2445,7 +2413,6 @@ func (v ConfigAwsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["vdi_gateway"] = val
 
 		val, err = v.Vpc.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3368,14 +3335,12 @@ func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Valu
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -3434,7 +3399,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals := make(map[string]tftypes.Value, 12)
 
 		val, err = v.AzureRegion.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3442,7 +3406,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["azure_region"] = val
 
 		val, err = v.ClientId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3450,7 +3413,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["client_id"] = val
 
 		val, err = v.ClientSecret.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3458,7 +3420,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["client_secret"] = val
 
 		val, err = v.ClientSecretVersion.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3466,7 +3427,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["client_secret_version"] = val
 
 		val, err = v.CloudType.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3474,7 +3434,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["cloud_type"] = val
 
 		val, err = v.CmdbDiscovery.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3482,7 +3441,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["cmdb_discovery"] = val
 
 		val, err = v.ImportExisting.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3490,7 +3448,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["import_existing"] = val
 
 		val, err = v.ResourceGroup.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3498,7 +3455,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["resource_group"] = val
 
 		val, err = v.RpcMode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3506,7 +3462,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["rpc_mode"] = val
 
 		val, err = v.StorageAccount.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3514,7 +3469,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["storage_account"] = val
 
 		val, err = v.SubscriberId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3522,7 +3476,6 @@ func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, 
 		vals["subscriber_id"] = val
 
 		val, err = v.TenantId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3925,14 +3878,12 @@ func (t ConfigHvmType) ValueFromTerraform(ctx context.Context, in tftypes.Value)
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -3971,7 +3922,6 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals := make(map[string]tftypes.Value, 2)
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -3979,7 +3929,6 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		vals["certificate_provider"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4844,14 +4793,12 @@ func (t ConfigVmwareType) ValueFromTerraform(ctx context.Context, in tftypes.Val
 	val := map[string]tftypes.Value{}
 
 	err := in.As(&val)
-
 	if err != nil {
 		return nil, err
 	}
 
 	for k, v := range val {
 		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-
 		if err != nil {
 			return nil, err
 		}
@@ -4918,7 +4865,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals := make(map[string]tftypes.Value, 16)
 
 		val, err = v.ApiUrl.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4926,7 +4872,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_url"] = val
 
 		val, err = v.ApiVersion.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4934,7 +4879,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["api_version"] = val
 
 		val, err = v.CertificateProvider.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4942,7 +4886,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["certificate_provider"] = val
 
 		val, err = v.Cluster.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4950,7 +4893,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["cluster"] = val
 
 		val, err = v.ConfigManagementId.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4958,7 +4900,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["config_management_id"] = val
 
 		val, err = v.Datacenter.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4966,7 +4907,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["datacenter"] = val
 
 		val, err = v.EnableDiskTypeSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4974,7 +4914,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_disk_type_selection"] = val
 
 		val, err = v.EnableNetworkTypeSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4982,7 +4921,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_network_type_selection"] = val
 
 		val, err = v.EnableStorageTypeSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4990,7 +4928,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_storage_type_selection"] = val
 
 		val, err = v.EnableVnc.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -4998,7 +4935,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["enable_vnc"] = val
 
 		val, err = v.HideHostSelection.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5006,7 +4942,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["hide_host_selection"] = val
 
 		val, err = v.Password.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5014,7 +4949,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["password"] = val
 
 		val, err = v.PasswordVersion.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5022,7 +4956,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["password_version"] = val
 
 		val, err = v.ResourcePool.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5030,7 +4963,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["resource_pool"] = val
 
 		val, err = v.RpcMode.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -5038,7 +4970,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		vals["rpc_mode"] = val
 
 		val, err = v.Username.ToTerraformValue(ctx)
-
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
