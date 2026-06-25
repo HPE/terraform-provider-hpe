@@ -73,9 +73,22 @@ func getLoadBalancerAsState(
 		state.TypeCode = convert.StrToType(data.Type.Code)
 	}
 
-	// Set config based on the load balancer type code from the API.
+	// Set config based on the representation the user configured (preserved in
+	// the plan) so apply does not move the value into a different attribute and
+	// trigger an "inconsistent result after apply" error. On import there is no
+	// plan, so fall back to the load balancer type code reported by the API.
+	planHasConfig := !plan.Config.IsNull() && !plan.Config.IsUnknown()
+	planHasHAProxy := !plan.ConfigHaproxy.IsNull() && !plan.ConfigHaproxy.IsUnknown()
+	planHasNsxt := !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown()
+
 	switch {
-	case isHAProxy:
+	case planHasConfig:
+		// Generic config block: echo the configured value back, since the API
+		// enriches the stored config and the user owns this representation.
+		state.Config = plan.Config
+		state.ConfigHaproxy = NewConfigHaproxyValueNull()
+		state.ConfigNsxt = NewConfigNsxtValueNull()
+	case planHasHAProxy || isHAProxy:
 		haproxyCfg, err := parseHAProxyConfig(ctx, getsafe.Get(&data.Config))
 		if err != nil {
 			return state, fmt.Errorf("failed to parse HAProxy config: %w", err)
@@ -84,7 +97,7 @@ func getLoadBalancerAsState(
 		state.ConfigHaproxy = haproxyCfg
 		state.ConfigNsxt = NewConfigNsxtValueNull()
 		state.Config = types.DynamicNull()
-	case isNSXT:
+	case planHasNsxt || isNSXT:
 		nsxtCfg, err := parseNsxtConfig(ctx, data.Config)
 		if err != nil {
 			return state, fmt.Errorf("failed to parse NSX-T config: %w", err)

@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
 )
 
 func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
@@ -26,7 +27,13 @@ func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
-	// diagnostic_summary="Not found in response: BackupSettings"
+
+	// This example asserts environment-specific resource IDs (default backup
+	// schedule and storage bucket) that must be pre-seeded, and it mutates
+	// global backup settings. Skip unless explicitly opted in.
+	if skip.SkipByDefault(t) {
+		t.Skip("set RUN_SKIPPED_BY_DEFAULT to run; needs seeded backup schedule/storage bucket IDs and mutates global settings")
+	}
 
 	providerConfig := testhelpers.ProviderBlock()
 

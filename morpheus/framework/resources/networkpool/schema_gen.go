@@ -5,7 +5,9 @@ package networkpool
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -35,7 +37,7 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The number of free IPs in the pool.",
 				MarkdownDescription: "The number of free IPs in the pool.",
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges")),
 				},
 			},
 			"gateway": schema.StringAttribute{
@@ -57,7 +59,7 @@ func NetworkPoolResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The total number of IPs in the pool.",
 				MarkdownDescription: "The total number of IPs in the pool.",
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
+					modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges")),
 				},
 			},
 			"ip_ranges": schema.ObjectAttribute{
