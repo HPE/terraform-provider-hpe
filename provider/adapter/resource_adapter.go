@@ -18,9 +18,10 @@ type AdapterResource struct {
 	withMoveState        resource.ResourceWithMoveState
 	withUpgradeState     resource.ResourceWithUpgradeState
 	withValidateConfig   resource.ResourceWithValidateConfig
-	// these two are handled on gRPC server create
-	withIdentity        resource.ResourceWithIdentity
-	withUpgradeIdentity resource.ResourceWithUpgradeIdentity
+
+	// We don't support ResourceWithIdentity and ResourceWithUpgradeIdentity in the Resource Adapter.
+	// This is because Terraform Plugin Framework checks for Resource Identity at gRPC server create,
+	// unlike the other interfaces which are handled at RPC request time.
 }
 
 type AdapterResourceWithConfigure struct {
@@ -46,13 +47,6 @@ var _ resource.ResourceWithMoveState = &AdapterResource{}
 var _ resource.ResourceWithUpgradeState = &AdapterResource{}
 var _ resource.ResourceWithValidateConfig = &AdapterResource{}
 
-// These could possibly be rolled into a separate struct (AdapterResourceWithIdentity)
-// Terraform Plugin Framework checks for Identity Schema support on resource at the server level.
-// So we can't perform any request/response trickery per resource method request to "disable"
-// IdentitySchema.
-var _ resource.ResourceWithIdentity = &AdapterResource{}
-var _ resource.ResourceWithUpgradeIdentity = &AdapterResource{}
-
 func NewAdapterResource(in resource.Resource, p provider.Provider) *AdapterResource {
 	r := &AdapterResource{in: in, provider: p}
 
@@ -63,9 +57,6 @@ func NewAdapterResource(in resource.Resource, p provider.Provider) *AdapterResou
 	r.withMoveState, _ = in.(resource.ResourceWithMoveState)
 	r.withUpgradeState, _ = in.(resource.ResourceWithUpgradeState)
 	r.withValidateConfig, _ = in.(resource.ResourceWithValidateConfig)
-	// these two are handled on gRPC server create
-	r.withIdentity, _ = in.(resource.ResourceWithIdentity)
-	r.withUpgradeIdentity, _ = in.(resource.ResourceWithUpgradeIdentity)
 
 	return r
 }
@@ -217,26 +208,4 @@ func (r *AdapterResource) ValidateConfig(
 	}
 
 	r.withValidateConfig.ValidateConfig(ctx, req, resp)
-}
-
-func (r *AdapterResource) IdentitySchema(
-	ctx context.Context,
-	req resource.IdentitySchemaRequest,
-	resp *resource.IdentitySchemaResponse,
-) {
-	if r.withIdentity == nil {
-		return
-	}
-
-	r.withIdentity.IdentitySchema(ctx, req, resp)
-}
-
-func (r *AdapterResource) UpgradeIdentity(
-	ctx context.Context,
-) map[int64]resource.IdentityUpgrader {
-	if r.withUpgradeIdentity == nil {
-		return nil
-	}
-
-	return r.withUpgradeIdentity.UpgradeIdentity(ctx)
 }
