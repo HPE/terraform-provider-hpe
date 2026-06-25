@@ -16,7 +16,7 @@ Initially this provider will support Morpheus, but will in time expand to cover 
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
-->This v1.4.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
+->This v1.5.0 release includes all functionality from the [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 This provider can now serve as a replacement for the Morpheus provider, and users are encouraged to migrate, as
 the Morpheus provider will be deprecated in the future.<br><br>
 We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
@@ -29,7 +29,7 @@ See [below](#morpheus-provider-mapping) for the mapping of Morpheus provider res
 ## Morpheus
 
 This provider can be used to manage Morpheus resources.  Support will grow over time.  See below for
-release notes for the current version (v1.4.0).
+release notes for the current version (v1.5.0).
 
 ### Authentication
 
@@ -66,10 +66,12 @@ be toggled off by setting `insecure` to `true` in the provider block.
 ## Release Notes
 
 ->The following resources use `WriteOnly` attributes:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_backup_host<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cloud<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cluster<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_image<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_pool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_pool_server<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_router_bgp_neighbor<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_storage_bucket<br>
@@ -83,8 +85,10 @@ be toggled off by setting `insecure` to `true` in the provider block.
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_cluster<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_datastore<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance_clone<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_pool<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_virtual_server<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_network_dhcp_server<br>
@@ -101,71 +105,26 @@ That is, the attribute names are case-sensitive and must match exactly.
 
 ### New resources
 
-In this release (v1.4.0) we have added the following resources:
+In this release (v1.5.0) we have added the following resources:
 
 #### Networking
 
-- hpe_morpheus_load_balancer_monitor
-- hpe_morpheus_load_balancer_virtual_server
-- hpe_morpheus_network_dhcp_server
-- hpe_morpheus_network_firewall_rule
-- hpe_morpheus_network_firewall_rule_group
-- hpe_morpheus_network_group
-- hpe_morpheus_network_pool
-- hpe_morpheus_network_pool_server
-- hpe_morpheus_network_router
-- hpe_morpheus_network_router_bgp_neighbor
-- hpe_morpheus_network_router_firewall_rule
-- hpe_morpheus_network_router_nat
-- hpe_morpheus_network_router_route
-- hpe_morpheus_security_group
-- hpe_morpheus_security_group_rule
-- hpe_morpheus_subnet
+- hpe_morpheus_load_balancer_pool
 
-#### Monitoring & Operations
+#### Compute & Instances
 
-- hpe_morpheus_backup_job
-- hpe_morpheus_budget
-- hpe_morpheus_monitoring_alert
-- hpe_morpheus_monitoring_check
-- hpe_morpheus_monitoring_group
+- hpe_morpheus_instance_clone
+- hpe_morpheus_instance_power_state
+- hpe_morpheus_instance_snapshot
 
-#### Storage
+#### Backup
 
-- hpe_morpheus_storage_bucket
-- hpe_morpheus_storage_server
-- hpe_morpheus_storage_volume
-
-#### Library & Provisioning
-
-- hpe_morpheus_container_script
-- hpe_morpheus_option_list
-- hpe_morpheus_provisioning_license
-
-#### VDI
-
-- hpe_morpheus_vdi_app
-- hpe_morpheus_vdi_gateway
-- hpe_morpheus_vdi_pool
-
-#### Compute & Cluster
-
-- hpe_morpheus_cluster_affinity_group
-- hpe_morpheus_cluster_namespace
-
-#### Identity & Governance
-
-- hpe_morpheus_setting_whitelabel
-
-#### Other
-
-- hpe_morpheus_certificate
-- hpe_morpheus_deployment
-- hpe_morpheus_power_schedule
+- hpe_morpheus_backup_host
+- hpe_morpheus_backup_instance
 
 ### New data sources
 
-In this release (v1.4.0) we have added the following data sources:
+In this release (v1.5.0) we have added the following data sources:
 
 - hpe_morpheus_load_balancer_monitor
 - hpe_morpheus_load_balancer_virtual_server
@@ -178,23 +137,32 @@ In this release (v1.4.0) we have added the following data sources:
 - hpe_morpheus_network_router_route
 - hpe_morpheus_security_group
 - hpe_morpheus_security_groups
+- hpe_morpheus_backup
+- hpe_morpheus_backup_type
+- hpe_morpheus_instance_snapshot
+- hpe_morpheus_load_balancer_pool
+- hpe_morpheus_network_edge_cluster
+- hpe_morpheus_network_pool
+- hpe_morpheus_network_server
+- hpe_morpheus_network_transport_zone
+- hpe_morpheus_network_type
 
 ### Enhancements to existing resources
 
-- hpe_morpheus_cloud — Added `config_azure` static config block; added 6 inventory discovery sync fields (`default_*_sync_active`)
-- hpe_morpheus_instance — Added `config_azure` static config block; added `network_domain_id` attribute (change forces recreation)
-- hpe_morpheus_load_balancer — Added tainting support; added `config` Dynamic attribute
-- hpe_morpheus_task — Allow null `else` in conditional_workflow task
-- All password/secret fields across 10 resources now enforce Sensitive + WriteOnly + PlanModifiers
+- hpe_morpheus_instance — Added `subnet_id` to `network_interfaces` (required by some clouds, e.g. Azure); added a computed `status` attribute and out-of-band deletion detection (the instance is removed from state when the underlying VM no longer exists)
+- hpe_morpheus_service_plan (data source) — Added a `cloud_id` filter (region/zone)
+- hpe_morpheus_identity_source_saml — Exposed the SP metadata (`entity_id`, `acs_url`) as computed outputs
+- hpe_morpheus_option_list_rest — Added `inject_system_authorization_header` and `use_owner_auth`
+- Option type resources and hpe_morpheus_form — Reject a self-referential `dependent_field` (circular `dependsOnCode`) at plan time
 
 ### Resolved issues
 
-- `hpe_morpheus_cloud` import fails with unknown values in static config blocks
-- `hpe_morpheus_task` conditional_workflow doesn't support null else clause
-- `hpe_morpheus_app_blueprint_kubernetes` YAML config not properly parsed
-- `hpe_morpheus_ansible_tower_inventory` data source type assertions fail intermittently
-- `hpe_morpheus_cluster` delete polling can report false failures
-- Import syntax standardised to dot-notation for multi-ID resources
+- `hpe_morpheus_form` dropped attributes on read for the secGroup field
+- `hpe_morpheus_form` cross-field leakage between option_type reads
+- `hpe_morpheus_form` no attribute generated for plain cascade keys
+- `hpe_morpheus_price_set` type enum and create/update failure handling
+- Appliance URLs with trailing slashes now authenticate correctly against Morpheus 9.0
+- New resources re-read via GET after POST and taint their state on failure, improving reliability
 
 ### Known issues
 

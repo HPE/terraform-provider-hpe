@@ -1,3 +1,72 @@
+# v1.5.0 Release Notes
+
+In this release (v1.5.0) we have added the following resources:
+
+### Networking
+
+- hpe_morpheus_load_balancer_pool
+
+### Compute & Instances
+
+- hpe_morpheus_instance_clone
+- hpe_morpheus_instance_power_state
+- hpe_morpheus_instance_snapshot
+
+### Backup
+
+- hpe_morpheus_backup_host
+- hpe_morpheus_backup_instance
+
+In this release (v1.5.0) we have added the following data sources:
+
+- hpe_morpheus_backup
+- hpe_morpheus_backup_type
+- hpe_morpheus_instance_snapshot
+- hpe_morpheus_load_balancer_pool
+- hpe_morpheus_network_edge_cluster
+- hpe_morpheus_network_pool
+- hpe_morpheus_network_server
+- hpe_morpheus_network_transport_zone
+- hpe_morpheus_network_type
+
+## Enhancements to existing resources
+
+- hpe_morpheus_instance — Added `subnet_id` to `network_interfaces` (required by some clouds, e.g. Azure); added a computed `status` attribute and out-of-band deletion detection (the instance is removed from state when the underlying VM no longer exists)
+- hpe_morpheus_service_plan (data source) — Added a `cloud_id` filter (region/zone)
+- hpe_morpheus_identity_source_saml — Exposed the SP metadata (`entity_id`, `acs_url`) as computed outputs
+- hpe_morpheus_option_list_rest — Added `inject_system_authorization_header` and `use_owner_auth`
+- Option type resources and hpe_morpheus_form — Reject a self-referential `dependent_field` (circular `dependsOnCode`) at plan time
+
+## Resolved issues
+
+- `hpe_morpheus_form` dropped attributes on read for the secGroup field
+- `hpe_morpheus_form` cross-field leakage between option_type reads
+- `hpe_morpheus_form` no attribute generated for plain cascade keys
+- `hpe_morpheus_price_set` type enum and create/update failure handling
+- Appliance URLs with trailing slashes now authenticate correctly against Morpheus 9.0
+- New resources re-read via GET after POST and taint their state on failure, improving reliability
+
+## Known issues
+
+- `hpe_morpheus_cluster_namespace`: `active` is not supported on import. `name` update is not supported.
+- `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
+
 # v1.4.0 Release Notes
 
 In this release (v1.4.0) we have added the following resources:
