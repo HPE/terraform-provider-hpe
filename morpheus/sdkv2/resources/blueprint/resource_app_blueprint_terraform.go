@@ -109,6 +109,26 @@ func ResourceAppBlueprintTerraform() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the terraform app blueprint (public or private)",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
+			},
+			"group_access_all": {
+				Type:        schema.TypeBool,
+				Description: "Whether to allow all groups access to the terraform app blueprint",
+				Optional:    true,
+				Computed:    true,
+			},
+			"group_ids": {
+				Type:        schema.TypeSet,
+				Description: "A list of group IDs to grant access to the terraform app blueprint",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -272,6 +292,7 @@ func resourceAppBlueprintTerraformCreate(ctx context.Context, d *schema.Resource
 				"description": description,
 				"category":    category,
 				"config":      config,
+				"visibility":  d.Get("visibility"),
 			},
 		},
 	}
@@ -298,6 +319,10 @@ func resourceAppBlueprintTerraformCreate(ctx context.Context, d *schema.Resource
 	blueprint := result.Blueprint
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	diags = append(diags, resourceAppBlueprintTerraformRead(ctx, d, meta)...)
 
@@ -386,6 +411,11 @@ func resourceAppBlueprintTerraformRead(ctx context.Context, d *schema.ResourceDa
 		}
 		d.Set("spec_template_ids", specTemplates)
 	}
+
+	setBlueprintPermissionsInState(d,
+		terraformBlueprint.Blueprint.Visibility,
+		terraformBlueprint.Blueprint.Resourcepermission.All,
+		terraformBlueprint.Blueprint.Resourcepermission.Sites)
 
 	return diags
 }
@@ -544,6 +574,7 @@ func resourceAppBlueprintTerraformUpdate(ctx context.Context, d *schema.Resource
 				"description": description,
 				"category":    category,
 				"config":      config,
+				"visibility":  d.Get("visibility"),
 			},
 		},
 	}
@@ -571,6 +602,10 @@ func resourceAppBlueprintTerraformUpdate(ctx context.Context, d *schema.Resource
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceAppBlueprintTerraformRead(ctx, d, meta)
 }

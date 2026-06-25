@@ -193,6 +193,19 @@ func ResourceInstanceTypeLayout() *schema.Resource {
 				},
 				Computed: true,
 			},
+			"group_access_all": {
+				Type:        schema.TypeBool,
+				Description: "Whether to allow all groups access to the instance layout",
+				Optional:    true,
+				Computed:    true,
+			},
+			"group_ids": {
+				Type:        schema.TypeSet,
+				Description: "A list of group IDs to grant access to the instance layout",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -375,6 +388,10 @@ func resourceInstanceTypeLayoutCreate(ctx context.Context, d *schema.ResourceDat
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
 
+	if err := applyLayoutPermissions(client, instanceLayoutResponse.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
+
 	diags = append(diags, resourceInstanceTypeLayoutRead(ctx, d, meta)...)
 
 	return diags
@@ -554,6 +571,12 @@ func resourceInstanceTypeLayoutRead(ctx context.Context, d *schema.ResourceData,
 	priceSetData := matchTemplatesWithSchema(priceSets, priceSetIDsRaw)
 	d.Set("price_set_ids", priceSetData)
 
+	var siteIDs []int64
+	for _, s := range instanceLayout.InstanceLayout.Permissions.ResourcePermissions.Sites {
+		siteIDs = append(siteIDs, s.ID)
+	}
+	setLayoutPermissionsInState(d, instanceLayout.InstanceLayout.Permissions.ResourcePermissions.All, siteIDs)
+
 	return diags
 }
 
@@ -724,6 +747,10 @@ func resourceInstanceTypeLayoutUpdate(ctx context.Context, d *schema.ResourceDat
 	// Successfully updated resource, now set id
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(instanceLayoutResponse.ID))
+
+	if err := applyLayoutPermissions(client, instanceLayoutResponse.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceInstanceTypeLayoutRead(ctx, d, meta)
 }

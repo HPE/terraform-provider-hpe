@@ -125,6 +125,26 @@ func ResourceAppBlueprintCloudFormation() *schema.Resource {
 				Description: "The git reference of the repository to pull (main, master, etc.)",
 				Optional:    true,
 			},
+			"visibility": {
+				Type:         schema.TypeString,
+				Description:  "The visibility of the cloud formation app blueprint (public or private)",
+				Optional:     true,
+				Computed:     true,
+				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
+			},
+			"group_access_all": {
+				Type:        schema.TypeBool,
+				Description: "Whether to allow all groups access to the cloud formation app blueprint",
+				Optional:    true,
+				Computed:    true,
+			},
+			"group_ids": {
+				Type:        schema.TypeSet,
+				Description: "A list of group IDs to grant access to the cloud formation app blueprint",
+				Optional:    true,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeInt},
+			},
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -274,6 +294,7 @@ func resourceAppBlueprintCloudFormationCreate(ctx context.Context, d *schema.Res
 				"description": description,
 				"category":    category,
 				"config":      config,
+				"visibility":  d.Get("visibility"),
 			},
 		},
 	}
@@ -298,6 +319,10 @@ func resourceAppBlueprintCloudFormationCreate(ctx context.Context, d *schema.Res
 	}
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	diags = append(diags, resourceAppBlueprintCloudFormationRead(ctx, d, meta)...)
 
@@ -374,6 +399,11 @@ func resourceAppBlueprintCloudFormationRead(ctx context.Context, d *schema.Resou
 		d.Set("repository_id", cloudformationBlueprint.Blueprint.Config.CloudFormation.Git.RepoId)
 		d.Set("version_ref", cloudformationBlueprint.Blueprint.Config.CloudFormation.Git.Branch)
 	}
+
+	setBlueprintPermissionsInState(d,
+		cloudformationBlueprint.Blueprint.Visibility,
+		cloudformationBlueprint.Blueprint.Resourcepermission.All,
+		cloudformationBlueprint.Blueprint.Resourcepermission.Sites)
 
 	return diags
 }
@@ -520,6 +550,7 @@ func resourceAppBlueprintCloudFormationUpdate(ctx context.Context, d *schema.Res
 				"description": description,
 				"category":    category,
 				"config":      config,
+				"visibility":  d.Get("visibility"),
 			},
 		},
 	}
@@ -543,6 +574,10 @@ func resourceAppBlueprintCloudFormationUpdate(ctx context.Context, d *schema.Res
 	}
 	blueprint := result.Blueprint
 	d.SetId(convert.Int64ToString(blueprint.ID))
+
+	if err := applyBlueprintPermissions(client, blueprint.ID, d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	return resourceAppBlueprintCloudFormationRead(ctx, d, meta)
 }
