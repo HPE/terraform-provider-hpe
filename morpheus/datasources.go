@@ -39,8 +39,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/role"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroup"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
@@ -75,8 +73,6 @@ func (SubProvider) GetDataSources(
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,
 		role.NewDataSource,
-		securitygroup.NewDataSource,
-		securitygroups.NewDataSource,
 		serviceplan.NewDataSource,
 		user.NewDataSource,
 		// hpegl VMaaS parity data sources
