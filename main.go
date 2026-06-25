@@ -35,17 +35,7 @@ func main() {
 	)
 	flag.Parse()
 
-	// p := provider.New(
-	// 	version,
-	// 	morpheus.New(),
-	// 	// subprovider2.New(),
-	// 	// subprovider3.New(),
-	// 	// .
-	// 	// .
-	// 	// .
-	// )
-
-	p := provider.New2(
+	p := provider.New(
 		version,
 		morpheus.NewMorpheusProvider(), // let's try just with Morpheus for now
 		opsrampprovider.New(version)(),
