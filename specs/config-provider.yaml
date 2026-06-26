@@ -1179,7 +1179,7 @@ resources:
     delete:
       path: /api/vdi-pools/{id}
       method: DELETE
-  whitelabel_settings:
+  setting_whitelabel:
     create:
       path: /api/whitelabel-settings
       method: PUT

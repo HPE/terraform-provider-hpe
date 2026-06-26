@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
 
-func WhitelabelSettingsResourceSchema(ctx context.Context) schema.Schema {
+func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"appliance_name": schema.StringAttribute{
@@ -74,7 +74,7 @@ func WhitelabelSettingsResourceSchema(ctx context.Context) schema.Schema {
 	}
 }
 
-type WhitelabelSettingsModel struct {
+type SettingWhitelabelModel struct {
 	ApplianceName    types.String `tfsdk:"appliance_name"`
 	Enabled          types.Bool   `tfsdk:"enabled"`
 	Favicon          types.String `tfsdk:"favicon"`
