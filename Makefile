@@ -14,10 +14,14 @@ build:
 	go build
 
 linter:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.0.2
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.3
 
+# The vendored Morpheus SDK (internal/sdk/{oapigen,legacy}) is generated /
+# hand-written third-party code that is not subject to the provider's lint
+# rules. It is still type-checked as a dependency, but excluded from the lint
+# target set (linting ~9k generated files is both wrong and prohibitively slow).
 lint:
-	golangci-lint run
+	golangci-lint run $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
 
 test:
 	env TF_ACC=1 \
@@ -32,9 +36,10 @@ test-json:
 	go test -json -cover -count 1 -timeout 60m ./...
 
 unit-tests:
-	# exclude the framework and sdkv2 packages and the
-	# terraform-provider-hpe/morpheus package (but NOT its subpackages)
-	pkgs=$$(go list ./... | grep -Ev 'sdkv2/(resources|datasources)|framework/(resources|datasources)|terraform-provider-hpe/morpheus$$'); \
+	# exclude the framework and sdkv2 packages, the
+	# terraform-provider-hpe/morpheus package (but NOT its subpackages), and the
+	# vendored SDK under internal/sdk (generated/third-party, no provider tests)
+	pkgs=$$(go list ./... | grep -Ev 'sdkv2/(resources|datasources)|framework/(resources|datasources)|terraform-provider-hpe/morpheus$$|/internal/sdk'); \
 	go test -v -count=1 -short -skip "TestAcc*" $$pkgs
 
 collect-test-results:

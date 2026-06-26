@@ -2,7 +2,7 @@
 
 package sdkfuncs
 
-import "github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+import sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 // Cloud
 

@@ -5,9 +5,10 @@ package configure
 import (
 	"context"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"

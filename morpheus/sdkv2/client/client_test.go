@@ -10,8 +10,9 @@ import (
 	"os"
 	"testing"
 
-	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/stretchr/testify/assert"
+
+	sdklegacy "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/client"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"

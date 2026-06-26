@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"

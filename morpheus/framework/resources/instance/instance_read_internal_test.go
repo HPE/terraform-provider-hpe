@@ -6,8 +6,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 // TestGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id

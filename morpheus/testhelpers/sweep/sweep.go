@@ -10,8 +10,9 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"

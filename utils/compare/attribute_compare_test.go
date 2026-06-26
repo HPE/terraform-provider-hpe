@@ -14,7 +14,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"

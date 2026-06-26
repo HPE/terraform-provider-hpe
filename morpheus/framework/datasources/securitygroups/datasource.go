@@ -9,11 +9,12 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"

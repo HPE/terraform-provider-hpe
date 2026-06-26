@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 )

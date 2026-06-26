@@ -51,10 +51,17 @@ Each subprovider provides its own schema block, configure logic, resources, and 
 
 ### Dual SDK
 
-- **Framework resources** use the generated OpenAPI SDK: `github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk`
-- **SDKv2 resources** use the legacy hand-written SDK: `github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy`
+The Morpheus SDK is vendored **in-tree** under `internal/sdk/` (it is part of this
+module — there is no external SDK dependency, `replace` directive, or `go.work`):
 
-The `go.work` file references a local checkout of the SDK at `../hpe-morpheus-go-sdk/oapigen` for development.
+- **Framework resources** use the generated OpenAPI SDK: `github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen` (package `sdk`)
+- **SDKv2 resources** use the legacy hand-written SDK: `github.com/HPE/terraform-provider-hpe/internal/sdk/legacy` (package `morpheus`)
+
+`internal/sdk/oapigen` is **generated** (OpenAPI Generator) and must not be hand-edited;
+it is regenerated from the OpenAPI spec by an internal code-generation pipeline and
+delivered here via a manual task (the same flow used for the generated `schema_gen.go`
+schemas). `internal/sdk/legacy` is hand-maintained. Both are excluded from `make lint`
+(vendored/generated code) but are still built and type-checked as part of the module.
 
 ## Key Conventions
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 func GetRole(t *testing.T, roleID int64) (*sdk.GetRole200Response, error) {

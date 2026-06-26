@@ -20,7 +20,12 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v8
-        with:
-          version: v2.11.3
+      # Run lint via the Makefile so the vendored SDK (internal/sdk) exclusion
+      # lives in one place. golangci-lint cannot skip analysis of those ~9k
+      # generated files via config alone, so the lint target filters them out
+      # of the package set (they are still type-checked as a dependency).
+      - name: Lint
+        run: |
+          make linter
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          make lint

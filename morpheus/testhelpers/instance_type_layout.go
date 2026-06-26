@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 func CreateInstanceTypeLayout(t *testing.T, count int64) (

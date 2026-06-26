@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/auth"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/model"
