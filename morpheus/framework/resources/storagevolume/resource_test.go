@@ -130,3 +130,62 @@ func TestAccMorpheusStorageVolumeResourceUpdateOk(t *testing.T) {
 		},
 	})
 }
+
+// TestAccMorpheusStorageVolumeResourceCompleteOk exercises the max_storage
+// (size) path, which the example-based tests do not cover. max_storage is
+// expressed in GiB; before the units fix the Morpheus API rejected the request
+// with "The size must be between 1 and 65536 GiB" because the value was treated
+// as bytes (MORPH-13021). The PlanOnly step additionally confirms that the
+// bytes->GiB read-back round-trips without drift, and the import step confirms
+// that the computed_optional type_id/type_code pair produces a clean import.
+func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+	}
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_storage_volume.example"
+
+	resourceConfig, err := storage_volume.RenderStorageVolumeCompleteConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+					// max_storage is in GiB.
+					resource.TestCheckResourceAttr(resourceName, "max_storage", "10"),
+					// type_code is computed_optional and is populated from the API.
+					resource.TestCheckResourceAttrSet(resourceName, "type_code"),
+				),
+			},
+			{
+				// A no-op re-plan confirms the bytes->GiB read-back round-trips
+				// without drift.
+				Config:             providerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+			},
+		},
+	})
+}
