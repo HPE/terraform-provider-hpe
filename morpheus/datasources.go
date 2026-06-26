@@ -62,6 +62,8 @@ func (p *MorpheusProvider) DataSources(
 		image.NewDataSource,
 		loadbalancer.NewDataSource,
 		loadbalancermonitor.NewDataSource,
+		loadbalancerpool.NewDataSource,
+		loadbalancerprofile.NewDataSource,
 		loadbalancervirtualserver.NewDataSource,
 		network.NewDataSource,
 		networkdhcpserver.NewDataSource,
@@ -75,6 +77,8 @@ func (p *MorpheusProvider) DataSources(
 		ostypeimage.NewDataSource,
 		policy.NewDataSource,
 		role.NewDataSource,
+		securitygroup.NewDataSource,
+		securitygroups.NewDataSource,
 		serviceplan.NewDataSource,
 		user.NewDataSource,
 		// hpegl VMaaS parity data sources

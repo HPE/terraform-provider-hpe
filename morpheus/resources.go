@@ -78,6 +78,8 @@ func (p *MorpheusProvider) Resources(
 		image.NewResource,
 		loadbalancer.NewResource,
 		loadbalancermonitor.NewResource,
+		loadbalancerpool.NewResource,
+		loadbalancerprofile.NewResource,
 		loadbalancervirtualserver.NewResource,
 		network.NewResource,
 		networkfirewallrule.NewResource,
@@ -85,7 +87,7 @@ func (p *MorpheusProvider) Resources(
 		networkdhcpserver.NewResource,
 		networkrouter.NewResource,
 		networkrouterbgpneighbor.NewResource,
-		network_router_route.NewResource,
+		networkrouterroute.NewResource,
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
@@ -94,53 +96,54 @@ func (p *MorpheusProvider) Resources(
 		task.NewResource,
 		instance.NewResource,
 		instancepowerstate.NewResource,
+		instanceclone.NewResource,
 		instancesnapshot.NewResource,
 		policy.NewResource,
 		cluster.NewResource,
 
 		// Sprint 1: Simple resources
 		certificate.NewResource,
-		power_schedule.NewResource,
-		vdi_app.NewResource,
-		vdi_gateway.NewResource,
-		container_script.NewResource,
+		powerschedule.NewResource,
+		vdiapp.NewResource,
+		vdigateway.NewResource,
+		containerscript.NewResource,
 
 		// Sprint 2: Networking
-		network_group.NewResource,
-		network_pool.NewResource,
-		network_pool_server.NewResource,
-		network_router_nat.NewResource,
-		network_router_firewall_rule.NewResource,
+		networkgroup.NewResource,
+		networkpool.NewResource,
+		networkpoolserver.NewResource,
+		networkrouternat.NewResource,
+		networkrouterfirewallrule.NewResource,
 		subnet.NewResource,
-		security_group.NewResource,
-		security_group_rule.NewResource,
+		securitygroup.NewResource,
+		securitygrouprule.NewResource,
 
 		// Sprint 3: Automation & Orchestration
 		deployment.NewResource,
 
 		// Sprint 4: Infrastructure & Compute
-		cluster_namespace.NewResource,
-		cluster_affinity_group.NewResource,
-		storage_server.NewResource,
-		storage_volume.NewResource,
-		storage_bucket.NewResource,
+		clusternamespace.NewResource,
+		clusteraffinitygroup.NewResource,
+		storageserver.NewResource,
+		storagevolume.NewResource,
+		storagebucket.NewResource,
 
 		// Sprint 5: Monitoring & Operations
-		monitoring_check.NewResource,
-		monitoring_alert.NewResource,
-		monitoring_group.NewResource,
+		monitoringcheck.NewResource,
+		monitoringalert.NewResource,
+		monitoringgroup.NewResource,
 		budget.NewResource,
-		backup_job.NewResource,
+		backupjob.NewResource,
 		backuphost.NewResource,
 		backupinstance.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		option_list.NewResource,
-		provisioning_license.NewResource,
+		optionlist.NewResource,
+		provisioninglicense.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance
-		vdi_pool.NewResource,
-		setting_whitelabel.NewResource,
+		vdipool.NewResource,
+		settingwhitelabel.NewResource,
 	}
 
 	return resources
