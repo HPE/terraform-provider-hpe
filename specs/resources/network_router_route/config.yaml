@@ -1,0 +1,58 @@
+network_router_route:
+  templates:
+    networkMtu:
+      float64:
+        computed_optional_required: optional
+        description: Network MTU
+  moves:
+    - network_route: ""
+    - network: source
+    - next_hop: destination
+    - template-networkMtu: network_mtu
+  removes:
+    - code
+    - external_id
+    - provider_id
+    - route_type
+    - source_type
+    - mtu
+    - destination_type
+    - external_interface
+    - external_type
+    - internal_id
+    - priority
+    - success
+    - unique_id
+    - visible
+  overrides:
+    id:
+      description: The ID of the route
+      state_for_unknown: true
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router
+      requires_replace: true
+    name:
+      computed_optional_required: computed_optional
+      description: Name of the route
+      requires_replace: true
+    description:
+      computed_optional_required: computed_optional
+      description: Description of the route
+      requires_replace: true
+    source:
+      computed_optional_required: required
+      description: Source network (CIDR)
+      requires_replace: true
+    destination:
+      computed_optional_required: required
+      description: Destination / next hop
+      requires_replace: true
+    default_route:
+      computed_optional_required: computed_optional
+      description: Whether this is the default route
+      default: false
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the route is enabled
+      default: true

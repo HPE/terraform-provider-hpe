@@ -1,0 +1,584 @@
+instance:
+  enable_timeouts: true
+  includes:
+    - evars
+    - instance.name
+    - instance.status
+    - instance.instance_context
+    - layout_size
+    - ports
+    - tags
+    - task_set_id
+    - zone_id
+    - instance.site.id
+  templates:
+    id:
+      int64:
+        computed_optional_required: computed
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    instance_type_id:
+      int64:
+        computed_optional_required: required
+        description: The type of instance by id we want to fetch.
+    layout_id:
+      int64:
+        computed_optional_required: required
+        description: The layout id for the instance type that you want to provision. i.e. single process or cluster
+    plan_id:
+      int64:
+        computed_optional_required: required
+        description: The id for the memory and storage option pre-configured within Morpheus.
+    volumes:
+      list_nested:
+        computed_optional_required: computed_optional
+        nested_object:
+          attributes:
+          - name: controller_mount_point
+            string:
+              computed_optional_required: computed_optional
+              description: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n"
+          - name: datastore_auto_selection
+            string:
+              computed_optional_required: optional
+              description: Auto selection can be specified as auto or autoCluster (for clusters).
+              validators:
+              - custom:
+                  imports:
+                  - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                  schema_definition: |-
+                    stringvalidator.OneOf(
+                    "auto",
+                    "autoCluster",
+                    )
+          - name: datastore_id
+            int64:
+              computed_optional_required: computed_optional
+              description: The ID of the specific datastore.
+          - name: id
+            int64:
+              computed_optional_required: computed
+              description: The id for the LV configuration being created.
+          - name: name
+            string:
+              computed_optional_required: computed_optional
+              description: Name/type of the LV being created.
+          - name: root_volume
+            bool:
+              computed_optional_required: computed_optional
+              description: If set to false then a non-root LV will be created.
+          - name: size
+            int64:
+              computed_optional_required: optional
+              description: Size of the LV to be created in GBs.  Uses default from service plan.
+          - name: size_id
+            int64:
+              computed_optional_required: optional
+              description: Can be used to select pre-existing LV choices from Morpheus.
+          - name: storage_profile
+            string:
+              computed_optional_required: computed_optional
+              description: |-
+                Storage profile code for the volume. The available codes depend on the
+                provision type; query `/api/provision-types` to list the `storageProfiles`
+                for a type. For example, KVM/HVM volumes use cache-mode profiles such as
+                `"kvm-cache-none"` or `"kvm-cache-directsync"` (`/api/provision-types?code=kvm`).
+          - name: storage_type_id
+            int64:
+              computed_optional_required: optional
+              description: Identifier for LV type
+        description: Logical Volume configuration to create additional LVs at provision time
+    availabilityId:
+      string:
+        computed_optional_required: optional
+        description: The id of the AWS zone to provision the instance in.
+    config:
+      dynamic:
+        computed_optional_required: computed_optional
+        description: Configuration object. Settings vary by type.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+    configAWS:
+      single_nested:
+        computed_optional_required: optional
+        description: Configuration options for AWS instances.
+    configAzure:
+      single_nested:
+        computed_optional_required: optional
+        description: Configuration options for Azure instances.
+    azureRegion:
+      string:
+        computed_optional_required: optional
+        description: The Azure region to provision the instance in.
+    azuresecurityGroupId:
+      string:
+        computed_optional_required: optional
+        description: The id of the Azure security group to assign the instance to.
+    availabilityOptions:
+      string:
+        computed_optional_required: optional
+        description: The availability option for the instance (zone, set).
+    availabilitySet:
+      string:
+        computed_optional_required: optional
+        description: The availability set to use when availability_options is 'set'.
+    availabilityZone:
+      string:
+        computed_optional_required: optional
+        description: The availability zone to use when availability_options is 'zone'.
+    azurefloatingIp:
+      string:
+        computed_optional_required: optional
+        description: Whether to assign a public IP to the instance (on, off).
+    bootDiagnostics:
+      string:
+        computed_optional_required: optional
+        description: Boot diagnostics setting (enable, enable_custom_storage).
+    diagnosticsStorageAccount:
+      string:
+        computed_optional_required: optional
+        description: The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.
+    osGuestDiagnostics:
+      string:
+        computed_optional_required: optional
+        description: OS guest diagnostics setting (on, off).
+    configHVM:
+      single_nested:
+        computed_optional_required: optional
+        description: Configuration options for HVM instances.
+    configVMware:
+      single_nested:
+        computed_optional_required: optional
+        description: Configuration options for VMware instances.
+    connectionInfo:
+      list:
+        computed_optional_required: computed
+        element_type:
+          string: {}
+        description: List of IP addresses to use when connecting to instance
+    coresPerSocket:
+      int64:
+        computed_optional_required: computed_optional
+        description: The number of cores per socket to use for the instance.  This is only applicable for certain service plans.
+        default:
+          static: 1
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              schema_definition: |-
+                int64validator.AtLeast(1)
+    createUser:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether to create a user when provisioning the instance.  The default is 'false'
+        default:
+          static: false
+    description:
+      string:
+        computed_optional_required: optional
+        description: A description of the instance.
+    instanceProfile:
+      string:
+        computed_optional_required: optional
+        description: The AWS IAM Profile to use for provisioning.
+    ipPool:
+      int64:
+        computed_optional_required: computed_optional
+        description: id of the ip pool to be used with this network
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("ip_address"),
+                }...)
+    ipAddress:
+      string:
+        computed_optional_required: computed_optional
+        description: The ip address. Not applicable when using DHCP or IP Pools.
+    ipMode:
+      string:
+        computed_optional_required: computed_optional
+        description: The mode for determining ip address. Can be 'static', 'dhcp' or ''.  The default is ''.
+    isEC2:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether this instance is an EC2 instance.  The default is 'false'.
+        default:
+          static: false
+    kmsKeyId:
+      string:
+        computed_optional_required: optional
+        description: The AWS KMS Key ID to use for provisioning.
+    kvmHostId:
+      int64:
+        computed_optional_required: optional
+        description: The id of the KVM host to use for provisioning.
+    layoutSize:
+      int64:
+        computed_optional_required: computed_optional
+        default:
+          static: 1
+        description: Apply a multiply factor of containers/vms within the instance.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              schema_definition: |-
+                int64validator.OneOf(1)
+    maxCores:
+      int64:
+        computed_optional_required: optional
+        description: The maximum number of cores to use for the instance.  This is only applicable for certain service plans.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              schema_definition: |-
+                int64validator.AtLeast(1)
+    maxMemory:
+      int64:
+        computed_optional_required: optional
+        description: The maximum amount of memory (in MB) to use for the instance.  This is only applicable for certain service plans.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              schema_definition: |-
+                int64validator.AtLeast(1)
+    nestedVirtualization:
+      string:
+        computed_optional_required: computed_optional
+        default:
+          static: "off"
+        description: |
+          Enable nested virtualization on the instance. Can be a number of valid string values:
+             "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: |-
+                stringvalidator.OneOf("on", "off", "0", "1", "true", "false", "yes", "no", "")
+    networkDomainId:
+      int64:
+        computed_optional_required: optional
+        description: The Network Domain ID to provision the instance into.
+    userGroupId:
+      int64:
+        computed_optional_required: optional
+        description: |
+          The id of the user group to associate with the instance. When create_user is enabled on
+          the relevant config_* block, the user group's members can be created as users on the
+          provisioned instance. The user group can only be set at provision time; changing it forces
+          replacement of the instance.
+    networkGroupId:
+      int64:
+        computed_optional_required: computed_optional
+        description: |
+          id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("network_id"),
+                  path.MatchRelative().AtParent().AtName("subnet_id"),
+                }...)
+    networkId:
+      int64:
+        computed_optional_required: computed_optional
+        description: id of the network to be used.  This cannot be used with 'network_group_id'
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("network_group_id"),
+                  path.MatchRelative().AtParent().AtName("subnet_id"),
+                }...)
+    subnetId:
+      int64:
+        computed_optional_required: computed_optional
+        description: id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("network_id"),
+                  path.MatchRelative().AtParent().AtName("network_group_id"),
+                }...)
+    networkInterfaceId:
+      int64:
+        computed_optional_required: computed
+        description: The id of the network interface
+    networkInterfaceTypeId:
+      int64:
+        computed_optional_required: computed_optional
+        description: The id of the type of network interface
+    networkInterfacesOuter:
+      list_nested:
+        computed_optional_required: required
+        description: |
+          The networkInterfaces parameter is for network configuration.
+
+          The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
+    networkInterfacesInner:
+      list_nested:
+        computed_optional_required: optional
+        description: |
+          The child_virtual_networks parameter is for network configuration of child virtual networks.  Note that this list
+          cannot be empty, it can either not be specified in HCL or if specified must contain at least one element.
+
+          The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
+              schema_definition: |-
+                listvalidator.SizeAtLeast(1)
+    noAgent:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+        default:
+          static: true
+    primaryInterface:
+      bool:
+        computed_optional_required: computed
+        description: Is this interface the 'primary interface'?
+    publicIpType:
+      string:
+        computed_optional_required: computed_optional
+        description: The type of public IP to associate with the instance.
+        default:
+          static: "subnet"
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: |-
+                stringvalidator.OneOf("subnet", "elasticIp")
+    resourcePoolId:
+      string:
+        computed_optional_required: required
+        description: The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+    securityGroups:
+      list_nested:
+        computed_optional_required: required
+        description: a list of objects containing the ids of the AWS security groups to assign the instance to.
+    securityGroupId:
+      string:
+        computed_optional_required: required
+        description: id of the AWS security group to assign the instance to.
+    servicePlanOptions:
+      single_nested:
+        computed_optional_required: optional
+        description: Custom options for selected service plan - the supported options depend on the service plan selected
+    vmwareFolderID:
+      string:
+        computed_optional_required: optional
+        description: VMware folder external ID.
+    interfaceName:
+      string:
+        computed_optional_required: computed
+        description: The name of the interface, e.g. 'eth0', 'eth1'
+    status:
+      string:
+        computed_optional_required: computed
+        description: |
+          The status of the instance (e.g. running, stopped, failed, unknown). The provider
+          refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
+          reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.UseStateForUnknown()
+  moves:
+    - instance: "" # unnest instance wrapper to root
+    - template-id: id
+    - template-status: status
+    - template-instance_type_id: instance_type_id
+    - template-layout_id: layout_id
+    - template-plan_id: plan_id
+    - template-volumes: volumes
+    - site.id: group_id
+    - zone_id: cloud_id
+    - ports.lb: ports.load_balancer_protocol
+    - template-config: config
+    - template-configHVM: config_hvm
+    - template-createUser: config_hvm.create_user
+    - template-description: description
+    - template-noAgent: config_hvm.no_agent
+    - template-nestedVirtualization: config_hvm.nested_virtualization
+    - template-resourcePoolId: config_hvm.resource_pool_id
+    - template-kvmHostId: config_hvm.kvm_host_id
+    - template-configVMware: config_vmware
+    - template-createUser: config_vmware.create_user
+    - template-noAgent: config_vmware.no_agent
+    - template-nestedVirtualization: config_vmware.nested_virtualization
+    - template-resourcePoolId: config_vmware.resource_pool_id
+    - template-vmwareFolderID: config_vmware.vmware_folder_id
+    - template-configAWS: config_aws
+    - template-availabilityId: config_aws.availability_zone_id
+    - template-instanceProfile: config_aws.instance_profile
+    - template-kmsKeyId: config_aws.kms_key_id
+    - template-publicIpType: config_aws.public_ip_type
+    - template-isEC2: config_aws.is_ec2
+    - template-noAgent: config_aws.no_agent
+    - template-createUser: config_aws.create_user
+    - template-resourcePoolId: config_aws.resource_pool_id
+    - template-securityGroups: security_groups
+    - template-securityGroupId: security_groups.id
+    - security_groups: config_aws.security_groups
+    # Azure static config
+    - template-configAzure: config_azure
+    - template-azureRegion: config_azure.azure_region
+    - template-azuresecurityGroupId: config_azure.azuresecurity_group_id
+    - template-availabilityOptions: config_azure.availability_options
+    - template-availabilitySet: config_azure.availability_set
+    - template-availabilityZone: config_azure.availability_zone
+    - template-azurefloatingIp: config_azure.azurefloating_ip
+    - template-bootDiagnostics: config_azure.boot_diagnostics
+    - template-createUser: config_azure.create_user
+    - template-diagnosticsStorageAccount: config_azure.diagnostics_storage_account
+    - template-osGuestDiagnostics: config_azure.os_guest_diagnostics
+    - template-resourcePoolId: config_azure.resource_pool_id
+    - template-networkDomainId: network_domain_id
+    - template-userGroupId: user_group
+    - template-connectionInfo: connection_info
+    - template-networkInterfacesOuter: network_interfaces
+    - template-ipAddress: network_interfaces.ip_address
+    - template-ipMode: network_interfaces.ip_mode
+    - template-ipPool: network_interfaces.ip_pool
+    - template-layoutSize: layout_size
+    - template-networkGroupId: network_interfaces.network_group_id
+    - template-networkId: network_interfaces.network_id
+    - template-subnetId: network_interfaces.subnet_id
+    - template-networkInterfaceId: network_interfaces.id
+    - template-networkInterfaceTypeId: network_interfaces.network_type_id
+    - template-primaryInterface: network_interfaces.primary_interface
+    - template-interfaceName: network_interfaces.name
+    - template-networkInterfacesInner: network_interfaces_inner
+    - template-ipAddress: network_interfaces_inner.ip_address
+    - template-ipMode: network_interfaces_inner.ip_mode
+    - template-ipPool: network_interfaces_inner.ip_pool
+    - template-networkGroupId: network_interfaces_inner.network_group_id
+    - template-networkId: network_interfaces_inner.network_id
+    - template-subnetId: network_interfaces_inner.subnet_id
+    - template-networkInterfaceId: network_interfaces_inner.id
+    - template-networkInterfaceTypeId: network_interfaces_inner.network_type_id
+    - template-primaryInterface: network_interfaces_inner.primary_interface
+    - template-servicePlanOptions: service_plan_options
+    - template-maxCores: service_plan_options.max_cores
+    - template-coresPerSocket: service_plan_options.cores_per_socket
+    - template-maxMemory: service_plan_options.max_memory
+    - template-interfaceName: network_interfaces_inner.name
+    - network_interfaces_inner: network_interfaces.child_virtual_networks
+  removes:
+    - site
+  overrides:
+    status:
+      computed_optional_required: computed
+      description: |
+        The status of the instance (e.g. running, stopped, failed, unknown). The provider
+        refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
+        reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
+      state_for_unknown: true
+    config:
+      conflicts_with: [config_hvm, config_vmware, config_aws, config_azure]
+      at_least_one_of: [config, config_hvm, config_vmware, config_aws, config_azure]
+    config_hvm:
+      computed_optional_required: optional
+    config_vmware:
+      computed_optional_required: optional
+    config_aws:
+      computed_optional_required: optional
+      requires_replace: true
+    config_azure:
+      computed_optional_required: optional
+      requires_replace: true
+    config_azure.resource_pool_id:
+      description: The id of the Azure resource group to provision the instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.
+      computed_optional_required: required
+    config_azure.azure_region:
+      description: The Azure region to provision the instance in.
+      computed_optional_required: optional
+    config_azure.azuresecurity_group_id:
+      description: The id of the Azure security group to assign the instance to.
+      computed_optional_required: optional
+    config_azure.availability_options:
+      description: The availability option for the instance (zone, set).
+      computed_optional_required: optional
+      one_of: ["zone", "set"]
+    config_azure.availability_set:
+      description: The availability set to use when availability_options is 'set'.
+      computed_optional_required: optional
+    config_azure.availability_zone:
+      description: The availability zone to use when availability_options is 'zone'.
+      computed_optional_required: optional
+    config_azure.azurefloating_ip:
+      description: Whether to assign a public IP to the instance (on, off).
+      computed_optional_required: optional
+      one_of: ["on", "off"]
+    config_azure.boot_diagnostics:
+      description: Boot diagnostics setting (enable, enable_custom_storage).
+      computed_optional_required: optional
+      one_of: ["enable", "enable_custom_storage"]
+    config_azure.os_guest_diagnostics:
+      description: OS guest diagnostics setting (on, off).
+      computed_optional_required: optional
+      one_of: ["on", "off"]
+    config_azure.diagnostics_storage_account:
+      description: The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.
+      computed_optional_required: optional
+    config_azure.create_user:
+      description: Whether to create a user when provisioning the instance.
+      computed_optional_required: computed_optional
+      default: true
+    evars:
+      state_for_unknown: true
+    network_domain_id:
+      requires_replace: true
+    user_group:
+      requires_replace: true
+    task_set_id:
+      computed_optional_required: optional
+    ports:
+      computed_optional_required: optional
+    evars.name:
+      computed_optional_required: required
+    evars.value:
+      computed_optional_required: required
+    tags:
+      computed_optional_required: optional
+    tags.name:
+      computed_optional_required: required
+    tags.value:
+      computed_optional_required: required
+    ports.load_balancer_protocol:
+      description: Enable a load balancer and set load balancer protocol. HTTP, HTTPS, or TCP.
+      computed_optional_required: optional
+    network_interfaces.ip_mode:
+      one_of: ["static", "dhcp", ""]
+      default: ""
+    network_interfaces.child_virtual_networks.ip_mode:
+      one_of: ["static", "dhcp", ""]
+      default: ""

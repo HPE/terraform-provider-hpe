@@ -1,0 +1,81 @@
+whitelabel_settings:
+  description: "Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. On destroy, all whitelabel settings will be reset to their zero values."
+  templates:
+    id:
+      string:
+        computed_optional_required: computed
+        description: The fixed identifier for the whitelabel settings singleton.
+      state_for_unknown: true
+    primary_color:
+      string:
+        computed_optional_required: optional
+        description: The primary button background color.
+    secondary_color:
+      string:
+        computed_optional_required: optional
+        description: The header background color.
+    support_menu_links_str:
+      string:
+        computed_optional_required: optional
+        description: Support menu links as a JSON string.
+  moves:
+    - whitelabel_settings: ""
+    - template-id: id
+    - template-primary_color: primary_color
+    - template-secondary_color: secondary_color
+    - template-support_menu_links_str: support_menu_links
+  removes:
+    - copyright_string
+    - disable_support_menu
+    - footer_bg_color
+    - footer_fg_color
+    - header_bg_color
+    - header_fg_color
+    - login_bg_color
+    - nav_bg_color
+    - nav_fg_color
+    - nav_hover_color
+    - override_css
+    - primary_button_bg_color
+    - primary_button_fg_color
+    - primary_button_hover_bg_color
+    - primary_button_hover_fg_color
+    - privacy_policy
+    - reset_favicon
+    - reset_footer_logo
+    - reset_header_logo
+    - reset_login_logo
+    - success
+    - terms_of_use
+  overrides:
+    appliance_name:
+      computed_optional_required: optional
+      description: The appliance name. Master account only.
+    enabled:
+      computed_optional_required: optional
+      description: Whether the whitelabel feature is enabled.
+    favicon:
+      computed_optional_required: optional
+      description: The favicon URL or path.
+    footer_logo:
+      computed_optional_required: optional
+      description: The footer logo URL or path.
+    header_logo:
+      computed_optional_required: optional
+      description: The header logo URL or path.
+    id:
+      computed_optional_required: computed
+      description: The fixed identifier for the whitelabel settings singleton.
+      state_for_unknown: true
+    login_logo:
+      computed_optional_required: optional
+      description: The login logo URL or path.
+    primary_color:
+      computed_optional_required: optional
+      description: The primary button background color.
+    secondary_color:
+      computed_optional_required: optional
+      description: The header background color.
+    support_menu_links:
+      computed_optional_required: optional
+      description: Support menu links as a JSON string.

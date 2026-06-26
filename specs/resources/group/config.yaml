@@ -1,0 +1,34 @@
+group:
+  templates:
+    cloud_ids:
+      list:
+        computed_optional_required: computed_optional
+        element_type:
+          int64: {}
+        description: List of cloud ids to add to the group
+  includes:
+    - group.id
+    - group.name
+    - group.code
+    - group.labels
+    - group.location
+  moves:
+    - group: "" # unnest group to root
+    - template-cloud_ids: cloud_ids
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the group
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: A unique name for the group
+    code:
+      computed_optional_required: optional
+      description: Optional code for use with policies
+    labels:
+      computed_optional_required: computed_optional
+      description: The organization labels associated with the group
+    location:
+      computed_optional_required: optional
+      description: Optional location for the group

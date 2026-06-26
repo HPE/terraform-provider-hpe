@@ -1,0 +1,98 @@
+instance_snapshot:
+  description: "Manages an instance snapshot in HPE Morpheus."
+  enable_timeouts: true
+  templates:
+    instance_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the instance to snapshot.
+    retain_on_delete:
+      bool:
+        computed_optional_required: optional
+        description: When true, the snapshot is left in Morpheus when the resource is destroyed (removed from Terraform state only). Defaults to false.
+    cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the cloud (zone) the snapshot belongs to.
+  moves:
+    - snapshot: ""                          # unnest read wrapper (response wraps in 'snapshot')
+    - template-instance_id: instance_id
+    - template-retain_on_delete: retain_on_delete
+    - template-cloud_id: cloud_id
+  removes:
+    - zone                                  # (components/schemas/snapshot.yaml) - nested object; exposed as cloud_id
+    - snapshot_files                        # (components/schemas/snapshot.yaml) - nested array; exposed on the data source
+    - process_ids                           # (snapshotInstance 200 response) - async tracking, not resource state
+    - success                               # API response wrapper
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the snapshot.
+      state_for_unknown: true
+    instance_id:
+      computed_optional_required: required
+      description: The ID of the instance to snapshot.
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: The name of the snapshot.
+      requires_replace: true
+    description:
+      computed_optional_required: optional
+      description: A description of the snapshot.
+      requires_replace: true
+    memory_snapshot:
+      computed_optional_required: computed_optional
+      description: Whether to include the instance's memory in the snapshot.
+      requires_replace: true
+    for_export:
+      computed_optional_required: computed_optional
+      description: When true, the snapshot is created in an exportable form (a full, standalone disk image) rather than a lightweight in-place snapshot. Supported on MVM/KVM and VMware. Defaults to false.
+      requires_replace: true
+    retain_on_delete:
+      computed_optional_required: optional
+      description: When true, the snapshot is left in Morpheus when the resource is destroyed (removed from Terraform state only). Defaults to false.
+    status:
+      computed_optional_required: computed
+      description: The status of the snapshot.
+      state_for_unknown: true
+    external_id:
+      computed_optional_required: computed
+      description: The external (cloud-provider) identifier of the snapshot.
+      state_for_unknown: true
+    date_created:
+      computed_optional_required: computed
+      description: When the snapshot was created.
+      state_for_unknown: true
+    cloud_id:
+      computed_optional_required: computed
+      description: The ID of the cloud (zone) the snapshot belongs to.
+      state_for_unknown: true
+    state:
+      computed_optional_required: computed
+      description: The lifecycle state of the snapshot.
+      state_for_unknown: true
+    snapshot_type:
+      computed_optional_required: computed
+      description: The type of the snapshot (cloud/provider specific).
+      state_for_unknown: true
+    snapshot_created:
+      computed_optional_required: computed
+      description: When the snapshot was taken on the underlying platform.
+      state_for_unknown: true
+    datastore:
+      computed_optional_required: computed
+      description: The datastore the snapshot resides on, if reported by the platform.
+      state_for_unknown: true
+    parent_snapshot:
+      computed_optional_required: computed
+      description: The ID of the parent snapshot in the snapshot lineage, if any.
+      state_for_unknown: true
+    currently_active:
+      computed_optional_required: computed
+      description: Whether this snapshot is the currently active snapshot for the instance.
+      state_for_unknown: true
+    for_backup:
+      computed_optional_required: computed
+      description: Whether the snapshot was created as part of a backup operation.
+      state_for_unknown: true

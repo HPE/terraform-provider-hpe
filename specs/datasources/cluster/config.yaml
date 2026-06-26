@@ -1,0 +1,31 @@
+cluster:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+  moves:
+    - cluster: "" # unnest cluster
+    - cluster_id: id
+    - accounts: tenants
+    - zone: cloud
+    - site: group
+    - cloud.zone_type: cloud.cloud_type
+    - permissions.resource_permissions.account: permissions.resource_permissions.tenant
+    - permissions.resource_permissions.sites: permissions.resource_permissions.groups
+    - template-config: config
+  removes:
+    # Clusters don't use code.
+    - code
+    # stats is a query parameter used enable getting a detailed `stats` object in the response.
+    # We won't suppport it for now - OpenAPI spec needs to be updated with the stats object.
+    - stats
+    # cpu_placement_mode is not yet exposed by the provider schema.
+    - cpu_placement_mode
+  overrides:
+    id:
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      conflicts_with: ["id"]
+      description: The name of the cluster.
+      computed_optional_required: computed_optional

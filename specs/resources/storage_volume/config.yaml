@@ -1,0 +1,61 @@
+storage_volume:
+  description: "Manages a Morpheus Storage Volume resource."
+  templates:
+    id_int:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the storage volume.
+    max_storage:
+      int64:
+        computed_optional_required: optional
+        description: The maximum storage size in bytes.
+    name:
+      string:
+        computed_optional_required: required
+        description: The name of the storage volume.
+    status:
+      string:
+        computed_optional_required: computed
+        description: The status of the storage volume.
+    storage_server_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the storage server.
+    type_id:
+      int64:
+        computed_optional_required: required
+        description: The type ID of the storage volume.
+  moves:
+    - template-id_int: id
+    - template-max_storage: max_storage
+    - template-name: name
+    - template-status: status
+    - template-storage_server_id: storage_server_id
+    - template-type_id: type_id
+  removes:
+    - storage_volume
+    - success
+    - type
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the storage volume.
+      state_for_unknown: true
+    max_storage:
+      computed_optional_required: optional
+      description: The maximum storage size in bytes.
+    name:
+      computed_optional_required: required
+      description: The name of the storage volume.
+    status:
+      computed_optional_required: computed
+      description: The status of the storage volume.
+      state_for_unknown: true
+    storage_server_id:
+      computed_optional_required: optional
+      description: The ID of the storage server.
+      requires_replace: true
+    type_id:
+      computed_optional_required: required
+      description: The type ID of the storage volume.
+      requires_replace: true

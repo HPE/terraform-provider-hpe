@@ -1,0 +1,27 @@
+environment:
+  includes:
+    - environment.id
+    - environment.name
+    - environment.code
+    - environment.active
+    - environment.description
+    - environment.visibility
+  moves:
+    - environment: "" # unnest environment to root
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: Morpheus ID of the Object being referenced
+      conflicts_with: [name]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the Morpheus environment
+      conflicts_with: [id]
+    code:
+      description: Optional code for use with policies
+    active:
+      description: Whether the environment is active
+    description:
+      description: The description of the Morpheus environment
+    visibility:
+      description: Whether the environment is visible in sub-tenants or not

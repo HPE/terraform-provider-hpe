@@ -1,0 +1,52 @@
+network_router_firewall_rule:
+  moves:
+    - rule: ""
+  removes:
+    - application
+    - application_type
+    - applications
+    - code
+    - destination
+    - destination_port_range
+    - destination_type
+    - group_name
+    - profiles
+    - rule_type
+    - source
+    - source_group
+    - source_port_range
+    - source_tier
+    - source_type
+    - success
+  overrides:
+    direction:
+      computed_optional_required: computed_optional
+      description: Direction (ingress or egress)
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the firewall rule is enabled
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the firewall rule
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: Name of the firewall rule
+    policy:
+      computed_optional_required: computed_optional
+      description: Policy action (accept, deny, reject)
+      default: "accept"
+    port_range:
+      computed_optional_required: computed_optional
+      description: Port range
+    priority:
+      computed_optional_required: computed_optional
+      description: Priority of the firewall rule
+    protocol:
+      computed_optional_required: computed_optional
+      description: Protocol
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router
+      requires_replace: true

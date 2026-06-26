@@ -1,0 +1,89 @@
+network_router_nat:
+  templates:
+    name:
+      string:
+        computed_optional_required: required
+        description: Name of the NAT rule.
+    action:
+      string:
+        computed_optional_required: required
+        description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    description:
+      string:
+        computed_optional_required: optional
+        description: Description of the NAT rule.
+    enabled:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether the NAT rule is enabled.
+      default: true
+    priority:
+      int64:
+        computed_optional_required: optional
+        description: Priority of the NAT rule.
+    protocol:
+      string:
+        computed_optional_required: optional
+        description: Protocol for the NAT rule.
+    source_network:
+      string:
+        computed_optional_required: optional
+        description: Source network for the NAT rule.
+    destination_network:
+      string:
+        computed_optional_required: optional
+        description: Destination network for the NAT rule.
+    translated_network:
+      string:
+        computed_optional_required: optional
+        description: Translated network for the NAT rule.
+  moves:
+    - template-name: name
+    - template-action: action
+    - template-description: description
+    - template-enabled: enabled
+    - template-priority: priority
+    - template-protocol: protocol
+    - template-source_network: source_network
+    - template-destination_network: destination_network
+    - template-translated_network: translated_network
+  removes:
+    - network_router_nat
+    - success
+  overrides:
+    description:
+      computed_optional_required: computed_optional
+      description: Description of the NAT rule
+    action:
+      computed_optional_required: required
+      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    destination_network:
+      computed_optional_required: computed_optional
+      description: Destination network
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the NAT rule is enabled
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the NAT rule
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: Name of the NAT rule
+    priority:
+      computed_optional_required: computed_optional
+      description: Priority of the NAT rule
+    protocol:
+      computed_optional_required: computed_optional
+      description: Protocol
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router
+      requires_replace: true
+    source_network:
+      computed_optional_required: computed_optional
+      description: Source network
+    translated_network:
+      computed_optional_required: computed_optional
+      description: Translated network

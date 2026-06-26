@@ -1,0 +1,74 @@
+load_balancer_profile:
+  templates:
+    config_http_https_redirect:
+      bool:
+        computed_optional_required: computed
+        description: >-
+          Whether HTTP traffic is redirected to HTTPS. Reflects the API
+          "on"/"off" value.
+    tags:
+      set_nested:
+        computed_optional_required: computed
+        description: NSX-T tags applied to the profile.
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: computed
+                description: Tag name.
+            - name: value
+              string:
+                computed_optional_required: computed
+                description: Tag scope/value.
+
+  moves:
+    - load_balancer_profile: ""                                          # unnest envelope wrapper
+    - config.httpload_balancer_profile_config: config_http
+    - config.fast_tcpload_balancer_profile_config: config_fast_tcp
+    - config.fast_udpload_balancer_profile_config: config_fast_udp
+    - config.cookie_persistence_load_balancer_profile_config: config_cookie_persistence
+    - config.source_ippersistence_load_balancer_profile_config: config_source_ip_persistence
+    - config.generic_persistence_load_balancer_profile_config: config_generic_persistence
+    - config.client_sslload_balancer_profile_config: config_client_ssl
+    - config.server_sslload_balancer_profile_config: config_server_ssl
+    - template-config_http_https_redirect: config_http.https_redirect
+    - template-tags: tags
+
+  removes:
+    - config
+    - success
+    - msg
+    - created_by
+    - config_http.profile_type
+    - config_fast_tcp.profile_type
+    - config_fast_udp.profile_type
+    - config_cookie_persistence.profile_type
+    - config_source_ip_persistence.profile_type
+    - config_generic_persistence.profile_type
+    - config_client_ssl.profile_type
+    - config_server_ssl.profile_type
+    - config_http.tags
+    - config_fast_tcp.tags
+    - config_fast_udp.tags
+    - config_cookie_persistence.tags
+    - config_source_ip_persistence.tags
+    - config_generic_persistence.tags
+    - config_client_ssl.tags
+    - config_server_ssl.tags
+
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the load balancer profile. One of id or name is required.
+      conflicts_with: [name]
+      at_least_one_of: [id, name]
+    load_balancer_id:
+      computed_optional_required: required
+      description: The ID of the load balancer this profile belongs to.
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the load balancer profile. One of id or name is required.
+      conflicts_with: [id]
+    tags:
+      computed_optional_required: computed
+      description: NSX-T tags applied to the profile.

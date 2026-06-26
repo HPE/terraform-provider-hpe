@@ -1,0 +1,48 @@
+cloud:
+  templates:
+    group_ids:
+      set:
+        computed_optional_required: computed
+        description: The ids of the groups granted access to the cloud
+        element_type:
+          int64: {}
+  includes:
+    - zone.id
+    - zone.name
+    - zone.code
+    - zone.costing_mode
+    - zone.external_id
+    - zone.inventory_level
+    - zone.guidance_mode
+    - zone.labels
+    - zone.location
+    - zone.timezone
+  moves:
+    - zone: "" # unnest zone to root
+    - timezone: time_zone
+    - template-group_ids: group_ids
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: Morpheus ID of the Object being referenced
+      conflicts_with: [name]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the Morpheus cloud
+      conflicts_with: [id]
+    code:
+      description: Optional code for use with policies
+    costing_mode:
+      description: The costing mode of the cloud
+    external_id:
+      description: The external id of the cloud
+    inventory_level:
+      description: The inventory level of the cloud
+    guidance_mode:
+      description: The guidance mode of the cloud
+    labels:
+      description: The organization labels associated with the cloud
+    location:
+      description: Optional location for your cloud
+    time_zone:
+      description: The time zone of the cloud

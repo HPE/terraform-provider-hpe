@@ -1,0 +1,79 @@
+security_group:
+  description: "Manages a Morpheus Security Group resource."
+  templates:
+    cloud_id:
+      int64:
+        computed_optional_required: optional
+        description: The cloud (zone) ID for the security group.
+    tenant_ids:
+      set:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: Set of tenant IDs that are allowed access to the security group.
+    resource_permission_groups_all:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether all groups have access to the security group.
+    resource_permission_group_ids:
+      set:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: Set of group IDs that have access to the security group. Only applicable when resource_permission_groups_all is false.
+  moves:
+    - security_group: ""
+    - template-cloud_id: cloud_id
+    - template-tenant_ids: tenant_ids
+    - template-resource_permission_groups_all: resource_permission_groups_all
+    - template-resource_permission_group_ids: resource_permission_group_ids
+  removes:
+    - account_id
+    - custom_options
+    - enabled
+    - external_id
+    - group_source
+    - locations
+    - network_server_id
+    - resource_permission
+    - resource_permissions
+    - rules
+    - success
+    - sync_source
+    - tenant_permissions
+    - tenants
+    - zone
+    - zone_id
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the security group is active.
+      default: true
+    description:
+      computed_optional_required: optional
+      description: The description of the security group.
+    id:
+      computed_optional_required: computed
+      description: The ID of the security group.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the security group.
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the security group.
+      default: "private"
+    resource_permission_groups_all:
+      default: false
+      state_for_unknown: true
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids"))
+    tenant_ids:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      requires_replace: true

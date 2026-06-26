@@ -1,0 +1,55 @@
+network_dhcp_server:
+  templates:
+    config:
+      dynamic:
+        description: Generic DHCP Server Configuration
+        computed_optional_required: computed
+
+  moves:
+    - network_dhcp_server: ""                    # unnest wrapper (components/schemas/networkDhcpServer.yaml)
+    - server_id: network_integration_id
+    - config.nsxdhcpserver_configuration: config_nsxt
+    - config_nsxt.preferred_edge_node1: config_nsxt.active_edge_node
+    - config_nsxt.preferred_edge_node2: config_nsxt.standby_edge_node
+    - template-config: config
+
+  removes:
+    - date_created                               # (components/schemas/networkDhcpServer.yaml)
+    - last_updated                               # (components/schemas/networkDhcpServer.yaml)
+    - owner                                      # (components/schemas/networkDhcpServer.yaml)
+    - network_server                             # (components/schemas/networkDhcpServer.yaml)
+    - external_id                                # (components/schemas/networkDhcpServer.yaml)
+    - provider_id                                # (components/schemas/networkDhcpServer.yaml)
+    - success                                    
+    - server_id                                  # duplicate of network_server_id template
+
+  overrides:
+    id:
+      description: Morpheus ID of the network DHCP server
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network DHCP server
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    server_ip_address:
+      description: Server address for the DHCP server
+      computed_optional_required: computed
+    lease_time:
+      description: Lease time in seconds for the DHCP server
+      computed_optional_required: computed
+    config_nsxt:
+      description: Configuration object with parameters that vary by type
+      computed_optional_required: computed
+    config_nsxt.edge_cluster:
+      description: Edge Cluster
+      computed_optional_required: computed
+    config_nsxt.active_edge_node:
+      description: Active Edge Node
+      computed_optional_required: computed
+    config_nsxt.standby_edge_node:
+      description: Standby Edge Node
+      computed_optional_required: computed
+    network_integration_id:
+      description: The ID of the network integration this DHCP server belongs to
+      computed_optional_required: required

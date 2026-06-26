@@ -1,0 +1,1505 @@
+provider:
+  name: morpheus
+resources:
+  active_directory_identity_source:
+    create:
+      path: /api/user-sources
+      method: POST
+    read:
+      path: /api/user-sources/{id}
+      method: GET
+    update:
+      path: /api/user-sources/{id}
+      method: PUT
+    delete:
+      path: /api/user-sources/{id}
+      method: DELETE
+  backup_setting:
+    create:
+      path: /api/backup-settings
+      method: PUT
+    read:
+      path: /api/backup-settings
+      method: GET
+    update:
+      path: /api/backup-settings
+      method: PUT
+  blueprint:
+    create:
+      path: /api/blueprints
+      method: POST
+    read:
+      path: /api/blueprints/{id}
+      method: GET
+    update:
+      path: /api/blueprints/{id}
+      method: PUT
+    delete:
+      path: /api/blueprints/{id}
+      method: DELETE
+  boot_script:
+    create:
+      path: /api/boot-scripts
+      method: POST
+    read:
+      path: /api/boot-scripts/{id}
+      method: GET
+    update:
+      path: /api/boot-scripts/{id}
+      method: PUT
+    delete:
+      path: /api/boot-scripts/{id}
+      method: DELETE
+  catalog_item_type:
+    create:
+      path: /api/catalog-item-types
+      method: POST
+    read:
+      path: /api/catalog-item-types/{id}
+      method: GET
+    update:
+      path: /api/catalog-item-types/{id}
+      method: PUT
+    delete:
+      path: /api/catalog-item-types/{id}
+      method: DELETE
+  cloud:
+    create:
+      path: /api/zones
+      method: POST
+    read:
+      path: /api/zones/{id}
+      method: GET
+    update:
+      path: /api/zones/{id}
+      method: PUT
+    delete:
+      path: /api/zones/{id}
+      method: DELETE
+    schema:
+      templates:
+        bool:
+          bool:
+            description: CHANGE ME
+            computed_optional_required: optional
+        azure-region:
+          string:
+            description: The Azure region associated with the cloud integration
+            computed_optional_required: required
+      moves:
+        - zone: "" # unnest zone
+        - account_id: tenant_id
+        - agent_mode: agent_install_mode
+        - timezone: time_zone
+        - config.appliance_url: appliance_url
+        - config.datacenter_name: data_center_name
+        - config.external_id: external_id
+        - config.inventory_level: import_existing_vms
+        - config.console_keymap: keyboard_layout
+        - config.anyof0.oneof2: config_hvm
+        - config_aws.endpoint: config_aws.region
+        - config_aws.sts_assume_role: config_aws.role_arn
+        - config_azure.rpc_mode.oneof0: config_azure.rpc_mode
+        - config_vsphere.rpc_mode.oneof0: config_vsphere.rpc_mode
+        - network_server.id: network_server_id
+      removes:
+        - account
+        - api_proxy
+        - config
+        - config_aws.use_host_credentials
+        - console_keymap # added from GET examples?
+        - container_mode
+        - cost_last_sync
+        - cost_last_sync_duration
+        - cost_status
+        - cost_status_date
+        - cost_status_message
+        - credential
+        - credential_type
+        - dark_image_path
+        - date_created
+        - default_datastore_sync_active
+        - default_folder_sync_active
+        - default_network_sync_active
+        - default_plan_sync_active
+        - default_pool_sync_active
+        - default_security_group_sync_active
+        - description
+        - domain_name
+        - groups
+        - image_path
+        - inventory_level # added from GET examples?
+        - last_sync
+        - last_sync_duration
+        - last_updated
+        - linked_account_id
+        - network_domain
+        - network_server
+        - network_server_id
+        - next_run_date
+        - owner
+        - provisioning_proxy
+        - region_code
+        - scale_priority
+        - security_server
+        - server_count
+        - service_version
+        - stats
+        - status
+        - status_date
+        - status_message
+        - storage_mode
+        - success
+        - user_data_linux
+        - user_data_windows
+        - uuid
+        - zone_type
+        - zone_type_id
+        - time_zone # Bug
+      overrides:
+        agent_install_mode:
+          description: The method used to install the Morpheus agent on virtual machines
+            provisioned in the cloud (ssh, cloudInit)
+          computed_optional_required: computed_optional
+        appliance_url:
+          computed_optional_required: optional
+        config_hvm:
+          computed_optional_required: optional
+        config_hvm.enable_network_type_selection:
+          description: Whether to enable the user to select the network interface type
+            during provisioning
+          computed_optional_required: optional
+        costing_mode:
+          description: Whether to enable costing on the cloud (off, costing, reservations,
+            full)
+          one_of: [off, costing, reservations, full]
+          default: off
+          computed_optional_required: computed_optional
+        data_center_name:
+          computed_optional_required: optional
+        external_id:
+          computed_optional_required: optional
+        group_id:
+          computed_optional_required: required
+          requires_replace: true
+        guidance_mode:
+          description: Whether to enable guidance recommendations on the cloud (manual, off)
+          computed_optional_required: computed_optional
+          one_of: [off, manual]
+          default: off
+        id:
+          description: The ID of the cloud
+          state_for_unknown: true
+        import_existing_vms:
+          description: Whether to import existing virtual machines (off, basic, full)
+          computed_optional_required: optional
+          one_of: [off, basic, full]
+        keyboard_layout:
+          computed_optional_required: optional
+        location:
+          computed_optional_required: optional
+        name:
+          computed_optional_required: required
+        tenant_id:
+          computed_optional_required: required
+          requires_replace: true
+  cluster:
+    create:
+      path: /api/clusters
+      method: POST
+    read:
+      path: /api/clusters/{clusterId}
+      method: GET
+    update:
+      path: /api/clusters/{clusterId}
+      method: PUT
+    delete:
+      path: /api/clusters/{clusterId}
+      method: DELETE
+  cluster_layout:
+    create:
+      path: /api/library/cluster-layouts
+      method: POST
+    read:
+      path: /api/library/cluster-layouts/{id}
+      method: GET
+    update:
+      path: /api/library/cluster-layouts/{id}
+      method: PUT
+    delete:
+      path: /api/library/cluster-layouts/{id}
+      method: DELETE
+  cluster_affinity_group:
+    create:
+      path: /api/clusters/{clusterId}/affinity-groups
+      method: POST
+    read:
+      path: /api/clusters/{clusterId}/affinity-groups/{id}
+      method: GET
+    update:
+      path: /api/clusters/{clusterId}/affinity-groups/{id}
+      method: PUT
+    delete:
+      path: /api/clusters/{clusterId}/affinity-groups/{id}
+      method: DELETE
+  cluster_namespace:
+    create:
+      path: /api/clusters/{clusterId}/namespaces
+      method: POST
+    read:
+      path: /api/clusters/{clusterId}/namespaces/{id}
+      method: GET
+    update:
+      path: /api/clusters/{clusterId}/namespaces/{id}
+      method: PUT
+    delete:
+      path: /api/clusters/{clusterId}/namespaces/{id}
+      method: DELETE
+  contact:
+    create:
+      path: /api/monitoring/contacts
+      method: POST
+    read:
+      path: /api/monitoring/contacts/{id}
+      method: GET
+    update:
+      path: /api/monitoring/contacts/{id}
+      method: PUT
+    delete:
+      path: /api/monitoring/contacts/{id}
+      method: DELETE
+  datastore:
+    create:
+      path: /api/data-stores
+      method: POST
+    read:
+      path: /api/data-stores/{id}
+      method: GET
+    update:
+      path: /api/data-stores/{id}
+      method: PUT
+    delete:
+      path: /api/data-stores/{id}
+      method: DELETE
+  file_template:
+    create:
+      path: /api/library/container-templates
+      method: POST
+    read:
+      path: /api/library/container-templates/{id}
+      method: GET
+    update:
+      path: /api/library/container-templates/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-templates/{id}
+      method: DELETE
+  group:
+    create:
+      path: /api/groups
+      method: POST
+    read:
+      path: /api/groups/{id}
+      method: GET
+    update:
+      path: /api/groups/{id}
+      method: PUT
+    delete:
+      path: /api/groups/{id}
+      method: DELETE
+  guidance_setting:
+    create:
+      path: /api/guidance-settings
+      method: PUT
+    read:
+      path: /api/guidance-settings
+      method: GET
+    update:
+      path: /api/guidance-settings
+      method: PUT
+  image:
+    create:
+      path: /api/virtual-images
+      method: POST
+    read:
+      path: /api/virtual-images/{virtualImageId}
+      method: GET
+    update:
+      path: /api/virtual-images/{virtualImageId}
+      method: PUT
+  load_balancer:
+    create:
+      path: /api/load-balancers
+      method: POST
+    read:
+      path: /api/load-balancers/{loadBalancerId}
+      method: GET
+    update:
+      path: /api/load-balancers/{loadBalancerId}
+      method: PUT
+    delete:
+      path: /api/load-balancers/{loadBalancerId}
+      method: DELETE
+  load_balancer_monitor:
+    create:
+      path: /api/load-balancers/{loadBalancerId}/monitors
+      method: POST
+    read:
+      path: /api/load-balancers/{loadBalancerId}/monitors/{id}
+      method: GET
+    update:
+      path: /api/load-balancers/{loadBalancerId}/monitors/{id}
+      method: PUT
+    delete:
+      path: /api/load-balancers/{loadBalancerId}/monitors/{id}
+      method: DELETE
+  instance:
+    create:
+      path: /api/instances
+      method: POST
+    read:
+      path: /api/instances/{id}
+      method: GET
+    update:
+      path: /api/instances/{id}
+      method: PUT
+    delete:
+      path: /api/instances/{id}
+      method: DELETE
+  instance_snapshot:
+    create:
+      path: /api/instances/{id}/snapshot
+      method: PUT
+    read:
+      path: /api/snapshots/{id}
+      method: GET
+    delete:
+      path: /api/snapshots/{id}
+      method: DELETE
+  instance_clone:
+    create:
+      path: /api/instances/{id}/clone
+      method: PUT
+    read:
+      path: /api/instances/{id}
+      method: GET
+  instance_type_layout:
+    create:
+      path: /api/library/instance-types/{instanceTypeId}/layouts
+      method: POST
+    read:
+      path: /api/library/layouts/{id}
+      method: GET
+    update:
+      path: /api/library/layouts/{id}
+      method: PUT
+    delete:
+      path: /api/library/layouts/{id}
+      method: DELETE
+  instance_type:
+    create:
+      path: /api/library/instance-types
+      method: POST
+    read:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: GET
+    update:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: PUT
+    delete:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: DELETE
+  load_balancer_pool:
+    create:
+      path: /api/load-balancers/{loadBalancerId}/pools
+      method: POST
+    read:
+      path: /api/load-balancers/{loadBalancerId}/pools/{id}
+      method: GET
+    update:
+      path: /api/load-balancers/{loadBalancerId}/pools/{id}
+      method: PUT
+    delete:
+      path: /api/load-balancers/{loadBalancerId}/pools/{id}
+      method: DELETE
+  load_balancer_profile:
+    create:
+      path: /api/load-balancers/{loadBalancerId}/profiles
+      method: POST
+    read:
+      path: /api/load-balancers/{loadBalancerId}/profiles/{id}
+      method: GET
+    update:
+      path: /api/load-balancers/{loadBalancerId}/profiles/{id}
+      method: PUT
+    delete:
+      path: /api/load-balancers/{loadBalancerId}/profiles/{id}
+      method: DELETE
+  load_balancer_virtual_server:
+    create:
+      path: /api/load-balancers/{loadBalancerId}/virtual-servers
+      method: POST
+    read:
+      path: /api/load-balancers/{loadBalancerId}/virtual-servers/{id}
+      method: GET
+    update:
+      path: /api/load-balancers/{loadBalancerId}/virtual-servers/{id}
+      method: PUT
+    delete:
+      path: /api/load-balancers/{loadBalancerId}/virtual-servers/{id}
+      method: DELETE
+  monitoring_setting:
+    create:
+      path: /api/monitoring-settings
+      method: PUT
+    read:
+      path: /api/monitoring-settings
+      method: GET
+    update:
+      path: /api/monitoring-settings
+      method: PUT
+  # network resource
+  network:
+    create:
+      path: /api/networks
+      method: POST
+    read:
+      path: /api/networks/{id}
+      method: GET
+    update:
+      path: /api/networks/{id}
+      method: PUT
+    delete:
+      path: /api/networks/{id}
+      method: DELETE
+  network_dhcp_server:
+    create:
+      path: /api/networks/servers/{serverId}/dhcp-servers
+      method: POST
+    read:
+      path: /api/networks/servers/{serverId}/dhcp-servers/{id}
+      method: GET
+    update:
+      path: /api/networks/servers/{serverId}/dhcp-servers/{id}
+      method: PUT
+    delete:
+      path: /api/networks/servers/{serverId}/dhcp-servers/{id}
+      method: DELETE
+  network_firewall_rule:
+    create:
+      path: /api/networks/servers/{serverId}/firewall-rules
+      method: POST
+    read:
+      path: /api/networks/servers/{serverId}/firewall-rules/{id}
+      method: GET
+    update:
+      path: /api/networks/servers/{serverId}/firewall-rules/{id}
+      method: PUT
+    delete:
+      path: /api/networks/servers/{serverId}/firewall-rules/{id}
+      method: DELETE
+  network_firewall_rule_group:
+    create:
+      path: /api/networks/servers/{serverId}/firewall-rule-groups
+      method: POST
+    read:
+      path: /api/networks/servers/{serverId}/firewall-rule-groups/{id}
+      method: GET
+    update:
+      path: /api/networks/servers/{serverId}/firewall-rule-groups/{id}
+      method: PUT
+    delete:
+      path: /api/networks/servers/{serverId}/firewall-rule-groups/{id}
+      method: DELETE
+  network_router_bgp_neighbor:
+    create:
+      path: /api/networks/routers/{routerId}/bgp-neighbors
+      method: POST
+    read:
+      path: /api/networks/routers/{routerId}/bgp-neighbors/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{routerId}/bgp-neighbors/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{routerId}/bgp-neighbors/{id}
+      method: DELETE
+  network_router:
+    create:
+      path: /api/networks/routers
+      method: POST
+    read:
+      path: /api/networks/routers/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{id}
+      method: DELETE
+  node_type:
+    create:
+      path: /api/library/container-types
+      method: POST
+    read:
+      path: /api/library/container-types/{id}
+      method: GET
+    update:
+      path: /api/library/container-types/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-types/{id}
+      method: DELETE
+  network_router_route:
+    create:
+      path: /api/networks/routers/{routerId}/routes
+      method: POST
+    read:
+      path: /api/networks/routers/{routerId}/routes/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{routerId}/routes/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{routerId}/routes/{id}
+      method: DELETE
+  os_type_image:
+    create:
+      path: /api/library/operating-systems/os-types/create-image
+      method: POST
+    read:
+      path: /api/library/operating-systems/os-types/images/{id}
+      method: GET
+    delete:
+      path: /api/library/operating-systems/os-types/images/{id}
+      method: DELETE
+  option_list:
+    create:
+      path: /api/library/option-type-lists
+      method: POST
+    read:
+      path: /api/library/option-type-lists/{id}
+      method: GET
+    update:
+      path: /api/library/option-type-lists/{id}
+      method: PUT
+    delete:
+      path: /api/library/option-type-lists/{id}
+      method: DELETE
+  option_type_list:
+    create:
+      path: /api/library/option-type-lists
+      method: POST
+    read:
+      path: /api/library/option-type-lists/{id}
+      method: GET
+    update:
+      path: /api/library/option-type-lists/{id}
+      method: PUT
+    delete:
+      path: /api/library/option-type-lists/{id}
+      method: DELETE
+  os_type:
+    create:
+      path: /api/library/operating-systems/os-types
+      method: POST
+    read:
+      path: /api/library/operating-systems/os-types/{id}
+      method: GET
+    update:
+      path: /api/library/operating-systems/os-types/{id}
+      method: PUT
+    delete:
+      path: /api/library/operating-systems/os-types/{id}
+      method: DELETE
+  policy:
+    create:
+      path: /api/policies
+      method: POST
+    read:
+      path: /api/policies/{id}
+      method: GET
+    update:
+      path: /api/policies/{id}
+      method: PUT
+    delete:
+      path: /api/policies/{id}
+      method: DELETE
+  preseed_script:
+    create:
+      path: /api/preseed-scripts
+      method: POST
+    read:
+      path: /api/preseed-scripts/{id}
+      method: GET
+    update:
+      path: /api/preseed-scripts/{id}
+      method: PUT
+    delete:
+      path: /api/preseed-scripts/{id}
+      method: DELETE
+  provisioning_setting:
+    create:
+      path: /api/provisioning-settings
+      method: PUT
+    read:
+      path: /api/provisioning-settings
+      method: GET
+    update:
+      path: /api/provisioning-settings
+      method: PUT
+  resource_pool_group:
+    create:
+      path: /api/resource-pools/groups
+      method: POST
+    read:
+      path: /api/resource-pools/groups/{id}
+      method: GET
+    update:
+      path: /api/resource-pools/groups/{id}
+      method: PUT
+    delete:
+      path: /api/resource-pools/groups/{id}
+      method: DELETE
+  container_script:
+    create:
+      path: /api/library/container-scripts
+      method: POST
+    read:
+      path: /api/library/container-scripts/{id}
+      method: GET
+    update:
+      path: /api/library/container-scripts/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-scripts/{id}
+      method: DELETE
+  script_template:
+    create:
+      path: /api/library/container-scripts
+      method: POST
+    read:
+      path: /api/library/container-scripts/{id}
+      method: GET
+    update:
+      path: /api/library/container-scripts/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-scripts/{id}
+      method: DELETE
+  service_plan:
+    create:
+      path: /api/service-plans
+      method: POST
+    read:
+      path: /api/service-plans/{id}
+      method: GET
+    update:
+      path: /api/service-plans/{id}
+      method: PUT
+    delete:
+      path: /api/service-plans/{id}
+      method: DELETE
+  spec_template:
+    create:
+      path: /api/library/spec-templates
+      method: POST
+    read:
+      path: /api/library/spec-templates/{id}
+      method: GET
+    update:
+      path: /api/library/spec-templates/{id}
+      method: PUT
+    delete:
+      path: /api/library/spec-templates/{id}
+      method: DELETE
+  task:
+    create:
+      path: /api/tasks
+      method: POST
+    read:
+      path: /api/tasks/{id}
+      method: GET
+    update:
+      path: /api/tasks/{id}
+      method: PUT
+    delete:
+      path: /api/tasks/{id}
+      method: DELETE
+  tenant:
+    create:
+      path: /api/accounts
+      method: POST
+    read:
+      path: /api/accounts/{id}
+      method: GET
+    update:
+      path: /api/accounts/{id}
+      method: PUT
+    delete:
+      path: /api/accounts/{id}
+      method: DELETE
+  # user resource
+  user:
+    create:
+      path: /api/users
+      method: POST
+    read:
+      path: /api/users/{id}
+      method: GET
+    update:
+      path: /api/users/{id}
+      method: PUT
+    delete:
+      path: /api/users/{id}
+      method: DELETE
+  role:
+    create:
+      path: /api/roles
+      method: POST
+    read:
+      path: /api/roles/{id}
+      method: GET
+    update:
+      path: /api/roles/{id}
+      method: PUT
+    delete:
+      path: /api/roles/{id}
+      method: DELETE
+  wiki_page:
+    create:
+      path: /api/wiki/pages
+      method: POST
+    read:
+      path: /api/wiki/pages/{id}
+      method: GET
+    update:
+      path: /api/wiki/pages/{id}
+      method: PUT
+    delete:
+      path: /api/wiki/pages/{id}
+      method: DELETE
+  backup_host:
+    create:
+      path: /api/backups
+      method: POST
+    read:
+      path: /api/backups/{id}
+      method: GET
+    update:
+      path: /api/backups/{id}
+      method: PUT
+    delete:
+      path: /api/backups/{id}
+      method: DELETE
+  backup_instance:
+    create:
+      path: /api/backups
+      method: POST
+    read:
+      path: /api/backups/{id}
+      method: GET
+    update:
+      path: /api/backups/{id}
+      method: PUT
+    delete:
+      path: /api/backups/{id}
+      method: DELETE
+  backup_job:
+    create:
+      path: /api/backups/jobs
+      method: POST
+    read:
+      path: /api/backups/jobs/{id}
+      method: GET
+    update:
+      path: /api/backups/jobs/{id}
+      method: PUT
+    delete:
+      path: /api/backups/jobs/{id}
+      method: DELETE
+  budget:
+    create:
+      path: /api/budgets
+      method: POST
+    read:
+      path: /api/budgets/{id}
+      method: GET
+    update:
+      path: /api/budgets/{id}
+      method: PUT
+    delete:
+      path: /api/budgets/{id}
+      method: DELETE
+  certificate:
+    create:
+      path: /api/certificates
+      method: POST
+    read:
+      path: /api/certificates/{id}
+      method: GET
+    update:
+      path: /api/certificates/{id}
+      method: PUT
+    delete:
+      path: /api/certificates/{id}
+      method: DELETE
+  cypher:
+    create:
+      path: /api/cypher/{cypherPath}
+      method: POST
+    read:
+      path: /api/cypher/{cypherPath}
+      method: GET
+    delete:
+      path: /api/cypher/{cypherPath}
+      method: DELETE
+  deployment:
+    create:
+      path: /api/deployments
+      method: POST
+    read:
+      path: /api/deployments/{deploymentId}
+      method: GET
+    update:
+      path: /api/deployments/{deploymentId}
+      method: PUT
+    delete:
+      path: /api/deployments/{deploymentId}
+      method: DELETE
+  library_container_script:
+    create:
+      path: /api/library/container-scripts
+      method: POST
+    read:
+      path: /api/library/container-scripts/{id}
+      method: GET
+    update:
+      path: /api/library/container-scripts/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-scripts/{id}
+      method: DELETE
+  library_file_template:
+    create:
+      path: /api/library/container-templates
+      method: POST
+    read:
+      path: /api/library/container-templates/{id}
+      method: GET
+    update:
+      path: /api/library/container-templates/{id}
+      method: PUT
+    delete:
+      path: /api/library/container-templates/{id}
+      method: DELETE
+  library_instance_type:
+    create:
+      path: /api/library/instance-types
+      method: POST
+    read:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: GET
+    update:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: PUT
+    delete:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: DELETE
+  library_option_type_list:
+    create:
+      path: /api/library/option-type-lists
+      method: POST
+    read:
+      path: /api/library/option-type-lists/{id}
+      method: GET
+    update:
+      path: /api/library/option-type-lists/{id}
+      method: PUT
+    delete:
+      path: /api/library/option-type-lists/{id}
+      method: DELETE
+  library_spec_template:
+    create:
+      path: /api/library/spec-templates
+      method: POST
+    read:
+      path: /api/library/spec-templates/{id}
+      method: GET
+    update:
+      path: /api/library/spec-templates/{id}
+      method: PUT
+    delete:
+      path: /api/library/spec-templates/{id}
+      method: DELETE
+  monitoring_alert:
+    create:
+      path: /api/monitoring/alerts
+      method: POST
+    read:
+      path: /api/monitoring/alerts/{id}
+      method: GET
+    update:
+      path: /api/monitoring/alerts/{id}
+      method: PUT
+    delete:
+      path: /api/monitoring/alerts/{id}
+      method: DELETE
+  monitoring_check:
+    create:
+      path: /api/monitoring/checks
+      method: POST
+    read:
+      path: /api/monitoring/checks/{id}
+      method: GET
+    update:
+      path: /api/monitoring/checks/{id}
+      method: PUT
+    delete:
+      path: /api/monitoring/checks/{id}
+      method: DELETE
+  monitoring_group:
+    create:
+      path: /api/monitoring/groups
+      method: POST
+    read:
+      path: /api/monitoring/groups/{id}
+      method: GET
+    update:
+      path: /api/monitoring/groups/{id}
+      method: PUT
+    delete:
+      path: /api/monitoring/groups/{id}
+      method: DELETE
+  network_group:
+    create:
+      path: /api/networks/groups
+      method: POST
+    read:
+      path: /api/networks/groups/{id}
+      method: GET
+    update:
+      path: /api/networks/groups/{id}
+      method: PUT
+    delete:
+      path: /api/networks/groups/{id}
+      method: DELETE
+  network_pool:
+    create:
+      path: /api/networks/pools
+      method: POST
+    read:
+      path: /api/networks/pools/{id}
+      method: GET
+    update:
+      path: /api/networks/pools/{id}
+      method: PUT
+    delete:
+      path: /api/networks/pools/{id}
+      method: DELETE
+  network_pool_server:
+    create:
+      path: /api/networks/pool-servers
+      method: POST
+    read:
+      path: /api/networks/pool-servers/{id}
+      method: GET
+    update:
+      path: /api/networks/pool-servers/{id}
+      method: PUT
+    delete:
+      path: /api/networks/pool-servers/{id}
+      method: DELETE
+  network_router_firewall_rule:
+    create:
+      path: /api/networks/routers/{routerId}/firewall-rules
+      method: POST
+    read:
+      path: /api/networks/routers/{routerId}/firewall-rules/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{routerId}/firewall-rules/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{routerId}/firewall-rules/{id}
+      method: DELETE
+  network_router_nat:
+    create:
+      path: /api/networks/routers/{routerId}/nats
+      method: POST
+    read:
+      path: /api/networks/routers/{routerId}/nats/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{routerId}/nats/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{routerId}/nats/{id}
+      method: DELETE
+  power_schedule:
+    create:
+      path: /api/power-schedules
+      method: POST
+    read:
+      path: /api/power-schedules/{id}
+      method: GET
+    update:
+      path: /api/power-schedules/{id}
+      method: PUT
+    delete:
+      path: /api/power-schedules/{id}
+      method: DELETE
+  provisioning_license:
+    create:
+      path: /api/provisioning-licenses
+      method: POST
+    read:
+      path: /api/provisioning-licenses/{id}
+      method: GET
+    update:
+      path: /api/provisioning-licenses/{id}
+      method: PUT
+    delete:
+      path: /api/provisioning-licenses/{id}
+      method: DELETE
+  security_group:
+    create:
+      path: /api/security-groups
+      method: POST
+    read:
+      path: /api/security-groups/{id}
+      method: GET
+    update:
+      path: /api/security-groups/{id}
+      method: PUT
+    delete:
+      path: /api/security-groups/{id}
+      method: DELETE
+  security_group_rule:
+    create:
+      path: /api/security-groups/{id}/rules
+      method: POST
+    read:
+      path: /api/security-groups/{id}/rules/{sgId}
+      method: GET
+    update:
+      path: /api/security-groups/{id}/rules/{sgId}
+      method: PUT
+    delete:
+      path: /api/security-groups/{id}/rules/{sgId}
+      method: DELETE
+  storage_bucket:
+    create:
+      path: /api/storage-buckets
+      method: POST
+    read:
+      path: /api/storage-buckets/{id}
+      method: GET
+    update:
+      path: /api/storage-buckets/{id}
+      method: PUT
+    delete:
+      path: /api/storage-buckets/{id}
+      method: DELETE
+  storage_server:
+    create:
+      path: /api/storage-servers
+      method: POST
+    read:
+      path: /api/storage-servers/{id}
+      method: GET
+    update:
+      path: /api/storage-servers/{id}
+      method: PUT
+    delete:
+      path: /api/storage-servers/{id}
+      method: DELETE
+  storage_volume:
+    create:
+      path: /api/storage-volumes
+      method: POST
+    read:
+      path: /api/storage-volumes/{id}
+      method: GET
+    update:
+      path: /api/storage-volumes/{id}
+      method: PUT
+    delete:
+      path: /api/storage-volumes/{id}
+      method: DELETE
+  subnet:
+    create:
+      path: /api/subnets
+      method: POST
+    read:
+      path: /api/subnets/{id}
+      method: GET
+    update:
+      path: /api/subnets/{id}
+      method: PUT
+    delete:
+      path: /api/subnets/{id}
+      method: DELETE
+  vdi_app:
+    create:
+      path: /api/vdi-apps
+      method: POST
+    read:
+      path: /api/vdi-apps/{id}
+      method: GET
+    update:
+      path: /api/vdi-apps/{id}
+      method: PUT
+    delete:
+      path: /api/vdi-apps/{id}
+      method: DELETE
+  vdi_gateway:
+    create:
+      path: /api/vdi-gateways
+      method: POST
+    read:
+      path: /api/vdi-gateways/{id}
+      method: GET
+    update:
+      path: /api/vdi-gateways/{id}
+      method: PUT
+    delete:
+      path: /api/vdi-gateways/{id}
+      method: DELETE
+  vdi_pool:
+    create:
+      path: /api/vdi-pools
+      method: POST
+    read:
+      path: /api/vdi-pools/{id}
+      method: GET
+    update:
+      path: /api/vdi-pools/{id}
+      method: PUT
+    delete:
+      path: /api/vdi-pools/{id}
+      method: DELETE
+  whitelabel_settings:
+    create:
+      path: /api/whitelabel-settings
+      method: PUT
+    read:
+      path: /api/whitelabel-settings
+      method: GET
+    update:
+      path: /api/whitelabel-settings
+      method: PUT
+data_sources:
+  ansible_tower_inventory:
+    read:
+      path: /api/options/ansibleTowerInventory
+      method: GET
+  ansible_tower_job_template:
+    read:
+      path: /api/options/ansibleTowerJobTemplate
+      method: GET
+  backup:
+    read:
+      path: /api/backups/{id}
+      method: GET
+  backup_type:
+    read:
+      path: /api/backups/types/{id}
+      method: GET
+  blueprint:
+    read:
+      path: /api/blueprints/{id}
+      method: GET
+  budget:
+    read:
+      path: /api/budgets/{id}
+      method: GET
+  catalog_item_type:
+    read:
+      path: /api/catalog/types/{id}
+      method: GET
+  chef_server:
+    read:
+      path: /api/options/chefServer
+      method: GET
+  cloud:
+    read:
+      path: /api/zones/{id}
+      method: GET
+  cloud_datastore:
+    read:
+      path: /api/zones/{zoneId}/data-stores/{id}
+      method: GET
+  cloud_type:
+    read:
+      path: /api/options/zoneTypes
+      method: GET
+  cluster:
+    read:
+      path: /api/clusters/{clusterId}
+      method: GET
+  contact:
+    read:
+      path: /api/monitoring/contacts/{id}
+      method: GET
+  credential:
+    read:
+      path: /api/credentials/{id}
+      method: GET
+  cypher_secret:
+    read:
+      path: /api/cypher/{cypherPath}
+      method: GET
+  datastore:
+    read:
+      path: /api/data-stores/{id}
+      method: GET
+  environment:
+    read:
+      path: /api/environments/{id}
+      method: GET
+  execute_schedule:
+    read:
+      path: /api/execute-schedules/{id}
+      method: GET
+  file_template:
+    read:
+      path: /api/library/container-templates/{id}
+      method: GET
+  git_integration:
+    read:
+      path: /api/integrations/{id}
+      method: GET
+  group:
+    read:
+      path: /api/groups/{id}
+      method: GET
+  instance_snapshot:
+    read:
+      path: /api/snapshots/{id}
+      method: GET
+  instance_type_layout:
+    read:
+      path: /api/library/layouts/{id}
+      method: GET
+  instance_type:
+    read:
+      path: /api/library/instance-types/{instanceTypeId}
+      method: GET
+  integration:
+    read:
+      path: /api/integrations/{id}
+      method: GET
+  job:
+    read:
+      path: /api/jobs/{id}
+      method: GET
+  key_pair:
+    read:
+      path: /api/key-pairs/{id}
+      method: GET
+  load_balancer:
+    read:
+      path: /api/load-balancers/{loadBalancerId}
+      method: GET
+  load_balancer_monitor:
+    read:
+      path: /api/load-balancers/{loadBalancerId}/monitors/{id}
+      method: GET
+  load_balancer_pool:
+    read:
+      path: /api/load-balancers/{loadBalancerId}/pools/{id}
+      method: GET
+  load_balancer_profile:
+    read:
+      path: /api/load-balancers/{loadBalancerId}/profiles/{id}
+      method: GET
+  load_balancer_virtual_server:
+    read:
+      path: /api/load-balancers/{loadBalancerId}/virtual-servers/{id}
+      method: GET
+  network_router_bgp_neighbor:
+    read:
+      path: /api/networks/routers/{routerId}/bgp-neighbors/{id}
+      method: GET
+  # network datasource
+  network:
+    read:
+      path: /api/networks/{id}
+      method: GET
+  network_firewall_rule:
+    read:
+      path: /api/networks/servers/{serverId}/firewall-rules/{id}
+      method: GET
+  network_firewall_rule_group:
+    read:
+      path: /api/networks/servers/{serverId}/firewall-rule-groups/{id}
+      method: GET
+  network_dhcp_server:
+    read:
+      path: /api/networks/servers/{serverId}/dhcp-servers/{id}
+      method: GET
+  network_domain:
+    read:
+      path: /api/networks/domains/{id}
+      method: GET
+  network_group:
+    read:
+      path: /api/networks/groups/{id}
+      method: GET
+  network_edge_cluster:
+    read:
+      path: /api/networks/servers/{serverId}/edge-clusters/{id}
+      method: GET
+  network_pool:
+    read:
+      path: /api/networks/pools/{id}
+      method: GET
+  network_server:
+    read:
+      path: /api/networks/servers/{id}
+      method: GET
+  network_transport_zone:
+    read:
+      path: /api/networks/servers/{serverId}/scopes/{id}
+      method: GET
+  network_type:
+    read:
+      path: /api/network-types/{id}
+      method: GET
+  network_router:
+    read:
+      path: /api/networks/routers/{id}
+      method: GET
+  network_router_route:
+    read:
+      path: /api/networks/routers/{routerId}/routes/{id}
+      method: GET
+  network_subnet:
+    read:
+      path: /api/subnets/{id}
+      method: GET
+  node_type:
+    read:
+      path: /api/library/container-types/{id}
+      method: GET
+  option_list:
+    read:
+      path: /api/library/option-type-lists/{id}
+      method: GET
+  option_type:
+    read:
+      path: /api/library/option-types/{id}
+      method: GET
+  os_type:
+    read:
+      path: /api/library/operating-systems/os-types/{id}
+      method: GET
+  os_type_image:
+    read:
+      path: /api/library/operating-systems/os-types/images/{id}
+      method: GET
+  service_plan:
+    read:
+      path: /api/service-plans/{id}
+      method: GET
+  policy:
+    read:
+      path: /api/policies/{id}
+      method: GET
+  power_schedule:
+    read:
+      path: /api/power-schedules/{id}
+      method: GET
+  price:
+    read:
+      path: /api/prices/{id}
+      method: GET
+  price_set:
+    read:
+      path: /api/price-sets/{id}
+      method: GET
+  provision_type:
+    read:
+      path: /api/provision-types/{id}
+      method: GET
+  resource_pool:
+    read:
+      path: /api/zones/{zoneId}/resource-pools/{id}
+      method: GET
+  script_template:
+    read:
+      path: /api/library/container-scripts/{id}
+      method: GET
+  security_group:
+    read:
+      path: /api/security-groups/{id}
+      method: GET
+  security_package:
+    read:
+      path: /api/security-packages/{id}
+      method: GET
+  servicenow_workflow:
+    read:
+      path: /api/options/serviceNowWorkflows
+      method: GET
+  spec_template:
+    read:
+      path: /api/library/spec-templates/{id}
+      method: GET
+  storage_bucket:
+    read:
+      path: /api/storage-buckets/{id}
+      method: GET
+  storage_server:
+    read:
+      path: /api/storage-servers/{id}
+      method: GET
+  storage_servers:
+    read:
+      path: /api/storage-servers
+      method: GET
+  storage_volume:
+    read:
+      path: /api/storage-volumes/{id}
+      method: GET
+  storage_volume_type:
+    read:
+      path: /api/storage-volume-types/{id}
+      method: GET
+  task:
+    read:
+      path: /api/tasks/{id}
+      method: GET
+  tenant:
+    read:
+      path: /api/accounts/{id}
+      method: GET
+  user:
+    read:
+      path: /api/users/{id}
+      method: GET
+  user_group:
+    read:
+      path: /api/user-groups/{id}
+      method: GET
+  role:
+    read:
+      path: /api/roles/{id}
+      method: GET
+  vdi_pool:
+    read:
+      path: /api/vdi-pools/{id}
+      method: GET
+  image:
+    read:
+      path: /api/virtual-images/{virtualImageId}
+      method: GET
+  instance:
+    read:
+      path: /api/instances/{id}
+      method: GET
+  workflow:
+    read:
+      path: /api/task-sets/{id}
+      method: GET

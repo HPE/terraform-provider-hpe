@@ -1,0 +1,49 @@
+os_type:
+  moves:
+    - os_type: ""              # (components/schemas/osType.yaml)
+    - images.zone: images.cloud_id
+    - images.compute_zone_type: images.cloud_type_id
+    - images.account: images.tenant_id
+    - images.provision_type: images.provision_type_id
+    # owner became oneOf(string, {id,name}) in the spec; keep the string form
+    # the data source has always exposed (no functional drift).
+    - owner: owner_poly
+    - owner_poly.oneof0: owner
+  removes:
+    - success                  # (components/schemas/osType.yaml)
+    - owner_poly               # drop the unused object variant of owner
+  overrides:
+    id:
+      description: Morpheus ID of the OS type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the OS type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    bit_count:
+      description: The architecture bit count (e.g. 32 or 64)
+    code:
+      description: The code Morpheus uses as an internal identifier
+    platform:
+      description: The platform of the OS type (e.g. linux, windows)
+    cloud_init_version:
+      description: The version of CloudInit being used
+    install_agent:
+      description: Whether to install the Morpheus agent on provisioned instances
+    category:
+      description: The category of the OS type
+    description:
+      description: The description of the OS type
+    os_codename:
+      description: The codename of the OS type
+    os_family:
+      description: The family of the OS type
+    os_name:
+      description: The OS name of the OS type
+    os_version:
+      description: The OS version of the OS type
+    vendor:
+      description: The vendor of the OS type
+    owner:
+      description: The owner of the OS type

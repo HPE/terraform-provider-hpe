@@ -1,0 +1,30 @@
+os_type_image:
+  moves:
+    - os_type_image: ""               # unnest wrapper
+    - os_type: os_type_id
+    - virtual_image: virtual_image_id
+    - provision_type: provision_type_id
+    - zone: cloud_id
+  removes:
+    - account
+    - compute_zone_type
+    - virtual_image_name
+  overrides:
+    id:
+      state_for_unknown: true
+    os_type_id:
+      computed_optional_required: required
+      requires_replace: true
+      description: ID of the OS type
+    virtual_image_id:
+      computed_optional_required: required
+      requires_replace: true
+      description: ID of the virtual image
+    provision_type_id:
+      computed_optional_required: computed_optional
+      requires_replace: true
+      description: ID of the provision type
+    cloud_id:
+      computed_optional_required: computed_optional
+      requires_replace: true
+      description: ID of the cloud

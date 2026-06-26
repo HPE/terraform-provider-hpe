@@ -1,0 +1,85 @@
+task:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed_optional
+        description: Configuration object. Settings vary by type.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.ValidObjectMap()
+    task_type_code:
+      string:
+        computed_optional_required: required
+        description: The code for the type of task
+    retry_delay_seconds:
+      int64:
+        computed_optional_required: computed_optional
+        description: The delay, between retries.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(0)
+
+  removes:
+    - account_id
+    - credential
+    - file
+    - task_options
+    - task_type
+    - ansible_playbook_task_config
+    - ansible_tower_task_config
+    - chef_bootstrap_task_config
+    - conditional_workflow_task_config
+    - email_task_config
+    - groovy_task_config
+    - httptask_config
+    - java_task_config
+    - library_script_task_config
+    - library_template_task_config
+    - nested_workflow_task_config
+    - power_shell_task_config
+    - puppet_task_config
+    - python_task_config
+    - restart_task_config
+    - shell_task_config
+    - v_realize_orchestrator_task_config
+    - write_attributes_task_config
+    - success
+    - date_created
+    - last_updated
+  moves:
+    - task: ""
+    - template-config: config
+    - template-task_type_code: task_type_code
+    - template-retry_delay_seconds: retry_delay_seconds
+    # - task_options.ansible_playbook_task_config: config_ansible_playbook
+    # - task_options.ansible_tower_task_config: config_ansible_tower
+    # - task_options.chef_bootstrap_task_config: config_chef_bootstrap
+    - task_options.conditional_workflow_task_config: config_conditional_workflow
+    # - task_options.email_task_config: config_email
+    # - task_options.groovy_task_config: config_groovy
+    # - task_options.httptask_config: config_http
+    # - task_options.java_task_config: config_java
+    # - task_options.library_script_task_config: config_library_script
+    # - task_options.library_template_task_config: config_library_template
+    # - task_options.nested_workflow_task_config: config_nested_workflow
+    # - task_options.power_shell_task_config: config_powershell
+    # - task_options.puppet_task_config: config_puppet
+    # - task_options.python_task_config: config_python
+    # - task_options.restart_task_config: config_restart
+    # - task_options.shell_task_config: config_shell
+    # - task_options.v_realize_orchestrator_task_config: config_vro
+    # - task_options.write_attributes_task_config: config_write_attributes
+    - result_type.oneof0: result_type
+  overrides:
+    task_type_code:
+      requires_replace: true
+    config_conditional_workflow.conditional_script:
+      trimmed_space_string: true
+    allow_custom_config:
+      description: When enabled, a text area is provided during manual Task execution to allow the user to pass extra variables or specify extra configuration
+      computed_optional_required: computed_optional
+    
