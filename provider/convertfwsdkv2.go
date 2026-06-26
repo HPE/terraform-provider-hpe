@@ -12,8 +12,10 @@ import (
 )
 
 // FwToSdkv2Schema converts a Terraform Plugin Framework provider schema into a
-// lossy SDKv2 schema wrapper. Prefer FwToSdkv2SchemaMap when assigning to
-// (*schema.Provider).Schema.
+// SDKv2 schema. The conversion is inherently lossy as not all Framework
+// concepts can be represented equivalently in SDKV2.
+// However, this conversion is good enough for our usecase of injecting the
+// Framework Provider Schema into an SDKv2 provider.
 func FwToSdkv2Schema(in frameworkschema.Schema) *sdkv2schema.Schema {
 	return &sdkv2schema.Schema{
 		Type:     sdkv2schema.TypeList,
@@ -53,10 +55,6 @@ func fwAttributeToSdkv2(ctx context.Context, attr frameworkschema.Attribute) *sd
 		Description: attr.GetDescription(),
 		Deprecated:  attr.GetDeprecationMessage(),
 	}
-
-	// if attr.GetMarkdownDescription() != "" {
-	// 	out.Description = attr.GetMarkdownDescription()
-	// }
 
 	switch a := attr.(type) {
 	case frameworkschema.StringAttribute:
