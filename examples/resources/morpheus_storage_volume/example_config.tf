@@ -2,7 +2,7 @@ resource "hpe_morpheus_storage_volume" "generic" {
   name              = "Example Storage Volume"
   type_id           = 1
   storage_server_id = 1
-  max_storage       = 32212254720 # 30 GiB, in bytes
+  max_storage       = 30 # GiB
 
   # config is a generic, write-only configuration map for storage volume types
   # that do not have a typed config block. Like config_alletramp_bmaas, its

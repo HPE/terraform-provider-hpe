@@ -2,7 +2,7 @@ resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
   name              = "{{.Name}}"
   type_id           = {{.TypeId}}
   storage_server_id = 1
-  max_storage       = 32212254720 # 30 GiB, in bytes
+  max_storage       = 30 # GiB
 
   # config_alletramp_bmaas is a write-only block: its values are sent to the API
   # on create but are never stored in Terraform state. Because Terraform cannot

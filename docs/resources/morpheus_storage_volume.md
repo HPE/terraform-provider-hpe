@@ -17,6 +17,31 @@ resource "hpe_morpheus_storage_volume" "example" {
 }
 ```
 
+### Storage volume type
+
+A storage volume requires a type, specified by **either** `type_id` **or**
+`type_code` (mutually exclusive). `type_code` is recommended where available —
+codes are stable across environments, whereas ids are not.
+
+| `type_code` | Storage server | Notes |
+|---|---|---|
+| `3par` | HPE 3PAR / Primera / Alletra 9000 | built-in |
+| `hpealletraMPLUN` | HPE Alletra Storage MP (block) | standard LUN |
+| `hpealletraMPLUN-active-pp` | HPE Alletra Storage MP | Peer Persistence (Active) |
+| `hpealletraMPLUN-classic-pp` | HPE Alletra Storage MP | Peer Persistence (Classic) |
+
+-> The available types depend on the storage plugins installed and the target
+storage server. Discover the full set of `type_code`s and `type_id`s for your
+environment with `GET /api/storage-volume-types`. Only certain storage server
+types (for example 3PAR, Isilon, and Alletra Storage MP) support creating
+storage volumes through this resource.
+
+### Size
+
+-> `max_storage` is specified in **GiB** and must be between 1 and 65536. For
+example, `max_storage = 100` creates a 100 GiB volume. (The Morpheus API stores
+and returns the size in bytes; the provider converts to and from GiB.)
+
 ### Write-only configuration
 
 -> The `config` and `config_alletramp_bmaas` arguments are
@@ -39,7 +64,7 @@ resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
   name              = "Example Alletra MP BMaaS Volume"
   type_id           = 1
   storage_server_id = 1
-  max_storage       = 32212254720 # 30 GiB, in bytes
+  max_storage       = 30 # GiB
 
   # config_alletramp_bmaas is a write-only block: its values are sent to the API
   # on create but are never stored in Terraform state. Because Terraform cannot
@@ -64,7 +89,7 @@ resource "hpe_morpheus_storage_volume" "generic" {
   name              = "Example Storage Volume"
   type_id           = 1
   storage_server_id = 1
-  max_storage       = 32212254720 # 30 GiB, in bytes
+  max_storage       = 30 # GiB
 
   # config is a generic, write-only configuration map for storage volume types
   # that do not have a typed config block. Like config_alletramp_bmaas, its
@@ -84,7 +109,6 @@ resource "hpe_morpheus_storage_volume" "generic" {
 ### Required
 
 - `name` (String) The name of the storage volume.
-- `type_id` (Number) The type ID of the storage volume.
 
 ### Optional
 
@@ -94,10 +118,12 @@ resource "hpe_morpheus_storage_volume" "generic" {
 - `config_alletramp_bmaas` (Attributes, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change. (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
 - `config_alletramp_bmaas_wo_version` (Number) Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.
 - `config_wo_version` (Number) Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.
-- `max_storage` (Number) The maximum storage size in bytes.
+- `max_storage` (Number) The storage volume size in GiB. Must be between 1 and 65536 GiB.
 - `provision_type` (String) Provision type for storage volume types that support it.
 - `storage_group_id` (Number) The ID of the storage group.
 - `storage_server_id` (Number) The ID of the storage server.
+- `type_code` (String) The storage volume type code, which is more stable across environments than type_id (e.g. "3par", "hpealletraMPLUN", "hpealletraMPLUN-active-pp", "hpealletraMPLUN-classic-pp"). Mutually exclusive with type_id.
+- `type_id` (Number) The ID of the storage volume type. Mutually exclusive with type_code.
 
 ### Read-Only
 

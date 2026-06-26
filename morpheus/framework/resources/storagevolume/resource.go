@@ -76,11 +76,27 @@ func (r *storageVolumeResource) Create(
 		return
 	}
 
-	volumeType := strconv.FormatInt(plan.TypeId.ValueInt64(), 10)
+	// The API "type" field accepts either a storage volume type code or id.
+	var volumeType string
+	if !plan.TypeCode.IsNull() && !plan.TypeCode.IsUnknown() {
+		volumeType = plan.TypeCode.ValueString()
+	} else {
+		volumeType = strconv.FormatInt(plan.TypeId.ValueInt64(), 10)
+	}
 
 	body := sdk.AddStorageVolumesRequestStorageVolume{
 		Name: plan.Name.ValueString(),
 		Type: volumeType,
+	}
+
+	// max_storage is expressed in GiB and sent as the top-level
+	// storageVolume.maxStorage field, which the API converts to bytes. It is
+	// carried in AdditionalProperties so it serialises at the top level of the
+	// storageVolume object (not inside config).
+	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
+		body.AdditionalProperties = map[string]interface{}{
+			"maxStorage": plan.MaxStorage.ValueInt64(),
+		}
 	}
 
 	if !plan.StorageServerId.IsNull() && !plan.StorageServerId.IsUnknown() {
@@ -228,12 +244,13 @@ func (r *storageVolumeResource) Update(
 		Name: plan.Name.ValueStringPointer(),
 	}
 
-	// Update model Config is still map[string]interface{} (not the typed union).
+	// max_storage is expressed in GiB and sent as the top-level
+	// storageVolume.maxStorage field (the API converts GiB to bytes), matching
+	// the create path.
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
-		config := map[string]interface{}{
+		body.AdditionalProperties = map[string]interface{}{
 			"maxStorage": plan.MaxStorage.ValueInt64(),
 		}
-		body.Config = config
 	}
 
 	_, httpResp, err := client.StorageAPI.UpdateStorageVolumes(ctx, idParam).
@@ -319,13 +336,18 @@ func (r *storageVolumeResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
+// oneGibibyte is the number of bytes in 1 GiB. The Morpheus API stores and
+// returns storage volume sizes in bytes, while the resource expresses
+// max_storage in GiB.
+const oneGibibyte int64 = 1024 * 1024 * 1024
+
 // buildCreateConfig constructs the typed Config union for the create request.
-// It handles three scenarios:
+// It handles two scenarios:
 //  1. Typed Alletra MP BMaaS block is set → build AlletraMPBMaaSVolumeConfiguration
 //  2. Generic dynamic config is set → build map[string]interface{} fallback
-//  3. Neither is set but max_storage is set → build minimal map with maxStorage
 //
-//nolint:cyclop // union dispatch requires branching
+// max_storage is not part of config; it is sent as the top-level
+// storageVolume.maxStorage field (see Create).
 func buildCreateConfig(
 	ctx context.Context,
 	plan *StorageVolumeModel,
@@ -333,7 +355,6 @@ func buildCreateConfig(
 ) *sdk.AddStorageVolumesRequestStorageVolumeConfig {
 	alletraSet := !plan.ConfigAlletrampBmaas.IsNull() && !plan.ConfigAlletrampBmaas.IsUnknown()
 	dynamicSet := !plan.Config.IsNull() && !plan.Config.IsUnknown()
-	maxStorageSet := !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown()
 
 	// Scenario 1: Typed Alletra MP BMaaS config block.
 	if alletraSet {
@@ -385,15 +406,6 @@ func buildCreateConfig(
 			variant.HpeStorageVolumeSetName = block.VolumeSetName.ValueStringPointer()
 		}
 
-		// The create body has no top-level maxStorage; the Alletra variant has no
-		// maxStorage field either. The current code sends size via config.maxStorage,
-		// so we use the AdditionalProperties map to pass it through.
-		if maxStorageSet {
-			variant.AdditionalProperties = map[string]interface{}{
-				"maxStorage": plan.MaxStorage.ValueInt64(),
-			}
-		}
-
 		return &sdk.AddStorageVolumesRequestStorageVolumeConfig{
 			AlletraMPBMaaSVolumeConfiguration: &variant,
 		}
@@ -423,24 +435,8 @@ func buildCreateConfig(
 			return nil
 		}
 
-		// Inject maxStorage into the generic config map if set.
-		if maxStorageSet {
-			configMap["maxStorage"] = plan.MaxStorage.ValueInt64()
-		}
-
 		return &sdk.AddStorageVolumesRequestStorageVolumeConfig{
 			MapmapOfStringAny: &configMap,
-		}
-	}
-
-	// Scenario 3: No config block but max_storage is set.
-	if maxStorageSet {
-		m := map[string]interface{}{
-			"maxStorage": plan.MaxStorage.ValueInt64(),
-		}
-
-		return &sdk.AddStorageVolumesRequestStorageVolumeConfig{
-			MapmapOfStringAny: &m,
 		}
 	}
 
@@ -472,7 +468,14 @@ func mapGetResponseToModel(
 		model.Name = types.StringValue(*sv.Name)
 	}
 
-	if sv.TypeId != nil {
+	// type_id and type_code are both computed_optional and mutually exclusive.
+	// Populate both from the API so the plan is clean regardless of which one the
+	// user configured — the unconfigured (computed) value is not compared against
+	// the null config, so it does not cause spurious drift or replacement.
+	if t := sv.Type; t != nil {
+		model.TypeId = convert.Int64ToType(t.Id)
+		model.TypeCode = convert.StrToType(t.Code)
+	} else if sv.TypeId != nil {
 		model.TypeId = types.Int64Value(*sv.TypeId)
 	}
 
@@ -482,8 +485,9 @@ func mapGetResponseToModel(
 		}
 	}
 
+	// The API returns maxStorage in bytes; the resource expresses it in GiB.
 	if sv.MaxStorage != nil {
-		model.MaxStorage = types.Int64Value(*sv.MaxStorage)
+		model.MaxStorage = types.Int64Value(*sv.MaxStorage / oneGibibyte)
 	}
 
 	if sv.Status != nil {

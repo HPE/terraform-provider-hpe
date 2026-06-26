@@ -131,8 +131,11 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_storage": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The maximum storage size in bytes.",
-				MarkdownDescription: "The maximum storage size in bytes.",
+				Description:         "The storage volume size in GiB. Must be between 1 and 65536 GiB.",
+				MarkdownDescription: "The storage volume size in GiB. Must be between 1 and 65536 GiB.",
+				Validators: []validator.Int64{
+					int64validator.Between(1, 65536),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -171,12 +174,29 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"type_code": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
+				MarkdownDescription: "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_id")}...),
+				},
+			},
 			"type_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "The type ID of the storage volume.",
-				MarkdownDescription: "The type ID of the storage volume.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The ID of the storage volume type. Mutually exclusive with type_code.",
+				MarkdownDescription: "The ID of the storage volume type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Int64{
+					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("type_id"), path.MatchRoot("type_code")}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
 				},
 			},
 		},
@@ -197,6 +217,7 @@ type StorageVolumeModel struct {
 	Status                        types.String              `tfsdk:"status"`
 	StorageGroupId                types.Int64               `tfsdk:"storage_group_id"`
 	StorageServerId               types.Int64               `tfsdk:"storage_server_id"`
+	TypeCode                      types.String              `tfsdk:"type_code"`
 	TypeId                        types.Int64               `tfsdk:"type_id"`
 }
 
