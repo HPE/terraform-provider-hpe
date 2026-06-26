@@ -173,9 +173,9 @@ func resourceSettingBackupCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BackupSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BackupSettings"))
-	}
+	// The backup-settings PUT returns only a success envelope (no backupSettings
+	// object), so do not require it here. State is populated by the read below.
+	_ = result
 
 	d.SetId(backupSettingsID)
 
@@ -338,9 +338,9 @@ func resourceSettingBackupUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if result.BackupSettings == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("BackupSettings"))
-	}
+	// The backup-settings PUT returns only a success envelope (no backupSettings
+	// object), so do not require it here. State is populated by the read below.
+	_ = result
 
 	d.SetId(backupSettingsID)
 

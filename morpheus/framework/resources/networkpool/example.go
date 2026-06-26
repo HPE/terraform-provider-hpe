@@ -1,0 +1,51 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package networkpool
+
+import (
+	"fmt"
+	"path/filepath"
+	"runtime"
+	"testing"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+)
+
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_pool/example.tf example.tf.tmpl Name "App Pool" TypeCode "morpheus" SubnetAddress "10.0.1.0" Netmask "255.255.255.0" Gateway "10.0.1.1" DnsDomain "example.com" StartingAddress "10.0.1.10" EndingAddress "10.0.1.50"
+
+func RenderNetworkPoolConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":            "App Pool",
+		"TypeCode":        "morpheus",
+		"SubnetAddress":   "10.0.1.0",
+		"Netmask":         "255.255.255.0",
+		"Gateway":         "10.0.1.1",
+		"DnsDomain":       "example.com",
+		"StartingAddress": "10.0.1.10",
+		"EndingAddress":   "10.0.1.50",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+	dir := filepath.Dir(filename)
+	templatePath := filepath.Join(dir, "example.tf.tmpl")
+
+	return testhelpers.RenderExample(
+		t,
+		templatePath,
+		args...,
+	)
+}

@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -39,7 +39,7 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	dependencyConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
 	})
@@ -117,7 +117,7 @@ func TestAccMorpheusBackupHostResourceUpdateOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	dependencyConfig, err := backup_job.RenderBackupJobConfig(t, map[string]string{
+	dependencyConfig, err := backupjob.RenderBackupJobConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
 	})

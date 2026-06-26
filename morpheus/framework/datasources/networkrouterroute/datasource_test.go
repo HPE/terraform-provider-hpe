@@ -12,8 +12,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
-	routeresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
 	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
+	routeresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )

@@ -4,6 +4,7 @@ package network
 
 import (
 	"context"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -40,9 +41,7 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Morpheus ID of the network being referenced",
 				MarkdownDescription: "Morpheus ID of the network being referenced",
 				Validators: []validator.Int64{
-					int64validator.ConflictsWith(path.Expressions{
-						path.MatchRoot("name"),
-					}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
 			"labels": schema.SetAttribute{
@@ -55,9 +54,7 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the Morpheus network",
 				MarkdownDescription: "The name of the Morpheus network",
 				Validators: []validator.String{
-					stringvalidator.ConflictsWith(path.Expressions{
-						path.MatchRoot("id"),
-					}...),
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
 			"visibility": schema.StringAttribute{

@@ -7,16 +7,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backup_job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backuphost"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupinstance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/backupjob"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_affinity_group"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster_namespace"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/container_script"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/clusteraffinitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/clusternamespace"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/containerscript"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
@@ -30,41 +30,41 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerprofile"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancervirtualserver"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_alert"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_check"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoring_group"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoringalert"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoringcheck"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/monitoringgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_group"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_pool_server"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_firewall_rule"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_nat"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/network_router_route"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkpoolserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/option_list"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/power_schedule"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/provisioning_license"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/powerschedule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/provisioninglicense"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/security_group_rule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/serviceplan"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/setting_whitelabel"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_bucket"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_server"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storage_volume"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagebucket"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storageserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/subnet"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_app"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_gateway"
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdi_pool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdiapp"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdigateway"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdipool"
 )
 
 func (s SubProvider) GetResources(
@@ -87,7 +87,7 @@ func (s SubProvider) GetResources(
 		networkdhcpserver.NewResource,
 		networkrouter.NewResource,
 		networkrouterbgpneighbor.NewResource,
-		network_router_route.NewResource,
+		networkrouterroute.NewResource,
 		ostype.NewResource,
 		ostypeimage.NewResource,
 		user.NewResource,
@@ -103,47 +103,47 @@ func (s SubProvider) GetResources(
 
 		// Sprint 1: Simple resources
 		certificate.NewResource,
-		power_schedule.NewResource,
-		vdi_app.NewResource,
-		vdi_gateway.NewResource,
-		container_script.NewResource,
+		powerschedule.NewResource,
+		vdiapp.NewResource,
+		vdigateway.NewResource,
+		containerscript.NewResource,
 
 		// Sprint 2: Networking
-		network_group.NewResource,
-		network_pool.NewResource,
-		network_pool_server.NewResource,
-		network_router_nat.NewResource,
-		network_router_firewall_rule.NewResource,
+		networkgroup.NewResource,
+		networkpool.NewResource,
+		networkpoolserver.NewResource,
+		networkrouternat.NewResource,
+		networkrouterfirewallrule.NewResource,
 		subnet.NewResource,
-		security_group.NewResource,
-		security_group_rule.NewResource,
+		securitygroup.NewResource,
+		securitygrouprule.NewResource,
 
 		// Sprint 3: Automation & Orchestration
 		deployment.NewResource,
 
 		// Sprint 4: Infrastructure & Compute
-		cluster_namespace.NewResource,
-		cluster_affinity_group.NewResource,
-		storage_server.NewResource,
-		storage_volume.NewResource,
-		storage_bucket.NewResource,
+		clusternamespace.NewResource,
+		clusteraffinitygroup.NewResource,
+		storageserver.NewResource,
+		storagevolume.NewResource,
+		storagebucket.NewResource,
 
 		// Sprint 5: Monitoring & Operations
-		monitoring_check.NewResource,
-		monitoring_alert.NewResource,
-		monitoring_group.NewResource,
+		monitoringcheck.NewResource,
+		monitoringalert.NewResource,
+		monitoringgroup.NewResource,
 		budget.NewResource,
-		backup_job.NewResource,
+		backupjob.NewResource,
 		backuphost.NewResource,
 		backupinstance.NewResource,
 
 		// Sprint 6: Library & Provisioning
-		option_list.NewResource,
-		provisioning_license.NewResource,
+		optionlist.NewResource,
+		provisioninglicense.NewResource,
 
 		// Sprint 7: Identity, VDI & Governance
-		vdi_pool.NewResource,
-		setting_whitelabel.NewResource,
+		vdipool.NewResource,
+		settingwhitelabel.NewResource,
 	}
 
 	return resources

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
+	rnetworkgroup "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkgroup"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsnetwork "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
@@ -33,8 +34,16 @@ func TestAccMorpheusDataSourceNetworkGroupExampleOk(t *testing.T) {
 
 	var dependenciesConfig string
 
-	datasourceConfig, err := dsnetwork.RenderNetworkGroupConfig(t, map[string]string{
+	if currentDependency, err := rnetworkgroup.RenderNetworkGroupConfig(t, map[string]string{
 		"Name": name,
+	}); err != nil {
+		t.Fatal(err)
+	} else {
+		dependenciesConfig += currentDependency
+	}
+
+	datasourceConfig, err := dsnetwork.RenderNetworkGroupConfig(t, map[string]string{
+		"Name": "hpe_morpheus_network_group.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -44,7 +53,7 @@ func TestAccMorpheusDataSourceNetworkGroupExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_group.example",
 			"name",
-			"TF Example Network Group",
+			name,
 		),
 	}
 
