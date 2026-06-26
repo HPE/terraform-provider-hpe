@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"time"
 
-	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+	sdklegacy "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/auth"
 )

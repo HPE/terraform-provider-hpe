@@ -5,7 +5,7 @@ package serviceplan
 import (
 	"testing"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 // TestServicePlanInCloud verifies the cloud_id disambiguation helper used by the

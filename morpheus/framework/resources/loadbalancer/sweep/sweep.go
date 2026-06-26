@@ -13,8 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"

@@ -8,8 +8,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 type CredsRoundTripper struct {

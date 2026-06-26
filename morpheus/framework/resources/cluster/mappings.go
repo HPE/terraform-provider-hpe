@@ -5,7 +5,7 @@ package cluster
 import (
 	"strconv"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 func createVolumeMapper(

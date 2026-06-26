@@ -14,7 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"

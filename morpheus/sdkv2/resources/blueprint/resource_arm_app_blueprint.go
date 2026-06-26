@@ -15,7 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
 
-	morpheus "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
+	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 )
 
 func ResourceAppBlueprintARM() *schema.Resource {

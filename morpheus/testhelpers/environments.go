@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/HewlettPackard/hpe-morpheus-go-sdk/oapigen/sdk"
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
 // TestEnvironment is a simplified struct for test usage.

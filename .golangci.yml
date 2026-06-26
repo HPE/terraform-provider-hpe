@@ -60,6 +60,10 @@ linters:
           - staticcheck
         text: 'ST1005:'
     paths:
+      # Vendored Morpheus SDK (generated oapigen + hand-written legacy). It was
+      # an external module before being merged in-tree and is not subject to the
+      # provider's lint rules; exclude it from analysis (also keeps lint fast).
+      - internal/sdk
       - third_party$
       - builtin$
       - examples$
@@ -76,6 +80,7 @@ formatters:
   exclusions:
     generated: lax
     paths:
+      - internal/sdk
       - third_party$
       - builtin$
       - examples$

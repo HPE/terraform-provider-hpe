@@ -5,8 +5,9 @@ package morpheus
 import (
 	"context"
 
-	sdklegacy "github.com/HewlettPackard/hpe-morpheus-go-sdk/legacy"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+
+	sdklegacy "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/client"
 	"github.com/HPE/terraform-provider-hpe/utils/httptrace"
