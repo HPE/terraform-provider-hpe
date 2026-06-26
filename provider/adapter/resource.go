@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package adapter
 
 import (
@@ -7,7 +9,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 )
 
-type AdapterResource struct {
+// ResourceAdapter wraps a Terraform Plugin Framework resource and adapts it
+// to work as a child resource within a parent provider architecture. It allows
+// child provider resources to be properly namespaced and integrated into a
+// parent provider.
+//
+// The adapter implements all optional resource interfaces
+// (ResourceWithConfigure, ResourceWithConfigValidators,
+// ResourceWithImportState, ResourceWithModifyPlan, ResourceWithMoveState,
+// ResourceWithUpgradeState, and ResourceWithValidateConfig) by delegating to
+// the wrapped resource if it implements them. For optional interfaces not
+// implemented by the wrapped resource, the adapter returns nil or no-op
+// responses.
+//
+// Key transformations performed by the adapter:
+//
+// 1. Metadata: Transforms the resource TypeName by prepending the child
+// provider's TypeName. For example, a "network" resource from a "morpheus"
+// provider becomes "morpheus_network", and when used in a parent "hpe"
+// provider becomes "hpe_morpheus_network".
+//
+// 2. Configure: Extracts the child provider's configuration data from the
+// parent provider's ConfigureRequest.ProviderData map, ensuring the resource
+// receives only its own provider's data.
+//
+// The adapter does not support ResourceWithIdentity and
+// ResourceWithUpgradeIdentity interfaces because Terraform Plugin Framework
+// checks for Resource Identity at gRPC server creation time, unlike other
+// optional interfaces which are handled during RPC request processing.
+type ResourceAdapter struct {
 	in       resource.Resource
 	provider provider.Provider // we need the provider so we can access its name from metadata
 
@@ -24,13 +54,13 @@ type AdapterResource struct {
 	// unlike the other interfaces which are handled at RPC request time.
 }
 
-type AdapterResourceWithConfigure struct {
+type ResourceAdapterWithConfigure struct {
 	in       resource.ResourceWithConfigure
 	provider provider.Provider
 	resource.Resource
 }
 
-func (r *AdapterResourceWithConfigure) Configure(
+func (r *ResourceAdapterWithConfigure) Configure(
 	ctx context.Context,
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
@@ -38,17 +68,17 @@ func (r *AdapterResourceWithConfigure) Configure(
 	r.in.Configure(ctx, req, resp)
 }
 
-var _ resource.Resource = &AdapterResource{}
-var _ resource.ResourceWithConfigure = &AdapterResource{}
-var _ resource.ResourceWithConfigValidators = &AdapterResource{}
-var _ resource.ResourceWithImportState = &AdapterResource{}
-var _ resource.ResourceWithModifyPlan = &AdapterResource{}
-var _ resource.ResourceWithMoveState = &AdapterResource{}
-var _ resource.ResourceWithUpgradeState = &AdapterResource{}
-var _ resource.ResourceWithValidateConfig = &AdapterResource{}
+var _ resource.Resource = &ResourceAdapter{}
+var _ resource.ResourceWithConfigure = &ResourceAdapter{}
+var _ resource.ResourceWithConfigValidators = &ResourceAdapter{}
+var _ resource.ResourceWithImportState = &ResourceAdapter{}
+var _ resource.ResourceWithModifyPlan = &ResourceAdapter{}
+var _ resource.ResourceWithMoveState = &ResourceAdapter{}
+var _ resource.ResourceWithUpgradeState = &ResourceAdapter{}
+var _ resource.ResourceWithValidateConfig = &ResourceAdapter{}
 
-func NewAdapterResource(in resource.Resource, p provider.Provider) *AdapterResource {
-	r := &AdapterResource{in: in, provider: p}
+func NewResourceAdapter(in resource.Resource, p provider.Provider) *ResourceAdapter {
+	r := &ResourceAdapter{in: in, provider: p}
 
 	r.withConfigure, _ = in.(resource.ResourceWithConfigure)
 	r.withConfigValidators, _ = in.(resource.ResourceWithConfigValidators)
@@ -62,17 +92,17 @@ func NewAdapterResource(in resource.Resource, p provider.Provider) *AdapterResou
 }
 
 func NewAdaptedResource(in resource.Resource, p provider.Provider) resource.Resource {
-	return NewAdapterResource(in, p)
+	return NewResourceAdapter(in, p)
 }
 
 // Metadata is the only method implementation that varies from `in`
 // We use the Provider Adapter's name to the Metadata request.
 // This will transform the resource name from e.g.:
 // resource -> {child_provider}_resource
-// When a parent provier is introduced, the resource name will
+// When a parent provider is introduced, the resource name will
 // then be registered as e.g.:
 // {parent_provider}_{child_provider}_resource
-func (r *AdapterResource) Metadata(
+func (r *ResourceAdapter) Metadata(
 	ctx context.Context,
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
@@ -85,7 +115,7 @@ func (r *AdapterResource) Metadata(
 	r.in.Metadata(ctx, req, resp)
 }
 
-func (r *AdapterResource) Schema(
+func (r *ResourceAdapter) Schema(
 	ctx context.Context,
 	req resource.SchemaRequest,
 	resp *resource.SchemaResponse,
@@ -93,7 +123,7 @@ func (r *AdapterResource) Schema(
 	r.in.Schema(ctx, req, resp)
 }
 
-func (r *AdapterResource) Create(
+func (r *ResourceAdapter) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
@@ -101,7 +131,7 @@ func (r *AdapterResource) Create(
 	r.in.Create(ctx, req, resp)
 }
 
-func (r *AdapterResource) Read(
+func (r *ResourceAdapter) Read(
 	ctx context.Context,
 	req resource.ReadRequest,
 	resp *resource.ReadResponse,
@@ -109,7 +139,7 @@ func (r *AdapterResource) Read(
 	r.in.Read(ctx, req, resp)
 }
 
-func (r *AdapterResource) Update(
+func (r *ResourceAdapter) Update(
 	ctx context.Context,
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
@@ -117,7 +147,7 @@ func (r *AdapterResource) Update(
 	r.in.Update(ctx, req, resp)
 }
 
-func (r *AdapterResource) Delete(
+func (r *ResourceAdapter) Delete(
 	ctx context.Context,
 	req resource.DeleteRequest,
 	resp *resource.DeleteResponse,
@@ -125,7 +155,7 @@ func (r *AdapterResource) Delete(
 	r.in.Delete(ctx, req, resp)
 }
 
-func (r *AdapterResource) Configure(
+func (r *ResourceAdapter) Configure(
 	ctx context.Context,
 	req resource.ConfigureRequest,
 	resp *resource.ConfigureResponse,
@@ -144,7 +174,7 @@ func (r *AdapterResource) Configure(
 	r.withConfigure.Configure(ctx, req, resp)
 }
 
-func (r *AdapterResource) ConfigValidators(
+func (r *ResourceAdapter) ConfigValidators(
 	ctx context.Context,
 ) []resource.ConfigValidator {
 	if r.withConfigValidators == nil {
@@ -154,7 +184,7 @@ func (r *AdapterResource) ConfigValidators(
 	return r.withConfigValidators.ConfigValidators(ctx)
 }
 
-func (r *AdapterResource) ImportState(
+func (r *ResourceAdapter) ImportState(
 	ctx context.Context,
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
@@ -166,7 +196,7 @@ func (r *AdapterResource) ImportState(
 	r.withImportState.ImportState(ctx, req, resp)
 }
 
-func (r *AdapterResource) ModifyPlan(
+func (r *ResourceAdapter) ModifyPlan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
@@ -178,7 +208,7 @@ func (r *AdapterResource) ModifyPlan(
 	r.withModifyPlan.ModifyPlan(ctx, req, resp)
 }
 
-func (r *AdapterResource) MoveState(
+func (r *ResourceAdapter) MoveState(
 	ctx context.Context,
 ) []resource.StateMover {
 	if r.withMoveState == nil {
@@ -188,7 +218,7 @@ func (r *AdapterResource) MoveState(
 	return r.withMoveState.MoveState(ctx)
 }
 
-func (r *AdapterResource) UpgradeState(
+func (r *ResourceAdapter) UpgradeState(
 	ctx context.Context,
 ) map[int64]resource.StateUpgrader {
 	if r.withUpgradeState == nil {
@@ -198,7 +228,7 @@ func (r *AdapterResource) UpgradeState(
 	return r.withUpgradeState.UpgradeState(ctx)
 }
 
-func (r *AdapterResource) ValidateConfig(
+func (r *ResourceAdapter) ValidateConfig(
 	ctx context.Context,
 	req resource.ValidateConfigRequest,
 	resp *resource.ValidateConfigResponse,

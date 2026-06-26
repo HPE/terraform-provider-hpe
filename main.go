@@ -14,15 +14,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
 
-	// "github.com/hashicorp/terraform-plugin-mux/tf5to6server"
-	// "github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/provider"
-	opsrampprovider "github.com/HPE/terraform-provider-opsramp/src/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 var version = "dev"
@@ -37,13 +35,7 @@ func main() {
 
 	p := provider.New(
 		version,
-		morpheus.NewMorpheusProvider(), // let's try just with Morpheus for now
-		opsrampprovider.New(version)(),
-		// subprovider2.New(),
-		// subprovider3.New(),
-		// .
-		// .
-		// .
+		adapter.NewAdaptedChildProvider(morpheus.NewMorpheusProvider()),
 	)
 
 	var opts []tf6server.ServeOpt

@@ -1,56 +1,54 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package morpheus
 
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/model"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
 var _ provider.Provider = &MorpheusProvider{}
 
-const providerName = "morpheus"
+const ProviderName = "morpheus"
 
 type MorpheusProvider struct {
-	// model.SubModel = morpheus SubModel
-	// we can tidy this up later.
-	newClientFactory func(model.SubModel) *clientfactory.ClientFactory
+	NewClientFactory func(model.MorpheusProviderModel) *clientfactory.ClientFactory
 }
 
-type MorpheusProviderModel struct {
-	URL             types.String `tfsdk:"url"`
-	Username        types.String `tfsdk:"username"`
-	Password        types.String `tfsdk:"password"`
-	AccessToken     types.String `tfsdk:"access_token"`
-	TenantSubdomain types.String `tfsdk:"tenant_subdomain"`
-	Insecure        types.Bool   `tfsdk:"insecure"`
+type Option func(*MorpheusProvider)
+
+func MorpheusWithClientFactory(f func(model.MorpheusProviderModel) *clientfactory.ClientFactory) Option {
+	return func(p *MorpheusProvider) {
+		p.NewClientFactory = f
+	}
 }
 
-func NewMorpheusProvider() *MorpheusProvider {
-	f := func(m model.SubModel) *clientfactory.ClientFactory {
+func NewMorpheusProvider(opts ...Option) *MorpheusProvider {
+	f := func(m model.MorpheusProviderModel) *clientfactory.ClientFactory {
 		return clientfactory.New(m)
 	}
 
 	p := &MorpheusProvider{
-		newClientFactory: f,
+		NewClientFactory: f,
 	}
 
 	return p
 }
 
 func (p *MorpheusProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = providerName
+	resp.TypeName = ProviderName
 	resp.Version = "dev"
 }
 
 func (p *MorpheusProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	var m model.SubModel
+	var m model.MorpheusProviderModel
 
 	diags := req.Config.Get(ctx, &m)
 	if diags.HasError() {
@@ -59,7 +57,7 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
-	cf := p.newClientFactory(m)
+	cf := p.NewClientFactory(m)
 	resp.ResourceData = cf
 	resp.DataSourceData = cf
 }

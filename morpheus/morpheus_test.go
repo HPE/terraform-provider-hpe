@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"testing"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -18,12 +19,12 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/model"
-	"github.com/HPE/terraform-provider-hpe/provider"
-	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+	providermod "github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -50,30 +51,52 @@ type FakeModel struct {
 	TestAttr types.String `tfsdk:"testattr"`
 }
 
+// For now, test using this method until we switch to testing the
+// Morpheus Framework Provider with a flat provider config.
 type SubProviderTest struct {
-	// morpheus.SubProvider
-	subprovider.SubProvider
+	adapter.ProviderAdapter
+	underlyingProvider fwprovider.Provider
 }
 
-func (t SubProviderTest) GetResources(
-	_ context.Context,
+var _ fwprovider.Provider = &SubProviderTest{}
+
+// Resources returns the Morpheus provider's resources plus the fake test resource.
+func (t *SubProviderTest) Resources(
+	ctx context.Context,
 ) []func() resource.Resource {
-	resources := []func() resource.Resource{
-		NewResource,
+	var adaptedResources []func() resource.Resource
+
+	// Add Morpheus provider resources (adapted)
+	for _, f := range t.underlyingProvider.Resources(ctx) {
+		adaptedResources = append(
+			adaptedResources,
+			func() resource.Resource {
+				return adapter.NewAdaptedResource(f(), &t.ProviderAdapter)
+			},
+		)
 	}
 
-	return resources
+	// Add fake test resource (also needs to be adapted for correct TypeName)
+	adaptedResources = append(
+		adaptedResources,
+		func() resource.Resource {
+			return adapter.NewAdaptedResource(NewResource(), &t.ProviderAdapter)
+		},
+	)
+
+	return adaptedResources
 }
 
 func New() *SubProviderTest {
-	m := morpheus.New()
-	t := SubProviderTest{SubProvider: m}
-
-	return &t
+	morpheusProvider := morpheus.NewMorpheusProvider()
+	return &SubProviderTest{
+		ProviderAdapter:    *adapter.NewProviderAdapter(morpheusProvider),
+		underlyingProvider: morpheusProvider,
+	}
 }
 
 func NewWithCustomHTTPClient() *SubProviderTest {
-	f := func(m model.SubModel) *clientfactory.ClientFactory {
+	f := func(m model.MorpheusProviderModel) *clientfactory.ClientFactory {
 		// example of passing in custom http client
 		hc := &http.Client{}
 
@@ -83,14 +106,15 @@ func NewWithCustomHTTPClient() *SubProviderTest {
 		)
 	}
 
-	m := morpheus.New(morpheus.WithClientFactory(f))
-	t := SubProviderTest{SubProvider: m}
-
-	return &t
+	morpheusProvider := morpheus.NewMorpheusProvider(morpheus.MorpheusWithClientFactory(f))
+	return &SubProviderTest{
+		ProviderAdapter:    *adapter.NewProviderAdapter(morpheusProvider),
+		underlyingProvider: morpheusProvider,
+	}
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", New())()
+	providerInstance := providermod.New("test", New())()
 
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
@@ -101,6 +125,9 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 	"hpe": newProviderWithError,
 }
 
+// These tests are bad as the logic for parent provider config parsing by children
+// is tightly coupled to the HPE provider implementation (the passing of []ListNestedBlock)
+// to children as a flat Provider schema.
 func TestAccMorpheusSubProviderMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -189,7 +216,7 @@ func TestAccMorpheusSubProviderWithCustomHTTPClient(t *testing.T) {
 		t.Log("Skipping test due to missing capabilities")
 	}
 	newLocalProviderWithError := func() (tfprotov6.ProviderServer, error) {
-		providerInstance := provider.New("test", NewWithCustomHTTPClient())()
+		providerInstance := providermod.New("test", NewWithCustomHTTPClient())()
 
 		return providerserver.NewProtocol6WithError(providerInstance)()
 	}
@@ -354,7 +381,7 @@ resource "hpe_morpheus_fake" "foo" {
 	name = "bar"
 }
 `
-	expected := `missing morpheus provider block`
+	expected := `missing morpheus`
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []testresource.TestStep{
@@ -431,10 +458,10 @@ type Resource struct {
 
 func (r *Resource) Metadata(
 	_ context.Context,
-	_ resource.MetadataRequest,
+	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = "hpe" + "_" + "morpheus" + "_" + "fake"
+	resp.TypeName = req.ProviderTypeName + "_" + "fake"
 }
 
 func (r *Resource) Schema(

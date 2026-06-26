@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	version "github.com/hashicorp/go-version"
@@ -31,10 +30,8 @@ func New(
 ) func() provider.Provider {
 	return func() provider.Provider {
 		return &HpeProvider{
-			version: version,
-			childProviders: adapter.NewAdaptedChildProviders(
-				providers...,
-			),
+			version:        version,
+			childProviders: providers,
 		}
 	}
 }
@@ -70,7 +67,14 @@ func (p *HpeProvider) Schema(
 		s.Metadata(ctx, provider.MetadataRequest{}, metaResp)
 		s.Schema(ctx, provider.SchemaRequest{}, schemaResp)
 
-		// resp.Schema.Attributes[metaResp.TypeName] = schemaResp.Schema.Attributes[metaResp.TypeName]
+		// switch metaResp.TypeName {
+		// case "hpe_opsramp":
+		// 	trimmed := strings.TrimPrefix(metaResp.TypeName, "hpe_")
+		// 	resp.Schema.Blocks[trimmed] = schemaResp.Schema.Blocks[metaResp.TypeName]
+
+		// default:
+		// 	resp.Schema.Blocks[metaResp.TypeName] = schemaResp.Schema.Blocks[metaResp.TypeName]
+		// }
 		resp.Schema.Blocks[metaResp.TypeName] = schemaResp.Schema.Blocks[metaResp.TypeName]
 	}
 }
@@ -146,6 +150,11 @@ func (p *HpeProvider) Configure(
 	for _, s := range p.childProviders {
 		childMetaResp := &provider.MetadataResponse{}
 		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
+
+		// handle opsramp provider naming quirk
+		// if childMetaResp.TypeName == "hpe_opsramp" {
+		// 	childMetaResp.TypeName = strings.TrimPrefix(childMetaResp.TypeName, "hpe_")
+		// }
 
 		// Since the "hpe" provider is using ListNestedBlock for its configs,
 		// we need to pass the 0th ListNestedBlock to the child provider
