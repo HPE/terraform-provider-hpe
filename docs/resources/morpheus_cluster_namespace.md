@@ -29,10 +29,23 @@ resource "hpe_morpheus_cluster_namespace" "example" {
 
 - `active` (Boolean) Whether the namespace is active.
 - `description` (String) The description of the namespace.
+- `resource_permissions` (Attributes) Resource permissions for group and service plan access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `tenant_ids` (List of Number) List of tenant account IDs that are allowed access.
+- `visibility` (String) The visibility of the cluster namespace (public or private).
 
 ### Read-Only
 
 - `id` (Number) The ID of the cluster namespace.
+
+<a id="nestedatt--resource_permissions"></a>
+### Nested Schema for `resource_permissions`
+
+Optional:
+
+- `all` (Boolean) Pass true to allow access to all groups.
+- `all_plans` (Boolean) Pass true to allow access to all service plans.
+- `plan_ids` (List of Number) List of service plan IDs allowed access.
+- `site_ids` (List of Number) List of site/group IDs allowed access.
 
 ## Import
 
