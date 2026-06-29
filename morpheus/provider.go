@@ -7,7 +7,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -41,22 +40,6 @@ func New(opts ...Option) *MorpheusProvider {
 	}
 
 	return p
-}
-
-// Returns a Morpheus provider via the Adapter Layer
-// This saves having to directly import the "adapter" package where an
-// adapted Morpheus provider is needed, e.g. Acceptance Tests.
-func NewAdapted(opts ...Option) provider.Provider {
-
-	f := func(m model.MorpheusProviderModel) *clientfactory.ClientFactory {
-		return clientfactory.New(m)
-	}
-
-	p := &MorpheusProvider{
-		NewClientFactory: f,
-	}
-
-	return adapter.NewAdaptedProvider(p)
 }
 
 func (p *MorpheusProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
