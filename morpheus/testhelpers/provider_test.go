@@ -8,7 +8,6 @@ import (
 	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/utils/adapter"
@@ -27,7 +26,7 @@ func TestGetAccTestFactories(t *testing.T) {
 	tests := []providerTestCase{
 		{"Framework provider only success", adapter.NewAdaptedMorpheus(), nil, false},
 		{"SDK v2 provider only success", nil, sdkv2morpheus.Provider(), false},
-		{"Both providers success", morpheus.New(), sdkv2morpheus.Provider(), false},
+		{"Both providers success", adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider(), false},
 	}
 
 	for _, test := range tests {
