@@ -50,7 +50,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -133,7 +133,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -216,7 +216,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -258,7 +258,7 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -293,7 +293,7 @@ func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 

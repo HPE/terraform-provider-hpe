@@ -65,7 +65,7 @@ func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -106,7 +106,7 @@ func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -147,7 +147,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -184,7 +184,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -211,7 +211,7 @@ func TestAccMorpheusFindNetworkFirewallRuleBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()

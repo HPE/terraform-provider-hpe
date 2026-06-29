@@ -42,7 +42,7 @@ func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -82,7 +82,7 @@ func TestAccMorpheusPolicyResourceValidationInvalidPolicyType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -123,7 +123,7 @@ func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -164,7 +164,7 @@ func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -224,7 +224,7 @@ func TestAccMorpheusPolicyResourceValidationTenantsNotSupported(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -288,7 +288,7 @@ func TestAccMorpheusPolicyResourceValidationApprovalWorkflowConflict(t *testing.
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -332,7 +332,7 @@ func TestAccMorpheusPolicyResourceValidationApprovalFlowIdRequired(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -374,7 +374,7 @@ func TestAccMorpheusPolicyResourceValidationApprovalWorkflowIdRequired(t *testin
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -416,7 +416,7 @@ func TestAccMorpheusPolicyResourceValidationLifecycleFlowIdRequired(t *testing.T
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -458,7 +458,7 @@ func TestAccMorpheusPolicyResourceValidationLifecycleWorkflowIdRequired(t *testi
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -500,7 +500,7 @@ func TestAccMorpheusPolicyResourceValidationShutdownFlowIdRequired(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -542,7 +542,7 @@ func TestAccMorpheusPolicyResourceValidationShutdownWorkflowIdRequired(t *testin
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -584,7 +584,7 @@ func TestAccMorpheusPolicyResourceValidationConfigConflict(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
