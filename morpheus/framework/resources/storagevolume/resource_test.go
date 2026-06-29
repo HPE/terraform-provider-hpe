@@ -153,7 +153,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_storage_volume.example"
 
-	resourceConfig, err := storage_volume.RenderStorageVolumeCompleteConfig(t, map[string]string{
+	resourceConfig, err := storagevolume.RenderStorageVolumeCompleteConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {
