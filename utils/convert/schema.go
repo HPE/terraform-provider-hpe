@@ -1,12 +1,12 @@
-// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package provider
+package convert
 
 import (
 	"context"
 	"fmt"
 
-	frameworkschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	fwschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,7 +16,7 @@ import (
 // concepts can be represented equivalently in SDKV2.
 // However, this conversion is good enough for our usecase of injecting the
 // Framework Provider Schema into an SDKv2 provider.
-func FwToSdkv2Schema(in frameworkschema.Schema) *sdkv2schema.Schema {
+func FwToSdkv2Schema(in fwschema.Schema) *sdkv2schema.Schema {
 	return &sdkv2schema.Schema{
 		Type:     sdkv2schema.TypeList,
 		Optional: true,
@@ -27,11 +27,11 @@ func FwToSdkv2Schema(in frameworkschema.Schema) *sdkv2schema.Schema {
 	}
 }
 
-func FwToSdkv2SchemaMap(in frameworkschema.Schema) map[string]*sdkv2schema.Schema {
+func FwToSdkv2SchemaMap(in fwschema.Schema) map[string]*sdkv2schema.Schema {
 	return fwObjectToSdkv2SchemaMap(context.Background(), in.Attributes, in.Blocks)
 }
 
-func fwObjectToSdkv2SchemaMap(ctx context.Context, attrs map[string]frameworkschema.Attribute, blocks map[string]frameworkschema.Block) map[string]*sdkv2schema.Schema {
+func fwObjectToSdkv2SchemaMap(ctx context.Context, attrs map[string]fwschema.Attribute, blocks map[string]fwschema.Block) map[string]*sdkv2schema.Schema {
 	out := make(map[string]*sdkv2schema.Schema, len(attrs)+len(blocks))
 
 	for name, attr := range attrs {
@@ -45,7 +45,7 @@ func fwObjectToSdkv2SchemaMap(ctx context.Context, attrs map[string]frameworksch
 	return out
 }
 
-func fwAttributeToSdkv2(ctx context.Context, attr frameworkschema.Attribute) *sdkv2schema.Schema {
+func fwAttributeToSdkv2(ctx context.Context, attr fwschema.Attribute) *sdkv2schema.Schema {
 	out := &sdkv2schema.Schema{
 		Required:    attr.IsRequired(),
 		Optional:    attr.IsOptional(),
@@ -57,35 +57,35 @@ func fwAttributeToSdkv2(ctx context.Context, attr frameworkschema.Attribute) *sd
 	}
 
 	switch a := attr.(type) {
-	case frameworkschema.StringAttribute:
+	case fwschema.StringAttribute:
 		out.Type = sdkv2schema.TypeString
-	case frameworkschema.BoolAttribute:
+	case fwschema.BoolAttribute:
 		out.Type = sdkv2schema.TypeBool
-	case frameworkschema.Int32Attribute, frameworkschema.Int64Attribute:
+	case fwschema.Int32Attribute, fwschema.Int64Attribute:
 		out.Type = sdkv2schema.TypeInt
-	case frameworkschema.Float32Attribute, frameworkschema.Float64Attribute, frameworkschema.NumberAttribute:
+	case fwschema.Float32Attribute, fwschema.Float64Attribute, fwschema.NumberAttribute:
 		out.Type = sdkv2schema.TypeFloat
-	case frameworkschema.ListAttribute:
+	case fwschema.ListAttribute:
 		out.Type = sdkv2schema.TypeList
 		out.Elem = sdkElemFromTFType(ctx, a.ElementType.TerraformType(ctx))
-	case frameworkschema.SetAttribute:
+	case fwschema.SetAttribute:
 		out.Type = sdkv2schema.TypeSet
 		out.Elem = sdkElemFromTFType(ctx, a.ElementType.TerraformType(ctx))
-	case frameworkschema.MapAttribute:
+	case fwschema.MapAttribute:
 		out.Type = sdkv2schema.TypeMap
 		out.Elem = sdkElemFromTFType(ctx, a.ElementType.TerraformType(ctx))
-	case frameworkschema.SingleNestedAttribute:
+	case fwschema.SingleNestedAttribute:
 		out.Type = sdkv2schema.TypeList
 		out.MaxItems = 1
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, a.Attributes, nil),
 		}
-	case frameworkschema.ListNestedAttribute:
+	case fwschema.ListNestedAttribute:
 		out.Type = sdkv2schema.TypeList
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, a.NestedObject.Attributes, nil),
 		}
-	case frameworkschema.SetNestedAttribute:
+	case fwschema.SetNestedAttribute:
 		out.Type = sdkv2schema.TypeSet
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, a.NestedObject.Attributes, nil),
@@ -97,7 +97,7 @@ func fwAttributeToSdkv2(ctx context.Context, attr frameworkschema.Attribute) *sd
 	return out
 }
 
-func fwBlockToSdkv2(ctx context.Context, block frameworkschema.Block) *sdkv2schema.Schema {
+func fwBlockToSdkv2(ctx context.Context, block fwschema.Block) *sdkv2schema.Schema {
 	out := &sdkv2schema.Schema{
 		Optional:    true,
 		Description: block.GetDescription(),
@@ -109,18 +109,18 @@ func fwBlockToSdkv2(ctx context.Context, block frameworkschema.Block) *sdkv2sche
 	}
 
 	switch b := block.(type) {
-	case frameworkschema.SingleNestedBlock:
+	case fwschema.SingleNestedBlock:
 		out.Type = sdkv2schema.TypeList
 		out.MaxItems = 1
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, b.Attributes, b.Blocks),
 		}
-	case frameworkschema.ListNestedBlock:
+	case fwschema.ListNestedBlock:
 		out.Type = sdkv2schema.TypeList
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, b.NestedObject.Attributes, b.NestedObject.Blocks),
 		}
-	case frameworkschema.SetNestedBlock:
+	case fwschema.SetNestedBlock:
 		out.Type = sdkv2schema.TypeSet
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, b.NestedObject.Attributes, b.NestedObject.Blocks),

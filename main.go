@@ -21,6 +21,7 @@ import (
 	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var version = "dev"
@@ -55,12 +56,12 @@ func main() {
 	}
 
 	// Inject HPE Provider schema into sdkv2 Morpheus provider
-	// Allow for muxing with the HPE provider.
+	// Allows for muxing with the HPE provider.
 	schemaResp := &fwprovider.SchemaResponse{}
 	p().Schema(context.Background(), fwprovider.SchemaRequest{}, schemaResp)
 	// sdkv2 Morpheus provider server
 	sdkv2Provider := sdkv2Morpheus.Provider()
-	sdkv2Provider.Schema = provider.FwToSdkv2SchemaMap(schemaResp.Schema)
+	sdkv2Provider.Schema = convert.FwToSdkv2SchemaMap(schemaResp.Schema)
 
 	legacyMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Provider.GRPCProvider)
 	if err != nil {
