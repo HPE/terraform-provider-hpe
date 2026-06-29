@@ -513,7 +513,14 @@ func mapGetResponseToModel(
 	}
 
 	// wwn is a computed, read-only identifier assigned by the storage system.
-	model.Wwn = convert.StrToType(sv.Wwn.Get())
+	// The storage system may assign it asynchronously, so an unset value is
+	// mapped to a known null rather than left unknown (which would fail apply for
+	// this computed-only attribute).
+	if sv.Wwn.IsSet() {
+		model.Wwn = convert.StrToType(sv.Wwn.Get())
+	} else {
+		model.Wwn = types.StringNull()
+	}
 
 	// StorageGroup is an object in the read model; map its id back to
 	// storage_group_id so it round-trips (and imports) cleanly.
