@@ -87,7 +87,7 @@ type UpdateHostAssignTenant200ResponseAllOfServer struct {
 	Volumes                  []AddBaremetalHost200ResponseServerVolumesInner           `json:"volumes,omitempty"`
 	Controllers              []AddBaremetalHost200ResponseServerControllersInner       `json:"controllers,omitempty"`
 	Interfaces               []AddBaremetalHost200ResponseServerInterfacesInner        `json:"interfaces,omitempty"`
-	Labels                   []map[string]interface{}                                  `json:"labels,omitempty"`
+	Labels                   []string                                                  `json:"labels,omitempty"`
 	Tags                     []map[string]interface{}                                  `json:"tags,omitempty"`
 	Enabled                  *bool                                                     `json:"enabled,omitempty"`
 	TagCompliant             NullableBool                                              `json:"tagCompliant,omitempty"`

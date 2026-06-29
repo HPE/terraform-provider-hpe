@@ -26,10 +26,10 @@ type AddStorageVolumesRequestStorageVolume struct {
 	Type   string                                       `json:"type"`
 	Config *AddStorageVolumesRequestStorageVolumeConfig `json:"config,omitempty"`
 	// Provision type for storage volume types that support it (for example 3Par - FULL, TPVV, SNP, PEER, TDVV).
-	ProvisionType        *string                                            `json:"provisionType,omitempty"`
-	StorageServer        AddStorageVolumesRequestStorageVolumeStorageServer `json:"storageServer"`
-	StorageGroup         *AddStorageVolumesRequestStorageVolumeStorageGroup `json:"storageGroup,omitempty"`
-	AdditionalProperties map[string]interface{}                             `json:",remain"`
+	ProvisionType        *string                                             `json:"provisionType,omitempty"`
+	StorageServer        *AddStorageVolumesRequestStorageVolumeStorageServer `json:"storageServer,omitempty"`
+	StorageGroup         *AddStorageVolumesRequestStorageVolumeStorageGroup  `json:"storageGroup,omitempty"`
+	AdditionalProperties map[string]interface{}                              `json:",remain"`
 }
 
 type _AddStorageVolumesRequestStorageVolume AddStorageVolumesRequestStorageVolume
@@ -52,7 +52,9 @@ func (o AddStorageVolumesRequestStorageVolume) ToMap() (map[string]interface{}, 
 	if !IsNil(o.ProvisionType) {
 		toSerialize["provisionType"] = o.ProvisionType
 	}
-	toSerialize["storageServer"] = o.StorageServer
+	if !IsNil(o.StorageServer) {
+		toSerialize["storageServer"] = o.StorageServer
+	}
 	if !IsNil(o.StorageGroup) {
 		toSerialize["storageGroup"] = o.StorageGroup
 	}
