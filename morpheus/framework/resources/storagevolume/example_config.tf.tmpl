@@ -1,6 +1,6 @@
 resource "hpe_morpheus_storage_volume" "generic" {
   name              = "{{.Name}}"
-  type_id           = {{.TypeId}}
+  type_code           = "{{.TypeCode}}"
   storage_server_id = 1
   max_storage       = 30 # GiB
 

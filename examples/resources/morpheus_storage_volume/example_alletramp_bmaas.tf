@@ -1,6 +1,6 @@
 resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
   name              = "Example Alletra MP BMaaS Volume"
-  type_id           = 1
+  type_code         = "hpealletraMPLUN"
   storage_server_id = 1
   max_storage       = 30 # GiB
 

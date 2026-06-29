@@ -11,17 +11,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeId 1
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf example_alletramp_bmaas.tf.tmpl Name "Example Alletra MP BMaaS Volume" TypeId 1
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_config.tf example_config.tf.tmpl Name "Example Storage Volume" TypeId 1
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_complete.tf example_complete.tf.tmpl Name "Example Storage Volume" TypeId 1 StorageServerId 1 MaxStorage 10
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf example_alletramp_bmaas.tf.tmpl Name "Example Alletra MP BMaaS Volume" TypeCode hpealletraMPLUN
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_config.tf example_config.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_complete.tf example_complete.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN StorageServerId 1 MaxStorage 10
 
 func RenderStorageVolumeConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	return renderStorageVolumeExample(t, "example.tf.tmpl", map[string]string{
-		"Name":   "Example Storage Volume",
-		"TypeId": "1",
+		"Name":     "Example Storage Volume",
+		"TypeCode": "hpealletraMPLUN",
 	}, overrides)
 }
 
@@ -32,7 +32,7 @@ func RenderStorageVolumeCompleteConfig(t *testing.T, overrides map[string]string
 
 	return renderStorageVolumeExample(t, "example_complete.tf.tmpl", map[string]string{
 		"Name":            "Example Storage Volume",
-		"TypeId":          "1",
+		"TypeCode":        "hpealletraMPLUN",
 		"StorageServerId": "1",
 		"MaxStorage":      "10",
 	}, overrides)

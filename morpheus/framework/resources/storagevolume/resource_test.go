@@ -43,7 +43,7 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "name", name),
-		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "type_id", "1"),
+		resource.TestCheckResourceAttr("hpe_morpheus_storage_volume.example", "type_code", "hpealletraMPLUN"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -167,11 +167,11 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 				Config: providerConfig + resourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", name),
-					resource.TestCheckResourceAttr(resourceName, "type_id", "1"),
+					resource.TestCheckResourceAttr(resourceName, "type_code", "hpealletraMPLUN"),
 					// max_storage is in GiB.
 					resource.TestCheckResourceAttr(resourceName, "max_storage", "10"),
-					// type_code is computed_optional and is populated from the API.
-					resource.TestCheckResourceAttrSet(resourceName, "type_code"),
+					// type_id is computed_optional and is populated from the API.
+					resource.TestCheckResourceAttrSet(resourceName, "type_id"),
 				),
 			},
 			{

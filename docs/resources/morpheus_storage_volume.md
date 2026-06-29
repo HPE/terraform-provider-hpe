@@ -12,8 +12,8 @@ Manages a Morpheus Storage Volume resource.
 
 ```terraform
 resource "hpe_morpheus_storage_volume" "example" {
-  name    = "Example Storage Volume"
-  type_id = 1
+  name      = "Example Storage Volume"
+  type_code = "hpealletraMPLUN"
 }
 ```
 
@@ -25,10 +25,14 @@ codes are stable across environments, whereas ids are not.
 
 | `type_code` | Storage server | Notes |
 |---|---|---|
-| `3par` | HPE 3PAR / Primera / Alletra 9000 | built-in |
-| `hpealletraMPLUN` | HPE Alletra Storage MP (block) | standard LUN |
-| `hpealletraMPLUN-active-pp` | HPE Alletra Storage MP | Peer Persistence (Active) |
-| `hpealletraMPLUN-classic-pp` | HPE Alletra Storage MP | Peer Persistence (Classic) |
+| `3par` | HPE 3PAR / Primera | built-in (legacy) |
+| `hpealletraMPLUN` | HPE Alletra Storage MP and Alletra 9000 (9060/9080) | standard LUN |
+| `hpealletraMPLUN-active-pp` | HPE Alletra Storage MP and Alletra 9000 (9060/9080) | Peer Persistence (Active) |
+| `hpealletraMPLUN-classic-pp` | HPE Alletra Storage MP and Alletra 9000 (9060/9080) | Peer Persistence (Classic) |
+
+-> HPE Alletra 9000 (models 9060/9080) is managed by the same Alletra Storage MP
+plugin as Alletra MP — it uses the same `hpealletraMPLUN*` types and the
+`config_alletramp_bmaas` block, not the legacy `3par` type.
 
 -> The available types depend on the storage plugins installed and the target
 storage server. Discover the full set of `type_code`s and `type_id`s for your
@@ -40,7 +44,8 @@ storage volumes through this resource.
 
 -> `max_storage` is specified in **GiB** and must be between 1 and 65536. For
 example, `max_storage = 100` creates a 100 GiB volume. (The Morpheus API stores
-and returns the size in bytes; the provider converts to and from GiB.)
+and returns the size in bytes; the provider converts to and from GiB.) HPE
+Alletra 9000 (9060/9080) enforces a minimum volume size of 16 GiB.
 
 ### Write-only configuration
 
@@ -56,13 +61,14 @@ the volume with the new values.
 #### Alletra MP BMaaS volume
 
 The typed `config_alletramp_bmaas` block configures an HPE Alletra Storage MP
-Bare Metal (BMaaS) volume. `compute_server_id` and `instance_ids` are mutually
-exclusive.
+Bare Metal (BMaaS) volume. It applies to both HPE Alletra MP and HPE Alletra
+9000 (9060/9080), which share the same plugin and API. `compute_server_id` and
+`instance_ids` are mutually exclusive.
 
 ```terraform
 resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
   name              = "Example Alletra MP BMaaS Volume"
-  type_id           = 1
+  type_code         = "hpealletraMPLUN"
   storage_server_id = 1
   max_storage       = 30 # GiB
 
@@ -87,7 +93,7 @@ map with the storage plugin's native keys.
 ```terraform
 resource "hpe_morpheus_storage_volume" "generic" {
   name              = "Example Storage Volume"
-  type_id           = 1
+  type_code         = "hpealletraMPLUN"
   storage_server_id = 1
   max_storage       = 30 # GiB
 
