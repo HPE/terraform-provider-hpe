@@ -54,20 +54,6 @@ type ResourceAdapter struct {
 	// unlike the other interfaces which are handled at RPC request time.
 }
 
-type ResourceAdapterWithConfigure struct {
-	in       resource.ResourceWithConfigure
-	provider provider.Provider
-	resource.Resource
-}
-
-func (r *ResourceAdapterWithConfigure) Configure(
-	ctx context.Context,
-	req resource.ConfigureRequest,
-	resp *resource.ConfigureResponse,
-) {
-	r.in.Configure(ctx, req, resp)
-}
-
 var _ resource.Resource = &ResourceAdapter{}
 var _ resource.ResourceWithConfigure = &ResourceAdapter{}
 var _ resource.ResourceWithConfigValidators = &ResourceAdapter{}
