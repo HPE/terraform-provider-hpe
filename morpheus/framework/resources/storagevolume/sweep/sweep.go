@@ -60,5 +60,9 @@ func init() {
 
 			return hresp, delErr
 		},
+		testsweep.WithIgnoreListStatuses[sdk.Search200ResponseHitsInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 }

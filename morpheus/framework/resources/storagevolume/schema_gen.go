@@ -4,11 +4,23 @@ package storagevolume
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 )
@@ -16,6 +28,99 @@ import (
 func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"config": schema.DynamicAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Generic write-only configuration options for the storage volume, varies based on the storage volume type. Only sent to the API on create; not stored in state. Increment config_wo_version to apply a change.",
+				MarkdownDescription: "Generic write-only configuration options for the storage volume, varies based on the storage volume type. Only sent to the API on create; not stored in state. Increment config_wo_version to apply a change.",
+				Validators: []validator.Dynamic{
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_alletramp_bmaas")}...),
+				},
+			},
+			"config_alletramp_bmaas": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"compute_server_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Compute server ID to export a non-shared volume to.",
+						MarkdownDescription: "Compute server ID to export a non-shared volume to.",
+						Validators: []validator.Int64{
+							int64validator.ConflictsWith(path.Expressions{path.MatchRoot("config_alletramp_bmaas.instance_ids")}...),
+						},
+					},
+					"datastore_id": schema.Int64Attribute{
+						Required:            true,
+						WriteOnly:           true,
+						Description:         "ID of the Alletra MP BMaaS data store (pool) in which to create the volume.",
+						MarkdownDescription: "ID of the Alletra MP BMaaS data store (pool) in which to create the volume.",
+					},
+					"instance_ids": schema.ListAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "List of instance IDs to export a shared volume to.",
+						MarkdownDescription: "List of instance IDs to export a shared volume to.",
+					},
+					"remote_copy_target_id": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Remote copy (replication) target ID. Required for replicated LUN volume types.",
+						MarkdownDescription: "Remote copy (replication) target ID. Required for replicated LUN volume types.",
+					},
+					"shared": schema.BoolAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Whether the volume is shared (multi-attach).",
+						MarkdownDescription: "Whether the volume is shared (multi-attach).",
+					},
+					"use_existing_volume_set": schema.BoolAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Whether to add the volume to an existing, exported volume set rather than creating a new one.",
+						MarkdownDescription: "Whether to add the volume to an existing, exported volume set rather than creating a new one.",
+					},
+					"volume_set_id": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "ID of an existing volume set to add the volume to.",
+						MarkdownDescription: "ID of an existing volume set to add the volume to.",
+					},
+					"volume_set_name": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Base name for a new volume set (a unique suffix is always appended).",
+						MarkdownDescription: "Base name for a new volume set (a unique suffix is always appended).",
+					},
+				},
+				CustomType: ConfigAlletrampBmaasType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAlletrampBmaasValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change.",
+				MarkdownDescription: "Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_alletramp_bmaas_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
+				MarkdownDescription: "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
+			"config_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
+				MarkdownDescription: "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
+				},
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the storage volume.",
@@ -26,13 +131,28 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_storage": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The maximum storage size in bytes.",
-				MarkdownDescription: "The maximum storage size in bytes.",
+				Description:         "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
+				MarkdownDescription: "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
+				Validators: []validator.Int64{
+					maxStorageSize(),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "The name of the storage volume.",
 				MarkdownDescription: "The name of the storage volume.",
+			},
+			"provision_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Provision type for storage volume types that support it.",
+				MarkdownDescription: "Provision type for storage volume types that support it.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("FULL", "TPVV", "SNP", "PEER", "TDVV"),
+				},
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -40,6 +160,14 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The status of the storage volume.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"storage_group_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "The ID of the storage group.",
+				MarkdownDescription: "The ID of the storage group.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplace(),
 				},
 			},
 			"storage_server_id": schema.Int64Attribute{
@@ -50,13 +178,33 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"type_code": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
+				MarkdownDescription: "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_id")}...),
+				},
+			},
 			"type_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "The type ID of the storage volume.",
-				MarkdownDescription: "The type ID of the storage volume.",
+				Optional:            true,
+				Computed:            true,
+				Description:         "The ID of the storage volume type. Mutually exclusive with type_code.",
+				MarkdownDescription: "The ID of the storage volume type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
+				Validators: []validator.Int64{
+					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("type_id"), path.MatchRoot("type_code")}...),
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
+				},
+			},
+			"wwn": schema.StringAttribute{
+				Computed: true,
 			},
 		},
 		Description:         "Manages a Morpheus Storage Volume resource.",
@@ -65,10 +213,758 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type StorageVolumeModel struct {
-	Id              types.Int64  `tfsdk:"id"`
-	MaxStorage      types.Int64  `tfsdk:"max_storage"`
-	Name            types.String `tfsdk:"name"`
-	Status          types.String `tfsdk:"status"`
-	StorageServerId types.Int64  `tfsdk:"storage_server_id"`
-	TypeId          types.Int64  `tfsdk:"type_id"`
+	Config                        types.Dynamic             `tfsdk:"config"`
+	ConfigAlletrampBmaas          ConfigAlletrampBmaasValue `tfsdk:"config_alletramp_bmaas"`
+	ConfigAlletrampBmaasWoVersion types.Int64               `tfsdk:"config_alletramp_bmaas_wo_version"`
+	ConfigWoVersion               types.Int64               `tfsdk:"config_wo_version"`
+	Id                            types.Int64               `tfsdk:"id"`
+	MaxStorage                    types.Int64               `tfsdk:"max_storage"`
+	Name                          types.String              `tfsdk:"name"`
+	ProvisionType                 types.String              `tfsdk:"provision_type"`
+	Status                        types.String              `tfsdk:"status"`
+	StorageGroupId                types.Int64               `tfsdk:"storage_group_id"`
+	StorageServerId               types.Int64               `tfsdk:"storage_server_id"`
+	TypeCode                      types.String              `tfsdk:"type_code"`
+	TypeId                        types.Int64               `tfsdk:"type_id"`
+	Wwn                           types.String              `tfsdk:"wwn"`
+}
+
+var _ basetypes.ObjectTypable = ConfigAlletrampBmaasType{}
+
+type ConfigAlletrampBmaasType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAlletrampBmaasType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAlletrampBmaasType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAlletrampBmaasType) String() string {
+	return "ConfigAlletrampBmaasType"
+}
+
+func (t ConfigAlletrampBmaasType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAlletrampBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	computeServerIdAttribute, ok := attributes["compute_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`compute_server_id is missing from object`)
+
+		return nil, diags
+	}
+
+	computeServerIdVal, ok := computeServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`compute_server_id expected to be basetypes.Int64Value, was: %T`, computeServerIdAttribute))
+	}
+
+	datastoreIdAttribute, ok := attributes["datastore_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`datastore_id is missing from object`)
+
+		return nil, diags
+	}
+
+	datastoreIdVal, ok := datastoreIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`datastore_id expected to be basetypes.Int64Value, was: %T`, datastoreIdAttribute))
+	}
+
+	instanceIdsAttribute, ok := attributes["instance_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`instance_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	instanceIdsVal, ok := instanceIdsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`instance_ids expected to be basetypes.ListValue, was: %T`, instanceIdsAttribute))
+	}
+
+	remoteCopyTargetIdAttribute, ok := attributes["remote_copy_target_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`remote_copy_target_id is missing from object`)
+
+		return nil, diags
+	}
+
+	remoteCopyTargetIdVal, ok := remoteCopyTargetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`remote_copy_target_id expected to be basetypes.StringValue, was: %T`, remoteCopyTargetIdAttribute))
+	}
+
+	sharedAttribute, ok := attributes["shared"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shared is missing from object`)
+
+		return nil, diags
+	}
+
+	sharedVal, ok := sharedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shared expected to be basetypes.BoolValue, was: %T`, sharedAttribute))
+	}
+
+	useExistingVolumeSetAttribute, ok := attributes["use_existing_volume_set"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`use_existing_volume_set is missing from object`)
+
+		return nil, diags
+	}
+
+	useExistingVolumeSetVal, ok := useExistingVolumeSetAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`use_existing_volume_set expected to be basetypes.BoolValue, was: %T`, useExistingVolumeSetAttribute))
+	}
+
+	volumeSetIdAttribute, ok := attributes["volume_set_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`volume_set_id is missing from object`)
+
+		return nil, diags
+	}
+
+	volumeSetIdVal, ok := volumeSetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`volume_set_id expected to be basetypes.StringValue, was: %T`, volumeSetIdAttribute))
+	}
+
+	volumeSetNameAttribute, ok := attributes["volume_set_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`volume_set_name is missing from object`)
+
+		return nil, diags
+	}
+
+	volumeSetNameVal, ok := volumeSetNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`volume_set_name expected to be basetypes.StringValue, was: %T`, volumeSetNameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAlletrampBmaasValue{
+		ComputeServerId:      computeServerIdVal,
+		DatastoreId:          datastoreIdVal,
+		InstanceIds:          instanceIdsVal,
+		RemoteCopyTargetId:   remoteCopyTargetIdVal,
+		Shared:               sharedVal,
+		UseExistingVolumeSet: useExistingVolumeSetVal,
+		VolumeSetId:          volumeSetIdVal,
+		VolumeSetName:        volumeSetNameVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAlletrampBmaasValueNull() ConfigAlletrampBmaasValue {
+	return ConfigAlletrampBmaasValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAlletrampBmaasValueUnknown() ConfigAlletrampBmaasValue {
+	return ConfigAlletrampBmaasValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAlletrampBmaasValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAlletrampBmaasValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAlletrampBmaasValue Attribute Value",
+				"While creating a ConfigAlletrampBmaasValue value, a missing attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAlletrampBmaasValue Attribute Type",
+				"While creating a ConfigAlletrampBmaasValue value, an invalid attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAlletrampBmaasValue Attribute Value",
+				"While creating a ConfigAlletrampBmaasValue value, an extra attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAlletrampBmaasValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	computeServerIdAttribute, ok := attributes["compute_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`compute_server_id is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	computeServerIdVal, ok := computeServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`compute_server_id expected to be basetypes.Int64Value, was: %T`, computeServerIdAttribute))
+	}
+
+	datastoreIdAttribute, ok := attributes["datastore_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`datastore_id is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	datastoreIdVal, ok := datastoreIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`datastore_id expected to be basetypes.Int64Value, was: %T`, datastoreIdAttribute))
+	}
+
+	instanceIdsAttribute, ok := attributes["instance_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`instance_ids is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	instanceIdsVal, ok := instanceIdsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`instance_ids expected to be basetypes.ListValue, was: %T`, instanceIdsAttribute))
+	}
+
+	remoteCopyTargetIdAttribute, ok := attributes["remote_copy_target_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`remote_copy_target_id is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	remoteCopyTargetIdVal, ok := remoteCopyTargetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`remote_copy_target_id expected to be basetypes.StringValue, was: %T`, remoteCopyTargetIdAttribute))
+	}
+
+	sharedAttribute, ok := attributes["shared"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`shared is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	sharedVal, ok := sharedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`shared expected to be basetypes.BoolValue, was: %T`, sharedAttribute))
+	}
+
+	useExistingVolumeSetAttribute, ok := attributes["use_existing_volume_set"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`use_existing_volume_set is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	useExistingVolumeSetVal, ok := useExistingVolumeSetAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`use_existing_volume_set expected to be basetypes.BoolValue, was: %T`, useExistingVolumeSetAttribute))
+	}
+
+	volumeSetIdAttribute, ok := attributes["volume_set_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`volume_set_id is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	volumeSetIdVal, ok := volumeSetIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`volume_set_id expected to be basetypes.StringValue, was: %T`, volumeSetIdAttribute))
+	}
+
+	volumeSetNameAttribute, ok := attributes["volume_set_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`volume_set_name is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	volumeSetNameVal, ok := volumeSetNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`volume_set_name expected to be basetypes.StringValue, was: %T`, volumeSetNameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	return ConfigAlletrampBmaasValue{
+		ComputeServerId:      computeServerIdVal,
+		DatastoreId:          datastoreIdVal,
+		InstanceIds:          instanceIdsVal,
+		RemoteCopyTargetId:   remoteCopyTargetIdVal,
+		Shared:               sharedVal,
+		UseExistingVolumeSet: useExistingVolumeSetVal,
+		VolumeSetId:          volumeSetIdVal,
+		VolumeSetName:        volumeSetNameVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAlletrampBmaasValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAlletrampBmaasValue {
+	object, diags := NewConfigAlletrampBmaasValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAlletrampBmaasValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAlletrampBmaasType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAlletrampBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAlletrampBmaasValueMust(ConfigAlletrampBmaasValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAlletrampBmaasType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAlletrampBmaasValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAlletrampBmaasValue{}
+
+type ConfigAlletrampBmaasValue struct {
+	ComputeServerId      basetypes.Int64Value  `tfsdk:"compute_server_id"`
+	DatastoreId          basetypes.Int64Value  `tfsdk:"datastore_id"`
+	InstanceIds          basetypes.ListValue   `tfsdk:"instance_ids"`
+	RemoteCopyTargetId   basetypes.StringValue `tfsdk:"remote_copy_target_id"`
+	Shared               basetypes.BoolValue   `tfsdk:"shared"`
+	UseExistingVolumeSet basetypes.BoolValue   `tfsdk:"use_existing_volume_set"`
+	VolumeSetId          basetypes.StringValue `tfsdk:"volume_set_id"`
+	VolumeSetName        basetypes.StringValue `tfsdk:"volume_set_name"`
+	state                attr.ValueState
+}
+
+func (v ConfigAlletrampBmaasValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 8)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["compute_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["datastore_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["instance_ids"] = basetypes.ListType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+	attrTypes["remote_copy_target_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["shared"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["use_existing_volume_set"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["volume_set_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["volume_set_name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 8)
+
+		val, err = v.ComputeServerId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["compute_server_id"] = val
+
+		val, err = v.DatastoreId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["datastore_id"] = val
+
+		val, err = v.InstanceIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["instance_ids"] = val
+
+		val, err = v.RemoteCopyTargetId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["remote_copy_target_id"] = val
+
+		val, err = v.Shared.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["shared"] = val
+
+		val, err = v.UseExistingVolumeSet.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["use_existing_volume_set"] = val
+
+		val, err = v.VolumeSetId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["volume_set_id"] = val
+
+		val, err = v.VolumeSetName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["volume_set_name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAlletrampBmaasValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAlletrampBmaasValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAlletrampBmaasValue) String() string {
+	return "ConfigAlletrampBmaasValue"
+}
+
+func (v ConfigAlletrampBmaasValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var instanceIdsVal basetypes.ListValue
+	switch {
+	case v.InstanceIds.IsUnknown():
+		instanceIdsVal = types.ListUnknown(types.Int64Type)
+	case v.InstanceIds.IsNull():
+		instanceIdsVal = types.ListNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		instanceIdsVal, d = types.ListValue(types.Int64Type, v.InstanceIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"compute_server_id": basetypes.Int64Type{},
+			"datastore_id":      basetypes.Int64Type{},
+			"instance_ids": basetypes.ListType{
+				ElemType: types.Int64Type,
+			},
+			"remote_copy_target_id":   basetypes.StringType{},
+			"shared":                  basetypes.BoolType{},
+			"use_existing_volume_set": basetypes.BoolType{},
+			"volume_set_id":           basetypes.StringType{},
+			"volume_set_name":         basetypes.StringType{},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"compute_server_id": basetypes.Int64Type{},
+		"datastore_id":      basetypes.Int64Type{},
+		"instance_ids": basetypes.ListType{
+			ElemType: types.Int64Type,
+		},
+		"remote_copy_target_id":   basetypes.StringType{},
+		"shared":                  basetypes.BoolType{},
+		"use_existing_volume_set": basetypes.BoolType{},
+		"volume_set_id":           basetypes.StringType{},
+		"volume_set_name":         basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"compute_server_id":       v.ComputeServerId,
+			"datastore_id":            v.DatastoreId,
+			"instance_ids":            instanceIdsVal,
+			"remote_copy_target_id":   v.RemoteCopyTargetId,
+			"shared":                  v.Shared,
+			"use_existing_volume_set": v.UseExistingVolumeSet,
+			"volume_set_id":           v.VolumeSetId,
+			"volume_set_name":         v.VolumeSetName,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAlletrampBmaasValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAlletrampBmaasValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ComputeServerId.Equal(other.ComputeServerId) {
+		return false
+	}
+
+	if !v.DatastoreId.Equal(other.DatastoreId) {
+		return false
+	}
+
+	if !v.InstanceIds.Equal(other.InstanceIds) {
+		return false
+	}
+
+	if !v.RemoteCopyTargetId.Equal(other.RemoteCopyTargetId) {
+		return false
+	}
+
+	if !v.Shared.Equal(other.Shared) {
+		return false
+	}
+
+	if !v.UseExistingVolumeSet.Equal(other.UseExistingVolumeSet) {
+		return false
+	}
+
+	if !v.VolumeSetId.Equal(other.VolumeSetId) {
+		return false
+	}
+
+	if !v.VolumeSetName.Equal(other.VolumeSetName) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAlletrampBmaasValue) Type(ctx context.Context) attr.Type {
+	return ConfigAlletrampBmaasType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAlletrampBmaasValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"compute_server_id": basetypes.Int64Type{},
+		"datastore_id":      basetypes.Int64Type{},
+		"instance_ids": basetypes.ListType{
+			ElemType: types.Int64Type,
+		},
+		"remote_copy_target_id":   basetypes.StringType{},
+		"shared":                  basetypes.BoolType{},
+		"use_existing_volume_set": basetypes.BoolType{},
+		"volume_set_id":           basetypes.StringType{},
+		"volume_set_name":         basetypes.StringType{},
+	}
 }
