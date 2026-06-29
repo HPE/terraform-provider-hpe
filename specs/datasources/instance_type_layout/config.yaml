@@ -1,0 +1,38 @@
+instance_type_layout:
+  templates:
+    version:
+      string:
+        computed_optional_required: computed_optional
+        description: The version of the instance layout
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              stringvalidator.ConflictsWith(path.Expressions{
+                path.MatchRoot("id"),
+              }...)
+  includes:
+    - instance_type_layout.id
+    - instance_type_layout.name
+    - instance_type_layout.code
+    - instance_type_layout.description
+    - instance_type_layout.sort_order
+  moves:
+    - instance_type_layout: "" # unnest to root
+    - template-version: version
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: Morpheus ID of the instance layout
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the Morpheus instance layout
+      conflicts_with: [id]
+    code:
+      description: Optional code for use with policies
+    description:
+      description: The description of the instance layout
+    sort_order:
+      description: Display order of the layout higher to lower

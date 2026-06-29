@@ -1,0 +1,39 @@
+cluster_namespace:
+  description: "Manages a Morpheus Cluster Namespace resource."
+  moves:
+    - namespace: ""
+  removes:
+    - external_id
+    - permissions
+    - region_code
+    - resource_permissions
+    - status
+    - success
+    - visibility
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the namespace is active.
+      default: true
+      state_for_unknown: true
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the cluster.
+      requires_replace: true
+    description:
+      computed_optional_required: optional
+      description: The description of the namespace.
+    id:
+      computed_optional_required: computed
+      description: The ID of the cluster namespace.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the namespace. Must be 63 characters or less. Must be lower case.
+      string_length_at_most: 63
+      requires_replace: true
+      validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.Lowercase()

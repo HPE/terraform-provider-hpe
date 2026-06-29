@@ -1,0 +1,119 @@
+storage_server:
+  description: "Manages a Morpheus Storage Server resource."
+  enable_timeouts: true
+  templates:
+    credential_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of a stored credential to use for authentication.
+    service_password_wo:
+      string:
+        computed_optional_required: optional
+        description: The service password for the storage server.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    service_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Service password version. Used to determine if service_password_wo has been updated.
+    tenants:
+      list:
+        computed_optional_required: computed_optional
+        element_type:
+          int64: {}
+        description: List of tenant account IDs that are allowed access to this storage server.
+  moves:
+    - storage_server: ""
+    - template-credential_id: credential_id
+    - template-service_password_wo: service_password_wo
+    - template-service_password_wo_version: service_password_wo_version
+    - template-tenants: tenants
+  removes:
+    - admin_port
+    - api_port
+    - category
+    - chassis
+    - config
+    - credential
+    - date_created
+    - disk_count
+    - error_message
+    - external_id
+    - external_ip
+    - groups
+    - host_groups
+    - hosts
+    - internal_id
+    - internal_ip
+    - last_updated
+    - max_storage
+    - owner
+    - ref_id
+    - ref_type
+    - serial_number
+    - server_model
+    - server_vendor
+    - service_password
+    - service_password_hash
+    - service_path
+    - service_port
+    - service_token
+    - service_token_hash
+    - service_version
+    - status
+    - status_date
+    - status_message
+    - success
+    - used_storage
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the storage server.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the storage server is enabled.
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the storage server.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the storage server.
+    service_host:
+      computed_optional_required: optional
+      description: The host address of the storage server.
+    credential_id:
+      computed_optional_required: optional
+      description: The ID of a stored credential to use for authentication. Conflicts with service_username and service_password_wo.
+      conflicts_with: [service_username, service_password_wo]
+    service_password_wo:
+      computed_optional_required: optional
+      description: The service password for the storage server. Conflicts with credential_id.
+      conflicts_with: [credential_id]
+    service_password_wo_version:
+      computed_optional_required: optional
+      description: Service password version. Used to determine if service_password_wo has been updated.
+    service_url:
+      computed_optional_required: optional
+      description: The service URL of the storage server.
+    service_username:
+      computed_optional_required: optional
+      description: The service username for the storage server. Conflicts with credential_id.
+      conflicts_with: [credential_id]
+    type:
+      computed_optional_required: required
+      description: The storage type code or ID.
+    tenants:
+      computed_optional_required: computed_optional
+      description: List of tenant account IDs that are allowed access to this storage server.
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the storage server (private or public).
+      default: private

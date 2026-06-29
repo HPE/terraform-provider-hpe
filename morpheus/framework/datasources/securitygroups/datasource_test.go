@@ -22,9 +22,7 @@ func TestMain(m *testing.M) {
 
 func TestAccMorpheusSecurityGroupsFilterByName(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	defer testhelpers.RecordResult(t)
 
@@ -81,9 +79,7 @@ data "hpe_morpheus_security_groups" "example" {
 // which are ANDed together. A new security group defaults to private visibility.
 func TestAccMorpheusSecurityGroupsMultiFilter(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	defer testhelpers.RecordResult(t)
 
@@ -140,9 +136,7 @@ data "hpe_morpheus_security_groups" "example" {
 
 func TestAccMorpheusSecurityGroupsEmptyResult(t *testing.T) {
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	defer testhelpers.RecordResult(t)
 

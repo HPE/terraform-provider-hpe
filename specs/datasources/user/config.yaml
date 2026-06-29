@@ -1,0 +1,27 @@
+user:
+  moves:
+    - user: "" # unnest user
+    - account: "tenant"
+    - access.app_templates: "access.blueprints"
+    - access.task_sets: "access.workflows"
+    - access.zones: "access.clouds"
+    - access.sites: "access.groups"
+  removes:
+    - include_access
+    - linux_password
+    - windows_password
+    - login_count
+    - login_attempts
+    - last_updated
+    - last_login_date
+    - date_created
+    - account_id
+  overrides:
+    id:
+      description: Morpheus ID of the Object being referenced
+      conflicts_with: ["username"]
+      computed_optional_required: computed_optional
+    username:
+      description: The username of the user
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional

@@ -29,7 +29,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -124,7 +124,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) 
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -241,7 +241,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresRep
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -369,7 +369,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *tes
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 

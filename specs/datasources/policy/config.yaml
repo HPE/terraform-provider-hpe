@@ -1,0 +1,501 @@
+policy:
+  templates:
+    config:
+      dynamic:
+        description: Generic Policy Configuration
+        computed_optional_required: computed
+   
+    config_lifecycle.lifecycle_auto_renew:
+      bool:
+        computed_optional_required: computed
+
+    config_lifecycle.lifecycle_allow_extend:
+      bool:
+        computed_optional_required: computed
+    
+    config_max_cores.exclude_containers:
+      bool:
+        computed_optional_required: computed
+
+    config_max_memory.exclude_containers:
+      bool:
+        computed_optional_required: computed
+ 
+    config_max_storage.exclude_containers:
+      bool:
+        computed_optional_required: computed
+
+    config_motd.fullpage.exclude_containers:
+      bool:
+        computed_optional_required: computed
+
+    config_shutdown.shutdown_auto_renew:
+      bool:
+        computed_optional_required: computed
+
+    config_shutdown.shutdown_allow_extend:
+      bool:
+        computed_optional_required: computed
+
+  moves:
+    - policy: "" # unnest policy
+    - ref_type: associated_resource_type
+    - ref_id: associated_resource_id
+    - site: "group"
+    - zone: "cloud"
+    - accounts: "tenants"
+
+    # rename config elements to relevant policy type
+    - config.approve_policy_type_configuration: config_approval
+    - config.backup_creation_policy_type_configuration: config_create_backup
+    - config.backup_targets_policy_type_configuration: config_backup_storage
+    - config.budget_policy_type_configuration: config_max_price
+    - config.cluster_resource_name_policy_type_configuration: config_server_naming
+    - config.cypher_access_policy_type_configuration: config_cypher
+    - config.delayed_delete_policy_type_configuration: config_delayed_removal
+    - config.expiration_policy_type_configuration: config_lifecycle
+    - config.hostname_policy_type_configuration: config_host_naming
+    - config.instance_name_policy_type_configuration: config_naming
+    - config.max_containers_policy_type_configuration: config_max_containers
+    - config.max_cores_policy_type_configuration: config_max_cores
+    - config.max_hosts_policy_type_configuration: config_max_hosts
+    - config.max_load_balancer_pools_policy_type_configuration: config_max_pools
+    - config.max_memory_policy_type_configuration: config_max_memory
+    - config.max_pool_members_policy_type_configuration: config_max_pool_members
+    - config.max_snapshots_policy_type_configuration: config_max_snapshots
+    - config.max_storageand_object_storage_quota_policy_type_configuration: config_max_storage
+    - config.max_virtual_servers_policy_type_configuration: config_max_virtual_servers
+    - config.max_vms_policy_type_configuration: config_max_vms
+    - config.messageofthe_day_policy_type_configuration: config_motd
+    - config.network_quota_policy_type_configuration: config_max_networks
+    - config.power_schedule_policy_type_configuration: config_power_schedule
+    - config.required_network_policy_type_configuration: config_required_network
+    - config.router_quota_policy_type_configuration: config_max_routers
+    - config.shutdown_policy_type_configuration: config_shutdown
+    - config.storage_server_storage_quota_policy_type_configuration: config_storage_server_quota
+    - config.tags_policy_type_configuration: config_tags
+    - config.user_creation_policy_type_configuration: config_create_user
+    - config.user_group_creation_policy_type_configuration: config_create_user_group
+    - config.workflow_policy_type_configuration: config_workflow
+
+    # Moving motdfull_page.oneof0 to motd_fullpage for simplicity
+    # note: moving to motdfull_page directly keeps motdfull_page as single-nested instead of string type
+    # therefore, slightly altering the name and removing it later.
+    - config_motd.motdfull_page.oneof0: config_motd.motd_fullpage
+
+    # Have a dynamic config as well as static schemas
+    - template-config: config
+
+    # Swap on/off fields with boolean templates
+    - template-config_lifecycle.lifecycle_auto_renew: config_lifecycle.lifecycle_auto_renew
+    - template-config_lifecycle.lifecycle_allow_extend: config_lifecycle.lifecycle_allow_extend
+    - template-config_max_cores.exclude_containers: config_max_cores.exclude_containers
+    - template-config_max_memory.exclude_containers: config_max_memory.exclude_containers
+    - template-config_max_storage.exclude_containers: config_max_storage.exclude_containers
+    - template-config_motd_fullpage.exclude_containers: config_motd_fullpage.exclude_containers
+    - template-config_shutdown.shutdown_auto_renew: config_shutdown.shutdown_auto_renew
+    - template-config_shutdown.shutdown_allow_extend: config_shutdown.shutdown_allow_extend
+  removes:
+    # Removing unneccessary inner motd and motdfull_page
+    - config_motd.motd
+    - config_motd.motdfull_page
+
+  overrides:
+    id:
+      description: Morpheus ID of the Object being referenced
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+
+    config_approval:
+      description: |
+        Configuration for the following policy types:
+        	- Approve Delete (deleteApproval)
+        	- Approve Provision (provisionApproval)
+        	- Approve Reconfigure (reconfigureApproval)
+        	- Approve Workflow Execute (workflowApproval)
+    
+    config_approval.account_integration_id:
+      description: ID of your ServiceNow or approval integration
+    
+    config_approval.flow_id:
+      description: ID of ServiceNow Flow (set if workflowType is 'flow')
+    
+    config_approval.workflow_id:
+      description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    
+    config_approval.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+    
+    config_create_backup:
+      description: |
+        Configuration for the following policy type:
+        	- Backup Creation (createBackup)
+    
+    config_create_backup.create_backup:
+      description: Enforce backup creation
+    
+    config_create_backup.create_backup_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+    
+    config_backup_storage:
+      description: |
+        Configuration for the following policy type:
+        	- Backup Targets (backupStorage)
+    
+    config_backup_storage.backup_storage_ids:
+      description: Array of backup storage IDs to restrict available backup targets
+    
+    config_max_price:
+      description: |
+        Configuration for the following policy type:
+        	- Budget (maxPrice)
+    
+    config_max_price.max_price:
+      description: Maximum price limit
+    
+    config_max_price.max_price_currency:
+      description: Currency code (e.g., USD)
+    
+    config_max_price.max_price_unit:
+      description: "Options: \"hour\", \"month\""
+    
+    config_server_naming:
+      description: |
+        Configuration for the following policy type:
+        	- Cluster Resource Name (serverNaming)
+    
+    config_server_naming.server_naming_conflict:
+      description: Auto-resolve conflicts
+    
+    config_server_naming.server_naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_server_naming.server_naming_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+    
+    config_cypher:
+      description: |
+        Configuration for the following policy type:
+        	- Cypher Access (cypher)
+    
+    config_cypher.delete:
+      description: Allow delete access
+    
+    config_cypher.key_pattern:
+      description: Pattern to match Cypher keys (e.g., "secret/*", "password/*")
+    
+    config_cypher.list:
+      description: Allow list access
+    
+    config_cypher.read:
+      description: Allow read access
+    
+    config_cypher.update:
+      description: Allow update access
+    
+    config_cypher.write:
+      description: Allow write access
+    
+    config_delayed_removal:
+      description: |
+        Configuration for the following policy type:
+        	- Delayed Delete (delayedRemoval)
+    
+    config_delayed_removal.removal_age:
+      description: Number of days to delay deletion
+    
+    config_lifecycle:
+      description: |
+        Configuration for the following policy type:
+        	- Expiration (lifecycle)
+    
+    config_lifecycle.account_integration_id:
+      description: ID of your ServiceNow or approval integration
+    
+    config_lifecycle.flow_id:
+      description: ID of ServiceNow Flow (set if workflowType is 'flow')
+    
+    config_lifecycle.lifecycle_age:
+      description: Days until expiration
+    
+    config_lifecycle.lifecycle_extensions_before_approval:
+      description: Number of extensions before requiring approval
+    
+    config_lifecycle.lifecycle_hide_fixed:
+      description: Hide fixed expiration from users
+    
+    config_lifecycle.lifecycle_message:
+      description: Notification message
+    
+    config_lifecycle.lifecycle_notify:
+      description: Days before expiration to notify
+    
+    config_lifecycle.lifecycle_renewal:
+      description: Days for renewal window
+    
+    config_lifecycle.lifecycle_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)"
+    
+    config_lifecycle.lifecycle_workflow_id:
+      description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    
+    config_lifecycle.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+    
+    config_host_naming:
+      description: |
+        Configuration for the following policy type:
+        	- Hostname (hostNaming)
+    
+    config_host_naming.host_naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_host_naming.host_naming_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+    
+    config_naming:
+      description: |
+        Configuration for the following policy type:
+        	- Instance Name (naming)
+    
+    config_naming.naming_conflict:
+      description: Auto-resolve conflicts
+    
+    config_naming.naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_naming.naming_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+    
+    config_max_containers:
+      description: |
+        Configuration for the following policy type:
+        	- Max Containers (maxContainers)
+    
+    config_max_containers.max_containers:
+      description: Max Containers
+    
+    config_max_cores:
+      description: |
+        Configuration for the following policy type:
+        	- Max Cores (maxCores)
+    
+    config_max_cores.max_cores:
+      description: Max Cores
+    
+    config_max_hosts:
+      description: |
+        Configuration for the following policy type:
+        	- Max Hosts (maxHosts)
+    
+    config_max_hosts.max_hosts:
+      description: Max Hosts
+    
+    config_max_pools:
+      description: |
+        Configuration for the following policy type:
+        	- Max Load Balancer Pools (maxPools)
+    
+    config_max_pools.max_pools:
+      description: Max Pools
+    
+    config_max_memory:
+      description: |
+        Configuration for the following policy type:
+        	- Max Memory (maxMemory)
+    
+    config_max_memory.max_memory:
+      description: Max Memory (GB)
+    
+    config_max_pool_members:
+      description: |
+        Configuration for the following policy type:
+        	- Max Pool Members (maxPoolMembers)
+    
+    config_max_pool_members.max_pool_members:
+      description: Max Pool Members
+    
+    config_max_snapshots:
+      description: |
+        Configuration for the following policy type:
+        	- Max Snapshots (maxSnapshots)
+    
+    config_max_snapshots.max_snapshots:
+      description: Max Snapshots
+
+    config_max_storage:
+      description: |
+        Configuration for the following policy types:
+        	- Max Storage (maxStorage)
+        	- Object Storage Quota (storageBucketQuota)
+        	- File Share Storage Quota (storageShareQuota)
+    
+    config_max_storage.max_storage:
+      description: Max Storage (GB)
+    
+    config_max_virtual_servers:
+      description: |
+        Configuration for the following policy type:
+        	- Max Virtual Servers (maxVirtualServers)
+    
+    config_max_virtual_servers.max_virtual_servers:
+      description: Max Virtual Servers
+    
+    config_max_vms:
+      description: |
+        Configuration for the following policy type:
+        	- Max VMs (maxVms)
+    
+    config_max_vms.max_vms:
+      description: Max VMs
+    
+    config_motd:
+      description: |
+        Configuration for the following policy type:
+        	- Message of the Day (motd)
+    
+    config_motd.motddate:
+      description: Display date for message
+    
+    config_motd.motdmessage:
+      description: Message content
+    
+    config_motd.motdtitle:
+      description: Message title
+    
+    config_motd.motdtype:
+      description: "Options: \"info\", \"warning\", \"critical\""
+    
+    config_max_networks:
+      description: |
+        Configuration for the following policy type:
+        	- Network Quota (maxNetworks)
+    
+    config_max_networks.max_networks:
+      description: Max Networks
+    
+    config_power_schedule:
+      description: |
+        Configuration for the following policy type:
+        	- Power Scheduling (powerSchedule)
+    
+    config_power_schedule.power_schedule:
+      description: ID of the power schedule
+    
+    config_power_schedule.power_schedule_hide_fixed:
+      description: Hide fixed schedule from users
+    
+    config_power_schedule.power_schedule_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict schedule)"
+    
+    config_required_network:
+      description: |
+        Configuration for the following policy type:
+        	- Instance Networks (requiredNetwork)
+    
+    config_required_network.required_networks:
+      description: Array of required network IDs
+    
+    config_max_routers:
+      description: |
+        Configuration for the following policy type:
+        	- Router Quota (maxRouters)
+    
+    config_max_routers.max_routers:
+      description: Max Routers
+    
+    config_shutdown:
+      description: |
+        Configuration for the following policy type:
+        	- Shutdown (shutdown)
+    
+    config_shutdown.account_integration_id:
+      description: ID of your ServiceNow or approval integration
+    
+    config_shutdown.flow_id:
+      description: ID of ServiceNow Flow (set if workflowType is 'flow')
+    
+    config_shutdown.shutdown_age:
+      description: Days instance is allowed to run before shutdown
+    
+    config_shutdown.shutdown_extensions_before_approval:
+      description: Number of extensions before requiring approval
+    
+    config_shutdown.shutdown_hide_fixed:
+      description: Hide fixed shutdown from users
+    
+    config_shutdown.shutdown_message:
+      description: Notification message
+    
+    config_shutdown.shutdown_notify:
+      description: Days before shutdown to notify via email
+    
+    config_shutdown.shutdown_renewal:
+      description: If the instance is renewed, this is the number of day increments the shutdown date is increased by
+    
+    config_shutdown.shutdown_type:
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)"
+    
+    config_shutdown.shutdown_workflow_id:
+      description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+    
+    config_shutdown.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+    
+    config_storage_server_quota:
+      description: |
+        Configuration for the following policy type:
+        	- Storage Server Storage Quota (storageServerQuota)
+    
+    config_storage_server_quota.max_storage:
+      description: Max Storage (GB)
+    
+    config_storage_server_quota.storage_server_id:
+      description: ID of the storage server
+    
+    config_tags:
+      description: |
+        Configuration for the following policy type:
+        	- Tags (tags)
+    
+    config_tags.key:
+      description: Tag key to enforce
+    
+    config_tags.strict:
+      description: Strict enforcement
+    
+    config_tags.value:
+      description: Tag value (optional, can be left empty for any value)
+    
+    config_tags.value_list_id:
+      description: ID of value from value list (optional)
+    
+    config_create_user:
+      description: |
+        Configuration for the following policy type:
+        	- User Creation (createUser)
+    
+    config_create_user.create_user:
+      description: Enforce user creation
+    
+    config_create_user.create_user_type:
+      description: "Options: \"user\" (user configurable), \"fixed\""
+    
+    config_create_user_group:
+      description: |
+        Configuration for the following policy type:
+        	- User Group Creation (createUserGroup)
+    
+    config_create_user_group.user_group:
+      description: ID of the user group to assign
+    
+    config_workflow:
+      description: |
+        Configuration for the following policy type:
+        	- Workflow (workflow)
+    
+    config_workflow.workflow_id:
+      description: ID of the workflow to execute

@@ -28,7 +28,7 @@ func TestAccMorpheusPriceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	// These tests when run in parallel generate errors which I believe could
 	// be race conditions in the Morpheus API.

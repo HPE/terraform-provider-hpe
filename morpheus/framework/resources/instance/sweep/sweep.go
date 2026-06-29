@@ -18,6 +18,11 @@ import (
 
 const sweeperName = "hpe_morpheus_instance"
 
+// unmanagedServerSweeperName sweeps leftover discovered VMs (unmanaged servers)
+// that acceptance tests create but that are not tied to a managed instance, so
+// the instance sweeper above does not catch them.
+const unmanagedServerSweeperName = "hpe_morpheus_instance_unmanaged_server"
+
 func init() {
 	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
@@ -69,6 +74,63 @@ func init() {
 				if err != nil || hresp.StatusCode != http.StatusOK {
 					return hresp, err
 				}
+			}
+
+			return &http.Response{StatusCode: http.StatusOK}, nil
+		},
+	)
+
+	testsweep.RegisterTypedAPISweeper(
+		unmanagedServerSweeperName,
+		// List unmanaged servers (discovered VMs not under Morpheus management).
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]sdk.ListHosts200ResponseAllOfServersInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.HostsAPI.ListHosts(ctx).
+				Managed(false).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return getsafe.Get(&resp.Servers), hresp, err
+		},
+		// Is this a test server? The API lowercases host names, so match the
+		// lowercased test resource prefix ("testaccmorpheus") case-sensitively.
+		func(item sdk.ListHosts200ResponseAllOfServersInner) bool {
+			name, ok := getsafe.GetOk(item.Name)
+			if !ok || name == nil {
+				return false
+			}
+
+			return strings.HasPrefix(
+				*name, strings.ToLower(testsweep.TestResourcePrefix),
+			)
+		},
+		// Stop and delete the unmanaged server.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			server sdk.ListHosts200ResponseAllOfServersInner,
+		) (*http.Response, error) {
+			if server.Id == nil {
+				return nil, fmt.Errorf("failed to get server ID")
+			}
+			serverID := *server.Id
+
+			stopID := sdk.UpdateHostIdParameter{Int64: &serverID}
+			_, hresp, err := client.HostsAPI.StopHost(ctx, stopID).Execute()
+			if err != nil || (hresp.StatusCode != http.StatusOK &&
+				hresp.StatusCode != http.StatusConflict) {
+				return hresp, err
+			}
+
+			deleteID := sdk.UpdateHostIdParameter{Int64: &serverID}
+			_, hresp, err = client.HostsAPI.RemoveHost(ctx, deleteID).
+				Force("on").RemoveResources("on").Execute()
+			if err != nil || hresp.StatusCode != http.StatusOK {
+				return hresp, err
 			}
 
 			return &http.Response{StatusCode: http.StatusOK}, nil

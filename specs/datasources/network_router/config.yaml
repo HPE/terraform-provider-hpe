@@ -1,0 +1,51 @@
+network_router:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+  moves:
+    # unnest
+    - network_router: ""
+    - zone: cloud
+    - site: group
+    - network_server: network_integration
+    - firewall.rule_groups.zone: firewall.rule_groups.cloud
+    - firewall.rule_groups.zone_pool: firewall.rule_groups.cloud_pool
+    - template-config: config
+  removes:
+    - category
+    - date_created
+    - description
+    - external_id
+    - external_ip
+    - external_network
+    - firewall
+    - instance
+    - last_updated
+    - nats
+    - network_server
+    - router_type
+    - routes
+    - status
+    - type
+    # having id and name of network integration is probably enough.
+    - network_integration.integration
+    # Exclude these (not in HPE-GL)
+    - interfaces.code
+    - interfaces.enabled
+    - interfaces.external_link
+    - interfaces.interface_type
+    - interfaces.name
+    - interfaces.network
+    - interfaces.network_position
+  overrides:
+    id:
+      description: The ID of the network router.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      conflicts_with: ["id"]
+      description: The name of the network router.
+      computed_optional_required: computed_optional
+    interfaces.ip_address:
+      description: Equivalent to interfaces.source_addresses in the HPE-GL Provider.

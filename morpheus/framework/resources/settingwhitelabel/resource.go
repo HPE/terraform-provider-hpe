@@ -39,7 +39,7 @@ func (r *settingWhitelabelResource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = WhitelabelSettingsResourceSchema(ctx)
+	resp.Schema = SettingWhitelabelResourceSchema(ctx)
 }
 
 func (r *settingWhitelabelResource) Create(
@@ -55,7 +55,7 @@ func (r *settingWhitelabelResource) Create(
 		return
 	}
 
-	var plan WhitelabelSettingsModel
+	var plan SettingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -90,7 +90,7 @@ func (r *settingWhitelabelResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	var state WhitelabelSettingsModel
+	var state SettingWhitelabelModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -126,7 +126,7 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
-	var plan WhitelabelSettingsModel
+	var plan SettingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -193,7 +193,7 @@ func (r *settingWhitelabelResource) Delete(
 
 func (r *settingWhitelabelResource) readIntoModel(
 	ctx context.Context,
-	model *WhitelabelSettingsModel,
+	model *SettingWhitelabelModel,
 	diagnostics *diag.Diagnostics,
 ) {
 	client, err := r.NewClient(ctx)
@@ -219,7 +219,7 @@ func (r *settingWhitelabelResource) readIntoModel(
 	mapResponseToModel(model, settings)
 }
 
-func buildUpdateRequest(plan *WhitelabelSettingsModel) sdk.UpdateWhitelabelSettingsRequest {
+func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
 	settings := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
 	if !plan.Enabled.IsNull() {
 		settings.Enabled = plan.Enabled.ValueBoolPointer()
@@ -240,7 +240,7 @@ func buildUpdateRequest(plan *WhitelabelSettingsModel) sdk.UpdateWhitelabelSetti
 }
 
 func mapResponseToModel(
-	model *WhitelabelSettingsModel,
+	model *SettingWhitelabelModel,
 	settings *sdk.ListWhitelabelSettings200ResponseWhitelabelSettings,
 ) {
 	model.Id = types.StringValue("settings")

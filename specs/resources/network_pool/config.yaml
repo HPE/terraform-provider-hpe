@@ -1,0 +1,93 @@
+network_pool:
+  description: "Manages a Morpheus Network Pool resource."
+  templates:
+    typeCode:
+      string:
+        computed_optional_required: required
+        description: The code of the network pool type. Default available codes are morpheus, morpheusipv6, vcd, and nsx-t. Plugins can add additional pool types.
+    ipRanges:
+      object:
+        computed_optional_required: required
+        description: The IPv4 IP address pool IP ranges.
+        attribute_types:
+          - name: starting_address
+            string: {}
+          - name: ending_address
+            string: {}
+  moves:
+    - network_pool: ""
+    - template-typeCode: type_code
+    - template-ipRanges: ip_ranges
+  removes:
+    - account
+    - boot_file
+    - category
+    - code
+    - config
+    - dhcp_ip
+    - display_name
+    - dns_search_path
+    - dns_servers
+    - dns_suffix_list
+    - external_id
+    - host_prefix
+    - http_proxy
+    - internal_id
+    - parent_id
+    - parent_type
+    - pool_group
+    - ref_id
+    - ref_type
+    - tftp_server
+    - type
+    - type_id
+  overrides:
+    dhcp_server:
+      computed_optional_required: computed_optional
+      description: Whether DHCP server is enabled.
+    dns_domain:
+      computed_optional_required: computed_optional
+      description: The DNS domain for the network pool.
+    free_count:
+      computed_optional_required: computed
+      description: The number of free IPs in the pool.
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"))
+    gateway:
+      computed_optional_required: computed_optional
+      description: The gateway IP address.
+    id:
+      computed_optional_required: computed
+      description: The ID of the network pool.
+      state_for_unknown: true
+    ip_count:
+      computed_optional_required: computed
+      description: The total number of IPs in the pool.
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              modifiers.Int64UseStateForUnknownUnless(path.Root("ip_ranges"))
+    name:
+      computed_optional_required: required
+      description: The name of the network pool.
+    netmask:
+      computed_optional_required: computed_optional
+      description: The netmask.
+    pool_enabled:
+      computed_optional_required: computed
+      description: Whether the pool is enabled.
+      state_for_unknown: true
+    subnet_address:
+      computed_optional_required: computed_optional
+      description: The subnet IP address.
+    type_code:
+      computed_optional_required: required
+      requires_replace: true

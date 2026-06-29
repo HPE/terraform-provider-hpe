@@ -26,9 +26,7 @@ func TestMain(m *testing.M) {
 
 func TestAccMorpheusLoadBalancerProfileDataSourceByIdOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	// Not parallel: NSX-T load balancer profiles are children of a load balancer
@@ -89,9 +87,7 @@ func TestAccMorpheusLoadBalancerProfileDataSourceByIdOk(t *testing.T) {
 
 func TestAccMorpheusLoadBalancerProfileDataSourceByNameOk(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	// Not parallel — see TestAccMorpheusLoadBalancerProfileDataSourceByIdOk.
@@ -150,9 +146,7 @@ func TestAccMorpheusLoadBalancerProfileDataSourceByNameOk(t *testing.T) {
 
 func TestAccMorpheusLoadBalancerProfileDataSourceNotFound(t *testing.T) {
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	defer testhelpers.RecordResult(t)

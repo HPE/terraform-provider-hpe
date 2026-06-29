@@ -1,0 +1,14 @@
+network_domain:
+  moves:
+    - network_domain: ""       # unnest wrapper (components/schemas/networkDomain.yaml)
+    - zone_type: cloud_type    # (components/schemas/networkDomain.yaml)
+    - template-description: description # (components/schemas/networkDomain.yaml)
+  overrides:
+    id:
+      description: Morpheus ID of the network domain
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network domain
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional

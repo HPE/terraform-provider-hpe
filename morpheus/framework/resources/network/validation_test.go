@@ -18,7 +18,7 @@ func TestAccMorpheusNetworkResourceValidationMissingName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -54,7 +54,7 @@ func TestAccMorpheusNetworkResourceValidationMissingCloudId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -90,7 +90,7 @@ func TestAccMorpheusNetworkResourceValidationMissingGroupId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -126,7 +126,7 @@ func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -163,7 +163,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -201,7 +201,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidPoolId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -239,7 +239,7 @@ func TestAccMorpheusNetworkResourceValidationInvalidTenantIds(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -276,7 +276,7 @@ func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

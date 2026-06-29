@@ -1,0 +1,10 @@
+backup_type:
+  moves:
+    - backup_type: ""
+  overrides:
+    id:
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional

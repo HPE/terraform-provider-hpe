@@ -1,0 +1,60 @@
+provisioning_license:
+  description: "Manages a Morpheus Provisioning License resource."
+  templates:
+    licenseKeyWo:
+      string:
+        computed_optional_required: required
+        description: The license key.
+        sensitive: true
+        write_only: true
+    licenseKeyWoVersion:
+      int64:
+        computed_optional_required: optional
+        description: License key version. Used to determine if license_key_wo has been updated.
+    tenantsList:
+      list:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: List of tenant IDs associated with the license.
+    virtualImagesList:
+      list:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: List of virtual image IDs associated with the license.
+  moves:
+    - license: ""
+    - template-licenseKeyWo: license_key_wo
+    - template-licenseKeyWoVersion: license_key_wo_version
+    - template-tenantsList: tenants
+    - template-virtualImagesList: virtual_images
+  removes:
+    - account
+    - copies
+    - full_name
+    - license_key
+    - license_version
+    - org_name
+    - reservation_count
+    - success
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the provisioning license.
+    id:
+      computed_optional_required: computed
+      description: The ID of the provisioning license.
+      state_for_unknown: true
+    license_type:
+      computed_optional_required: required
+      description: The type of the license.
+    name:
+      computed_optional_required: required
+      description: The name of the provisioning license.
+    tenants:
+      computed_optional_required: optional
+      description: List of tenant IDs associated with the license.
+    virtual_images:
+      computed_optional_required: optional
+      description: List of virtual image IDs associated with the license.

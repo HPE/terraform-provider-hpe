@@ -87,7 +87,7 @@ type UpdateHostResize200ResponseAllOfServer struct {
 	Volumes                  []UpdateHostResize200ResponseAllOfServerVolumesInner           `json:"volumes,omitempty"`
 	Controllers              []UpdateHostResize200ResponseAllOfServerControllersInner       `json:"controllers,omitempty"`
 	Interfaces               []UpdateHostResize200ResponseAllOfServerInterfacesInner        `json:"interfaces,omitempty"`
-	Labels                   []map[string]interface{}                                       `json:"labels,omitempty"`
+	Labels                   []string                                                       `json:"labels,omitempty"`
 	Tags                     []map[string]interface{}                                       `json:"tags,omitempty"`
 	Enabled                  *bool                                                          `json:"enabled,omitempty"`
 	TagCompliant             NullableBool                                                   `json:"tagCompliant,omitempty"`

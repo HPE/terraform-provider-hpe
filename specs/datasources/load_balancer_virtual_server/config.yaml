@@ -1,0 +1,56 @@
+load_balancer_virtual_server:
+  templates:
+    pool_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the load balancer pool assigned to this virtual server.
+    config:
+      dynamic:
+        description: Generic virtual server configuration object. Settings vary by load balancer type.
+        computed_optional_required: computed
+    config_nsxt:
+      single_nested:
+        computed_optional_required: computed
+        description: NSX-T virtual server configuration
+    config_nsxt_application_profile:
+      int64:
+        computed_optional_required: computed
+        description: The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.
+    config_nsxt_persistence:
+      string:
+        computed_optional_required: computed
+        description: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled)."
+    config_nsxt_persistence_profile:
+      int64:
+        computed_optional_required: computed
+        description: The persistence profile ID (`NetworkLoadBalancerProfile`).
+    config_nsxt_ssl_client_profile:
+      int64:
+        computed_optional_required: computed
+        description: The SSL client profile ID (`NetworkLoadBalancerProfile`).
+    config_nsxt_ssl_server_profile:
+      int64:
+        computed_optional_required: computed
+        description: The SSL server profile ID (`NetworkLoadBalancerProfile`).
+  moves:
+    - load_balancer_instance: "" # unnest wrapper
+    - template-config: config
+    - template-pool_id: pool_id
+    - template-config_nsxt: config_nsxt
+    - template-config_nsxt_application_profile: config_nsxt.application_profile
+    - template-config_nsxt_persistence: config_nsxt.persistence
+    - template-config_nsxt_persistence_profile: config_nsxt.persistence_profile
+    - template-config_nsxt_ssl_client_profile: config_nsxt.ssl_client_profile
+    - template-config_nsxt_ssl_server_profile: config_nsxt.ssl_server_profile
+  removes:
+    - success                    # API response wrapper
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the load balancer virtual server
+    load_balancer_id:
+      computed_optional_required: required
+      description: The ID of the load balancer this virtual server belongs to
+    vip_name:
+      computed_optional_required: computed_optional
+      description: VIP Name

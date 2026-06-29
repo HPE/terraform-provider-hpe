@@ -1,0 +1,227 @@
+storage_volume:
+  description: "Manages a Morpheus Storage Volume resource."
+  templates:
+    type_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the storage volume type. Mutually exclusive with type_code.
+    type_code:
+      string:
+        computed_optional_required: computed_optional
+        description: The storage volume type code. Mutually exclusive with type_id.
+    id_int:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the storage volume.
+    status:
+      string:
+        computed_optional_required: computed
+        description: The status of the storage volume.
+    config:
+      dynamic:
+        computed_optional_required: optional
+        write_only: true
+        description: Generic write-only configuration options for the storage volume, varies based on the storage volume type. Only sent to the API on create; not stored in state. Increment config_wo_version to apply a change.
+    config_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Version trigger for the write-only config attribute. Increment this whenever config changes so the volume is recreated with the new configuration.
+    config_alletramp_bmaas_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Version trigger for the write-only config_alletramp_bmaas attribute. Increment this whenever config_alletramp_bmaas changes so the volume is recreated with the new configuration.
+    storage_group_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the storage group.
+    shared:
+      bool:
+        computed_optional_required: optional
+        write_only: true
+        description: Whether the volume is shared (multi-attach).
+    compute_server_id:
+      int64:
+        computed_optional_required: optional
+        write_only: true
+        description: Compute server ID to export a non-shared volume to.
+    instance_ids:
+      list:
+        computed_optional_required: optional
+        write_only: true
+        element_type:
+          int64: {}
+        description: List of instance IDs to export a shared volume to.
+    use_existing_volume_set:
+      bool:
+        computed_optional_required: optional
+        write_only: true
+        description: Whether to add the volume to an existing, exported volume set rather than creating a new one.
+  moves:
+    - storage_volume: ""                                                            # unnest wrapper (POST /api/storage-volumes)
+    - storage_server.id: storage_server_id                                          # unnest storageServer.id (POST /api/storage-volumes)
+    - config.alletra_mpbmaa_svolume_configuration: config_alletramp_bmaas           # extract Alletra anyOf variant (storageVolumeConfigAlletraMPBmaas)
+    - config_alletramp_bmaas.hpe_storage_remotecopytarget_id: config_alletramp_bmaas.remote_copy_target_id  # rename (storageVolumeConfigAlletraMPBmaas)
+    - config_alletramp_bmaas.hpe_storage_volumeset_id: config_alletramp_bmaas.volume_set_id                # rename (storageVolumeConfigAlletraMPBmaas)
+    - config_alletramp_bmaas.hpe_storage_volume_set_name: config_alletramp_bmaas.volume_set_name           # rename (storageVolumeConfigAlletraMPBmaas)
+    - config_alletramp_bmaas.hpe_storage_datastore: config_alletramp_bmaas.datastore_id                    # rename (storageVolumeConfigAlletraMPBmaas)
+    - template-shared: config_alletramp_bmaas.shared                                # bool replaces hpe_storage_volume_shared on/off (storageVolumeConfigAlletraMPBmaas)
+    - template-compute_server_id: config_alletramp_bmaas.compute_server_id          # int64 replaces hpe_storage_compute_server string (storageVolumeConfigAlletraMPBmaas)
+    - template-instance_ids: config_alletramp_bmaas.instance_ids                    # set of int64 replaces hpe_storage_instances set-of-string (storageVolumeConfigAlletraMPBmaas)
+    - template-use_existing_volume_set: config_alletramp_bmaas.use_existing_volume_set  # bool replaces hpe_storage_existing_volume_set on/off (storageVolumeConfigAlletraMPBmaas)
+    - config.generic_storage_volume_configuration: config                           # extract generic anyOf as dynamic fallback (POST /api/storage-volumes)
+    - template-config: config                                                       # dynamic fallback template (POST /api/storage-volumes)
+    - template-type_id: type_id                                                     # int64 template replaces type string (POST /api/storage-volumes)
+    - template-type_code: type_code                                                 # string alternative to type_id (the API 'type' field accepts a code or an id)
+    - template-storage_group_id: storage_group_id                                   # int64 unnest from storageGroup.id (POST /api/storage-volumes)
+    - template-id_int: id                                                           # computed int64 id (GET /api/storage-volumes/{id})
+    - template-status: status                                                       # computed status (GET /api/storage-volumes/{id})
+    - template-config_wo_version: config_wo_version                                  # write-only version trigger for config
+    - template-config_alletramp_bmaas_wo_version: config_alletramp_bmaas_wo_version  # write-only version trigger for config_alletramp_bmaas
+  removes:
+    - success                                    # (response envelope)
+    - type                                       # (POST /api/storage-volumes) — replaced by type_id template
+    - storage_server                             # (POST /api/storage-volumes) — unnested to storage_server_id
+    - storage_group                              # (POST /api/storage-volumes) — replaced by storage_group_id template
+    - config_alletramp_bmaas.hpe_storage_volume_shared        # (storageVolumeConfigAlletraMPBmaas) — replaced by shared bool
+    - config_alletramp_bmaas.hpe_storage_compute_server       # (storageVolumeConfigAlletraMPBmaas) — replaced by compute_server_id int64
+    - config_alletramp_bmaas.hpe_storage_instances            # (storageVolumeConfigAlletraMPBmaas) — replaced by instance_ids set of int64
+    - config_alletramp_bmaas.hpe_storage_existing_volume_set  # (storageVolumeConfigAlletraMPBmaas) — replaced by use_existing_volume_set bool
+    # Read-only fields from storageVolume GET schema
+    - description                                # (components/schemas/storageVolume)
+    - controller                                 # (components/schemas/storageVolume)
+    - controller_id                              # (components/schemas/storageVolume)
+    - controller_mount_point                     # (components/schemas/storageVolume)
+    - resizeable                                 # (components/schemas/storageVolume)
+    - root_volume                                # (components/schemas/storageVolume)
+    - unit_number                                # (components/schemas/storageVolume)
+    - device_name                                # (components/schemas/storageVolume)
+    - device_display_name                        # (components/schemas/storageVolume)
+    - volume_name                                # (components/schemas/storageVolume)
+    - volume_path                                # (components/schemas/storageVolume)
+    - volume_type                                # (components/schemas/storageVolume)
+    - ref_type                                   # (components/schemas/storageVolume)
+    - ref_id                                     # (components/schemas/storageVolume)
+    - disk_mode                                  # (components/schemas/storageVolume)
+    - disk_type                                  # (components/schemas/storageVolume)
+    - category                                   # (components/schemas/storageVolume)
+    - status_message                             # (components/schemas/storageVolume)
+    - configurable_iops                          # (components/schemas/storageVolume)
+    - used_storage                               # (components/schemas/storageVolume)
+    - display_order                              # (components/schemas/storageVolume)
+    - max_iops                                   # (components/schemas/storageVolume)
+    - uuid                                       # (components/schemas/storageVolume)
+    - active                                     # (components/schemas/storageVolume)
+    - read_only                                  # (components/schemas/storageVolume)
+    - removable                                  # (components/schemas/storageVolume)
+    - pool_name                                  # (components/schemas/storageVolume)
+    - zone                                       # (components/schemas/storageVolume)
+    - zone_id                                    # (components/schemas/storageVolume)
+    - datastore                                  # (components/schemas/storageVolume)
+    - datastore_id                               # (components/schemas/storageVolume)
+    - datastore_option                           # (components/schemas/storageVolume)
+    - storage_profile                            # (components/schemas/storageVolume)
+    - owner                                      # (components/schemas/storageVolume)
+    - account                                    # (components/schemas/storageVolume)
+    - source                                     # (components/schemas/storageVolume)
+    - source_id                                  # (components/schemas/storageVolume)
+    - source_image                               # (components/schemas/storageVolume)
+    - external_id                                # (components/schemas/storageVolume)
+    - internal_id                                # (components/schemas/storageVolume)
+    - unique_id                                  # (components/schemas/storageVolume)
+    - claim_name                                 # (components/schemas/storageVolume)
+    - namespace                                  # (components/schemas/storageVolume)
+    - raw_data                                   # (components/schemas/storageVolume)
+    - copy_type                                  # (components/schemas/storageVolume)
+    - share_path                                 # (components/schemas/storageVolume)
+    - online                                     # (components/schemas/storageVolume)
+    - image_type                                 # (components/schemas/storageVolume)
+    - file_name                                  # (components/schemas/storageVolume)
+    - fiber_wwn                                  # (components/schemas/storageVolume)
+    - create_for_multi_attach                    # (components/schemas/storageVolume)
+    - is_multi_attach                            # (components/schemas/storageVolume)
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the storage volume.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the storage volume.
+    max_storage:
+      computed_optional_required: optional
+      description: The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.
+      validators:
+        - custom:
+            schema_definition: |-
+              maxStorageSize()
+    status:
+      computed_optional_required: computed
+      description: The status of the storage volume.
+      state_for_unknown: true
+    storage_server_id:
+      computed_optional_required: optional
+      description: The ID of the storage server.
+      requires_replace: true
+    type_id:
+      computed_optional_required: computed_optional
+      description: The ID of the storage volume type. Mutually exclusive with type_code.
+      requires_replace: true
+      at_least_one_of: [type_id, type_code]
+      conflicts_with: [type_code]
+    type_code:
+      computed_optional_required: computed_optional
+      description: 'The storage volume type code, which is more stable across environments than type_id (e.g. "3par", "hpealletraMPLUN", "hpealletraMPLUN-active-pp", "hpealletraMPLUN-classic-pp"). Mutually exclusive with type_id.'
+      requires_replace: true
+      conflicts_with: [type_id]
+    storage_group_id:
+      computed_optional_required: optional
+      description: The ID of the storage group.
+      requires_replace: true
+    provision_type:
+      computed_optional_required: computed_optional
+      requires_replace: true
+      description: "Provision type for storage volume types that support it."
+      one_of: [FULL, TPVV, SNP, PEER, TDVV]
+    config:
+      conflicts_with: [config_alletramp_bmaas]
+      computed_optional_required: optional
+      write_only: true
+    config_wo_version:
+      computed_optional_required: optional
+      description: Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.
+      requires_replace: true
+    config_alletramp_bmaas_wo_version:
+      computed_optional_required: optional
+      description: Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.
+      requires_replace: true
+    config_alletramp_bmaas:
+      description: Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change.
+      conflicts_with: [config]
+      computed_optional_required: optional
+      write_only: true
+    config_alletramp_bmaas.datastore_id:
+      computed_optional_required: required
+      write_only: true
+      description: ID of the Alletra MP BMaaS data store (pool) in which to create the volume.
+    config_alletramp_bmaas.shared:
+      description: Whether the volume is shared (multi-attach).
+    config_alletramp_bmaas.compute_server_id:
+      description: Compute server ID to export a non-shared volume to.
+      conflicts_with: [config_alletramp_bmaas.instance_ids]
+    config_alletramp_bmaas.instance_ids:
+      description: List of instance IDs to export a shared volume to.
+      conflicts_with: [config_alletramp_bmaas.compute_server_id]
+    config_alletramp_bmaas.remote_copy_target_id:
+      computed_optional_required: optional
+      write_only: true
+      description: Remote copy (replication) target ID. Required for replicated LUN volume types.
+    config_alletramp_bmaas.use_existing_volume_set:
+      description: Whether to add the volume to an existing, exported volume set rather than creating a new one.
+    config_alletramp_bmaas.volume_set_id:
+      computed_optional_required: optional
+      write_only: true
+      description: ID of an existing volume set to add the volume to.
+    config_alletramp_bmaas.volume_set_name:
+      computed_optional_required: optional
+      write_only: true
+      description: Base name for a new volume set (a unique suffix is always appended).

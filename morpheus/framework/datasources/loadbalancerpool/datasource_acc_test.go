@@ -27,7 +27,7 @@ func TestAccMorpheusLoadBalancerPoolDataSourceByIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
@@ -97,7 +97,7 @@ func TestAccMorpheusLoadBalancerPoolDataSourceByNameOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
