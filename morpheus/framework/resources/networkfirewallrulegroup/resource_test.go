@@ -28,7 +28,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -120,7 +120,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -252,7 +252,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -309,7 +309,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeO
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -366,7 +366,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegr
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -422,7 +422,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceImportInvalidFormatErr(t *te
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkFirewall) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {

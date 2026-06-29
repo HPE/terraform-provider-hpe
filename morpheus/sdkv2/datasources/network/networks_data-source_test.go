@@ -5,7 +5,6 @@ package network_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus"
@@ -19,7 +18,7 @@ func TestAccMorpheusDataSourceNetworksExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.Network) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -29,13 +28,13 @@ func TestAccMorpheusDataSourceNetworksExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
 	var dependenciesConfig string
 
-	datasourceConfig, err := dsnetwork.RenderNetworksConfig(t, map[string]string{
-		"Name": name,
-	})
+	// Use template defaults (CloudId=3, Name="name", SortAscending=true,
+	// Values=["Test*"]) which the checks below assert against. Do not override
+	// Name with a random value; the template renders it unquoted and a random
+	// string produces an invalid HCL reference.
+	datasourceConfig, err := dsnetwork.RenderNetworksConfig(t, map[string]string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,20 +50,24 @@ func TestAccMorpheusDataSourceNetworksExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_networks.example",
-			"name",
-			"name",
-		),
-
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_networks.example",
 			"sort_ascending",
 			"true",
 		),
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_networks.example",
-			"values",
-			"[\"Test*\"]",
+			"filter.#",
+			"1",
+		),
+
+		resource.TestCheckTypeSetElemNestedAttrs(
+			"data.hpe_morpheus_networks.example",
+			"filter.*",
+			map[string]string{
+				"name":     "name",
+				"values.0": "Test*",
+				"values.#": "1",
+			},
 		),
 	}
 

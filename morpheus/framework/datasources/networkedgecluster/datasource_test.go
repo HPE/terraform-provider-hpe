@@ -25,7 +25,7 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -65,7 +65,7 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 
@@ -105,7 +105,7 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 

@@ -29,9 +29,7 @@ func TestAccMorpheusInstanceCloneResource(t *testing.T) {
 	}
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -102,9 +100,7 @@ func TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile(t *testing.T) {
 	}
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()

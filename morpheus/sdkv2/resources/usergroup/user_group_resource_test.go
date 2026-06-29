@@ -28,7 +28,7 @@ func TestAccMorpheusUserGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 

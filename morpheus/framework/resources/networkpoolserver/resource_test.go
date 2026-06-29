@@ -25,7 +25,7 @@ func TestAccMorpheusNetworkPoolServerResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkPool) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -93,7 +93,7 @@ func TestAccMorpheusNetworkPoolServerResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkPool) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
