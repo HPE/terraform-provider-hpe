@@ -26,7 +26,6 @@ power_schedule:
     - thursday_on
     - tuesday_off
     - tuesday_on
-    - visibility
     - wednesday_off
     - wednesday_on
   overrides:
@@ -110,4 +109,10 @@ power_schedule:
     wednesday_on_time:
       computed_optional_required: computed_optional
       description: The Wednesday on time for the power schedule.
+      state_for_unknown: true
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the power schedule (public or private).
+      default: "private"
+      one_of: [public, private]
       state_for_unknown: true

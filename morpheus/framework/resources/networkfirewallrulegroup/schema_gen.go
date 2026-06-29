@@ -5,9 +5,12 @@ package networkfirewallrulegroup
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -64,6 +67,25 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network firewall rule group priority",
 				MarkdownDescription: "Network firewall rule group priority",
 			},
+			"tenant_ids": schema.ListAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Description:         "List of tenant account IDs that are allowed access. Only configurable from a master tenant account.",
+				MarkdownDescription: "List of tenant account IDs that are allowed access. Only configurable from a master tenant account.",
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The visibility of the firewall rule group (public or private).",
+				MarkdownDescription: "The visibility of the firewall rule group (public or private).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("public", "private"),
+				},
+				Default: stringdefault.StaticString("private"),
+			},
 		},
 		Description:         "Manages a network firewall rule group resource in Morpheus.",
 		MarkdownDescription: "Manages a network firewall rule group resource in Morpheus.",
@@ -78,4 +100,6 @@ type NetworkFirewallRuleGroupModel struct {
 	Name                 types.String `tfsdk:"name"`
 	NetworkIntegrationId types.Int64  `tfsdk:"network_integration_id"`
 	Priority             types.Int64  `tfsdk:"priority"`
+	TenantIds            types.List   `tfsdk:"tenant_ids"`
+	Visibility           types.String `tfsdk:"visibility"`
 }

@@ -98,6 +98,20 @@ func getRouterAsState(
 		}
 	}
 
+	// Read permissions: visibility + tenant_ids
+	if router.Permissions != nil {
+		if router.Permissions.Visibility != nil {
+			state.Visibility = types.StringValue(*router.Permissions.Visibility)
+		}
+		var tenantIDs []int64
+		if router.Permissions.TenantPermissions != nil {
+			tenantIDs = router.Permissions.TenantPermissions.Accounts
+		}
+		setVal, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
+		diags.Append(setDiags...)
+		state.TenantIds = setVal
+	}
+
 	return state, diags
 }
 

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -92,11 +93,27 @@ func getNetworkFirewallRuleGroupAsState(
 	state.Name = convert.StrToType(ruleGroup.Name)
 	state.Priority = convert.Int64ToType(ruleGroup.Priority)
 	state.GroupLayer = convert.StrToType(ruleGroup.GroupLayer)
+	state.Visibility = convert.StrToType(ruleGroup.Visibility)
 
 	if ruleGroup.Description.IsSet() {
 		state.Description = convert.StrToType(ruleGroup.Description.Get())
 	} else {
 		state.Description = types.StringNull()
+	}
+
+	// Build tenant_ids from the Tenants array returned by the API.
+	if len(ruleGroup.Tenants) > 0 {
+		ids := make([]int64, 0, len(ruleGroup.Tenants))
+		for _, t := range ruleGroup.Tenants {
+			if t.Id != nil {
+				ids = append(ids, *t.Id)
+			}
+		}
+		listVal, listDiags := types.ListValueFrom(ctx, types.Int64Type, ids)
+		diags.Append(listDiags...)
+		state.TenantIds = listVal
+	} else {
+		state.TenantIds = types.ListValueMust(types.Int64Type, []attr.Value{})
 	}
 
 	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.

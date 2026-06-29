@@ -53,6 +53,7 @@ func ProvisioningLicenseResourceSchema(ctx context.Context) schema.Schema {
 			"tenants": schema.ListAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
+				Computed:            true,
 				Description:         "List of tenant IDs associated with the license.",
 				MarkdownDescription: "List of tenant IDs associated with the license.",
 			},

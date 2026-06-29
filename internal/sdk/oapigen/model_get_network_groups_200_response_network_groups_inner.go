@@ -20,15 +20,16 @@ var _ MappedNullable = &GetNetworkGroups200ResponseNetworkGroupsInner{}
 
 // GetNetworkGroups200ResponseNetworkGroupsInner struct for GetNetworkGroups200ResponseNetworkGroupsInner
 type GetNetworkGroups200ResponseNetworkGroupsInner struct {
-	Id                   *int64                                                      `json:"id,omitempty"`
-	Name                 *string                                                     `json:"name,omitempty"`
-	Description          *string                                                     `json:"description,omitempty"`
-	Visibility           *string                                                     `json:"visibility,omitempty"`
-	Active               *bool                                                       `json:"active,omitempty"`
-	Networks             []int64                                                     `json:"networks,omitempty"`
-	Subnets              []map[string]interface{}                                    `json:"subnets,omitempty"`
-	Tenants              []GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner `json:"tenants,omitempty"`
-	AdditionalProperties map[string]interface{}                                      `json:",remain"`
+	Id                   *int64                                                           `json:"id,omitempty"`
+	Name                 *string                                                          `json:"name,omitempty"`
+	Description          *string                                                          `json:"description,omitempty"`
+	Visibility           *string                                                          `json:"visibility,omitempty"`
+	Active               *bool                                                            `json:"active,omitempty"`
+	Networks             []int64                                                          `json:"networks,omitempty"`
+	Subnets              []map[string]interface{}                                         `json:"subnets,omitempty"`
+	Tenants              []GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner      `json:"tenants,omitempty"`
+	ResourcePermission   *GetNetworkGroups200ResponseNetworkGroupsInnerResourcePermission `json:"resourcePermission,omitempty"`
+	AdditionalProperties map[string]interface{}                                           `json:",remain"`
 }
 
 type _GetNetworkGroups200ResponseNetworkGroupsInner GetNetworkGroups200ResponseNetworkGroupsInner
@@ -66,6 +67,9 @@ func (o GetNetworkGroups200ResponseNetworkGroupsInner) ToMap() (map[string]inter
 	}
 	if !IsNil(o.Tenants) {
 		toSerialize["tenants"] = o.Tenants
+	}
+	if !IsNil(o.ResourcePermission) {
+		toSerialize["resourcePermission"] = o.ResourcePermission
 	}
 
 	for key, value := range o.AdditionalProperties {

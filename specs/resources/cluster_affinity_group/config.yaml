@@ -5,21 +5,42 @@ cluster_affinity_group:
       string:
         computed_optional_required: optional
         description: Description of the affinity group.
+    tenantIds:
+      list:
+        computed_optional_required: optional
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+    resourcePermissions:
+      single_nested:
+        computed_optional_required: optional
+        description: Resource permissions for group and service plan access.
+        attributes:
+        - name: all
+          bool:
+            computed_optional_required: optional
+            description: Pass true to allow access to all groups.
+        - name: site_ids
+          list:
+            computed_optional_required: optional
+            description: List of site/group IDs allowed access.
+            element_type:
+              int64: {}
   moves:
     - affinity_group: ""
     - template-description: description
+    - template-tenantIds: tenant_ids
+    - template-resourcePermissions: resource_permissions
   removes:
     - affinity_type
     - enabled
     - pool
     - ref_id
     - ref_type
-    - resource_permissions
     - servers
     - source
     - success
     - tenants
-    - visibility
   overrides:
     active:
       computed_optional_required: computed_optional
@@ -39,3 +60,9 @@ cluster_affinity_group:
     name:
       computed_optional_required: required
       description: The name of the affinity group.
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the cluster affinity group (public or private).
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true

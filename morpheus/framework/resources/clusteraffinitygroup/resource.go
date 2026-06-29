@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -73,6 +74,37 @@ func (r *clusterAffinityGroupResource) Create(
 		Name: &name,
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	ag.Visibility = plan.Visibility.ValueStringPointer()
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupTenantsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			tenants = append(tenants, sdk.SaveClusterAffinityGroupRequestAffinityGroupTenantsInner{Id: &id})
+		}
+		ag.Tenants = tenants
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+			var siteIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(siteIDs))
+			for _, sid := range siteIDs {
+				sites = append(sites, map[string]interface{}{"id": sid})
+			}
+			rp.Sites = sites
+		}
+		ag.ResourcePermissions = &rp
+	}
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -190,6 +222,37 @@ func (r *clusterAffinityGroupResource) Update(
 		ag.Name = &v
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	ag.Visibility = plan.Visibility.ValueStringPointer()
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			tenants = append(tenants, sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner{Id: &id})
+		}
+		ag.Tenants = tenants
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.UpdateCloudAffinityGroupRequestAffinityGroupResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+			var siteIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]map[string]interface{}, 0, len(siteIDs))
+			for _, sid := range siteIDs {
+				sites = append(sites, map[string]interface{}{"id": sid})
+			}
+			rp.Sites = sites
+		}
+		ag.ResourcePermissions = &rp
+	}
 
 	body := sdk.UpdateClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
@@ -292,5 +355,37 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 	}
 	if ag.Active != nil {
 		model.Active = types.BoolValue(*ag.Active)
+	}
+	if ag.Visibility != nil {
+		model.Visibility = types.StringValue(*ag.Visibility)
+	} else {
+		model.Visibility = types.StringNull()
+	}
+	tenantVals := make([]attr.Value, 0, len(ag.Tenants))
+	for _, t := range ag.Tenants {
+		if t.Id != nil {
+			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
+		}
+	}
+	model.TenantIds = types.ListValueMust(types.Int64Type, tenantVals)
+	if ag.ResourcePermissions != nil {
+		siteVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
+		for _, s := range ag.ResourcePermissions.Sites {
+			if id, ok := s["id"].(float64); ok {
+				siteVals = append(siteVals, types.Int64Value(int64(id)))
+			}
+		}
+		model.ResourcePermissions = NewResourcePermissionsValueMust(
+			map[string]attr.Type{
+				"all":      types.BoolType,
+				"site_ids": types.ListType{ElemType: types.Int64Type},
+			},
+			map[string]attr.Value{
+				"all":      types.BoolPointerValue(ag.ResourcePermissions.All),
+				"site_ids": types.ListValueMust(types.Int64Type, siteVals),
+			},
+		)
+	} else {
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
 }

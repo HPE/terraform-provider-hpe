@@ -62,22 +62,48 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-
-	additionalProps := map[string]interface{}{}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		additionalProps["visibility"] = plan.Visibility.ValueString()
+		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		additionalProps["active"] = plan.Active.ValueBool()
+		body.Active = plan.Active.ValueBoolPointer()
 	}
-	if len(additionalProps) > 0 {
-		body.AdditionalProperties = additionalProps
+
+	createReq := sdk.CreateNetworkGroupRequest{NetworkGroup: &body}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		accts := make([]sdk.CreateNetworkGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			accts = append(accts, sdk.CreateNetworkGroupRequestTenantPermissionsAccountsInner{Id: &id})
+		}
+		createReq.TenantPermissions = &sdk.CreateNetworkGroupRequestTenantPermissions{Accounts: accts}
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.CreateNetworkGroupRequestResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+			var siteIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.CreateNetworkGroupRequestResourcePermissionsSitesInner, 0, len(siteIDs))
+			for i := range siteIDs {
+				id := siteIDs[i]
+				sites = append(sites, sdk.CreateNetworkGroupRequestResourcePermissionsSitesInner{Id: &id})
+			}
+			rp.Sites = sites
+		}
+		createReq.ResourcePermissions = &rp
 	}
 
 	result, httpResp, err := client.NetworksAPI.CreateNetworkGroup(ctx).
-		CreateNetworkGroupRequest(sdk.CreateNetworkGroupRequest{
-			NetworkGroup: &body,
-		}).Execute()
+		CreateNetworkGroupRequest(createReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "network_group", plan.Name.ValueString(), err, httpResp)
 
@@ -189,22 +215,48 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-
-	additionalProps := map[string]interface{}{}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		additionalProps["visibility"] = plan.Visibility.ValueString()
+		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		additionalProps["active"] = plan.Active.ValueBool()
+		body.Active = plan.Active.ValueBoolPointer()
 	}
-	if len(additionalProps) > 0 {
-		body.AdditionalProperties = additionalProps
+
+	updateReq := sdk.UpdateNetworkGroupRequest{NetworkGroup: &body}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		accts := make([]sdk.UpdateNetworkGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			accts = append(accts, sdk.UpdateNetworkGroupRequestTenantPermissionsAccountsInner{Id: &id})
+		}
+		updateReq.TenantPermissions = &sdk.UpdateNetworkGroupRequestTenantPermissions{Accounts: accts}
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.UpdateNetworkGroupRequestResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+			var siteIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.UpdateNetworkGroupRequestResourcePermissionsSitesInner, 0, len(siteIDs))
+			for i := range siteIDs {
+				sid := siteIDs[i]
+				sites = append(sites, sdk.UpdateNetworkGroupRequestResourcePermissionsSitesInner{Id: &sid})
+			}
+			rp.Sites = sites
+		}
+		updateReq.ResourcePermissions = &rp
 	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateNetworkGroup(ctx, id).
-		UpdateNetworkGroupRequest(sdk.UpdateNetworkGroupRequest{
-			NetworkGroup: &body,
-		}).Execute()
+		UpdateNetworkGroupRequest(updateReq).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "network_group", plan.Name.ValueString(), err, httpResp)
 

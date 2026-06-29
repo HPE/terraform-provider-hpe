@@ -113,6 +113,9 @@ func (r *powerScheduleResource) Create(ctx context.Context, req resource.CreateR
 	if !plan.SundayOffTime.IsNull() && !plan.SundayOffTime.IsUnknown() {
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
 
 	reqBody := sdk.AddPowerSchedulesRequest{Schedule: body}
 	result, httpResp, err := client.AutomationAPI.AddPowerSchedules(ctx).AddPowerSchedulesRequest(reqBody).Execute()
@@ -266,6 +269,9 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.SundayOffTime.IsNull() {
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
+	if !plan.Visibility.IsNull() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
 
 	_, httpResp, err := client.AutomationAPI.UpdatePowerSchedules(ctx, id).
 		UpdatePowerSchedulesRequest(sdk.UpdatePowerSchedulesRequest{
@@ -366,6 +372,11 @@ func mapGetResponseToModel(model *PowerScheduleModel, schedule *sdk.GetPowerSche
 		model.TotalMonthlyHoursSaved = types.Float64Value(float64(*schedule.TotalMonthlyHoursSaved))
 	} else {
 		model.TotalMonthlyHoursSaved = types.Float64Null()
+	}
+	if schedule.Visibility != nil {
+		model.Visibility = types.StringValue(*schedule.Visibility)
+	} else {
+		model.Visibility = types.StringNull()
 	}
 }
 

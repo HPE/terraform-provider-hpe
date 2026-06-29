@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -323,4 +324,11 @@ func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProv
 	if license.LicenseType != nil && license.LicenseType.Code != nil {
 		model.LicenseType = types.StringValue(*license.LicenseType.Code)
 	}
+	tenantVals := make([]attr.Value, 0, len(license.Tenants))
+	for _, t := range license.Tenants {
+		if t.Id != nil {
+			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
+		}
+	}
+	model.Tenants = types.ListValueMust(types.Int64Type, tenantVals)
 }
