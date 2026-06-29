@@ -1,0 +1,22 @@
+# InstanceActionAddNodeSshKeyPair
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Id** | Pointer to **int64** | The ID of the SSH key pair | [optional] 
+
+## Usage
+
+Instantiate with a Go composite literal:
+
+```go
+obj := &InstanceActionAddNodeSshKeyPair{
+    // Set fields directly
+}
+```
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

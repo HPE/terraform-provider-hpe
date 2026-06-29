@@ -1,0 +1,15 @@
+gitUserId: HewlettPackard
+gitRepoId: hpe-morpheus-go-sdk
+packageName: sdk
+
+additionalProperties:
+  goVersion: 1.24
+  isGoSubmodule: true
+  withGoMod: false
+  disallowAdditionalPropertiesIfNotPresent: false
+  useMapStructs: true
+
+files:
+  errors.mustache:
+    templateType: SupportingFiles
+    destinationFilename: errors.go

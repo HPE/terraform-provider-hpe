@@ -1,0 +1,25 @@
+# ApprovePolicyTypeConfiguration8
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**AccountIntegrationId** | **string** |  | 
+**WorkflowId** | Pointer to **string** |  | [optional] 
+**FlowId** | Pointer to **string** |  | [optional] 
+**WorkflowType** | Pointer to **string** |  | [optional] 
+
+## Usage
+
+Instantiate with a Go composite literal:
+
+```go
+obj := &ApprovePolicyTypeConfiguration8{
+    // Set fields directly
+}
+```
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

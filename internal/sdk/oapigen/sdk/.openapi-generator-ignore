@@ -1,0 +1,8 @@
+# OpenAPI Generator Ignore
+# Lines beginning with a # are comments
+
+# Exclude all recursively
+# We don't want to regenerate the tests automatically
+test/**
+# I don't think the OpenAPI spec produced by the generation process is 100% reliable for reproducing the generated client, so for now we will ignore it. Need to investigate further.
+api/**

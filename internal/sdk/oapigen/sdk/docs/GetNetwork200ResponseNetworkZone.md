@@ -1,0 +1,23 @@
+# GetNetwork200ResponseNetworkZone
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Id** | Pointer to **int64** | Cloud ID | [optional] 
+**Name** | Pointer to **string** | Cloud Name | [optional] 
+
+## Usage
+
+Instantiate with a Go composite literal:
+
+```go
+obj := &GetNetwork200ResponseNetworkZone{
+    // Set fields directly
+}
+```
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

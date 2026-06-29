@@ -1,0 +1,25 @@
+# UpdateStorageBucketsRequestStorageBucketConfigOneOf5
+
+## Properties
+
+Name | Type | Description | Notes
+------------ | ------------- | ------------- | -------------
+**Username** | Pointer to **string** | Username | [optional] 
+**ApiKey** | Pointer to **string** | API Key | [optional] 
+**Region** | Pointer to **string** | Region | [optional] 
+**IdentityUrl** | Pointer to **string** | Identity URL | [optional] 
+
+## Usage
+
+Instantiate with a Go composite literal:
+
+```go
+obj := &UpdateStorageBucketsRequestStorageBucketConfigOneOf5{
+    // Set fields directly
+}
+```
+
+
+[[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
+
+

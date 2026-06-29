@@ -1,0 +1,18 @@
+{{>partial_header}}
+package {{packageName}}
+
+var _ error = ResponseValidationError{}
+
+type ResponseValidationError struct {
+	message string
+}
+
+func (e ResponseValidationError) Error() string{
+	return e.message
+}
+
+func NewResponseValidationError(msg string) ResponseValidationError {
+	return ResponseValidationError{
+		message: msg,
+	}
+}
