@@ -13,5 +13,5 @@ resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
     shared            = false
     compute_server_id = 10
   }
-  config_alletramp_bmaas_wo_version = 1
+  config_alletramp_bmaas_wo_version = {{.WoVersion}}
 }

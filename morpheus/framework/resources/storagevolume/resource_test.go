@@ -191,3 +191,70 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 		},
 	})
 }
+
+// TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk exercises the typed
+// write-only config_alletramp_bmaas block (buildCreateConfig) end to end, and
+// confirms that incrementing config_alletramp_bmaas_wo_version forces a
+// replacement (the write-only block cannot be diffed in state, so the version
+// trigger drives the change).
+func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if capabilities.Missing(t, capabilities.Alletra) {
+		t.Log("Skipping test due to missing capabilities")
+	}
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_storage_volume.alletramp_bmaas"
+
+	createConfig, err := storagevolume.RenderStorageVolumeAlletraMPBMaaSConfig(t, map[string]string{
+		"Name":      name,
+		"WoVersion": "1",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bumpConfig, err := storagevolume.RenderStorageVolumeAlletraMPBMaaSConfig(t, map[string]string{
+		"Name":      name,
+		"WoVersion": "2",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expectReplace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionReplace),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + createConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", name),
+					resource.TestCheckResourceAttr(resourceName, "type_code", "hpealletraMPLUN"),
+					// config_alletramp_bmaas is write-only and not persisted in state.
+					resource.TestCheckNoResourceAttr(resourceName, "config_alletramp_bmaas.datastore_id"),
+					resource.TestCheckResourceAttr(resourceName, "config_alletramp_bmaas_wo_version", "1"),
+				),
+			},
+			{
+				// Bumping the write-only version trigger forces a replacement.
+				Config:           providerConfig + bumpConfig,
+				ConfigPlanChecks: expectReplace,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "config_alletramp_bmaas_wo_version", "2"),
+				),
+			},
+		},
+	})
+}
