@@ -42,10 +42,12 @@ storage volumes through this resource.
 
 ### Size
 
--> `max_storage` is specified in **GiB** and must be between 1 and 65536. For
-example, `max_storage = 100` creates a 100 GiB volume. (The Morpheus API stores
-and returns the size in bytes; the provider converts to and from GiB.) HPE
-Alletra 9000 (9060/9080) enforces a minimum volume size of 16 GiB.
+-> `max_storage` is specified in **GiB**. For example, `max_storage = 100`
+creates a 100 GiB volume. (The Morpheus API stores and returns the size in bytes;
+the provider converts to and from GiB.) HPE Alletra MP and Alletra 9000 volumes
+must be between 1 and 65536 GiB; other storage types only require a positive
+size. HPE Alletra 9000 (9060/9080) additionally enforces a 16 GiB minimum on the
+array.
 
 ### Write-only configuration
 
@@ -124,7 +126,7 @@ resource "hpe_morpheus_storage_volume" "generic" {
 - `config_alletramp_bmaas` (Attributes, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change. (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
 - `config_alletramp_bmaas_wo_version` (Number) Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.
 - `config_wo_version` (Number) Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.
-- `max_storage` (Number) The storage volume size in GiB. Must be between 1 and 65536 GiB.
+- `max_storage` (Number) The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.
 - `provision_type` (String) Provision type for storage volume types that support it.
 - `storage_group_id` (Number) The ID of the storage group.
 - `storage_server_id` (Number) The ID of the storage server.
@@ -135,6 +137,7 @@ resource "hpe_morpheus_storage_volume" "generic" {
 
 - `id` (Number) The ID of the storage volume.
 - `status` (String) The status of the storage volume.
+- `wwn` (String)
 
 <a id="nestedatt--config_alletramp_bmaas"></a>
 ### Nested Schema for `config_alletramp_bmaas`

@@ -131,10 +131,10 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_storage": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The storage volume size in GiB. Must be between 1 and 65536 GiB.",
-				MarkdownDescription: "The storage volume size in GiB. Must be between 1 and 65536 GiB.",
+				Description:         "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
+				MarkdownDescription: "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
 				Validators: []validator.Int64{
-					int64validator.Between(1, 65536),
+					maxStorageSize(),
 				},
 			},
 			"name": schema.StringAttribute{
@@ -144,8 +144,12 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"provision_type": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Provision type for storage volume types that support it.",
 				MarkdownDescription: "Provision type for storage volume types that support it.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 				Validators: []validator.String{
 					stringvalidator.OneOf("FULL", "TPVV", "SNP", "PEER", "TDVV"),
 				},
@@ -199,6 +203,9 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
 				},
 			},
+			"wwn": schema.StringAttribute{
+				Computed: true,
+			},
 		},
 		Description:         "Manages a Morpheus Storage Volume resource.",
 		MarkdownDescription: "Manages a Morpheus Storage Volume resource.",
@@ -219,6 +226,7 @@ type StorageVolumeModel struct {
 	StorageServerId               types.Int64               `tfsdk:"storage_server_id"`
 	TypeCode                      types.String              `tfsdk:"type_code"`
 	TypeId                        types.Int64               `tfsdk:"type_id"`
+	Wwn                           types.String              `tfsdk:"wwn"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAlletrampBmaasType{}

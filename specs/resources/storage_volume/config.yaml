@@ -149,13 +149,11 @@ storage_volume:
       description: The name of the storage volume.
     max_storage:
       computed_optional_required: optional
-      description: The storage volume size in GiB. Must be between 1 and 65536 GiB.
+      description: The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.
       validators:
         - custom:
-            imports:
-              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
             schema_definition: |-
-              int64validator.Between(1, 65536)
+              maxStorageSize()
     status:
       computed_optional_required: computed
       description: The status of the storage volume.
@@ -180,7 +178,8 @@ storage_volume:
       description: The ID of the storage group.
       requires_replace: true
     provision_type:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
+      requires_replace: true
       description: "Provision type for storage volume types that support it."
       one_of: [FULL, TPVV, SNP, PEER, TDVV]
     config:

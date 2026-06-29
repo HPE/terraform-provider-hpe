@@ -37,10 +37,12 @@ storage volumes through this resource.
 
 ### Size
 
--> `max_storage` is specified in **GiB** and must be between 1 and 65536. For
-example, `max_storage = 100` creates a 100 GiB volume. (The Morpheus API stores
-and returns the size in bytes; the provider converts to and from GiB.) HPE
-Alletra 9000 (9060/9080) enforces a minimum volume size of 16 GiB.
+-> `max_storage` is specified in **GiB**. For example, `max_storage = 100`
+creates a 100 GiB volume. (The Morpheus API stores and returns the size in bytes;
+the provider converts to and from GiB.) HPE Alletra MP and Alletra 9000 volumes
+must be between 1 and 65536 GiB; other storage types only require a positive
+size. HPE Alletra 9000 (9060/9080) additionally enforces a 16 GiB minimum on the
+array.
 
 ### Write-only configuration
 

@@ -89,18 +89,19 @@ func (r *storageVolumeResource) Create(
 		Type: volumeType,
 	}
 
-	// max_storage is expressed in GiB and sent as the top-level
-	// storageVolume.maxStorage field, which the API converts to bytes. It is
+	// max_storage is expressed in GiB. The Morpheus API stores and interprets
+	// storageVolume.maxStorage in bytes (it does not convert), so convert GiB to
+	// bytes here — mirroring the bytes-to-GiB conversion in the read path. It is
 	// carried in AdditionalProperties so it serialises at the top level of the
 	// storageVolume object (not inside config).
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
 		body.AdditionalProperties = map[string]interface{}{
-			"maxStorage": plan.MaxStorage.ValueInt64(),
+			"maxStorage": plan.MaxStorage.ValueInt64() * oneGibibyte,
 		}
 	}
 
 	if !plan.StorageServerId.IsNull() && !plan.StorageServerId.IsUnknown() {
-		body.StorageServer = sdk.AddStorageVolumesRequestStorageVolumeStorageServer{
+		body.StorageServer = &sdk.AddStorageVolumesRequestStorageVolumeStorageServer{
 			Id: plan.StorageServerId.ValueInt64(),
 		}
 	}
@@ -244,12 +245,11 @@ func (r *storageVolumeResource) Update(
 		Name: plan.Name.ValueStringPointer(),
 	}
 
-	// max_storage is expressed in GiB and sent as the top-level
-	// storageVolume.maxStorage field (the API converts GiB to bytes), matching
+	// max_storage is expressed in GiB; convert to bytes (the API unit), matching
 	// the create path.
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
 		body.AdditionalProperties = map[string]interface{}{
-			"maxStorage": plan.MaxStorage.ValueInt64(),
+			"maxStorage": plan.MaxStorage.ValueInt64() * oneGibibyte,
 		}
 	}
 
@@ -499,6 +499,14 @@ func mapGetResponseToModel(
 		model.ProvisionType = convert.StrToType(sv.ProvisionType.Get())
 	}
 
-	// StorageGroup is a NullableString in the read model (not a numeric ID),
-	// so we do NOT overwrite storage_group_id — leave plan/state value intact.
+	// wwn is a computed, read-only identifier assigned by the storage system.
+	model.Wwn = convert.StrToType(sv.Wwn.Get())
+
+	// StorageGroup is an object in the read model; map its id back to
+	// storage_group_id so it round-trips (and imports) cleanly.
+	if storageGroup := sv.StorageGroup; storageGroup != nil {
+		if id, ok := storageGroup["id"].(float64); ok {
+			model.StorageGroupId = types.Int64Value(int64(id))
+		}
+	}
 }
