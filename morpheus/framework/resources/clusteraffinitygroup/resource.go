@@ -145,7 +145,18 @@ func (r *clusterAffinityGroupResource) Create(
 
 		return
 	}
+
+	// The API silently drops tenant/site IDs that don't exist in the environment.
+	// Preserve plan values so state matches the plan and Terraform's consistency
+	// check passes. Read() will return the API-normalised values, surfacing any
+	// divergence as a plan diff on the next run.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readAg)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -279,7 +290,16 @@ func (r *clusterAffinityGroupResource) Update(
 
 		return
 	}
+
+	// Same as Create: preserve plan values for tenant_ids and resource_permissions
+	// so the consistency check passes when the API normalises submitted IDs.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readAg)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
