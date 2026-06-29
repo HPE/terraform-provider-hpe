@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"testing"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
@@ -15,28 +16,47 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
-	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 type SubProviderTest struct {
-	subprovider.SubProvider
+	adapter.ProviderAdapter
+	underlyingProvider fwprovider.Provider
 }
 
-func (t SubProviderTest) GetResources(
-	_ context.Context,
+var _ fwprovider.Provider = &SubProviderTest{}
+
+func (t *SubProviderTest) Resources(
+	ctx context.Context,
 ) []func() resource.Resource {
-	resources := []func() resource.Resource{
-		testhelpers.NewResource,
+	var adaptedResources []func() resource.Resource
+
+	for _, f := range t.underlyingProvider.Resources(ctx) {
+		adaptedResources = append(
+			adaptedResources,
+			func() resource.Resource {
+				return adapter.NewAdaptedResource(f(), &t.ProviderAdapter)
+			},
+		)
 	}
 
-	return resources
+	adaptedResources = append(
+		adaptedResources,
+		func() resource.Resource {
+			return adapter.NewAdaptedResource(testhelpers.NewResource(), &t.ProviderAdapter)
+		},
+	)
+
+	return adaptedResources
 }
 
 func New() *SubProviderTest {
-	m := morpheus.New()
-	t := SubProviderTest{SubProvider: m}
+	morpheusProvider := morpheus.New()
 
-	return &t
+	return &SubProviderTest{
+		ProviderAdapter:    *adapter.NewProviderAdapter(morpheusProvider),
+		underlyingProvider: morpheusProvider,
+	}
 }
 
 var testAccProtoV6ProviderFactories = map[string]func() (
