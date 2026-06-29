@@ -5,8 +5,10 @@ package convert
 import (
 	"context"
 	"fmt"
+	"reflect"
 
 	fwschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -124,11 +126,13 @@ func fwBlockToSdkv2(ctx context.Context, block fwschema.Block) *sdkv2schema.Sche
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, b.NestedObject.Attributes, b.NestedObject.Blocks),
 		}
+		out.MinItems, out.MaxItems = sizeConstraintsFromValidators(b.Validators)
 	case fwschema.SetNestedBlock:
 		out.Type = sdkv2schema.TypeSet
 		out.Elem = &sdkv2schema.Resource{
 			Schema: fwObjectToSdkv2SchemaMap(ctx, b.NestedObject.Attributes, b.NestedObject.Blocks),
 		}
+		out.MinItems, out.MaxItems = sizeConstraintsFromValidators(b.Validators)
 	default:
 		panic(fmt.Sprintf("unsupported framework block type %T", block))
 	}
@@ -166,4 +170,31 @@ func applyTFTypeToSdkSchema(ctx context.Context, out *sdkv2schema.Schema, typ tf
 	default:
 		panic(fmt.Sprintf("unsupported Terraform type %T", typ))
 	}
+}
+
+// sizeConstraintsFromValidators inspects validators for size constraints
+// and returns min/max items values. This allows the SDKv2 schema to properly
+// reflect MinItems/MaxItems for documentation generation (e.g., tfplugindocs).
+//
+// Accepts any slice of validators that implement validator.Describer (e.g.,
+// []validator.List or []validator.Set). The framework size validators
+// (SizeBetween, SizeAtMost, SizeAtLeast) return unexported types, so we use
+// reflection to match by type name and read their min/max fields directly.
+func sizeConstraintsFromValidators[T validator.Describer](validators []T) (minItems, maxItems int) {
+	for _, v := range validators {
+		rv := reflect.ValueOf(v)
+		typeName := rv.Type().Name()
+
+		switch typeName {
+		case "sizeBetweenValidator":
+			minItems = int(rv.FieldByName("min").Int())
+			maxItems = int(rv.FieldByName("max").Int())
+		case "sizeAtMostValidator":
+			maxItems = int(rv.FieldByName("max").Int())
+		case "sizeAtLeastValidator":
+			minItems = int(rv.FieldByName("min").Int())
+		}
+	}
+
+	return minItems, maxItems
 }

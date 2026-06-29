@@ -6,7 +6,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	fwschema "github.com/hashicorp/terraform-plugin-framework/provider/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sdkv2schema "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -56,7 +58,7 @@ func TestFwToSdkv2Schema(t *testing.T) {
 	}
 }
 
-func TestTestFwToSdkv2SchemaMapAttributes(t *testing.T) {
+func TestFwToSdkv2SchemaMap_Attributes(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -357,7 +359,7 @@ func TestTestFwToSdkv2SchemaMapAttributes(t *testing.T) {
 	}
 }
 
-func TestTestFwToSdkv2SchemaMapBlocks(t *testing.T) {
+func TestFwToSdkv2SchemaMap_Blocks(t *testing.T) {
 	t.Parallel()
 
 	testCases := map[string]struct {
@@ -410,6 +412,90 @@ func TestTestFwToSdkv2SchemaMapBlocks(t *testing.T) {
 					Elem: &sdkv2schema.Resource{
 						Schema: map[string]*sdkv2schema.Schema{
 							"address": {Type: sdkv2schema.TypeString, Required: true},
+						},
+					},
+				},
+			},
+		},
+		"list-nested-block-with-size-between-validator": {
+			input: fwschema.Schema{
+				Blocks: map[string]fwschema.Block{
+					"morpheus": fwschema.ListNestedBlock{
+						NestedObject: fwschema.NestedBlockObject{
+							Attributes: map[string]fwschema.Attribute{
+								"url": fwschema.StringAttribute{Required: true},
+							},
+						},
+						Validators: []validator.List{
+							listvalidator.SizeBetween(0, 1),
+						},
+					},
+				},
+			},
+			expected: map[string]*sdkv2schema.Schema{
+				"morpheus": {
+					Type:     sdkv2schema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Elem: &sdkv2schema.Resource{
+						Schema: map[string]*sdkv2schema.Schema{
+							"url": {Type: sdkv2schema.TypeString, Required: true},
+						},
+					},
+				},
+			},
+		},
+		"list-nested-block-with-size-at-most-validator": {
+			input: fwschema.Schema{
+				Blocks: map[string]fwschema.Block{
+					"config": fwschema.ListNestedBlock{
+						NestedObject: fwschema.NestedBlockObject{
+							Attributes: map[string]fwschema.Attribute{
+								"host": fwschema.StringAttribute{Required: true},
+							},
+						},
+						Validators: []validator.List{
+							listvalidator.SizeAtMost(3),
+						},
+					},
+				},
+			},
+			expected: map[string]*sdkv2schema.Schema{
+				"config": {
+					Type:     sdkv2schema.TypeList,
+					Optional: true,
+					MaxItems: 3,
+					Elem: &sdkv2schema.Resource{
+						Schema: map[string]*sdkv2schema.Schema{
+							"host": {Type: sdkv2schema.TypeString, Required: true},
+						},
+					},
+				},
+			},
+		},
+		"list-nested-block-with-size-at-least-validator": {
+			input: fwschema.Schema{
+				Blocks: map[string]fwschema.Block{
+					"backend": fwschema.ListNestedBlock{
+						NestedObject: fwschema.NestedBlockObject{
+							Attributes: map[string]fwschema.Attribute{
+								"addr": fwschema.StringAttribute{Required: true},
+							},
+						},
+						Validators: []validator.List{
+							listvalidator.SizeAtLeast(1),
+						},
+					},
+				},
+			},
+			expected: map[string]*sdkv2schema.Schema{
+				"backend": {
+					Type:     sdkv2schema.TypeList,
+					Optional: true,
+					MinItems: 1,
+					Elem: &sdkv2schema.Resource{
+						Schema: map[string]*sdkv2schema.Schema{
+							"addr": {Type: sdkv2schema.TypeString, Required: true},
 						},
 					},
 				},
@@ -519,7 +605,7 @@ func TestTestFwToSdkv2SchemaMapBlocks(t *testing.T) {
 	}
 }
 
-func TestTestFwToSdkv2SchemaMapEmpty(t *testing.T) {
+func TestFwToSdkv2SchemaMap_Empty(t *testing.T) {
 	t.Parallel()
 
 	got := FwToSdkv2SchemaMap(fwschema.Schema{})
@@ -528,7 +614,7 @@ func TestTestFwToSdkv2SchemaMapEmpty(t *testing.T) {
 	}
 }
 
-func TestTestFwToSdkv2SchemaMapAttributesAndBlocks(t *testing.T) {
+func TestFwToSdkv2SchemaMap_AttributesAndBlocks(t *testing.T) {
 	t.Parallel()
 
 	in := fwschema.Schema{
