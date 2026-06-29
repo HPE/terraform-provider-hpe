@@ -20,7 +20,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.Network) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -171,7 +171,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.Azure, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -302,7 +302,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -396,7 +396,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.AWS, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -519,7 +519,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.GCP, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -630,7 +630,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.HVM) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

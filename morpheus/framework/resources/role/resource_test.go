@@ -38,7 +38,7 @@ func TestAccMorpheusRoleResourceUserRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -118,7 +118,7 @@ func TestAccMorpheusRoleResourceTenantRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -200,7 +200,7 @@ func TestAccMorpheusRoleResourceAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -327,7 +327,7 @@ func TestAccMorpheusRoleResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -396,7 +396,7 @@ func TestAccMorpheusRoleResourcePermissionsDefaultAccessPermissionsOk(t *testing
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.VDI) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -511,7 +511,7 @@ func TestAccMorpheusRoleResourceAllPermissionsUserRoleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.VDI) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
@@ -796,7 +796,7 @@ func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.VDI) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 	t.Parallel()
 	if testing.Short() {
