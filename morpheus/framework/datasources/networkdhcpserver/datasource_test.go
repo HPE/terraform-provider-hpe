@@ -57,7 +57,7 @@ func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -95,7 +95,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -133,7 +133,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	if testing.Short() {
@@ -173,7 +173,7 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()
@@ -200,7 +200,7 @@ func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Log("Skipping test due to missing capabilities")
+		t.Skip("Skipping test due to missing capabilities")
 	}
 
 	t.Parallel()

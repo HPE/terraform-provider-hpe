@@ -21,7 +21,7 @@ import (
 //	func TestAccMorpheusVMwareCloud(t *testing.T) {
 //	    defer testhelpers.RecordResult(t)
 //	    if capabilities.Missing(t, capabilities.VMware) {
-//	        t.Log("Skipping test due to missing capabilities")
+//	        t.Skip("Skipping test due to missing capabilities")
 //	    }
 //	    t.Parallel()
 //	    // ... rest of test
@@ -52,7 +52,7 @@ func Missing(t *testing.T, required ...Capability) bool {
 //	    defer testhelpers.RecordResult(t)
 //	    // Runs if NSXT OR NSXV is available
 //	    if capabilities.MissingAll(t, capabilities.NSXT, capabilities.NSXV) {
-//	        t.Log("Skipping test due to missing capabilities")
+//	        t.Skip("Skipping test due to missing capabilities")
 //	    }
 //	    // ... rest of test
 //	}

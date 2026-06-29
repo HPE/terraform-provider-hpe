@@ -87,7 +87,7 @@ type ListHosts200ResponseAllOfServersInner struct {
 	Volumes                  []ListHosts200ResponseAllOfServersInnerVolumesInner           `json:"volumes,omitempty"`
 	Controllers              []ListHosts200ResponseAllOfServersInnerControllersInner       `json:"controllers,omitempty"`
 	Interfaces               []ListHosts200ResponseAllOfServersInnerInterfacesInner        `json:"interfaces,omitempty"`
-	Labels                   []map[string]interface{}                                      `json:"labels,omitempty"`
+	Labels                   []string                                                      `json:"labels,omitempty"`
 	Tags                     []map[string]interface{}                                      `json:"tags,omitempty"`
 	Enabled                  *bool                                                         `json:"enabled,omitempty"`
 	TagCompliant             NullableBool                                                  `json:"tagCompliant,omitempty"`

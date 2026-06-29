@@ -32,7 +32,7 @@ func TestRecordResultRecordsCapabilitySkip(t *testing.T) {
 		defer RecordResult(st)
 
 		if capabilities.Missing(st, capabilities.Capability("nonexistent_capability")) {
-			st.Log("Skipping test due to missing capabilities")
+			st.Skip("Skipping test due to missing capabilities")
 		}
 		st.Fatal("test body must not run when a required capability is missing")
 	})
