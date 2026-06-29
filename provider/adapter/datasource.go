@@ -44,10 +44,12 @@ type DataSourceAdapter struct {
 	withValidateConfig   datasource.DataSourceWithValidateConfig
 }
 
-var _ datasource.DataSource = &DataSourceAdapter{}
-var _ datasource.DataSourceWithConfigure = &DataSourceAdapter{}
-var _ datasource.DataSourceWithConfigValidators = &DataSourceAdapter{}
-var _ datasource.DataSourceWithValidateConfig = &DataSourceAdapter{}
+var (
+	_ datasource.DataSource                     = &DataSourceAdapter{}
+	_ datasource.DataSourceWithConfigure        = &DataSourceAdapter{}
+	_ datasource.DataSourceWithConfigValidators = &DataSourceAdapter{}
+	_ datasource.DataSourceWithValidateConfig   = &DataSourceAdapter{}
+)
 
 func NewDataSourceAdapter(in datasource.DataSource, p provider.Provider) *DataSourceAdapter {
 	d := &DataSourceAdapter{in: in, provider: p}

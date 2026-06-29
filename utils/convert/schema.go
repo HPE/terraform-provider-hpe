@@ -31,7 +31,11 @@ func FwToSdkv2SchemaMap(in fwschema.Schema) map[string]*sdkv2schema.Schema {
 	return fwObjectToSdkv2SchemaMap(context.Background(), in.Attributes, in.Blocks)
 }
 
-func fwObjectToSdkv2SchemaMap(ctx context.Context, attrs map[string]fwschema.Attribute, blocks map[string]fwschema.Block) map[string]*sdkv2schema.Schema {
+func fwObjectToSdkv2SchemaMap(
+	ctx context.Context,
+	attrs map[string]fwschema.Attribute,
+	blocks map[string]fwschema.Block,
+) map[string]*sdkv2schema.Schema {
 	out := make(map[string]*sdkv2schema.Schema, len(attrs)+len(blocks))
 
 	for name, attr := range attrs {

@@ -54,14 +54,16 @@ type ResourceAdapter struct {
 	// unlike the other interfaces which are handled at RPC request time.
 }
 
-var _ resource.Resource = &ResourceAdapter{}
-var _ resource.ResourceWithConfigure = &ResourceAdapter{}
-var _ resource.ResourceWithConfigValidators = &ResourceAdapter{}
-var _ resource.ResourceWithImportState = &ResourceAdapter{}
-var _ resource.ResourceWithModifyPlan = &ResourceAdapter{}
-var _ resource.ResourceWithMoveState = &ResourceAdapter{}
-var _ resource.ResourceWithUpgradeState = &ResourceAdapter{}
-var _ resource.ResourceWithValidateConfig = &ResourceAdapter{}
+var (
+	_ resource.Resource                     = &ResourceAdapter{}
+	_ resource.ResourceWithConfigure        = &ResourceAdapter{}
+	_ resource.ResourceWithConfigValidators = &ResourceAdapter{}
+	_ resource.ResourceWithImportState      = &ResourceAdapter{}
+	_ resource.ResourceWithModifyPlan       = &ResourceAdapter{}
+	_ resource.ResourceWithMoveState        = &ResourceAdapter{}
+	_ resource.ResourceWithUpgradeState     = &ResourceAdapter{}
+	_ resource.ResourceWithValidateConfig   = &ResourceAdapter{}
+)
 
 func NewResourceAdapter(in resource.Resource, p provider.Provider) *ResourceAdapter {
 	r := &ResourceAdapter{in: in, provider: p}

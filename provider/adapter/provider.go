@@ -56,15 +56,17 @@ type ProviderAdapter struct {
 	withValidateConfig   provider.ProviderWithValidateConfig
 }
 
-var _ provider.Provider = &ProviderAdapter{}
-var _ provider.ProviderWithActions = &ProviderAdapter{}
-var _ provider.ProviderWithConfigValidators = &ProviderAdapter{}
-var _ provider.ProviderWithEphemeralResources = &ProviderAdapter{}
-var _ provider.ProviderWithFunctions = &ProviderAdapter{}
-var _ provider.ProviderWithListResources = &ProviderAdapter{}
-var _ provider.ProviderWithMetaSchema = &ProviderAdapter{}
-var _ provider.ProviderWithStateStores = &ProviderAdapter{}
-var _ provider.ProviderWithValidateConfig = &ProviderAdapter{}
+var (
+	_ provider.Provider                       = &ProviderAdapter{}
+	_ provider.ProviderWithActions            = &ProviderAdapter{}
+	_ provider.ProviderWithConfigValidators   = &ProviderAdapter{}
+	_ provider.ProviderWithEphemeralResources = &ProviderAdapter{}
+	_ provider.ProviderWithFunctions          = &ProviderAdapter{}
+	_ provider.ProviderWithListResources      = &ProviderAdapter{}
+	_ provider.ProviderWithMetaSchema         = &ProviderAdapter{}
+	_ provider.ProviderWithStateStores        = &ProviderAdapter{}
+	_ provider.ProviderWithValidateConfig     = &ProviderAdapter{}
+)
 
 // Constructs a new Provider Adapter from any standard Terraform Plugin Framework Provider.
 func NewProviderAdapter(in provider.Provider) *ProviderAdapter {
@@ -156,6 +158,7 @@ func (p *ProviderAdapter) Resources(
 			},
 		)
 	}
+
 	return adaptedResources
 }
 
@@ -171,6 +174,7 @@ func (p *ProviderAdapter) DataSources(
 			},
 		)
 	}
+
 	return adaptedDataSources
 }
 
