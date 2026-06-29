@@ -453,6 +453,21 @@ func boolToOnOff(b bool) string {
 	return "off"
 }
 
+// objectID extracts the numeric "id" from a Morpheus relation object that the
+// read API encodes as a generic JSON object (e.g. storageServer, storageGroup).
+// JSON numbers decode into float64, so the value is asserted as float64 and
+// narrowed to int64. The bool reports whether a usable id was present; a nil map
+// or a missing/non-numeric "id" yields false, letting callers leave the
+// corresponding optional attribute untouched.
+func objectID(obj map[string]interface{}) (int64, bool) {
+	id, ok := obj["id"].(float64)
+	if !ok {
+		return 0, false
+	}
+
+	return int64(id), true
+}
+
 // mapGetResponseToModel maps the API read response onto the Terraform model.
 // Write-only config attributes (config, config_alletramp_bmaas) are NOT overwritten —
 // the API read does not return config, so we preserve whatever the plan/state holds.
@@ -479,10 +494,8 @@ func mapGetResponseToModel(
 		model.TypeId = types.Int64Value(*sv.TypeId)
 	}
 
-	if storageServer := sv.StorageServer; storageServer != nil {
-		if id, ok := storageServer["id"].(float64); ok {
-			model.StorageServerId = types.Int64Value(int64(id))
-		}
+	if id, ok := objectID(sv.StorageServer); ok {
+		model.StorageServerId = types.Int64Value(id)
 	}
 
 	// The API returns maxStorage in bytes; the resource expresses it in GiB.
@@ -504,9 +517,7 @@ func mapGetResponseToModel(
 
 	// StorageGroup is an object in the read model; map its id back to
 	// storage_group_id so it round-trips (and imports) cleanly.
-	if storageGroup := sv.StorageGroup; storageGroup != nil {
-		if id, ok := storageGroup["id"].(float64); ok {
-			model.StorageGroupId = types.Int64Value(int64(id))
-		}
+	if id, ok := objectID(sv.StorageGroup); ok {
+		model.StorageGroupId = types.Int64Value(id)
 	}
 }
