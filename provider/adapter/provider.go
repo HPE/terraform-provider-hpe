@@ -83,7 +83,7 @@ func NewProviderAdapter(in provider.Provider) *ProviderAdapter {
 }
 
 // The constructor that should be used for passing the child into the parent Provider.
-func NewAdaptedChildProvider(in provider.Provider) provider.Provider {
+func NewAdaptedProvider(in provider.Provider) provider.Provider {
 	return NewProviderAdapter(in)
 }
 
