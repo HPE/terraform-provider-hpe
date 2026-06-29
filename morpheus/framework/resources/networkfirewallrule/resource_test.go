@@ -15,12 +15,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -178,7 +178,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceExampleOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		CheckDestroy:             checkDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -317,7 +317,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
 	checkUpdateFn := resource.ComposeAggregateTestCheckFunc(updateChecks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		CheckDestroy:             checkDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -388,7 +388,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceNestedAttributesOk(t *testing.T) 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		CheckDestroy:             checkDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -425,7 +425,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceImportBadIDError(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		CheckDestroy:             checkDestroy(t),
 		Steps: []resource.TestStep{
 			{
@@ -467,7 +467,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceImportNonNumericIDError(t *testin
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		CheckDestroy:             checkDestroy(t),
 		Steps: []resource.TestStep{
 			{

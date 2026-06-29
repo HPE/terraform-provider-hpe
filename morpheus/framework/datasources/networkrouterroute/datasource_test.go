@@ -10,12 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
 	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	routeresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -100,7 +100,7 @@ data "hpe_morpheus_network_router_route" "example" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(routeChecks()...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + routerFixture(t, name) + routeFixture(t, name) + dataSourceConfig,
@@ -139,7 +139,7 @@ func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(routeChecks()...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + routerFixture(t, name) + routeFixture(t, name) + dataSourceConfig,
@@ -177,7 +177,7 @@ data "hpe_morpheus_network_router_route" "example" {
 	expected := regexp.MustCompile(`no network router route found`)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      providerConfig + routerFixture(t, name) + dataSourceConfig,
@@ -204,7 +204,7 @@ func TestAccMorpheusFindNetworkRouterRouteNoSearchAttrs(t *testing.T) {
 	expected := networkrouterroute.ErrorNoValidSearchTerms
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
