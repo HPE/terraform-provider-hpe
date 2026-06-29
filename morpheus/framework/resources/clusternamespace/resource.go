@@ -330,9 +330,9 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 				tenantVals = append(tenantVals, types.Int64Value(*a.Id))
 			}
 		}
-		model.TenantIds = types.ListValueMust(types.Int64Type, tenantVals)
+		model.TenantIds = types.SetValueMust(types.Int64Type, tenantVals)
 	} else {
-		model.TenantIds = types.ListValueMust(types.Int64Type, []attr.Value{})
+		model.TenantIds = types.SetValueMust(types.Int64Type, []attr.Value{})
 	}
 	// Map resource_permissions from permissions.resourcePermissions
 	if ns.Permissions != nil && ns.Permissions.ResourcePermissions != nil {

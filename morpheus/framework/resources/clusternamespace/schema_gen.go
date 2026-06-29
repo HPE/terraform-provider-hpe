@@ -105,7 +105,7 @@ func ClusterNamespaceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Resource permissions for group and service plan access.",
 				MarkdownDescription: "Resource permissions for group and service plan access.",
 			},
-			"tenant_ids": schema.ListAttribute{
+			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
 				Description:         "List of tenant account IDs that are allowed access.",
@@ -137,7 +137,7 @@ type ClusterNamespaceModel struct {
 	Id                  types.Int64              `tfsdk:"id"`
 	Name                types.String             `tfsdk:"name"`
 	ResourcePermissions ResourcePermissionsValue `tfsdk:"resource_permissions"`
-	TenantIds           types.List               `tfsdk:"tenant_ids"`
+	TenantIds           types.Set                `tfsdk:"tenant_ids"`
 	Visibility          types.String             `tfsdk:"visibility"`
 }
 

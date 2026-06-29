@@ -6,7 +6,7 @@ cluster_affinity_group:
         computed_optional_required: optional
         description: Description of the affinity group.
     tenantIds:
-      list:
+      set:
         computed_optional_required: optional
         description: List of tenant account IDs that are allowed access.
         element_type:

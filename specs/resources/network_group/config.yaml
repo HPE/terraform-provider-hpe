@@ -2,7 +2,7 @@ network_group:
   description: "Manages a Morpheus Network Group resource."
   templates:
     tenantIds:
-      list:
+      set:
         computed_optional_required: optional
         description: List of tenant account IDs that are allowed access.
         element_type:

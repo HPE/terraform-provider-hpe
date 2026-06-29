@@ -67,7 +67,7 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network firewall rule group priority",
 				MarkdownDescription: "Network firewall rule group priority",
 			},
-			"tenant_ids": schema.ListAttribute{
+			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
 				Description:         "List of tenant account IDs that are allowed access. Only configurable from a master tenant account.",
@@ -100,6 +100,6 @@ type NetworkFirewallRuleGroupModel struct {
 	Name                 types.String `tfsdk:"name"`
 	NetworkIntegrationId types.Int64  `tfsdk:"network_integration_id"`
 	Priority             types.Int64  `tfsdk:"priority"`
-	TenantIds            types.List   `tfsdk:"tenant_ids"`
+	TenantIds            types.Set    `tfsdk:"tenant_ids"`
 	Visibility           types.String `tfsdk:"visibility"`
 }

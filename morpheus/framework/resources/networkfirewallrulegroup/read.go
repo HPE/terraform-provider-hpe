@@ -109,11 +109,11 @@ func getNetworkFirewallRuleGroupAsState(
 				ids = append(ids, *t.Id)
 			}
 		}
-		listVal, listDiags := types.ListValueFrom(ctx, types.Int64Type, ids)
+		listVal, listDiags := types.SetValueFrom(ctx, types.Int64Type, ids)
 		diags.Append(listDiags...)
 		state.TenantIds = listVal
 	} else {
-		state.TenantIds = types.ListValueMust(types.Int64Type, []attr.Value{})
+		state.TenantIds = types.SetValueMust(types.Int64Type, []attr.Value{})
 	}
 
 	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.

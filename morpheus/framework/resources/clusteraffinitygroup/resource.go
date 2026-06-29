@@ -367,7 +367,7 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
 		}
 	}
-	model.TenantIds = types.ListValueMust(types.Int64Type, tenantVals)
+	model.TenantIds = types.SetValueMust(types.Int64Type, tenantVals)
 	if ag.ResourcePermissions != nil {
 		siteVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
 		for _, s := range ag.ResourcePermissions.Sites {
