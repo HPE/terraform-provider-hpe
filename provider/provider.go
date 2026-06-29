@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
+	"github.com/HPE/terraform-provider-hpe/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	version "github.com/hashicorp/go-version"
@@ -67,15 +68,18 @@ func (p *HpeProvider) Schema(
 		s.Metadata(ctx, provider.MetadataRequest{}, metaResp)
 		s.Schema(ctx, provider.SchemaRequest{}, schemaResp)
 
-		// switch metaResp.TypeName {
-		// case "hpe_opsramp":
-		// 	trimmed := strings.TrimPrefix(metaResp.TypeName, "hpe_")
-		// 	resp.Schema.Blocks[trimmed] = schemaResp.Schema.Blocks[metaResp.TypeName]
+		blockName := metaResp.TypeName
 
-		// default:
-		// 	resp.Schema.Blocks[metaResp.TypeName] = schemaResp.Schema.Blocks[metaResp.TypeName]
-		// }
-		resp.Schema.Blocks[metaResp.TypeName] = schemaResp.Schema.Blocks[metaResp.TypeName]
+		// Prevent a panic if one of the child providers was passed
+		// without using the adapter layer, and surface the error as a diagnostic.
+		block, ok := schemaResp.Schema.Blocks[blockName]
+		if !ok || block == nil {
+			resp.Diagnostics.AddError(errfmt.ChildProviderSchemaErr(metaResp.TypeName))
+
+			return
+		}
+
+		resp.Schema.Blocks[blockName] = block
 	}
 }
 
@@ -152,15 +156,16 @@ func (p *HpeProvider) Configure(
 		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
 
 		// handle opsramp provider naming quirk
-		// if childMetaResp.TypeName == "hpe_opsramp" {
-		// 	childMetaResp.TypeName = strings.TrimPrefix(childMetaResp.TypeName, "hpe_")
-		// }
+		blockName := childMetaResp.TypeName
+		if childMetaResp.TypeName == "hpe_opsramp" {
+			blockName = strings.TrimPrefix(childMetaResp.TypeName, "hpe_")
+		}
 
 		// Since the "hpe" provider is using ListNestedBlock for its configs,
 		// we need to pass the 0th ListNestedBlock to the child provider
 		// so that it can parse its config as a flat map[string]Attribute
 		blocks := req.Config.Schema.GetBlocks()
-		block := blocks[childMetaResp.TypeName]
+		block := blocks[blockName]
 		fwAttrs := block.GetNestedObject().GetAttributes()
 
 		schemaAttrs := make(map[string]schema.Attribute)
@@ -172,7 +177,7 @@ func (p *HpeProvider) Configure(
 		}
 
 		// Extract the list tftypes.Value for this child's block.
-		listVal, ok := parentAttrs[childMetaResp.TypeName]
+		listVal, ok := parentAttrs[blockName]
 		if !ok || listVal.IsNull() || !listVal.IsKnown() {
 			continue
 		}
