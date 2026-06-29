@@ -57,7 +57,6 @@ func (p *HpeProvider) Schema(
 	resp *provider.SchemaResponse,
 ) {
 	resp.Schema = schema.Schema{
-		// Attributes: make(map[string]schema.Attribute),
 		Blocks: make(map[string]schema.Block),
 	}
 
