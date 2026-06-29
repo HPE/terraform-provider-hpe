@@ -118,6 +118,9 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Preserve plan value: API may silently drop tenant IDs that don't exist.
+	state.TenantIds = plan.TenantIds
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(

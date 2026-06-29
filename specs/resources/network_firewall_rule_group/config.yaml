@@ -3,7 +3,7 @@ network_firewall_rule_group:
   templates:
     tenantIds:
       set:
-        computed_optional_required: optional
+        computed_optional_required: computed_optional
         description: List of tenant account IDs that are allowed access. Only configurable from a master tenant account.
         element_type:
           int64: {}

@@ -127,7 +127,18 @@ func (r *clusterNamespaceResource) Create(
 
 		return
 	}
+
+	// The API silently drops tenant/site/plan IDs that don't exist in the environment.
+	// Preserve plan values so state matches the plan and Terraform's consistency
+	// check passes. Read() will return the API-normalised values, surfacing any
+	// divergence as a plan diff on the next run.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readNs)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -239,7 +250,16 @@ func (r *clusterNamespaceResource) Update(
 
 		return
 	}
+
+	// Same as Create: preserve plan values for tenant_ids and resource_permissions
+	// so the consistency check passes when the API normalises submitted IDs.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readNs)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

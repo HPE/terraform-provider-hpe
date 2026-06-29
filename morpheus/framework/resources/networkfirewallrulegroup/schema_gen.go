@@ -70,6 +70,7 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
+				Computed:            true,
 				Description:         "List of tenant account IDs that are allowed access. Only configurable from a master tenant account.",
 				MarkdownDescription: "List of tenant account IDs that are allowed access. Only configurable from a master tenant account.",
 			},
