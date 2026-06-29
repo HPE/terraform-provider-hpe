@@ -88,7 +88,7 @@ func (t *SubProviderTest) Resources(
 }
 
 func New() *SubProviderTest {
-	morpheusProvider := morpheus.NewMorpheusProvider()
+	morpheusProvider := morpheus.New()
 	return &SubProviderTest{
 		ProviderAdapter:    *adapter.NewProviderAdapter(morpheusProvider),
 		underlyingProvider: morpheusProvider,
@@ -106,7 +106,7 @@ func NewWithCustomHTTPClient() *SubProviderTest {
 		)
 	}
 
-	morpheusProvider := morpheus.NewMorpheusProvider(morpheus.MorpheusWithClientFactory(f))
+	morpheusProvider := morpheus.New(morpheus.MorpheusWithClientFactory(f))
 	return &SubProviderTest{
 		ProviderAdapter:    *adapter.NewProviderAdapter(morpheusProvider),
 		underlyingProvider: morpheusProvider,

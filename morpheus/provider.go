@@ -30,7 +30,7 @@ func MorpheusWithClientFactory(f func(model.MorpheusProviderModel) *clientfactor
 	}
 }
 
-func NewMorpheusProvider(opts ...Option) *MorpheusProvider {
+func New(opts ...Option) *MorpheusProvider {
 	f := func(m model.MorpheusProviderModel) *clientfactory.ClientFactory {
 		return clientfactory.New(m)
 	}

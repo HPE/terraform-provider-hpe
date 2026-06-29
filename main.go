@@ -35,7 +35,7 @@ func main() {
 
 	p := provider.New(
 		version,
-		adapter.NewAdaptedChildProvider(morpheus.NewMorpheusProvider()),
+		adapter.NewAdaptedChildProvider(morpheus.New()),
 	)
 
 	var opts []tf6server.ServeOpt
