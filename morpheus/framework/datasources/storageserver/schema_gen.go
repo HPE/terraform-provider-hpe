@@ -138,8 +138,8 @@ func StorageServerDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"type_code": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The storage server type code (for example, 3par, netapp).",
-				MarkdownDescription: "The storage server type code (for example, 3par, netapp).",
+				Description:         "The storage server type code (for example, 3par or hpealletramp-storage-provider).",
+				MarkdownDescription: "The storage server type code (for example, 3par or hpealletramp-storage-provider).",
 			},
 			"type_id": schema.Int64Attribute{
 				Computed:            true,

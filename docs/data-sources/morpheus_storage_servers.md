@@ -138,7 +138,7 @@ Read-Only:
 - `status` (String)
 - `status_date` (String)
 - `status_message` (String)
-- `type_code` (String) The storage server type code (for example, 3par, netapp).
+- `type_code` (String) The storage server type code (for example, 3par or hpealletramp-storage-provider).
 - `type_id` (Number) The storage server type ID.
 - `type_name` (String) The storage server type name.
 - `used_storage` (Number)
