@@ -1,0 +1,132 @@
+load_balancer_profile:
+  templates:
+    # https_redirect is modelled as a bool in Terraform; the provider converts
+    # it to the API "on"/"off" string. Replaces the auto-extracted string enum.
+    config_http_https_redirect:
+      bool:
+        computed_optional_required: computed_optional
+        description: >-
+          Whether to redirect HTTP traffic to HTTPS. Maps to the API "on"/"off"
+          value; leave unset for no redirection. When false ("off"), set
+          redirect_address.
+    # Single top-level tags set, shared across all service types (the provider
+    # injects it into the active config block). Replaces the per-block tags.
+    tags:
+      set_nested:
+        computed_optional_required: optional
+        description: NSX-T tags applied to the profile.
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: Tag name.
+            - name: value
+              string:
+                computed_optional_required: optional
+                description: Tag scope/value.
+
+  moves:
+    - load_balancer_profile: ""                                          # unnest envelope wrapper
+    # Extract the 8 typed config variants from the anyOf shell to top level
+    - config.httpload_balancer_profile_config: config_http
+    - config.fast_tcpload_balancer_profile_config: config_fast_tcp
+    - config.fast_udpload_balancer_profile_config: config_fast_udp
+    - config.cookie_persistence_load_balancer_profile_config: config_cookie_persistence
+    - config.source_ippersistence_load_balancer_profile_config: config_source_ip_persistence
+    - config.generic_persistence_load_balancer_profile_config: config_generic_persistence
+    - config.client_sslload_balancer_profile_config: config_client_ssl
+    - config.server_sslload_balancer_profile_config: config_server_ssl
+    # Replace the string https_redirect with the bool template (must run after
+    # config_http is extracted above)
+    - template-config_http_https_redirect: config_http.https_redirect
+    # Inject the single top-level tags set
+    - template-tags: tags
+
+  removes:
+    - config                                                             # empty anyOf shell (no dynamic fallback)
+    - success                                                            # API response envelope
+    - msg                                                                # API response envelope
+    - created_by                                                         # object the provider does not surface
+    # profileType is auto-injected by the provider from service_type
+    - config_http.profile_type
+    - config_fast_tcp.profile_type
+    - config_fast_udp.profile_type
+    - config_cookie_persistence.profile_type
+    - config_source_ip_persistence.profile_type
+    - config_generic_persistence.profile_type
+    - config_client_ssl.profile_type
+    - config_server_ssl.profile_type
+    # Per-block tags replaced by the single top-level tags set
+    - config_http.tags
+    - config_fast_tcp.tags
+    - config_fast_udp.tags
+    - config_cookie_persistence.tags
+    - config_source_ip_persistence.tags
+    - config_generic_persistence.tags
+    - config_client_ssl.tags
+    - config_server_ssl.tags
+
+  overrides:
+    id:
+      state_for_unknown: true
+    load_balancer_id:
+      computed_optional_required: required
+      requires_replace: true
+      description: The ID of the load balancer this profile belongs to.
+    name:
+      computed_optional_required: required
+      description: The name of the load balancer profile.
+    description:
+      computed_optional_required: optional
+      description: A description of the load balancer profile.
+    service_type:
+      computed_optional_required: required
+      requires_replace: true
+      description: >-
+        The profile service type. Determines which config_* block applies.
+      one_of:
+        - LBHttpProfile
+        - LBFastTcpProfile
+        - LBFastUdpProfile
+        - LBCookiePersistenceProfile
+        - LBSourceIpPersistenceProfile
+        - LBGenericPersistenceProfile
+        - LBClientSslProfile
+        - LBServerSslProfile
+    tags:
+      computed_optional_required: optional
+      description: NSX-T tags applied to the profile.
+    # cookie_type is exposed with friendly values; the provider translates
+    # session<->LBSessionCookieTime and persistence<->LBPersistenceCookieTime.
+    config_cookie_persistence.cookie_type:
+      one_of: [session, persistence]
+      description: >-
+        Cookie time type: `session` (LBSessionCookieTime) or `persistence`
+        (LBPersistenceCookieTime). Required when cookie_mode is INSERT.
+    # The 8 config blocks are mutually exclusive (only the one matching
+    # service_type may be set).
+    config_http:
+      computed_optional_required: optional
+      conflicts_with: [config_fast_tcp, config_fast_udp, config_cookie_persistence, config_source_ip_persistence, config_generic_persistence, config_client_ssl, config_server_ssl]
+    config_fast_tcp:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_udp, config_cookie_persistence, config_source_ip_persistence, config_generic_persistence, config_client_ssl, config_server_ssl]
+    config_fast_udp:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_cookie_persistence, config_source_ip_persistence, config_generic_persistence, config_client_ssl, config_server_ssl]
+    config_cookie_persistence:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_fast_udp, config_source_ip_persistence, config_generic_persistence, config_client_ssl, config_server_ssl]
+    config_source_ip_persistence:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_fast_udp, config_cookie_persistence, config_generic_persistence, config_client_ssl, config_server_ssl]
+    config_generic_persistence:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_fast_udp, config_cookie_persistence, config_source_ip_persistence, config_client_ssl, config_server_ssl]
+    config_client_ssl:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_fast_udp, config_cookie_persistence, config_source_ip_persistence, config_generic_persistence, config_server_ssl]
+    config_server_ssl:
+      computed_optional_required: optional
+      conflicts_with: [config_http, config_fast_tcp, config_fast_udp, config_cookie_persistence, config_source_ip_persistence, config_generic_persistence, config_client_ssl]

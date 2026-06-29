@@ -1,0 +1,42 @@
+monitoring_alert:
+  description: "Manages a Morpheus Monitoring Alert resource."
+  moves:
+    - alert: ""
+  removes:
+    - all_apps
+    - apps
+    - check_groups
+    - checks
+    - contacts
+    - date_created
+    - groups
+    - last_updated
+    - success
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the alert is active.
+      default: true
+    all_checks:
+      computed_optional_required: computed_optional
+      description: Trigger for all checks.
+      default: false
+    all_groups:
+      computed_optional_required: computed_optional
+      description: Trigger for all check groups.
+      default: false
+    id:
+      computed_optional_required: computed
+      description: The ID of the monitoring alert.
+      state_for_unknown: true
+    min_duration:
+      computed_optional_required: computed_optional
+      description: Duration in minutes of the delay before sending notifications.
+      default: 0
+    min_severity:
+      computed_optional_required: computed_optional
+      description: Severity level threshold for sending notifications.
+      default: "critical"
+    name:
+      computed_optional_required: required
+      description: The name of the monitoring alert.

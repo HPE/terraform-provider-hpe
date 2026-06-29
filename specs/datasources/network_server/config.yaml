@@ -1,0 +1,47 @@
+network_server:
+  templates:
+    config:
+      dynamic:
+        description: Network server configuration object. Settings vary by integration type.
+        computed_optional_required: computed
+
+  moves:
+    - network_server: ""                    # unnest wrapper (components/schemas/networkServer.yaml)
+    - template-config: config
+
+  removes:
+    - account                               # (components/schemas/networkServer.yaml) - internal ref
+    - credential                            # (components/schemas/networkServer.yaml) - nested object
+    - date_created                          # (components/schemas/networkServer.yaml) - read-only
+    - integration                           # (components/schemas/networkServer.yaml) - nested object
+    - last_sync                             # (components/schemas/networkServer.yaml) - read-only
+    - last_sync_duration                    # (components/schemas/networkServer.yaml) - read-only
+    - last_updated                          # (components/schemas/networkServer.yaml) - read-only
+    - next_run_date                         # (components/schemas/networkServer.yaml) - read-only
+    - service_password_hash                 # (components/schemas/networkServer.yaml) - sensitive hash
+    - service_token_hash                    # (components/schemas/networkServer.yaml) - sensitive hash
+    - status                                # (components/schemas/networkServer.yaml) - read-only
+    - status_date                           # (components/schemas/networkServer.yaml) - read-only
+    - status_message                        # (components/schemas/networkServer.yaml) - read-only
+    - success                               # API response wrapper
+    - tenants                               # (components/schemas/networkServer.yaml) - nested array
+    - type                                  # (components/schemas/networkServer.yaml) - nested object
+
+  overrides:
+    id:
+      description: The ID of the network server (integration)
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network server (integration)
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    service_password:
+      description: The service password for the network server integration
+      sensitive: true
+    service_token:
+      description: The service token for the network server integration
+      sensitive: true
+    config:
+      description: Network server configuration object. Settings vary by integration type.
+      computed_optional_required: computed

@@ -1,0 +1,46 @@
+certificate:
+  description: "Manages a Morpheus Certificate resource."
+  moves:
+    - certificate: ""
+  removes:
+    - account_id
+    - category
+    - cert_type
+    - chain_file
+    - common_name
+    - generated
+    - integration_id
+    - key_file_md5
+    - self_signed
+    - success
+    - type
+    - wildcard
+  overrides:
+    cert_file:
+      computed_optional_required: required
+      description: The contents of the certificate file.
+      sensitive: true
+      state_for_unknown: true
+    description:
+      computed_optional_required: optional
+      description: A description of the certificate.
+    domain_name:
+      computed_optional_required: computed_optional
+      description: The domain name this certificate is tied to.
+      state_for_unknown: true
+    enabled:
+      computed_optional_required: computed
+      description: Whether the certificate is enabled.
+      state_for_unknown: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the certificate.
+      state_for_unknown: true
+    key_file:
+      computed_optional_required: required
+      description: The contents of the key file.
+      sensitive: true
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the certificate.

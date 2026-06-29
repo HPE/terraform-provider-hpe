@@ -1,0 +1,143 @@
+load_balancer_monitor:
+  templates:
+    config:
+      single_nested: {}
+    monitor:
+      single_nested: {}
+    monitor_id:
+      int64: {}
+    monitor_config:
+      dynamic: {}
+    monitor_password_wo:
+      string:
+        computed_optional_required: optional
+        description: The password for authenticated health checks (Write Only)
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    monitor_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Monitor password version. Used to determine if monitor_password_wo has been updated.
+        requires_replace: true
+
+  moves:
+    - load_balancer_monitor: "" # unnest wrapper (components/schemas/loadBalancerMonitorCreate.yaml)
+    - template-config: config
+    - template-monitor: config.monitor
+    - template-monitor_id: config.monitor.id
+    - template-monitor_config: config.monitor_config
+    - template-monitor_password_wo: monitor_password_wo
+    - template-monitor_password_wo_version: monitor_password_wo_version
+
+  removes:
+    # API response fields (components/schemas/successMessage.yaml)
+    - msg
+    - success
+    # Read-only fields (components/schemas/loadBalancerMonitor.yaml)
+    - alias_address
+    - category
+    - code
+    - created_by
+    - date_created
+    - disabled_data
+    - enabled
+    - external_id
+    - internal_id
+    - last_updated
+    - load_balancer
+    - monitor_adaptive
+    - monitor_password_hash
+    - monitor_reverse
+    - monitor_source
+    - monitor_transparent
+    - monitor_password
+    - partition
+    - status
+    - status_date
+    - status_message
+    - visibility
+
+  overrides:
+    id:
+      state_for_unknown: true
+    load_balancer_id:
+      description: The ID of the load balancer associated with the monitor
+      computed_optional_required: required
+      requires_replace: true
+    name:
+      description: The name of the load balancer monitor
+      computed_optional_required: required
+    description:
+      description: A description of the load balancer monitor
+      computed_optional_required: computed_optional
+    monitor_type:
+      description: >-
+        The monitor protocol type. Valid values are: dns, http, https, icmp,
+        ldap, mssql, passive, tcp, udp. The provider maps these to the
+        appropriate load-balancer-specific value based on the load balancer
+        type (e.g. http becomes LBHttpMonitorProfile for NSX-T).
+      computed_optional_required: computed_optional
+    monitor_interval:
+      description: The interval in seconds at which the monitor checks target health
+      computed_optional_required: computed_optional
+    monitor_timeout:
+      description: The maximum time in seconds to wait for a health check response before marking as failed
+      computed_optional_required: computed_optional
+    send_data:
+      description: The request body to send to the target during health checks
+      computed_optional_required: computed_optional
+    send_version:
+      description: The HTTP protocol version to use in health check requests (e.g. HTTP/1.0, HTTP/1.1)
+      computed_optional_required: computed_optional
+    send_type:
+      description: The HTTP method for the health check request (e.g. GET, POST, HEAD)
+      computed_optional_required: computed_optional
+    receive_data:
+      description: The expected response body string to validate in the health check response
+      computed_optional_required: computed_optional
+    receive_code:
+      description: A comma-separated list of HTTP status codes expected for a successful health check (e.g. "200" or "200,201")
+      computed_optional_required: computed_optional
+    monitor_username:
+      description: The username for authenticated health checks
+      computed_optional_required: computed_optional
+      requires_replace: true
+    monitor_destination:
+      description: The target path or URL for the health check (e.g. /health)
+      computed_optional_required: computed_optional
+    fall_count:
+      description: The number of consecutive failed health checks before marking the target as down
+      computed_optional_required: computed_optional
+    rise_count:
+      description: The number of consecutive successful health checks before marking the target as up
+      computed_optional_required: computed_optional
+    alias_port:
+      description: An alternative port to use for health checks if different from the target port
+      computed_optional_required: computed_optional
+    data_length:
+      description: The length in bytes of the data payload for ICMP echo requests
+      computed_optional_required: computed_optional
+    max_retry:
+      description: The number of retries before the health check is considered failed
+      computed_optional_required: computed_optional
+    extra_config:
+      description: Additional monitor extension configuration. Used with NSX-V load balancer monitors to provide extension parameters for specific monitor types (e.g. http, https, tcp, udp, dns, mssql, ldap). This field is write-only and not returned by the API.
+      computed_optional_required: optional
+    config:
+      description: Configuration object with parameters that vary by monitor type
+      computed_optional_required: computed_optional
+    config.monitor:
+      description: Parent monitor reference. Allows this monitor to inherit from an existing monitor.
+      computed_optional_required: computed_optional
+    config.monitor.id:
+      description: The ID of the parent monitor. If set, the monitorType of the new monitor will be inherited from the parent monitor.
+      computed_optional_required: computed_optional
+    config.monitor_config:
+      description: Free-form monitor configuration content.
+      computed_optional_required: computed_optional

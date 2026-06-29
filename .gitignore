@@ -22,3 +22,12 @@ AGENTS.md
 .gitattributes
 tools/.hero-satellite
 tools/.opencode/
+
+# Schema generation: the per-resource config.yaml files under specs/ (and
+# specs/config-provider.yaml) are the source of truth. The split/merge
+# intermediates and any bundled OpenAPI spec are regenerated, not stored.
+specs/**/spec.yaml
+specs/provider.yaml
+specs/provider_code_spec.json
+specs/**/bundled.json
+specs/**/bundled.yaml

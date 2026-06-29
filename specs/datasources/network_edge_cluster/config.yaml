@@ -1,0 +1,57 @@
+network_edge_cluster:
+  templates:
+    config:
+      dynamic:
+        description: Edge cluster configuration object.
+        computed_optional_required: computed
+    network_server_id:
+      int64:
+        description: The ID of the network server (integration) this edge cluster belongs to.
+        computed_optional_required: required
+
+  moves:
+    - network_edge_cluster: ""              # unnest wrapper (components/schemas/networkEdgeCluster.yaml)
+    - template-config: config
+    - template-network_server_id: network_server_id
+
+  removes:
+    - date_created                          # (components/schemas/networkEdgeCluster.yaml) - read-only
+    - last_updated                          # (components/schemas/networkEdgeCluster.yaml) - read-only
+    - network_server                        # (components/schemas/networkEdgeCluster.yaml) - nested object
+    - owner                                 # (components/schemas/networkEdgeCluster.yaml) - internal ref
+    - server_id                             # path param duplicate of network_server_id
+    - success                               # API response wrapper
+    - tenants                               # (components/schemas/networkEdgeCluster.yaml) - nested array
+    - zone                                  # (components/schemas/networkEdgeCluster.yaml) - nested object
+
+  overrides:
+    id:
+      description: The ID of the network edge cluster
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network edge cluster
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    network_server_id:
+      description: The ID of the network server (integration) this edge cluster belongs to
+      computed_optional_required: required
+    config:
+      description: Edge cluster configuration object
+      computed_optional_required: computed
+    description:
+      description: The description of the edge cluster
+    display_name:
+      description: The display name of the edge cluster
+    external_id:
+      description: The external identifier of the edge cluster in the network provider
+    internal_id:
+      description: The internal identifier of the edge cluster
+    provider_id:
+      description: The provider-assigned identifier for the edge cluster
+    enabled:
+      description: Whether the edge cluster is enabled
+    active:
+      description: Whether the edge cluster is active
+    visibility:
+      description: The visibility of the edge cluster (e.g. public, private)

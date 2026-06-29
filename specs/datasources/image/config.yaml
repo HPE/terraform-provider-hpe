@@ -1,0 +1,45 @@
+image:
+  moves:
+  - virtual_image: ""
+  - accounts: tenants
+  - config.azure_reference_virtual_image_configuration: config_azure
+  - os_type.id: os_type_id
+  - storage_provider.id: storage_provider_id
+  - is_auto_join_domain: auto_join_domain
+  - is_cloud_init: cloud_init
+  - is_force_customization: force_customization
+  - is_sysprep: sysprep
+  removes:
+    - config
+    - tenant
+    - config.oneof1
+    - min_disk_gb
+    - min_ram_gb
+    - storage_provider
+    - ssh_password
+    - ssh_password_hash
+    - os_type
+    - virtual_image_id
+    - date_created
+    - last_updated
+    - locations
+    - network_interfaces
+    - raw_size_gb
+    - storage_controllers
+    - volumes
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      conflicts_with: 
+        - name
+        - image_type
+    name:
+      computed_optional_required: computed_optional
+    image_type:
+      computed_optional_required: computed_optional
+      also_requires: 
+        - name
+    os_type_id:
+      description: ID of the OS Type
+    storage_provider_id:
+      description: ID of the storage provider where the image will be uploaded

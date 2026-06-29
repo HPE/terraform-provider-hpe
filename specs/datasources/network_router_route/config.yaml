@@ -1,0 +1,29 @@
+network_router_route:
+  templates:
+    mtu:
+      int64:
+        computed_optional_required: computed
+        description: Maximum Transmission Unit (MTU).
+  moves:
+    - network_route: ""
+    - template-mtu: mtu
+  removes:
+    - network_mtu        # provider exposes mtu as an Int64 (via template) instead of the API number
+    - destination        # (components/schemas/networkRouterRoute.yaml)
+    - destination_type   # (components/schemas/networkRouterRoute.yaml)
+    - external_interface # (components/schemas/networkRouterRoute.yaml)
+    - external_type      # (components/schemas/networkRouterRoute.yaml)
+    - internal_id        # (components/schemas/networkRouterRoute.yaml)
+    - priority           # (components/schemas/networkRouterRoute.yaml)
+    - source             # (components/schemas/networkRouterRoute.yaml)
+    - unique_id          # (components/schemas/networkRouterRoute.yaml)
+    - visible            # (components/schemas/networkRouterRoute.yaml)
+  overrides:
+    id:
+      description: The ID of the Network router route.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the Network router route.
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional

@@ -1,0 +1,707 @@
+policy:
+  templates:
+    config:
+      dynamic:
+        description: Generic Policy Configuration
+        computed_optional_required: computed_optional
+   
+    # Template booleans to replace on/off fields 
+    config_lifecycle.lifecycle_auto_renew:
+      bool:
+        computed_optional_required: computed_optional
+    config_lifecycle.lifecycle_allow_extend:
+      bool:
+        computed_optional_required: computed_optional
+    
+    config_max_cores.exclude_containers:
+      bool:
+        computed_optional_required: computed_optional  
+    config_max_memory.exclude_containers:
+      bool:
+        computed_optional_required: computed_optional
+ 
+    config_max_storage.exclude_containers:
+      bool:
+        computed_optional_required: computed_optional
+    config_motd.fullpage.exclude_containers:
+      bool:
+        computed_optional_required: computed_optional
+
+    config_shutdown.shutdown_auto_renew:
+      bool:
+        computed_optional_required: computed_optional
+    config_shutdown.shutdown_allow_extend:
+      bool:
+        computed_optional_required: computed_optional
+
+    config_max_memory.max_memory:
+      string:
+        computed_optional_required: computed_optional
+
+    config_approval.flow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of ServiceNow Flow (set if workflowType is 'flow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("workflow_id"),
+                }...)
+
+    config_approval.workflow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("flow_id"),
+                }...)
+
+    config_lifecycle.flow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of ServiceNow Flow (set if workflowType is 'flow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("lifecycle_workflow_id"),
+                }...)
+
+    config_lifecycle.lifecycle_workflow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("flow_id"),
+                }...)
+
+    config_shutdown.flow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of ServiceNow Flow (set if workflowType is 'flow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("shutdown_workflow_id"),
+                }...)
+
+    config_shutdown.shutdown_workflow_id:
+      string:
+        computed_optional_required: computed_optional
+        description: ID of legacy ServiceNow workflow (set if workflowType is 'workflow')
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("flow_id"),
+                }...)
+
+  moves:
+    - policy: "" # unnest policy
+    - ref_type.oneof0: associated_resource_type
+    - ref_id: associated_resource_id
+    - site: "group"
+    - zone: "cloud"
+    - accounts: "tenants"
+
+    # rename config elements to relevant policy type
+    - config.approve_policy_type_configuration: config_approval
+    - config.backup_creation_policy_type_configuration: config_create_backup
+    - config.backup_targets_policy_type_configuration: config_backup_storage
+    - config.budget_policy_type_configuration: config_max_price
+    - config.cluster_resource_name_policy_type_configuration: config_server_naming
+    - config.cypher_access_policy_type_configuration: config_cypher
+    - config.delayed_delete_policy_type_configuration: config_delayed_removal
+    - config.expiration_policy_type_configuration: config_lifecycle
+    - config.hostname_policy_type_configuration: config_host_naming
+    - config.instance_name_policy_type_configuration: config_naming
+    - config.max_containers_policy_type_configuration: config_max_containers
+    - config.max_cores_policy_type_configuration: config_max_cores
+    - config.max_hosts_policy_type_configuration: config_max_hosts
+    - config.max_load_balancer_pools_policy_type_configuration: config_max_pools
+    - config.max_memory_policy_type_configuration: config_max_memory
+    - config.max_pool_members_policy_type_configuration: config_max_pool_members
+    - config.max_snapshots_policy_type_configuration: config_max_snapshots
+    - config.max_storageand_object_storage_quota_policy_type_configuration: config_max_storage
+    - config.max_virtual_servers_policy_type_configuration: config_max_virtual_servers
+    - config.max_vms_policy_type_configuration: config_max_vms
+    - config.messageofthe_day_policy_type_configuration: config_motd
+    - config.network_quota_policy_type_configuration: config_max_networks
+    - config.power_schedule_policy_type_configuration: config_power_schedule
+    - config.required_network_policy_type_configuration: config_required_network
+    - config.router_quota_policy_type_configuration: config_max_routers
+    - config.shutdown_policy_type_configuration: config_shutdown
+    - config.storage_server_storage_quota_policy_type_configuration: config_storage_server_quota
+    - config.tags_policy_type_configuration: config_tags
+    - config.user_creation_policy_type_configuration: config_create_user
+    - config.user_group_creation_policy_type_configuration: config_create_user_group
+    - config.workflow_policy_type_configuration: config_workflow
+
+    - template-config_max_memory.max_memory: config_max_memory.max_memory
+
+    # Moving motdfull_page.oneof0 to motd_fullpage for simplicity
+    # note: moving to motdfull_page directly keeps motdfull_page as single-nested instead of string type
+    # therefore, slightly altering the name and removing it later.
+    - config_motd.motdfull_page.oneof0: config_motd.motd_fullpage
+
+    # Have a dynamic config as well as static schemas
+    - template-config: config
+
+    # Swap on/off fields with boolean templates
+    - template-config_lifecycle.lifecycle_auto_renew: config_lifecycle.lifecycle_auto_renew
+    - template-config_lifecycle.lifecycle_allow_extend: config_lifecycle.lifecycle_allow_extend
+    - template-config_max_cores.exclude_containers: config_max_cores.exclude_containers
+    - template-config_max_memory.exclude_containers: config_max_memory.exclude_containers
+    - template-config_max_storage.exclude_containers: config_max_storage.exclude_containers
+    - template-config_motd_fullpage.exclude_containers: config_motd_fullpage.exclude_containers
+    - template-config_shutdown.shutdown_auto_renew: config_shutdown.shutdown_auto_renew
+    - template-config_shutdown.shutdown_allow_extend: config_shutdown.shutdown_allow_extend
+
+    # Swap conflict fields with templates that use path expressions
+    - template-config_approval.flow_id: config_approval.flow_id
+    - template-config_approval.workflow_id: config_approval.workflow_id
+    - template-config_lifecycle.flow_id: config_lifecycle.flow_id
+    - template-config_lifecycle.lifecycle_workflow_id: config_lifecycle.lifecycle_workflow_id
+    - template-config_shutdown.flow_id: config_shutdown.flow_id
+    - template-config_shutdown.shutdown_workflow_id: config_shutdown.shutdown_workflow_id
+  removes:
+    - ref_type
+    - success
+    # Removing unneccessary inner motd and motdfull_page
+    - config_motd.motd
+    - config_motd.motdfull_page
+
+  overrides:
+    associated_resource_type: # Add Global, ComputeSite -> Group, ComputeZone -> Cloud
+      one_of: ["Global", "Group", "Cloud", "User", "Role", "Network", "Plan", "Label"]
+      description: Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'
+      computed_optional_required: required
+      requires_replace: true
+    associated_resource_id:
+      description: The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label
+      requires_replace: true
+    policy_type.code:
+      computed_optional_required: required
+      requires_replace: true
+
+    config:
+      conflicts_with: ["config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+
+    config_approval:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy types:
+        	- Approve Delete (deleteApproval)
+        	- Approve Provision (provisionApproval)
+        	- Approve Reconfigure (reconfigureApproval)
+        	- Approve Workflow Execute (workflowApproval)
+    
+    config_approval.account_integration_id:
+      computed_optional_required: required
+      description: ID of your ServiceNow or approval integration
+    
+    config_approval.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+
+
+    config_create_backup:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Backup Creation (createBackup)
+    
+    config_create_backup.create_backup:
+      description: Enforce backup creation
+    
+    config_create_backup.create_backup_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+
+
+    config_backup_storage:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Backup Targets (backupStorage)
+    
+    config_backup_storage.backup_storage_ids:
+      computed_optional_required: required
+      description: Array of backup storage IDs to restrict available backup targets
+
+    config_max_price:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Budget (maxPrice)
+    
+    config_max_price.max_price:
+      computed_optional_required: required
+      description: Maximum price limit
+    
+    config_max_price.max_price_currency:
+      description: Currency code (e.g., USD)
+    
+    config_max_price.max_price_unit:
+      description: "Options: \"hour\", \"month\""
+
+
+    config_server_naming:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Cluster Resource Name (serverNaming)
+    
+    config_server_naming.server_naming_conflict:
+      description: Auto-resolve conflicts
+    
+    config_server_naming.server_naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_server_naming.server_naming_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+
+
+    config_cypher:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Cypher Access (cypher)
+    
+    config_cypher.delete:
+      description: Allow delete access
+    
+    config_cypher.key_pattern:
+      computed_optional_required: required
+      description: Pattern to match Cypher keys (e.g., "secret/*", "password/*")
+    
+    config_cypher.list:
+      description: Allow list access
+    
+    config_cypher.read:
+      description: Allow read access
+    
+    config_cypher.update:
+      description: Allow update access
+    
+    config_cypher.write:
+      description: Allow write access
+
+
+    config_delayed_removal:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Delayed Delete (delayedRemoval)
+    
+    config_delayed_removal.removal_age:
+      computed_optional_required: required
+      description: Number of days to delay deletion
+
+
+    config_lifecycle:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Expiration (lifecycle)
+    
+    config_lifecycle.account_integration_id:
+      description: ID of your ServiceNow or approval integration
+    
+    config_lifecycle.lifecycle_age:
+      description: Days until expiration
+    
+    config_lifecycle.lifecycle_extensions_before_approval:
+      description: Number of extensions before requiring approval
+    
+    config_lifecycle.lifecycle_hide_fixed:
+      description: Hide fixed expiration from users
+    
+    config_lifecycle.lifecycle_message:
+      description: Notification message
+    
+    config_lifecycle.lifecycle_notify:
+      description: Days before expiration to notify
+    
+    config_lifecycle.lifecycle_renewal:
+      description: Days for renewal window
+    
+    config_lifecycle.lifecycle_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (fixed expiration)"
+    
+    config_lifecycle.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+
+
+    config_host_naming:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Hostname (hostNaming)
+    
+    config_host_naming.host_naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_host_naming.host_naming_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+
+
+    config_naming:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Instance Name (naming)
+    
+    config_naming.naming_conflict:
+      description: Auto-resolve conflicts
+    
+    config_naming.naming_pattern:
+      description: Name pattern uses ${variable} string interpolation.  Available variables are:<br>groupName, groupCode, cloudName, cloudCode, type, accountId, account, accountType, platform, username, userId, userInitials, provisionType
+    
+    config_naming.naming_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict pattern)"
+
+
+    config_max_containers:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Containers (maxContainers)
+    
+    config_max_containers.max_containers:
+      computed_optional_required: required
+      description: Max Containers
+
+
+    config_max_cores:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Cores (maxCores)
+    
+    config_max_cores.max_cores:
+      computed_optional_required: required
+      description: Max Cores
+
+
+    config_max_hosts:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Hosts (maxHosts)
+    
+    config_max_hosts.max_hosts:
+      computed_optional_required: required
+      description: Max Hosts
+
+
+    config_max_pools:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Load Balancer Pools (maxPools)
+    
+    config_max_pools.max_pools:
+      computed_optional_required: required
+      description: Max Pools
+
+
+    config_max_memory:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Memory (maxMemory)
+    
+    config_max_memory.max_memory:
+      computed_optional_required: required
+      description: Max Memory (GB)
+
+
+    config_max_pool_members:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Pool Members (maxPoolMembers)
+    
+    config_max_pool_members.max_pool_members:
+      computed_optional_required: required
+      description: Max Pool Members
+
+
+    config_max_snapshots:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Snapshots (maxSnapshots)
+    
+    config_max_snapshots.max_snapshots:
+      computed_optional_required: required
+      description: Max Snapshots
+
+
+    config_max_storage:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy types:
+        	- Max Storage (maxStorage)
+        	- Object Storage Quota (storageBucketQuota)
+        	- File Share Storage Quota (storageShareQuota)
+    
+    config_max_storage.max_storage:
+      computed_optional_required: required
+      description: Max Storage (GB)
+
+
+    config_max_virtual_servers:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max Virtual Servers (maxVirtualServers)
+    
+    config_max_virtual_servers.max_virtual_servers:
+      computed_optional_required: required
+      description: Max Virtual Servers
+
+
+    config_max_vms:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Max VMs (maxVms)
+    
+    config_max_vms.max_vms:
+      computed_optional_required: required
+      description: Max VMs
+
+
+    config_motd:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Message of the Day (motd)
+    
+    config_motd.motddate:
+      description: Display date for message
+    
+    config_motd.motdmessage:
+      description: Message content
+    
+    config_motd.motdtitle:
+      description: Message title
+    
+    config_motd.motdtype:
+      description: "Options: \"info\", \"warning\", \"critical\""
+
+
+    config_max_networks:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Network Quota (maxNetworks)
+    
+    config_max_networks.max_networks:
+      computed_optional_required: required
+      description: Max Networks
+
+
+    config_power_schedule:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Power Scheduling (powerSchedule)
+    
+    config_power_schedule.power_schedule:
+      description: ID of the power schedule
+    
+    config_power_schedule.power_schedule_hide_fixed:
+      description: Hide fixed schedule from users
+    
+    config_power_schedule.power_schedule_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict schedule)"
+
+
+    config_required_network:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Instance Networks (requiredNetwork)
+    
+    config_required_network.required_networks:
+      computed_optional_required: required
+      description: Array of required network IDs
+
+    config_max_routers:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Router Quota (maxRouters)
+    
+    config_max_routers.max_routers:
+      computed_optional_required: required
+      description: Max Routers
+
+
+    config_shutdown:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Shutdown (shutdown)
+    
+    config_shutdown.account_integration_id:
+      description: ID of your ServiceNow or approval integration
+    
+    config_shutdown.shutdown_age:
+      description: Days instance is allowed to run before shutdown
+    
+    config_shutdown.shutdown_extensions_before_approval:
+      description: Number of extensions before requiring approval
+    
+    config_shutdown.shutdown_hide_fixed:
+      description: Hide fixed shutdown from users
+    
+    config_shutdown.shutdown_message:
+      description: Notification message
+    
+    config_shutdown.shutdown_notify:
+      description: Days before shutdown to notify via email
+    
+    config_shutdown.shutdown_renewal:
+      description: If the instance is renewed, this is the number of day increments the shutdown date is increased by
+    
+    config_shutdown.shutdown_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\" (strict shutdown)"
+    
+    config_shutdown.workflow_type:
+      description: "Options: \"workflow\" (legacy workflow), \"flow\" (ServiceNow Flow)"
+
+
+    config_storage_server_quota:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_tags", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Storage Server Storage Quota (storageServerQuota)
+    
+    config_storage_server_quota.max_storage:
+      description: Max Storage (GB)
+    
+    config_storage_server_quota.storage_server_id:
+      computed_optional_required: required
+      description: ID of the storage server
+
+
+    config_tags:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_create_user", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- Tags (tags)
+    
+    config_tags.key:
+      description: Tag key to enforce
+    
+    config_tags.strict:
+      computed_optional_required: required
+      description: Strict enforcement
+    
+    config_tags.value:
+      description: Tag value (optional, can be left empty for any value)
+    
+    config_tags.value_list_id:
+      description: ID of value from value list (optional)
+
+
+    config_create_user:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user_group", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- User Creation (createUser)
+    
+    config_create_user.create_user:
+      description: Enforce user creation
+    
+    config_create_user.create_user_type:
+      computed_optional_required: required
+      description: "Options: \"user\" (user configurable), \"fixed\""
+
+
+    config_create_user_group:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_workflow"]
+      description: |
+        Configuration for the following policy type:
+        	- User Group Creation (createUserGroup)
+    
+    config_create_user_group.user_group:
+      computed_optional_required: required
+      description: ID of the user group to assign
+
+
+    config_workflow:
+      computed_optional_required: optional
+      conflicts_with: ["config", "config_approval", "config_create_backup", "config_backup_storage", "config_max_price", "config_server_naming", "config_cypher", "config_delayed_removal", "config_lifecycle", "config_host_naming", "config_naming", "config_max_containers", "config_max_cores", "config_max_hosts", "config_max_pools", "config_max_memory", "config_max_pool_members", "config_max_snapshots", "config_max_storage", "config_max_virtual_servers", "config_max_vms", "config_motd", "config_max_networks", "config_power_schedule", "config_required_network", "config_max_routers", "config_shutdown", "config_storage_server_quota", "config_tags", "config_create_user", "config_create_user_group"]
+      description: |
+        Configuration for the following policy type:
+        	- Workflow (workflow)
+    
+    config_workflow.workflow_id:
+      computed_optional_required: required
+      description: ID of the workflow to execute

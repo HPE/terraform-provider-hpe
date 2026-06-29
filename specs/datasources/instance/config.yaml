@@ -1,0 +1,66 @@
+instance:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+        description: Configuration object. Settings vary by type.
+        validators:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/validators"
+            schema_definition: validators.ValidObjectMap()
+  moves:
+    - instance: ""
+    - account_id: tenant_id
+    - interfaces.id.oneof0: interfaces.id
+    - container_details.server.interfaces: container_details.server.container_interfaces
+    - container_details.server.container_interfaces.interfaces: container_details.server.container_interfaces.child_interfaces
+    - container_details.server.container_interfaces.network: container_details.server.container_interfaces.child_network
+    - container_details.server.owner: container_details.server.container_owner
+    - container_details.server.plan: container_details.server.container_plan
+    - container_details.server.volumes: container_details.server.child_volumes
+    - controllers.type: controllers.controllers_type
+    - cluster.type: cluster.cluster_type
+    - evars.value.oneof0: evars.value # converts the value attr into a string
+    - container_details.server.child_volumes.zone: container_details.server.child_volumes.volume_zone
+    - interfaces.network_interfaces.id.oneof0: interfaces.network_interfaces.id
+    - interfaces.network_interfaces.network: interfaces.network_interfaces.interface_network
+    - interfaces.network.pool: interfaces.network.interface_network_pool
+    - template-config: config
+  removes:
+    - details
+    - apps
+    - interfaces.id.oneof1
+    - interfaces.network_interfaces.id.oneof1
+    - stats
+    - container_details.cloud
+    - container_details.plan
+    - container_details.volumes
+    - evars.value.oneof1
+    - instance_threshold
+    - custom_options
+    - data_created
+    - expire_date
+    - expire_warning_date
+    - last_updated
+    - removal_date
+    - shutdown_date
+    - shutdown_warning_date
+    - status_date
+    - container_details.last_updated
+    - container_details.date_created
+    - container_details.server.last_agent_update
+    - container_details.server.power_state
+    - container_details.server.status_date
+    - current_load_balancer_containers_in
+    - current_load_balancer_containers_out
+    - current_load_balancer_instances
+    - last_deploy
+  overrides:
+    id:
+      at_least_one_of: [id, name]
+      conflicts_with: [name]
+      computed_optional_required: computed_optional
+    name:
+      conflicts_with: [id]
+      computed_optional_required: computed_optional

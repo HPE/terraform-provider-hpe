@@ -1,0 +1,25 @@
+deployment:
+  description: "Manages a Morpheus Deployment resource."
+  moves:
+    - deployment: ""
+  removes:
+    - account_id
+    - date_created
+    - deployment_id
+    - external_id
+    - last_updated
+    - max_versions
+    - success
+    - version_count
+    - versions
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the deployment.
+    id:
+      computed_optional_required: computed
+      description: The ID of the deployment.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the deployment.

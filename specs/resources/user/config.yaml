@@ -1,0 +1,124 @@
+user:
+  templates:
+    id:
+      int64:
+        computed_optional_required: computed
+        description: User id
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    role_ids:
+      set:
+        computed_optional_required: required
+        element_type:
+          int64: {}
+    tenant_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
+        plan_modifiers:
+        - custom:
+            schema_definition: |-
+              int64planmodifier.UseStateForUnknown(),
+              int64planmodifier.RequiresReplace(), // force new
+    first_name:
+      string:
+        computed_optional_required: computed_optional
+        description: User's first name (optional)
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+    last_name:
+      string:
+        computed_optional_required: computed_optional
+        description: User's last name (optional)
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+    linux_key_pair_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Linux key pair id (optional)
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableInt64UpdateModifier{}
+    linux_username:
+      string:
+        computed_optional_required: computed_optional
+        description: Linux username
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+    linux_password_wo:
+      string:
+        computed_optional_required: optional
+        description: Linux password (Write Only)
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+        sensitive: true
+        write_only: true
+    linux_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Linux password version. Used to determine if linux_password_wo has been updated.
+    windows_username:
+      string:
+        computed_optional_required: computed_optional
+        description: Windows username
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+
+    windows_password_wo:
+      string:
+        computed_optional_required: optional
+        description: Windows password (Write Only)
+        plan_modifiers:
+        - custom:
+            schema_definition: modifiers.NullableStringUpdateModifier{}
+        sensitive: true
+        write_only: true
+    windows_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Windows password version. Used to determine if windows_password_wo has been updated.
+    password_wo:
+      string:
+        computed_optional_required: optional
+        description: Password to apply to the user (Write Only)
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier
+            - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+            schema_definition: modifiers.RequireOnCreateModifier{}
+        sensitive: true
+        write_only: true
+    password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Password version. Used to determine if password_wo has been updated.
+  includes:
+    - user.username
+    - user.email
+    - user.password_expired
+    - user.receive_notifications
+  moves:
+    - user: "" # unnest user wrapper to root
+    - template-id: id
+    - template-role_ids: role_ids
+    - template-tenant_id: tenant_id
+    - template-first_name: first_name
+    - template-last_name: last_name
+    - template-linux_key_pair_id: linux_key_pair_id
+    - template-linux_username: linux_username
+    - template-linux_password_wo: linux_password_wo
+    - template-linux_password_wo_version: linux_password_wo_version
+    - template-windows_username: windows_username
+    - template-windows_password_wo: windows_password_wo
+    - template-windows_password_wo_version: windows_password_wo_version
+    - template-password_wo: password_wo
+    - template-password_wo_version: password_wo_version

@@ -1,0 +1,41 @@
+cluster_affinity_group:
+  description: "Manages a Morpheus Cluster Affinity Group resource."
+  templates:
+    description:
+      string:
+        computed_optional_required: optional
+        description: Description of the affinity group.
+  moves:
+    - affinity_group: ""
+    - template-description: description
+  removes:
+    - affinity_type
+    - enabled
+    - pool
+    - ref_id
+    - ref_type
+    - resource_permissions
+    - servers
+    - source
+    - success
+    - tenants
+    - visibility
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the affinity group is active.
+      default: true
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the cluster.
+      requires_replace: true
+    description:
+      computed_optional_required: optional
+      description: The description of the affinity group.
+    id:
+      computed_optional_required: computed
+      description: The ID of the cluster affinity group.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the affinity group.

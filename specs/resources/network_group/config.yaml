@@ -1,0 +1,31 @@
+network_group:
+  description: "Manages a Morpheus Network Group resource."
+  moves:
+    - network_group: ""
+  removes:
+    - networks
+    - subnets
+    - success
+    - tenants
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the network group is active.
+      default: true
+      state_for_unknown: true
+    description:
+      computed_optional_required: optional
+      description: The description of the network group.
+    id:
+      computed_optional_required: computed
+      description: The ID of the network group.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the network group.
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the network group.
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true

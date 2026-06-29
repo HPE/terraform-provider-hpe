@@ -1,0 +1,168 @@
+load_balancer_pool:
+  templates:
+    config:
+      dynamic:
+        description: Generic pool configuration object. Settings vary by load balancer type.
+        computed_optional_required: computed
+    config_nsxt:
+      single_nested:
+        computed_optional_required: computed
+        description: NSX-T load balancer pool configuration
+    config_nsxt_active_monitor_paths:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the active health monitor
+    config_nsxt_passive_monitor_path:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the passive health monitor
+    config_nsxt_snat_translation_type:
+      string:
+        computed_optional_required: computed
+        description: SNAT translation type
+    config_nsxt_snat_ip_addresses:
+      list:
+        computed_optional_required: computed
+        description: List of SNAT IP addresses
+        element_type:
+          string: {}
+    config_nsxt_tcp_multiplexing:
+      bool:
+        computed_optional_required: computed
+        description: Whether TCP multiplexing is enabled
+    config_nsxt_tcp_multiplexing_number:
+      int64:
+        computed_optional_required: computed
+        description: Maximum number of TCP multiplexing connections
+    config_nsxt_member_group:
+      single_nested:
+        computed_optional_required: computed
+        description: NSX-T member group configuration
+    config_nsxt_member_group_path:
+      string:
+        computed_optional_required: computed
+        description: NSX-T member group path
+    config_nsxt_member_group_ip_revision_filter:
+      string:
+        computed_optional_required: computed
+        description: IP revision filter for member group
+    config_nsxt_member_group_max_ip_list_size:
+      int64:
+        computed_optional_required: computed
+        description: Maximum IP list size for member group
+    config_nsxt_member_group_port:
+      int64:
+        computed_optional_required: computed
+        description: Port for member group
+
+  moves:
+    - load_balancer_pool: ""                             # unnest wrapper
+    - template-config_nsxt: config_nsxt                  # inject NSX-T config block
+    - template-config_nsxt_active_monitor_paths: config_nsxt.active_monitor_paths
+    - template-config_nsxt_passive_monitor_path: config_nsxt.passive_monitor_path
+    - template-config_nsxt_snat_translation_type: config_nsxt.snat_translation_type
+    - template-config_nsxt_snat_ip_addresses: config_nsxt.snat_ip_addresses
+    - template-config_nsxt_tcp_multiplexing: config_nsxt.tcp_multiplexing
+    - template-config_nsxt_tcp_multiplexing_number: config_nsxt.tcp_multiplexing_number
+    - template-config_nsxt_member_group: config_nsxt.member_group
+    - template-config_nsxt_member_group_path: config_nsxt.member_group.path
+    - template-config_nsxt_member_group_ip_revision_filter: config_nsxt.member_group.ip_revision_filter
+    - template-config_nsxt_member_group_max_ip_list_size: config_nsxt.member_group.max_ip_list_size
+    - template-config_nsxt_member_group_port: config_nsxt.member_group.port
+    - template-config: config                            # replace config with dynamic fallback (must be last)
+
+  removes:
+    # API response envelope fields
+    - success                                            # (components/schemas/successMessage.yaml)
+    - msg                                                # (components/schemas/successMessage.yaml)
+    # Read-only metadata (createdBy is an object the provider does not surface)
+    - created_by                                         # (components/schemas/loadBalancerPool.yaml)
+
+  overrides:
+    id:
+      description: The ID of the load balancer pool
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+      at_least_one_of: [id, name]
+    load_balancer_id:
+      description: The ID of the load balancer this pool belongs to
+      computed_optional_required: required
+    name:
+      description: The name of the load balancer pool
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    description:
+      description: A description of the load balancer pool
+    vip_balance:
+      description: The balance algorithm for the pool
+    vip_sticky:
+      description: Session persistence mode for the pool
+    vip_client_ip_mode:
+      description: VIP client IP mode
+    min_active:
+      description: Minimum number of active pool members
+    port:
+      description: The port number for the pool
+    partition:
+      description: Partition identifier
+    monitors:
+      description: The monitors associated with the pool
+    nodes:
+      description: The nodes associated with the pool
+    members:
+      description: The members of the pool
+    # Read-only computed fields (virtual server pattern — keep all API response fields)
+    allow_nat:
+      computed_optional_required: computed
+    allow_snat:
+      computed_optional_required: computed
+    category:
+      computed_optional_required: computed
+    date_created:
+      computed_optional_required: computed
+    down_action:
+      computed_optional_required: computed
+    enabled:
+      computed_optional_required: computed
+    error_penalty:
+      computed_optional_required: computed
+    external_id:
+      computed_optional_required: computed
+    health_penalty:
+      computed_optional_required: computed
+    health_score:
+      computed_optional_required: computed
+    internal_id:
+      computed_optional_required: computed
+    last_updated:
+      computed_optional_required: computed
+    load_balancer:
+      computed_optional_required: computed
+    max_queue_depth:
+      computed_optional_required: computed
+    max_queue_time:
+      computed_optional_required: computed
+    min_in_service:
+      computed_optional_required: computed
+    min_up_action:
+      computed_optional_required: computed
+    min_up_monitor:
+      computed_optional_required: computed
+    number_active:
+      computed_optional_required: computed
+    number_in_service:
+      computed_optional_required: computed
+    performance_score:
+      computed_optional_required: computed
+    port_type:
+      computed_optional_required: computed
+    ramp_time:
+      computed_optional_required: computed
+    security_penalty:
+      computed_optional_required: computed
+    status:
+      computed_optional_required: computed
+    vip_server_ip_mode:
+      computed_optional_required: computed
+    visibility:
+      computed_optional_required: computed

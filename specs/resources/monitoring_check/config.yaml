@@ -1,0 +1,80 @@
+monitoring_check:
+  description: "Manages a Morpheus Monitoring Check resource."
+  templates:
+    check_type_id:
+      int64:
+        computed_optional_required: required
+        description: The check type ID.
+  moves:
+    - check: ""
+    - template-check_type_id: check_type_id
+  removes:
+    - account
+    - api_key
+    - availability
+    - check_agent
+    - check_socket
+    - check_spec
+    - check_type
+    - config
+    - container
+    - create_incident
+    - created_by
+    - date_created
+    - deleted
+    - elastic_check
+    - end_date
+    - health
+    - last_box_stats
+    - last_check_status
+    - last_error
+    - last_error_date
+    - last_message
+    - last_metric
+    - last_run_date
+    - last_stats
+    - last_success_date
+    - last_timer
+    - last_updated
+    - last_warning_date
+    - muted
+    - my_sql_check
+    - next_run_date
+    - outage_time
+    - postgres_check
+    - push_check
+    - snmpcheck
+    - sql_check
+    - start_date
+    - success
+    - web_check
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the check is active.
+      default: true
+    check_interval:
+      computed_optional_required: computed_optional
+      description: Check interval in seconds.
+      default: 300
+    check_type_id:
+      computed_optional_required: required
+      description: The check type ID.
+    description:
+      computed_optional_required: optional
+      description: The description of the monitoring check.
+    id:
+      computed_optional_required: computed
+      description: The ID of the monitoring check.
+      state_for_unknown: true
+    in_uptime:
+      computed_optional_required: computed_optional
+      description: Whether the check affects account-wide availability calculations.
+      default: true
+    name:
+      computed_optional_required: required
+      description: The name of the monitoring check.
+    severity:
+      computed_optional_required: computed_optional
+      description: Severity level threshold for sending notifications.
+      default: "critical"
