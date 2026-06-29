@@ -7,7 +7,7 @@ data "hpe_morpheus_storage_servers" "by_name" {
   }
 }
 
-# Filter by storage server type code (for example, 3par or netapp).
+# Filter by storage server type code (for example, 3par or hpealletramp-storage-provider).
 data "hpe_morpheus_storage_servers" "three_par" {
   filter {
     name   = "type_code"
