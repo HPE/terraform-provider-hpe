@@ -43,6 +43,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageservers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
@@ -80,6 +82,8 @@ func (SubProvider) GetDataSources(
 		securitygroup.NewDataSource,
 		securitygroups.NewDataSource,
 		serviceplan.NewDataSource,
+		storageserver.NewDataSource,
+		storageservers.NewDataSource,
 		user.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
