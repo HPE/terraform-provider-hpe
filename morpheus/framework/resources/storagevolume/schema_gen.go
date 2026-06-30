@@ -135,6 +135,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_storage": schema.Int64Attribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
 				MarkdownDescription: "The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.",
 				Validators: []validator.Int64{
