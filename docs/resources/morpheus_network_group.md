@@ -31,7 +31,7 @@ resource "hpe_morpheus_network_group" "example" {
 - `active` (Boolean) Whether the network group is active.
 - `description` (String) The description of the network group.
 - `resource_permissions` (Attributes) Resource permissions for group and service plan access. (see [below for nested schema](#nestedatt--resource_permissions))
-- `tenant_ids` (List of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
 - `visibility` (String) The visibility of the network group (public or private).
 
 ### Read-Only
