@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -101,20 +100,12 @@ func getNetworkFirewallRuleGroupAsState(
 		state.Description = types.StringNull()
 	}
 
-	// Build tenant_ids from the Tenants array returned by the API.
-	if len(ruleGroup.Tenants) > 0 {
-		ids := make([]int64, 0, len(ruleGroup.Tenants))
-		for _, t := range ruleGroup.Tenants {
-			if t.Id != nil {
-				ids = append(ids, *t.Id)
-			}
-		}
-		listVal, listDiags := types.SetValueFrom(ctx, types.Int64Type, ids)
-		diags.Append(listDiags...)
-		state.TenantIds = listVal
-	} else {
-		state.TenantIds = types.SetValueMust(types.Int64Type, []attr.Value{})
-	}
+	// tenant_ids — intentionally not updated from the API response.
+	// Morpheus substitutes the master tenant for any unrecognised tenant IDs and
+	// silently drops IDs that don't exist in this environment. Reading back would
+	// cause a perpetual diff. The prior state/plan value is preserved instead
+	// (subnet resource uses the same pattern).
+	state.TenantIds = prior.TenantIds
 
 	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.
 	state.NetworkIntegrationId = prior.NetworkIntegrationId
