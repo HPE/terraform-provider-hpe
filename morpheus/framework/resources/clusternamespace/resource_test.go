@@ -26,9 +26,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Kubernetes) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Kubernetes)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -88,9 +86,7 @@ func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 func TestAccMorpheusClusterNamespaceResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Kubernetes) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Kubernetes)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

@@ -35,12 +35,9 @@ provider "hpe" {
 // errors when neither id nor name is supplied. The error is raised before any
 // API call, so the offline provider configuration is sufficient.
 func TestAccMorpheusStorageServerNoSearchTerms(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
-	}
 	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHave(t, capabilities.All)
 
 	t.Parallel()
 

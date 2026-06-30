@@ -18,9 +18,7 @@ import (
 func TestAccMorpheusPolicyResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -118,9 +116,7 @@ resource "hpe_morpheus_policy" "update_test" {
 func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -244,9 +240,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -363,9 +357,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 func TestAccMorpheusPolicyResourceTypeCodeChangeRequiresReplace(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

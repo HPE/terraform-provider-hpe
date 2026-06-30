@@ -48,9 +48,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestAccMorpheusFindRoleById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -107,9 +105,7 @@ resource "hpe_morpheus_role" "test" {
 func TestAccMorpheusFindRoleByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -166,9 +162,7 @@ resource "hpe_morpheus_role" "test" {
 func TestAccMorpheusFindRoleVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -380,9 +374,7 @@ data "hpe_morpheus_role" "test_tenant" {
 func TestAccMorpheusFindRoleNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -415,9 +407,7 @@ func TestAccMorpheusFindRoleNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindRoleBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	config := providerConfigOffline + `

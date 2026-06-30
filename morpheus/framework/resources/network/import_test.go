@@ -19,9 +19,7 @@ import (
 func TestAccMorpheusNetworkResourceImport(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NetworkDHCP)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

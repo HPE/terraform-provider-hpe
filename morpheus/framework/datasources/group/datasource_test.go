@@ -48,9 +48,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestAccMorpheusFindGroupById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -95,9 +93,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 func TestAccMorpheusFindGroupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -142,9 +138,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -182,9 +176,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
       }`
@@ -215,9 +207,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
         id = 1

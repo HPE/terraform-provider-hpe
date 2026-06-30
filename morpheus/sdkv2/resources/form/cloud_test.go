@@ -19,9 +19,7 @@ import (
 func TestAccMorpheusFormCloudOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -95,9 +93,7 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {

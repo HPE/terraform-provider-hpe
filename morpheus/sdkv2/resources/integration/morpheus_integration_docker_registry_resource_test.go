@@ -16,9 +16,7 @@ import (
 func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Docker) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Docker)
 	t.Parallel()
 
 	if testing.Short() {

@@ -16,9 +16,7 @@ import (
 func TestAccMorpheusClusterLayoutExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Kubernetes) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Kubernetes)
 	t.Parallel()
 
 	if testing.Short() {

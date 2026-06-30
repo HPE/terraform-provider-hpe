@@ -24,9 +24,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -82,9 +80,7 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -145,9 +141,7 @@ func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 func TestAccMorpheusOsTypeImageDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {

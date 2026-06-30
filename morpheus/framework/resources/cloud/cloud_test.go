@@ -46,9 +46,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -201,9 +199,7 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Azure) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -290,9 +286,7 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -452,9 +446,7 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -1246,9 +1238,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	t.Parallel()
 
@@ -1334,9 +1324,7 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	t.Parallel()
 

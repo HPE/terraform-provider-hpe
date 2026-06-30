@@ -39,9 +39,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusIntegrationVroExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VRO) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VRO)
 
 	t.Parallel()
 

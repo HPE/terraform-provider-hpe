@@ -34,9 +34,7 @@ provider "hpe" {
 func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -68,9 +66,7 @@ func TestAccMorpheusFindNetworkDomainByName(t *testing.T) {
 func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -112,9 +108,7 @@ func TestAccMorpheusFindNetworkDomainById(t *testing.T) {
 func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -149,9 +143,7 @@ func TestAccMorpheusFindNetworkDomainNotFound(t *testing.T) {
 func TestAccMorpheusFindNetworkDomainNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	t.Parallel()
 
@@ -175,9 +167,7 @@ func TestAccMorpheusFindNetworkDomainNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindNetworkDomainBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	t.Parallel()
 

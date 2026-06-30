@@ -80,9 +80,7 @@ resource "hpe_morpheus_load_balancer_profile" "validation" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpExampleOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -178,9 +176,7 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpRedirectOff(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -232,9 +228,7 @@ resource "hpe_morpheus_load_balancer_profile" "http_off" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceCookiePersistenceOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -316,9 +310,7 @@ resource "hpe_morpheus_load_balancer_profile" "cookie" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceSourceIpPersistenceOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -373,9 +365,7 @@ resource "hpe_morpheus_load_balancer_profile" "source_ip" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceClientSslCustomOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -456,9 +446,7 @@ resource "hpe_morpheus_load_balancer_profile" "client_ssl" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceClientSslBalancedOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -508,9 +496,7 @@ resource "hpe_morpheus_load_balancer_profile" "client_ssl_balanced" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpUpdateOk(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -592,9 +578,7 @@ resource "hpe_morpheus_load_balancer_profile" "http_update" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceServiceTypeRequiresReplace(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -668,9 +652,7 @@ resource "hpe_morpheus_load_balancer_profile" "replace" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceSmokeVariants(t *testing.T) {
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

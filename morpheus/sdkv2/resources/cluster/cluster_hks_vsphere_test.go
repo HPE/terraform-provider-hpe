@@ -27,9 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusClusterHKSVsphereExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VMware) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VMware)
 	t.Parallel()
 
 	if testing.Short() {

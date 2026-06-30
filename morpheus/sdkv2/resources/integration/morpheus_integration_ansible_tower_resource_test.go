@@ -16,9 +16,7 @@ import (
 func TestAccMorpheusIntegrationAnsibleTowerExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AnsibleTower) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.AnsibleTower)
 
 	t.Parallel()
 

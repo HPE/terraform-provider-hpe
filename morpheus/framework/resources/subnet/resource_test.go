@@ -23,9 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusSubnetResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Subnet) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Subnet)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -76,9 +74,7 @@ func TestAccMorpheusSubnetResourceExampleOk(t *testing.T) {
 func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Subnet) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Subnet)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

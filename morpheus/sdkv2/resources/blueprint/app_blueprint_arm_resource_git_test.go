@@ -18,9 +18,7 @@ import (
 func TestAccMorpheusAppBlueprintArmGitExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Git) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Git)
 	t.Parallel()
 
 	if testing.Short() {

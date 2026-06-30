@@ -27,9 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AnsibleTower) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.AnsibleTower)
 	t.Parallel()
 
 	if testing.Short() {

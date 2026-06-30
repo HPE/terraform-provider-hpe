@@ -37,9 +37,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusRoleResourceUserRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -117,9 +115,7 @@ resource "hpe_morpheus_role" "example_required" {
 func TestAccMorpheusRoleResourceTenantRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -199,9 +195,7 @@ resource "hpe_morpheus_role" "example_required" {
 func TestAccMorpheusRoleResourceAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -326,9 +320,7 @@ resource "hpe_morpheus_role" "example_all" {
 func TestAccMorpheusRoleResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -395,9 +387,7 @@ func TestAccMorpheusRoleResourceExampleOk(t *testing.T) {
 func TestAccMorpheusRoleResourcePermissionsDefaultAccessPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VDI) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VDI)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -510,9 +500,7 @@ resource "hpe_morpheus_role" "default_access_permissions_ok" {
 func TestAccMorpheusRoleResourceAllPermissionsUserRoleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VDI) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VDI)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -795,9 +783,7 @@ resource "hpe_morpheus_role" "testacc_role_all_permissions_user_role_ok" {
 func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VDI) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VDI)
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

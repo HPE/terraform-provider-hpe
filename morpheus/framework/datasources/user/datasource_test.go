@@ -39,9 +39,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -103,9 +101,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -155,9 +151,7 @@ resource "hpe_morpheus_user" "test_user" {
 func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -197,9 +191,7 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -232,9 +224,7 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	t.Parallel()
 
 	if testing.Short() {
@@ -276,9 +266,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VDI) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VDI)
 	t.Parallel()
 
 	if testing.Short() {

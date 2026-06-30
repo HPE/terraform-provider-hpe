@@ -23,9 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusOptionListResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -75,9 +73,7 @@ func TestAccMorpheusOptionListResourceExampleOk(t *testing.T) {
 func TestAccMorpheusOptionListResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

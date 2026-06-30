@@ -11,7 +11,7 @@ import (
 // TestRecordResultRecordsCapabilitySkip protects the contract that an
 // acceptance test skipped because a required capability is missing is recorded
 // as "Skipped". It exercises the canonical pattern: register RecordResult
-// first, then gate on capabilities.Missing (which skips the test via t.Skip
+// first, then gate on capabilities.MustHave (which skips the test via t.Skip
 // when the capability is absent). The deferred RecordResult must observe the
 // skip and record it.
 //
@@ -31,9 +31,8 @@ func TestRecordResultRecordsCapabilitySkip(t *testing.T) {
 	t.Run(sub, func(st *testing.T) {
 		defer RecordResult(st)
 
-		if capabilities.Missing(st, capabilities.Capability("nonexistent_capability")) {
-			st.Skip("Skipping test due to missing capabilities")
-		}
+		capabilities.MustHave(st, capabilities.Capability("nonexistent_capability"))
+
 		st.Fatal("test body must not run when a required capability is missing")
 	})
 

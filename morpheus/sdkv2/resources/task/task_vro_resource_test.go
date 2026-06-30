@@ -18,9 +18,7 @@ import (
 func TestAccMorpheusTaskVroExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VRO) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.VRO)
 	t.Parallel()
 
 	if testing.Short() {

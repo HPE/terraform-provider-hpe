@@ -18,9 +18,7 @@ import (
 func TestAccMorpheusDataSourceIntegrationExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Ansible) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Ansible)
 	t.Parallel()
 
 	if testing.Short() {

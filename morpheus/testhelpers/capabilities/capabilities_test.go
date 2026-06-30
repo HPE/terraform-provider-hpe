@@ -4,6 +4,7 @@ package capabilities
 
 import (
 	"os"
+	"slices"
 	"testing"
 )
 
@@ -158,7 +159,7 @@ func TestHasAny(t *testing.T) {
 	}
 }
 
-func TestMissing(t *testing.T) {
+func TestMissingCapabilities(t *testing.T) {
 	ResetForTesting()
 	os.Setenv(EnvCapabilities, "vmware,nsxt")
 	defer os.Unsetenv(EnvCapabilities)
@@ -167,51 +168,86 @@ func TestMissing(t *testing.T) {
 	tests := []struct {
 		name     string
 		caps     []Capability
-		expected bool
+		expected []Capability
 	}{
-		{"all present", []Capability{VMware, NSXT}, false},
-		{"one missing", []Capability{VMware, AWS}, true},
-		{"all missing", []Capability{AWS, Azure}, true},
-		{"empty list", []Capability{}, false},
-		{"single present", []Capability{VMware}, false},
-		{"single missing", []Capability{GCP}, true},
+		{"all present", []Capability{VMware, NSXT}, nil},
+		{"one missing", []Capability{VMware, AWS}, []Capability{AWS}},
+		{"all missing", []Capability{AWS, Azure}, []Capability{AWS, Azure}},
+		{"empty list", []Capability{}, nil},
+		{"single present", []Capability{VMware}, nil},
+		{"single missing", []Capability{GCP}, []Capability{GCP}},
+		{
+			"order preserved, only missing reported",
+			[]Capability{Azure, VMware, AWS},
+			[]Capability{Azure, AWS},
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := Missing(t, tc.caps...)
-			if got != tc.expected {
-				t.Errorf("Missing(%v) = %v, want %v", tc.caps, got, tc.expected)
+			got := missingCapabilities(tc.caps...)
+			if !slices.Equal(got, tc.expected) {
+				t.Errorf("missingCapabilities(%v) = %v, want %v", tc.caps, got, tc.expected)
 			}
 		})
 	}
 }
 
-func TestMissingAll(t *testing.T) {
-	ResetForTesting()
-	os.Setenv(EnvCapabilities, "nsxt,vmware")
-	defer os.Unsetenv(EnvCapabilities)
-	defer ResetForTesting()
-
+func TestCapabilityNames(t *testing.T) {
 	tests := []struct {
 		name     string
 		caps     []Capability
-		expected bool
+		expected string
 	}{
-		{"one present (NSXT)", []Capability{NSXT, NSXV}, false},
-		{"none present", []Capability{AWS, Azure}, true},
-		{"all present", []Capability{VMware, NSXT}, false},
-		{"empty list", []Capability{}, false},
+		{"empty", nil, ""},
+		{"single", []Capability{Azure}, "azure"},
+		{"multiple", []Capability{Azure, NetworkDHCP}, "azure, network_dhcp"},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			got := MissingAll(t, tc.caps...)
-			if got != tc.expected {
-				t.Errorf("MissingAll(%v) = %v, want %v", tc.caps, got, tc.expected)
+			if got := capabilityNames(tc.caps); got != tc.expected {
+				t.Errorf("capabilityNames(%v) = %q, want %q", tc.caps, got, tc.expected)
 			}
 		})
 	}
+}
+
+func TestMustHave(t *testing.T) {
+	ResetForTesting()
+	os.Setenv(EnvCapabilities, "vmware,nsxt")
+	defer os.Unsetenv(EnvCapabilities)
+	defer ResetForTesting()
+
+	t.Run("all present runs the test body", func(st *testing.T) {
+		var bodyRan bool
+		st.Cleanup(func() {
+			if st.Skipped() {
+				t.Error("MustHave skipped when all required capabilities were present")
+			}
+			if !bodyRan {
+				t.Error("test body did not run when all required capabilities were present")
+			}
+		})
+
+		MustHave(st, VMware, NSXT)
+		bodyRan = true
+	})
+
+	t.Run("missing capability skips before the body", func(st *testing.T) {
+		var skipped bool
+		// Registered first => runs last (LIFO), so it observes the value set
+		// by the cleanup below after MustHave skips via runtime.Goexit.
+		st.Cleanup(func() {
+			if !skipped {
+				t.Error("expected MustHave to mark the test as skipped")
+			}
+		})
+		st.Cleanup(func() { skipped = st.Skipped() })
+
+		MustHave(st, AWS) // not in the registry -> skips here
+		t.Error("code after MustHave ran despite a missing capability")
+	})
 }
 
 func TestIsVerbose(t *testing.T) {

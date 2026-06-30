@@ -25,9 +25,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
 	t.Parallel()
 
 	if testing.Short() {
@@ -77,9 +75,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
 	t.Parallel()
 
 	if testing.Short() {
@@ -133,9 +129,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerResourceValidationPermissionsConflict(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

@@ -24,9 +24,7 @@ func TestAccMorpheusSettingWhitelabelResourceExampleOk(t *testing.T) {
 	// We can't run this test in parallel as it's a singleton resource in Morpheus.
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Settings) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Settings)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -69,9 +67,7 @@ func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
 	// We can't run this test in parallel as it's a singleton resource in Morpheus.
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Settings) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Settings)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

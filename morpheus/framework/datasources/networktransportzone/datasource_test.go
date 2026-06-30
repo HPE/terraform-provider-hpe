@@ -24,9 +24,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	t.Parallel()
 
 	if testing.Short() {
@@ -64,9 +62,7 @@ func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	t.Parallel()
 
 	if testing.Short() {
@@ -104,9 +100,7 @@ func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 func TestAccMorpheusNetworkTransportZoneNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NSXT)
 	t.Parallel()
 
 	if testing.Short() {

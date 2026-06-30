@@ -20,9 +20,7 @@ import (
 func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.NetworkDHCP)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -427,9 +425,7 @@ resource "hpe_morpheus_network" "foo" {
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Network) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Network)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -673,9 +669,7 @@ resource "hpe_morpheus_network" "name_change_test" {
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Network) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Network)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1005,9 +999,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Network) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.Network)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

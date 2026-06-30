@@ -17,9 +17,7 @@ import (
 func TestAccMorpheusNetworkResourceValidationMissingName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -53,9 +51,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingCloudId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -89,9 +85,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingGroupId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -125,9 +119,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -162,9 +154,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -200,9 +190,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidPoolId(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -238,9 +226,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationInvalidTenantIds(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -275,9 +261,7 @@ resource "hpe_morpheus_network" "test" {
 func TestAccMorpheusNetworkResourceValidationValidConfigNull(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHave(t, capabilities.All)
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
