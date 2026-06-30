@@ -55,11 +55,11 @@ func main() {
 		)
 	}
 
-	// Inject HPE Provider schema into sdkv2 Morpheus provider
+	// Inject HPE Provider schema into sdkv2 Morpheus provider.
 	// Allows for muxing with the HPE provider.
 	schemaResp := &fwprovider.SchemaResponse{}
 	p().Schema(context.Background(), fwprovider.SchemaRequest{}, schemaResp)
-	// sdkv2 Morpheus provider server
+
 	sdkv2Provider := sdkv2Morpheus.Provider()
 	sdkv2Provider.Schema = convert.FwToSdkv2SchemaMap(schemaResp.Schema)
 
@@ -72,7 +72,6 @@ func main() {
 	providers := []func() tfprotov6.ProviderServer{
 		providerserver.NewProtocol6(p()),
 		func() tfprotov6.ProviderServer { return legacyMorpheus },
-		// providerserver.NewProtocol6(opsrampprovider.New(version)()),
 	}
 
 	muxServer, err := tf6muxserver.NewMuxServer(context.Background(), providers...)
