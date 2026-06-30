@@ -72,8 +72,18 @@ type ClientFactory struct {
 }
 
 func (c ClientFactory) NewClient(ctx context.Context) (*sdk.APIClient, error) {
+	// Surface error here to avoid panic on missing Morpheus config.
+	// Checking for nil prevents a panic when using the provider adapter architecture.
 	if c.newClient == nil {
-		return nil, errors.New("morpheus client not configured - missing morpheus provider block")
+		msg := `
+morpheus client not configured - possible missing morpheus provider block.
+
+provider "hpe" {
+  morpheus { <- missing or duplicate?
+    url = "https://example.com"
+  }
+}`
+		return nil, errors.New(msg)
 	}
 
 	return c.newClient(ctx)

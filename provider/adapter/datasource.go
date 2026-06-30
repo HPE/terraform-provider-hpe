@@ -65,7 +65,6 @@ func NewAdaptedDataSource(in datasource.DataSource, p provider.Provider) datasou
 	return NewDataSourceAdapter(in, p)
 }
 
-// Metadata is the only method implementation that varies from `in`
 // We use the Provider Adapter's name to the Metadata request.
 // This will transform the data source name from e.g.:
 // datasource -> {child_provider}_datasource

@@ -33,7 +33,7 @@ import (
 // attributes appear as a single nested block (identified by the child's
 // TypeName), allowing configuration like:
 //
-//	provider "provider" {
+//	provider "parent_provider" {
 //	  child_provider {
 //	   first_attribute  = ""
 //	   second_attribute = ""
@@ -121,6 +121,9 @@ func (p *ProviderAdapter) Schema(
 
 	p.in.Schema(ctx, provider.SchemaRequest{}, inSchemaResp)
 
+	// We're hardcoding ListNestedBlock as the Provider Block type using
+	// the adapter layer, as this is the type already used in the "hpe"
+	// provider. This is to avoid breaking existing user configs.
 	resp.Schema = schema.Schema{
 		Blocks: map[string]schema.Block{
 			inMetaResp.TypeName: schema.ListNestedBlock{

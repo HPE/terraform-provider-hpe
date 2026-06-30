@@ -83,7 +83,6 @@ func NewAdaptedResource(in resource.Resource, p provider.Provider) resource.Reso
 	return NewResourceAdapter(in, p)
 }
 
-// Metadata is the only method implementation that varies from `in`
 // We use the Provider Adapter's name to the Metadata request.
 // This will transform the resource name from e.g.:
 // resource -> {child_provider}_resource

@@ -141,7 +141,9 @@ func (p *HpeProvider) Configure(
 	resourceData := map[string]any{}
 	dataSourceData := map[string]any{}
 
-	// Navigate the parent raw value as a map of block names → tftypes.Value.
+	// Parse the parent raw config value as a map of block names → tftypes.Value.
+	// This is because we need to provide tftypes.Value for the 'Raw' part of
+	// constructing the childProverConfigReq later in this function.
 	parentAttrs := map[string]tftypes.Value{}
 	if err := req.Config.Raw.As(&parentAttrs); err != nil {
 		resp.Diagnostics.AddError("Failed to read provider config", err.Error())
@@ -154,21 +156,16 @@ func (p *HpeProvider) Configure(
 		childMetaResp := &provider.MetadataResponse{}
 		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
 
-		// handle opsramp provider naming quirk
-		blockName := childMetaResp.TypeName
-		if childMetaResp.TypeName == "hpe_opsramp" {
-			blockName = strings.TrimPrefix(childMetaResp.TypeName, "hpe_")
-		}
-
 		// Since the "hpe" provider is using ListNestedBlock for its configs,
 		// we need to pass the 0th ListNestedBlock to the child provider
-		// so that it can parse its config as a flat map[string]Attribute
+		// so that it can parse its config as a flat map[string]Attribute.
+		blockName := childMetaResp.TypeName
 		blocks := req.Config.Schema.GetBlocks()
 		block := blocks[blockName]
 		fwAttrs := block.GetNestedObject().GetAttributes()
 
 		schemaAttrs := make(map[string]schema.Attribute)
-		// assert fwschema UnderlyingAttributes to schema Attribute
+		// assert fwschema UnderlyingAttributes to schema Attribute.
 		for k, v := range fwAttrs {
 			if schemaAttr, ok := v.(schema.Attribute); ok {
 				schemaAttrs[k] = schemaAttr
@@ -177,6 +174,7 @@ func (p *HpeProvider) Configure(
 
 		// Extract the list tftypes.Value for this child's block.
 		listVal, ok := parentAttrs[blockName]
+		// The blocks are optional.
 		if !ok || listVal.IsNull() || !listVal.IsKnown() {
 			continue
 		}
@@ -184,6 +182,15 @@ func (p *HpeProvider) Configure(
 		// Unwrap the list to its elements.
 		var elems []tftypes.Value
 		if err := listVal.As(&elems); err != nil || len(elems) == 0 {
+			if err != nil {
+				// Only fail on error.
+				resp.Diagnostics.AddError(
+					"failed to configure hpe provider",
+					err.Error(),
+				)
+
+				return
+			}
 			continue
 		}
 
