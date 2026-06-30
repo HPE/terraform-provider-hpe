@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -26,6 +27,7 @@ import (
 
 var _ provider.Provider = &HpeProvider{}
 var _ provider.ProviderWithEphemeralResources = &HpeProvider{}
+var _ provider.ProviderWithFunctions = &HpeProvider{}
 
 func New(
 	version string,
@@ -268,4 +270,18 @@ func (p *HpeProvider) EphemeralResources(
 	}
 
 	return ephemerals
+}
+
+func (p *HpeProvider) Functions(
+	ctx context.Context,
+) []func() function.Function {
+	var functions []func() function.Function
+
+	for _, s := range p.childProviders {
+		if fn, ok := s.(provider.ProviderWithFunctions); ok {
+			functions = append(functions, fn.Functions(ctx)...)
+		}
+	}
+
+	return functions
 }
