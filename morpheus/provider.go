@@ -13,11 +13,10 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 var _ provider.Provider = &MorpheusProvider{}
-
-const ProviderName = "morpheus"
 
 type MorpheusProvider struct {
 	NewClientFactory func(model.MorpheusProviderModel) *clientfactory.ClientFactory
@@ -44,7 +43,7 @@ func New(opts ...Option) *MorpheusProvider {
 }
 
 func (p *MorpheusProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = ProviderName
+	resp.TypeName = constants.ProviderName
 	resp.Version = "dev"
 }
 

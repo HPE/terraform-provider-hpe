@@ -19,7 +19,7 @@ type DataSourceWithMorpheusConfigure struct {
 }
 
 func (r *DataSourceWithMorpheusConfigure) BlockName() string {
-	return constants.SubProviderName
+	return constants.ProviderName
 }
 
 func (r *DataSourceWithMorpheusConfigure) Configure(
@@ -44,7 +44,7 @@ provider "hpe" {
   }
 }`
 		resp.Diagnostics.AddError(
-			constants.SubProviderName+" client creation failed",
+			constants.ProviderName+" client creation failed",
 			msg,
 		)
 

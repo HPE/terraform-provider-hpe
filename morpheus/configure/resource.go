@@ -18,7 +18,7 @@ type ResourceWithMorpheusConfigure struct {
 }
 
 func (r *ResourceWithMorpheusConfigure) BlockName() string {
-	return constants.SubProviderName
+	return constants.ProviderName
 }
 
 func (r *ResourceWithMorpheusConfigure) Configure(
@@ -43,7 +43,7 @@ provider "hpe" {
   }
 }`
 		resp.Diagnostics.AddError(
-			constants.SubProviderName+" client creation failed",
+			constants.ProviderName+" client creation failed",
 			msg,
 		)
 
