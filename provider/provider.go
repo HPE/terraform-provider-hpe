@@ -191,6 +191,7 @@ func (p *HpeProvider) Configure(
 
 				return
 			}
+
 			continue
 		}
 

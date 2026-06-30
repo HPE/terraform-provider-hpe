@@ -83,6 +83,7 @@ provider "hpe" {
     url = "https://example.com"
   }
 }`
+
 		return nil, errors.New(msg)
 	}
 
