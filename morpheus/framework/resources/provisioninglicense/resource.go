@@ -133,7 +133,14 @@ func (r *provisioningLicenseResource) Create(
 
 		return
 	}
+
+	// The API may normalise the tenants list on GET (e.g. replacing submitted IDs
+	// with the master tenant). Preserve the plan value so Terraform's post-apply
+	// consistency check passes. Read() will surface any real divergence on the
+	// next plan.
+	savedTenants := plan.Tenants
 	mapGetResponseToModel(&plan, readLicense)
+	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -261,7 +268,11 @@ func (r *provisioningLicenseResource) Update(
 
 		return
 	}
+
+	// Same as Create: preserve plan value for tenants.
+	savedTenants := plan.Tenants
 	mapGetResponseToModel(&plan, readLicense)
+	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

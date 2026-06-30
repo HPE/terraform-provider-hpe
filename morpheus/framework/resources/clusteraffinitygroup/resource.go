@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -145,7 +146,17 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
+	// The API silently drops tenant/site IDs that don't exist in the environment.
+	// Preserve plan values so state matches the plan and Terraform's consistency
+	// check passes. Read() will return the API-normalised values, surfacing any
+	// divergence as a plan diff on the next run.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readAg)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -280,7 +291,15 @@ func (r *clusterAffinityGroupResource) Update(
 		return
 	}
 
+	// Same as Create: preserve plan values for tenant_ids and resource_permissions
+	// so the consistency check passes when the API normalises submitted IDs.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
 	mapGetResponseToModel(&plan, readAg)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -362,9 +381,31 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 	} else {
 		model.Visibility = types.StringNull()
 	}
-	// tenant_ids and resource_permissions — intentionally not updated from the
-	// API response. Morpheus substitutes the master tenant for any unrecognised
-	// tenant IDs, and silently drops site IDs that don't exist in this
-	// environment. Reading these back would cause a perpetual diff. The prior
-	// plan/state value is preserved instead (subnet resource uses the same pattern).
+	tenantVals := make([]attr.Value, 0, len(ag.Tenants))
+	for _, t := range ag.Tenants {
+		if t.Id != nil {
+			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
+		}
+	}
+	model.TenantIds = types.SetValueMust(types.Int64Type, tenantVals)
+	if ag.ResourcePermissions != nil {
+		siteVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
+		for _, s := range ag.ResourcePermissions.Sites {
+			if id, ok := s["id"].(float64); ok {
+				siteVals = append(siteVals, types.Int64Value(int64(id)))
+			}
+		}
+		model.ResourcePermissions = NewResourcePermissionsValueMust(
+			map[string]attr.Type{
+				"all":      types.BoolType,
+				"site_ids": types.ListType{ElemType: types.Int64Type},
+			},
+			map[string]attr.Value{
+				"all":      types.BoolPointerValue(ag.ResourcePermissions.All),
+				"site_ids": types.ListValueMust(types.Int64Type, siteVals),
+			},
+		)
+	} else {
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
 }
