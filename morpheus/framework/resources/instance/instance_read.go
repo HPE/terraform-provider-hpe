@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,6 +28,7 @@ import (
 const (
 	awsCode    = "amazon"
 	azureCode  = "azure"
+	bmaasCode  = "hpe-baremetal-plugin.provision"
 	hvmCode    = "mvm-cluster"
 	kvmCode    = "kvm"
 	vmwareCode = "vmware"
@@ -149,6 +151,7 @@ func getInstanceAsState(
 	state.ConfigAzure = NewConfigAzureValueNull()
 	state.ConfigHvm = NewConfigHvmValueNull()
 	state.ConfigVmware = NewConfigVmwareValueNull()
+	state.ConfigBmaas = NewConfigBmaasValueNull()
 
 	switch {
 	case plan.Name.IsNull() || plan.Name.IsUnknown():
@@ -192,6 +195,14 @@ func getInstanceAsState(
 			}
 			state.ConfigVmware = configVMware
 
+		case bmaasCode:
+			configBmaas, cdiags := getInstanceBmaasConfig(ctx, id, apiConfig)
+			diags.Append(cdiags...)
+			if diags.HasError() {
+				return state, false, diags
+			}
+			state.ConfigBmaas = configBmaas
+
 		default:
 			config, cdiags := getInstanceConfigGeneric(ctx, id, apiConfig)
 			diags.Append(cdiags...)
@@ -214,6 +225,9 @@ func getInstanceAsState(
 
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		state.ConfigVmware = plan.ConfigVmware
+
+	case !plan.ConfigBmaas.IsNull() && !plan.ConfigBmaas.IsUnknown():
+		state.ConfigBmaas = plan.ConfigBmaas
 
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		state.Config = plan.Config
@@ -672,6 +686,150 @@ func getInstanceAWSConfig(
 	configAws.state = attr.ValueStateKnown
 
 	return configAws, diag.Diagnostics{}
+}
+
+// getInstanceBmaasConfig builds the config_bmaas block from the API response for
+// HPE bare metal (BMaaS) instances. The baremetal plugin's option types are stored
+// in the generic instance config map, so the plugin-specific fields (enforce RAID
+// boot volume and selected hosts) are read from the config's untyped additional
+// properties, while no_agent is a typed field on the instance config.
+func getInstanceBmaasConfig(
+	ctx context.Context,
+	id int64,
+	apiConfig *apiConfigType,
+) (ConfigBmaasValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	configBmaas := ConfigBmaasValue{}
+
+	noAgent, ndiags := getNoAgent(id, apiConfig)
+	if ndiags.HasError() {
+		return configBmaas, ndiags
+	}
+
+	createUser, cdiags := getCreateUser(id, apiConfig)
+	if cdiags.HasError() {
+		return configBmaas, cdiags
+	}
+
+	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
+	if rdiags.HasError() {
+		return configBmaas, rdiags
+	}
+
+	selectedHosts, shdiags := selectedHostsFromConfig(
+		ctx,
+		apiConfig.AdditionalProperties["selectedHosts"],
+	)
+	diags.Append(shdiags...)
+	if diags.HasError() {
+		return configBmaas, diags
+	}
+
+	imageID := basetypes.NewInt64Null()
+	if id, ok := numberToInt64(apiConfig.AdditionalProperties["imageId"]); ok {
+		imageID = basetypes.NewInt64Value(id)
+	}
+
+	configBmaas.CreateUser = convert.BoolToType(createUser)
+	configBmaas.ImageId = imageID
+	configBmaas.NoAgent = convert.BoolToType(noAgent)
+	configBmaas.ResourcePoolId = convert.StrToType(resourcePoolId)
+	// enforce_raid_boot_volume defaults to true in the schema; mirror that default
+	// when the value is absent from the config so an imported instance is stable.
+	configBmaas.EnforceRaidBootVolume = boolFromConfig(
+		apiConfig.AdditionalProperties["enforceRaidBootVolume"],
+		true,
+	)
+	configBmaas.SelectedHosts = selectedHosts
+	configBmaas.state = attr.ValueStateKnown
+
+	return configBmaas, diags
+}
+
+// boolFromConfig coerces a value from the untyped instance config map into a bool
+// value, tolerating the encodings Morpheus may use (native bool or strings such as
+// "on"/"off"/"true"/"false"). The supplied default is used when the key is absent
+// or cannot be interpreted.
+func boolFromConfig(v interface{}, def bool) basetypes.BoolValue {
+	switch val := v.(type) {
+	case bool:
+		return basetypes.NewBoolValue(val)
+	case string:
+		switch strings.ToLower(strings.TrimSpace(val)) {
+		case "on", "true", "1", "yes":
+			return basetypes.NewBoolValue(true)
+		case "off", "false", "0", "no":
+			return basetypes.NewBoolValue(false)
+		}
+	}
+
+	return basetypes.NewBoolValue(def)
+}
+
+// selectedHostsFromConfig parses the baremetal plugin's selectedHosts config value
+// into a list of host ids. The plugin stores each entry as an object with a "value"
+// field, but this tolerates bare ids and the various JSON number/string encodings.
+// An absent or empty value yields a null list.
+func selectedHostsFromConfig(
+	ctx context.Context,
+	v interface{},
+) (basetypes.ListValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	nullList := basetypes.NewListNull(types.Int64Type)
+
+	raw, ok := v.([]interface{})
+	if !ok || len(raw) == 0 {
+		return nullList, diags
+	}
+
+	hostIDs := make([]int64, 0, len(raw))
+	for _, elem := range raw {
+		if hostID, ok := hostIDFromElement(elem); ok {
+			hostIDs = append(hostIDs, hostID)
+		}
+	}
+
+	if len(hostIDs) == 0 {
+		return nullList, diags
+	}
+
+	list, d := types.ListValueFrom(ctx, types.Int64Type, hostIDs)
+	diags.Append(d...)
+
+	return list, diags
+}
+
+// hostIDFromElement extracts a host id from a selectedHosts element, which the
+// baremetal plugin stores as an object with a "value" field, falling back to
+// treating the element itself as the id.
+func hostIDFromElement(elem interface{}) (int64, bool) {
+	if m, ok := elem.(map[string]interface{}); ok {
+		return numberToInt64(m["value"])
+	}
+
+	return numberToInt64(elem)
+}
+
+// numberToInt64 coerces the JSON-decoded representations of a number (float64 from
+// encoding/json, native ints, or a numeric string) into an int64.
+func numberToInt64(v interface{}) (int64, bool) {
+	switch n := v.(type) {
+	case float64:
+		return int64(n), true
+	case int64:
+		return n, true
+	case int:
+		return int64(n), true
+	case string:
+		i, err := strconv.ParseInt(strings.TrimSpace(n), 10, 64)
+		if err != nil {
+			return 0, false
+		}
+
+		return i, true
+	}
+
+	return 0, false
 }
 
 func getCreateUser(

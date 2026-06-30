@@ -16,7 +16,8 @@ monitoring, and eventual decommissioning.
 &nbsp;&nbsp;&nbsp;&nbsp;- Azure: `config_azure`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- BMaaS: `config_bmaas`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
@@ -844,13 +845,16 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    imageId         = 231
-    resourcePoolId  = "pool-1"
-    isVpcSelectable = true
-    serverId        = 155
-    noAgent         = false
-    createUser      = true
+  config_bmaas = {
+    image_id                 = 231
+    resource_pool_id         = "pool-1"
+    no_agent                 = true
+    create_user              = false
+    enforce_raid_boot_volume = true
+
+    # Optionally pin specific bare metal host id(s) instead of auto-selecting
+    # from the resource pool:
+    # selected_hosts = [155]
   }
 
   timeouts = {
@@ -879,6 +883,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config` (Dynamic) Configuration object. Settings vary by type.
 - `config_aws` (Attributes) Configuration options for AWS instances. (see [below for nested schema](#nestedatt--config_aws))
 - `config_azure` (Attributes) Configuration options for Azure instances. (see [below for nested schema](#nestedatt--config_azure))
+- `config_bmaas` (Attributes) Configuration options for HPE bare metal (BMaaS) instances. (see [below for nested schema](#nestedatt--config_bmaas))
 - `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `description` (String) A description of the instance.
@@ -997,6 +1002,23 @@ Optional:
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.
 - `diagnostics_storage_account` (String) The diagnostics storage account to use when boot_diagnostics is 'enable_custom_storage'.
 - `os_guest_diagnostics` (String) OS guest diagnostics setting (on, off).
+
+
+<a id="nestedatt--config_bmaas"></a>
+### Nested Schema for `config_bmaas`
+
+Required:
+
+- `image_id` (Number) The id of the ISO virtual image to boot the bare metal instance from.
+- `resource_pool_id` (String) The id of the resource pool to provision the bare metal instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.
+
+Optional:
+
+- `create_user` (Boolean) Whether to create a user when provisioning the bare metal instance.
+- `enforce_raid_boot_volume` (Boolean) When enabled, provisioning fails if a RAID boot volume cannot be created. When
+disabled, provisioning falls back to a single disk if RAID1 is unavailable.
+- `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
+- `selected_hosts` (List of Number) IDs of the bare metal host(s) to provision this workload on.
 
 
 <a id="nestedatt--config_hvm"></a>

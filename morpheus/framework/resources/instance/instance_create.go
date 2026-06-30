@@ -253,6 +253,60 @@ func (g *Resource) Create(
 			AzureInstanceConfiguration2: configAzure,
 		}
 
+	// BMaaS (HPE bare metal) config. There is no typed SDK config object for the
+	// baremetal plugin, so its option types are sent through the generic config map
+	// (instance.config.*). The instance is identified as bare metal by its layout's
+	// provision type code; this block just carries the baremetal-specific settings.
+	case !plan.ConfigBmaas.IsNull() && !plan.ConfigBmaas.IsUnknown():
+		configMap := map[string]interface{}{
+			"imageId":        plan.ConfigBmaas.ImageId.ValueInt64(),
+			"resourcePoolId": plan.ConfigBmaas.ResourcePoolId.ValueString(),
+		}
+
+		// create_user is only sent when the user set it explicitly so the API can
+		// apply its own default otherwise (matches the other config blocks).
+		if !config.ConfigBmaas.CreateUser.IsNull() &&
+			!config.ConfigBmaas.CreateUser.IsUnknown() {
+			configMap["createUser"] = plan.ConfigBmaas.CreateUser.ValueBool()
+		}
+
+		if !plan.ConfigBmaas.EnforceRaidBootVolume.IsNull() &&
+			!plan.ConfigBmaas.EnforceRaidBootVolume.IsUnknown() {
+			configMap["enforceRaidBootVolume"] = plan.ConfigBmaas.EnforceRaidBootVolume.ValueBool()
+		}
+
+		if !plan.ConfigBmaas.NoAgent.IsNull() && !plan.ConfigBmaas.NoAgent.IsUnknown() {
+			configMap["noAgent"] = plan.ConfigBmaas.NoAgent.ValueBool()
+		}
+
+		if !plan.ConfigBmaas.SelectedHosts.IsNull() &&
+			!plan.ConfigBmaas.SelectedHosts.IsUnknown() {
+			var hostIDs []int64
+			resp.Diagnostics.Append(
+				plan.ConfigBmaas.SelectedHosts.ElementsAs(ctx, &hostIDs, false)...,
+			)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+
+			// The baremetal plugin reads each selected host as an object with a
+			// "value" holding the host id (host.value as Long), so send that shape
+			// rather than a bare list of ids.
+			selectedHosts := make([]map[string]interface{}, 0, len(hostIDs))
+			for _, hostID := range hostIDs {
+				selectedHosts = append(selectedHosts, map[string]interface{}{
+					"value": hostID,
+				})
+			}
+			configMap["selectedHosts"] = selectedHosts
+		}
+
+		reqInstance.Config = sdk.AddInstanceRequestConfig{
+			GenericInstanceConfiguration2: &sdk.GenericInstanceConfiguration2{
+				AdditionalProperties: configMap,
+			},
+		}
+
 	// Generic config
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		configValue := plan.Config.UnderlyingValue()

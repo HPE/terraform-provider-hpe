@@ -125,3 +125,137 @@ func TestUnitRemoveExternalStorageVolumes(t *testing.T) {
 		t.Errorf("provisioned disks not retained in order: got %v, %v", got[0].Id, got[1].Id)
 	}
 }
+
+// TestBoolFromConfig verifies the defensive coercion of untyped instance config
+// values (native bool or the string encodings Morpheus may use) that back the
+// config_bmaas.enforce_raid_boot_volume attribute, including the fallback to the
+// supplied default when the value is absent or unrecognised.
+func TestBoolFromConfig(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name string
+		in   interface{}
+		def  bool
+		want types.Bool
+	}{
+		{"native true", true, false, types.BoolValue(true)},
+		{"native false", false, true, types.BoolValue(false)},
+		{"string on", "on", false, types.BoolValue(true)},
+		{"string off", "off", true, types.BoolValue(false)},
+		{"string true mixed case", "True", false, types.BoolValue(true)},
+		{"string false", "false", true, types.BoolValue(false)},
+		{"absent uses default true", nil, true, types.BoolValue(true)},
+		{"absent uses default false", nil, false, types.BoolValue(false)},
+		{"unrecognised uses default", "maybe", true, types.BoolValue(true)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			if got := boolFromConfig(tt.in, tt.def); !got.Equal(tt.want) {
+				t.Errorf("boolFromConfig(%v, %v) = %v, want %v", tt.in, tt.def, got, tt.want)
+			}
+		})
+	}
+}
+
+// TestSelectedHostsFromConfig verifies parsing of the baremetal plugin's
+// selectedHosts config value into the config_bmaas.selected_hosts list. The plugin
+// stores each entry as an object with a "value" id (host.value as Long); bare ids
+// and the various JSON number/string encodings are also tolerated. An absent or
+// otherwise unusable value yields a null list.
+func TestSelectedHostsFromConfig(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name     string
+		in       interface{}
+		wantNull bool
+		want     []int64
+	}{
+		{
+			name: "objects with value (plugin shape)",
+			in: []interface{}{
+				map[string]interface{}{"value": float64(12)},
+				map[string]interface{}{"value": float64(34)},
+			},
+			want: []int64{12, 34},
+		},
+		{
+			name: "bare numeric ids",
+			in:   []interface{}{float64(7), float64(8)},
+			want: []int64{7, 8},
+		},
+		{
+			name: "string values",
+			in:   []interface{}{map[string]interface{}{"value": "55"}},
+			want: []int64{55},
+		},
+		{name: "absent yields null", in: nil, wantNull: true},
+		{name: "empty slice yields null", in: []interface{}{}, wantNull: true},
+		{name: "wrong type yields null", in: "nope", wantNull: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, diags := selectedHostsFromConfig(ctx, tt.in)
+			if diags.HasError() {
+				t.Fatalf("selectedHostsFromConfig returned diagnostics: %v", diags)
+			}
+			if tt.wantNull {
+				if !got.IsNull() {
+					t.Errorf("expected null list, got %v", got)
+				}
+
+				return
+			}
+			var ids []int64
+			if d := got.ElementsAs(ctx, &ids, false); d.HasError() {
+				t.Fatalf("ElementsAs returned diagnostics: %v", d)
+			}
+			if len(ids) != len(tt.want) {
+				t.Fatalf("got %d ids %v, want %d %v", len(ids), ids, len(tt.want), tt.want)
+			}
+			for i := range ids {
+				if ids[i] != tt.want[i] {
+					t.Errorf("id[%d] = %d, want %d", i, ids[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
+// TestNumberToInt64 verifies coercion of the JSON-decoded number representations
+// that may appear in the untyped instance config map.
+func TestNumberToInt64(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name   string
+		in     interface{}
+		want   int64
+		wantOK bool
+	}{
+		{"float64", float64(42), 42, true},
+		{"int", 43, 43, true},
+		{"int64", int64(44), 44, true},
+		{"numeric string", "45", 45, true},
+		{"non-numeric string", "x", 0, false},
+		{"nil", nil, 0, false},
+		{"bool unsupported", true, 0, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, ok := numberToInt64(tt.in)
+			if ok != tt.wantOK || got != tt.want {
+				t.Errorf("numberToInt64(%v) = (%d, %v), want (%d, %v)", tt.in, got, ok, tt.want, tt.wantOK)
+			}
+		})
+	}
+}
