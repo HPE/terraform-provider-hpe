@@ -11,14 +11,14 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
-// TestGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id
+// TestUnitGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id
 // back from a child server interface's subnet association.
 //
 // When provisioning via subnet_id the Morpheus API resolves the subnet to its
 // parent network (reported as network_id) but also returns the subnet itself
 // (containerDetails.server.interfaces[].subnet, see _computeServerInterface.gson),
 // so subnet_id round-trips on refresh rather than being write-only.
-func TestGetChildNetworksReadsSubnetID(t *testing.T) {
+func TestUnitGetChildNetworksReadsSubnetID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -58,9 +58,9 @@ func TestGetChildNetworksReadsSubnetID(t *testing.T) {
 	}
 }
 
-// TestGetChildNetworksNoSubnet verifies that a child interface with no subnet
+// TestUnitGetChildNetworksNoSubnet verifies that a child interface with no subnet
 // association yields a null subnet_id (e.g. when network_id was used directly).
-func TestGetChildNetworksNoSubnet(t *testing.T) {
+func TestUnitGetChildNetworksNoSubnet(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -93,12 +93,12 @@ func TestGetChildNetworksNoSubnet(t *testing.T) {
 	}
 }
 
-// TestRemoveExternalStorageVolumes verifies that storage-server (SAN) volumes —
+// TestUnitRemoveExternalStorageVolumes verifies that storage-server (SAN) volumes —
 // e.g. Alletra MP BMaaS LUNs exported to the instance's host by
 // hpe_morpheus_storage_volume — are excluded from the instance's tracked
 // volumes, while the instance's own provisioned disks (no storageServer) are
 // retained in order. This prevents spurious drift on the instance's volumes.
-func TestRemoveExternalStorageVolumes(t *testing.T) {
+func TestUnitRemoveExternalStorageVolumes(t *testing.T) {
 	t.Parallel()
 
 	volumes := []sdk.InstanceContainerServerVolume1{
