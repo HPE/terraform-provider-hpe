@@ -34,12 +34,12 @@ type EphemeralResourceAdapter struct {
 }
 
 var (
-	_ ephemeral.EphemeralResource                 = &EphemeralResourceAdapter{}
-	_ ephemeral.EphemeralResourceWithConfigure    = &EphemeralResourceAdapter{}
+	_ ephemeral.EphemeralResource                     = &EphemeralResourceAdapter{}
+	_ ephemeral.EphemeralResourceWithConfigure        = &EphemeralResourceAdapter{}
 	_ ephemeral.EphemeralResourceWithConfigValidators = &EphemeralResourceAdapter{}
-	_ ephemeral.EphemeralResourceWithRenew        = &EphemeralResourceAdapter{}
-	_ ephemeral.EphemeralResourceWithClose        = &EphemeralResourceAdapter{}
-	_ ephemeral.EphemeralResourceWithValidateConfig = &EphemeralResourceAdapter{}
+	_ ephemeral.EphemeralResourceWithRenew            = &EphemeralResourceAdapter{}
+	_ ephemeral.EphemeralResourceWithClose            = &EphemeralResourceAdapter{}
+	_ ephemeral.EphemeralResourceWithValidateConfig   = &EphemeralResourceAdapter{}
 )
 
 func NewEphemeralResourceAdapter(in ephemeral.EphemeralResource, p provider.Provider) *EphemeralResourceAdapter {
