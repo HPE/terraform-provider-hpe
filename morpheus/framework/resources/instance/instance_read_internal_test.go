@@ -126,11 +126,11 @@ func TestUnitRemoveExternalStorageVolumes(t *testing.T) {
 	}
 }
 
-// TestBoolFromConfig verifies the defensive coercion of untyped instance config
+// TestUnitBoolFromConfig verifies the defensive coercion of untyped instance config
 // values (native bool or the string encodings Morpheus may use) that back the
 // config_bmaas.enforce_raid_boot_volume attribute, including the fallback to the
 // supplied default when the value is absent or unrecognised.
-func TestBoolFromConfig(t *testing.T) {
+func TestUnitBoolFromConfig(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -160,12 +160,12 @@ func TestBoolFromConfig(t *testing.T) {
 	}
 }
 
-// TestSelectedHostsFromConfig verifies parsing of the baremetal plugin's
+// TestUnitSelectedHostsFromConfig verifies parsing of the baremetal plugin's
 // selectedHosts config value into the config_bmaas.selected_hosts list. The plugin
 // stores each entry as an object with a "value" id (host.value as Long); bare ids
 // and the various JSON number/string encodings are also tolerated. An absent or
 // otherwise unusable value yields a null list.
-func TestSelectedHostsFromConfig(t *testing.T) {
+func TestUnitSelectedHostsFromConfig(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -229,9 +229,9 @@ func TestSelectedHostsFromConfig(t *testing.T) {
 	}
 }
 
-// TestNumberToInt64 verifies coercion of the JSON-decoded number representations
+// TestUnitNumberToInt64 verifies coercion of the JSON-decoded number representations
 // that may appear in the untyped instance config map.
-func TestNumberToInt64(t *testing.T) {
+func TestUnitNumberToInt64(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
