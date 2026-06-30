@@ -92,3 +92,36 @@ func TestGetChildNetworksNoSubnet(t *testing.T) {
 		t.Errorf("child subnet_id = %v, want null", got)
 	}
 }
+
+// TestRemoveExternalStorageVolumes verifies that storage-server (SAN) volumes —
+// e.g. Alletra MP BMaaS LUNs exported to the instance's host by
+// hpe_morpheus_storage_volume — are excluded from the instance's tracked
+// volumes, while the instance's own provisioned disks (no storageServer) are
+// retained in order. This prevents spurious drift on the instance's volumes.
+func TestRemoveExternalStorageVolumes(t *testing.T) {
+	t.Parallel()
+
+	volumes := []sdk.InstanceContainerServerVolume1{
+		{Id: sdk.PtrInt64(1), Name: sdk.PtrString("root")},
+		{Id: sdk.PtrInt64(2), Name: sdk.PtrString("data")},
+		{
+			Id:            sdk.PtrInt64(3),
+			Name:          sdk.PtrString("alletra-bmaas-lun"),
+			StorageServer: &sdk.InstanceContainerServerVolumeStorageServer1{},
+		},
+	}
+
+	got := removeExternalStorageVolumes(volumes)
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 volumes after filtering, got %d", len(got))
+	}
+	for _, v := range got {
+		if v.StorageServer != nil {
+			t.Errorf("storage-server volume (id %v) was not filtered out", v.Id)
+		}
+	}
+	if got[0].Id == nil || *got[0].Id != 1 || got[1].Id == nil || *got[1].Id != 2 {
+		t.Errorf("provisioned disks not retained in order: got %v, %v", got[0].Id, got[1].Id)
+	}
+}
