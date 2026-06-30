@@ -163,7 +163,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -235,7 +235,7 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + createConfig,
