@@ -4,6 +4,7 @@ package adapter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -114,7 +115,20 @@ func (d *DataSourceAdapter) Configure(
 		metaResp := &provider.MetadataResponse{}
 		d.provider.Metadata(ctx, provider.MetadataRequest{}, metaResp)
 
-		req.ProviderData = providerData[metaResp.TypeName]
+		childData, exists := providerData[metaResp.TypeName]
+		if !exists {
+			resp.Diagnostics.AddError(
+				"Missing provider configuration",
+				fmt.Sprintf(
+					"The %q provider block is required but was not found in the provider configuration.",
+					metaResp.TypeName,
+				),
+			)
+
+			return
+		}
+
+		req.ProviderData = childData
 	}
 
 	d.withConfigure.Configure(ctx, req, resp)

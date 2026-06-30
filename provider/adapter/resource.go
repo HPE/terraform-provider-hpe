@@ -4,6 +4,7 @@ package adapter
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -156,8 +157,22 @@ func (r *ResourceAdapter) Configure(
 		metaResp := &provider.MetadataResponse{}
 		r.provider.Metadata(ctx, provider.MetadataRequest{}, metaResp)
 
-		req.ProviderData = providerData[metaResp.TypeName]
+		childData, exists := providerData[metaResp.TypeName]
+		if !exists {
+			resp.Diagnostics.AddError(
+				"Missing provider configuration",
+				fmt.Sprintf(
+					"The %q provider block is required but was not found in the provider configuration.",
+					metaResp.TypeName,
+				),
+			)
+
+			return
+		}
+
+		req.ProviderData = childData
 	}
+
 	r.withConfigure.Configure(ctx, req, resp)
 }
 
@@ -177,6 +192,11 @@ func (r *ResourceAdapter) ImportState(
 	resp *resource.ImportStateResponse,
 ) {
 	if r.withImportState == nil {
+		resp.Diagnostics.AddError(
+			"Import Not Supported",
+			"This resource does not support import.",
+		)
+
 		return
 	}
 

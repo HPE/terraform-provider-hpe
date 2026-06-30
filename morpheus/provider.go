@@ -39,6 +39,11 @@ func New(opts ...Option) *MorpheusProvider {
 		NewClientFactory: f,
 	}
 
+	// Apply any options
+	for _, opt := range opts {
+		opt(p)
+	}
+
 	return p
 }
 
