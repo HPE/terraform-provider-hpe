@@ -11,6 +11,7 @@ import (
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -24,6 +25,7 @@ import (
 )
 
 var _ provider.Provider = &HpeProvider{}
+var _ provider.ProviderWithEphemeralResources = &HpeProvider{}
 
 func New(
 	version string,
@@ -140,6 +142,7 @@ func (p *HpeProvider) Configure(
 
 	resourceData := map[string]any{}
 	dataSourceData := map[string]any{}
+	ephemeralResourceData := map[string]any{}
 
 	// Parse the parent raw config value as a map of block names → tftypes.Value.
 	// This is because we need to provide tftypes.Value for the 'Raw' part of
@@ -218,10 +221,15 @@ func (p *HpeProvider) Configure(
 		if childConfigResp.DataSourceData != nil {
 			dataSourceData[childMetaResp.TypeName] = childConfigResp.DataSourceData
 		}
+
+		if childConfigResp.EphemeralResourceData != nil {
+			ephemeralResourceData[childMetaResp.TypeName] = childConfigResp.EphemeralResourceData
+		}
 	}
 
 	resp.ResourceData = resourceData
 	resp.DataSourceData = dataSourceData
+	resp.EphemeralResourceData = ephemeralResourceData
 
 	wg.Wait()
 }
@@ -246,4 +254,18 @@ func (p *HpeProvider) DataSources(
 	}
 
 	return datasources
+}
+
+func (p *HpeProvider) EphemeralResources(
+	ctx context.Context,
+) []func() ephemeral.EphemeralResource {
+	var ephemerals []func() ephemeral.EphemeralResource
+
+	for _, s := range p.childProviders {
+		if ep, ok := s.(provider.ProviderWithEphemeralResources); ok {
+			ephemerals = append(ephemerals, ep.EphemeralResources(ctx)...)
+		}
+	}
+
+	return ephemerals
 }
