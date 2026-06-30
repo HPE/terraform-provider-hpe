@@ -219,7 +219,17 @@ func (p *ProviderAdapter) EphemeralResources(
 		return nil
 	}
 
-	return p.withEphemeral.EphemeralResources(ctx)
+	var adaptedEphemerals []func() ephemeral.EphemeralResource
+	for _, f := range p.withEphemeral.EphemeralResources(ctx) {
+		adaptedEphemerals = append(
+			adaptedEphemerals,
+			func() ephemeral.EphemeralResource {
+				return NewAdaptedEphemeralResource(f(), p)
+			},
+		)
+	}
+
+	return adaptedEphemerals
 }
 
 func (p *ProviderAdapter) MetaSchema(
