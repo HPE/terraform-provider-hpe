@@ -162,6 +162,7 @@ storage_volume:
       computed_optional_required: optional
       description: The ID of the storage server.
       requires_replace: true
+      at_least_one_of: [storage_server_id, storage_group_id]
     type_id:
       computed_optional_required: computed_optional
       description: The ID of the storage volume type. Mutually exclusive with type_code.
@@ -205,12 +206,28 @@ storage_volume:
       description: ID of the Alletra MP BMaaS data store (pool) in which to create the volume.
     config_alletramp_bmaas.shared:
       description: Whether the volume is shared (multi-attach).
+    # compute_server_id and instance_ids are mutually exclusive (the Alletra MP
+    # plugin's validateExportInput rejects both). Custom validators are used
+    # because the conflicts_with shorthand mis-renders a nested path as
+    # path.MatchRoot("config_alletramp_bmaas.instance_ids") (a single root name).
     config_alletramp_bmaas.compute_server_id:
       description: Compute server ID to export a non-shared volume to.
-      conflicts_with: [config_alletramp_bmaas.instance_ids]
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: |-
+              int64validator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("instance_ids"))
     config_alletramp_bmaas.instance_ids:
       description: List of instance IDs to export a shared volume to.
-      conflicts_with: [config_alletramp_bmaas.compute_server_id]
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
+            schema_definition: |-
+              listvalidator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("compute_server_id"))
     config_alletramp_bmaas.remote_copy_target_id:
       computed_optional_required: optional
       write_only: true

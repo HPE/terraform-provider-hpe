@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -45,7 +46,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Compute server ID to export a non-shared volume to.",
 						MarkdownDescription: "Compute server ID to export a non-shared volume to.",
 						Validators: []validator.Int64{
-							int64validator.ConflictsWith(path.Expressions{path.MatchRoot("config_alletramp_bmaas.instance_ids")}...),
+							int64validator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("instance_ids")),
 						},
 					},
 					"datastore_id": schema.Int64Attribute{
@@ -60,6 +61,9 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 						WriteOnly:           true,
 						Description:         "List of instance IDs to export a shared volume to.",
 						MarkdownDescription: "List of instance IDs to export a shared volume to.",
+						Validators: []validator.List{
+							listvalidator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("compute_server_id")),
+						},
 					},
 					"remote_copy_target_id": schema.StringAttribute{
 						Optional:            true,
@@ -176,6 +180,9 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the storage server.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Int64{
+					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("storage_server_id"), path.MatchRoot("storage_group_id")}...),
 				},
 			},
 			"type_code": schema.StringAttribute{

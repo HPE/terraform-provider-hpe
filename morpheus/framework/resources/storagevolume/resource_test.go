@@ -4,6 +4,7 @@ package storagevolume_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -254,6 +255,71 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "config_alletramp_bmaas_wo_version", "2"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceRequiresServerOrGroup verifies the schema
+// rejects a volume with neither storage_server_id nor storage_group_id at plan
+// time (MORPH-12939), instead of failing apply with a generic API
+// "error saving volume". The error is raised during config validation, so no
+// storage backend is required.
+func TestAccMorpheusStorageVolumeResourceRequiresServerOrGroup(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name      = "tf-acc-no-server"
+  type_code = "hpealletraMPLUN"
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)[Aa]t least one attribute out of.*storage_server_id`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceConfigExportConflict verifies the
+// config_alletramp_bmaas block rejects setting both compute_server_id and
+// instance_ids (mutually exclusive export targets) at plan time.
+func TestAccMorpheusStorageVolumeResourceConfigExportConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-export-conflict"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id      = 5
+    compute_server_id = 10
+    instance_ids      = [7, 8]
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)Invalid Attribute Combination|cannot be specified when`),
 			},
 		},
 	})

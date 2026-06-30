@@ -12,8 +12,9 @@ Manages a Morpheus Storage Volume resource.
 
 ```terraform
 resource "hpe_morpheus_storage_volume" "example" {
-  name      = "Example Storage Volume"
-  type_code = "hpealletraMPLUN"
+  name              = "Example Storage Volume"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
 }
 ```
 
@@ -39,6 +40,15 @@ storage server. Discover the full set of `type_code`s and `type_id`s for your
 environment with `GET /api/storage-volume-types`. Only certain storage server
 types (for example 3PAR, Isilon, and Alletra Storage MP) support creating
 storage volumes through this resource.
+
+### Storage server
+
+-> A volume must target a storage system: set `storage_server_id` (the storage
+server / array) **or** `storage_group_id` (a storage group, which belongs to a
+storage server). Creation routes to the storage provider through that server, so
+omitting both fails with a generic `error saving volume` from the API. Look up
+ids with the `hpe_morpheus_storage_server` / `hpe_morpheus_storage_servers` data
+sources.
 
 ### Size
 
