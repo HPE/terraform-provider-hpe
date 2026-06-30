@@ -1002,6 +1002,11 @@ func getVolumes(
 		},
 	)
 
+	// Remove externally-attached storage-server (SAN) volumes — e.g. Alletra MP
+	// BMaaS LUNs created by hpe_morpheus_storage_volume and exported to this
+	// instance's host — which are not part of the instance's provisioned disks.
+	apiVolumes = removeExternalStorageVolumes(apiVolumes)
+
 	// Import
 	if plan.Name.IsNull() || plan.Name.IsUnknown() {
 		nonRaidVolumes := removeRaidDisks(apiVolumes)
@@ -1185,6 +1190,27 @@ func reorderVolumes(
 	}
 
 	return orderedVolumes
+}
+
+// removeExternalStorageVolumes drops storage-server (SAN) volumes from the list.
+// A volume that belongs to a storage server — e.g. an Alletra MP BMaaS LUN
+// created by hpe_morpheus_storage_volume and exported to this instance's host —
+// is added to the compute server's volume collection as a side effect of that
+// export (see updateVolumeAttachment in the Alletra MP plugin). Such volumes are
+// not part of the instance's provisioned disks, so including them here would
+// cause spurious drift on this resource's volumes (and the resize-on-count-change
+// update path could try to detach them). Provisioned VM/metal disks are managed
+// via a datastore/zone and carry no storageServer, so this only excludes
+// externally-managed array LUNs.
+func removeExternalStorageVolumes(
+	apiVolumes []sdk.InstanceContainerServerVolume1,
+) []sdk.InstanceContainerServerVolume1 {
+	return slices.DeleteFunc(
+		apiVolumes,
+		func(v sdk.InstanceContainerServerVolume1) bool {
+			return v.StorageServer != nil
+		},
+	)
 }
 
 // removeRaidDisks removes any RAID disks from the list of volumes
