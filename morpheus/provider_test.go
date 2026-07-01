@@ -376,7 +376,7 @@ resource "hpe_morpheus_fake" "foo" {
 	name = "bar"
 }
 `
-	expected := `missing morpheus`
+	expected := `The "morpheus" provider block is required but was not found`
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []testresource.TestStep{
