@@ -70,14 +70,12 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 					"group_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
-						Computed:            true,
 						Description:         "List of site/group IDs allowed access.",
 						MarkdownDescription: "List of site/group IDs allowed access.",
 					},
 					"plan_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
-						Computed:            true,
 						Description:         "List of service plan IDs allowed access.",
 						MarkdownDescription: "List of service plan IDs allowed access.",
 					},
@@ -94,7 +92,6 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
-				Computed:            true,
 				Description:         "List of tenant account IDs that are allowed access.",
 				MarkdownDescription: "List of tenant account IDs that are allowed access.",
 			},

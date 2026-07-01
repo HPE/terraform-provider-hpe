@@ -3,7 +3,7 @@ network_group:
   templates:
     tenantIds:
       set:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: List of tenant account IDs that are allowed access.
         element_type:
           int64: {}
@@ -18,7 +18,7 @@ network_group:
             description: Pass true to allow access to all groups.
         - name: group_ids
           list:
-            computed_optional_required: computed_optional
+            computed_optional_required: optional
             description: List of site/group IDs allowed access.
             element_type:
               int64: {}
@@ -28,7 +28,7 @@ network_group:
             description: Pass true to allow access to all service plans.
         - name: plan_ids
           list:
-            computed_optional_required: computed_optional
+            computed_optional_required: optional
             description: List of service plan IDs allowed access.
             element_type:
               int64: {}

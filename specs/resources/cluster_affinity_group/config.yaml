@@ -7,7 +7,7 @@ cluster_affinity_group:
         description: Description of the affinity group.
     tenantIds:
       set:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: List of tenant account IDs that are allowed access.
         element_type:
           int64: {}
@@ -22,7 +22,7 @@ cluster_affinity_group:
             description: Pass true to allow access to all groups.
         - name: group_ids
           list:
-            computed_optional_required: computed_optional
+            computed_optional_required: optional
             description: List of site/group IDs allowed access.
             element_type:
               int64: {}
@@ -41,6 +41,7 @@ cluster_affinity_group:
     - source
     - success
     - tenants
+    - tenant_permissions
   overrides:
     active:
       computed_optional_required: computed_optional
