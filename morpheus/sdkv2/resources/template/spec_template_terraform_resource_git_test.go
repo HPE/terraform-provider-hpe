@@ -17,6 +17,7 @@ func TestAccMorpheusSpecTemplateTerraformResourceGitExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {

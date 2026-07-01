@@ -55,6 +55,7 @@ func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -91,6 +92,7 @@ func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -128,6 +130,7 @@ func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -165,6 +168,7 @@ func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
@@ -206,6 +210,7 @@ func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -236,6 +241,7 @@ func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -281,6 +287,7 @@ func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -312,6 +319,7 @@ func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

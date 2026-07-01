@@ -29,6 +29,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -122,6 +123,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) 
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -237,6 +239,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresRep
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -363,6 +366,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *tes
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

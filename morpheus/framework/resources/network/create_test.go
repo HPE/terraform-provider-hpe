@@ -20,6 +20,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Network)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -169,6 +170,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Azure, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -298,6 +300,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -390,6 +393,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -511,6 +515,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.GCP, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -620,6 +625,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.HVM)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

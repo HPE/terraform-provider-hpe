@@ -20,6 +20,7 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Settings)
+
 	t.Parallel()
 
 	if testing.Short() {

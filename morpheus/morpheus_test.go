@@ -105,6 +105,7 @@ func TestAccMorpheusSubProviderMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -132,6 +133,7 @@ func TestAccMorpheusSubProviderOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -182,6 +184,7 @@ func TestAccMorpheusSubProviderWithCustomHTTPClient(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	newLocalProviderWithError := func() (tfprotov6.ProviderServer, error) {
 		providerInstance := provider.New("test", NewWithCustomHTTPClient())()
 
@@ -241,6 +244,7 @@ func TestAccMorpheusSubProviderMissingAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -269,6 +273,7 @@ func TestAccMorpheusSubProviderMissingPassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -299,6 +304,7 @@ func TestAccMorpheusSubProviderTooMuchAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {
@@ -332,6 +338,7 @@ func TestAccMorpheusSubProviderStrayResource(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 }
@@ -357,6 +364,7 @@ func TestAccMorpheusSubProviderTooManyBlocks(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 	morpheus {url = "https://example1.com"}
@@ -387,6 +395,7 @@ func TestAccMorpheusSubProviderEmptyBlock(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	providerConfig := `
 provider "hpe" {
 }

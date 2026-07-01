@@ -20,6 +20,7 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -94,6 +95,7 @@ func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {

@@ -20,6 +20,7 @@ func TestAccMorpheusPriceLoadBalancerVirtualServerExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {

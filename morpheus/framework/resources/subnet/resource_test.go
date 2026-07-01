@@ -24,6 +24,7 @@ func TestAccMorpheusSubnetResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Subnet)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -75,6 +76,7 @@ func TestAccMorpheusSubnetResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Subnet)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

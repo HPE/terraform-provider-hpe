@@ -46,6 +46,7 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -165,6 +166,7 @@ func TestAccMorpheusInstanceDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -194,6 +196,7 @@ func TestAccMorpheusInstanceDatasourceNoAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

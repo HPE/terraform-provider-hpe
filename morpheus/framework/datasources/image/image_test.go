@@ -41,6 +41,7 @@ func TestAccMorpheusImageDatasourceById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -106,6 +107,7 @@ func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -171,6 +173,7 @@ func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -240,6 +243,7 @@ func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	dataSourceConfig := `
@@ -266,6 +270,7 @@ func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	dataSourceConfig := `

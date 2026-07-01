@@ -38,6 +38,7 @@ func TestAccMorpheusRoleResourceUserRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -116,6 +117,7 @@ func TestAccMorpheusRoleResourceTenantRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -196,6 +198,7 @@ func TestAccMorpheusRoleResourceAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -321,6 +324,7 @@ func TestAccMorpheusRoleResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -388,6 +392,7 @@ func TestAccMorpheusRoleResourcePermissionsDefaultAccessPermissionsOk(t *testing
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VDI)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -501,6 +506,7 @@ func TestAccMorpheusRoleResourceAllPermissionsUserRoleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VDI)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -784,6 +790,7 @@ func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VDI)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

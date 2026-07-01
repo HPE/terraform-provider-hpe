@@ -24,6 +24,7 @@ func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -62,6 +63,7 @@ func TestAccMorpheusLoadBalancerDataSourceByIdExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {

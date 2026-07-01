@@ -43,6 +43,7 @@ func TestAccMorpheusFindInstanceTypeLayoutById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -101,6 +102,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -158,6 +160,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersion(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -222,6 +225,7 @@ func TestAccMorpheusFindInstanceTypeLayoutSortOrder(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -275,6 +279,7 @@ func TestAccMorpheusFindInstanceLayoutNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -315,6 +320,7 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{
@@ -348,6 +354,7 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{
@@ -383,6 +390,7 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	checks := []resource.TestCheckFunc{

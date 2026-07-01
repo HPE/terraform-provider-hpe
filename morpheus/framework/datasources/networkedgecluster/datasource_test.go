@@ -25,6 +25,7 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -63,6 +64,7 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -101,6 +103,7 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

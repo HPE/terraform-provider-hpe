@@ -27,6 +27,7 @@ func TestAccMorpheusNetworkRouterResourceGenericExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkRouter)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -69,6 +70,7 @@ func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0ExampleOk(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -111,6 +113,7 @@ func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier1ExampleOk(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

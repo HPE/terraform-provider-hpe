@@ -17,6 +17,7 @@ func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Docker)
+
 	t.Parallel()
 
 	if testing.Short() {

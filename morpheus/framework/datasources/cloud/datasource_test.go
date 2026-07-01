@@ -50,6 +50,7 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -131,6 +132,7 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -212,6 +214,7 @@ func TestAccMorpheusFindCloudNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -252,6 +255,7 @@ func TestAccMorpheusFindCloudNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -285,6 +289,7 @@ func TestAccMorpheusFindCloudBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

@@ -27,6 +27,7 @@ func TestAccMorpheusNetworkRouterRouteResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkRouter)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -100,6 +101,7 @@ func TestAccMorpheusNetworkRouterRouteResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkRouter)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

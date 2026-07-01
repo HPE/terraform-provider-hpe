@@ -17,6 +17,7 @@ func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {

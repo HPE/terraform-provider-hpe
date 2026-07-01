@@ -19,6 +19,7 @@ func TestAccMorpheusDataSourceIntegrationExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Ansible)
+
 	t.Parallel()
 
 	if testing.Short() {

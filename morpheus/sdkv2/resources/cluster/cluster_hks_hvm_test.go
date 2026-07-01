@@ -20,6 +20,7 @@ func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.HVM, capabilities.Kubernetes)
+
 	t.Parallel()
 
 	if testing.Short() {

@@ -19,6 +19,7 @@ func TestAccMorpheusDataSourceVroWorkflowExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VRO)
+
 	t.Parallel()
 
 	if testing.Short() {

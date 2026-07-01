@@ -25,6 +25,7 @@ func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -63,6 +64,7 @@ func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -101,6 +103,7 @@ func TestAccMorpheusNetworkTransportZoneNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

@@ -26,6 +26,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -76,6 +77,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -130,6 +132,7 @@ func TestAccMorpheusLoadBalancerResourceValidationPermissionsConflict(t *testing
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

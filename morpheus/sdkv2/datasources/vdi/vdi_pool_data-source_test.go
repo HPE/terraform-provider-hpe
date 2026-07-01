@@ -28,6 +28,7 @@ func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VDI)
+
 	t.Parallel()
 
 	if testing.Short() {

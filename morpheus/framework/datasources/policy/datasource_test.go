@@ -53,6 +53,7 @@ func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -126,6 +127,7 @@ func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -199,6 +201,7 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -239,6 +242,7 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -273,6 +277,7 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -311,6 +316,7 @@ func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -721,6 +727,7 @@ func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

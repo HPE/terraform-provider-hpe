@@ -49,6 +49,7 @@ func TestAccMorpheusFindRoleById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -106,6 +107,7 @@ func TestAccMorpheusFindRoleByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -163,6 +165,7 @@ func TestAccMorpheusFindRoleVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -375,6 +378,7 @@ func TestAccMorpheusFindRoleNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -408,6 +412,7 @@ func TestAccMorpheusFindRoleBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

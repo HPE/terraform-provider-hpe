@@ -27,6 +27,7 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -96,6 +97,7 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

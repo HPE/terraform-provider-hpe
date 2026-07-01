@@ -77,6 +77,7 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -204,6 +205,7 @@ func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -254,6 +256,7 @@ func TestAccMorpheusUserResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -372,6 +375,7 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1069,6 +1073,7 @@ func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1428,6 +1433,7 @@ func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1788,6 +1794,7 @@ func TestAccMorpheusUserResourceImportOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -2009,6 +2016,7 @@ func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

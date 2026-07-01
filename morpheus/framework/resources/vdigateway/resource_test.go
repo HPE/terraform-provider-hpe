@@ -24,6 +24,7 @@ func TestAccMorpheusVdiGatewayResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -71,6 +72,7 @@ func TestAccMorpheusVdiGatewayResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

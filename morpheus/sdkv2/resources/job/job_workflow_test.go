@@ -19,6 +19,7 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -134,6 +135,7 @@ func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -244,6 +246,7 @@ func TestAccMorpheusJobWorkflowManualExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {

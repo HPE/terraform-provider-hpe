@@ -26,6 +26,7 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -71,6 +72,7 @@ func TestAccMorpheusStorageVolumeResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -140,6 +142,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -195,6 +198,7 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

@@ -28,6 +28,7 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.ResourcePool)
+
 	t.Parallel()
 
 	if testing.Short() {

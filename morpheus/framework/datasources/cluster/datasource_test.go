@@ -36,6 +36,7 @@ func TestAccMorpheusFindClusterById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -83,6 +84,7 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -130,6 +132,7 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -164,6 +167,7 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -192,6 +196,7 @@ func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

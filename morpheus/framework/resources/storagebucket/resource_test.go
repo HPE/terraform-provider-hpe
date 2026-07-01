@@ -24,6 +24,7 @@ func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -69,6 +70,7 @@ func TestAccMorpheusStorageBucketResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Alletra)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

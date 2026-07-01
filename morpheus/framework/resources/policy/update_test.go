@@ -19,6 +19,7 @@ func TestAccMorpheusPolicyResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -117,6 +118,7 @@ func TestAccMorpheusPolicyAssociatedResourceIdChangeRequiresReplace(t *testing.T
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -241,6 +243,7 @@ func TestAccMorpheusPolicyAssociatedResourceTypeChangeRequiresReplace(t *testing
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -358,6 +361,7 @@ func TestAccMorpheusPolicyResourceTypeCodeChangeRequiresReplace(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

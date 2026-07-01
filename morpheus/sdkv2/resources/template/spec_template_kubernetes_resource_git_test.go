@@ -19,6 +19,7 @@ func TestAccMorpheusSpecTemplateKubernetesGitExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Kubernetes)
+
 	t.Parallel()
 
 	if testing.Short() {

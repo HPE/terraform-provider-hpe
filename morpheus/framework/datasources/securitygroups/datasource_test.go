@@ -22,6 +22,7 @@ func TestMain(m *testing.M) {
 
 func TestAccMorpheusSecurityGroupsFilterByName(t *testing.T) {
 	capabilities.MustHave(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -77,6 +78,7 @@ data "hpe_morpheus_security_groups" "example" {
 // which are ANDed together. A new security group defaults to private visibility.
 func TestAccMorpheusSecurityGroupsMultiFilter(t *testing.T) {
 	capabilities.MustHave(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -132,6 +134,7 @@ data "hpe_morpheus_security_groups" "example" {
 
 func TestAccMorpheusSecurityGroupsEmptyResult(t *testing.T) {
 	capabilities.MustHave(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {

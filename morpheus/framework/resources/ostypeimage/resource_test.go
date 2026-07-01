@@ -29,6 +29,7 @@ func TestAccMorpheusOsTypeImageResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -138,6 +139,7 @@ func TestAccMorpheusOsTypeImageResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

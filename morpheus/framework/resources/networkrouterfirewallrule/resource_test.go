@@ -27,6 +27,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkRouter, capabilities.NetworkFirewall)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -96,6 +97,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkRouter, capabilities.NetworkFirewall)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

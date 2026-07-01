@@ -21,6 +21,7 @@ func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -426,6 +427,7 @@ func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Network)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -670,6 +672,7 @@ func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Network)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1000,6 +1003,7 @@ func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Network)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

@@ -29,6 +29,7 @@ func TestAccMorpheusBackupInstanceResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Backup)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -105,6 +106,7 @@ func TestAccMorpheusBackupInstanceResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Backup)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

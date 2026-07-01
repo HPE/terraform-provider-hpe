@@ -49,6 +49,7 @@ func TestAccMorpheusFindGroupById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -94,6 +95,7 @@ func TestAccMorpheusFindGroupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -139,6 +141,7 @@ func TestAccMorpheusFindGroupNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -177,6 +180,7 @@ func TestAccMorpheusFindGroupNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
       }`
@@ -208,6 +212,7 @@ func TestAccMorpheusFindGroupBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	config := providerConfigOffline + `
       data "hpe_morpheus_group" "test" {
         id = 1

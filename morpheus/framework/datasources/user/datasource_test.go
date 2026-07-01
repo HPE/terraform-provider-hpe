@@ -40,6 +40,7 @@ func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -102,6 +103,7 @@ func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -152,6 +154,7 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -192,6 +195,7 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -225,6 +229,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -267,6 +272,7 @@ func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VDI)
+
 	t.Parallel()
 
 	if testing.Short() {

@@ -25,6 +25,7 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -81,6 +82,7 @@ func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -142,6 +144,7 @@ func TestAccMorpheusOsTypeImageDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {

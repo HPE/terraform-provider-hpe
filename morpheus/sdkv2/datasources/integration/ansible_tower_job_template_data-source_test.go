@@ -19,6 +19,7 @@ func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.AnsibleTower)
+
 	t.Parallel()
 
 	if testing.Short() {

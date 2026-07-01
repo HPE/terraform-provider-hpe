@@ -62,6 +62,7 @@ func TestAccMorpheusFindBackupById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Backup)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -124,6 +125,7 @@ func TestAccMorpheusFindBackupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.Backup)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -191,6 +193,7 @@ func TestAccMorpheusFindBackupNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -222,6 +225,7 @@ func TestAccMorpheusFindBackupNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -246,6 +250,7 @@ func TestAccMorpheusFindBackupBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

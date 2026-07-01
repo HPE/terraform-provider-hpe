@@ -19,6 +19,7 @@ func TestAccMorpheusFormVmwFoldersOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.VMware)
+
 	t.Parallel()
 
 	if testing.Short() {

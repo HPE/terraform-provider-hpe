@@ -20,6 +20,7 @@ func TestAccMorpheusPolicyResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -102,6 +103,7 @@ func TestAccMorpheusPolicyResourceAllBareMetalPolicyTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.ServiceNow)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -583,6 +585,7 @@ func TestAccMorpheusPolicyResourceTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -826,6 +829,7 @@ func TestAccMorpheusPolicyResourceAllStaticSchemaOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.ServiceNow)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

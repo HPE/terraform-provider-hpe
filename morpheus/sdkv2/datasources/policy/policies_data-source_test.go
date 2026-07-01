@@ -30,6 +30,7 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHave(t, capabilities.All)
+
 	t.Parallel()
 
 	// This test is blocked by two generated-SDK defects that must be fixed
