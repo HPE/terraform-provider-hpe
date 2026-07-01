@@ -22,7 +22,7 @@ import (
 func TestAccMorpheusDataSourceUserGroupsExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

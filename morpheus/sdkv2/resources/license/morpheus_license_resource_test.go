@@ -38,7 +38,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusLicenseExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.License)
+	capabilities.MustHaveOrSkip(t, capabilities.License)
 
 	t.Parallel()
 

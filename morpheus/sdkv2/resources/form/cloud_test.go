@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusFormCloudOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -94,7 +94,7 @@ func TestAccMorpheusFormCloudOk(t *testing.T) {
 func TestAccMorpheusFormCloudGroupCascadeOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

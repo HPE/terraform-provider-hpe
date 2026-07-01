@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerPoolDataSourceByIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
 	// (unrealized) and can be pruned by a Morpheus/NSX-T inventory sync that
@@ -94,7 +94,7 @@ func TestAccMorpheusLoadBalancerPoolDataSourceByIdOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerPoolDataSourceByNameOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	// Not parallel: a standalone NSX-T load balancer pool stays "offline"
 	// (unrealized) and can be pruned by a Morpheus/NSX-T inventory sync that

@@ -56,7 +56,7 @@ func dhcpFixture(t *testing.T, name, serverIP string) string {
 func TestAccMorpheusFindNetworkDhcpServerByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -92,7 +92,7 @@ data "hpe_morpheus_network_dhcp_server" "example" {
 func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -128,7 +128,7 @@ func TestAccMorpheusFindNetworkDhcpServerById(t *testing.T) {
 func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -166,7 +166,7 @@ func TestAccMorpheusFindNetworkDhcpServerNotFound(t *testing.T) {
 func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	t.Parallel()
 
@@ -191,7 +191,7 @@ func TestAccMorpheusFindNetworkDhcpServerNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindNetworkDhcpServerBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	t.Parallel()
 

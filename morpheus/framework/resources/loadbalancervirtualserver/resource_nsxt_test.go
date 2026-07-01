@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 
@@ -122,7 +122,7 @@ func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtExampleOk(t *testing.T)
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 
@@ -238,7 +238,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_update" {
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtConfigChangeRequiresReplace(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 
@@ -365,7 +365,7 @@ resource "hpe_morpheus_load_balancer_virtual_server" "nsxt_replace" {
 func TestAccMorpheusLoadBalancerVirtualServerResourceNsxtMinimalExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 

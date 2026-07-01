@@ -46,7 +46,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -199,7 +199,7 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Azure)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -286,7 +286,7 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -446,7 +446,7 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -1238,7 +1238,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -1324,7 +1324,7 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

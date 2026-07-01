@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Settings)
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
 
 	t.Parallel()
 

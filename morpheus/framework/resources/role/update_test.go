@@ -22,7 +22,7 @@ import (
 func TestAccMorpheusRoleResourceUserUpdateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -802,7 +802,7 @@ resource "hpe_morpheus_role" "update_test" {
 func TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

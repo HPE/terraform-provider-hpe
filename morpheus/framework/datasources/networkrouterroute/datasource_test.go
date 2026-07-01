@@ -73,7 +73,7 @@ func routeFixture(t *testing.T, name string) string {
 func TestAccMorpheusFindNetworkRouterRouteByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -111,7 +111,7 @@ data "hpe_morpheus_network_router_route" "example" {
 func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -148,7 +148,7 @@ func TestAccMorpheusFindNetworkRouterRouteById(t *testing.T) {
 func TestAccMorpheusFindNetworkRouterRouteNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -184,7 +184,7 @@ data "hpe_morpheus_network_router_route" "example" {
 func TestAccMorpheusFindNetworkRouterRouteNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	t.Parallel()
 

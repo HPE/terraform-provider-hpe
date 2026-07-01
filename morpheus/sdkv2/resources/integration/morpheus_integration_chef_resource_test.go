@@ -16,7 +16,7 @@ import (
 func TestAccMorpheusIntegrationChefExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Chef)
+	capabilities.MustHaveOrSkip(t, capabilities.Chef)
 
 	t.Parallel()
 

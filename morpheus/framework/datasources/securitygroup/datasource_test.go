@@ -33,7 +33,7 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindSecurityGroupByName(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	defer testhelpers.RecordResult(t)
 
@@ -82,7 +82,7 @@ data "hpe_morpheus_security_group" "example" {
 }
 
 func TestAccMorpheusFindSecurityGroupById(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	defer testhelpers.RecordResult(t)
 
@@ -131,7 +131,7 @@ data "hpe_morpheus_security_group" "example" {
 }
 
 func TestAccMorpheusFindSecurityGroupNotFound(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	defer testhelpers.RecordResult(t)
 
@@ -161,7 +161,7 @@ func TestAccMorpheusFindSecurityGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindSecurityGroupNoSearchAttrs(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	defer testhelpers.RecordResult(t)
 
@@ -185,7 +185,7 @@ func TestAccMorpheusFindSecurityGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindSecurityGroupBothSearchAttrs(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	defer testhelpers.RecordResult(t)
 

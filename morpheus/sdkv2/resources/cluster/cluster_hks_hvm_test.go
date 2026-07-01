@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusClusterHKSHVMExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.HVM, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.Kubernetes)
 
 	t.Parallel()
 

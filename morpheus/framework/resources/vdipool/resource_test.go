@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusVdiPoolResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -77,7 +77,7 @@ func TestAccMorpheusVdiPoolResourceExampleOk(t *testing.T) {
 func TestAccMorpheusVdiPoolResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

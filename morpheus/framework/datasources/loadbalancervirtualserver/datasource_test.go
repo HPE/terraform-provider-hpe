@@ -26,7 +26,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 
@@ -96,7 +96,7 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 

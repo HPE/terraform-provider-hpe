@@ -38,7 +38,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindServicePlanById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -91,7 +91,7 @@ resource "hpe_morpheus_service_plan" "test" {
 func TestAccMorpheusFindServicePlanByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -154,7 +154,7 @@ resource "hpe_morpheus_service_plan" "test" {
 func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -198,7 +198,7 @@ func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -233,7 +233,7 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -275,7 +275,7 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -315,7 +315,7 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -358,7 +358,7 @@ func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

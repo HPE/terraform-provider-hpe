@@ -45,7 +45,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -165,7 +165,7 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 func TestAccMorpheusInstanceDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -195,7 +195,7 @@ data "hpe_morpheus_instance" "test" {
 func TestAccMorpheusInstanceDatasourceNoAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

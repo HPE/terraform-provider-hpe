@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindDatastoreById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -90,7 +90,7 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -151,7 +151,7 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -190,7 +190,7 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -222,7 +222,7 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

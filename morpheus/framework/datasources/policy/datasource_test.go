@@ -52,7 +52,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestAccMorpheusPolicyDataSourceFindByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -126,7 +126,7 @@ resource "hpe_morpheus_policy" "test" {
 func TestAccMorpheusPolicyDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -200,7 +200,7 @@ resource "hpe_morpheus_policy" "test" {
 func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -241,7 +241,7 @@ func TestAccMorpheusPolicyDataSourceNotFound(t *testing.T) {
 func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -276,7 +276,7 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -315,7 +315,7 @@ func TestAccMorpheusPolicyDataSourceBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusPolicyDataSourceVerifyAllAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -726,7 +726,7 @@ data "hpe_morpheus_policy" "test_all_attrs" {
 func TestAccMorpheusPolicyDataSourceResourceTypesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

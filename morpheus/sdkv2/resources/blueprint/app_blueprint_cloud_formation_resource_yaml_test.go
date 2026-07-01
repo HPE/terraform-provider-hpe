@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusAppBlueprintCloudFormationYamlExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AWS)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	t.Parallel()
 

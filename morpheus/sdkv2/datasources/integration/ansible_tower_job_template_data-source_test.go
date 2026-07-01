@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusDataSourceAnsibleTowerJobTemplateExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AnsibleTower)
+	capabilities.MustHaveOrSkip(t, capabilities.AnsibleTower)
 
 	t.Parallel()
 

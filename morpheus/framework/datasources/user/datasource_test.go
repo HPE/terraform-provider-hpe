@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -102,7 +102,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServe
 func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -153,7 +153,7 @@ resource "hpe_morpheus_user" "test_user" {
 func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -194,7 +194,7 @@ func TestAccMorpheusUserDataSourceNotFound(t *testing.T) {
 func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -228,7 +228,7 @@ func TestAccMorpheusUserDataSourceNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -271,7 +271,7 @@ func TestAccMorpheusUserDataSourceBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.VDI)
+	capabilities.MustHaveOrSkip(t, capabilities.VDI)
 
 	t.Parallel()
 

@@ -54,7 +54,7 @@ func newProviderWithError() (tfprotov6.ProviderServer, error) {
 func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -91,7 +91,7 @@ func TestAccMorpheusProviderBlockWithAccessToken(t *testing.T) {
 func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -129,7 +129,7 @@ func TestAccMorpheusProviderBlockWithCredentials(t *testing.T) {
 func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -167,7 +167,7 @@ func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
@@ -209,7 +209,7 @@ func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -240,7 +240,7 @@ func TestAccMorpheusProviderBlockMissingAuth(t *testing.T) {
 func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -286,7 +286,7 @@ func TestAccMorpheusProviderBlockMissingUsername(t *testing.T) {
 func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -318,7 +318,7 @@ func TestAccMorpheusProviderBlockMissingPassword(t *testing.T) {
 func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

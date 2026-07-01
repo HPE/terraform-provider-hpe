@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Network)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -169,7 +169,7 @@ resource "hpe_morpheus_network" "foo" {
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Azure, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -299,7 +299,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -392,7 +392,7 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AWS, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -514,7 +514,7 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.GCP, capabilities.NetworkDHCP)
+	capabilities.MustHaveOrSkip(t, capabilities.GCP, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -624,7 +624,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.HVM)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

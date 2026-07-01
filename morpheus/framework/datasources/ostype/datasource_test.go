@@ -34,7 +34,7 @@ provider "hpe" {
 func TestAccMorpheusFindOsTypeByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -70,7 +70,7 @@ func TestAccMorpheusFindOsTypeByName(t *testing.T) {
 func TestAccMorpheusFindOsTypeById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -128,7 +128,7 @@ func TestAccMorpheusFindOsTypeById(t *testing.T) {
 func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -168,7 +168,7 @@ func TestAccMorpheusFindOsTypeNotFound(t *testing.T) {
 func TestAccMorpheusFindOsTypeNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -202,7 +202,7 @@ func TestAccMorpheusFindOsTypeNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindOsTypeBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

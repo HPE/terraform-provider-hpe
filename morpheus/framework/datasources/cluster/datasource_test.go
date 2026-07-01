@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindClusterById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -83,7 +83,7 @@ func TestAccMorpheusFindClusterById(t *testing.T) {
 func TestAccMorpheusFindClusterByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -131,7 +131,7 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	if testing.Short() {
@@ -166,7 +166,7 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -195,7 +195,7 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

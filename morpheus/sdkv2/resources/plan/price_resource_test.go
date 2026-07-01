@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusPriceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	// These tests when run in parallel generate errors which I believe could
 	// be race conditions in the Morpheus API.

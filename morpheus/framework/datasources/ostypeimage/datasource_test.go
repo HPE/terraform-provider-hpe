@@ -24,7 +24,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -81,7 +81,7 @@ func TestAccMorpheusOsTypeImageDataSourceExampleOk(t *testing.T) {
 func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -143,7 +143,7 @@ func TestAccMorpheusOsTypeImageDataSourceSystemImageOk(t *testing.T) {
 func TestAccMorpheusOsTypeImageDataSourceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

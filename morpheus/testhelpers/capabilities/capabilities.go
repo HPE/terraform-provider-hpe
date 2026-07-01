@@ -10,7 +10,7 @@
 // Usage:
 //
 //	func TestAccMorpheusVMwareCloud(t *testing.T) {
-//	    capabilities.MustHave(t, capabilities.VMware)
+//	    capabilities.MustHaveOrSkip(t, capabilities.VMware)
 //	    // ... rest of test
 //	}
 //

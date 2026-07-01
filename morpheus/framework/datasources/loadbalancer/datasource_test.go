@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
 
 	t.Parallel()
 
@@ -62,7 +62,7 @@ func TestAccMorpheusLoadBalancerDataSourceByNameExampleOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerDataSourceByIdExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
 
 	t.Parallel()
 

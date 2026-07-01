@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusDataSourceServicenowWorkflowExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.ServiceNow)
+	capabilities.MustHaveOrSkip(t, capabilities.ServiceNow)
 
 	t.Parallel()
 

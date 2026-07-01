@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusDataSourceAnsibleTowerInventoryExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AnsibleTower)
+	capabilities.MustHaveOrSkip(t, capabilities.AnsibleTower)
 
 	t.Parallel()
 

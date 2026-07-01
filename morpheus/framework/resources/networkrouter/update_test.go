@@ -17,7 +17,7 @@ import (
 func TestAccMorpheusNetworkRouterResourceGenericUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	t.Parallel()
 
@@ -97,7 +97,7 @@ func TestAccMorpheusNetworkRouterResourceGenericUpdateOk(t *testing.T) {
 func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0UpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 
@@ -177,7 +177,7 @@ func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0UpdateOk(t *testing.T) 
 func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier1UpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	t.Parallel()
 

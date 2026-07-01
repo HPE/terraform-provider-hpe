@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -83,7 +83,7 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

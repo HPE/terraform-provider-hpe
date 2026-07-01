@@ -80,7 +80,7 @@ resource "hpe_morpheus_load_balancer_profile" "validation" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpExampleOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -177,7 +177,7 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpRedirectOff(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -230,7 +230,7 @@ resource "hpe_morpheus_load_balancer_profile" "http_off" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceCookiePersistenceOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -313,7 +313,7 @@ resource "hpe_morpheus_load_balancer_profile" "cookie" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceSourceIpPersistenceOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -369,7 +369,7 @@ resource "hpe_morpheus_load_balancer_profile" "source_ip" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceClientSslCustomOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -451,7 +451,7 @@ resource "hpe_morpheus_load_balancer_profile" "client_ssl" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceClientSslBalancedOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -502,7 +502,7 @@ resource "hpe_morpheus_load_balancer_profile" "client_ssl_balanced" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceHttpUpdateOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -585,7 +585,7 @@ resource "hpe_morpheus_load_balancer_profile" "http_update" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceServiceTypeRequiresReplace(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 
@@ -660,7 +660,7 @@ resource "hpe_morpheus_load_balancer_profile" "replace" {
 }
 
 func TestAccMorpheusLoadBalancerProfileResourceSmokeVariants(t *testing.T) {
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	defer testhelpers.RecordResult(t)
 

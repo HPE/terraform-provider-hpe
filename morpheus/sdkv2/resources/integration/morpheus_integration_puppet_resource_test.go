@@ -16,7 +16,7 @@ import (
 func TestAccMorpheusIntegrationPuppetExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Puppet)
+	capabilities.MustHaveOrSkip(t, capabilities.Puppet)
 
 	t.Parallel()
 

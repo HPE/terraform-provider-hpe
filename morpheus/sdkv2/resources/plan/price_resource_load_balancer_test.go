@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusPriceLoadBalancerExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkLoadBalancer)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
 
 	t.Parallel()
 

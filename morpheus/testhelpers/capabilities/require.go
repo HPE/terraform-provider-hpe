@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// MustHave skips the test unless ALL of the required capabilities are
+// MustHaveOrSkip skips the test unless ALL of the required capabilities are
 // available. Use it as the first capability gate in a test function (after
 // "defer testhelpers.RecordResult(t)"). When one or more required
 // capabilities are missing, the test is skipped via t.Skip with a message
@@ -24,11 +24,11 @@ import (
 //
 //	func TestAccMorpheusVMwareCloud(t *testing.T) {
 //	    defer testhelpers.RecordResult(t)
-//	    capabilities.MustHave(t, capabilities.VMware)
+//	    capabilities.MustHaveOrSkip(t, capabilities.VMware)
 //	    t.Parallel()
 //	    // ... rest of test
 //	}
-func MustHave(t *testing.T, required ...Capability) {
+func MustHaveOrSkip(t *testing.T, required ...Capability) {
 	t.Helper()
 
 	missing := missingCapabilities(required...)

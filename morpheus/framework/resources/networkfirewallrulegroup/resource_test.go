@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -117,7 +117,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
 func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -247,7 +247,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
 func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -302,7 +302,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing
 func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -357,7 +357,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeO
 func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegrationIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -411,7 +411,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegr
 func TestAccMorpheusNetworkFirewallRuleGroupResourceImportInvalidFormatErr(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.VDI)
+	capabilities.MustHaveOrSkip(t, capabilities.VDI)
 
 	t.Parallel()
 

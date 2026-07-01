@@ -213,7 +213,7 @@ func TestCapabilityNames(t *testing.T) {
 	}
 }
 
-func TestMustHave(t *testing.T) {
+func TestMustHaveOrSkip(t *testing.T) {
 	ResetForTesting()
 	os.Setenv(EnvCapabilities, "vmware,nsxt")
 	defer os.Unsetenv(EnvCapabilities)
@@ -223,30 +223,30 @@ func TestMustHave(t *testing.T) {
 		var bodyRan bool
 		st.Cleanup(func() {
 			if st.Skipped() {
-				t.Error("MustHave skipped when all required capabilities were present")
+				t.Error("MustHaveOrSkip skipped when all required capabilities were present")
 			}
 			if !bodyRan {
 				t.Error("test body did not run when all required capabilities were present")
 			}
 		})
 
-		MustHave(st, VMware, NSXT)
+		MustHaveOrSkip(st, VMware, NSXT)
 		bodyRan = true
 	})
 
 	t.Run("missing capability skips before the body", func(st *testing.T) {
 		var skipped bool
 		// Registered first => runs last (LIFO), so it observes the value set
-		// by the cleanup below after MustHave skips via runtime.Goexit.
+		// by the cleanup below after MustHaveOrSkip skips via runtime.Goexit.
 		st.Cleanup(func() {
 			if !skipped {
-				t.Error("expected MustHave to mark the test as skipped")
+				t.Error("expected MustHaveOrSkip to mark the test as skipped")
 			}
 		})
 		st.Cleanup(func() { skipped = st.Skipped() })
 
-		MustHave(st, AWS) // not in the registry -> skips here
-		t.Error("code after MustHave ran despite a missing capability")
+		MustHaveOrSkip(st, AWS) // not in the registry -> skips here
+		t.Error("code after MustHaveOrSkip ran despite a missing capability")
 	})
 }
 

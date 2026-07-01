@@ -55,7 +55,7 @@ resource "hpe_morpheus_network_router" "nat_tier1" {
 func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -117,7 +117,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

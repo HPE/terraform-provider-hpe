@@ -35,7 +35,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindBackupTypeById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -73,7 +73,7 @@ func TestAccMorpheusFindBackupTypeById(t *testing.T) {
 func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -114,7 +114,7 @@ func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
 func TestAccMorpheusFindBackupTypeNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -146,7 +146,7 @@ data "hpe_morpheus_backup_type" "example" {
 func TestAccMorpheusFindBackupTypeNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -171,7 +171,7 @@ data "hpe_morpheus_backup_type" "example" {
 func TestAccMorpheusFindBackupTypeBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

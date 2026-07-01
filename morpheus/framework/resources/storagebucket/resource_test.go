@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Alletra)
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -69,7 +69,7 @@ func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 func TestAccMorpheusStorageBucketResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Alletra)
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

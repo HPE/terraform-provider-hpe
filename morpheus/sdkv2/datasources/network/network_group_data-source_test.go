@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusDataSourceNetworkGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Network)
 
 	t.Parallel()
 

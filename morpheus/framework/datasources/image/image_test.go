@@ -40,7 +40,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusImageDatasourceById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -106,7 +106,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 func TestAccMorpheusImageDatasourceByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -172,7 +172,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -242,7 +242,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 func TestAccMorpheusImageDatasourceByImageTypeOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -269,7 +269,7 @@ data "hpe_morpheus_image" "test" {
 func TestAccMorpheusImageDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

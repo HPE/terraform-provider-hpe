@@ -39,7 +39,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Chef)
+	capabilities.MustHaveOrSkip(t, capabilities.Chef)
 
 	t.Parallel()
 

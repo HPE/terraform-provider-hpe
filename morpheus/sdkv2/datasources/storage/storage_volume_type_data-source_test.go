@@ -17,7 +17,7 @@ import (
 func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
 
 	t.Parallel()
 

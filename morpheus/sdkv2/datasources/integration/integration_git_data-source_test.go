@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusDataSourceIntegrationGitExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.Git)
+	capabilities.MustHaveOrSkip(t, capabilities.Git)
 
 	t.Parallel()
 

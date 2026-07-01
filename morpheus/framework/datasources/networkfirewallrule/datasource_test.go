@@ -64,7 +64,7 @@ provider "hpe" {
 func TestAccMorpheusFindNetworkFirewallRuleByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -103,7 +103,7 @@ data "hpe_morpheus_network_firewall_rule" "example" {
 func TestAccMorpheusFindNetworkFirewallRuleById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -142,7 +142,7 @@ data "hpe_morpheus_network_firewall_rule" "example" {
 func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -177,7 +177,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNotFound(t *testing.T) {
 func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	t.Parallel()
 
@@ -202,7 +202,7 @@ func TestAccMorpheusFindNetworkFirewallRuleNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindNetworkFirewallRuleBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	t.Parallel()
 

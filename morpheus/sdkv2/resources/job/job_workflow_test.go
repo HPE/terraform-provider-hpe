@@ -18,7 +18,7 @@ import (
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AWS)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	t.Parallel()
 
@@ -134,7 +134,7 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AWS)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	t.Parallel()
 
@@ -245,7 +245,7 @@ func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 func TestAccMorpheusJobWorkflowManualExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.AWS)
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	t.Parallel()
 

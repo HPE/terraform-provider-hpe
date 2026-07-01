@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerMonitorResourceNsxtExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -105,7 +105,7 @@ func TestAccMorpheusLoadBalancerMonitorResourceNsxtExampleOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerMonitorResourceNsxtUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NSXT)
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.ResourcePool)
+	capabilities.MustHaveOrSkip(t, capabilities.ResourcePool)
 
 	t.Parallel()
 

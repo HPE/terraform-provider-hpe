@@ -41,7 +41,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusGroupResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -120,7 +120,7 @@ func TestAccMorpheusGroupResourceExampleOk(t *testing.T) {
 func TestAccMorpheusGroupResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -349,7 +349,7 @@ resource "hpe_morpheus_group" "test" {
 func TestAccMorpheusGroupResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

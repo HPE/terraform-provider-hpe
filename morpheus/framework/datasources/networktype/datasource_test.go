@@ -34,7 +34,7 @@ provider "hpe" {
 func TestAccMorpheusFindNetworkTypeByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -80,7 +80,7 @@ func TestAccMorpheusFindNetworkTypeByName(t *testing.T) {
 func TestAccMorpheusFindNetworkTypeById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -126,7 +126,7 @@ func TestAccMorpheusFindNetworkTypeById(t *testing.T) {
 func TestAccMorpheusFindNetworkTypeNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -166,7 +166,7 @@ func TestAccMorpheusFindNetworkTypeNotFound(t *testing.T) {
 func TestAccMorpheusFindNetworkTypeNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -200,7 +200,7 @@ func TestAccMorpheusFindNetworkTypeNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindNetworkTypeBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

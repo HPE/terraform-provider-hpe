@@ -109,7 +109,7 @@ func checkDestroy(t *testing.T) resource.TestCheckFunc {
 func TestAccMorpheusNetworkFirewallRuleResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -205,7 +205,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceExampleOk(t *testing.T) {
 func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -345,7 +345,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceUpdateOk(t *testing.T) {
 func TestAccMorpheusNetworkFirewallRuleResourceNestedAttributesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -396,7 +396,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceNestedAttributesOk(t *testing.T) 
 func TestAccMorpheusNetworkFirewallRuleResourceImportBadIDError(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -436,7 +436,7 @@ func TestAccMorpheusNetworkFirewallRuleResourceImportBadIDError(t *testing.T) {
 func TestAccMorpheusNetworkFirewallRuleResourceImportNonNumericIDError(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkFirewall)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkFirewall)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

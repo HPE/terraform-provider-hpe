@@ -27,7 +27,7 @@ func TestMain(m *testing.M) {
 
 // Tests that our HVM example file template used for docs is a valid config
 func TestAccMorpheusClusterResourceHVMExampleOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
 		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
@@ -213,7 +213,7 @@ data "hpe_morpheus_service_plan" "test" {
 
 // Tests that our generic example file template used for docs is a valid config
 func TestAccMorpheusClusterResourceGenericExampleOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
 		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
@@ -386,7 +386,7 @@ data "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusClusterResourceHVMUpdateOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
 		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
@@ -573,7 +573,7 @@ resource "hpe_morpheus_cluster" "test" {
 }
 
 func TestAccMorpheusClusterResourceGenericUpdateOk(t *testing.T) {
-	capabilities.MustHave(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
 		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")

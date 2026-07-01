@@ -65,7 +65,7 @@ func neighborFixture(t *testing.T, name, ipAddress string) string {
 func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -103,7 +103,7 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -140,7 +140,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -174,7 +174,7 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 func TestAccMorpheusFindNetworkRouterBgpNeighborNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHave(t, capabilities.NetworkRouter)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
 	t.Parallel()
 
