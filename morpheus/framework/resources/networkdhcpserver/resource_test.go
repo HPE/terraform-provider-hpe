@@ -26,9 +26,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusNetworkDhcpServerResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -121,9 +119,7 @@ func TestAccMorpheusNetworkDhcpServerResourceExampleOk(t *testing.T) {
 func TestAccMorpheusNetworkDhcpServerResourceDynamicConfigExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -228,9 +224,7 @@ func TestAccMorpheusNetworkDhcpServerResourceDynamicConfigExampleOk(t *testing.T
 func TestAccMorpheusNetworkDhcpServerResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

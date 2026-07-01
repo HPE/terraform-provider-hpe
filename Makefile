@@ -10,6 +10,14 @@ SWEEP ?= all
 SWEEP_SYSTEMS ?= all
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 
+# Per-package timeout for the acceptance test targets (`test`, `test-json`).
+# Acceptance tests provision real infrastructure; on slower backends a single
+# instance can take ~25m to provision, and packages such as the instance
+# resource run several such tests in parallel (with multi-step update tests
+# provisioning twice), so the default needs generous headroom. Override per run,
+# e.g. `make test TEST_TIMEOUT=180m`.
+TEST_TIMEOUT ?= 120m
+
 build:
 	go build
 
@@ -26,7 +34,7 @@ lint:
 test:
 	pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
 	env TF_ACC=1 \
-	go test -v -cover -count 1 -timeout 60m $$pkgs
+	go test -v -cover -count 1 -timeout $(TEST_TIMEOUT) $$pkgs
 
 # Same as `test` but emits machine-readable `go test -json` on stdout (and
 # nothing else, so the stream stays valid JSON). Used by the nightly runner to
@@ -34,8 +42,8 @@ test:
 # recipe command out of stdout.
 test-json:
 	@pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
-	env TF_ACC=1 \
-	go test -json -cover -count 1 -timeout 60m $$pkgs
+	@env TF_ACC=1 \
+	go test -json -cover -count 1 -timeout $(TEST_TIMEOUT) $$pkgs
 
 unit-tests:
 	# exclude the framework and sdkv2 packages, the

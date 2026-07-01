@@ -19,9 +19,8 @@ import (
 func TestAccMorpheusPriceLoadBalancerVirtualServerExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkLoadBalancer) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
+
 	t.Parallel()
 
 	if testing.Short() {

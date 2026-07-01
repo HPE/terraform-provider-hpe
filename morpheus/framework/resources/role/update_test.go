@@ -22,9 +22,8 @@ import (
 func TestAccMorpheusRoleResourceUserUpdateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)
@@ -803,9 +802,8 @@ resource "hpe_morpheus_role" "update_test" {
 func TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	defer testhelpers.RecordResult(t)

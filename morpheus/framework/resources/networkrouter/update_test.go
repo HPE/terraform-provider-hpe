@@ -17,9 +17,8 @@ import (
 func TestAccMorpheusNetworkRouterResourceGenericUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkRouter) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -98,9 +97,8 @@ func TestAccMorpheusNetworkRouterResourceGenericUpdateOk(t *testing.T) {
 func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0UpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -179,9 +177,8 @@ func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier0UpdateOk(t *testing.T) 
 func TestAccMorpheusNetworkRouterResourceNSXTGatewayTier1UpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
