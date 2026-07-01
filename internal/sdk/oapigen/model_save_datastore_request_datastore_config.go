@@ -21,15 +21,22 @@ var _ fmt.Stringer
 
 // SaveDatastoreRequestDatastoreConfig Configuration options for the datastore, varies based on the type of datastore.
 type SaveDatastoreRequestDatastoreConfig struct {
-	AlletraMPHVMDatastoreConfiguration1 *AlletraMPHVMDatastoreConfiguration1
-	GFS2DatastoreConfiguration1         *GFS2DatastoreConfiguration1
-	NFSDatastoreConfiguration1          *NFSDatastoreConfiguration1
-	MapmapOfStringAny                   *map[string]interface{}
+	AlletraMPBMAASDatastoreConfiguration *AlletraMPBMAASDatastoreConfiguration
+	AlletraMPHVMDatastoreConfiguration1  *AlletraMPHVMDatastoreConfiguration1
+	GFS2DatastoreConfiguration1          *GFS2DatastoreConfiguration1
+	NFSDatastoreConfiguration1           *NFSDatastoreConfiguration1
+	MapmapOfStringAny                    *map[string]interface{}
 }
 
 func (dst *SaveDatastoreRequestDatastoreConfig) UnmarshalMapstructure(data any) (any, error) {
 	if dst == nil {
 		dst = &SaveDatastoreRequestDatastoreConfig{}
+	}
+
+	mapstructDecode(data, &dst.AlletraMPBMAASDatastoreConfiguration)
+
+	if IsEmpty(dst.AlletraMPBMAASDatastoreConfiguration) {
+		dst.AlletraMPBMAASDatastoreConfiguration = nil
 	}
 
 	mapstructDecode(data, &dst.AlletraMPHVMDatastoreConfiguration1)
@@ -62,6 +69,19 @@ func (dst *SaveDatastoreRequestDatastoreConfig) UnmarshalMapstructure(data any) 
 // Unmarshal JSON data into any of the pointers in the struct
 func (dst *SaveDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte) error {
 	var err error
+	// try to unmarshal JSON data into AlletraMPBMAASDatastoreConfiguration
+	err = json.Unmarshal(data, &dst.AlletraMPBMAASDatastoreConfiguration)
+	if err == nil {
+		jsonAlletraMPBMAASDatastoreConfiguration, _ := json.Marshal(dst.AlletraMPBMAASDatastoreConfiguration)
+		if string(jsonAlletraMPBMAASDatastoreConfiguration) == "{}" { // empty struct
+			dst.AlletraMPBMAASDatastoreConfiguration = nil
+		} else {
+			return nil // data stored in dst.AlletraMPBMAASDatastoreConfiguration, return on the first match
+		}
+	} else {
+		dst.AlletraMPBMAASDatastoreConfiguration = nil
+	}
+
 	// try to unmarshal JSON data into AlletraMPHVMDatastoreConfiguration1
 	err = json.Unmarshal(data, &dst.AlletraMPHVMDatastoreConfiguration1)
 	if err == nil {
@@ -119,6 +139,10 @@ func (dst *SaveDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte) error
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src SaveDatastoreRequestDatastoreConfig) MarshalJSON() ([]byte, error) {
+	if src.AlletraMPBMAASDatastoreConfiguration != nil {
+		return json.Marshal(&src.AlletraMPBMAASDatastoreConfiguration)
+	}
+
 	if src.AlletraMPHVMDatastoreConfiguration1 != nil {
 		return json.Marshal(&src.AlletraMPHVMDatastoreConfiguration1)
 	}

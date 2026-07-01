@@ -33,6 +33,9 @@ var (
 	alletrampHvmConfigFunc = func() *sdk.AlletraMPHVMDatastoreConfiguration1 {
 		return &sdk.AlletraMPHVMDatastoreConfiguration1{}
 	}
+	alletrampBmaasConfigFunc = func() *sdk.AlletraMPBMAASDatastoreConfiguration {
+		return &sdk.AlletraMPBMAASDatastoreConfiguration{}
+	}
 	storageServerFunc = func() *sdk.SaveDatastoreRequestDatastoreStorageServer {
 		return &sdk.SaveDatastoreRequestDatastoreStorageServer{}
 	}
@@ -106,6 +109,13 @@ func datastoreCreateDatastore(ctx context.Context,
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
+	case !plan.ConfigAlletrampBmaas.IsNull() && !plan.ConfigAlletrampBmaas.IsUnknown():
+		alletrampBmaasConfig := alletrampBmaasConfigFunc()
+
+		if !plan.ConfigAlletrampBmaas.ProtocolType.IsNull() {
+			alletrampBmaasConfig.ProtocolType = plan.ConfigAlletrampBmaas.ProtocolType.ValueString()
+		}
+		createConfig.AlletraMPBMAASDatastoreConfiguration = alletrampBmaasConfig
 
 		// removing for now
 		/*
@@ -158,6 +168,14 @@ func datastoreCreateDatastore(ctx context.Context,
 		storageServerConfig := storageServerFunc()
 		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
 		datastoreCreate.StorageServer = storageServerConfig
+	}
+
+	// resource_pool maps to the datastore's zonePool (the Alletra MP pool the
+	// LUN is provisioned into). Required for BMaaS datastores.
+	if !plan.ResourcePool.IsNull() && !plan.ResourcePool.IsUnknown() {
+		zonePool := &sdk.SaveDatastoreRequestDatastoreZonePool{}
+		zonePool.Id = plan.ResourcePool.Id.ValueInt64Pointer()
+		datastoreCreate.ZonePool = zonePool
 	}
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {

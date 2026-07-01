@@ -49,9 +49,13 @@ func datastoreCreateCluster(ctx context.Context,
 	// Set the required fields
 	datastoreCreate.Name = plan.Name.ValueStringPointer()
 
-	// Set the type
+	// Set the type. Send the code as well as the id; the API prefers the code
+	// when both are present.
 	datastoreTypeForRequest := datastoreTypeClusterFunc()
 	datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
+	if !plan.DatastoreType.Code.IsNull() && !plan.DatastoreType.Code.IsUnknown() {
+		datastoreTypeForRequest.Code = plan.DatastoreType.Code.ValueStringPointer()
+	}
 	datastoreCreate.DatastoreType = datastoreTypeForRequest
 
 	// Set the config.  As far as I can tell you need a config object, even if empty.

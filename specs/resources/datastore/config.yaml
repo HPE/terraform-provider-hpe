@@ -31,6 +31,7 @@ datastore:
     - config.gfs2datastore_configuration: config_gfs2
     - config.generic_datastore_configuration: config
     - config.alletra_mphvmdatastore_configuration: config_alletramp_hvm
+    - config.alletra_mpbmaasdatastore_configuration: config_alletramp_bmaas
     - template-configAlletraRansomware: config_alletramp_hvm.enable_ransomware
     - template-datastoreTypeParent: datastore_type
     - template-datastoreTypeId: datastore_type.id
@@ -74,10 +75,10 @@ datastore:
       description: The Cloud this datastore is associated with
       computed_optional_required: computed
     resource_pool:
-      description: The resource pool this datastore is associated with (for some Cloud datastores)
-      computed_optional_required: computed
+      description: The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.
+      computed_optional_required: computed_optional
     resource_pool.id:
-      computed_optional_required: computed
+      computed_optional_required: computed_optional
     resource_permissions:
       computed_optional_required: optional
     resource_permissions.groups:
@@ -109,7 +110,7 @@ datastore:
     resource_permissions.all_plans:
       computed_optional_required: optional
     config_nfs:
-      conflicts_with: [config, config_alletramp_hvm]
+      conflicts_with: [config, config_alletramp_hvm, config_alletramp_bmaas]
       computed_optional_required: optional
       requires_replace: true
     #config_gfs2:
@@ -122,16 +123,24 @@ datastore:
       description: NFS version to use when mounting the export, either 3 or 4
       computed_optional_required: optional
     config:
-      conflicts_with: [config_nfs, config_alletramp_hvm]
+      conflicts_with: [config_nfs, config_alletramp_hvm, config_alletramp_bmaas]
       computed_optional_required: optional
       requires_replace: true
-      at_least_one_of: [config_nfs, config, config_alletramp_hvm]
+      at_least_one_of: [config_nfs, config, config_alletramp_hvm, config_alletramp_bmaas]
     config_alletramp_hvm:
       description: Alletra MP HVM Datastore Configuration
-      conflicts_with: [config_nfs, config]
+      conflicts_with: [config_nfs, config, config_alletramp_bmaas]
       computed_optional_required: optional
       requires_replace: true
     config_alletramp_hvm.protocol_type:
+      one_of: [iSCSI, FC]
+      description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    config_alletramp_bmaas:
+      description: HPE Alletra MP Bare Metal (BMaaS) Datastore Configuration
+      conflicts_with: [config_nfs, config, config_alletramp_hvm]
+      computed_optional_required: optional
+      requires_replace: true
+    config_alletramp_bmaas.protocol_type:
       one_of: [iSCSI, FC]
       description: Storage protocol type, either iSCSI or FC (Fibre Channel)
     locations:

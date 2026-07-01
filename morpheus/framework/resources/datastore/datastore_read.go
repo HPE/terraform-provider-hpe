@@ -21,8 +21,9 @@ import (
 )
 
 const (
-	nfsDatastoreCode = "libvirt-netfs-nfs"
-	alletraMPHVMCode = "hpedatastore-alletra-mp"
+	nfsDatastoreCode   = "libvirt-netfs-nfs"
+	alletraMPHVMCode   = "hpedatastore-alletra-mp"
+	alletraMPBmaasCode = "hpedatastore-alletra-mp-bmaas"
 	// gfs2DatastoreCode = "libvirt-dir-gfs2"
 )
 
@@ -183,6 +184,34 @@ func getDatastoreAsState(
 		}
 		configAlletraMPHVM.state = attr.ValueStateKnown
 		state.ConfigAlletrampHvm = configAlletraMPHVM
+
+		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
+		diags = append(diags, pdiags...)
+		if diags.HasError() {
+			return state, diags
+		}
+
+		state.ConfigFromApi = configFromAPI
+
+	case alletraMPBmaasCode:
+		keysMap := map[string]string{
+			"protocol_type": "protocolType",
+		}
+		keysFromMap, pdiags := compare.CheckPlanAttributeAgainstAPIAttribute(
+			ctx, plan.ConfigAlletrampBmaas, datastore.Config, keysMap,
+		)
+		diags = append(diags, pdiags...)
+
+		var configAlletraMPBmaas ConfigAlletrampBmaasValue
+		for k, v := range datastore.Config {
+			if k == "protocolType" {
+				if str, ok := v.(string); ok {
+					configAlletraMPBmaas.ProtocolType = convert.StrToType(&str)
+				}
+			}
+		}
+		configAlletraMPBmaas.state = attr.ValueStateKnown
+		state.ConfigAlletrampBmaas = configAlletraMPBmaas
 
 		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
 		diags = append(diags, pdiags...)
