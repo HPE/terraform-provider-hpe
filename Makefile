@@ -24,16 +24,18 @@ lint:
 	golangci-lint run $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
 
 test:
+	pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
 	env TF_ACC=1 \
-	go test -v -cover -count 1 -timeout 60m ./...
+	go test -v -cover -count 1 -timeout 60m $$pkgs
 
 # Same as `test` but emits machine-readable `go test -json` on stdout (and
 # nothing else, so the stream stays valid JSON). Used by the nightly runner to
 # capture a full, parseable log including API traces. The leading `@` keeps the
 # recipe command out of stdout.
 test-json:
-	@env TF_ACC=1 \
-	go test -json -cover -count 1 -timeout 60m ./...
+	@pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
+	env TF_ACC=1 \
+	go test -json -cover -count 1 -timeout 60m $$pkgs
 
 unit-tests:
 	# exclude the framework and sdkv2 packages, the
