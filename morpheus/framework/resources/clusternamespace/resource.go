@@ -157,6 +157,12 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
+	// Detect import: ImportState sets only cluster_id and id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+	priorTenantIds := state.TenantIds
+	priorRP := state.ResourcePermissions
+
 	clusterID := state.ClusterId.ValueInt64()
 	id := state.Id.ValueInt64()
 
@@ -180,6 +186,15 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	mapGetResponseToModel(&state, ns)
+
+	// On normal refresh, preserve tenant_ids and resource_permissions from prior
+	// state. The API may silently drop IDs that don't exist in the environment,
+	// which would cause a spurious diff. On import there is no prior state, so
+	// we use the API values that mapGetResponseToModel just populated.
+	if !isImport {
+		state.TenantIds = priorTenantIds
+		state.ResourcePermissions = priorRP
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

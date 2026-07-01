@@ -30,6 +30,12 @@ func (r *Resource) Read(
 		return
 	}
 
+	// Detect import: ImportState sets network_integration_id, id, and
+	// external_type but not name. On normal refresh, name is always a known
+	// string from prior state.
+	isImport := data.Name.IsNull()
+	priorTenantIds := data.TenantIds
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -51,6 +57,13 @@ func (r *Resource) Read(
 
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
+	}
+
+	// On normal refresh, preserve tenant_ids from prior state. The API may
+	// silently drop IDs that don't exist in the environment. On import there
+	// is no prior state, so we keep the API value from getNetworkFirewallRuleGroupAsState.
+	if !isImport {
+		state.TenantIds = priorTenantIds
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

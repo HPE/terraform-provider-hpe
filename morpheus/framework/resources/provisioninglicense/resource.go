@@ -160,6 +160,11 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
+	// Detect import: ImportState sets only id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+	priorTenants := state.Tenants
+
 	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.ProvisioningLicensesAPI.GetProvisioningLicense(ctx, id).Execute()
@@ -181,6 +186,14 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 	mapGetResponseToModel(&state, license)
+
+	// On normal refresh, preserve tenants from prior state. The API may
+	// silently drop IDs that don't exist in the environment, which would
+	// cause a spurious diff. On import there is no prior state, so we use
+	// the API values that mapGetResponseToModel just populated.
+	if !isImport {
+		state.Tenants = priorTenants
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

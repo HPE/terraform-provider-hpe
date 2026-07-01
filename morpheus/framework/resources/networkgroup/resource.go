@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -168,6 +169,10 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
+	// Detect import: ImportState sets only id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+
 	id := state.Id.ValueInt64()
 
 	result, httpResp, err := client.NetworksAPI.GetNetworkGroup(ctx, id).Execute()
@@ -189,6 +194,15 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 	mapResponseToModel(&state, group)
+
+	// mapResponseToModel never touches tenant_ids or resource_permissions, so on
+	// a normal refresh those fields carry forward from the prior state naturally.
+	// On import there is no prior state, so we explicitly populate them from the
+	// API response.
+	if isImport {
+		state.TenantIds = networkGroupTenantIdsFromAPI(group.Tenants)
+		state.ResourcePermissions = networkGroupResourcePermissionsFromAPI(group.ResourcePermission)
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -338,4 +352,59 @@ func mapResponseToModel(model *NetworkGroupModel, group *sdk.GetNetworkGroup200R
 	if group.Active != nil {
 		model.Active = types.BoolValue(*group.Active)
 	}
+}
+
+// networkGroupTenantIdsFromAPI converts the Tenants slice from a GET response
+// into the types.Set used by the Terraform model. Used only on import.
+func networkGroupTenantIdsFromAPI(
+	tenants []sdk.GetNetworkGroup200ResponseNetworkGroupTenantsInner,
+) types.Set {
+	vals := make([]attr.Value, 0, len(tenants))
+	for _, t := range tenants {
+		if t.Id != nil {
+			vals = append(vals, types.Int64Value(*t.Id))
+		}
+	}
+
+	return types.SetValueMust(types.Int64Type, vals)
+}
+
+// networkGroupResourcePermissionsFromAPI converts the ResourcePermission object
+// from a GET response into the ResourcePermissionsValue used by the Terraform
+// model. Used only on import.
+func networkGroupResourcePermissionsFromAPI(
+	rp *sdk.GetNetworkGroup200ResponseNetworkGroupResourcePermission,
+) ResourcePermissionsValue {
+	if rp == nil {
+		return NewResourcePermissionsValueNull()
+	}
+
+	siteVals := make([]attr.Value, 0, len(rp.Sites))
+	for _, s := range rp.Sites {
+		if s.Id != nil {
+			siteVals = append(siteVals, types.Int64Value(*s.Id))
+		}
+	}
+
+	planVals := make([]attr.Value, 0, len(rp.Plans))
+	for _, p := range rp.Plans {
+		if p.Id != nil {
+			planVals = append(planVals, types.Int64Value(*p.Id))
+		}
+	}
+
+	return NewResourcePermissionsValueMust(
+		map[string]attr.Type{
+			"all":       types.BoolType,
+			"all_plans": types.BoolType,
+			"site_ids":  types.ListType{ElemType: types.Int64Type},
+			"plan_ids":  types.ListType{ElemType: types.Int64Type},
+		},
+		map[string]attr.Value{
+			"all":       types.BoolPointerValue(rp.All),
+			"all_plans": types.BoolPointerValue(rp.AllPlans),
+			"site_ids":  types.ListValueMust(types.Int64Type, siteVals),
+			"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
+		},
+	)
 }
