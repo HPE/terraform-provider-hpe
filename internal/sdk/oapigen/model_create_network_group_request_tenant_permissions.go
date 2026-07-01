@@ -21,8 +21,8 @@ var _ MappedNullable = &CreateNetworkGroupRequestTenantPermissions{}
 // CreateNetworkGroupRequestTenantPermissions struct for CreateNetworkGroupRequestTenantPermissions
 type CreateNetworkGroupRequestTenantPermissions struct {
 	// Array of tenant account IDs
-	Accounts             []CreateNetworkGroupRequestTenantPermissionsAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                    `json:",remain"`
+	Accounts             []UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{}                                            `json:",remain"`
 }
 
 type _CreateNetworkGroupRequestTenantPermissions CreateNetworkGroupRequestTenantPermissions

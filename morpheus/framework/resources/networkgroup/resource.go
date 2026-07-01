@@ -77,10 +77,10 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		accts := make([]sdk.CreateNetworkGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
+		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
 		for i := range ids {
 			id := ids[i]
-			accts = append(accts, sdk.CreateNetworkGroupRequestTenantPermissionsAccountsInner{Id: &id})
+			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
 		}
 		createReq.TenantPermissions = &sdk.CreateNetworkGroupRequestTenantPermissions{Accounts: accts}
 	}
@@ -99,6 +99,22 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 				sites = append(sites, sdk.CreateNetworkGroupRequestResourcePermissionsSitesInner{Id: &id})
 			}
 			rp.Sites = sites
+		}
+		if !plan.ResourcePermissions.AllPlans.IsNull() && !plan.ResourcePermissions.AllPlans.IsUnknown() {
+			rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
+		}
+		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
+			var planIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			plans := make([]sdk.CreateNetworkGroupRequestResourcePermissionsPlansInner, 0, len(planIDs))
+			for i := range planIDs {
+				id := planIDs[i]
+				plans = append(plans, sdk.CreateNetworkGroupRequestResourcePermissionsPlansInner{Id: &id})
+			}
+			rp.Plans = plans
 		}
 		createReq.ResourcePermissions = &rp
 	}
@@ -266,6 +282,22 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 			}
 			rp.Sites = sites
 		}
+		if !plan.ResourcePermissions.AllPlans.IsNull() && !plan.ResourcePermissions.AllPlans.IsUnknown() {
+			rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
+		}
+		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
+			var planIDs []int64
+			resp.Diagnostics.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			plans := make([]sdk.UpdateNetworkGroupRequestResourcePermissionsPlansInner, 0, len(planIDs))
+			for i := range planIDs {
+				pid := planIDs[i]
+				plans = append(plans, sdk.UpdateNetworkGroupRequestResourcePermissionsPlansInner{Id: &pid})
+			}
+			rp.Plans = plans
+		}
 		updateReq.ResourcePermissions = &rp
 	}
 
@@ -402,7 +434,7 @@ func networkGroupResourcePermissionsFromAPI(
 		},
 		map[string]attr.Value{
 			"all":       types.BoolPointerValue(rp.All),
-			"all_plans": types.BoolPointerValue(rp.AllPlans),
+			"all_plans": types.BoolPointerValue(rp.AllPlans.Get()),
 			"group_ids": types.ListValueMust(types.Int64Type, siteVals),
 			"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
 		},

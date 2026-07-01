@@ -22,7 +22,7 @@ var _ MappedNullable = &GetNetworkGroup200ResponseNetworkGroupResourcePermission
 type GetNetworkGroup200ResponseNetworkGroupResourcePermission struct {
 	All                  *bool                                                                `json:"all,omitempty"`
 	Sites                []GetNetworkGroup200ResponseNetworkGroupResourcePermissionSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                `json:"allPlans,omitempty"`
+	AllPlans             NullableBool                                                         `json:"allPlans,omitempty"`
 	Plans                []GetNetworkGroup200ResponseNetworkGroupResourcePermissionPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                               `json:",remain"`
 }
@@ -45,8 +45,8 @@ func (o GetNetworkGroup200ResponseNetworkGroupResourcePermission) ToMap() (map[s
 	if !IsNil(o.Sites) {
 		toSerialize["sites"] = o.Sites
 	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
+	if o.AllPlans.IsSet() {
+		toSerialize["allPlans"] = o.AllPlans.Get()
 	}
 	if !IsNil(o.Plans) {
 		toSerialize["plans"] = o.Plans

@@ -265,10 +265,10 @@ func mapPermissions(
 
 	return PermissionsValue{
 		All:           convert.BoolToType(rp.All),
-		AllPlans:      convert.BoolToType(rp.AllPlans),
-		CanManage:     convert.BoolToType(rp.CanManage),
-		DefaultStore:  convert.BoolToType(rp.DefaultStore),
-		DefaultTarget: convert.BoolToType(rp.DefaultTarget),
+		AllPlans:      convert.BoolToType(rp.AllPlans.Get()),
+		CanManage:     convert.BoolToType(rp.CanManage.Get()),
+		DefaultStore:  convert.BoolToType(rp.DefaultStore.Get()),
+		DefaultTarget: convert.BoolToType(rp.DefaultTarget.Get()),
 		Groups:        groupsSet,
 		Plans:         plansSet,
 		TenantId:      tenantId,

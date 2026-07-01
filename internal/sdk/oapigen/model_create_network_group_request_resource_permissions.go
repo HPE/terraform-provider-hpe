@@ -23,7 +23,11 @@ type CreateNetworkGroupRequestResourcePermissions struct {
 	// Pass true to allow access to all groups
 	All *bool `json:"all,omitempty"`
 	// Array of groups that are allowed access
-	Sites                []CreateNetworkGroupRequestResourcePermissionsSitesInner `json:"sites,omitempty"`
+	Sites []CreateNetworkGroupRequestResourcePermissionsSitesInner `json:"sites,omitempty"`
+	// Pass true to allow access to all service plans
+	AllPlans *bool `json:"allPlans,omitempty"`
+	// Array of service plan IDs that are allowed access
+	Plans                []CreateNetworkGroupRequestResourcePermissionsPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                   `json:",remain"`
 }
 
@@ -44,6 +48,12 @@ func (o CreateNetworkGroupRequestResourcePermissions) ToMap() (map[string]interf
 	}
 	if !IsNil(o.Sites) {
 		toSerialize["sites"] = o.Sites
+	}
+	if !IsNil(o.AllPlans) {
+		toSerialize["allPlans"] = o.AllPlans
+	}
+	if !IsNil(o.Plans) {
+		toSerialize["plans"] = o.Plans
 	}
 
 	for key, value := range o.AdditionalProperties {
