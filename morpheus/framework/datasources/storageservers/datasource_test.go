@@ -23,12 +23,9 @@ func TestMain(m *testing.M) {
 // storage servers yields an empty result. This does not require creating a
 // storage server (which needs real backend connectivity).
 func TestAccMorpheusStorageServersEmptyResult(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Log("Skipping test due to missing capabilities")
-
-		return
-	}
 	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

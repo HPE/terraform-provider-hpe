@@ -35,9 +35,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindClusterById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -84,9 +83,8 @@ func TestAccMorpheusFindClusterById(t *testing.T) {
 func TestAccMorpheusFindClusterByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -133,9 +131,8 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -169,9 +166,8 @@ func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -199,9 +195,8 @@ func TestAccMorpheusFindClusterNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindClusterBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

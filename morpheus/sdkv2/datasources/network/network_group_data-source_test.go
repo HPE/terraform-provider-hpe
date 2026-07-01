@@ -19,9 +19,8 @@ import (
 func TestAccMorpheusDataSourceNetworkGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Network) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Network)
+
 	t.Parallel()
 
 	if testing.Short() {

@@ -43,9 +43,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusDatastoreResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -150,9 +148,7 @@ func TestAccMorpheusDatastoreResourceExampleOk(t *testing.T) {
 func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -532,9 +528,7 @@ func TestAccMorpheusDatastoreResourceUpdateOk(t *testing.T) {
 func TestAccMorpheusDatastoreResourceValidationOneOf(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -662,9 +656,7 @@ func TestAccMorpheusDatastoreResourceValidationOneOf(t *testing.T) {
 func TestAccMorpheusDatastoreResourceValidationRequiredAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

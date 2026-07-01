@@ -76,9 +76,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusUserResourceExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -205,9 +204,8 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -257,9 +255,8 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -377,9 +374,8 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1076,9 +1072,8 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1437,9 +1432,8 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -1636,9 +1630,7 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceMissingRoles(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1676,9 +1668,7 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceMissingUsername(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1716,9 +1706,7 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceMissingEmail(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1758,9 +1746,7 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceMissingPasswordWo(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -1807,9 +1793,8 @@ resource "hpe_morpheus_user" "foo" {
 func TestAccMorpheusUserResourceImportOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -2030,9 +2015,8 @@ destroy = false
 func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

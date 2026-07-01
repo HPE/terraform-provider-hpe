@@ -19,9 +19,8 @@ import (
 func TestAccMorpheusSettingBackupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Settings) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
 	t.Parallel()
 
 	if testing.Short() {

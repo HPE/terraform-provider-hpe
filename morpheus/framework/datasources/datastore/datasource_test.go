@@ -33,9 +33,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindDatastoreById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -91,9 +90,8 @@ func TestAccMorpheusFindDatastoreById(t *testing.T) {
 func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -153,9 +151,8 @@ func TestAccMorpheusFindDatastoreByName(t *testing.T) {
 func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -193,9 +190,8 @@ func TestAccMorpheusFindDatastoreNotFound(t *testing.T) {
 func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -226,9 +222,8 @@ func TestAccMorpheusFindDatastoreNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindDatastoreBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

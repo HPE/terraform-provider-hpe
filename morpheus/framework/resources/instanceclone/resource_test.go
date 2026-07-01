@@ -28,9 +28,7 @@ func TestAccMorpheusInstanceCloneResource(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	defer testhelpers.RecordResult(t)
@@ -99,9 +97,7 @@ func TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile(t *testing.T) {
 		t.Skip("skipping acceptance test in short mode")
 	}
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 	defer testhelpers.RecordResult(t)

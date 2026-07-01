@@ -35,9 +35,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindBackupTypeById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -74,9 +73,8 @@ func TestAccMorpheusFindBackupTypeById(t *testing.T) {
 func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -116,9 +114,8 @@ func TestAccMorpheusFindBackupTypeByName(t *testing.T) {
 func TestAccMorpheusFindBackupTypeNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -149,9 +146,8 @@ data "hpe_morpheus_backup_type" "example" {
 func TestAccMorpheusFindBackupTypeNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -175,9 +171,8 @@ data "hpe_morpheus_backup_type" "example" {
 func TestAccMorpheusFindBackupTypeBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `

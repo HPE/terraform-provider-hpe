@@ -27,9 +27,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.ResourcePool) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.ResourcePool)
+
 	t.Parallel()
 
 	if testing.Short() {

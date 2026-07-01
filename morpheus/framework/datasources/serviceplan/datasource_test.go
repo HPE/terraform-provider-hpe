@@ -38,9 +38,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusFindServicePlanById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -92,9 +91,8 @@ resource "hpe_morpheus_service_plan" "test" {
 func TestAccMorpheusFindServicePlanByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -156,9 +154,8 @@ resource "hpe_morpheus_service_plan" "test" {
 func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -201,9 +198,8 @@ func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	config := providerConfigOffline + `
@@ -237,9 +233,8 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -280,9 +275,8 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -321,9 +315,8 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -365,9 +358,8 @@ func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 func TestAccMorpheusFindServicePlanVerifyAttributes(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
