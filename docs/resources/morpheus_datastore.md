@@ -96,12 +96,16 @@ resource "hpe_morpheus_datastore" "example" {
   active                   = true
   associated_resource_id   = data.hpe_morpheus_cloud.metal.id
 
-  config = {
-    protocol_type     = "iSCSI"
+  config_alletramp_bmaas = {
+    protocol_type = "iSCSI"
   }
 
   storage_server = {
     id = 1
+  }
+
+  resource_pool = {
+    id = <no value>
   }
 
   resource_permissions = {
@@ -133,11 +137,13 @@ resource "hpe_morpheus_datastore" "example" {
 
 - `active` (Boolean)
 - `config` (Dynamic) Generic configuration options for the datastore, varies based on the type of datastore.
+- `config_alletramp_bmaas` (Attributes) HPE Alletra MP Bare Metal (BMaaS) Datastore Configuration (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
 - `config_alletramp_hvm` (Attributes) Alletra MP HVM Datastore Configuration (see [below for nested schema](#nestedatt--config_alletramp_hvm))
 - `config_nfs` (Attributes) NFS Cluster Datastore Configuration (see [below for nested schema](#nestedatt--config_nfs))
 - `datastores` (Attributes Set) List of datastores associated with this datastore, for use with vSphere clouds. (see [below for nested schema](#nestedatt--datastores))
 - `default_store` (Boolean)
 - `resource_permissions` (Attributes) (see [below for nested schema](#nestedatt--resource_permissions))
+- `resource_pool` (Attributes) The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores. (see [below for nested schema](#nestedatt--resource_pool))
 - `storage_server` (Attributes) (see [below for nested schema](#nestedatt--storage_server))
 - `tenants` (Attributes Set) (see [below for nested schema](#nestedatt--tenants))
 - `visibility` (String) Visibility level of the datastore, can be 'private' or 'public'. If not specified, defaults to 'private'.
@@ -161,7 +167,6 @@ resource "hpe_morpheus_datastore" "example" {
 - `locations` (Attributes Set) (see [below for nested schema](#nestedatt--locations))
 - `online` (Boolean)
 - `owner` (Attributes) (see [below for nested schema](#nestedatt--owner))
-- `resource_pool` (Attributes) The resource pool this datastore is associated with (for some Cloud datastores) (see [below for nested schema](#nestedatt--resource_pool))
 - `status` (String) The current status of the datastore, e.g. 'provisioned', 'provisioning', 'failed', 'warning'
 - `status_message` (String) Additional details about the current status of the datastore
 - `storage_size` (Number)
@@ -174,6 +179,14 @@ Required:
 
 - `code` (String) The code of the datastore type.
 - `id` (Number) The ID of the datastore type.
+
+
+<a id="nestedatt--config_alletramp_bmaas"></a>
+### Nested Schema for `config_alletramp_bmaas`
+
+Required:
+
+- `protocol_type` (String) Storage protocol type, either iSCSI or FC (Fibre Channel)
 
 
 <a id="nestedatt--config_alletramp_hvm"></a>
@@ -243,6 +256,14 @@ Optional:
 
 
 
+<a id="nestedatt--resource_pool"></a>
+### Nested Schema for `resource_pool`
+
+Optional:
+
+- `id` (Number)
+
+
 <a id="nestedatt--storage_server"></a>
 ### Nested Schema for `storage_server`
 
@@ -280,14 +301,6 @@ Read-Only:
 
 <a id="nestedatt--owner"></a>
 ### Nested Schema for `owner`
-
-Read-Only:
-
-- `id` (Number)
-
-
-<a id="nestedatt--resource_pool"></a>
-### Nested Schema for `resource_pool`
 
 Read-Only:
 
