@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example.tf example.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN StorageServerId 1
 //go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf example_alletramp_bmaas.tf.tmpl Name "Example Alletra MP BMaaS Volume" TypeCode hpealletraMPLUN WoVersion 1
 //go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_config.tf example_config.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN
 //go:generate ../../../../bin/render -out examples/resources/morpheus_storage_volume/example_complete.tf example_complete.tf.tmpl Name "Example Storage Volume" TypeCode hpealletraMPLUN StorageServerId 1 MaxStorage 10
@@ -20,8 +20,9 @@ func RenderStorageVolumeConfig(t *testing.T, overrides map[string]string) (strin
 	t.Helper()
 
 	return renderStorageVolumeExample(t, "example.tf.tmpl", map[string]string{
-		"Name":     "Example Storage Volume",
-		"TypeCode": "hpealletraMPLUN",
+		"Name":            "Example Storage Volume",
+		"TypeCode":        "hpealletraMPLUN",
+		"StorageServerId": "1",
 	}, overrides)
 }
 
