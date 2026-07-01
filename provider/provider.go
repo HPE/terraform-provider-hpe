@@ -169,13 +169,22 @@ func (p *HpeProvider) Configure(
 		blockName := childMetaResp.TypeName
 		blocks := req.Config.Schema.GetBlocks()
 		block := blocks[blockName]
-		fwAttrs := block.GetNestedObject().GetAttributes()
+		nestedObj := block.GetNestedObject()
+		fwAttrs := nestedObj.GetAttributes()
+		fwBlocks := nestedObj.GetBlocks()
 
 		schemaAttrs := make(map[string]schema.Attribute)
 		// assert fwschema UnderlyingAttributes to schema Attribute.
 		for k, v := range fwAttrs {
 			if schemaAttr, ok := v.(schema.Attribute); ok {
 				schemaAttrs[k] = schemaAttr
+			}
+		}
+
+		schemaBlocks := make(map[string]schema.Block)
+		for k, v := range fwBlocks {
+			if schemaBlock, ok := v.(schema.Block); ok {
+				schemaBlocks[k] = schemaBlock
 			}
 		}
 
@@ -208,6 +217,7 @@ func (p *HpeProvider) Configure(
 			Config: tfsdk.Config{
 				Schema: schema.Schema{
 					Attributes: schemaAttrs,
+					Blocks:     schemaBlocks,
 				},
 				Raw: elems[0], // flat object: {url, username, ...}
 			},
