@@ -25,9 +25,11 @@ import (
 	version "github.com/hashicorp/go-version"
 )
 
-var _ provider.Provider = &HpeProvider{}
-var _ provider.ProviderWithEphemeralResources = &HpeProvider{}
-var _ provider.ProviderWithFunctions = &HpeProvider{}
+var (
+	_ provider.Provider                       = &HpeProvider{}
+	_ provider.ProviderWithEphemeralResources = &HpeProvider{}
+	_ provider.ProviderWithFunctions          = &HpeProvider{}
+)
 
 func New(
 	version string,
