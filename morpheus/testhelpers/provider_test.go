@@ -10,7 +10,7 @@ import (
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 type providerTestCase struct {
@@ -24,9 +24,9 @@ func TestGetAccTestFactories(t *testing.T) {
 	t.Parallel()
 
 	tests := []providerTestCase{
-		{"Framework provider only success", adapter.NewAdaptedMorpheus(), nil, false},
+		{"Framework provider only success", adapter.NewMorpheus(), nil, false},
 		{"SDK v2 provider only success", nil, sdkv2morpheus.Provider(), false},
-		{"Both providers success", adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider(), false},
+		{"Both providers success", adapter.NewMorpheus(), sdkv2morpheus.Provider(), false},
 	}
 
 	for _, test := range tests {

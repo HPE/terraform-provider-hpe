@@ -8,13 +8,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 // Returns a Morpheus provider via the Adapter Layer
-// This saves having to directly import the "adapter" package where an
+// This saves having to manually wrap a Morpheus provider where an
 // adapted Morpheus provider is needed, e.g. Acceptance Tests.
-func NewAdaptedMorpheus(opts ...morpheus.Option) provider.Provider {
+func NewMorpheus(opts ...morpheus.Option) provider.Provider {
 	f := func(m model.MorpheusProviderModel) *clientfactory.ClientFactory {
 		return clientfactory.New(m)
 	}
@@ -28,5 +27,5 @@ func NewAdaptedMorpheus(opts ...morpheus.Option) provider.Provider {
 		opt(p)
 	}
 
-	return adapter.NewAdaptedProvider(p)
+	return NewAdaptedProvider(p)
 }

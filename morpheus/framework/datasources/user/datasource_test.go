@@ -17,7 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 const providerConfigOffline = `
@@ -90,7 +90,7 @@ resource "hpe_morpheus_user" "test_user" {
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", adapter.NewAdaptedMorpheus())()
+	providerInstance := provider.New("test", adapter.NewMorpheus())()
 
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }
