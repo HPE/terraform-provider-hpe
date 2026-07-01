@@ -269,7 +269,7 @@ func (r *powerScheduleResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.SundayOffTime.IsNull() {
 		body.SundayOffTime = plan.SundayOffTime.ValueStringPointer()
 	}
-	if !plan.Visibility.IsNull() {
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
