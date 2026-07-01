@@ -88,15 +88,24 @@ func mapGetResponseToModel(
 	// type_id and type_code are both computed_optional and mutually exclusive.
 	// Populate both from the API so the plan is clean regardless of which one the
 	// user configured — the unconfigured (computed) value is not compared against
-	// the null config, so it does not cause spurious drift or replacement. A value
-	// the API does not return is mapped to a known null rather than left unknown
-	// (which would fail apply for a computed attribute).
+	// the null config, so it does not cause spurious drift or replacement.
 	if t := sv.Type; t != nil {
 		model.TypeId = convert.Int64ToType(t.Id)
 		model.TypeCode = convert.StrToType(t.Code)
 	} else if sv.TypeId != nil {
 		model.TypeId = convert.Int64ToType(sv.TypeId)
 	}
+
+	// Null only a value that is still unknown — the computed member the user did
+	// not configure. This mapper also runs against the plan during create, where
+	// the configured member (e.g. type_code) is a known value that must round-trip
+	// unchanged; clearing it unconditionally would null a configured
+	// computed_optional attribute and fail apply with "Provider produced
+	// inconsistent result after apply" (and, since the pair is at_least_one_of and
+	// requires_replace, force a spurious replacement). Clearing both is also
+	// unnecessary for drift detection: a storage volume always has a type and the
+	// type is requires_replace, so the API does not drop it in place, and a
+	// genuinely different type is already surfaced by the branches above.
 	if model.TypeId.IsUnknown() {
 		model.TypeId = types.Int64Null()
 	}
