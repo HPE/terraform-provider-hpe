@@ -74,19 +74,8 @@ func (r *clusterAffinityGroupResource) Create(
 		Name: &name,
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
-	ag.Visibility = plan.Visibility.ValueStringPointer()
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var ids []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		tenants := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupTenantsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			tenants = append(tenants, sdk.SaveClusterAffinityGroupRequestAffinityGroupTenantsInner{Id: &id})
-		}
-		ag.Tenants = tenants
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ag.Visibility = plan.Visibility.ValueStringPointer()
 	}
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
@@ -108,6 +97,19 @@ func (r *clusterAffinityGroupResource) Create(
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		accts := make([]sdk.SaveClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			accts = append(accts, sdk.SaveClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
+		}
+		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{Accounts: accts}
 	}
 
 	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
@@ -242,28 +244,17 @@ func (r *clusterAffinityGroupResource) Update(
 	clusterID := plan.ClusterId.ValueInt64()
 	id := plan.Id.ValueInt64()
 
-	ag := sdk.UpdateCloudAffinityGroupRequestAffinityGroup{}
+	ag := sdk.UpdateClusterAffinityGroupRequestAffinityGroup{}
 	if !plan.Name.IsNull() {
 		v := plan.Name.ValueString()
 		ag.Name = &v
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
-	ag.Visibility = plan.Visibility.ValueStringPointer()
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var ids []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		tenants := make([]sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			tenants = append(tenants, sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner{Id: &id})
-		}
-		ag.Tenants = tenants
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ag.Visibility = plan.Visibility.ValueStringPointer()
 	}
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
-		rp := sdk.UpdateCloudAffinityGroupRequestAffinityGroupResourcePermissions{}
+		rp := sdk.UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
@@ -282,6 +273,19 @@ func (r *clusterAffinityGroupResource) Update(
 
 	body := sdk.UpdateClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
+		}
+		body.TenantPermissions = &sdk.UpdateClusterAffinityGroupRequestTenantPermissions{Accounts: accts}
 	}
 
 	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).

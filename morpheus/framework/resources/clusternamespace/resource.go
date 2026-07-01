@@ -80,7 +80,9 @@ func (r *clusterNamespaceResource) Create(
 	if !plan.Active.IsNull() {
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
-	ns.Visibility = plan.Visibility.ValueStringPointer()
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ns.Visibility = plan.Visibility.ValueStringPointer()
+	}
 	if perms := buildNamespaceCreatePermissions(ctx, plan, &resp.Diagnostics); perms != nil {
 		ns.Permissions = perms
 	}
@@ -232,7 +234,9 @@ func (r *clusterNamespaceResource) Update(
 	if !plan.Active.IsNull() {
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
-	ns.Visibility = plan.Visibility.ValueStringPointer()
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ns.Visibility = plan.Visibility.ValueStringPointer()
+	}
 	if perms := buildNamespaceUpdatePermissions(ctx, plan, &resp.Diagnostics); perms != nil {
 		ns.Permissions = perms
 	}
@@ -421,10 +425,10 @@ func buildNamespaceCreatePermissions(
 		if diags.HasError() {
 			return nil
 		}
-		accts := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissionsAccountsInner, 0, len(ids))
+		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
 		for i := range ids {
 			id := ids[i]
-			accts = append(accts, sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissionsAccountsInner{Id: &id})
+			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
 		}
 		perms.TenantPermissions = &sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: accts}
 	}
