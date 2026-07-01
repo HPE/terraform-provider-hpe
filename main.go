@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
-	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -36,7 +35,7 @@ func main() {
 
 	p := provider.New(
 		version,
-		adapter.NewAdaptedProvider(morpheus.New()),
+		adapter.NewMorpheus(),
 	)
 
 	var opts []tf6server.ServeOpt

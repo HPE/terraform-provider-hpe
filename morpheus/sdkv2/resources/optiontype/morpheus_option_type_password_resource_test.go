@@ -12,7 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optiontype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestAccMorpheusOptionTypePasswordExampleOk(t *testing.T) {
@@ -120,7 +120,7 @@ func TestAccMorpheusOptionTypePasswordExampleOk(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// Plan
 			{

@@ -15,7 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -66,7 +66,7 @@ func TestAccMorpheusLoadBalancerProfileDataSourceByIdOk(t *testing.T) {
 	dsName := "data.hpe_morpheus_load_balancer_profile.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -123,7 +123,7 @@ func TestAccMorpheusLoadBalancerProfileDataSourceByNameOk(t *testing.T) {
 	dsName := "data.hpe_morpheus_load_balancer_profile.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -172,7 +172,7 @@ func TestAccMorpheusLoadBalancerProfileDataSourceNotFound(t *testing.T) {
 	config := providerConfig + lbConfig + dataSourceConfig
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,

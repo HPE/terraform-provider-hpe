@@ -12,7 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -46,7 +46,7 @@ data "hpe_morpheus_storage_server" "test" {
 }`
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,

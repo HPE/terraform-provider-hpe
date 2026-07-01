@@ -15,7 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -84,7 +84,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceExampleOk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -215,7 +215,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceUpdateOk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -283,7 +283,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceOk(t *testing
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -338,7 +338,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceExternalTypeO
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -392,7 +392,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceRequiresReplaceNetworkIntegr
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -437,7 +437,7 @@ func TestAccMorpheusNetworkFirewallRuleGroupResourceImportInvalidFormatErr(t *te
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{

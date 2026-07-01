@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -49,7 +49,7 @@ func TestAccMorpheusSettingWhitelabelResourceExampleOk(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -117,7 +117,7 @@ func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{Config: providerConfig + createConfig, Check: createChecks},
 			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},

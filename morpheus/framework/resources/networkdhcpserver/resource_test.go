@@ -14,7 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -79,7 +79,7 @@ func TestAccMorpheusNetworkDhcpServerResourceExampleOk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -167,7 +167,7 @@ func TestAccMorpheusNetworkDhcpServerResourceDynamicConfigExampleOk(t *testing.T
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{
@@ -300,7 +300,7 @@ func TestAccMorpheusNetworkDhcpServerResourceUpdateOk(t *testing.T) {
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(
-			t, adapter.NewAdaptedMorpheus(), nil,
+			t, adapter.NewMorpheus(), nil,
 		),
 		Steps: []resource.TestStep{
 			{

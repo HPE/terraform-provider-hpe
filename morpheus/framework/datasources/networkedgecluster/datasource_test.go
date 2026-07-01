@@ -12,7 +12,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkedgecluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
-	"github.com/HPE/terraform-provider-hpe/utils/adapter"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -46,7 +46,7 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 	dsName := "data.hpe_morpheus_network_edge_cluster.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -85,7 +85,7 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 	dsName := "data.hpe_morpheus_network_edge_cluster.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -120,7 +120,7 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 	expected := regexp.MustCompile(networkedgecluster.ErrorNoEdgeClusterFound)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -143,7 +143,7 @@ func TestAccMorpheusNetworkEdgeClusterNoSearchAttrs(t *testing.T) {
 	expected := regexp.MustCompile(networkedgecluster.ErrorNoValidSearchTerms)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
