@@ -45,9 +45,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -166,9 +165,8 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 func TestAccMorpheusInstanceDatasourceBothAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -197,9 +195,8 @@ data "hpe_morpheus_instance" "test" {
 func TestAccMorpheusInstanceDatasourceNoAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

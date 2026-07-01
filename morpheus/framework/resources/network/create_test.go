@@ -19,9 +19,8 @@ import (
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Network) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Network)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -170,9 +169,8 @@ resource "hpe_morpheus_network" "foo" {
 func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Azure, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Azure, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -301,9 +299,8 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -395,9 +392,8 @@ func TestAccMorpheusNetworkResourceCreateHostConfig(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AWS, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.AWS, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -518,9 +514,8 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.GCP, capabilities.NetworkDHCP) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.GCP, capabilities.NetworkDHCP)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -629,9 +624,8 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.HVM) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.HVM)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}

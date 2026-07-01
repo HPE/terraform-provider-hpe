@@ -39,9 +39,8 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusTaskChefBootstrapExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Chef) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Chef)
+
 	t.Parallel()
 
 	if testing.Short() {

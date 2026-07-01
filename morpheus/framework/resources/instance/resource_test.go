@@ -25,9 +25,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -97,9 +95,7 @@ func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 func TestAccMorpheusInstanceResourceUserGroupStorageProfile(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -162,9 +158,7 @@ func TestAccMorpheusInstanceResourceUserGroupStorageProfile(t *testing.T) {
 func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Azure) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -234,9 +228,7 @@ func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 func TestAccMorpheusInstanceResourceAzureSubnet(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Azure) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -313,9 +305,7 @@ func TestAccMorpheusInstanceResourceAzureSubnet(t *testing.T) {
 func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -372,9 +362,7 @@ func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
 func TestAccMorpheusInstanceResourceUpdateInstanceContext(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -432,9 +420,7 @@ func TestAccMorpheusInstanceResourceUpdateInstanceContext(t *testing.T) {
 func TestAccMorpheusInstanceResourceUpdateTags(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

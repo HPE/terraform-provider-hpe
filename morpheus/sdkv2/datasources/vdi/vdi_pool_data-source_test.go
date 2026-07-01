@@ -27,9 +27,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.VDI) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.VDI)
+
 	t.Parallel()
 
 	if testing.Short() {

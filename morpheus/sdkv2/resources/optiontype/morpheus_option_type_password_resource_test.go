@@ -18,9 +18,8 @@ import (
 func TestAccMorpheusOptionTypePasswordExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	t.Parallel()
 
 	if testing.Short() {

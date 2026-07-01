@@ -41,9 +41,7 @@ var testAccProtoV6ProviderFactories = map[string]func() (
 func TestAccMorpheusPolicyValidationResourceIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -81,9 +79,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationInvalidPolicyType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -122,9 +118,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyValidationInvalidResourceType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -163,9 +157,8 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyValidationIncompatiblePolicyAndResourceType(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -223,9 +216,8 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationTenantsNotSupported(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -287,9 +279,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationApprovalWorkflowConflict(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -331,9 +321,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationApprovalFlowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -373,9 +361,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationApprovalWorkflowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -415,9 +401,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationLifecycleFlowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -457,9 +441,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationLifecycleWorkflowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -499,9 +481,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationShutdownFlowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -541,9 +521,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationShutdownWorkflowIdRequired(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -583,9 +561,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 func TestAccMorpheusPolicyResourceValidationConfigConflict(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 

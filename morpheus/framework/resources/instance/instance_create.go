@@ -30,13 +30,18 @@ var (
 	// pendingDeleteApproval, pendingReconfigureApproval, unknown
 	CreateTargetStatuses = []string{
 		"running",
+		// An instance can settle in "stopped" rather than "running" when its
+		// cloud has "Automatically Power On VMs" (autoRecoverPowerState)
+		// disabled - which is the API default for clouds created via the API.
+		// Provisioning has still succeeded, so "stopped" is a valid create
+		// target (matching the instance_clone resource).
+		"stopped",
 	}
 
 	CreateErrorStatuses = []string{
 		"denied",
 		"cancelled",
 		"failed",
-		"stopped",
 		"suspended",
 		"removing",
 		"pendingRemoval",

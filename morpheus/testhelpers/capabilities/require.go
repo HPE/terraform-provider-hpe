@@ -3,82 +3,70 @@
 package capabilities
 
 import (
-	"fmt"
+	"strings"
 	"testing"
 )
 
-// Missing reports whether ANY of the required capabilities are missing.
-// Use it at the top of a test function. When a required capability is
-// unavailable the test is marked skipped (via t.Skip); register
-// "defer testhelpers.RecordResult(t)" beforehand so the skip is recorded.
-// The bool result is retained for call-site readability, but when a
-// capability is missing the call does not return: the test is skipped.
+// MustHaveOrSkip skips the test unless ALL of the required capabilities are
+// available. Use it as the first capability gate in a test function (after
+// "defer testhelpers.RecordResult(t)"). When one or more required
+// capabilities are missing, the test is skipped via t.Skip with a message
+// naming only the missing capabilities; the call does not return.
 //
-// When TF_ACC_CAPABILITIES_VERBOSE is set, logs which capability is missing.
+// The skip reason is emitted into "go test -json" as an output event for the
+// test, in the stable, human-readable form:
+//
+//	missing required capabilities: a, b, c
+//
+// When TF_ACC_CAPABILITIES_VERBOSE is set, the same reason is also logged.
 //
 // Example:
 //
 //	func TestAccMorpheusVMwareCloud(t *testing.T) {
 //	    defer testhelpers.RecordResult(t)
-//	    if capabilities.Missing(t, capabilities.VMware) {
-//	        t.Skip("Skipping test due to missing capabilities")
-//	    }
+//	    capabilities.MustHaveOrSkip(t, capabilities.VMware)
 //	    t.Parallel()
 //	    // ... rest of test
 //	}
-func Missing(t *testing.T, required ...Capability) bool {
+func MustHaveOrSkip(t *testing.T, required ...Capability) {
 	t.Helper()
-	for _, cap := range required {
-		if !Has(cap) {
-			if IsVerbose() {
-				t.Logf("capability %q not available, test not running", cap)
-			}
 
-			t.Skipf("required capability %q not available", cap)
+	missing := missingCapabilities(required...)
+	if len(missing) == 0 {
+		return
+	}
+
+	msg := "missing required capabilities: " + capabilityNames(missing)
+	if IsVerbose() {
+		t.Logf("%s; test not running", msg)
+	}
+
+	// t.Skip (not Skipf): msg is pre-built and must not be treated as a format
+	// string. This emits msg as an output event in "go test -json".
+	t.Skip(msg)
+}
+
+// missingCapabilities returns the subset of required capabilities that are not
+// available, preserving the order in which they were requested. It is pure
+// (no *testing.T side effects), which makes it straightforward to unit test.
+func missingCapabilities(required ...Capability) []Capability {
+	var missing []Capability
+	for _, capability := range required {
+		if !Has(capability) {
+			missing = append(missing, capability)
 		}
 	}
 
-	return false
+	return missing
 }
 
-// MissingAll returns true if ALL of the specified capabilities are missing.
-// Use when a test can run with any one of several alternative capabilities.
-// When all are missing the test is marked skipped (via t.Skip); register
-// "defer testhelpers.RecordResult(t)" beforehand so the skip is recorded.
-//
-// Example:
-//
-//	func TestAccMorpheusRouterGeneric(t *testing.T) {
-//	    defer testhelpers.RecordResult(t)
-//	    // Runs if NSXT OR NSXV is available
-//	    if capabilities.MissingAll(t, capabilities.NSXT, capabilities.NSXV) {
-//	        t.Skip("Skipping test due to missing capabilities")
-//	    }
-//	    // ... rest of test
-//	}
-func MissingAll(t *testing.T, anyOf ...Capability) bool {
-	t.Helper()
-	if HasAny(anyOf...) {
-		return false
-	}
-	if IsVerbose() {
-		t.Logf("none of capabilities %v available, test not running", capabilityNames(anyOf))
-	}
-
-	t.Skipf("none of required capabilities %v available", capabilityNames(anyOf))
-
-	return true
-}
-
-// capabilityNames returns a formatted string of capability names for logging.
+// capabilityNames returns a human-readable, comma-separated list of capability
+// names (e.g. "azure, network_dhcp") for use in skip messages and logs.
 func capabilityNames(caps []Capability) string {
-	if len(caps) == 0 {
-		return "[]"
-	}
 	names := make([]string, len(caps))
-	for i, cap := range caps {
-		names[i] = string(cap)
+	for i, capability := range caps {
+		names[i] = string(capability)
 	}
 
-	return fmt.Sprintf("%v", names)
+	return strings.Join(names, ", ")
 }
