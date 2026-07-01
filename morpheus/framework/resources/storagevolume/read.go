@@ -106,6 +106,8 @@ func mapGetResponseToModel(
 
 	if id, ok := objectID(sv.StorageServer); ok {
 		model.StorageServerId = types.Int64Value(id)
+	} else {
+		model.StorageServerId = types.Int64Null()
 	}
 
 	// The API returns maxStorage in bytes; the resource expresses it in GiB.
@@ -142,8 +144,12 @@ func mapGetResponseToModel(
 	}
 
 	// StorageGroup is an object in the read model; map its id back to
-	// storage_group_id so it round-trips (and imports) cleanly.
+	// storage_group_id so it round-trips (and imports) cleanly. An absent
+	// group maps to a known null so a group removed out-of-band surfaces as
+	// drift rather than retaining the stale id.
 	if id, ok := objectID(sv.StorageGroup); ok {
 		model.StorageGroupId = types.Int64Value(id)
+	} else {
+		model.StorageGroupId = types.Int64Null()
 	}
 }
