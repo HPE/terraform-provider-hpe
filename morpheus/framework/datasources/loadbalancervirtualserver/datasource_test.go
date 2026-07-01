@@ -26,9 +26,8 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -97,9 +96,8 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByIdOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.NSXT) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
 	t.Parallel()
 
 	if testing.Short() {

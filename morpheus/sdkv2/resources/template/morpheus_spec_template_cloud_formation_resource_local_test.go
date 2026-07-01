@@ -16,9 +16,8 @@ import (
 func TestAccMorpheusSpecTemplateCloudFormationResourceLocalExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AWS) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {

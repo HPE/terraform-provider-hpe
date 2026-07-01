@@ -16,9 +16,7 @@ import (
 func TestAccMorpheusIntegrationServicenowExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.ServiceNow) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.ServiceNow)
 
 	t.Parallel()
 

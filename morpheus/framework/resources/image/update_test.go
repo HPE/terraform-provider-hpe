@@ -21,9 +21,7 @@ var url = "https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/cloud/generic_al
 func TestAccMorpheusImageResourceUpdate(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -227,9 +225,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 func TestAccMorpheusImageResourceUpdatePassword(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

@@ -33,9 +33,8 @@ provider "hpe" {
 `
 
 func TestAccMorpheusFindSecurityGroupByName(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -83,9 +82,8 @@ data "hpe_morpheus_security_group" "example" {
 }
 
 func TestAccMorpheusFindSecurityGroupById(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -133,9 +131,8 @@ data "hpe_morpheus_security_group" "example" {
 }
 
 func TestAccMorpheusFindSecurityGroupNotFound(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
@@ -164,9 +161,8 @@ func TestAccMorpheusFindSecurityGroupNotFound(t *testing.T) {
 }
 
 func TestAccMorpheusFindSecurityGroupNoSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
@@ -189,9 +185,8 @@ func TestAccMorpheusFindSecurityGroupNoSearchAttrs(t *testing.T) {
 }
 
 func TestAccMorpheusFindSecurityGroupBothSearchAttrs(t *testing.T) {
-	if capabilities.Missing(t, capabilities.All) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
 	defer testhelpers.RecordResult(t)
 
 	t.Parallel()
