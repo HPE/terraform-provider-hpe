@@ -264,9 +264,7 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 func TestAccMorpheusStorageVolumeResourceRequiresServerOrGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -296,9 +294,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 func TestAccMorpheusStorageVolumeResourceConfigExportConflict(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -335,9 +331,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 func TestAccMorpheusStorageVolumeResourceInstanceIDsRequiresShared(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -374,9 +368,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 func TestAccMorpheusStorageVolumeResourceComputeServerForbidsShared(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.Alletra) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
