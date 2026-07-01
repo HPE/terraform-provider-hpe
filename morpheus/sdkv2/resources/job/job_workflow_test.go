@@ -18,9 +18,8 @@ import (
 func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AWS) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -135,9 +134,8 @@ func TestAccMorpheusJobWorkflowDateAndTimeExampleOk(t *testing.T) {
 func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AWS) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -247,9 +245,8 @@ func TestAccMorpheusJobWorkflowScheduleExampleOk(t *testing.T) {
 func TestAccMorpheusJobWorkflowManualExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	if capabilities.Missing(t, capabilities.AWS) {
-		t.Skip("Skipping test due to missing capabilities")
-	}
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
+
 	t.Parallel()
 
 	if testing.Short() {
