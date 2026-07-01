@@ -315,8 +315,9 @@ func (r *Resource) Update(
 			updateCloud.Config["datacenter"] = plan.ConfigVmware.Datacenter.ValueString()
 		}
 
-		if !plan.ConfigVmware.Password.IsNull() && !plan.ConfigVmware.Password.IsUnknown() {
-			updateCloud.Config["password"] = plan.ConfigVmware.Password.ValueString()
+		// password is write-only: read it from req.Config, not the plan.
+		if !config.ConfigVmware.Password.IsNull() && !config.ConfigVmware.Password.IsUnknown() {
+			updateCloud.Config["password"] = config.ConfigVmware.Password.ValueString()
 		}
 
 		if !plan.ConfigVmware.ResourcePool.IsNull() && !plan.ConfigVmware.ResourcePool.IsUnknown() {
@@ -379,8 +380,9 @@ func (r *Resource) Update(
 			updateCloud.Config["clientId"] = plan.ConfigAzure.ClientId.ValueString()
 		}
 
-		if !plan.ConfigAzure.ClientSecret.IsNull() && !plan.ConfigAzure.ClientSecret.IsUnknown() {
-			updateCloud.Config["clientSecret"] = plan.ConfigAzure.ClientSecret.ValueString()
+		// client_secret is write-only: read it from req.Config, not the plan.
+		if !config.ConfigAzure.ClientSecret.IsNull() && !config.ConfigAzure.ClientSecret.IsUnknown() {
+			updateCloud.Config["clientSecret"] = config.ConfigAzure.ClientSecret.ValueString()
 		}
 
 		if !plan.ConfigAzure.ResourceGroup.IsNull() && !plan.ConfigAzure.ResourceGroup.IsUnknown() {

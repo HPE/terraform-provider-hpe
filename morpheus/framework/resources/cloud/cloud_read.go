@@ -436,11 +436,8 @@ func getCloudAsState(
 			attrValues["hide_host_selection"] = types.BoolNull()
 		}
 
-		if cfg.Password.Get() != nil {
-			attrValues["password"] = convert.StrToType(cfg.Password.Get())
-		} else {
-			attrValues["password"] = types.StringNull()
-		}
+		// password is write-only: it must never be persisted to state.
+		attrValues["password"] = types.StringNull()
 
 		if cfg.ResourcePool != nil {
 			attrValues["resource_pool"] = convert.StrToType(cfg.ResourcePool)
