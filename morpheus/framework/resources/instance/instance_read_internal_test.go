@@ -11,14 +11,14 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
-// TestGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id
+// TestUnitGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id
 // back from a child server interface's subnet association.
 //
 // When provisioning via subnet_id the Morpheus API resolves the subnet to its
 // parent network (reported as network_id) but also returns the subnet itself
 // (containerDetails.server.interfaces[].subnet, see _computeServerInterface.gson),
 // so subnet_id round-trips on refresh rather than being write-only.
-func TestGetChildNetworksReadsSubnetID(t *testing.T) {
+func TestUnitGetChildNetworksReadsSubnetID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -58,9 +58,9 @@ func TestGetChildNetworksReadsSubnetID(t *testing.T) {
 	}
 }
 
-// TestGetChildNetworksNoSubnet verifies that a child interface with no subnet
+// TestUnitGetChildNetworksNoSubnet verifies that a child interface with no subnet
 // association yields a null subnet_id (e.g. when network_id was used directly).
-func TestGetChildNetworksNoSubnet(t *testing.T) {
+func TestUnitGetChildNetworksNoSubnet(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -90,5 +90,38 @@ func TestGetChildNetworksNoSubnet(t *testing.T) {
 
 	if got := children[0].SubnetId; !got.IsNull() {
 		t.Errorf("child subnet_id = %v, want null", got)
+	}
+}
+
+// TestUnitRemoveExternalStorageVolumes verifies that storage-server (SAN) volumes —
+// e.g. Alletra MP BMaaS LUNs exported to the instance's host by
+// hpe_morpheus_storage_volume — are excluded from the instance's tracked
+// volumes, while the instance's own provisioned disks (no storageServer) are
+// retained in order. This prevents spurious drift on the instance's volumes.
+func TestUnitRemoveExternalStorageVolumes(t *testing.T) {
+	t.Parallel()
+
+	volumes := []sdk.InstanceContainerServerVolume1{
+		{Id: sdk.PtrInt64(1), Name: sdk.PtrString("root")},
+		{Id: sdk.PtrInt64(2), Name: sdk.PtrString("data")},
+		{
+			Id:            sdk.PtrInt64(3),
+			Name:          sdk.PtrString("alletra-bmaas-lun"),
+			StorageServer: &sdk.InstanceContainerServerVolumeStorageServer1{},
+		},
+	}
+
+	got := removeExternalStorageVolumes(volumes)
+
+	if len(got) != 2 {
+		t.Fatalf("expected 2 volumes after filtering, got %d", len(got))
+	}
+	for _, v := range got {
+		if v.StorageServer != nil {
+			t.Errorf("storage-server volume (id %v) was not filtered out", v.Id)
+		}
+	}
+	if got[0].Id == nil || *got[0].Id != 1 || got[1].Id == nil || *got[1].Id != 2 {
+		t.Errorf("provisioned disks not retained in order: got %v, %v", got[0].Id, got[1].Id)
 	}
 }
