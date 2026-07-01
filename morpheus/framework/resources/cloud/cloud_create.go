@@ -20,6 +20,113 @@ import (
 
 const createOperation = "create cloud resource"
 
+// buildVmwareCloudConfig assembles the VMware (vSphere) cloud configuration for
+// the AddClouds request.
+//
+// The write-only password attribute is null in the plan - Terraform strips
+// write-only values from the plan and state - so it MUST be sourced from the
+// request configuration (configModel, populated from req.Config). Sourcing it
+// from the plan instead silently drops the password and the API rejects the
+// create with 400 "Enter your password". Every non-write-only field is taken
+// from the plan.
+func buildVmwareCloudConfig(plan, configModel CloudModel) *sdk.AddCloudsRequestZoneConfigAnyOf3 {
+	config := sdkfuncs.NewVmwareCloudConfig(
+		plan.ConfigVmware.ApiUrl.ValueString(),
+		plan.ConfigVmware.ApiVersion.ValueString(),
+		plan.ConfigVmware.Datacenter.ValueString(),
+	)
+
+	if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
+		config.ApplianceUrl = plan.ApplianceUrl.ValueStringPointer()
+	}
+
+	if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
+		config.DatacenterName = plan.DataCenterName.ValueStringPointer()
+	}
+
+	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
+		config.ExternalId.Set(plan.ExternalId.ValueStringPointer())
+	}
+
+	if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
+		config.InventoryLevel = plan.ImportExistingVms.ValueStringPointer()
+	}
+
+	if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
+		config.ConsoleKeymap = plan.KeyboardLayout.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.CertificateProvider.IsNull() &&
+		!plan.ConfigVmware.CertificateProvider.IsUnknown() {
+		config.CertificateProvider = plan.ConfigVmware.CertificateProvider.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.Cluster.IsNull() &&
+		!plan.ConfigVmware.Cluster.IsUnknown() {
+		config.Cluster = plan.ConfigVmware.Cluster.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.ConfigManagementId.IsNull() &&
+		!plan.ConfigVmware.ConfigManagementId.IsUnknown() {
+		config.ConfigManagementId = plan.ConfigVmware.ConfigManagementId.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.EnableDiskTypeSelection.IsNull() &&
+		!plan.ConfigVmware.EnableDiskTypeSelection.IsUnknown() {
+		config.EnableDiskTypeSelection.Set(
+			convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableDiskTypeSelection),
+		)
+	}
+
+	if !plan.ConfigVmware.EnableNetworkTypeSelection.IsNull() &&
+		!plan.ConfigVmware.EnableNetworkTypeSelection.IsUnknown() {
+		config.EnableNetworkTypeSelection.Set(
+			convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableNetworkTypeSelection),
+		)
+	}
+
+	if !plan.ConfigVmware.EnableStorageTypeSelection.IsNull() &&
+		!plan.ConfigVmware.EnableStorageTypeSelection.IsUnknown() {
+		config.EnableStorageTypeSelection.Set(
+			convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableStorageTypeSelection),
+		)
+	}
+
+	if !plan.ConfigVmware.EnableVnc.IsNull() &&
+		!plan.ConfigVmware.EnableVnc.IsUnknown() {
+		config.EnableVnc.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableVnc))
+	}
+
+	if !plan.ConfigVmware.HideHostSelection.IsNull() &&
+		!plan.ConfigVmware.HideHostSelection.IsUnknown() {
+		config.HideHostSelection.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.HideHostSelection))
+	}
+
+	// password is write-only: it is null in the plan, so read it from
+	// req.Config (captured in configModel).
+	if !configModel.ConfigVmware.Password.IsNull() &&
+		!configModel.ConfigVmware.Password.IsUnknown() {
+		config.Password = configModel.ConfigVmware.Password.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.ResourcePool.IsNull() &&
+		!plan.ConfigVmware.ResourcePool.IsUnknown() {
+		config.ResourcePool = plan.ConfigVmware.ResourcePool.ValueStringPointer()
+	}
+
+	if !plan.ConfigVmware.RpcMode.IsNull() &&
+		!plan.ConfigVmware.RpcMode.IsUnknown() {
+		config.RpcMode.Set(plan.ConfigVmware.RpcMode.ValueStringPointer())
+	}
+
+	if !plan.ConfigVmware.Username.IsNull() &&
+		!plan.ConfigVmware.Username.IsUnknown() {
+		config.Username = plan.ConfigVmware.Username.ValueStringPointer()
+	}
+
+	return config
+}
+
 func (r *Resource) Create(
 	ctx context.Context,
 	req resource.CreateRequest,
@@ -36,8 +143,11 @@ func (r *Resource) Create(
 	name := plan.Name.ValueString()
 	tenantID := plan.TenantId.ValueInt64()
 
-	var config CloudModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	// configModel holds the raw request configuration. Write-only attributes
+	// (e.g. config_vmware.password, config_azure.client_secret) are null in the
+	// plan/state and must be read from req.Config, not the plan.
+	var configModel CloudModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configModel)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -272,99 +382,7 @@ func (r *Resource) Create(
 	case !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown():
 		cloudTypeCode = vmwareCloud
 
-		config := sdkfuncs.NewVmwareCloudConfig(
-			plan.ConfigVmware.ApiUrl.ValueString(),
-			plan.ConfigVmware.ApiVersion.ValueString(),
-			plan.ConfigVmware.Datacenter.ValueString(),
-		)
-
-		if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
-			config.ApplianceUrl = plan.ApplianceUrl.ValueStringPointer()
-		}
-
-		if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
-			config.DatacenterName = plan.DataCenterName.ValueStringPointer()
-		}
-
-		if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
-			config.ExternalId.Set(plan.ExternalId.ValueStringPointer())
-		}
-
-		if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
-			config.InventoryLevel = plan.ImportExistingVms.ValueStringPointer()
-		}
-
-		if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
-			config.ConsoleKeymap = plan.KeyboardLayout.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.CertificateProvider.IsNull() &&
-			!plan.ConfigVmware.CertificateProvider.IsUnknown() {
-			config.CertificateProvider = plan.ConfigVmware.CertificateProvider.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.Cluster.IsNull() &&
-			!plan.ConfigVmware.Cluster.IsUnknown() {
-			config.Cluster = plan.ConfigVmware.Cluster.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.ConfigManagementId.IsNull() &&
-			!plan.ConfigVmware.ConfigManagementId.IsUnknown() {
-			config.ConfigManagementId = plan.ConfigVmware.ConfigManagementId.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.EnableDiskTypeSelection.IsNull() &&
-			!plan.ConfigVmware.EnableDiskTypeSelection.IsUnknown() {
-			config.EnableDiskTypeSelection.Set(
-				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableDiskTypeSelection),
-			)
-		}
-
-		if !plan.ConfigVmware.EnableNetworkTypeSelection.IsNull() &&
-			!plan.ConfigVmware.EnableNetworkTypeSelection.IsUnknown() {
-			config.EnableNetworkTypeSelection.Set(
-				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableNetworkTypeSelection),
-			)
-		}
-
-		if !plan.ConfigVmware.EnableStorageTypeSelection.IsNull() &&
-			!plan.ConfigVmware.EnableStorageTypeSelection.IsUnknown() {
-			config.EnableStorageTypeSelection.Set(
-				convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableStorageTypeSelection),
-			)
-		}
-
-		if !plan.ConfigVmware.EnableVnc.IsNull() &&
-			!plan.ConfigVmware.EnableVnc.IsUnknown() {
-			config.EnableVnc.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.EnableVnc))
-		}
-
-		if !plan.ConfigVmware.HideHostSelection.IsNull() &&
-			!plan.ConfigVmware.HideHostSelection.IsUnknown() {
-			config.HideHostSelection.Set(convert.BoolTypeToStringPointerOnOff(plan.ConfigVmware.HideHostSelection))
-		}
-
-		if !plan.ConfigVmware.Password.IsNull() &&
-			!plan.ConfigVmware.Password.IsUnknown() {
-			config.Password = plan.ConfigVmware.Password.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.ResourcePool.IsNull() &&
-			!plan.ConfigVmware.ResourcePool.IsUnknown() {
-			config.ResourcePool = plan.ConfigVmware.ResourcePool.ValueStringPointer()
-		}
-
-		if !plan.ConfigVmware.RpcMode.IsNull() &&
-			!plan.ConfigVmware.RpcMode.IsUnknown() {
-			config.RpcMode.Set(plan.ConfigVmware.RpcMode.ValueStringPointer())
-		}
-
-		if !plan.ConfigVmware.Username.IsNull() &&
-			!plan.ConfigVmware.Username.IsUnknown() {
-			config.Username = plan.ConfigVmware.Username.ValueStringPointer()
-		}
-
-		addCloudConfig.AddCloudsRequestZoneConfigAnyOf3 = config
+		addCloudConfig.AddCloudsRequestZoneConfigAnyOf3 = buildVmwareCloudConfig(plan, configModel)
 
 	case !plan.ConfigAzure.IsNull() && !plan.ConfigAzure.IsUnknown():
 		cloudTypeCode = azureCloud
@@ -413,8 +431,10 @@ func (r *Resource) Create(
 			config.ClientId = plan.ConfigAzure.ClientId.ValueStringPointer()
 		}
 
-		if !plan.ConfigAzure.ClientSecret.IsNull() && !plan.ConfigAzure.ClientSecret.IsUnknown() {
-			config.ClientSecret = plan.ConfigAzure.ClientSecret.ValueStringPointer()
+		// client_secret is write-only: it is null in the plan, so read it from
+		// req.Config (captured in configModel above).
+		if !configModel.ConfigAzure.ClientSecret.IsNull() && !configModel.ConfigAzure.ClientSecret.IsUnknown() {
+			config.ClientSecret = configModel.ConfigAzure.ClientSecret.ValueStringPointer()
 		}
 
 		if !plan.ConfigAzure.ResourceGroup.IsNull() && !plan.ConfigAzure.ResourceGroup.IsUnknown() {
