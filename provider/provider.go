@@ -9,42 +9,46 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
+	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
-	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+	"github.com/HPE/terraform-provider-hpe/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/notify"
 
 	version "github.com/hashicorp/go-version"
 )
 
-var _ provider.Provider = &hpeProvider{}
+var (
+	_ provider.Provider                       = &HpeProvider{}
+	_ provider.ProviderWithEphemeralResources = &HpeProvider{}
+	_ provider.ProviderWithFunctions          = &HpeProvider{}
+)
 
 func New(
 	version string,
-	b ...subprovider.SubProvider,
+	providers ...provider.Provider,
 ) func() provider.Provider {
 	return func() provider.Provider {
-		return &hpeProvider{
-			version:      version,
-			subproviders: b,
+		return &HpeProvider{
+			version:        version,
+			childProviders: providers,
 		}
 	}
 }
 
-type hpeProvider struct {
-	version      string
-	subproviders []subprovider.SubProvider
+type HpeProvider struct {
+	version        string
+	childProviders []provider.Provider
 }
 
-func (p *hpeProvider) Metadata(
+func (p *HpeProvider) Metadata(
 	_ context.Context,
 	_ provider.MetadataRequest,
 	resp *provider.MetadataResponse,
@@ -53,49 +57,38 @@ func (p *hpeProvider) Metadata(
 	resp.Version = p.version
 }
 
-type AttrMap struct {
-	name       string
-	attributes map[string]schema.Attribute
-}
-
-func createListNestedBlock(attrmaps []AttrMap) map[string]schema.Block {
-	blockmap := map[string]schema.Block{}
-	for _, attrmap := range attrmaps {
-		block := schema.ListNestedBlock{
-			NestedObject: schema.NestedBlockObject{
-				Attributes: attrmap.attributes,
-			},
-			Validators: []validator.List{
-				listvalidator.SizeBetween(0, 1),
-			},
-		}
-		blockmap[attrmap.name] = block
-	}
-
-	return blockmap
-}
-
-func (p *hpeProvider) Schema(
+func (p *HpeProvider) Schema(
 	ctx context.Context,
 	_ provider.SchemaRequest,
 	resp *provider.SchemaResponse,
 ) {
-	var a []AttrMap
-	for _, s := range p.subproviders {
-		a = append(a, AttrMap{
-			name:       s.GetName(ctx),
-			attributes: s.GetSchema(ctx),
-		})
+	resp.Schema = schema.Schema{
+		Blocks: make(map[string]schema.Block),
 	}
 
-	blocks := createListNestedBlock(a)
+	for _, s := range p.childProviders {
+		metaResp := &provider.MetadataResponse{}
+		schemaResp := &provider.SchemaResponse{}
 
-	resp.Schema = schema.Schema{
-		Blocks: blocks,
+		s.Metadata(ctx, provider.MetadataRequest{}, metaResp)
+		s.Schema(ctx, provider.SchemaRequest{}, schemaResp)
+
+		blockName := metaResp.TypeName
+
+		// Prevent a panic if one of the child providers was passed
+		// without using the adapter layer, and surface the error as a diagnostic.
+		block, ok := schemaResp.Schema.Blocks[blockName]
+		if !ok || block == nil {
+			resp.Diagnostics.AddError(errfmt.ChildProviderSchemaErr(metaResp.TypeName))
+
+			return
+		}
+
+		resp.Schema.Blocks[blockName] = block
 	}
 }
 
-func (p *hpeProvider) Configure(
+func (p *HpeProvider) Configure(
 	ctx context.Context,
 	req provider.ConfigureRequest,
 	resp *provider.ConfigureResponse,
@@ -151,47 +144,156 @@ func (p *hpeProvider) Configure(
 
 	}
 
-	f := func(ctx context.Context, c tfsdk.Config, name string) func(any) {
-		return func(target any) {
-			c.GetAttribute(ctx, path.Root(name), target)
+	resourceData := map[string]any{}
+	dataSourceData := map[string]any{}
+	ephemeralResourceData := map[string]any{}
+
+	// Parse the parent raw config value as a map of block names → tftypes.Value.
+	// This is because we need to provide tftypes.Value for the 'Raw' part of
+	// constructing the childProverConfigReq later in this function.
+	parentAttrs := map[string]tftypes.Value{}
+	if err := req.Config.Raw.As(&parentAttrs); err != nil {
+		resp.Diagnostics.AddError("Failed to read provider config", err.Error())
+		wg.Wait()
+
+		return
+	}
+
+	for _, s := range p.childProviders {
+		childMetaResp := &provider.MetadataResponse{}
+		s.Metadata(ctx, provider.MetadataRequest{}, childMetaResp)
+
+		// Since the "hpe" provider is using ListNestedBlock for its configs,
+		// we need to pass the 0th ListNestedBlock to the child provider
+		// so that it can parse its config as a flat map[string]Attribute.
+		blockName := childMetaResp.TypeName
+		blocks := req.Config.Schema.GetBlocks()
+		block := blocks[blockName]
+		nestedObj := block.GetNestedObject()
+		fwAttrs := nestedObj.GetAttributes()
+		fwBlocks := nestedObj.GetBlocks()
+
+		schemaAttrs := make(map[string]schema.Attribute)
+		// assert fwschema UnderlyingAttributes to schema Attribute.
+		for k, v := range fwAttrs {
+			if schemaAttr, ok := v.(schema.Attribute); ok {
+				schemaAttrs[k] = schemaAttr
+			}
+		}
+
+		schemaBlocks := make(map[string]schema.Block)
+		for k, v := range fwBlocks {
+			if schemaBlock, ok := v.(schema.Block); ok {
+				schemaBlocks[k] = schemaBlock
+			}
+		}
+
+		// Extract the list tftypes.Value for this child's block.
+		listVal, ok := parentAttrs[blockName]
+		// The blocks are optional.
+		if !ok || listVal.IsNull() || !listVal.IsKnown() {
+			continue
+		}
+
+		// Unwrap the list to its elements.
+		var elems []tftypes.Value
+		if err := listVal.As(&elems); err != nil || len(elems) == 0 {
+			if err != nil {
+				// Only fail on error.
+				resp.Diagnostics.AddError(
+					"failed to configure hpe provider",
+					err.Error(),
+				)
+
+				return
+			}
+
+			continue
+		}
+
+		childProviderConfigReq := provider.ConfigureRequest{
+			TerraformVersion:   req.TerraformVersion,
+			ClientCapabilities: req.ClientCapabilities,
+			Config: tfsdk.Config{
+				Schema: schema.Schema{
+					Attributes: schemaAttrs,
+					Blocks:     schemaBlocks,
+				},
+				Raw: elems[0], // flat object: {url, username, ...}
+			},
+		}
+
+		childConfigResp := &provider.ConfigureResponse{}
+		s.Configure(ctx, childProviderConfigReq, childConfigResp)
+
+		resp.Diagnostics.Append(childConfigResp.Diagnostics...)
+
+		if childConfigResp.ResourceData != nil {
+			resourceData[childMetaResp.TypeName] = childConfigResp.ResourceData
+		}
+
+		if childConfigResp.DataSourceData != nil {
+			dataSourceData[childMetaResp.TypeName] = childConfigResp.DataSourceData
+		}
+
+		if childConfigResp.EphemeralResourceData != nil {
+			ephemeralResourceData[childMetaResp.TypeName] = childConfigResp.EphemeralResourceData
 		}
 	}
 
-	d := map[string]any{}
-	for _, s := range p.subproviders {
-		v, err := s.Configure(ctx, f(ctx, req.Config, s.GetName(ctx)))
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to configure "+s.GetName(ctx),
-				err.Error(),
-			)
-		}
-		d[s.GetName(ctx)] = v
-	}
+	resp.ResourceData = resourceData
+	resp.DataSourceData = dataSourceData
+	resp.EphemeralResourceData = ephemeralResourceData
 
-	resp.ResourceData = d
-	resp.DataSourceData = d
 	wg.Wait()
 }
 
-func (p *hpeProvider) Resources(
+func (p *HpeProvider) Resources(
 	ctx context.Context,
 ) []func() resource.Resource {
 	var resources []func() resource.Resource
-	for _, s := range p.subproviders {
-		resources = append(resources, s.GetResources(ctx)...)
+	for _, s := range p.childProviders {
+		resources = append(resources, s.Resources(ctx)...)
 	}
 
 	return resources
 }
 
-func (p *hpeProvider) DataSources(
+func (p *HpeProvider) DataSources(
 	ctx context.Context,
 ) []func() datasource.DataSource {
 	var datasources []func() datasource.DataSource
-	for _, s := range p.subproviders {
-		datasources = append(datasources, s.GetDataSources(ctx)...)
+	for _, s := range p.childProviders {
+		datasources = append(datasources, s.DataSources(ctx)...)
 	}
 
 	return datasources
+}
+
+func (p *HpeProvider) EphemeralResources(
+	ctx context.Context,
+) []func() ephemeral.EphemeralResource {
+	var ephemerals []func() ephemeral.EphemeralResource
+
+	for _, s := range p.childProviders {
+		if ep, ok := s.(provider.ProviderWithEphemeralResources); ok {
+			ephemerals = append(ephemerals, ep.EphemeralResources(ctx)...)
+		}
+	}
+
+	return ephemerals
+}
+
+func (p *HpeProvider) Functions(
+	ctx context.Context,
+) []func() function.Function {
+	var functions []func() function.Function
+
+	for _, s := range p.childProviders {
+		if fn, ok := s.(provider.ProviderWithFunctions); ok {
+			functions = append(functions, fn.Functions(ctx)...)
+		}
+	}
+
+	return functions
 }

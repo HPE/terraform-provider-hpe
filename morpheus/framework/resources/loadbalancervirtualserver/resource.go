@@ -31,7 +31,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_load_balancer_virtual_server"
+	resp.TypeName = req.ProviderTypeName + "_" + "load_balancer_virtual_server"
 }
 
 func (r *Resource) Schema(

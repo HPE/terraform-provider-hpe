@@ -67,7 +67,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdipool"
 )
 
-func (s SubProvider) GetResources(
+func (p *MorpheusProvider) Resources(
 	_ context.Context,
 ) []func() resource.Resource {
 	resources := []func() resource.Resource{

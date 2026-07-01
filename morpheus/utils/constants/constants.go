@@ -4,7 +4,9 @@ package constants
 
 import "time"
 
-const SubProviderName = "morpheus"
+// Put this here, we get an import cycle in `configure` package if we store the
+// `ProviderName` const in the `morpheus` package.
+const ProviderName = "morpheus"
 
 // TODO: properly implement resource timeouts similar to
 // terraform-plugin-framework-timeouts

@@ -35,7 +35,7 @@ func (r *powerScheduleResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_power_schedule"
+	resp.TypeName = req.ProviderTypeName + "_" + "power_schedule"
 }
 
 func (r *powerScheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

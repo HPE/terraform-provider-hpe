@@ -9,12 +9,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	datasourcepool "github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancerpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	resourcepool "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -74,7 +74,7 @@ func TestAccMorpheusLoadBalancerPoolDataSourceByIdOk(t *testing.T) {
 	dsName := "data.hpe_morpheus_load_balancer_pool.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -142,7 +142,7 @@ func TestAccMorpheusLoadBalancerPoolDataSourceByNameOk(t *testing.T) {
 	dsName := "data.hpe_morpheus_load_balancer_pool.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,

@@ -38,7 +38,7 @@ func (r *containerScriptResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_container_script"
+	resp.TypeName = req.ProviderTypeName + "_" + "container_script"
 }
 
 func (r *containerScriptResource) Schema(

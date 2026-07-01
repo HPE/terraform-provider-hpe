@@ -50,7 +50,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_network_firewall_rule_group"
+	resp.TypeName = req.ProviderTypeName + "_" + "network_firewall_rule_group"
 }
 
 // Schema defines the schema for the data source.

@@ -31,7 +31,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_datastore"
+	resp.TypeName = req.ProviderTypeName + "_" + "datastore"
 }
 
 func (r *Resource) Schema(

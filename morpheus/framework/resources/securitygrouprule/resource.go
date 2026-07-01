@@ -36,7 +36,7 @@ func (r *securityGroupRuleResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_security_group_rule"
+	resp.TypeName = req.ProviderTypeName + "_" + "security_group_rule"
 }
 
 func (r *securityGroupRuleResource) Schema(

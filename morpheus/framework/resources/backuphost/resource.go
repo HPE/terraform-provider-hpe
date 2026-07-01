@@ -36,7 +36,7 @@ func (r *backupHostResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_backup_host"
+	resp.TypeName = req.ProviderTypeName + "_" + "backup_host"
 }
 
 func (r *backupHostResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

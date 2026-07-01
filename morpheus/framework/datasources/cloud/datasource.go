@@ -15,7 +15,6 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud/consts"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -43,7 +42,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_cloud"
+	resp.TypeName = req.ProviderTypeName + "_" + "cloud"
 }
 
 // Schema defines the schema for the data source.
