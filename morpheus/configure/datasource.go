@@ -19,7 +19,7 @@ type DataSourceWithMorpheusConfigure struct {
 }
 
 func (r *DataSourceWithMorpheusConfigure) BlockName() string {
-	return constants.SubProviderName
+	return constants.ProviderName
 }
 
 func (r *DataSourceWithMorpheusConfigure) Configure(
@@ -32,8 +32,7 @@ func (r *DataSourceWithMorpheusConfigure) Configure(
 		return
 	}
 
-	m, _ := req.ProviderData.(map[string]any)
-	cf, ok := m[constants.SubProviderName].(*clientfactory.ClientFactory)
+	cf, ok := req.ProviderData.(*clientfactory.ClientFactory)
 	if !ok {
 		tflog.Debug(ctx, "Nil ProviderData sub block")
 		msg := `
@@ -45,7 +44,7 @@ provider "hpe" {
   }
 }`
 		resp.Diagnostics.AddError(
-			constants.SubProviderName+" client creation failed",
+			constants.ProviderName+" client creation failed",
 			msg,
 		)
 

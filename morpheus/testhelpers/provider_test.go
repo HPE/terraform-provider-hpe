@@ -5,17 +5,17 @@ package testhelpers_test
 import (
 	"testing"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
-	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 type providerTestCase struct {
 	name              string
-	frameworkProvider subprovider.SubProvider
+	frameworkProvider fwprovider.Provider
 	sdvkv2Provider    *schema.Provider
 	expectNoFactories bool
 }
@@ -24,9 +24,9 @@ func TestGetAccTestFactories(t *testing.T) {
 	t.Parallel()
 
 	tests := []providerTestCase{
-		{"Framework provider only success", morpheus.New(), nil, false},
+		{"Framework provider only success", adapter.NewAdaptedMorpheus(), nil, false},
 		{"SDK v2 provider only success", nil, sdkv2morpheus.Provider(), false},
-		{"Both providers success", morpheus.New(), sdkv2morpheus.Provider(), false},
+		{"Both providers success", adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider(), false},
 	}
 
 	for _, test := range tests {

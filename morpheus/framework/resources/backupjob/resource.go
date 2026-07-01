@@ -31,7 +31,7 @@ func NewResource() resource.Resource {
 }
 
 func (r *backupJobResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_backup_job"
+	resp.TypeName = req.ProviderTypeName + "_" + "backup_job"
 }
 
 func (r *backupJobResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

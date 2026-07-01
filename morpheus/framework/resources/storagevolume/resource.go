@@ -39,7 +39,7 @@ func (r *storageVolumeResource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_storage_volume"
+	resp.TypeName = req.ProviderTypeName + "_" + "storage_volume"
 }
 
 func (r *storageVolumeResource) Schema(

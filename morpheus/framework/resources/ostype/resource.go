@@ -2,12 +2,10 @@ package ostype
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 type Resource struct {
@@ -25,10 +23,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "os_type"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_" + "os_type"
 }
 
 func (r *Resource) Schema(

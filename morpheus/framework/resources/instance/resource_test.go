@@ -9,10 +9,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -75,7 +75,7 @@ func TestAccMorpheusInstanceResourceExampleOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -143,7 +143,7 @@ func TestAccMorpheusInstanceResourceUserGroupStorageProfile(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -213,7 +213,7 @@ func TestAccMorpheusInstanceResourceAzureExampleOk(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -290,7 +290,7 @@ func TestAccMorpheusInstanceResourceAzureSubnet(t *testing.T) {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:             providerConfig + resourceConfig,
@@ -333,7 +333,7 @@ func TestAccMorpheusInstanceResourceUpdateName(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -391,7 +391,7 @@ func TestAccMorpheusInstanceResourceUpdateInstanceContext(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -448,7 +448,7 @@ func TestAccMorpheusInstanceResourceUpdateTags(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,

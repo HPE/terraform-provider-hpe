@@ -5,14 +5,15 @@ package clientfactory
 import (
 	"context"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/auth"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/model"
 	"github.com/HPE/terraform-provider-hpe/utils/httptrace"
 )
 
@@ -25,7 +26,7 @@ func WithFactoryHTTPClient(c *http.Client) FactoryOption {
 	}
 }
 
-func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
+func New(m model.MorpheusProviderModel, opts ...FactoryOption) *ClientFactory {
 	var options []ClientOption
 
 	cf := &ClientFactory{
@@ -66,11 +67,26 @@ func New(m model.SubModel, opts ...FactoryOption) *ClientFactory {
 
 type ClientFactory struct {
 	httpclient *http.Client
-	model      model.SubModel
+	model      model.MorpheusProviderModel
 	newClient  func(context.Context) (*sdk.APIClient, error)
 }
 
 func (c ClientFactory) NewClient(ctx context.Context) (*sdk.APIClient, error) {
+	// Surface error here to avoid panic on missing Morpheus config.
+	// Checking for nil prevents a panic when using the provider adapter architecture.
+	if c.newClient == nil {
+		msg := `
+morpheus client not configured - possible missing morpheus provider block.
+
+provider "hpe" {
+  morpheus { <- missing or duplicate?
+    url = "https://example.com"
+  }
+}`
+
+		return nil, errors.New(msg)
+	}
+
 	return c.newClient(ctx)
 }
 

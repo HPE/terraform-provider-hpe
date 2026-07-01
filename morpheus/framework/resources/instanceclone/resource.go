@@ -41,7 +41,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_morpheus_instance_clone"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance_clone"
 }
 
 func (r *Resource) Schema(

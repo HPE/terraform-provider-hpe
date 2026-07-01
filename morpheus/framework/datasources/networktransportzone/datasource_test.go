@@ -9,10 +9,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktransportzone"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -46,7 +46,7 @@ func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 	dsName := "data.hpe_morpheus_network_transport_zone.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -85,7 +85,7 @@ func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 	dsName := "data.hpe_morpheus_network_transport_zone.example"
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: config,
@@ -120,7 +120,7 @@ func TestAccMorpheusNetworkTransportZoneNotFound(t *testing.T) {
 	expected := regexp.MustCompile(networktransportzone.ErrorNoTransportZone)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -143,7 +143,7 @@ func TestAccMorpheusNetworkTransportZoneNoSearchAttrs(t *testing.T) {
 	expected := regexp.MustCompile(networktransportzone.ErrorNoValidSearchTerms)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,

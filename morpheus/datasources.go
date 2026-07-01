@@ -48,7 +48,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
-func (SubProvider) GetDataSources(
+func (p *MorpheusProvider) DataSources(
 	_ context.Context,
 ) []func() datasource.DataSource {
 	return []func() datasource.DataSource{

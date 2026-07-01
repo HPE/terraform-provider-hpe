@@ -24,7 +24,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -58,7 +57,7 @@ type InstancePowerStateModel struct {
 	Timeouts     timeouts.Value `tfsdk:"timeouts"`
 }
 
-// Resource implements the hpe_morpheus_instance_power_state resource.
+// Resource implements the hpe_instance_power_state resource.
 type Resource struct {
 	configure.ResourceWithMorpheusConfigure
 }
@@ -73,7 +72,7 @@ func (r *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_instance_power_state"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance_power_state"
 }
 
 // Schema implements resource.Resource.

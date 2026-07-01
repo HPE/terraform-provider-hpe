@@ -12,11 +12,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 const providerConfigOffline = `
@@ -78,7 +78,7 @@ resource "hpe_morpheus_service_plan" "test" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + servicePlanResourceConfig + dataSourceConfig,
@@ -137,7 +137,7 @@ resource "hpe_morpheus_service_plan" "test" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			// create dependency
 			{
@@ -181,7 +181,7 @@ func TestAccMorpheusFindServicePlanNoPlanFound(t *testing.T) {
 	expected := serviceplan.ErrorNoServicePlanFound
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -219,7 +219,7 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 	expected := serviceplan.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -261,7 +261,7 @@ func TestAccMorpheusFindServicePlanBothSearchAttrs(t *testing.T) {
 	expected := serviceplan.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -301,7 +301,7 @@ func TestAccMorpheusFindServicePlanByProvisionOnly(t *testing.T) {
 	expected := serviceplan.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -343,7 +343,7 @@ func TestAccMorpheusFindServicePlanByCloudIdOnly(t *testing.T) {
 	expected := serviceplan.ErrorRunningPreApply
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -588,7 +588,7 @@ data "hpe_morpheus_service_plan" "test_all" {
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), sdkv2morpheus.Provider()),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				ExpectNonEmptyPlan: false,

@@ -10,10 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/utils/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -48,7 +48,7 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -111,7 +111,7 @@ func TestAccMorpheusStorageVolumeResourceUpdateOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + createConfig,
@@ -160,7 +160,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -231,7 +231,7 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewAdaptedMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + createConfig,
