@@ -209,7 +209,17 @@ func (p *ProviderAdapter) Functions(
 		return nil
 	}
 
-	return p.withFunctions.Functions(ctx)
+	var adaptedFunctions []func() function.Function
+	for _, f := range p.withFunctions.Functions(ctx) {
+		adaptedFunctions = append(
+			adaptedFunctions,
+			func() function.Function {
+				return NewAdaptedFunction(f(), p)
+			},
+		)
+	}
+
+	return adaptedFunctions
 }
 
 func (p *ProviderAdapter) EphemeralResources(
