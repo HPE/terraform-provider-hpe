@@ -82,23 +82,26 @@ func mapGetResponseToModel(
 	model *StorageVolumeModel,
 	sv *sdk.GetStorageVolumes200ResponseStorageVolume,
 ) {
-	if sv.Id != nil {
-		model.Id = types.Int64Value(*sv.Id)
-	}
-
-	if sv.Name != nil {
-		model.Name = types.StringValue(*sv.Name)
-	}
+	model.Id = convert.Int64ToType(sv.Id)
+	model.Name = convert.StrToType(sv.Name)
 
 	// type_id and type_code are both computed_optional and mutually exclusive.
 	// Populate both from the API so the plan is clean regardless of which one the
 	// user configured — the unconfigured (computed) value is not compared against
-	// the null config, so it does not cause spurious drift or replacement.
+	// the null config, so it does not cause spurious drift or replacement. A value
+	// the API does not return is mapped to a known null rather than left unknown
+	// (which would fail apply for a computed attribute).
 	if t := sv.Type; t != nil {
 		model.TypeId = convert.Int64ToType(t.Id)
 		model.TypeCode = convert.StrToType(t.Code)
 	} else if sv.TypeId != nil {
-		model.TypeId = types.Int64Value(*sv.TypeId)
+		model.TypeId = convert.Int64ToType(sv.TypeId)
+	}
+	if model.TypeId.IsUnknown() {
+		model.TypeId = types.Int64Null()
+	}
+	if model.TypeCode.IsUnknown() {
+		model.TypeCode = types.StringNull()
 	}
 
 	if id, ok := objectID(sv.StorageServer); ok {
@@ -106,13 +109,17 @@ func mapGetResponseToModel(
 	}
 
 	// The API returns maxStorage in bytes; the resource expresses it in GiB.
+	// max_storage is optional+computed, so an unset value must map to a known
+	// null rather than remain unknown (which would fail apply with "computed
+	// attribute remained unknown").
 	if sv.MaxStorage != nil {
 		model.MaxStorage = types.Int64Value(*sv.MaxStorage / oneGibibyte)
+	} else {
+		model.MaxStorage = types.Int64Null()
 	}
 
-	if sv.Status != nil {
-		model.Status = types.StringValue(*sv.Status)
-	}
+	// status is computed; an unset value maps to a known null.
+	model.Status = convert.StrToType(sv.Status)
 
 	// ProvisionType is an optional, computed NullableString. As with wwn below, an
 	// unset value must be mapped to a known null rather than left unknown —

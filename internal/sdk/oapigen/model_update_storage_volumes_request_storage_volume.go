@@ -24,6 +24,8 @@ type UpdateStorageVolumesRequestStorageVolume struct {
 	Name *string `json:"name,omitempty"`
 	// Storage Type Code or ID
 	Type *string `json:"type,omitempty"`
+	// The size of the storage volume in bytes.
+	MaxStorage *int64 `json:"maxStorage,omitempty"`
 	// Configuration object with parameters that vary by `type`.
 	Config               map[string]interface{}                                 `json:"config,omitempty"`
 	StorageServer        *UpdateStorageVolumesRequestStorageVolumeStorageServer `json:"storageServer,omitempty"`
@@ -48,6 +50,9 @@ func (o UpdateStorageVolumesRequestStorageVolume) ToMap() (map[string]interface{
 	}
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
+	}
+	if !IsNil(o.MaxStorage) {
+		toSerialize["maxStorage"] = o.MaxStorage
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

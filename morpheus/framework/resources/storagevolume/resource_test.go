@@ -324,3 +324,73 @@ resource "hpe_morpheus_storage_volume" "test" {
 		},
 	})
 }
+
+// TestAccMorpheusStorageVolumeResourceInstanceIDsRequiresShared verifies that
+// instance_ids (a multi-attach export target) requires shared = true, and is
+// rejected at plan time when shared is false.
+func TestAccMorpheusStorageVolumeResourceInstanceIDsRequiresShared(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-instance-ids-shared"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id = 5
+    instance_ids = [7, 8]
+    shared       = false
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)shared is required with instance_ids`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceComputeServerForbidsShared verifies that
+// compute_server_id (a single-attach export target) is incompatible with
+// shared = true, and is rejected at plan time.
+func TestAccMorpheusStorageVolumeResourceComputeServerForbidsShared(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-compute-server-shared"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id      = 5
+    compute_server_id = 10
+    shared            = true
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)shared conflicts with compute_server_id`),
+			},
+		},
+	})
+}

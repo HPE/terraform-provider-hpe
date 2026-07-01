@@ -47,6 +47,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Compute server ID to export a non-shared volume to.",
 						Validators: []validator.Int64{
 							int64validator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("instance_ids")),
+							forbidSharedForComputeServer(),
 						},
 					},
 					"datastore_id": schema.Int64Attribute{
@@ -63,6 +64,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "List of instance IDs to export a shared volume to.",
 						Validators: []validator.List{
 							listvalidator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("compute_server_id")),
+							requireSharedForInstanceIDs(),
 						},
 					},
 					"remote_copy_target_id": schema.StringAttribute{

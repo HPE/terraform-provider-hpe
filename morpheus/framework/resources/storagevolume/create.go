@@ -58,13 +58,9 @@ func (r *storageVolumeResource) Create(
 
 	// max_storage is expressed in GiB. The Morpheus API stores and interprets
 	// storageVolume.maxStorage in bytes (it does not convert), so convert GiB to
-	// bytes here — mirroring the bytes-to-GiB conversion in the read path. It is
-	// carried in AdditionalProperties so it serialises at the top level of the
-	// storageVolume object (not inside config).
+	// bytes here — mirroring the bytes-to-GiB conversion in the read path.
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
-		body.AdditionalProperties = map[string]interface{}{
-			"maxStorage": plan.MaxStorage.ValueInt64() * oneGibibyte,
-		}
+		body.MaxStorage = sdk.PtrInt64(plan.MaxStorage.ValueInt64() * oneGibibyte)
 	}
 
 	if !plan.StorageServerId.IsNull() && !plan.StorageServerId.IsUnknown() {

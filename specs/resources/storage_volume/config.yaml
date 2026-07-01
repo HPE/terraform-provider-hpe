@@ -219,6 +219,9 @@ storage_volume:
               - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
             schema_definition: |-
               int64validator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("instance_ids"))
+        - custom:
+            schema_definition: |-
+              forbidSharedForComputeServer()
     config_alletramp_bmaas.instance_ids:
       description: List of instance IDs to export a shared volume to.
       validators:
@@ -228,6 +231,9 @@ storage_volume:
               - path: github.com/hashicorp/terraform-plugin-framework-validators/listvalidator
             schema_definition: |-
               listvalidator.ConflictsWith(path.MatchRoot("config_alletramp_bmaas").AtName("compute_server_id"))
+        - custom:
+            schema_definition: |-
+              requireSharedForInstanceIDs()
     config_alletramp_bmaas.remote_copy_target_id:
       computed_optional_required: optional
       write_only: true
