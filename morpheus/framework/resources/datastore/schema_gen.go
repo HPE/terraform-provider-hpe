@@ -198,9 +198,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "The code of the datastore type.",
 					},
 					"id": schema.Int64Attribute{
-						Required:            true,
-						Description:         "The ID of the datastore type.",
-						MarkdownDescription: "The ID of the datastore type.",
+						Optional:            true,
+						Computed:            true,
+						Description:         "The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.",
+						MarkdownDescription: "The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.",
 					},
 				},
 				CustomType: DatastoreTypeType{

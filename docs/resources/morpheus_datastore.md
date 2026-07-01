@@ -28,8 +28,9 @@ Ensure the Morpheus appliance can reach the NFS server and that the share is acc
 
 ## Example Usage
 
-Note that the `datastore_type` stanza must contain the `id` and `code`.  To find both and in particular the `id` first
-get a Morpheus API Token for authentication using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
+The `datastore_type` stanza requires only the `code`; the `id` is optional (it is resolved from the
+`code` and populated after apply). To find the `code` (and `id`) get a Morpheus API Token for authentication
+using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
 and then make a call to the `/api/data-store-types` endpoint to list the available datastore types:
 
 ```bash
@@ -44,7 +45,6 @@ $ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-st
 resource "hpe_morpheus_datastore" "example" {
   name = "TestAlletraDatastore"
   datastore_type = {
-    id   = 8
     code = "hpedatastore-alletra-mp"
   }
   associated_resource_type = "Cluster"
@@ -88,7 +88,6 @@ data "hpe_morpheus_cloud" "metal" {
 resource "hpe_morpheus_datastore" "example" {
   name = "TestAlletraDatastore"
   datastore_type = {
-    id   = 12
     code = "hpedatastore-alletra-mp-bmaas"
   }
   associated_resource_type = "Cloud"
@@ -105,7 +104,7 @@ resource "hpe_morpheus_datastore" "example" {
   }
 
   resource_pool = {
-    id = <no value>
+    id = 1
   }
 
   resource_permissions = {
@@ -178,7 +177,10 @@ resource "hpe_morpheus_datastore" "example" {
 Required:
 
 - `code` (String) The code of the datastore type.
-- `id` (Number) The ID of the datastore type.
+
+Optional:
+
+- `id` (Number) The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.
 
 
 <a id="nestedatt--config_alletramp_bmaas"></a>

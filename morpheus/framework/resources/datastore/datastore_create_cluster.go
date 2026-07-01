@@ -49,12 +49,12 @@ func datastoreCreateCluster(ctx context.Context,
 	// Set the required fields
 	datastoreCreate.Name = plan.Name.ValueStringPointer()
 
-	// Set the type. Send the code as well as the id; the API prefers the code
-	// when both are present.
+	// Set the type by code (the stable identifier). id is optional and only
+	// sent when the user supplied it; the API resolves the type from the code.
 	datastoreTypeForRequest := datastoreTypeClusterFunc()
-	datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
-	if !plan.DatastoreType.Code.IsNull() && !plan.DatastoreType.Code.IsUnknown() {
-		datastoreTypeForRequest.Code = plan.DatastoreType.Code.ValueStringPointer()
+	datastoreTypeForRequest.Code = plan.DatastoreType.Code.ValueStringPointer()
+	if !plan.DatastoreType.Id.IsNull() && !plan.DatastoreType.Id.IsUnknown() {
+		datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
 	}
 	datastoreCreate.DatastoreType = datastoreTypeForRequest
 

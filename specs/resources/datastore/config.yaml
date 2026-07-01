@@ -18,8 +18,8 @@ datastore:
         description: The type of datastore.
     datastoreTypeId:
       int64:
-        computed_optional_required: required
-        description: The ID of the datastore type.
+        computed_optional_required: computed_optional
+        description: The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.
     datastoreTypeCode:
       string:
         computed_optional_required: required

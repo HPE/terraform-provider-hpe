@@ -5,7 +5,6 @@ data "hpe_morpheus_cloud" "metal" {
 resource "hpe_morpheus_datastore" "example" {
   name = "TestAlletraDatastore"
   datastore_type = {
-    id   = 12
     code = "hpedatastore-alletra-mp-bmaas"
   }
   associated_resource_type = "Cloud"
@@ -22,7 +21,7 @@ resource "hpe_morpheus_datastore" "example" {
   }
 
   resource_pool = {
-    id = <no value>
+    id = 1
   }
 
   resource_permissions = {

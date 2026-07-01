@@ -1,7 +1,6 @@
 resource "hpe_morpheus_datastore" "example" {
   name = "TestAlletraDatastore"
   datastore_type = {
-    id   = 8
     code = "hpedatastore-alletra-mp"
   }
   associated_resource_type = "Cluster"
