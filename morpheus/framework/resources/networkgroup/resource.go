@@ -87,9 +87,9 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.CreateNetworkGroupRequestResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -253,9 +253,9 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.UpdateNetworkGroupRequestResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -397,13 +397,13 @@ func networkGroupResourcePermissionsFromAPI(
 		map[string]attr.Type{
 			"all":       types.BoolType,
 			"all_plans": types.BoolType,
-			"site_ids":  types.ListType{ElemType: types.Int64Type},
+			"group_ids": types.ListType{ElemType: types.Int64Type},
 			"plan_ids":  types.ListType{ElemType: types.Int64Type},
 		},
 		map[string]attr.Value{
 			"all":       types.BoolPointerValue(rp.All),
 			"all_plans": types.BoolPointerValue(rp.AllPlans),
-			"site_ids":  types.ListValueMust(types.Int64Type, siteVals),
+			"group_ids": types.ListValueMust(types.Int64Type, siteVals),
 			"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
 		},
 	)

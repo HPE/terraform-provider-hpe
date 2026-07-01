@@ -66,7 +66,7 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Pass true to allow access to all groups.",
 						MarkdownDescription: "Pass true to allow access to all groups.",
 					},
-					"site_ids": schema.ListAttribute{
+					"group_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
@@ -171,22 +171,22 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	siteIdsAttribute, ok := attributes["site_ids"]
+	groupIdsAttribute, ok := attributes["group_ids"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`site_ids is missing from object`)
+			`group_ids is missing from object`)
 
 		return nil, diags
 	}
 
-	siteIdsVal, ok := siteIdsAttribute.(basetypes.ListValue)
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`site_ids expected to be basetypes.ListValue, was: %T`, siteIdsAttribute))
+			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -194,9 +194,9 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	}
 
 	return ResourcePermissionsValue{
-		All:     allVal,
-		SiteIds: siteIdsVal,
-		state:   attr.ValueStateKnown,
+		All:      allVal,
+		GroupIds: groupIdsVal,
+		state:    attr.ValueStateKnown,
 	}, diags
 }
 
@@ -281,22 +281,22 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	siteIdsAttribute, ok := attributes["site_ids"]
+	groupIdsAttribute, ok := attributes["group_ids"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`site_ids is missing from object`)
+			`group_ids is missing from object`)
 
 		return NewResourcePermissionsValueUnknown(), diags
 	}
 
-	siteIdsVal, ok := siteIdsAttribute.(basetypes.ListValue)
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`site_ids expected to be basetypes.ListValue, was: %T`, siteIdsAttribute))
+			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
 	}
 
 	if diags.HasError() {
@@ -304,9 +304,9 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	}
 
 	return ResourcePermissionsValue{
-		All:     allVal,
-		SiteIds: siteIdsVal,
-		state:   attr.ValueStateKnown,
+		All:      allVal,
+		GroupIds: groupIdsVal,
+		state:    attr.ValueStateKnown,
 	}, diags
 }
 
@@ -376,9 +376,9 @@ func (t ResourcePermissionsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ResourcePermissionsValue{}
 
 type ResourcePermissionsValue struct {
-	All     basetypes.BoolValue `tfsdk:"all"`
-	SiteIds basetypes.ListValue `tfsdk:"site_ids"`
-	state   attr.ValueState
+	All      basetypes.BoolValue `tfsdk:"all"`
+	GroupIds basetypes.ListValue `tfsdk:"group_ids"`
+	state    attr.ValueState
 }
 
 func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -388,7 +388,7 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 	var err error
 
 	attrTypes["all"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["site_ids"] = basetypes.ListType{
+	attrTypes["group_ids"] = basetypes.ListType{
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
 
@@ -405,12 +405,12 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 
 		vals["all"] = val
 
-		val, err = v.SiteIds.ToTerraformValue(ctx)
+		val, err = v.GroupIds.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["site_ids"] = val
+		vals["group_ids"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -441,22 +441,22 @@ func (v ResourcePermissionsValue) String() string {
 func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var siteIdsVal basetypes.ListValue
+	var groupIdsVal basetypes.ListValue
 	switch {
-	case v.SiteIds.IsUnknown():
-		siteIdsVal = types.ListUnknown(types.Int64Type)
-	case v.SiteIds.IsNull():
-		siteIdsVal = types.ListNull(types.Int64Type)
+	case v.GroupIds.IsUnknown():
+		groupIdsVal = types.ListUnknown(types.Int64Type)
+	case v.GroupIds.IsNull():
+		groupIdsVal = types.ListNull(types.Int64Type)
 	default:
 		var d diag.Diagnostics
-		siteIdsVal, d = types.ListValue(types.Int64Type, v.SiteIds.Elements())
+		groupIdsVal, d = types.ListValue(types.Int64Type, v.GroupIds.Elements())
 		diags.Append(d...)
 	}
 
 	if diags.HasError() {
 		return types.ObjectUnknown(map[string]attr.Type{
 			"all": basetypes.BoolType{},
-			"site_ids": basetypes.ListType{
+			"group_ids": basetypes.ListType{
 				ElemType: types.Int64Type,
 			},
 		}), diags
@@ -464,7 +464,7 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 
 	attributeTypes := map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"site_ids": basetypes.ListType{
+		"group_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}
@@ -480,8 +480,8 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"all":      v.All,
-			"site_ids": siteIdsVal,
+			"all":       v.All,
+			"group_ids": groupIdsVal,
 		})
 
 	return objVal, diags
@@ -506,7 +506,7 @@ func (v ResourcePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.SiteIds.Equal(other.SiteIds) {
+	if !v.GroupIds.Equal(other.GroupIds) {
 		return false
 	}
 
@@ -524,7 +524,7 @@ func (v ResourcePermissionsValue) Type(ctx context.Context) attr.Type {
 func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"site_ids": basetypes.ListType{
+		"group_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}

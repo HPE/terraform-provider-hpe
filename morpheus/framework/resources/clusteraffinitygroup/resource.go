@@ -91,9 +91,9 @@ func (r *clusterAffinityGroupResource) Create(
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -265,9 +265,9 @@ func (r *clusterAffinityGroupResource) Update(
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.UpdateCloudAffinityGroupRequestAffinityGroupResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
@@ -412,12 +412,12 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 		}
 		model.ResourcePermissions = NewResourcePermissionsValueMust(
 			map[string]attr.Type{
-				"all":      types.BoolType,
-				"site_ids": types.ListType{ElemType: types.Int64Type},
+				"all":       types.BoolType,
+				"group_ids": types.ListType{ElemType: types.Int64Type},
 			},
 			map[string]attr.Value{
-				"all":      types.BoolPointerValue(ag.ResourcePermissions.All),
-				"site_ids": types.ListValueMust(types.Int64Type, siteVals),
+				"all":       types.BoolPointerValue(ag.ResourcePermissions.All),
+				"group_ids": types.ListValueMust(types.Int64Type, siteVals),
 			},
 		)
 	} else {

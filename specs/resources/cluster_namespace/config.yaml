@@ -16,7 +16,7 @@ cluster_namespace:
           bool:
             computed_optional_required: optional
             description: Pass true to allow access to all groups.
-        - name: site_ids
+        - name: group_ids
           list:
             computed_optional_required: computed_optional
             description: List of site/group IDs allowed access.

@@ -387,13 +387,13 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 		model.ResourcePermissions = NewResourcePermissionsValueMust(
 			map[string]attr.Type{
 				"all":       types.BoolType,
-				"site_ids":  types.ListType{ElemType: types.Int64Type},
+				"group_ids": types.ListType{ElemType: types.Int64Type},
 				"all_plans": types.BoolType,
 				"plan_ids":  types.ListType{ElemType: types.Int64Type},
 			},
 			map[string]attr.Value{
 				"all":       types.BoolPointerValue(rp.All),
-				"site_ids":  types.ListValueMust(types.Int64Type, siteVals),
+				"group_ids": types.ListValueMust(types.Int64Type, siteVals),
 				"all_plans": types.BoolPointerValue(rp.AllPlans),
 				"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
 			},
@@ -432,9 +432,9 @@ func buildNamespaceCreatePermissions(
 		rp := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			diags.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if diags.HasError() {
 				return nil
 			}
@@ -492,9 +492,9 @@ func buildNamespaceUpdatePermissions(
 		rp := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
-		if !plan.ResourcePermissions.SiteIds.IsNull() && !plan.ResourcePermissions.SiteIds.IsUnknown() {
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
 			var siteIDs []int64
-			diags.Append(plan.ResourcePermissions.SiteIds.ElementsAs(ctx, &siteIDs, false)...)
+			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
 			if diags.HasError() {
 				return nil
 			}

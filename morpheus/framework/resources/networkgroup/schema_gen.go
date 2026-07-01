@@ -67,19 +67,19 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Pass true to allow access to all service plans.",
 						MarkdownDescription: "Pass true to allow access to all service plans.",
 					},
+					"group_ids": schema.ListAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Computed:            true,
+						Description:         "List of site/group IDs allowed access.",
+						MarkdownDescription: "List of site/group IDs allowed access.",
+					},
 					"plan_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
 						Computed:            true,
 						Description:         "List of service plan IDs allowed access.",
 						MarkdownDescription: "List of service plan IDs allowed access.",
-					},
-					"site_ids": schema.ListAttribute{
-						ElementType:         types.Int64Type,
-						Optional:            true,
-						Computed:            true,
-						Description:         "List of site/group IDs allowed access.",
-						MarkdownDescription: "List of site/group IDs allowed access.",
 					},
 				},
 				CustomType: ResourcePermissionsType{
@@ -196,6 +196,24 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`all_plans expected to be basetypes.BoolValue, was: %T`, allPlansAttribute))
 	}
 
+	groupIdsAttribute, ok := attributes["group_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
+	}
+
 	planIdsAttribute, ok := attributes["plan_ids"]
 
 	if !ok {
@@ -214,24 +232,6 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`plan_ids expected to be basetypes.ListValue, was: %T`, planIdsAttribute))
 	}
 
-	siteIdsAttribute, ok := attributes["site_ids"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`site_ids is missing from object`)
-
-		return nil, diags
-	}
-
-	siteIdsVal, ok := siteIdsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`site_ids expected to be basetypes.ListValue, was: %T`, siteIdsAttribute))
-	}
-
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -239,8 +239,8 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	return ResourcePermissionsValue{
 		All:      allVal,
 		AllPlans: allPlansVal,
+		GroupIds: groupIdsVal,
 		PlanIds:  planIdsVal,
-		SiteIds:  siteIdsVal,
 		state:    attr.ValueStateKnown,
 	}, diags
 }
@@ -344,6 +344,24 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`all_plans expected to be basetypes.BoolValue, was: %T`, allPlansAttribute))
 	}
 
+	groupIdsAttribute, ok := attributes["group_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`group_ids is missing from object`)
+
+		return NewResourcePermissionsValueUnknown(), diags
+	}
+
+	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
+	}
+
 	planIdsAttribute, ok := attributes["plan_ids"]
 
 	if !ok {
@@ -362,24 +380,6 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`plan_ids expected to be basetypes.ListValue, was: %T`, planIdsAttribute))
 	}
 
-	siteIdsAttribute, ok := attributes["site_ids"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`site_ids is missing from object`)
-
-		return NewResourcePermissionsValueUnknown(), diags
-	}
-
-	siteIdsVal, ok := siteIdsAttribute.(basetypes.ListValue)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`site_ids expected to be basetypes.ListValue, was: %T`, siteIdsAttribute))
-	}
-
 	if diags.HasError() {
 		return NewResourcePermissionsValueUnknown(), diags
 	}
@@ -387,8 +387,8 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	return ResourcePermissionsValue{
 		All:      allVal,
 		AllPlans: allPlansVal,
+		GroupIds: groupIdsVal,
 		PlanIds:  planIdsVal,
-		SiteIds:  siteIdsVal,
 		state:    attr.ValueStateKnown,
 	}, diags
 }
@@ -461,8 +461,8 @@ var _ basetypes.ObjectValuable = ResourcePermissionsValue{}
 type ResourcePermissionsValue struct {
 	All      basetypes.BoolValue `tfsdk:"all"`
 	AllPlans basetypes.BoolValue `tfsdk:"all_plans"`
+	GroupIds basetypes.ListValue `tfsdk:"group_ids"`
 	PlanIds  basetypes.ListValue `tfsdk:"plan_ids"`
-	SiteIds  basetypes.ListValue `tfsdk:"site_ids"`
 	state    attr.ValueState
 }
 
@@ -474,10 +474,10 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 
 	attrTypes["all"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["all_plans"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["plan_ids"] = basetypes.ListType{
+	attrTypes["group_ids"] = basetypes.ListType{
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
-	attrTypes["site_ids"] = basetypes.ListType{
+	attrTypes["plan_ids"] = basetypes.ListType{
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
 
@@ -501,19 +501,19 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 
 		vals["all_plans"] = val
 
+		val, err = v.GroupIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["group_ids"] = val
+
 		val, err = v.PlanIds.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
 		vals["plan_ids"] = val
-
-		val, err = v.SiteIds.ToTerraformValue(ctx)
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["site_ids"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -544,6 +544,31 @@ func (v ResourcePermissionsValue) String() string {
 func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	var groupIdsVal basetypes.ListValue
+	switch {
+	case v.GroupIds.IsUnknown():
+		groupIdsVal = types.ListUnknown(types.Int64Type)
+	case v.GroupIds.IsNull():
+		groupIdsVal = types.ListNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		groupIdsVal, d = types.ListValue(types.Int64Type, v.GroupIds.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"all":       basetypes.BoolType{},
+			"all_plans": basetypes.BoolType{},
+			"group_ids": basetypes.ListType{
+				ElemType: types.Int64Type,
+			},
+			"plan_ids": basetypes.ListType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
 	var planIdsVal basetypes.ListValue
 	switch {
 	case v.PlanIds.IsUnknown():
@@ -560,35 +585,10 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 		return types.ObjectUnknown(map[string]attr.Type{
 			"all":       basetypes.BoolType{},
 			"all_plans": basetypes.BoolType{},
+			"group_ids": basetypes.ListType{
+				ElemType: types.Int64Type,
+			},
 			"plan_ids": basetypes.ListType{
-				ElemType: types.Int64Type,
-			},
-			"site_ids": basetypes.ListType{
-				ElemType: types.Int64Type,
-			},
-		}), diags
-	}
-
-	var siteIdsVal basetypes.ListValue
-	switch {
-	case v.SiteIds.IsUnknown():
-		siteIdsVal = types.ListUnknown(types.Int64Type)
-	case v.SiteIds.IsNull():
-		siteIdsVal = types.ListNull(types.Int64Type)
-	default:
-		var d diag.Diagnostics
-		siteIdsVal, d = types.ListValue(types.Int64Type, v.SiteIds.Elements())
-		diags.Append(d...)
-	}
-
-	if diags.HasError() {
-		return types.ObjectUnknown(map[string]attr.Type{
-			"all":       basetypes.BoolType{},
-			"all_plans": basetypes.BoolType{},
-			"plan_ids": basetypes.ListType{
-				ElemType: types.Int64Type,
-			},
-			"site_ids": basetypes.ListType{
 				ElemType: types.Int64Type,
 			},
 		}), diags
@@ -597,10 +597,10 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 	attributeTypes := map[string]attr.Type{
 		"all":       basetypes.BoolType{},
 		"all_plans": basetypes.BoolType{},
-		"plan_ids": basetypes.ListType{
+		"group_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
-		"site_ids": basetypes.ListType{
+		"plan_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}
@@ -618,8 +618,8 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 		map[string]attr.Value{
 			"all":       v.All,
 			"all_plans": v.AllPlans,
+			"group_ids": groupIdsVal,
 			"plan_ids":  planIdsVal,
-			"site_ids":  siteIdsVal,
 		})
 
 	return objVal, diags
@@ -648,11 +648,11 @@ func (v ResourcePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.PlanIds.Equal(other.PlanIds) {
+	if !v.GroupIds.Equal(other.GroupIds) {
 		return false
 	}
 
-	if !v.SiteIds.Equal(other.SiteIds) {
+	if !v.PlanIds.Equal(other.PlanIds) {
 		return false
 	}
 
@@ -671,10 +671,10 @@ func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string
 	return map[string]attr.Type{
 		"all":       basetypes.BoolType{},
 		"all_plans": basetypes.BoolType{},
-		"plan_ids": basetypes.ListType{
+		"group_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
-		"site_ids": basetypes.ListType{
+		"plan_ids": basetypes.ListType{
 			ElemType: types.Int64Type,
 		},
 	}
