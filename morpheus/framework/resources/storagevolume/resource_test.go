@@ -278,7 +278,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -315,7 +315,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -352,7 +352,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
@@ -389,7 +389,7 @@ resource "hpe_morpheus_storage_volume" "test" {
 `
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
