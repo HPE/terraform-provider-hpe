@@ -21,8 +21,8 @@ var _ MappedNullable = &UpdateClusterNamespaceRequestNamespacePermissionsTenantP
 // UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions struct for UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions
 type UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions struct {
 	// Array of tenant account IDs
-	Accounts             []UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissionsAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                                            `json:",remain"`
+	Accounts             []int64                `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions

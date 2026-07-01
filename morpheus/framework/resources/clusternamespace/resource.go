@@ -425,12 +425,7 @@ func buildNamespaceCreatePermissions(
 		if diags.HasError() {
 			return nil
 		}
-		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
-		}
-		perms.TenantPermissions = &sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: accts}
+		perms.TenantPermissions = &sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: ids}
 	}
 	if hasRP {
 		rp := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
@@ -485,12 +480,7 @@ func buildNamespaceUpdatePermissions(
 		if diags.HasError() {
 			return nil
 		}
-		accts := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissionsAccountsInner{Id: &id})
-		}
-		perms.TenantPermissions = &sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: accts}
+		perms.TenantPermissions = &sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: ids}
 	}
 	if hasRP {
 		rp := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{}

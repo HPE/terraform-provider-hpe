@@ -104,12 +104,7 @@ func (r *clusterAffinityGroupResource) Create(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		accts := make([]sdk.SaveClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.SaveClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
-		}
-		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{Accounts: accts}
+		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{Accounts: ids}
 	}
 
 	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
@@ -280,12 +275,7 @@ func (r *clusterAffinityGroupResource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
-		}
-		body.TenantPermissions = &sdk.UpdateClusterAffinityGroupRequestTenantPermissions{Accounts: accts}
+		body.TenantPermissions = &sdk.UpdateClusterAffinityGroupRequestTenantPermissions{Accounts: ids}
 	}
 
 	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).

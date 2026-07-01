@@ -21,8 +21,8 @@ var _ MappedNullable = &UpdateNetworkGroupRequestTenantPermissions{}
 // UpdateNetworkGroupRequestTenantPermissions struct for UpdateNetworkGroupRequestTenantPermissions
 type UpdateNetworkGroupRequestTenantPermissions struct {
 	// Array of tenant account IDs
-	Accounts             []UpdateNetworkGroupRequestTenantPermissionsAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                    `json:",remain"`
+	Accounts             []int64                `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdateNetworkGroupRequestTenantPermissions UpdateNetworkGroupRequestTenantPermissions

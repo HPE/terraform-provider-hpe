@@ -77,12 +77,7 @@ func (r *networkGroupResource) Create(ctx context.Context, req resource.CreateRe
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		accts := make([]sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.UpdateClusterAffinityGroupRequestTenantPermissionsAccountsInner{Id: &id})
-		}
-		createReq.TenantPermissions = &sdk.CreateNetworkGroupRequestTenantPermissions{Accounts: accts}
+		createReq.TenantPermissions = &sdk.CreateNetworkGroupRequestTenantPermissions{Accounts: ids}
 	}
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.CreateNetworkGroupRequestResourcePermissions{}
@@ -259,12 +254,7 @@ func (r *networkGroupResource) Update(ctx context.Context, req resource.UpdateRe
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		accts := make([]sdk.UpdateNetworkGroupRequestTenantPermissionsAccountsInner, 0, len(ids))
-		for i := range ids {
-			id := ids[i]
-			accts = append(accts, sdk.UpdateNetworkGroupRequestTenantPermissionsAccountsInner{Id: &id})
-		}
-		updateReq.TenantPermissions = &sdk.UpdateNetworkGroupRequestTenantPermissions{Accounts: accts}
+		updateReq.TenantPermissions = &sdk.UpdateNetworkGroupRequestTenantPermissions{Accounts: ids}
 	}
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.UpdateNetworkGroupRequestResourcePermissions{}

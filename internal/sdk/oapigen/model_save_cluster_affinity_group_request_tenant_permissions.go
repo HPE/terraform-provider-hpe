@@ -21,8 +21,8 @@ var _ MappedNullable = &SaveClusterAffinityGroupRequestTenantPermissions{}
 // SaveClusterAffinityGroupRequestTenantPermissions struct for SaveClusterAffinityGroupRequestTenantPermissions
 type SaveClusterAffinityGroupRequestTenantPermissions struct {
 	// Array of tenant account IDs
-	Accounts             []SaveClusterAffinityGroupRequestTenantPermissionsAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                          `json:",remain"`
+	Accounts             []int64                `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _SaveClusterAffinityGroupRequestTenantPermissions SaveClusterAffinityGroupRequestTenantPermissions
