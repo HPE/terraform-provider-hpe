@@ -23,12 +23,6 @@ import (
 var (
 	UpdateTargetStatuses = []string{
 		"running",
-		// A resize settles in "stopped" rather than "running" when the
-		// instance's cloud has "Automatically Power On VMs"
-		// (autoRecoverPowerState) disabled, or when resizing an
-		// already-stopped instance. The resize has still completed, so
-		// "stopped" is a valid update target (matching create polling).
-		"stopped",
 	}
 
 	UpdateErrorStatuses = []string{
