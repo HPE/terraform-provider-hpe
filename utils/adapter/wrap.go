@@ -23,5 +23,10 @@ func NewAdaptedMorpheus(opts ...morpheus.Option) provider.Provider {
 		NewClientFactory: f,
 	}
 
+	// Apply any options
+	for _, opt := range opts {
+		opt(p)
+	}
+
 	return adapter.NewAdaptedProvider(p)
 }
