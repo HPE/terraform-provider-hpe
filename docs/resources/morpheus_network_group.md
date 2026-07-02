@@ -45,7 +45,7 @@ Optional:
 
 - `all` (Boolean) Pass true to allow access to all groups.
 - `all_plans` (Boolean) Pass true to allow access to all service plans.
-- `group_ids` (List of Number) List of site/group IDs allowed access.
+- `group_ids` (List of Number) List of group IDs allowed access.
 - `plan_ids` (List of Number) List of service plan IDs allowed access.
 
 ## Import

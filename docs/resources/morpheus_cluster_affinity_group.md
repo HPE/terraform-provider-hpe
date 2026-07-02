@@ -43,7 +43,7 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 Optional:
 
 - `all` (Boolean) Pass true to allow access to all groups.
-- `group_ids` (List of Number) List of site/group IDs allowed access.
+- `group_ids` (List of Number) List of group IDs allowed access.
 
 ## Import
 
