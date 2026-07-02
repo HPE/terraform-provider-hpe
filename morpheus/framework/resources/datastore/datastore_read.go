@@ -182,6 +182,19 @@ func getDatastoreAsState(
 				configAlletraMPHVM.ProtocolType = convert.StrToType(&str)
 			}
 		}
+		// If the API response omits a field the user set, fall back to the
+		// planned/prior value (protocol_type is Required; enable_ransomware is
+		// Optional+Computed) to avoid an inconsistent-result-after-apply error.
+		if configAlletraMPHVM.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
+			configAlletraMPHVM.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType
+		}
+		if configAlletraMPHVM.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
+			configAlletraMPHVM.EnableRansomware = plan.ConfigAlletrampHvm.EnableRansomware
+		}
 		configAlletraMPHVM.state = attr.ValueStateKnown
 		state.ConfigAlletrampHvm = configAlletraMPHVM
 
@@ -209,6 +222,13 @@ func getDatastoreAsState(
 					configAlletraMPBmaas.ProtocolType = convert.StrToType(&str)
 				}
 			}
+		}
+		// If the API response omits protocol_type (Required), fall back to the
+		// planned/prior value to avoid an inconsistent-result-after-apply error.
+		if configAlletraMPBmaas.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampBmaas.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampBmaas.ProtocolType.IsUnknown() {
+			configAlletraMPBmaas.ProtocolType = plan.ConfigAlletrampBmaas.ProtocolType
 		}
 		configAlletraMPBmaas.state = attr.ValueStateKnown
 		state.ConfigAlletrampBmaas = configAlletraMPBmaas
