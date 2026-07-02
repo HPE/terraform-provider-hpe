@@ -13,12 +13,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-// TestAccMorpheusSpecTemplateTerraformRejectsMissingRepositoryId is a regression
+// TestUnitMorpheusSpecTemplateTerraformRejectsMissingRepositoryId is a regression
 // test for MORPH-13329: source_type = "repository" without repository_id must
 // fail at plan time (the Morpheus UI requires the repository, but the API
 // silently accepts the omission). Runs as a unit test - the CustomizeDiff error
 // is raised during plan before any API call.
-func TestAccMorpheusSpecTemplateTerraformRejectsMissingRepositoryId(t *testing.T) {
+func TestUnitMorpheusSpecTemplateTerraformRejectsMissingRepositoryId(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlockUnitTest()
@@ -43,11 +43,11 @@ resource "hpe_morpheus_spec_template_terraform" "test" {
 	})
 }
 
-// TestAccMorpheusSpecTemplateTerraformRejectsEmptySpecContent is a regression
+// TestUnitMorpheusSpecTemplateTerraformRejectsEmptySpecContent is a regression
 // test for MORPH-13325: source_type = "local" with an empty spec_content must
 // fail at plan time. Runs as a unit test - the CustomizeDiff error is raised
 // during plan before any API call.
-func TestAccMorpheusSpecTemplateTerraformRejectsEmptySpecContent(t *testing.T) {
+func TestUnitMorpheusSpecTemplateTerraformRejectsEmptySpecContent(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlockUnitTest()

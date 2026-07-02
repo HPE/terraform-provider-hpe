@@ -36,7 +36,7 @@ func expectSpecTemplateValidationError(t *testing.T, config string, errRe string
 	})
 }
 
-func TestAccMorpheusSpecTemplateArmRejectsMissingRepositoryId(t *testing.T) {
+func TestUnitMorpheusSpecTemplateArmRejectsMissingRepositoryId(t *testing.T) {
 	t.Parallel()
 	expectSpecTemplateValidationError(t, `
 resource "hpe_morpheus_spec_template_arm" "test" {
@@ -48,7 +48,7 @@ resource "hpe_morpheus_spec_template_arm" "test" {
 `, `repository_id is required when source_type is "repository"`)
 }
 
-func TestAccMorpheusSpecTemplateCloudFormationRejectsEmptySpecContent(t *testing.T) {
+func TestUnitMorpheusSpecTemplateCloudFormationRejectsEmptySpecContent(t *testing.T) {
 	t.Parallel()
 	expectSpecTemplateValidationError(t, `
 resource "hpe_morpheus_spec_template_cloud_formation" "test" {
@@ -59,7 +59,7 @@ resource "hpe_morpheus_spec_template_cloud_formation" "test" {
 `, `spec_content is required and must not be empty when source_type is "local"`)
 }
 
-func TestAccMorpheusSpecTemplateHelmRejectsMissingRepositoryId(t *testing.T) {
+func TestUnitMorpheusSpecTemplateHelmRejectsMissingRepositoryId(t *testing.T) {
 	t.Parallel()
 	expectSpecTemplateValidationError(t, `
 resource "hpe_morpheus_spec_template_helm" "test" {
@@ -71,7 +71,7 @@ resource "hpe_morpheus_spec_template_helm" "test" {
 `, `repository_id is required when source_type is "repository"`)
 }
 
-func TestAccMorpheusSpecTemplateKubernetesRejectsEmptySpecContent(t *testing.T) {
+func TestUnitMorpheusSpecTemplateKubernetesRejectsEmptySpecContent(t *testing.T) {
 	t.Parallel()
 	expectSpecTemplateValidationError(t, `
 resource "hpe_morpheus_spec_template_kubernetes" "test" {
