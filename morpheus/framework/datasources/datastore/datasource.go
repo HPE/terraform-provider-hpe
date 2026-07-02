@@ -24,9 +24,10 @@ import (
 )
 
 const (
-	nfsDatastoreCode  = "libvirt-netfs-nfs"
-	alletraMPHVMCode  = "hpedatastore-alletra-mp"
-	gfs2DatastoreCode = "libvirt-dir-gfs2"
+	nfsDatastoreCode   = "libvirt-netfs-nfs"
+	alletraMPHVMCode   = "hpedatastore-alletra-mp"
+	alletraMPBmaasCode = "hpedatastore-alletra-mp-bmaas"
+	gfs2DatastoreCode  = "libvirt-dir-gfs2"
 
 	cloudRefType   = "ComputeZone"
 	clusterRefType = "ComputeServerGroup"
@@ -196,6 +197,29 @@ func getDatastoreById(
 		}
 		keysFromMap, _ := compare.CheckPlanAttributeAgainstAPIAttribute(
 			ctx, configAlletraMPHVM, datastore.Config, keysMap)
+
+		configFromAPI, _ := createConfigFromApiDynamic(ctx, datastore.Config, keysFromMap)
+		state.ConfigFromApi = configFromAPI
+
+	case alletraMPBmaasCode:
+		var configAlletraMPBmaas ConfigAlletrampBmaasValue
+		for k, v := range datastore.Config {
+			if k == "protocolType" {
+				if str, ok := v.(string); ok {
+					configAlletraMPBmaas.ProtocolType = convert.StrToType(&str)
+				}
+			}
+		}
+		configAlletraMPBmaas.state = attr.ValueStateKnown
+		state.ConfigAlletrampBmaas = configAlletraMPBmaas
+
+		// The Alletra MP BMaaS plugin returns extra values in config other than those set in the API POST
+		// We put these extra values into "config_from_api"
+		keysMap := map[string]string{
+			"protocol_type": "protocolType",
+		}
+		keysFromMap, _ := compare.CheckPlanAttributeAgainstAPIAttribute(
+			ctx, configAlletraMPBmaas, datastore.Config, keysMap)
 
 		configFromAPI, _ := createConfigFromApiDynamic(ctx, datastore.Config, keysFromMap)
 		state.ConfigFromApi = configFromAPI

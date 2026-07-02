@@ -30,6 +30,7 @@ type SaveDatastoreRequestDatastore struct {
 	// The ID of the resource this datastore is associated with, e.g. ComputeZone, ComputeServerGroup
 	RefId         int64                                       `json:"refId"`
 	StorageServer *SaveDatastoreRequestDatastoreStorageServer `json:"storageServer,omitempty"`
+	ZonePool      *SaveDatastoreRequestDatastoreZonePool      `json:"zonePool,omitempty"`
 	// Visibility level of the datastore, can be 'private' or 'public'. If not specified, defaults to 'private'.
 	Visibility          *string                                           `json:"visibility,omitempty"`
 	Active              *bool                                             `json:"active,omitempty"`
@@ -62,6 +63,9 @@ func (o SaveDatastoreRequestDatastore) ToMap() (map[string]interface{}, error) {
 	toSerialize["refId"] = o.RefId
 	if !IsNil(o.StorageServer) {
 		toSerialize["storageServer"] = o.StorageServer
+	}
+	if !IsNil(o.ZonePool) {
+		toSerialize["zonePool"] = o.ZonePool
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

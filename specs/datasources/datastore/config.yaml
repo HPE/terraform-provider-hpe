@@ -32,6 +32,14 @@ datastore:
       single_nested:
         computed_optional_required: computed
         description: Alletra MP HVM configuration
+    configAlletraMPBMAASProtocolType:
+      string:
+        computed_optional_required: computed
+        description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    configAlletraMPBMAASParent:
+      single_nested:
+        computed_optional_required: computed
+        description: Alletra MP Bare Metal (BMaaS) configuration
     configGFS2BlockDevice:
       string:
         computed_optional_required: computed
@@ -94,6 +102,8 @@ datastore:
     - template-configAlletraMPHVMParent: config_alletramp_hvm
     - template-configAlletraMPHVMEnableRansomware: config_alletramp_hvm.enable_ransomware
     - template-configAlletraMPHVMProtocolType: config_alletramp_hvm.protocol_type
+    - template-configAlletraMPBMAASParent: config_alletramp_bmaas
+    - template-configAlletraMPBMAASProtocolType: config_alletramp_bmaas.protocol_type
     - template-configGFS2Parent: config_gfs2
     - template-configGFS2BlockDevice: config_gfs2.block_device
     - template-config: config

@@ -49,6 +49,7 @@ data "hpe_morpheus_datastore" "test" {
 - `cloud` (Attributes) The Cloud this datastore is associated with (see [below for nested schema](#nestedatt--cloud))
 - `code` (String)
 - `config` (Dynamic) Generic configuration options for the datastore, varies based on the type of datastore.
+- `config_alletramp_bmaas` (Attributes) Alletra MP Bare Metal (BMaaS) configuration (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
 - `config_alletramp_hvm` (Attributes) Alletra MP HVM configuration (see [below for nested schema](#nestedatt--config_alletramp_hvm))
 - `config_from_api` (Dynamic) Configuration options for the datastore as returned from the API.
 - `config_gfs2` (Attributes) GFS2 configuration (see [below for nested schema](#nestedatt--config_gfs2))
@@ -81,6 +82,14 @@ data "hpe_morpheus_datastore" "test" {
 Read-Only:
 
 - `id` (Number)
+
+
+<a id="nestedatt--config_alletramp_bmaas"></a>
+### Nested Schema for `config_alletramp_bmaas`
+
+Read-Only:
+
+- `protocol_type` (String) Storage protocol type, either iSCSI or FC (Fibre Channel)
 
 
 <a id="nestedatt--config_alletramp_hvm"></a>

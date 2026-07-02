@@ -421,34 +421,34 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 	if subnet.Id != nil {
 		model.Id = convert.Int64ToType(subnet.Id)
 	}
-	if subnet.Name != nil {
-		model.Name = convert.StrToType(subnet.Name)
-	}
+	// name, cidr, netmask, subnet_address, active and dhcp_server are Computed
+	// (with UseStateForUnknown), so on create their planned value is unknown.
+	// They must therefore always be resolved to a *known* value after apply. The
+	// API omits several of these fields (returns nil) for subnet types that do
+	// not derive a value — e.g. a subnet created with only network_id/type_id/
+	// name and no CIDR returns nil cidr/netmask/subnetAddress. Assign
+	// unconditionally so nil maps to null rather than leaving the unknown plan
+	// value in place, which Terraform rejects as "Provider returned invalid
+	// result object after apply ... still indicated an unknown value". The
+	// convert helpers are nil-safe (nil -> Null). visibility is intentionally
+	// left guarded below because it has a "private" default whose known plan
+	// value must be preserved when the API omits it.
+	model.Name = convert.StrToType(subnet.Name)
 	if subnet.Description.IsSet() && subnet.Description.Get() != nil {
 		model.Description = convert.StrToType(subnet.Description.Get())
 	} else {
 		model.Description = types.StringNull()
 	}
-	if subnet.Cidr != nil {
-		model.Cidr = convert.StrToType(subnet.Cidr)
-	}
+	model.Cidr = convert.StrToType(subnet.Cidr)
 	if subnet.Gateway.IsSet() && subnet.Gateway.Get() != nil {
 		model.Gateway = convert.StrToType(subnet.Gateway.Get())
 	} else {
 		model.Gateway = types.StringNull()
 	}
-	if subnet.Netmask != nil {
-		model.Netmask = convert.StrToType(subnet.Netmask)
-	}
-	if subnet.SubnetAddress != nil {
-		model.SubnetAddress = convert.StrToType(subnet.SubnetAddress)
-	}
-	if subnet.Active != nil {
-		model.Active = convert.BoolToType(subnet.Active)
-	}
-	if subnet.DhcpServer != nil {
-		model.DhcpServer = convert.BoolToType(subnet.DhcpServer)
-	}
+	model.Netmask = convert.StrToType(subnet.Netmask)
+	model.SubnetAddress = convert.StrToType(subnet.SubnetAddress)
+	model.Active = convert.BoolToType(subnet.Active)
+	model.DhcpServer = convert.BoolToType(subnet.DhcpServer)
 	if subnet.Visibility != nil {
 		model.Visibility = convert.StrToType(subnet.Visibility)
 	}

@@ -49,9 +49,13 @@ func datastoreCreateCluster(ctx context.Context,
 	// Set the required fields
 	datastoreCreate.Name = plan.Name.ValueStringPointer()
 
-	// Set the type
+	// Set the type by code (the stable identifier). id is optional and only
+	// sent when the user supplied it; the API resolves the type from the code.
 	datastoreTypeForRequest := datastoreTypeClusterFunc()
-	datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
+	datastoreTypeForRequest.Code = plan.DatastoreType.Code.ValueStringPointer()
+	if !plan.DatastoreType.Id.IsNull() && !plan.DatastoreType.Id.IsUnknown() {
+		datastoreTypeForRequest.Id = plan.DatastoreType.Id.ValueInt64Pointer()
+	}
 	datastoreCreate.DatastoreType = datastoreTypeForRequest
 
 	// Set the config.  As far as I can tell you need a config object, even if empty.
@@ -83,12 +87,14 @@ func datastoreCreateCluster(ctx context.Context,
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigClusterFunc()
 
-		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
+		if !plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
 			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
 		}
 
-		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
+		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 
@@ -141,7 +147,8 @@ func datastoreCreateCluster(ctx context.Context,
 	datastoreCreate.Config = createConfig
 
 	// Optional fields
-	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
+	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() &&
+		!plan.StorageServer.Id.IsNull() && !plan.StorageServer.Id.IsUnknown() {
 		storageServerConfig := &sdk.SaveClusterDatastoreRequestDatastoreStorageServer{}
 		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
 		datastoreCreate.StorageServer = storageServerConfig
