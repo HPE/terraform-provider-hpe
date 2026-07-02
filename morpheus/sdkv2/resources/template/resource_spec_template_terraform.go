@@ -26,6 +26,7 @@ func ResourceSpecTemplateTerraform() *schema.Resource {
 		ReadContext:   resourceSpecTemplateTerraformRead,
 		UpdateContext: resourceSpecTemplateTerraformUpdate,
 		DeleteContext: resourceSpecTemplateTerraformDelete,
+		CustomizeDiff: validateSpecTemplateSource,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
