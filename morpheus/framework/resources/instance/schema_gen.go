@@ -48,8 +48,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Configuration object. Settings vary by type.",
 				Validators: []validator.Dynamic{
 					validators.ValidObjectMap(),
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_bmaas")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm"), path.MatchRoot("config_vmware"), path.MatchRoot("config_aws"), path.MatchRoot("config_azure"), path.MatchRoot("config_bmaas")}...),
 				},
 			},
 			"config_aws": schema.SingleNestedAttribute{
@@ -217,6 +217,58 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Configuration options for Azure instances.",
 				MarkdownDescription: "Configuration options for Azure instances.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+			},
+			"config_bmaas": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"create_user": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to create a user when provisioning the bare metal instance.",
+						MarkdownDescription: "Whether to create a user when provisioning the bare metal instance.",
+						Default:             booldefault.StaticBool(false),
+					},
+					"enforce_raid_boot_volume": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "When enabled, provisioning fails if a RAID boot volume cannot be created. When\ndisabled, provisioning falls back to a single disk if RAID1 is unavailable.\n",
+						MarkdownDescription: "When enabled, provisioning fails if a RAID boot volume cannot be created. When\ndisabled, provisioning falls back to a single disk if RAID1 is unavailable.\n",
+						Default:             booldefault.StaticBool(true),
+					},
+					"image_id": schema.Int64Attribute{
+						Required:            true,
+						Description:         "The id of the ISO virtual image to boot the bare metal instance from.",
+						MarkdownDescription: "The id of the ISO virtual image to boot the bare metal instance from.",
+					},
+					"no_agent": schema.BoolAttribute{
+						Optional:            true,
+						Computed:            true,
+						Description:         "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						MarkdownDescription: "Whether to skip installing the Morpheus agent on the instance.  The default is 'true'",
+						Default:             booldefault.StaticBool(true),
+					},
+					"resource_pool_id": schema.StringAttribute{
+						Required:            true,
+						Description:         "The id of the resource pool to provision the bare metal instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource pool to provision the bare metal instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.",
+					},
+					"selected_hosts": schema.ListAttribute{
+						ElementType:         types.Int64Type,
+						Optional:            true,
+						Description:         "IDs of the bare metal host(s) to provision this workload on.",
+						MarkdownDescription: "IDs of the bare metal host(s) to provision this workload on.",
+					},
+				},
+				CustomType: ConfigBmaasType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigBmaasValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "Configuration options for HPE bare metal (BMaaS) instances.",
+				MarkdownDescription: "Configuration options for HPE bare metal (BMaaS) instances.",
 				PlanModifiers: []planmodifier.Object{
 					objectplanmodifier.RequiresReplace(),
 				},
@@ -797,6 +849,7 @@ type InstanceModel struct {
 	Config             types.Dynamic           `tfsdk:"config"`
 	ConfigAws          ConfigAwsValue          `tfsdk:"config_aws"`
 	ConfigAzure        ConfigAzureValue        `tfsdk:"config_azure"`
+	ConfigBmaas        ConfigBmaasValue        `tfsdk:"config_bmaas"`
 	ConfigHvm          ConfigHvmValue          `tfsdk:"config_hvm"`
 	ConfigVmware       ConfigVmwareValue       `tfsdk:"config_vmware"`
 	ConnectionInfo     types.List              `tfsdk:"connection_info"`
@@ -2813,6 +2866,636 @@ func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Ty
 		"diagnostics_storage_account": basetypes.StringType{},
 		"os_guest_diagnostics":        basetypes.StringType{},
 		"resource_pool_id":            basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigBmaasType{}
+
+type ConfigBmaasType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigBmaasType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigBmaasType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigBmaasType) String() string {
+	return "ConfigBmaasType"
+}
+
+func (t ConfigBmaasType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBmaasValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return nil, diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	enforceRaidBootVolumeAttribute, ok := attributes["enforce_raid_boot_volume"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enforce_raid_boot_volume is missing from object`)
+
+		return nil, diags
+	}
+
+	enforceRaidBootVolumeVal, ok := enforceRaidBootVolumeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enforce_raid_boot_volume expected to be basetypes.BoolValue, was: %T`, enforceRaidBootVolumeAttribute))
+	}
+
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return nil, diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return nil, diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	selectedHostsAttribute, ok := attributes["selected_hosts"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`selected_hosts is missing from object`)
+
+		return nil, diags
+	}
+
+	selectedHostsVal, ok := selectedHostsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`selected_hosts expected to be basetypes.ListValue, was: %T`, selectedHostsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigBmaasValue{
+		CreateUser:            createUserVal,
+		EnforceRaidBootVolume: enforceRaidBootVolumeVal,
+		ImageId:               imageIdVal,
+		NoAgent:               noAgentVal,
+		ResourcePoolId:        resourcePoolIdVal,
+		SelectedHosts:         selectedHostsVal,
+		state:                 attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBmaasValueNull() ConfigBmaasValue {
+	return ConfigBmaasValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigBmaasValueUnknown() ConfigBmaasValue {
+	return ConfigBmaasValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigBmaasValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigBmaasValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigBmaasValue Attribute Value",
+				"While creating a ConfigBmaasValue value, a missing attribute value was detected. "+
+					"A ConfigBmaasValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBmaasValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigBmaasValue Attribute Type",
+				"While creating a ConfigBmaasValue value, an invalid attribute value was detected. "+
+					"A ConfigBmaasValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigBmaasValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigBmaasValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigBmaasValue Attribute Value",
+				"While creating a ConfigBmaasValue value, an extra attribute value was detected. "+
+					"A ConfigBmaasValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigBmaasValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	createUserAttribute, ok := attributes["create_user"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_user is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	createUserVal, ok := createUserAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	enforceRaidBootVolumeAttribute, ok := attributes["enforce_raid_boot_volume"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`enforce_raid_boot_volume is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	enforceRaidBootVolumeVal, ok := enforceRaidBootVolumeAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`enforce_raid_boot_volume expected to be basetypes.BoolValue, was: %T`, enforceRaidBootVolumeAttribute))
+	}
+
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
+	noAgentAttribute, ok := attributes["no_agent"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`no_agent is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	noAgentVal, ok := noAgentAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`no_agent expected to be basetypes.BoolValue, was: %T`, noAgentAttribute))
+	}
+
+	resourcePoolIdAttribute, ok := attributes["resource_pool_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_pool_id is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	resourcePoolIdVal, ok := resourcePoolIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
+	}
+
+	selectedHostsAttribute, ok := attributes["selected_hosts"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`selected_hosts is missing from object`)
+
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	selectedHostsVal, ok := selectedHostsAttribute.(basetypes.ListValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`selected_hosts expected to be basetypes.ListValue, was: %T`, selectedHostsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigBmaasValueUnknown(), diags
+	}
+
+	return ConfigBmaasValue{
+		CreateUser:            createUserVal,
+		EnforceRaidBootVolume: enforceRaidBootVolumeVal,
+		ImageId:               imageIdVal,
+		NoAgent:               noAgentVal,
+		ResourcePoolId:        resourcePoolIdVal,
+		SelectedHosts:         selectedHostsVal,
+		state:                 attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigBmaasValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigBmaasValue {
+	object, diags := NewConfigBmaasValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigBmaasValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigBmaasType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigBmaasValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigBmaasValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigBmaasValueMust(ConfigBmaasValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigBmaasType) ValueType(ctx context.Context) attr.Value {
+	return ConfigBmaasValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigBmaasValue{}
+
+type ConfigBmaasValue struct {
+	CreateUser            basetypes.BoolValue   `tfsdk:"create_user"`
+	EnforceRaidBootVolume basetypes.BoolValue   `tfsdk:"enforce_raid_boot_volume"`
+	ImageId               basetypes.Int64Value  `tfsdk:"image_id"`
+	NoAgent               basetypes.BoolValue   `tfsdk:"no_agent"`
+	ResourcePoolId        basetypes.StringValue `tfsdk:"resource_pool_id"`
+	SelectedHosts         basetypes.ListValue   `tfsdk:"selected_hosts"`
+	state                 attr.ValueState
+}
+
+func (v ConfigBmaasValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 6)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["enforce_raid_boot_volume"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["selected_hosts"] = basetypes.ListType{
+		ElemType: types.Int64Type,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.CreateUser.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_user"] = val
+
+		val, err = v.EnforceRaidBootVolume.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["enforce_raid_boot_volume"] = val
+
+		val, err = v.ImageId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["image_id"] = val
+
+		val, err = v.NoAgent.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["no_agent"] = val
+
+		val, err = v.ResourcePoolId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_pool_id"] = val
+
+		val, err = v.SelectedHosts.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["selected_hosts"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigBmaasValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigBmaasValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigBmaasValue) String() string {
+	return "ConfigBmaasValue"
+}
+
+func (v ConfigBmaasValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var selectedHostsVal basetypes.ListValue
+	switch {
+	case v.SelectedHosts.IsUnknown():
+		selectedHostsVal = types.ListUnknown(types.Int64Type)
+	case v.SelectedHosts.IsNull():
+		selectedHostsVal = types.ListNull(types.Int64Type)
+	default:
+		var d diag.Diagnostics
+		selectedHostsVal, d = types.ListValue(types.Int64Type, v.SelectedHosts.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"create_user":              basetypes.BoolType{},
+			"enforce_raid_boot_volume": basetypes.BoolType{},
+			"image_id":                 basetypes.Int64Type{},
+			"no_agent":                 basetypes.BoolType{},
+			"resource_pool_id":         basetypes.StringType{},
+			"selected_hosts": basetypes.ListType{
+				ElemType: types.Int64Type,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"create_user":              basetypes.BoolType{},
+		"enforce_raid_boot_volume": basetypes.BoolType{},
+		"image_id":                 basetypes.Int64Type{},
+		"no_agent":                 basetypes.BoolType{},
+		"resource_pool_id":         basetypes.StringType{},
+		"selected_hosts": basetypes.ListType{
+			ElemType: types.Int64Type,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"create_user":              v.CreateUser,
+			"enforce_raid_boot_volume": v.EnforceRaidBootVolume,
+			"image_id":                 v.ImageId,
+			"no_agent":                 v.NoAgent,
+			"resource_pool_id":         v.ResourcePoolId,
+			"selected_hosts":           selectedHostsVal,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigBmaasValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigBmaasValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.EnforceRaidBootVolume.Equal(other.EnforceRaidBootVolume) {
+		return false
+	}
+
+	if !v.ImageId.Equal(other.ImageId) {
+		return false
+	}
+
+	if !v.NoAgent.Equal(other.NoAgent) {
+		return false
+	}
+
+	if !v.ResourcePoolId.Equal(other.ResourcePoolId) {
+		return false
+	}
+
+	if !v.SelectedHosts.Equal(other.SelectedHosts) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigBmaasValue) Type(ctx context.Context) attr.Type {
+	return ConfigBmaasType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigBmaasValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"create_user":              basetypes.BoolType{},
+		"enforce_raid_boot_volume": basetypes.BoolType{},
+		"image_id":                 basetypes.Int64Type{},
+		"no_agent":                 basetypes.BoolType{},
+		"resource_pool_id":         basetypes.StringType{},
+		"selected_hosts": basetypes.ListType{
+			ElemType: types.Int64Type,
+		},
 	}
 }
 

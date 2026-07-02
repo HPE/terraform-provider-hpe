@@ -87,13 +87,16 @@ resource "hpe_morpheus_instance" "example" {
     }
   ]
 
-  config = {
-    imageId         = 231
-    resourcePoolId  = "pool-1"
-    isVpcSelectable = true
-    serverId        = 155
-    noAgent         = false
-    createUser      = true
+  config_bmaas = {
+    image_id                 = 231
+    resource_pool_id         = "pool-1"
+    no_agent                 = true
+    create_user              = false
+    enforce_raid_boot_volume = true
+
+    # Optionally pin specific bare metal host id(s) instead of auto-selecting
+    # from the resource pool:
+    # selected_hosts = [155]
   }
 
   timeouts = {

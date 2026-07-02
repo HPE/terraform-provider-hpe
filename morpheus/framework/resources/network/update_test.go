@@ -426,7 +426,7 @@ resource "hpe_morpheus_network" "foo" {
 func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -671,7 +671,7 @@ resource "hpe_morpheus_network" "name_change_test" {
 func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -1002,7 +1002,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
