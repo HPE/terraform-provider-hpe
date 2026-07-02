@@ -18,6 +18,10 @@ func createVolumeMapper(
 	vol VolumesValue,
 ) sdk.AddInstanceRequestVolumesInner {
 	volume := sdk.AddInstanceRequestVolumesInner{}
+	// The volume id selects create vs keep: a real id (> 0) tells Morpheus to keep
+	// (and, on resize, resize) that existing volume, while -1 is the sentinel for
+	// "create a new volume". A volume the user just added has no id in the plan
+	// (null/unknown), so it maps to -1 and the API provisions it.
 	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
 		volume.Id = vol.Id.ValueInt64Pointer()
 	} else {
@@ -66,6 +70,10 @@ func updateVolumeMapper(
 	vol VolumesValue,
 ) sdk.ResizeInstanceRequestVolumesInner {
 	volume := sdk.ResizeInstanceRequestVolumesInner{}
+	// The volume id selects create vs keep: a real id (> 0) tells Morpheus to keep
+	// (and, on resize, resize) that existing volume, while -1 is the sentinel for
+	// "create a new volume". A volume the user just added has no id in the plan
+	// (null/unknown), so it maps to -1 and the API provisions it.
 	if !vol.Id.IsNull() && !vol.Id.IsUnknown() {
 		volume.Id = vol.Id.ValueInt64Pointer()
 	} else {
