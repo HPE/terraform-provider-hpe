@@ -9,9 +9,16 @@ resource "hpe_morpheus_storage_volume" "alletramp_bmaas" {
   # detect changes to a write-only value, increment config_alletramp_bmaas_wo_version
   # whenever you change this block to recreate the volume with the new configuration.
   config_alletramp_bmaas = {
-    datastore_id      = 5
+    datastore_id = 5
+
+    # Export the volume to a single bare metal host (single-attach):
     shared            = false
     compute_server_id = 10
+
+    # Or export it to every node of one or more instances (multi-attach). This
+    # requires shared = true and is mutually exclusive with compute_server_id:
+    #   shared       = true
+    #   instance_ids = [123]
   }
   config_alletramp_bmaas_wo_version = {{.WoVersion}}
 }

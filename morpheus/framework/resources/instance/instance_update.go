@@ -299,8 +299,6 @@ func addVolumesToResizeRequest(
 	plan, state InstanceModel,
 	resizeRequest *sdk.ResizeInstanceRequest,
 ) diag.Diagnostics {
-	resizing := false
-
 	var pVolumes []VolumesValue
 	pdiags := plan.Volumes.ElementsAs(ctx, &pVolumes, false)
 	if pdiags.HasError() {
@@ -317,29 +315,11 @@ func addVolumesToResizeRequest(
 		return sdiags
 	}
 
-	// Always resize if the number of volumes in the plan and state are different
-	if len(pVolumes) != len(sVolumes) {
-		resizing = true
-	}
-
-	// Go through the lists of volumes from state and in the plan.  Assume that volumes are in the same order
-	// in both lists.  If the volume in the plan is different from the volume in the state, then we add the volume
-	// from the plan to the list of volumes for the resize request.  If the volume in the plan is the same as the
-	// volume in the state, then we add the volume from the state to the list of volumes for the resize request.
-	var volumes []VolumesValue
-	for i, pVolume := range pVolumes {
-		if i < len(sVolumes) {
-			sVolume := sVolumes[i]
-			volForRequest, different := createVolumeFromPlanAndState(pVolume, sVolume)
-			// Resize if the volume for the request is different from the volume in the state
-			if different {
-				resizing = true
-			}
-			volumes = append(volumes, volForRequest)
-		} else {
-			volumes = append(volumes, pVolume)
-		}
-	}
+	// Build the resize volume list (see buildResizeVolumes) and only issue a resize
+	// when it reports an actual change - a volume added, removed, or resized (a
+	// per-volume size change). A rename or reorder of the same set of volumes is not
+	// a change that requires a resize.
+	volumes, resizing := buildResizeVolumes(pVolumes, sVolumes)
 
 	if resizing {
 		volumesForRequest := make([]sdk.ResizeInstanceRequestVolumesInner, len(volumes))
@@ -351,6 +331,97 @@ func addVolumesToResizeRequest(
 	}
 
 	return diag.Diagnostics{}
+}
+
+// buildResizeVolumes builds the ordered volume list for an instance resize request
+// from the planned and current (state) volumes, and reports whether a resize is
+// required. The morpheus-ui resize changelist
+// (CloudPluginProvisioningService.buildResizeRequest -> provider.buildVolumeChangelist)
+// keys existing volumes on their id, so each request volume must carry the right id:
+// an existing volume keeps its state id (> 0) to be kept/resized, an added volume is
+// left with a null id (updateVolumeMapper sends -1) for the API to create, and any
+// state volume with no planned counterpart is omitted so the API removes it.
+//
+// When the plan and state hold the same number of volumes, volumes are paired
+// positionally — this preserves the existing behaviour exactly: a resize is
+// triggered only by a per-volume size change, so a rename or reorder of the same set
+// of volumes is not misread as an add+remove and does not force an unnecessary
+// resize. Only when the counts differ (a volume was genuinely added or removed) do we
+// match by name (falling back to position for unnamed volumes), because that is the
+// only case where positional pairing mis-assigns ids for an insert or remove in the
+// middle of the list. This mirrors the read side (getVolumes).
+func buildResizeVolumes(
+	planVolumes, stateVolumes []VolumesValue,
+) ([]VolumesValue, bool) {
+	// Equal counts: positional pairing (unchanged behaviour). A resize is triggered
+	// only by a per-volume size change.
+	if len(planVolumes) == len(stateVolumes) {
+		volumes := make([]VolumesValue, 0, len(planVolumes))
+		resizing := false
+
+		for i, pVolume := range planVolumes {
+			volForRequest, different := createVolumeFromPlanAndState(pVolume, stateVolumes[i])
+			if different {
+				resizing = true
+			}
+			volumes = append(volumes, volForRequest)
+		}
+
+		return volumes, resizing
+	}
+
+	// Counts differ: a volume was added or removed, so a resize is always required.
+	// Match by name (positional fallback for unnamed volumes) so each existing
+	// volume keeps its id and genuinely new volumes are identified.
+	consumed := make([]bool, len(stateVolumes))
+	volumes := make([]VolumesValue, 0, len(planVolumes))
+
+	for i, pVolume := range planVolumes {
+		si := matchStateVolume(pVolume, stateVolumes, consumed, i)
+		if si == -1 {
+			// No existing counterpart: a newly added volume. updateVolumeMapper
+			// sends id=-1 when the plan volume has no id, so the API creates it.
+			volumes = append(volumes, pVolume)
+
+			continue
+		}
+
+		consumed[si] = true
+		// Keep the existing volume's id and pick up any size change from the plan.
+		volForRequest, _ := createVolumeFromPlanAndState(pVolume, stateVolumes[si])
+		volumes = append(volumes, volForRequest)
+	}
+
+	return volumes, true
+}
+
+// matchStateVolume returns the index of the state volume corresponding to the
+// planned volume, or -1 when there is none (a newly added volume). A named plan
+// volume is matched to the first unconsumed state volume with the same name; a
+// named plan volume with no such match is treated as new. An unnamed plan volume
+// falls back to the state volume at the same position when it is still unconsumed.
+func matchStateVolume(
+	planVolume VolumesValue,
+	stateVolumes []VolumesValue,
+	consumed []bool,
+	i int,
+) int {
+	name := planVolume.Name.ValueString()
+	if name != "" {
+		for s := range stateVolumes {
+			if !consumed[s] && stateVolumes[s].Name.ValueString() == name {
+				return s
+			}
+		}
+
+		return -1
+	}
+
+	if i < len(stateVolumes) && !consumed[i] {
+		return i
+	}
+
+	return -1
 }
 
 func createVolumeFromPlanAndState(
