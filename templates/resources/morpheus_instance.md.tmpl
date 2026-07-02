@@ -41,9 +41,9 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 &nbsp;&nbsp;&nbsp;&nbsp;- **Do not** change the order of volumes or network_interfaces in HCL<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is supported<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Existing volumes can have their size increased but not decreased<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- For BMaaS (bare metal) instances only datastore-backed volumes (e.g. HPE Alletra MP) can be<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  added or resized; local disk / RAID volumes such as the RAID1 boot volume are fixed hardware<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  and cannot be added, resized or removed via `Update`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- For BMaaS (bare metal) instances only datastore-backed volumes (e.g. HPE Alletra MP)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  can be added or resized; local disk / RAID volumes such as the RAID1 boot volume<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  are fixed hardware and cannot be added, resized or removed via `Update`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Network interface update is supported for Morpheus versions >= 8.1.2, for earlier<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  versions network_interfaces changes will force a new instance to be created.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
