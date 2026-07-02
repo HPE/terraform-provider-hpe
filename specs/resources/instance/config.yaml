@@ -20,6 +20,50 @@ instance:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
             schema_definition: int64planmodifier.UseStateForUnknown()
+    host_name:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          The hostname of the instance. When not set, Morpheus derives the hostname
+          from the instance name, so this value is also computed. Set it to make the
+          instance name and hostname differ. The instance update API cannot modify the
+          hostname, so changing it forces replacement.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.UseStateForUnknown()
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplace()
+    labels:
+      set:
+        computed_optional_required: computed_optional
+        element_type:
+          string: {}
+        description: Organization labels (keywords) assigned to the instance.
+    server_uuids:
+      set:
+        computed_optional_required: computed_optional
+        element_type:
+          string: {}
+        description: |-
+          Optional UUIDs to assign to the servers provisioned for this instance.
+          Each UUID must be unique - Morpheus rejects a value already in use by
+          another server. Set at provision time only; changing it forces
+          replacement. When not set, Morpheus generates the UUIDs and they are
+          read back here. This is an unordered set: Morpheus does not guarantee
+          servers are returned in the order the UUIDs were supplied.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.UseStateForUnknown()
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.RequiresReplace()
     instance_type_id:
       int64:
         computed_optional_required: required
@@ -424,6 +468,9 @@ instance:
   moves:
     - instance: "" # unnest instance wrapper to root
     - template-id: id
+    - template-host_name: host_name
+    - template-labels: labels
+    - template-server_uuids: server_uuids
     - template-instance_type_id: instance_type_id
     - template-layout_id: layout_id
     - template-plan_id: plan_id

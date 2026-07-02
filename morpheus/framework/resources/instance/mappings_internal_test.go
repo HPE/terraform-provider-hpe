@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-// TestNetworkInterfaceMapperNetworkID verifies the network.id string sent to the
+// TestUnitNetworkInterfaceMapperNetworkID verifies the network.id string sent to the
 // API is built with the correct prefix for each of network_id, network_group_id
 // and subnet_id.
 //
@@ -17,7 +17,7 @@ import (
 // InstanceService.parseNetworks in morpheus-ui dispatches network.id by prefix
 // ("network-", "subnet-", "networkGroup-", or a bare numeric id). The provider
 // owns the prefix and accepts a plain integer subnet id from the user.
-func TestNetworkInterfaceMapperNetworkID(t *testing.T) {
+func TestUnitNetworkInterfaceMapperNetworkID(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()
@@ -104,12 +104,12 @@ func TestNetworkInterfaceMapperNetworkID(t *testing.T) {
 	}
 }
 
-// TestVolumeMapperStorageProfile verifies that storage_profile is forwarded to
+// TestUnitVolumeMapperStorageProfile verifies that storage_profile is forwarded to
 // the create (AddInstanceRequestVolumesInner) and update
 // (ResizeInstanceRequestVolumesInner) volume requests only when the user set it,
 // and is left unset (so the omitempty NullableString is omitted) when the plan
 // value is null or unknown.
-func TestVolumeMapperStorageProfile(t *testing.T) {
+func TestUnitVolumeMapperStorageProfile(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
@@ -176,14 +176,14 @@ func TestVolumeMapperStorageProfile(t *testing.T) {
 	}
 }
 
-// TestChildNetworkInterfaceMapperNetworkID verifies the network.id string sent to
+// TestUnitChildNetworkInterfaceMapperNetworkID verifies the network.id string sent to
 // the API for child virtual networks is built with the correct prefix for each of
 // network_id, network_group_id and subnet_id.
 //
 // Child virtual networks are parsed by the same (recursive) InstanceService.parseNetworks
 // path in morpheus-ui as top-level interfaces, so subnet based provisioning (the
 // "subnet-" prefix) applies equally to them.
-func TestChildNetworkInterfaceMapperNetworkID(t *testing.T) {
+func TestUnitChildNetworkInterfaceMapperNetworkID(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {

@@ -14,6 +14,16 @@ data "hpe_morpheus_instance_type_layout" "vmware" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "TestInstance"
+  # host_name sets the guest hostname independently of the instance name. When
+  # omitted, Morpheus derives it from the name. It is set at provision time only;
+  # changing it forces the instance to be replaced.
+  host_name        = "webserver01"
+  # labels are organization keywords assigned to the instance.
+  labels = ["terraform", "webserver"]
+  # server_uuids optionally assigns specific UUIDs to the servers provisioned for
+  # this instance (bring-your-own-UUID). Set at provision time only; changing it
+  # forces replacement. When omitted, Morpheus generates the UUIDs.
+  # server_uuids = ["550e8400-e29b-41d4-a716-446655440000"]
   cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
   layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
   instance_type_id = 9

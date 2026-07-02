@@ -303,6 +303,26 @@ func getInstanceAsState(
 	// name
 	state.Name = convert.StrToType(instance.Name)
 
+	// host_name - Computed: populated from the API (Morpheus derives it from the
+	// name when not explicitly set). Shared by Create/Read/Update via this mapper.
+	state.HostName = convert.StrToType(instance.HostName)
+
+	// labels - Computed set of organization labels; round-trips from the GET
+	// response (empty -> null).
+	state.Labels = convert.StrSliceToSet(instance.Labels)
+
+	// server_uuids - RequiresReplace, create-only input. Preserve the incoming
+	// value when the user set it (the API assigns exactly those UUIDs to the
+	// servers, so preserving avoids any read-back mismatch). Otherwise read the
+	// auto-generated UUIDs back from containerDetails[].server.uuid so the
+	// Computed value is known after apply. It is an unordered set because Morpheus
+	// does not guarantee containerDetails ordering matches the supplied order.
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		state.ServerUuids = plan.ServerUuids
+	} else {
+		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
+	}
+
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
 	// which Morpheus reports as "unknown" while retaining the instance record,
@@ -1102,6 +1122,21 @@ func getInstanceEnvVars(
 	// }
 
 	return resp.Envs, diags
+}
+
+// serverUUIDsFromContainerDetails builds the server_uuids set from
+// instance.containerDetails[].server.uuid, skipping containers with no server or
+// no uuid. Returns a null set when no UUIDs are present. server_uuids is an
+// unordered set because Morpheus does not guarantee containerDetails ordering.
+func serverUUIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
+	uuids := make([]string, 0, len(containers))
+	for _, cont := range containers {
+		if cont.Server != nil && cont.Server.Uuid != nil {
+			uuids = append(uuids, *cont.Server.Uuid)
+		}
+	}
+
+	return convert.StrSliceToSet(uuids)
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes
