@@ -23,6 +23,11 @@ func TestUnitValidateBmaasConfig(t *testing.T) {
 	storageServer := StorageServerValue{Id: types.Int64Value(1), state: attr.ValueStateKnown}
 	resourcePool := ResourcePoolValue{Id: types.Int64Value(1), state: attr.ValueStateKnown}
 
+	// Empty blocks (e.g. storage_server = {}) are non-null but carry a null id,
+	// which the API would reject; validation must catch this at plan time.
+	storageServerNoID := StorageServerValue{Id: types.Int64Null(), state: attr.ValueStateKnown}
+	resourcePoolNoID := ResourcePoolValue{Id: types.Int64Null(), state: attr.ValueStateKnown}
+
 	tests := []struct {
 		name         string
 		model        DatastoreModel
@@ -59,6 +64,26 @@ func TestUnitValidateBmaasConfig(t *testing.T) {
 				ConfigAlletrampBmaas:   bmaasSet,
 				StorageServer:          storageServer,
 				ResourcePool:           NewResourcePoolValueNull(),
+				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
+			},
+			wantErrCount: 1,
+		},
+		{
+			name: "empty storage_server block (null id) is rejected",
+			model: DatastoreModel{
+				ConfigAlletrampBmaas:   bmaasSet,
+				StorageServer:          storageServerNoID,
+				ResourcePool:           resourcePool,
+				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
+			},
+			wantErrCount: 1,
+		},
+		{
+			name: "empty resource_pool block (null id) is rejected",
+			model: DatastoreModel{
+				ConfigAlletrampBmaas:   bmaasSet,
+				StorageServer:          storageServer,
+				ResourcePool:           resourcePoolNoID,
 				AssociatedResourceType: types.StringValue(associatedResourceTypeCloud),
 			},
 			wantErrCount: 1,

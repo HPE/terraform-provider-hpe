@@ -43,21 +43,30 @@ func validateBmaasConfig(config DatastoreModel) diag.Diagnostics {
 		return diags
 	}
 
-	if config.StorageServer.IsNull() || config.StorageServer.IsUnknown() {
+	// storage_server and resource_pool are Optional+Computed with an
+	// Optional+Computed nested id, so an empty block (e.g. storage_server = {})
+	// satisfies !IsNull() while leaving a nil id that the API would reject. The
+	// short-circuit || only reaches the nested id checks when the block itself
+	// is known and non-null, so accessing .Id is always safe.
+	if config.StorageServer.IsNull() || config.StorageServer.IsUnknown() ||
+		config.StorageServer.Id.IsNull() || config.StorageServer.Id.IsUnknown() {
 		diags.AddAttributeError(
 			path.Root("storage_server"),
 			"Missing storage_server for BMaaS datastore",
-			"storage_server is required when config_alletramp_bmaas is set: HPE Alletra "+
-				"MP Bare Metal datastores must be created against a storage server.",
+			"storage_server (with a populated id) is required when config_alletramp_bmaas "+
+				"is set: HPE Alletra MP Bare Metal datastores must be created against a "+
+				"storage server.",
 		)
 	}
 
-	if config.ResourcePool.IsNull() || config.ResourcePool.IsUnknown() {
+	if config.ResourcePool.IsNull() || config.ResourcePool.IsUnknown() ||
+		config.ResourcePool.Id.IsNull() || config.ResourcePool.Id.IsUnknown() {
 		diags.AddAttributeError(
 			path.Root("resource_pool"),
 			"Missing resource_pool for BMaaS datastore",
-			"resource_pool is required when config_alletramp_bmaas is set: HPE Alletra "+
-				"MP Bare Metal datastores must be created in a resource pool.",
+			"resource_pool (with a populated id) is required when config_alletramp_bmaas "+
+				"is set: HPE Alletra MP Bare Metal datastores must be created in a "+
+				"resource pool.",
 		)
 	}
 
