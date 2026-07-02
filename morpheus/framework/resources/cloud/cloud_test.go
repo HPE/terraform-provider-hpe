@@ -16,11 +16,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	cloud "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -31,7 +31,7 @@ func TestMain(m *testing.M) {
 }
 
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
-	providerInstance := provider.New("test", morpheus.New())()
+	providerInstance := provider.New("test", adapter.NewMorpheus())()
 
 	return providerserver.NewProtocol6WithError(providerInstance)()
 }

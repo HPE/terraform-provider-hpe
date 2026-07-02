@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
@@ -12,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/HPE/terraform-provider-hpe/provider"
-	"github.com/HPE/terraform-provider-hpe/provider/subprovider"
 )
 
 const NoProvidersErr = "at least one provider must be non-nil"
@@ -24,7 +24,7 @@ const NoProvidersErr = "at least one provider must be non-nil"
 // At least one of the parameters must be non-nil.
 func GetAccTestFactories(
 	t *testing.T,
-	fw subprovider.SubProvider,
+	fw fwprovider.Provider,
 	sdkv2 *schema.Provider,
 ) map[string]func() (tfprotov6.ProviderServer, error) {
 	t.Helper()
@@ -37,7 +37,7 @@ func GetAccTestFactories(
 	return factories
 }
 
-func getAccTestFactories(fw subprovider.SubProvider, sdkv2 *schema.Provider) (
+func getAccTestFactories(fw fwprovider.Provider, sdkv2 *schema.Provider) (
 	map[string]func() (tfprotov6.ProviderServer, error), error,
 ) {
 	if fw == nil && sdkv2 == nil {
@@ -47,7 +47,7 @@ func getAccTestFactories(fw subprovider.SubProvider, sdkv2 *schema.Provider) (
 	var providers []func() tfprotov6.ProviderServer
 
 	if fw != nil {
-		frameworkProvider := provider.New("test", []subprovider.SubProvider{fw}...)()
+		frameworkProvider := provider.New("test", []fwprovider.Provider{fw}...)()
 
 		frameworkServer, err := providerserver.NewProtocol6WithError(frameworkProvider)()
 		if err != nil {

@@ -35,6 +35,15 @@ environment with `GET /api/storage-volume-types`. Only certain storage server
 types (for example 3PAR, Isilon, and Alletra Storage MP) support creating
 storage volumes through this resource.
 
+### Storage server
+
+-> A volume must target a storage system: set `storage_server_id` (the storage
+server / array) **or** `storage_group_id` (a storage group, which belongs to a
+storage server). Creation routes to the storage provider through that server, so
+omitting both fails with a generic `error saving volume` from the API. Look up
+ids with the `hpe_morpheus_storage_server` / `hpe_morpheus_storage_servers` data
+sources.
+
 ### Size
 
 -> `max_storage` is specified in **GiB**. For example, `max_storage = 100`
@@ -59,8 +68,21 @@ the volume with the new values.
 
 The typed `config_alletramp_bmaas` block configures an HPE Alletra Storage MP
 Bare Metal (BMaaS) volume. It applies to both HPE Alletra MP and HPE Alletra
-9000 (9060/9080), which share the same plugin and API. `compute_server_id` and
-`instance_ids` are mutually exclusive.
+9000 (9060/9080), which share the same plugin and API.
+
+`compute_server_id` and `instance_ids` select where the volume is exported, and
+`shared` must match the chosen target:
+
+- `compute_server_id` presents the volume to a **single host** (single-attach),
+  so it requires `shared = false`.
+- `instance_ids` presents the volume to **every node of each listed instance**
+  (multi-attach), so it requires `shared = true`.
+
+`compute_server_id` and `instance_ids` are mutually exclusive, and both pairings
+are enforced at plan time. Under the hood the Alletra MP plugin groups an
+instance's shared volumes into a single volume set, so a mismatch (for example
+`instance_ids` with `shared = false`) would present the volume to multiple hosts
+while tracking it as non-shared.
 
 {{ tffile "examples/resources/morpheus_storage_volume/example_alletramp_bmaas.tf" }}
 

@@ -9,15 +9,18 @@ import (
 	"os"
 	"path/filepath"
 
+	fwprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6/tf6server"
+
 	"github.com/hashicorp/terraform-plugin-mux/tf5to6server"
 	"github.com/hashicorp/terraform-plugin-mux/tf6muxserver"
 
-	morpheus "github.com/HPE/terraform-provider-hpe/morpheus"
 	sdkv2Morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var version = "dev"
@@ -32,12 +35,7 @@ func main() {
 
 	p := provider.New(
 		version,
-		morpheus.New(),
-		// subprovider2.New(),
-		// subprovider3.New(),
-		// .
-		// .
-		// .
+		adapter.NewMorpheus(),
 	)
 
 	var opts []tf6server.ServeOpt
@@ -56,13 +54,20 @@ func main() {
 		)
 	}
 
-	// sdkv2 Morpheus provider server
-	legacyMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Morpheus.Provider().GRPCProvider)
+	// Inject HPE Provider schema into sdkv2 Morpheus provider.
+	// Allows for muxing with the HPE provider.
+	schemaResp := &fwprovider.SchemaResponse{}
+	p().Schema(context.Background(), fwprovider.SchemaRequest{}, schemaResp)
+
+	sdkv2Provider := sdkv2Morpheus.Provider()
+	sdkv2Provider.Schema = convert.FwToSdkv2SchemaMap(schemaResp.Schema)
+
+	legacyMorpheus, err := tf5to6server.UpgradeServer(context.Background(), sdkv2Provider.GRPCProvider)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	// Combine framework and sdkv2 providers
+	// Combine HPE and sdkv2 providers
 	providers := []func() tfprotov6.ProviderServer{
 		providerserver.NewProtocol6(p()),
 		func() tfprotov6.ProviderServer { return legacyMorpheus },

@@ -13,9 +13,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/model"
 )
 
 func TestMain(m *testing.M) {
@@ -33,7 +33,7 @@ func TestSecureTLS(t *testing.T) {
 		}))
 	defer server.Close()
 
-	m := model.SubModel{
+	m := model.MorpheusProviderModel{
 		URL:             types.StringValue(server.URL),
 		Username:        types.StringValue("user"),
 		Password:        types.StringValue("secret"),
@@ -65,7 +65,7 @@ func TestSecureTLS(t *testing.T) {
 func TestNewClientTrimsTrailingSlashFromURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	m := model.SubModel{
+	m := model.MorpheusProviderModel{
 		URL:      types.StringValue("https://morpheus.example.com/"),
 		Username: types.StringValue("user"),
 		Password: types.StringValue("secret"),
@@ -93,7 +93,7 @@ func TestInsecureTLS(t *testing.T) {
 		}))
 	defer server.Close()
 
-	m := model.SubModel{
+	m := model.MorpheusProviderModel{
 		URL:             types.StringValue(server.URL),
 		Username:        types.StringValue("user"),
 		Password:        types.StringValue("secret"),

@@ -4,16 +4,17 @@ package storagevolume_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 func TestMain(m *testing.M) {
@@ -48,7 +49,7 @@ func TestAccMorpheusStorageVolumeResourceExampleOk(t *testing.T) {
 	)
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -111,7 +112,7 @@ func TestAccMorpheusStorageVolumeResourceUpdateOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + createConfig,
@@ -160,7 +161,7 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + resourceConfig,
@@ -231,7 +232,7 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 	}
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, morpheus.New(), nil),
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + createConfig,
@@ -250,6 +251,149 @@ func TestAccMorpheusStorageVolumeResourceWriteOnlyConfigOk(t *testing.T) {
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "config_alletramp_bmaas_wo_version", "2"),
 				),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceRequiresServerOrGroup verifies the schema
+// rejects a volume with neither storage_server_id nor storage_group_id at plan
+// time (MORPH-12939), instead of failing apply with a generic API
+// "error saving volume". The error is raised during config validation, so no
+// storage backend is required.
+func TestAccMorpheusStorageVolumeResourceRequiresServerOrGroup(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name      = "tf-acc-no-server"
+  type_code = "hpealletraMPLUN"
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)[Aa]t least one attribute out of.*storage_server_id`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceConfigExportConflict verifies the
+// config_alletramp_bmaas block rejects setting both compute_server_id and
+// instance_ids (mutually exclusive export targets) at plan time.
+func TestAccMorpheusStorageVolumeResourceConfigExportConflict(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-export-conflict"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id      = 5
+    compute_server_id = 10
+    instance_ids      = [7, 8]
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)Invalid Attribute Combination|cannot be specified when`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceInstanceIDsRequiresShared verifies that
+// instance_ids (a multi-attach export target) requires shared = true, and is
+// rejected at plan time when shared is false.
+func TestAccMorpheusStorageVolumeResourceInstanceIDsRequiresShared(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-instance-ids-shared"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id = 5
+    instance_ids = [7, 8]
+    shared       = false
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)shared is required with instance_ids`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusStorageVolumeResourceComputeServerForbidsShared verifies that
+// compute_server_id (a single-attach export target) is incompatible with
+// shared = true, and is rejected at plan time.
+func TestAccMorpheusStorageVolumeResourceComputeServerForbidsShared(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_storage_volume" "test" {
+  name              = "tf-acc-compute-server-shared"
+  type_code         = "hpealletraMPLUN"
+  storage_server_id = 1
+  config_alletramp_bmaas = {
+    datastore_id      = 5
+    compute_server_id = 10
+    shared            = true
+  }
+  config_alletramp_bmaas_wo_version = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile(`(?s)shared conflicts with compute_server_id`),
 			},
 		},
 	})

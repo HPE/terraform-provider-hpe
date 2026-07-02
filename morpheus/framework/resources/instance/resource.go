@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
 
 var (
@@ -43,11 +42,8 @@ func (g *Resource) Metadata(
 	req resource.MetadataRequest,
 	resp *resource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + constants.SubProviderName + "_instance"
-	resp.TypeName = strings.Join(
-		[]string{req.ProviderTypeName, constants.SubProviderName, "instance"},
-		"_",
-	)
+	resp.TypeName = req.ProviderTypeName + "_" + "instance"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance"
 }
 
 // Schema implements resource.Resource.
