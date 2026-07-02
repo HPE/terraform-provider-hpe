@@ -401,7 +401,7 @@ func (g *Resource) Create(
 	}
 
 	// network_domain_id
-	if !plan.NetworkDomainId.IsNull() {
+	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
 		netDomain := &sdk.AddInstanceRequestInstanceNetworkDomain{
 			Id: plan.NetworkDomainId.ValueInt64(),
 		}
