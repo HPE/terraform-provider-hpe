@@ -157,7 +157,7 @@ func (r *Resource) Create(
 	}
 
 	// Apply permissions (visibility + tenant_ids) before the read-back so state reflects them.
-	// 403 on site-scoped routers is a warning, not an error.
+	// A 403 from applyRouterPermissions is an error; the resource will be tainted.
 	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, client)...)
 	if resp.Diagnostics.HasError() {
 		taintResourceState(id)
