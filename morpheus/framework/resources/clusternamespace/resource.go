@@ -77,7 +77,7 @@ func (r *clusterNamespaceResource) Create(
 		v := plan.Description.ValueString()
 		ns.Description = &v
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
@@ -231,7 +231,7 @@ func (r *clusterNamespaceResource) Update(
 		v := plan.Description.ValueString()
 		ns.Description = &v
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		ns.Active = plan.Active.ValueBoolPointer()
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {

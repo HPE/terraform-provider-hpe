@@ -87,7 +87,7 @@ func (r *provisioningLicenseResource) Create(
 		}
 		body.VirtualImages = images
 	}
-	if !plan.Tenants.IsNull() {
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
 		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenants, false)...)
 		if resp.Diagnostics.HasError() {
@@ -244,7 +244,7 @@ func (r *provisioningLicenseResource) Update(
 		}
 		body.VirtualImages = images
 	}
-	if !plan.Tenants.IsNull() {
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
 		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenants, false)...)
 		if resp.Diagnostics.HasError() {

@@ -122,7 +122,12 @@ func buildUpdateConfig(ctx context.Context, plan NetworkRouterModel) map[string]
 // applyRouterPermissions calls UpdateNetworkRouterPermissions when visibility or tenant_ids
 // are set in the plan. A 403 response is treated as a warning rather than an error because
 // site-scoped routers may not support tenant permissions.
-func applyRouterPermissions(ctx context.Context, id int64, plan NetworkRouterModel, client *sdk.APIClient) diag.Diagnostics {
+func applyRouterPermissions(
+	ctx context.Context,
+	id int64,
+	plan NetworkRouterModel,
+	client *sdk.APIClient,
+) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if plan.Visibility.IsNull() && plan.TenantIds.IsNull() {
@@ -164,12 +169,8 @@ func applyRouterPermissions(ctx context.Context, id int64, plan NetworkRouterMod
 			return diags
 		}
 
-		if hresp != nil && hresp.StatusCode != http.StatusOK {
-			diags.AddError(
-				"network router permissions update failed",
-				fmt.Sprintf("network router %d permissions PUT failed: %s", id, errfmt.ErrMsg(err, hresp)),
-			)
-		}
+		errfmt.DiagErrorf(&diags, errfmt.OpUpdate, "network router permissions",
+			"network router %d permissions PUT failed: %s", id, errfmt.SafeErrMsg(err, hresp))
 	}
 
 	return diags

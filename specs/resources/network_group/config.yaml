@@ -19,7 +19,7 @@ network_group:
         - name: group_ids
           list:
             computed_optional_required: optional
-            description: List of site/group IDs allowed access.
+            description: List of group IDs allowed access.
             element_type:
               int64: {}
         - name: all_plans

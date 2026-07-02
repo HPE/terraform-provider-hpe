@@ -86,8 +86,8 @@ func ClusterNamespaceResourceSchema(ctx context.Context) schema.Schema {
 					"group_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
 						Optional:            true,
-						Description:         "List of site/group IDs allowed access.",
-						MarkdownDescription: "List of site/group IDs allowed access.",
+						Description:         "List of group IDs allowed access.",
+						MarkdownDescription: "List of group IDs allowed access.",
 					},
 					"plan_ids": schema.ListAttribute{
 						ElementType:         types.Int64Type,
