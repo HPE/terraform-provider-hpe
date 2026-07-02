@@ -728,7 +728,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The status of the instance (e.g. running, stopped, failed, unknown). The provider\nrefreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus\nreports as \"unknown\" while retaining the instance record - surfaces as a change on the next plan.\n",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
-					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"tags": schema.SetNestedAttribute{

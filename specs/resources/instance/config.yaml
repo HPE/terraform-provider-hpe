@@ -421,22 +421,9 @@ instance:
       string:
         computed_optional_required: computed
         description: The name of the interface, e.g. 'eth0', 'eth1'
-    status:
-      string:
-        computed_optional_required: computed
-        description: |
-          The status of the instance (e.g. running, stopped, failed, unknown). The provider
-          refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus
-          reports as "unknown" while retaining the instance record - surfaces as a change on the next plan.
-        plan_modifiers:
-        - custom:
-            imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
-            schema_definition: stringplanmodifier.UseStateForUnknown()
   moves:
     - instance: "" # unnest instance wrapper to root
     - template-id: id
-    - template-status: status
     - template-instance_type_id: instance_type_id
     - template-layout_id: layout_id
     - template-plan_id: plan_id
