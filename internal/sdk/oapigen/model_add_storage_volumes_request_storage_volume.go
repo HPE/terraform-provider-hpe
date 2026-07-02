@@ -23,10 +23,8 @@ type AddStorageVolumesRequestStorageVolume struct {
 	// A unique name scoped to your account for the storage volume
 	Name string `json:"name"`
 	// Storage Type Code or ID
-	Type string `json:"type"`
-	// The size of the storage volume in bytes.
-	MaxStorage *int64                                       `json:"maxStorage,omitempty"`
-	Config     *AddStorageVolumesRequestStorageVolumeConfig `json:"config,omitempty"`
+	Type   string                                       `json:"type"`
+	Config *AddStorageVolumesRequestStorageVolumeConfig `json:"config,omitempty"`
 	// Provision type for storage volume types that support it (for example 3Par - FULL, TPVV, SNP, PEER, TDVV).
 	ProvisionType        *string                                             `json:"provisionType,omitempty"`
 	StorageServer        *AddStorageVolumesRequestStorageVolumeStorageServer `json:"storageServer,omitempty"`
@@ -48,9 +46,6 @@ func (o AddStorageVolumesRequestStorageVolume) ToMap() (map[string]interface{}, 
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
 	toSerialize["type"] = o.Type
-	if !IsNil(o.MaxStorage) {
-		toSerialize["maxStorage"] = o.MaxStorage
-	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config
 	}

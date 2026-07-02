@@ -16,22 +16,38 @@ cluster_namespace:
           bool:
             computed_optional_required: optional
             description: Pass true to allow access to all groups.
-        - name: group_ids
-          list:
+        - name: groups
+          set_nested:
             computed_optional_required: optional
-            description: List of group IDs allowed access.
-            element_type:
-              int64: {}
+            description: Set of groups allowed access.
+            nested_object:
+              attributes:
+              - name: id
+                int64:
+                  computed_optional_required: required
+                  description: Group ID.
+              - name: default
+                bool:
+                  computed_optional_required: optional
+                  description: Whether this is the default group.
         - name: all_plans
           bool:
             computed_optional_required: optional
             description: Pass true to allow access to all service plans.
-        - name: plan_ids
-          list:
+        - name: plans
+          set_nested:
             computed_optional_required: optional
-            description: List of service plan IDs allowed access.
-            element_type:
-              int64: {}
+            description: Set of service plans allowed access.
+            nested_object:
+              attributes:
+              - name: id
+                int64:
+                  computed_optional_required: required
+                  description: Service plan ID.
+              - name: default
+                bool:
+                  computed_optional_required: optional
+                  description: Whether this is the default service plan.
   moves:
     - namespace: ""
     - template-tenantIds: tenant_ids

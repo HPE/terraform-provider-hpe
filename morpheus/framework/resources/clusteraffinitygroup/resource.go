@@ -84,15 +84,20 @@ func (r *clusterAffinityGroupResource) Create(
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			resp.Diagnostics.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			sites := make([]map[string]interface{}, 0, len(siteIDs))
-			for _, sid := range siteIDs {
-				sites = append(sites, map[string]interface{}{"id": sid})
+			sites := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
 			}
 			rp.Sites = sites
 		}
@@ -154,7 +159,7 @@ func (r *clusterAffinityGroupResource) Create(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readAg)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -208,7 +213,7 @@ func (r *clusterAffinityGroupResource) Read(
 		return
 	}
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&state, ag)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &state, ag)...)
 
 	// On normal refresh, preserve tenant_ids and resource_permissions from prior
 	// state. The API may silently drop IDs that don't exist in the environment,
@@ -255,15 +260,20 @@ func (r *clusterAffinityGroupResource) Update(
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
-		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var siteIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			resp.Diagnostics.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			sites := make([]map[string]interface{}, 0, len(siteIDs))
-			for _, sid := range siteIDs {
-				sites = append(sites, map[string]interface{}{"id": sid})
+			sites := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
 			}
 			rp.Sites = sites
 		}
@@ -309,7 +319,10 @@ func (r *clusterAffinityGroupResource) Update(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readAg)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -380,6 +393,7 @@ func (r *clusterAffinityGroupResource) ImportState(
 var _ *http.Response
 
 func mapGetResponseToModel(
+	ctx context.Context,
 	model *ClusterAffinityGroupModel,
 	ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup,
 ) diag.Diagnostics {
@@ -407,22 +421,32 @@ func mapGetResponseToModel(
 	model.TenantIds = set
 
 	if ag.ResourcePermissions != nil {
-		siteVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
+		groupVals := make([]GroupsValue, 0, len(ag.ResourcePermissions.Sites))
 		for _, s := range ag.ResourcePermissions.Sites {
-			if id, ok := s["id"].(float64); ok {
-				siteVals = append(siteVals, types.Int64Value(int64(id)))
+			if s.Id != nil {
+				var defaultVal types.Bool
+				if s.Default != nil {
+					defaultVal = types.BoolValue(*s.Default)
+				} else {
+					defaultVal = types.BoolNull()
+				}
+				groupVals = append(groupVals, GroupsValue{
+					Id:      types.Int64Value(*s.Id),
+					Default: defaultVal,
+					state:   attr.ValueStateKnown,
+				})
 			}
 		}
-		groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
-		diags.Append(listDiags...)
+		groupsSet, d := types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groupVals)
+		diags.Append(d...)
 		rp, rpDiags := NewResourcePermissionsValue(
 			map[string]attr.Type{
-				"all":       types.BoolType,
-				"group_ids": types.ListType{ElemType: types.Int64Type},
+				"all":    types.BoolType,
+				"groups": types.SetType{ElemType: GroupsValue{}.Type(ctx)},
 			},
 			map[string]attr.Value{
-				"all":       types.BoolPointerValue(ag.ResourcePermissions.All),
-				"group_ids": groupIdsList,
+				"all":    types.BoolPointerValue(ag.ResourcePermissions.All),
+				"groups": groupsSet,
 			},
 		)
 		diags.Append(rpDiags...)

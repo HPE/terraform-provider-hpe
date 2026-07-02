@@ -20,9 +20,9 @@ var _ MappedNullable = &ClusterAffinityGroupCreateResourcePermissions{}
 
 // ClusterAffinityGroupCreateResourcePermissions Resource Permissions for controlling Group Access
 type ClusterAffinityGroupCreateResourcePermissions struct {
-	All                  *bool                    `json:"all,omitempty"`
-	Sites                []map[string]interface{} `json:"sites,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	All                  *bool                                                     `json:"all,omitempty"`
+	Sites                []ClusterAffinityGroupCreateResourcePermissionsSitesInner `json:"sites,omitempty"`
+	AdditionalProperties map[string]interface{}                                    `json:",remain"`
 }
 
 type _ClusterAffinityGroupCreateResourcePermissions ClusterAffinityGroupCreateResourcePermissions

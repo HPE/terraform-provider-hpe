@@ -66,11 +66,29 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Pass true to allow access to all groups.",
 						MarkdownDescription: "Pass true to allow access to all groups.",
 					},
-					"group_ids": schema.ListAttribute{
-						ElementType:         types.Int64Type,
+					"groups": schema.SetNestedAttribute{
+						NestedObject: schema.NestedAttributeObject{
+							Attributes: map[string]schema.Attribute{
+								"default": schema.BoolAttribute{
+									Optional:            true,
+									Description:         "Whether this is the default group.",
+									MarkdownDescription: "Whether this is the default group.",
+								},
+								"id": schema.Int64Attribute{
+									Required:            true,
+									Description:         "Group ID.",
+									MarkdownDescription: "Group ID.",
+								},
+							},
+							CustomType: GroupsType{
+								ObjectType: types.ObjectType{
+									AttrTypes: GroupsValue{}.AttributeTypes(ctx),
+								},
+							},
+						},
 						Optional:            true,
-						Description:         "List of group IDs allowed access.",
-						MarkdownDescription: "List of group IDs allowed access.",
+						Description:         "Set of groups allowed access.",
+						MarkdownDescription: "Set of groups allowed access.",
 					},
 				},
 				CustomType: ResourcePermissionsType{
@@ -169,22 +187,22 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	groupIdsAttribute, ok := attributes["group_ids"]
+	groupsAttribute, ok := attributes["groups"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`group_ids is missing from object`)
+			`groups is missing from object`)
 
 		return nil, diags
 	}
 
-	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
+	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
+			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
 	}
 
 	if diags.HasError() {
@@ -192,9 +210,9 @@ func (t ResourcePermissionsType) ValueFromObject(ctx context.Context, in basetyp
 	}
 
 	return ResourcePermissionsValue{
-		All:      allVal,
-		GroupIds: groupIdsVal,
-		state:    attr.ValueStateKnown,
+		All:    allVal,
+		Groups: groupsVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -279,22 +297,22 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`all expected to be basetypes.BoolValue, was: %T`, allAttribute))
 	}
 
-	groupIdsAttribute, ok := attributes["group_ids"]
+	groupsAttribute, ok := attributes["groups"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`group_ids is missing from object`)
+			`groups is missing from object`)
 
 		return NewResourcePermissionsValueUnknown(), diags
 	}
 
-	groupIdsVal, ok := groupIdsAttribute.(basetypes.ListValue)
+	groupsVal, ok := groupsAttribute.(basetypes.SetValue)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`group_ids expected to be basetypes.ListValue, was: %T`, groupIdsAttribute))
+			fmt.Sprintf(`groups expected to be basetypes.SetValue, was: %T`, groupsAttribute))
 	}
 
 	if diags.HasError() {
@@ -302,9 +320,9 @@ func NewResourcePermissionsValue(attributeTypes map[string]attr.Type, attributes
 	}
 
 	return ResourcePermissionsValue{
-		All:      allVal,
-		GroupIds: groupIdsVal,
-		state:    attr.ValueStateKnown,
+		All:    allVal,
+		Groups: groupsVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -374,9 +392,9 @@ func (t ResourcePermissionsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ResourcePermissionsValue{}
 
 type ResourcePermissionsValue struct {
-	All      basetypes.BoolValue `tfsdk:"all"`
-	GroupIds basetypes.ListValue `tfsdk:"group_ids"`
-	state    attr.ValueState
+	All    basetypes.BoolValue `tfsdk:"all"`
+	Groups basetypes.SetValue  `tfsdk:"groups"`
+	state  attr.ValueState
 }
 
 func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
@@ -386,8 +404,8 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 	var err error
 
 	attrTypes["all"] = basetypes.BoolType{}.TerraformType(ctx)
-	attrTypes["group_ids"] = basetypes.ListType{
-		ElemType: types.Int64Type,
+	attrTypes["groups"] = basetypes.SetType{
+		ElemType: GroupsValue{}.Type(ctx),
 	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
@@ -403,12 +421,12 @@ func (v ResourcePermissionsValue) ToTerraformValue(ctx context.Context) (tftypes
 
 		vals["all"] = val
 
-		val, err = v.GroupIds.ToTerraformValue(ctx)
+		val, err = v.Groups.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["group_ids"] = val
+		vals["groups"] = val
 
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -439,31 +457,39 @@ func (v ResourcePermissionsValue) String() string {
 func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var groupIdsVal basetypes.ListValue
-	switch {
-	case v.GroupIds.IsUnknown():
-		groupIdsVal = types.ListUnknown(types.Int64Type)
-	case v.GroupIds.IsNull():
-		groupIdsVal = types.ListNull(types.Int64Type)
-	default:
-		var d diag.Diagnostics
-		groupIdsVal, d = types.ListValue(types.Int64Type, v.GroupIds.Elements())
-		diags.Append(d...)
+	groupsVal := types.SetValueMust(
+		GroupsType{
+			basetypes.ObjectType{
+				AttrTypes: GroupsValue{}.AttributeTypes(ctx),
+			},
+		},
+		v.Groups.Elements(),
+	)
+
+	if v.Groups.IsNull() {
+		groupsVal = types.SetNull(
+			GroupsType{
+				basetypes.ObjectType{
+					AttrTypes: GroupsValue{}.AttributeTypes(ctx),
+				},
+			},
+		)
 	}
 
-	if diags.HasError() {
-		return types.ObjectUnknown(map[string]attr.Type{
-			"all": basetypes.BoolType{},
-			"group_ids": basetypes.ListType{
-				ElemType: types.Int64Type,
+	if v.Groups.IsUnknown() {
+		groupsVal = types.SetUnknown(
+			GroupsType{
+				basetypes.ObjectType{
+					AttrTypes: GroupsValue{}.AttributeTypes(ctx),
+				},
 			},
-		}), diags
+		)
 	}
 
 	attributeTypes := map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"group_ids": basetypes.ListType{
-			ElemType: types.Int64Type,
+		"groups": basetypes.SetType{
+			ElemType: GroupsValue{}.Type(ctx),
 		},
 	}
 
@@ -478,8 +504,8 @@ func (v ResourcePermissionsValue) ToObjectValue(ctx context.Context) (basetypes.
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"all":       v.All,
-			"group_ids": groupIdsVal,
+			"all":    v.All,
+			"groups": groupsVal,
 		})
 
 	return objVal, diags
@@ -504,7 +530,7 @@ func (v ResourcePermissionsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.GroupIds.Equal(other.GroupIds) {
+	if !v.Groups.Equal(other.Groups) {
 		return false
 	}
 
@@ -522,8 +548,391 @@ func (v ResourcePermissionsValue) Type(ctx context.Context) attr.Type {
 func (v ResourcePermissionsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"all": basetypes.BoolType{},
-		"group_ids": basetypes.ListType{
-			ElemType: types.Int64Type,
+		"groups": basetypes.SetType{
+			ElemType: GroupsValue{}.Type(ctx),
 		},
+	}
+}
+
+var _ basetypes.ObjectTypable = GroupsType{}
+
+type GroupsType struct {
+	basetypes.ObjectType
+}
+
+func (t GroupsType) Equal(o attr.Type) bool {
+	other, ok := o.(GroupsType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t GroupsType) String() string {
+	return "GroupsType"
+}
+
+func (t GroupsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewGroupsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGroupsValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	defaultAttribute, ok := attributes["default"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default is missing from object`)
+
+		return nil, diags
+	}
+
+	defaultVal, ok := defaultAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default expected to be basetypes.BoolValue, was: %T`, defaultAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return GroupsValue{
+		Default: defaultVal,
+		Id:      idVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupsValueNull() GroupsValue {
+	return GroupsValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewGroupsValueUnknown() GroupsValue {
+	return GroupsValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewGroupsValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (GroupsValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing GroupsValue Attribute Value",
+				"While creating a GroupsValue value, a missing attribute value was detected. "+
+					"A GroupsValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupsValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid GroupsValue Attribute Type",
+				"While creating a GroupsValue value, an invalid attribute value was detected. "+
+					"A GroupsValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("GroupsValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("GroupsValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra GroupsValue Attribute Value",
+				"While creating a GroupsValue value, an extra attribute value was detected. "+
+					"A GroupsValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra GroupsValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewGroupsValueUnknown(), diags
+	}
+
+	defaultAttribute, ok := attributes["default"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`default is missing from object`)
+
+		return NewGroupsValueUnknown(), diags
+	}
+
+	defaultVal, ok := defaultAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`default expected to be basetypes.BoolValue, was: %T`, defaultAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewGroupsValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return NewGroupsValueUnknown(), diags
+	}
+
+	return GroupsValue{
+		Default: defaultVal,
+		Id:      idVal,
+		state:   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewGroupsValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) GroupsValue {
+	object, diags := NewGroupsValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewGroupsValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t GroupsType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewGroupsValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewGroupsValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewGroupsValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewGroupsValueMust(GroupsValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t GroupsType) ValueType(ctx context.Context) attr.Value {
+	return GroupsValue{}
+}
+
+var _ basetypes.ObjectValuable = GroupsValue{}
+
+type GroupsValue struct {
+	Default basetypes.BoolValue  `tfsdk:"default"`
+	Id      basetypes.Int64Value `tfsdk:"id"`
+	state   attr.ValueState
+}
+
+func (v GroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["default"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Default.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["default"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v GroupsValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v GroupsValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v GroupsValue) String() string {
+	return "GroupsValue"
+}
+
+func (v GroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"default": basetypes.BoolType{},
+		"id":      basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"default": v.Default,
+			"id":      v.Id,
+		})
+
+	return objVal, diags
+}
+
+func (v GroupsValue) Equal(o attr.Value) bool {
+	other, ok := o.(GroupsValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Default.Equal(other.Default) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	return true
+}
+
+func (v GroupsValue) Type(ctx context.Context) attr.Type {
+	return GroupsType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v GroupsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"default": basetypes.BoolType{},
+		"id":      basetypes.Int64Type{},
 	}
 }

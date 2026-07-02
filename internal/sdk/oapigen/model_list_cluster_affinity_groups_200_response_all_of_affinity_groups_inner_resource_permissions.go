@@ -20,9 +20,9 @@ var _ MappedNullable = &ListClusterAffinityGroups200ResponseAllOfAffinityGroupsI
 
 // ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissions Resource Permissions for controlling Group Access
 type ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissions struct {
-	All                  *bool                    `json:"all,omitempty"`
-	Sites                []map[string]interface{} `json:"sites,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	All                  *bool                                                                                       `json:"all,omitempty"`
+	Sites                []ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                      `json:",remain"`
 }
 
 type _ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissions ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissions

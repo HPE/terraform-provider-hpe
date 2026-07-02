@@ -140,7 +140,7 @@ func (r *clusterNamespaceResource) Create(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readNs)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -190,7 +190,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&state, ns)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &state, ns)...)
 
 	// On normal refresh, preserve tenant_ids and resource_permissions from prior
 	// state. The API may silently drop IDs that don't exist in the environment,
@@ -278,7 +278,10 @@ func (r *clusterNamespaceResource) Update(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readNs)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -348,7 +351,11 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) diag.Diagnostics {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *ClusterNamespaceModel,
+	ns *sdk.GetClusterNamespace200ResponseNamespace,
+) diag.Diagnostics {
 	var diags diag.Diagnostics
 
 	if ns.Id != nil {
@@ -382,34 +389,56 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 	// Map resource_permissions from permissions.resourcePermissions
 	if ns.Permissions != nil && ns.Permissions.ResourcePermissions != nil {
 		rp := ns.Permissions.ResourcePermissions
-		siteVals := make([]attr.Value, 0, len(rp.Sites))
+
+		groupVals := make([]GroupsValue, 0, len(rp.Sites))
 		for _, s := range rp.Sites {
 			if s.Id != nil {
-				siteVals = append(siteVals, types.Int64Value(*s.Id))
+				var defaultVal types.Bool
+				if s.Default != nil {
+					defaultVal = types.BoolValue(*s.Default)
+				} else {
+					defaultVal = types.BoolNull()
+				}
+				groupVals = append(groupVals, GroupsValue{
+					Id:      types.Int64Value(*s.Id),
+					Default: defaultVal,
+					state:   attr.ValueStateKnown,
+				})
 			}
 		}
-		planVals := make([]attr.Value, 0, len(rp.Plans))
+		groupsSet, d := types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groupVals)
+		diags.Append(d...)
+
+		planVals := make([]PlansValue, 0, len(rp.Plans))
 		for _, p := range rp.Plans {
 			if p.Id != nil {
-				planVals = append(planVals, types.Int64Value(*p.Id))
+				var defaultVal types.Bool
+				if p.Default != nil {
+					defaultVal = types.BoolValue(*p.Default)
+				} else {
+					defaultVal = types.BoolNull()
+				}
+				planVals = append(planVals, PlansValue{
+					Id:      types.Int64Value(*p.Id),
+					Default: defaultVal,
+					state:   attr.ValueStateKnown,
+				})
 			}
 		}
-		groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
-		diags.Append(listDiags...)
-		planIdsList, planDiags := types.ListValue(types.Int64Type, planVals)
-		diags.Append(planDiags...)
+		plansSet, d2 := types.SetValueFrom(ctx, PlansValue{}.Type(ctx), planVals)
+		diags.Append(d2...)
 		rpVal, rpDiags := NewResourcePermissionsValue(
 			map[string]attr.Type{
 				"all":       types.BoolType,
-				"group_ids": types.ListType{ElemType: types.Int64Type},
 				"all_plans": types.BoolType,
-				"plan_ids":  types.ListType{ElemType: types.Int64Type},
+				"groups":    types.SetType{ElemType: GroupsValue{}.Type(ctx)},
+				"plans":     types.SetType{ElemType: PlansValue{}.Type(ctx)},
 			},
 			map[string]attr.Value{
 				"all":       types.BoolPointerValue(rp.All),
-				"group_ids": groupIdsList,
 				"all_plans": types.BoolPointerValue(rp.AllPlans),
-				"plan_ids":  planIdsList,
+				"groups":    groupsSet,
+				"plans":     plansSet,
 			},
 		)
 		diags.Append(rpDiags...)
@@ -445,31 +474,39 @@ func buildNamespaceCreatePermissions(
 		rp := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
-		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var siteIDs []int64
-			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			diags.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
 			if diags.HasError() {
 				return nil
 			}
-			sites := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(siteIDs))
-			for i := range siteIDs {
-				id := siteIDs[i]
-				sites = append(sites, sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id})
+			sites := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
 			}
 			rp.Sites = sites
 		}
-		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
-			var planIDs []int64
-			diags.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+		if !plan.ResourcePermissions.Plans.IsNull() && !plan.ResourcePermissions.Plans.IsUnknown() {
+			var plans []PlansValue
+			diags.Append(plan.ResourcePermissions.Plans.ElementsAs(ctx, &plans, false)...)
 			if diags.HasError() {
 				return nil
 			}
-			plans := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(planIDs))
-			for i := range planIDs {
-				id := planIDs[i]
-				plans = append(plans, sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id})
+			planSlice := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(plans))
+			for _, p := range plans {
+				id := p.Id.ValueInt64()
+				inner := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id}
+				if !p.Default.IsNull() && !p.Default.IsUnknown() {
+					inner.Default = p.Default.ValueBoolPointer()
+				}
+				planSlice = append(planSlice, inner)
 			}
-			rp.Plans = plans
+			rp.Plans = planSlice
 		}
 		perms.ResourcePermissions = &rp
 	}
@@ -500,31 +537,39 @@ func buildNamespaceUpdatePermissions(
 		rp := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
 		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
 		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
-		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
-			var siteIDs []int64
-			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			diags.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
 			if diags.HasError() {
 				return nil
 			}
-			sites := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(siteIDs))
-			for i := range siteIDs {
-				id := siteIDs[i]
-				sites = append(sites, sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id})
+			sites := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
 			}
 			rp.Sites = sites
 		}
-		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
-			var planIDs []int64
-			diags.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+		if !plan.ResourcePermissions.Plans.IsNull() && !plan.ResourcePermissions.Plans.IsUnknown() {
+			var plans []PlansValue
+			diags.Append(plan.ResourcePermissions.Plans.ElementsAs(ctx, &plans, false)...)
 			if diags.HasError() {
 				return nil
 			}
-			plans := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(planIDs))
-			for i := range planIDs {
-				id := planIDs[i]
-				plans = append(plans, sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id})
+			planSlice := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(plans))
+			for _, p := range plans {
+				id := p.Id.ValueInt64()
+				inner := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id}
+				if !p.Default.IsNull() && !p.Default.IsUnknown() {
+					inner.Default = p.Default.ValueBoolPointer()
+				}
+				planSlice = append(planSlice, inner)
 			}
-			rp.Plans = plans
+			rp.Plans = planSlice
 		}
 		perms.ResourcePermissions = &rp
 	}
