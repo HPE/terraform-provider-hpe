@@ -253,30 +253,32 @@ func (g *Resource) Create(
 			AzureInstanceConfiguration2: configAzure,
 		}
 
-	// BMaaS (HPE bare metal) config. There is no typed SDK config object for the
-	// baremetal plugin, so its option types are sent through the generic config map
-	// (instance.config.*). The instance is identified as bare metal by its layout's
-	// provision type code; this block just carries the baremetal-specific settings.
+	// BMaaS (HPE bare metal) config. The instance is identified as bare metal by
+	// its layout's provision type code; this block carries the baremetal-specific
+	// provision settings.
 	case !plan.ConfigBmaas.IsNull() && !plan.ConfigBmaas.IsUnknown():
-		configMap := map[string]interface{}{
-			"imageId":        plan.ConfigBmaas.ImageId.ValueInt64(),
-			"resourcePoolId": plan.ConfigBmaas.ResourcePoolId.ValueString(),
+		configBmaas := &sdk.BMaaSInstanceConfiguration{
+			ImageId:        plan.ConfigBmaas.ImageId.ValueInt64(),
+			ResourcePoolId: plan.ConfigBmaas.ResourcePoolId.ValueStringPointer(),
 		}
 
 		// create_user is only sent when the user set it explicitly so the API can
 		// apply its own default otherwise (matches the other config blocks).
 		if !config.ConfigBmaas.CreateUser.IsNull() &&
 			!config.ConfigBmaas.CreateUser.IsUnknown() {
-			configMap["createUser"] = plan.ConfigBmaas.CreateUser.ValueBool()
+			createUser := plan.ConfigBmaas.CreateUser.ValueBool()
+			configBmaas.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
 		if !plan.ConfigBmaas.EnforceRaidBootVolume.IsNull() &&
 			!plan.ConfigBmaas.EnforceRaidBootVolume.IsUnknown() {
-			configMap["enforceRaidBootVolume"] = plan.ConfigBmaas.EnforceRaidBootVolume.ValueBool()
+			enforceRaid := plan.ConfigBmaas.EnforceRaidBootVolume.ValueBool()
+			configBmaas.EnforceRaidBootVolume = &enforceRaid
 		}
 
 		if !plan.ConfigBmaas.NoAgent.IsNull() && !plan.ConfigBmaas.NoAgent.IsUnknown() {
-			configMap["noAgent"] = plan.ConfigBmaas.NoAgent.ValueBool()
+			noAgent := plan.ConfigBmaas.NoAgent.ValueBool()
+			configBmaas.NoAgent = *sdk.NewNullableBool(&noAgent)
 		}
 
 		if !plan.ConfigBmaas.SelectedHosts.IsNull() &&
@@ -290,21 +292,20 @@ func (g *Resource) Create(
 			}
 
 			// The baremetal plugin reads each selected host as an object with a
-			// "value" holding the host id (host.value as Long), so send that shape
-			// rather than a bare list of ids.
-			selectedHosts := make([]map[string]interface{}, 0, len(hostIDs))
+			// "value" holding the host id (host.value as Long).
+			selectedHosts := make([]sdk.BMaaSInstanceConfigurationSelectedHostsInner, 0, len(hostIDs))
 			for _, hostID := range hostIDs {
-				selectedHosts = append(selectedHosts, map[string]interface{}{
-					"value": hostID,
-				})
+				id := hostID
+				selectedHosts = append(
+					selectedHosts,
+					sdk.BMaaSInstanceConfigurationSelectedHostsInner{Value: &id},
+				)
 			}
-			configMap["selectedHosts"] = selectedHosts
+			configBmaas.SelectedHosts = selectedHosts
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
-			GenericInstanceConfiguration2: &sdk.GenericInstanceConfiguration2{
-				AdditionalProperties: configMap,
-			},
+			BMaaSInstanceConfiguration: configBmaas,
 		}
 
 	// Generic config
