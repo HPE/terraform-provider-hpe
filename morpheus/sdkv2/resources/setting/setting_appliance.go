@@ -6,7 +6,6 @@ import (
 	"context"
 	"crypto/sha256"
 	"encoding/hex"
-	"encoding/json"
 	"log"
 	"strings"
 
@@ -33,15 +32,6 @@ func ResourceSettingAppliance() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The ID of the appliance settings",
 				Computed:    true,
-			},
-			"previous_settings": {
-				Type: schema.TypeString,
-				Description: "Internal use only. A JSON snapshot of the appliance " +
-					"settings captured immediately before this resource was created. " +
-					"It is used to restore the appliance to its prior state on destroy " +
-					"so a shared appliance is not left mutated. Do not set this field.",
-				Computed:  true,
-				Sensitive: true,
 			},
 			"appliance_url": {
 				Type:        schema.TypeString,
@@ -293,17 +283,6 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	var diags diag.Diagnostics
-
-	// Snapshot the current appliance settings before mutating them. Appliance
-	// settings are a singleton, so a create is really an in-place mutation of
-	// shared global state. Capturing the prior values here lets Delete restore
-	// them, so `terraform destroy` (and acceptance tests) do not leave a shared
-	// appliance permanently reconfigured.
-	if snapshot := snapshotApplianceSettings(client); snapshot != "" {
-		if err := d.Set("previous_settings", snapshot); err != nil {
-			return diag.FromErr(err)
-		}
-	}
 
 	applianceSettings := make(map[string]any)
 
@@ -654,140 +633,9 @@ func resourceSettingApplianceUpdate(ctx context.Context, d *schema.ResourceData,
 }
 
 func resourceSettingApplianceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
-	var client *morpheus.Client
-	if v, ok := meta.(*morpheus.Client); ok {
-		client = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("client", meta))
-	}
-
 	var diags diag.Diagnostics
-
-	// Restore the appliance settings that were captured before this resource
-	// was created. Appliance settings are a singleton with no real "delete"
-	// operation, so restoring the prior values is the least-surprising destroy
-	// behaviour and prevents a shared appliance from being left mutated.
-	previous, ok := d.Get("previous_settings").(string)
-	if ok && previous != "" {
-		var applianceSettings map[string]any
-		if err := json.Unmarshal([]byte(previous), &applianceSettings); err != nil {
-			return diag.FromErr(err)
-		}
-
-		req := &morpheus.Request{
-			Body: map[string]any{
-				"applianceSettings": applianceSettings,
-			},
-		}
-
-		resp, err := client.UpdateApplianceSettings(req)
-		if err != nil {
-			log.Printf("API FAILURE: %s - %s", resp, err)
-
-			return diag.FromErr(err)
-		}
-		log.Printf("API RESPONSE: %s", resp)
-	}
 
 	d.SetId("")
 
 	return diags
-}
-
-// SnapshotApplianceSettingsForTest captures the current appliance settings and
-// returns a restore function that reverts them to the captured values. It is
-// intended as a safety net for acceptance tests that mutate the shared
-// appliance-settings singleton, so a failed or interrupted run does not leave a
-// shared appliance permanently reconfigured. Password fields are not restored
-// because the API only exposes password hashes.
-func SnapshotApplianceSettingsForTest(client *morpheus.Client) (func() error, error) {
-	resp, err := client.GetApplianceSettings(&morpheus.Request{})
-	if err != nil {
-		return nil, err
-	}
-
-	result, ok := resp.Result.(*morpheus.GetApplianceSettingsResult)
-	if !ok || result.ApplianceSettings == nil {
-		return nil, helpers.NotFoundInResponseError("ApplianceSettings")
-	}
-
-	restore := applianceRestoreMap(result.ApplianceSettings)
-
-	return func() error {
-		_, err := client.UpdateApplianceSettings(&morpheus.Request{
-			Body: map[string]any{
-				"applianceSettings": restore,
-			},
-		})
-
-		return err
-	}, nil
-}
-
-// snapshotApplianceSettings fetches the current appliance settings and returns
-// them as a JSON-encoded restore body (the same shape accepted by the
-// appliance-settings PUT). It returns an empty string if the settings cannot be
-// read, so that a snapshot failure never blocks a create. Password fields are
-// intentionally omitted: the API only returns password hashes, which cannot be
-// replayed as plaintext, so they are left untouched on restore.
-func snapshotApplianceSettings(client *morpheus.Client) string {
-	resp, err := client.GetApplianceSettings(&morpheus.Request{})
-	if err != nil {
-		log.Printf("appliance settings snapshot skipped, GET failed: %s - %s", resp, err)
-
-		return ""
-	}
-
-	result, ok := resp.Result.(*morpheus.GetApplianceSettingsResult)
-	if !ok || result.ApplianceSettings == nil {
-		log.Printf("appliance settings snapshot skipped, unexpected response: %s", resp)
-
-		return ""
-	}
-
-	restore := applianceRestoreMap(result.ApplianceSettings)
-
-	encoded, err := json.Marshal(restore)
-	if err != nil {
-		log.Printf("appliance settings snapshot skipped, marshal failed: %s", err)
-
-		return ""
-	}
-
-	return string(encoded)
-}
-
-// applianceRestoreMap converts appliance settings read from the API into the
-// map shape accepted by the appliance-settings PUT. Empty strings are preserved
-// on purpose so that fields set by a create (for example a proxy host) are
-// cleared again on restore. Role IDs are only included when registration is
-// enabled, mirroring the create/update logic and the RequiredWith constraints.
-func applianceRestoreMap(s *morpheus.ApplianceSettings) map[string]any {
-	m := map[string]any{
-		"applianceUrl":         s.ApplianceURL,
-		"internalApplianceUrl": s.InternalApplianceURL,
-		"corsAllowed":          s.CorsAllowed,
-		"registrationEnabled":  s.RegistrationEnabled,
-		"dockerPrivilegedMode": s.DockerPrivilegedMode,
-		"smtpMailFrom":         s.SMTPMailFrom,
-		"smtpServer":           s.SMTPServer,
-		"smtpPort":             s.SMTPPort,
-		"smtpSSL":              s.SMTPSSL,
-		"smtpTLS":              s.SMTPTLS,
-		"smtpUser":             s.SMTPUser,
-		"proxyHost":            s.ProxyHost,
-		"proxyPort":            s.ProxyPort,
-		"proxyUser":            s.ProxyUser,
-		"proxyDomain":          s.ProxyDomain,
-		"proxyWorkstation":     s.ProxyWorkstation,
-		"currencyProvider":     s.CurrencyProvider,
-		"currencyKey":          s.CurrencyKey,
-	}
-
-	if s.RegistrationEnabled {
-		m["defaultRoleId"] = s.DefaultRoleID
-		m["defaultUserRoleId"] = s.DefaultUserRoleID
-	}
-
-	return m
 }

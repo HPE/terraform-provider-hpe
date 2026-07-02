@@ -20,10 +20,9 @@ import (
 )
 
 // snapshotAndRestoreApplianceSettings captures the appliance settings before a
-// test mutates them and registers a t.Cleanup that restores them afterwards.
-// This is an independent safety net (in addition to the resource's own
-// restore-on-destroy) so that an interrupted or failed run never leaves the
-// shared appliance pointed at the test's placeholder proxy/URL values.
+// test mutates them and registers a t.Cleanup that restores them afterwards, so
+// that an interrupted or failed run never leaves the shared appliance pointed at
+// the test's placeholder proxy/URL values.
 func snapshotAndRestoreApplianceSettings(t *testing.T) {
 	t.Helper()
 
@@ -48,16 +47,62 @@ func snapshotAndRestoreApplianceSettings(t *testing.T) {
 		sdklegacy.WithInsecure(insecure),
 	)
 
-	restore, err := setting.SnapshotApplianceSettingsForTest(legacyClient)
+	resp, err := legacyClient.GetApplianceSettings(&sdklegacy.Request{})
 	if err != nil {
-		t.Fatalf("failed to snapshot appliance settings: %v", err)
+		t.Fatalf("failed to read appliance settings: %v", err)
 	}
 
+	result, ok := resp.Result.(*sdklegacy.GetApplianceSettingsResult)
+	if !ok || result.ApplianceSettings == nil {
+		t.Fatal("appliance settings not found in response")
+	}
+
+	restore := applianceRestoreBody(result.ApplianceSettings)
+
 	t.Cleanup(func() {
-		if err := restore(); err != nil {
+		if _, err := legacyClient.UpdateApplianceSettings(&sdklegacy.Request{
+			Body: map[string]any{"applianceSettings": restore},
+		}); err != nil {
 			t.Errorf("failed to restore appliance settings: %v", err)
 		}
 	})
+}
+
+// applianceRestoreBody converts appliance settings read from the API into the
+// map shape accepted by the appliance-settings PUT. Empty strings are preserved
+// on purpose so that fields set by the test (for example a proxy host) are
+// cleared again on restore. Role IDs are only included when registration is
+// enabled, mirroring the RequiredWith constraints. Password fields are omitted
+// because the API only returns password hashes, which cannot be replayed as
+// plaintext.
+func applianceRestoreBody(s *sdklegacy.ApplianceSettings) map[string]any {
+	m := map[string]any{
+		"applianceUrl":         s.ApplianceURL,
+		"internalApplianceUrl": s.InternalApplianceURL,
+		"corsAllowed":          s.CorsAllowed,
+		"registrationEnabled":  s.RegistrationEnabled,
+		"dockerPrivilegedMode": s.DockerPrivilegedMode,
+		"smtpMailFrom":         s.SMTPMailFrom,
+		"smtpServer":           s.SMTPServer,
+		"smtpPort":             s.SMTPPort,
+		"smtpSSL":              s.SMTPSSL,
+		"smtpTLS":              s.SMTPTLS,
+		"smtpUser":             s.SMTPUser,
+		"proxyHost":            s.ProxyHost,
+		"proxyPort":            s.ProxyPort,
+		"proxyUser":            s.ProxyUser,
+		"proxyDomain":          s.ProxyDomain,
+		"proxyWorkstation":     s.ProxyWorkstation,
+		"currencyProvider":     s.CurrencyProvider,
+		"currencyKey":          s.CurrencyKey,
+	}
+
+	if s.RegistrationEnabled {
+		m["defaultRoleId"] = s.DefaultRoleID
+		m["defaultUserRoleId"] = s.DefaultUserRoleID
+	}
+
+	return m
 }
 
 func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
