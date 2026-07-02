@@ -58,6 +58,7 @@ const (
 	Network             Capability = "network"
 	NetworkDHCP         Capability = "network_dhcp"
 	NetworkPool         Capability = "network_pool"
+	NetworkServer       Capability = "network_server"
 	NetworkRouter       Capability = "network_router"
 	NetworkFirewall     Capability = "network_firewall"
 	NetworkLoadBalancer Capability = "network_loadbalancer"

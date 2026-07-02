@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instance"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/job"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/task"
@@ -52,9 +53,21 @@ func TestAccMorpheusJobTaskDateAndTimeExampleOk(t *testing.T) {
 
 	dependencyResourceConfig += currentDependency
 
+	// Provision a throwaway instance for the job to target, rather than relying
+	// on hard-coded instance IDs that exist only in a reference environment.
+	instanceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dependencyResourceConfig += instanceConfig
+
 	resourceConfig, err := job.RenderJobTaskDateAndTimeConfig(t, map[string]string{
-		"Name":   name,
-		"TaskId": "hpe_morpheus_task_shell_script.tfexample_shell_local.id",
+		"Name":        name,
+		"TaskId":      "hpe_morpheus_task_shell_script.tfexample_shell_local.id",
+		"InstanceIds": "[hpe_morpheus_instance.example.id]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -98,17 +111,13 @@ func TestAccMorpheusJobTaskDateAndTimeExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_job_task.example",
 			"instance_ids.#",
-			"2",
-		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_job_task.example",
-			"instance_ids.0",
 			"1",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_job_task.example",
-			"instance_ids.1",
-			"2",
+			"instance_ids.0",
+			"hpe_morpheus_instance.example",
+			"id",
 		),
 	}
 
@@ -159,9 +168,21 @@ func TestAccMorpheusJobTaskScheduleExampleOk(t *testing.T) {
 
 	dependencyResourceConfig += currentDependency
 
+	// Provision a throwaway instance for the job to target, rather than relying
+	// on hard-coded instance IDs that exist only in a reference environment.
+	instanceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dependencyResourceConfig += instanceConfig
+
 	resourceConfig, err := job.RenderJobTaskScheduleConfig(t, map[string]string{
-		"Name":   name,
-		"TaskId": "hpe_morpheus_task_shell_script.tfexample_shell_local.id",
+		"Name":        name,
+		"TaskId":      "hpe_morpheus_task_shell_script.tfexample_shell_local.id",
+		"InstanceIds": "[hpe_morpheus_instance.example.id]",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -206,10 +227,11 @@ func TestAccMorpheusJobTaskScheduleExampleOk(t *testing.T) {
 			"instance_ids.#",
 			"1",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_job_task.example",
 			"instance_ids.0",
-			"91",
+			"hpe_morpheus_instance.example",
+			"id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_job_task.example",
