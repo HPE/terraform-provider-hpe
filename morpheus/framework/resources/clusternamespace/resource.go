@@ -18,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -137,7 +138,7 @@ func (r *clusterNamespaceResource) Create(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	mapGetResponseToModel(&plan, readNs)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -187,7 +188,7 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	mapGetResponseToModel(&state, ns)
+	resp.Diagnostics.Append(mapGetResponseToModel(&state, ns)...)
 
 	// On normal refresh, preserve tenant_ids and resource_permissions from prior
 	// state. The API may silently drop IDs that don't exist in the environment,
@@ -275,7 +276,7 @@ func (r *clusterNamespaceResource) Update(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	mapGetResponseToModel(&plan, readNs)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -345,7 +346,9 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) {
+func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if ns.Id != nil {
 		model.Id = types.Int64Value(*ns.Id)
 	}
@@ -355,11 +358,8 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 	if ns.Description != nil {
 		model.Description = types.StringValue(*ns.Description)
 	}
-	if ns.Visibility != nil {
-		model.Visibility = types.StringValue(*ns.Visibility)
-	} else {
-		model.Visibility = types.StringNull()
-	}
+	model.Visibility = convert.StrToType(ns.Visibility)
+
 	// Map tenant_ids from permissions.tenantPermissions.accounts
 	if ns.Permissions != nil && ns.Permissions.TenantPermissions != nil {
 		accts := ns.Permissions.TenantPermissions.Accounts
@@ -369,9 +369,13 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 				tenantVals = append(tenantVals, types.Int64Value(*a.Id))
 			}
 		}
-		model.TenantIds = types.SetValueMust(types.Int64Type, tenantVals)
+		set, setDiags := types.SetValue(types.Int64Type, tenantVals)
+		diags.Append(setDiags...)
+		model.TenantIds = set
 	} else {
-		model.TenantIds = types.SetValueMust(types.Int64Type, []attr.Value{})
+		emptySet, emptyDiags := types.SetValue(types.Int64Type, []attr.Value{})
+		diags.Append(emptyDiags...)
+		model.TenantIds = emptySet
 	}
 	// Map resource_permissions from permissions.resourcePermissions
 	if ns.Permissions != nil && ns.Permissions.ResourcePermissions != nil {
@@ -388,7 +392,11 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 				planVals = append(planVals, types.Int64Value(*p.Id))
 			}
 		}
-		model.ResourcePermissions = NewResourcePermissionsValueMust(
+		groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
+		diags.Append(listDiags...)
+		planIdsList, planDiags := types.ListValue(types.Int64Type, planVals)
+		diags.Append(planDiags...)
+		rpVal, rpDiags := NewResourcePermissionsValue(
 			map[string]attr.Type{
 				"all":       types.BoolType,
 				"group_ids": types.ListType{ElemType: types.Int64Type},
@@ -397,15 +405,19 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 			},
 			map[string]attr.Value{
 				"all":       types.BoolPointerValue(rp.All),
-				"group_ids": types.ListValueMust(types.Int64Type, siteVals),
+				"group_ids": groupIdsList,
 				"all_plans": types.BoolPointerValue(rp.AllPlans),
-				"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
+				"plan_ids":  planIdsList,
 			},
 		)
+		diags.Append(rpDiags...)
+		model.ResourcePermissions = rpVal
 	} else {
 		model.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
 	// NOTE: Active is not in the API GET at all. Config value is preserved in state.
+
+	return diags
 }
 
 func buildNamespaceCreatePermissions(

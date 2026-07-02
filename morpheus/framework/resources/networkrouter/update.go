@@ -120,8 +120,8 @@ func buildUpdateConfig(ctx context.Context, plan NetworkRouterModel) map[string]
 }
 
 // applyRouterPermissions calls UpdateNetworkRouterPermissions when visibility or tenant_ids
-// are set in the plan. A 403 response is treated as a warning rather than an error because
-// site-scoped routers may not support tenant permissions.
+// are set in the plan. A 403 response is an error because group-scoped routers do not
+// support tenant permissions and the caller must resolve the conflict.
 func applyRouterPermissions(
 	ctx context.Context,
 	id int64,
@@ -157,14 +157,10 @@ func applyRouterPermissions(
 		UpdateNetworkRouterPermissionsRequest(permReq).Execute()
 	if err != nil {
 		if hresp != nil && hresp.StatusCode == http.StatusForbidden {
-			diags.AddWarning(
-				"network router permissions not applied",
-				fmt.Sprintf(
-					"network router %d: permissions PUT returned 403"+
-						" (site-scoped routers may not support tenant permissions): %s",
-					id, errfmt.ErrMsg(err, hresp),
-				),
-			)
+			errfmt.DiagErrorf(&diags, errfmt.OpUpdate, "network router permissions",
+				"network router %d permissions PUT returned 403"+
+					" (group-scoped routers may not support tenant permissions): %s",
+				id, errfmt.SafeErrMsg(err, hresp))
 
 			return diags
 		}

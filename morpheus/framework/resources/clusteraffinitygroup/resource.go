@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -17,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -150,7 +152,7 @@ func (r *clusterAffinityGroupResource) Create(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	mapGetResponseToModel(&plan, readAg)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readAg)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -204,7 +206,7 @@ func (r *clusterAffinityGroupResource) Read(
 		return
 	}
 
-	mapGetResponseToModel(&state, ag)
+	resp.Diagnostics.Append(mapGetResponseToModel(&state, ag)...)
 
 	// On normal refresh, preserve tenant_ids and resource_permissions from prior
 	// state. The API may silently drop IDs that don't exist in the environment,
@@ -305,7 +307,7 @@ func (r *clusterAffinityGroupResource) Update(
 	savedTenantIds := plan.TenantIds
 	savedRP := plan.ResourcePermissions
 
-	mapGetResponseToModel(&plan, readAg)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readAg)...)
 
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
@@ -375,7 +377,12 @@ func (r *clusterAffinityGroupResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+func mapGetResponseToModel(
+	model *ClusterAffinityGroupModel,
+	ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if ag.Id != nil {
 		model.Id = types.Int64Value(*ag.Id)
 	}
@@ -385,18 +392,18 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 	if ag.Active != nil {
 		model.Active = types.BoolValue(*ag.Active)
 	}
-	if ag.Visibility != nil {
-		model.Visibility = types.StringValue(*ag.Visibility)
-	} else {
-		model.Visibility = types.StringNull()
-	}
+	model.Visibility = convert.StrToType(ag.Visibility)
+
 	tenantVals := make([]attr.Value, 0, len(ag.Tenants))
 	for _, t := range ag.Tenants {
 		if t.Id != nil {
 			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
 		}
 	}
-	model.TenantIds = types.SetValueMust(types.Int64Type, tenantVals)
+	set, setDiags := types.SetValue(types.Int64Type, tenantVals)
+	diags.Append(setDiags...)
+	model.TenantIds = set
+
 	if ag.ResourcePermissions != nil {
 		siteVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
 		for _, s := range ag.ResourcePermissions.Sites {
@@ -404,17 +411,23 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 				siteVals = append(siteVals, types.Int64Value(int64(id)))
 			}
 		}
-		model.ResourcePermissions = NewResourcePermissionsValueMust(
+		groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
+		diags.Append(listDiags...)
+		rp, rpDiags := NewResourcePermissionsValue(
 			map[string]attr.Type{
 				"all":       types.BoolType,
 				"group_ids": types.ListType{ElemType: types.Int64Type},
 			},
 			map[string]attr.Value{
 				"all":       types.BoolPointerValue(ag.ResourcePermissions.All),
-				"group_ids": types.ListValueMust(types.Int64Type, siteVals),
+				"group_ids": groupIdsList,
 			},
 		)
+		diags.Append(rpDiags...)
+		model.ResourcePermissions = rp
 	} else {
 		model.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
+
+	return diags
 }

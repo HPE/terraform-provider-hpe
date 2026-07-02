@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -139,7 +140,7 @@ func (r *provisioningLicenseResource) Create(
 	// consistency check passes. Read() will surface any real divergence on the
 	// next plan.
 	savedTenants := plan.Tenants
-	mapGetResponseToModel(&plan, readLicense)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
 	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
@@ -185,7 +186,7 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 
 		return
 	}
-	mapGetResponseToModel(&state, license)
+	resp.Diagnostics.Append(mapGetResponseToModel(&state, license)...)
 
 	// On normal refresh, preserve tenants from prior state. The API may
 	// silently drop IDs that don't exist in the environment, which would
@@ -284,7 +285,7 @@ func (r *provisioningLicenseResource) Update(
 
 	// Same as Create: preserve plan value for tenants.
 	savedTenants := plan.Tenants
-	mapGetResponseToModel(&plan, readLicense)
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
 	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
@@ -333,7 +334,12 @@ func (r *provisioningLicenseResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProvisioningLicense200ResponseLicense) {
+func mapGetResponseToModel(
+	model *ProvisioningLicenseModel,
+	license *sdk.GetProvisioningLicense200ResponseLicense,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if license.Id != nil {
 		model.Id = types.Int64Value(*license.Id)
 	}
@@ -354,5 +360,9 @@ func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProv
 			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
 		}
 	}
-	model.Tenants = types.ListValueMust(types.Int64Type, tenantVals)
+	list, listDiags := types.ListValue(types.Int64Type, tenantVals)
+	diags.Append(listDiags...)
+	model.Tenants = list
+
+	return diags
 }

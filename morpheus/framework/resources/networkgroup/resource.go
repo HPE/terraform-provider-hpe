@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -211,8 +212,13 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 	// On import there is no prior state, so we explicitly populate them from the
 	// API response.
 	if isImport {
-		state.TenantIds = networkGroupTenantIdsFromAPI(group.Tenants)
-		state.ResourcePermissions = networkGroupResourcePermissionsFromAPI(group.ResourcePermission)
+		tenantSet, tenantDiags := networkGroupTenantIdsFromAPI(group.Tenants)
+		resp.Diagnostics.Append(tenantDiags...)
+		state.TenantIds = tenantSet
+
+		rpVal, rpDiags := networkGroupResourcePermissionsFromAPI(group.ResourcePermission)
+		resp.Diagnostics.Append(rpDiags...)
+		state.ResourcePermissions = rpVal
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -380,7 +386,7 @@ func mapResponseToModel(model *NetworkGroupModel, group *sdk.GetNetworkGroup200R
 // into the types.Set used by the Terraform model. Used only on import.
 func networkGroupTenantIdsFromAPI(
 	tenants []sdk.GetNetworkGroup200ResponseNetworkGroupTenantsInner,
-) types.Set {
+) (types.Set, diag.Diagnostics) {
 	vals := make([]attr.Value, 0, len(tenants))
 	for _, t := range tenants {
 		if t.Id != nil {
@@ -388,7 +394,7 @@ func networkGroupTenantIdsFromAPI(
 		}
 	}
 
-	return types.SetValueMust(types.Int64Type, vals)
+	return types.SetValue(types.Int64Type, vals)
 }
 
 // networkGroupResourcePermissionsFromAPI converts the ResourcePermission object
@@ -396,10 +402,12 @@ func networkGroupTenantIdsFromAPI(
 // model. Used only on import.
 func networkGroupResourcePermissionsFromAPI(
 	rp *sdk.GetNetworkGroup200ResponseNetworkGroupResourcePermission,
-) ResourcePermissionsValue {
+) (ResourcePermissionsValue, diag.Diagnostics) {
 	if rp == nil {
-		return NewResourcePermissionsValueNull()
+		return NewResourcePermissionsValueNull(), nil
 	}
+
+	var diags diag.Diagnostics
 
 	siteVals := make([]attr.Value, 0, len(rp.Sites))
 	for _, s := range rp.Sites {
@@ -415,7 +423,12 @@ func networkGroupResourcePermissionsFromAPI(
 		}
 	}
 
-	return NewResourcePermissionsValueMust(
+	groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
+	diags.Append(listDiags...)
+	planIdsList, planDiags := types.ListValue(types.Int64Type, planVals)
+	diags.Append(planDiags...)
+
+	val, rpDiags := NewResourcePermissionsValue(
 		map[string]attr.Type{
 			"all":       types.BoolType,
 			"all_plans": types.BoolType,
@@ -425,8 +438,11 @@ func networkGroupResourcePermissionsFromAPI(
 		map[string]attr.Value{
 			"all":       types.BoolPointerValue(rp.All),
 			"all_plans": types.BoolPointerValue(rp.AllPlans.Get()),
-			"group_ids": types.ListValueMust(types.Int64Type, siteVals),
-			"plan_ids":  types.ListValueMust(types.Int64Type, planVals),
+			"group_ids": groupIdsList,
+			"plan_ids":  planIdsList,
 		},
 	)
+	diags.Append(rpDiags...)
+
+	return val, diags
 }
