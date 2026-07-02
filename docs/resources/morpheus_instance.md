@@ -909,11 +909,12 @@ hostname, so changing it forces replacement.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
-- `server_uuids` (List of String) Optional UUIDs to assign to the servers provisioned for this instance.
+- `server_uuids` (Set of String) Optional UUIDs to assign to the servers provisioned for this instance.
 Each UUID must be unique - Morpheus rejects a value already in use by
 another server. Set at provision time only; changing it forces
 replacement. When not set, Morpheus generates the UUIDs and they are
-read back here.
+read back here. This is an unordered set: Morpheus does not guarantee
+servers are returned in the order the UUIDs were supplied.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.

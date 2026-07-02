@@ -44,7 +44,7 @@ instance:
           string: {}
         description: Organization labels (keywords) assigned to the instance.
     server_uuids:
-      list:
+      set:
         computed_optional_required: computed_optional
         element_type:
           string: {}
@@ -53,16 +53,17 @@ instance:
           Each UUID must be unique - Morpheus rejects a value already in use by
           another server. Set at provision time only; changing it forces
           replacement. When not set, Morpheus generates the UUIDs and they are
-          read back here.
+          read back here. This is an unordered set: Morpheus does not guarantee
+          servers are returned in the order the UUIDs were supplied.
         plan_modifiers:
         - custom:
             imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier
-            schema_definition: listplanmodifier.UseStateForUnknown()
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.UseStateForUnknown()
         - custom:
             imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier
-            schema_definition: listplanmodifier.RequiresReplace()
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.RequiresReplace()
     instance_type_id:
       int64:
         computed_optional_required: required
@@ -626,8 +627,6 @@ instance:
       description: Whether to create a user when provisioning the bare metal instance.
       computed_optional_required: computed_optional
     evars:
-      state_for_unknown: true
-    labels:
       state_for_unknown: true
     network_domain_id:
       requires_replace: true

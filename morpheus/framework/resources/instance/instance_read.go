@@ -314,14 +314,13 @@ func getInstanceAsState(
 	// server_uuids - RequiresReplace, create-only input. Preserve the incoming
 	// value when the user set it (the API assigns exactly those UUIDs to the
 	// servers, so preserving avoids any read-back mismatch). Otherwise read the
-	// auto-generated UUIDs back positionally from containerDetails[].server.uuid
-	// so the Computed value is known after apply.
+	// auto-generated UUIDs back from containerDetails[].server.uuid so the
+	// Computed value is known after apply. It is an unordered set because Morpheus
+	// does not guarantee containerDetails ordering matches the supplied order.
 	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
 		state.ServerUuids = plan.ServerUuids
 	} else {
-		serverUUIDs, d := serverUUIDsFromContainerDetails(ctx, instance.ContainerDetails)
-		diags.Append(d...)
-		state.ServerUuids = serverUUIDs
+		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
 	}
 
 	// status
@@ -1125,15 +1124,11 @@ func getInstanceEnvVars(
 	return resp.Envs, diags
 }
 
-// serverUUIDsFromContainerDetails builds the server_uuids list positionally from
+// serverUUIDsFromContainerDetails builds the server_uuids set from
 // instance.containerDetails[].server.uuid, skipping containers with no server or
-// no uuid. Returns a null list when no UUIDs are present.
-func serverUUIDsFromContainerDetails(
-	ctx context.Context,
-	containers []sdk.InstanceContainer2,
-) (types.List, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
+// no uuid. Returns a null set when no UUIDs are present. server_uuids is an
+// unordered set because Morpheus does not guarantee containerDetails ordering.
+func serverUUIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
 	uuids := make([]string, 0, len(containers))
 	for _, cont := range containers {
 		if cont.Server != nil && cont.Server.Uuid != nil {
@@ -1141,14 +1136,7 @@ func serverUUIDsFromContainerDetails(
 		}
 	}
 
-	if len(uuids) == 0 {
-		return types.ListNull(types.StringType), diags
-	}
-
-	listVal, d := types.ListValueFrom(ctx, types.StringType, uuids)
-	diags.Append(d...)
-
-	return listVal, diags
+	return convert.StrSliceToSet(uuids)
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes

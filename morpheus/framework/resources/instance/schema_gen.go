@@ -19,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -439,9 +438,6 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Organization labels (keywords) assigned to the instance.",
 				MarkdownDescription: "Organization labels (keywords) assigned to the instance.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"layout_id": schema.Int64Attribute{
 				Required:            true,
@@ -705,15 +701,15 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 			},
-			"server_uuids": schema.ListAttribute{
+			"server_uuids": schema.SetAttribute{
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here.",
-				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here.",
-				PlanModifiers: []planmodifier.List{
-					listplanmodifier.UseStateForUnknown(),
-					listplanmodifier.RequiresReplace(),
+				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
+				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.RequiresReplace(),
 				},
 			},
 			"service_plan_options": schema.SingleNestedAttribute{
@@ -900,7 +896,7 @@ type InstanceModel struct {
 	NetworkInterfaces  types.List              `tfsdk:"network_interfaces"`
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
-	ServerUuids        types.List              `tfsdk:"server_uuids"`
+	ServerUuids        types.Set               `tfsdk:"server_uuids"`
 	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
 	Status             types.String            `tfsdk:"status"`
 	Tags               types.Set               `tfsdk:"tags"`
