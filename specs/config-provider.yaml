@@ -1463,6 +1463,10 @@ data_sources:
     read:
       path: /api/storage-volumes/{id}
       method: GET
+  storage_volumes:
+    read:
+      path: /api/storage-volumes
+      method: GET
   storage_volume_type:
     read:
       path: /api/storage-volume-types/{id}

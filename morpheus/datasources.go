@@ -45,6 +45,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageservers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
@@ -84,6 +86,8 @@ func (p *MorpheusProvider) DataSources(
 		serviceplan.NewDataSource,
 		storageserver.NewDataSource,
 		storageservers.NewDataSource,
+		storagevolume.NewDataSource,
+		storagevolumes.NewDataSource,
 		user.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
