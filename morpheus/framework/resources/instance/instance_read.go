@@ -303,6 +303,27 @@ func getInstanceAsState(
 	// name
 	state.Name = convert.StrToType(instance.Name)
 
+	// host_name - Computed: populated from the API (Morpheus derives it from the
+	// name when not explicitly set). Shared by Create/Read/Update via this mapper.
+	state.HostName = convert.StrToType(instance.HostName)
+
+	// labels - Computed set of organization labels; round-trips from the GET
+	// response (empty -> null).
+	state.Labels = convert.StrSliceToSet(instance.Labels)
+
+	// server_uuids - RequiresReplace, create-only input. Preserve the incoming
+	// value when the user set it (the API assigns exactly those UUIDs to the
+	// servers, so preserving avoids any read-back mismatch). Otherwise read the
+	// auto-generated UUIDs back positionally from containerDetails[].server.uuid
+	// so the Computed value is known after apply.
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		state.ServerUuids = plan.ServerUuids
+	} else {
+		serverUUIDs, d := serverUUIDsFromContainerDetails(ctx, instance.ContainerDetails)
+		diags.Append(d...)
+		state.ServerUuids = serverUUIDs
+	}
+
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
 	// which Morpheus reports as "unknown" while retaining the instance record,
@@ -1102,6 +1123,32 @@ func getInstanceEnvVars(
 	// }
 
 	return resp.Envs, diags
+}
+
+// serverUUIDsFromContainerDetails builds the server_uuids list positionally from
+// instance.containerDetails[].server.uuid, skipping containers with no server or
+// no uuid. Returns a null list when no UUIDs are present.
+func serverUUIDsFromContainerDetails(
+	ctx context.Context,
+	containers []sdk.InstanceContainer2,
+) (types.List, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	uuids := make([]string, 0, len(containers))
+	for _, cont := range containers {
+		if cont.Server != nil && cont.Server.Uuid != nil {
+			uuids = append(uuids, *cont.Server.Uuid)
+		}
+	}
+
+	if len(uuids) == 0 {
+		return types.ListNull(types.StringType), diags
+	}
+
+	listVal, d := types.ListValueFrom(ctx, types.StringType, uuids)
+	diags.Append(d...)
+
+	return listVal, diags
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes

@@ -155,6 +155,16 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
 	}
 
+	// labels
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
+		var labels []string
+		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
+		if resp.Diagnostics.HasError() {
+			return NewServicePlanOptionsValueNull()
+		}
+		instanceUpdateRequest.Labels = labels
+	}
+
 	// Config update handling. Currently only Azure uses map-based config updates
 	// via AdditionalProperties. Other config types (HVM, VMware, AWS) use
 	// requires_replace on their config blocks so no update logic is needed.

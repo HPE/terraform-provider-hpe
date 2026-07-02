@@ -355,6 +355,27 @@ func (g *Resource) Create(
 	}
 	reqInstance.Evars = evars
 
+	// labels
+	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
+		var labels []string
+		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		reqInstance.Labels = labels
+	}
+
+	// server_uuids - optional bring-your-own UUIDs for the provisioned servers.
+	// Create-time only (RequiresReplace); read back from containerDetails.server.uuid.
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		var serverUUIDs []string
+		resp.Diagnostics.Append(plan.ServerUuids.ElementsAs(ctx, &serverUUIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		reqInstance.ServerUUIDs = serverUUIDs
+	}
+
 	// group_id
 	reqInstance.Instance.Site = sdk.AddInstanceRequestInstanceSite{
 		Id: plan.GroupId.ValueInt64(),
@@ -398,6 +419,14 @@ func (g *Resource) Create(
 	// name
 	if !plan.Name.IsNull() {
 		reqInstance.Instance.Name = plan.Name.ValueString()
+	}
+
+	// host_name - optional; when omitted Morpheus derives the hostname from the
+	// instance name. Sent only at create: the update API cannot modify hostName
+	// (it is excluded from the instance update bind), so the schema marks
+	// host_name RequiresReplace.
+	if !plan.HostName.IsNull() && !plan.HostName.IsUnknown() {
+		reqInstance.Instance.HostName = plan.HostName.ValueStringPointer()
 	}
 
 	// network_domain_id

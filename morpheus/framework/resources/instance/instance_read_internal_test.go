@@ -93,6 +93,77 @@ func TestUnitGetChildNetworksNoSubnet(t *testing.T) {
 	}
 }
 
+// TestUnitServerUUIDsFromContainerDetails verifies server_uuids is read back
+// positionally from containerDetails[].server.uuid (MORPH-12963), skipping
+// containers with no server or no uuid, and yielding a null list when none are
+// present.
+func TestUnitServerUUIDsFromContainerDetails(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name       string
+		containers []sdk.InstanceContainer2
+		wantNull   bool
+		want       []string
+	}{
+		{
+			name: "positional uuids in order",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-1")}},
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+			},
+			want: []string{"uuid-1", "uuid-2"},
+		},
+		{
+			name: "nil server skipped",
+			containers: []sdk.InstanceContainer2{
+				{Server: nil},
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+			},
+			want: []string{"uuid-2"},
+		},
+		{
+			name: "nil uuid skipped -> null",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: nil}},
+			},
+			wantNull: true,
+		},
+		{name: "empty containers -> null", containers: nil, wantNull: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got, diags := serverUUIDsFromContainerDetails(ctx, tt.containers)
+			if diags.HasError() {
+				t.Fatalf("serverUUIDsFromContainerDetails returned diagnostics: %v", diags)
+			}
+			if tt.wantNull {
+				if !got.IsNull() {
+					t.Errorf("expected null list, got %v", got)
+				}
+
+				return
+			}
+			var uuids []string
+			if d := got.ElementsAs(ctx, &uuids, false); d.HasError() {
+				t.Fatalf("ElementsAs returned diagnostics: %v", d)
+			}
+			if len(uuids) != len(tt.want) {
+				t.Fatalf("got %d uuids %v, want %d %v", len(uuids), uuids, len(tt.want), tt.want)
+			}
+			for i := range uuids {
+				if uuids[i] != tt.want[i] {
+					t.Errorf("uuid[%d] = %q, want %q", i, uuids[i], tt.want[i])
+				}
+			}
+		})
+	}
+}
+
 // TestUnitRemoveExternalStorageVolumes verifies that storage-server (SAN) volumes —
 // e.g. Alletra MP BMaaS LUNs exported to the instance's host by
 // hpe_morpheus_storage_volume — are excluded from the instance's tracked
