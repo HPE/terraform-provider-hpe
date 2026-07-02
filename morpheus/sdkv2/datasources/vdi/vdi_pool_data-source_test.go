@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdipool"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dsvdi "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/vdi"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
@@ -39,10 +40,17 @@ func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	var dependenciesConfig string
+	// Create the VDI pool the data source looks up, rather than relying on a
+	// pre-seeded pool with a specific name existing on the target appliance.
+	dependenciesConfig, err := vdipool.RenderVdiPoolConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	datasourceConfig, err := dsvdi.RenderVdiPoolConfig(t, map[string]string{
-		"Name": `"` + name + `"`,
+		"Name": "hpe_morpheus_vdi_pool.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +64,7 @@ func TestAccMorpheusDataSourceVdiPoolExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_vdi_pool.example",
 			"name",
-			"Terraform Example VDI Pool",
+			name,
 		),
 	}
 

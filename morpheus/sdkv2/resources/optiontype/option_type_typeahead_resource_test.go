@@ -30,8 +30,21 @@ func TestAccMorpheusOptionTypeTypeaheadExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// Create the option list this option type depends on, rather than relying
+	// on a hard-coded reference-environment option list ID.
+	dependencyConfig := `
+resource "hpe_morpheus_option_list" "dep" {
+  name        = "` + name + `-list"
+  description = "dependency option list for acceptance test"
+  type        = "manual"
+  visibility  = "public"
+  real_time   = false
+}
+`
+
 	resourceConfig, err := optiontype.RenderOptionTypeTypeaheadConfig(t, map[string]string{
-		"Name": name,
+		"Name":         name,
+		"OptionListId": "hpe_morpheus_option_list.dep.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -100,20 +113,31 @@ func TestAccMorpheusOptionTypeTypeaheadExampleOk(t *testing.T) {
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_option_type_typeahead.example",
-			"labels",
-			"[\"demo\", \"terraform\"]",
+			"labels.#",
+			"2",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_option_type_typeahead.example",
+			"labels.*",
+			"demo",
+		),
+		resource.TestCheckTypeSetElemAttr(
+			"hpe_morpheus_option_type_typeahead.example",
+			"labels.*",
+			"terraform",
 		),
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_option_type_typeahead.example",
 			"name",
-			"tf_example_typeahead_option_type",
+			name,
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_option_type_typeahead.example",
 			"option_list_id",
-			"3",
+			"hpe_morpheus_option_list.dep",
+			"id",
 		),
 
 		resource.TestCheckResourceAttr(
@@ -153,13 +177,13 @@ func TestAccMorpheusOptionTypeTypeaheadExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

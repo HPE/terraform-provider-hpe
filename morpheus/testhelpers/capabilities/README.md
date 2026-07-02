@@ -73,10 +73,14 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
+| `Network` | `network` | Basic network create/update on a network-service-capable cloud |
 | `NetworkDHCP` | `network_dhcp` | DHCP server/relay |
+| `NetworkPool` | `network_pool` | Network (IP) pools |
+| `NetworkServer` | `network_server` | Network server / service integration (e.g. NSX-T) |
 | `NetworkRouter` | `network_router` | Network routers |
 | `NetworkFirewall` | `network_firewall` | Firewall rules |
 | `NetworkLoadBalancer` | `network_loadbalancer` | Load balancers |
+| `Subnet` | `subnet` | Subnets |
 
 ### Automation Integrations
 
