@@ -100,19 +100,22 @@ func datastoreCreateDatastore(ctx context.Context,
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigFunc()
 
-		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
+		if !plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
 			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
 		}
 
-		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
+		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 		createConfig.AlletraMPHVMDatastoreConfiguration1 = alletrampHvmConfig
 	case !plan.ConfigAlletrampBmaas.IsNull() && !plan.ConfigAlletrampBmaas.IsUnknown():
 		alletrampBmaasConfig := alletrampBmaasConfigFunc()
 
-		if !plan.ConfigAlletrampBmaas.ProtocolType.IsNull() {
+		if !plan.ConfigAlletrampBmaas.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampBmaas.ProtocolType.IsUnknown() {
 			alletrampBmaasConfig.ProtocolType = plan.ConfigAlletrampBmaas.ProtocolType.ValueString()
 		}
 		createConfig.AlletraMPBMAASDatastoreConfiguration = alletrampBmaasConfig
@@ -164,7 +167,8 @@ func datastoreCreateDatastore(ctx context.Context,
 	datastoreCreate.Config = createConfig
 
 	// Optional fields
-	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
+	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() &&
+		!plan.StorageServer.Id.IsNull() && !plan.StorageServer.Id.IsUnknown() {
 		storageServerConfig := storageServerFunc()
 		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
 		datastoreCreate.StorageServer = storageServerConfig
@@ -172,7 +176,8 @@ func datastoreCreateDatastore(ctx context.Context,
 
 	// resource_pool maps to the datastore's zonePool (the Alletra MP pool the
 	// LUN is provisioned into). Required for BMaaS datastores.
-	if !plan.ResourcePool.IsNull() && !plan.ResourcePool.IsUnknown() {
+	if !plan.ResourcePool.IsNull() && !plan.ResourcePool.IsUnknown() &&
+		!plan.ResourcePool.Id.IsNull() && !plan.ResourcePool.Id.IsUnknown() {
 		zonePool := &sdk.SaveDatastoreRequestDatastoreZonePool{}
 		zonePool.Id = plan.ResourcePool.Id.ValueInt64Pointer()
 		datastoreCreate.ZonePool = zonePool

@@ -87,12 +87,14 @@ func datastoreCreateCluster(ctx context.Context,
 	case !plan.ConfigAlletrampHvm.IsNull() && !plan.ConfigAlletrampHvm.IsUnknown():
 		alletrampHvmConfig := alletrampHvmConfigClusterFunc()
 
-		if !plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
+		if !plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
 			enableRansomwareString := convert.BoolToStringOnOff(plan.ConfigAlletrampHvm.EnableRansomware.ValueBool())
 			alletrampHvmConfig.Enableransomware = enableRansomwareString.ValueStringPointer()
 		}
 
-		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() {
+		if !plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
 			alletrampHvmConfig.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType.ValueString()
 		}
 
@@ -145,7 +147,8 @@ func datastoreCreateCluster(ctx context.Context,
 	datastoreCreate.Config = createConfig
 
 	// Optional fields
-	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() {
+	if !plan.StorageServer.IsNull() && !plan.StorageServer.IsUnknown() &&
+		!plan.StorageServer.Id.IsNull() && !plan.StorageServer.Id.IsUnknown() {
 		storageServerConfig := &sdk.SaveClusterDatastoreRequestDatastoreStorageServer{}
 		storageServerConfig.Id = plan.StorageServer.Id.ValueInt64Pointer()
 		datastoreCreate.StorageServer = storageServerConfig
