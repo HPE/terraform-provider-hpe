@@ -51,7 +51,10 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
-	t.Parallel()
+	// NOTE: intentionally not calling t.Parallel(). This test and
+	// TestAccMorpheusFindCloudByName both create a cloud, and Morpheus returns
+	// an empty-body 400 when two clouds are created concurrently. Running these
+	// two cloud-creating tests serially avoids that isolation conflict.
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -133,7 +136,10 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
-	t.Parallel()
+	// NOTE: intentionally not calling t.Parallel(). This test and
+	// TestAccMorpheusFindCloudById both create a cloud, and Morpheus returns
+	// an empty-body 400 when two clouds are created concurrently. Running these
+	// two cloud-creating tests serially avoids that isolation conflict.
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

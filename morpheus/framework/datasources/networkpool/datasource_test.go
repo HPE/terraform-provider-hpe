@@ -34,7 +34,7 @@ provider "hpe" {
 func TestAccMorpheusFindNetworkPoolByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkPool)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -80,7 +80,7 @@ func TestAccMorpheusFindNetworkPoolByName(t *testing.T) {
 func TestAccMorpheusFindNetworkPoolById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkPool)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

@@ -19,7 +19,7 @@ import (
 func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Network)
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -624,7 +624,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.HVM)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.NetworkServer)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

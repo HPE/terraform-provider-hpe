@@ -69,6 +69,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
 ### Read-Only
 
 - `id` (String) The ID of the appliance settings
+- `previous_settings` (String, Sensitive) Internal use only. A JSON snapshot of the appliance settings captured immediately before this resource was created. It is used to restore the appliance to its prior state on destroy so a shared appliance is not left mutated. Do not set this field.
 
 ## Import
 
