@@ -26,6 +26,7 @@ func ResourceSpecTemplateKubernetes() *schema.Resource {
 		ReadContext:   resourceSpecTemplateKubernetesRead,
 		UpdateContext: resourceSpecTemplateKubernetesUpdate,
 		DeleteContext: resourceSpecTemplateKubernetesDelete,
+		CustomizeDiff: validateSpecTemplateSource,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

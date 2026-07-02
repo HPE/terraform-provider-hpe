@@ -26,6 +26,7 @@ func ResourceSpecTemplateCloudFormation() *schema.Resource {
 		ReadContext:   resourceSpecTemplateCloudFormationRead,
 		UpdateContext: resourceSpecTemplateCloudFormationUpdate,
 		DeleteContext: resourceSpecTemplateCloudFormationDelete,
+		CustomizeDiff: validateSpecTemplateSource,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
