@@ -87,8 +87,34 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 					dynamicplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Dynamic{
-					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config"), path.MatchRoot("config_alletramp_hvm")}...),
-					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config_alletramp_hvm")}...),
+					dynamicvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config"), path.MatchRoot("config_alletramp_hvm"), path.MatchRoot("config_alletramp_bmaas")}...),
+					dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config_alletramp_hvm"), path.MatchRoot("config_alletramp_bmaas")}...),
+				},
+			},
+			"config_alletramp_bmaas": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"protocol_type": schema.StringAttribute{
+						Required:            true,
+						Description:         "Storage protocol type, either iSCSI or FC (Fibre Channel)",
+						MarkdownDescription: "Storage protocol type, either iSCSI or FC (Fibre Channel)",
+						Validators: []validator.String{
+							stringvalidator.OneOf("iSCSI", "FC"),
+						},
+					},
+				},
+				CustomType: ConfigAlletrampBmaasType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAlletrampBmaasValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				Description:         "HPE Alletra MP Bare Metal (BMaaS) Datastore Configuration",
+				MarkdownDescription: "HPE Alletra MP Bare Metal (BMaaS) Datastore Configuration",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config"), path.MatchRoot("config_alletramp_hvm")}...),
 				},
 			},
 			"config_alletramp_hvm": schema.SingleNestedAttribute{
@@ -120,7 +146,7 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 					objectplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config")}...),
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_nfs"), path.MatchRoot("config"), path.MatchRoot("config_alletramp_bmaas")}...),
 				},
 			},
 			"config_from_api": schema.DynamicAttribute{
@@ -161,7 +187,7 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 					objectplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Object{
-					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_alletramp_hvm")}...),
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config"), path.MatchRoot("config_alletramp_hvm"), path.MatchRoot("config_alletramp_bmaas")}...),
 				},
 			},
 			"datastore_type": schema.SingleNestedAttribute{
@@ -172,9 +198,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "The code of the datastore type.",
 					},
 					"id": schema.Int64Attribute{
-						Required:            true,
-						Description:         "The ID of the datastore type.",
-						MarkdownDescription: "The ID of the datastore type.",
+						Optional:            true,
+						Computed:            true,
+						Description:         "The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.",
+						MarkdownDescription: "The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.",
 					},
 				},
 				CustomType: DatastoreTypeType{
@@ -361,6 +388,7 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 			"resource_pool": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
+						Optional: true,
 						Computed: true,
 					},
 				},
@@ -369,9 +397,10 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: ResourcePoolValue{}.AttributeTypes(ctx),
 					},
 				},
+				Optional:            true,
 				Computed:            true,
-				Description:         "The resource pool this datastore is associated with (for some Cloud datastores)",
-				MarkdownDescription: "The resource pool this datastore is associated with (for some Cloud datastores)",
+				Description:         "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.",
+				MarkdownDescription: "The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.",
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -438,42 +467,43 @@ func DatastoreResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type DatastoreModel struct {
-	Active                 types.Bool               `tfsdk:"active"`
-	AllowProvision         types.Bool               `tfsdk:"allow_provision"`
-	AllowRead              types.Bool               `tfsdk:"allow_read"`
-	AllowWrite             types.Bool               `tfsdk:"allow_write"`
-	AssociatedResourceId   types.Int64              `tfsdk:"associated_resource_id"`
-	AssociatedResourceType types.String             `tfsdk:"associated_resource_type"`
-	Cloud                  CloudValue               `tfsdk:"cloud"`
-	Code                   types.String             `tfsdk:"code"`
-	Config                 types.Dynamic            `tfsdk:"config"`
-	ConfigAlletrampHvm     ConfigAlletrampHvmValue  `tfsdk:"config_alletramp_hvm"`
-	ConfigFromApi          types.Dynamic            `tfsdk:"config_from_api"`
-	ConfigNfs              ConfigNfsValue           `tfsdk:"config_nfs"`
-	DatastoreType          DatastoreTypeValue       `tfsdk:"datastore_type"`
-	Datastores             types.Set                `tfsdk:"datastores"`
-	DefaultStore           types.Bool               `tfsdk:"default_store"`
-	DrsEnabled             types.Bool               `tfsdk:"drs_enabled"`
-	ExecutionId            types.String             `tfsdk:"execution_id"`
-	ExternalId             types.String             `tfsdk:"external_id"`
-	ExternalPath           types.String             `tfsdk:"external_path"`
-	ExternalType           types.String             `tfsdk:"external_type"`
-	FreeSpace              types.Int64              `tfsdk:"free_space"`
-	HeartBeatTarget        types.Bool               `tfsdk:"heart_beat_target"`
-	Id                     types.Int64              `tfsdk:"id"`
-	Locations              types.Set                `tfsdk:"locations"`
-	Name                   types.String             `tfsdk:"name"`
-	Online                 types.Bool               `tfsdk:"online"`
-	Owner                  OwnerValue               `tfsdk:"owner"`
-	ResourcePermissions    ResourcePermissionsValue `tfsdk:"resource_permissions"`
-	ResourcePool           ResourcePoolValue        `tfsdk:"resource_pool"`
-	Status                 types.String             `tfsdk:"status"`
-	StatusMessage          types.String             `tfsdk:"status_message"`
-	StorageServer          StorageServerValue       `tfsdk:"storage_server"`
-	StorageSize            types.Int64              `tfsdk:"storage_size"`
-	Tenants                types.Set                `tfsdk:"tenants"`
-	Type                   types.String             `tfsdk:"type"`
-	Visibility             types.String             `tfsdk:"visibility"`
+	Active                 types.Bool                `tfsdk:"active"`
+	AllowProvision         types.Bool                `tfsdk:"allow_provision"`
+	AllowRead              types.Bool                `tfsdk:"allow_read"`
+	AllowWrite             types.Bool                `tfsdk:"allow_write"`
+	AssociatedResourceId   types.Int64               `tfsdk:"associated_resource_id"`
+	AssociatedResourceType types.String              `tfsdk:"associated_resource_type"`
+	Cloud                  CloudValue                `tfsdk:"cloud"`
+	Code                   types.String              `tfsdk:"code"`
+	Config                 types.Dynamic             `tfsdk:"config"`
+	ConfigAlletrampBmaas   ConfigAlletrampBmaasValue `tfsdk:"config_alletramp_bmaas"`
+	ConfigAlletrampHvm     ConfigAlletrampHvmValue   `tfsdk:"config_alletramp_hvm"`
+	ConfigFromApi          types.Dynamic             `tfsdk:"config_from_api"`
+	ConfigNfs              ConfigNfsValue            `tfsdk:"config_nfs"`
+	DatastoreType          DatastoreTypeValue        `tfsdk:"datastore_type"`
+	Datastores             types.Set                 `tfsdk:"datastores"`
+	DefaultStore           types.Bool                `tfsdk:"default_store"`
+	DrsEnabled             types.Bool                `tfsdk:"drs_enabled"`
+	ExecutionId            types.String              `tfsdk:"execution_id"`
+	ExternalId             types.String              `tfsdk:"external_id"`
+	ExternalPath           types.String              `tfsdk:"external_path"`
+	ExternalType           types.String              `tfsdk:"external_type"`
+	FreeSpace              types.Int64               `tfsdk:"free_space"`
+	HeartBeatTarget        types.Bool                `tfsdk:"heart_beat_target"`
+	Id                     types.Int64               `tfsdk:"id"`
+	Locations              types.Set                 `tfsdk:"locations"`
+	Name                   types.String              `tfsdk:"name"`
+	Online                 types.Bool                `tfsdk:"online"`
+	Owner                  OwnerValue                `tfsdk:"owner"`
+	ResourcePermissions    ResourcePermissionsValue  `tfsdk:"resource_permissions"`
+	ResourcePool           ResourcePoolValue         `tfsdk:"resource_pool"`
+	Status                 types.String              `tfsdk:"status"`
+	StatusMessage          types.String              `tfsdk:"status_message"`
+	StorageServer          StorageServerValue        `tfsdk:"storage_server"`
+	StorageSize            types.Int64               `tfsdk:"storage_size"`
+	Tenants                types.Set                 `tfsdk:"tenants"`
+	Type                   types.String              `tfsdk:"type"`
+	Visibility             types.String              `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = CloudType{}
@@ -802,6 +832,335 @@ func (v CloudValue) Type(ctx context.Context) attr.Type {
 func (v CloudValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"id": basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigAlletrampBmaasType{}
+
+type ConfigAlletrampBmaasType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAlletrampBmaasType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAlletrampBmaasType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAlletrampBmaasType) String() string {
+	return "ConfigAlletrampBmaasType"
+}
+
+func (t ConfigAlletrampBmaasType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAlletrampBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	protocolTypeAttribute, ok := attributes["protocol_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`protocol_type is missing from object`)
+
+		return nil, diags
+	}
+
+	protocolTypeVal, ok := protocolTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`protocol_type expected to be basetypes.StringValue, was: %T`, protocolTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAlletrampBmaasValue{
+		ProtocolType: protocolTypeVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAlletrampBmaasValueNull() ConfigAlletrampBmaasValue {
+	return ConfigAlletrampBmaasValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAlletrampBmaasValueUnknown() ConfigAlletrampBmaasValue {
+	return ConfigAlletrampBmaasValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAlletrampBmaasValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAlletrampBmaasValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAlletrampBmaasValue Attribute Value",
+				"While creating a ConfigAlletrampBmaasValue value, a missing attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAlletrampBmaasValue Attribute Type",
+				"While creating a ConfigAlletrampBmaasValue value, an invalid attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAlletrampBmaasValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAlletrampBmaasValue Attribute Value",
+				"While creating a ConfigAlletrampBmaasValue value, an extra attribute value was detected. "+
+					"A ConfigAlletrampBmaasValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAlletrampBmaasValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	protocolTypeAttribute, ok := attributes["protocol_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`protocol_type is missing from object`)
+
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	protocolTypeVal, ok := protocolTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`protocol_type expected to be basetypes.StringValue, was: %T`, protocolTypeAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAlletrampBmaasValueUnknown(), diags
+	}
+
+	return ConfigAlletrampBmaasValue{
+		ProtocolType: protocolTypeVal,
+		state:        attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAlletrampBmaasValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAlletrampBmaasValue {
+	object, diags := NewConfigAlletrampBmaasValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAlletrampBmaasValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAlletrampBmaasType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAlletrampBmaasValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAlletrampBmaasValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAlletrampBmaasValueMust(ConfigAlletrampBmaasValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAlletrampBmaasType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAlletrampBmaasValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAlletrampBmaasValue{}
+
+type ConfigAlletrampBmaasValue struct {
+	ProtocolType basetypes.StringValue `tfsdk:"protocol_type"`
+	state        attr.ValueState
+}
+
+func (v ConfigAlletrampBmaasValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["protocol_type"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.ProtocolType.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["protocol_type"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAlletrampBmaasValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAlletrampBmaasValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAlletrampBmaasValue) String() string {
+	return "ConfigAlletrampBmaasValue"
+}
+
+func (v ConfigAlletrampBmaasValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"protocol_type": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"protocol_type": v.ProtocolType,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAlletrampBmaasValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAlletrampBmaasValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ProtocolType.Equal(other.ProtocolType) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAlletrampBmaasValue) Type(ctx context.Context) attr.Type {
+	return ConfigAlletrampBmaasType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAlletrampBmaasValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"protocol_type": basetypes.StringType{},
 	}
 }
 

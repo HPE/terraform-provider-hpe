@@ -274,6 +274,126 @@ func (a *DatastoresAPIService) GetDatastoresExecute(r ApiGetDatastoresRequest) (
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiListDatastoreTypesRequest struct {
+	ctx        context.Context
+	ApiService *DatastoresAPIService
+}
+
+func (r ApiListDatastoreTypesRequest) Execute() (*ListDatastoreTypes200Response, *http.Response, error) {
+	return r.ApiService.ListDatastoreTypesExecute(r)
+}
+
+/*
+ListDatastoreTypes Get All Datastore Types
+
+Fetch a list of available datastore types, including the configuration option types for each. This endpoint returns all datastore types with no pagination.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListDatastoreTypesRequest
+*/
+func (a *DatastoresAPIService) ListDatastoreTypes(ctx context.Context) ApiListDatastoreTypesRequest {
+	return ApiListDatastoreTypesRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListDatastoreTypes200Response
+func (a *DatastoresAPIService) ListDatastoreTypesExecute(r ApiListDatastoreTypesRequest) (*ListDatastoreTypes200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListDatastoreTypes200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "DatastoresAPIService.ListDatastoreTypes")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/data-store-types"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v ListApplianceSettings4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v ListApplianceSettings5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiListDatastoresRequest struct {
 	ctx        context.Context
 	ApiService *DatastoresAPIService

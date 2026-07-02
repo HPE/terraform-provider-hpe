@@ -28,8 +28,9 @@ Ensure the Morpheus appliance can reach the NFS server and that the share is acc
 
 ## Example Usage
 
-Note that the `datastore_type` stanza must contain the `id` and `code`.  To find both and in particular the `id` first
-get a Morpheus API Token for authentication using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
+The `datastore_type` stanza requires only the `code`; the `id` is optional (it is resolved from the
+`code` and populated after apply). To find the `code` (and `id`) get a Morpheus API Token for authentication
+using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
 and then make a call to the `/api/data-store-types` endpoint to list the available datastore types:
 
 ```bash

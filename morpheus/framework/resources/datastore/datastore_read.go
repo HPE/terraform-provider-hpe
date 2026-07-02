@@ -21,8 +21,9 @@ import (
 )
 
 const (
-	nfsDatastoreCode = "libvirt-netfs-nfs"
-	alletraMPHVMCode = "hpedatastore-alletra-mp"
+	nfsDatastoreCode   = "libvirt-netfs-nfs"
+	alletraMPHVMCode   = "hpedatastore-alletra-mp"
+	alletraMPBmaasCode = "hpedatastore-alletra-mp-bmaas"
 	// gfs2DatastoreCode = "libvirt-dir-gfs2"
 )
 
@@ -181,8 +182,56 @@ func getDatastoreAsState(
 				configAlletraMPHVM.ProtocolType = convert.StrToType(&str)
 			}
 		}
+		// If the API response omits a field the user set, fall back to the
+		// planned/prior value (protocol_type is Required; enable_ransomware is
+		// Optional+Computed) to avoid an inconsistent-result-after-apply error.
+		if configAlletraMPHVM.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampHvm.ProtocolType.IsUnknown() {
+			configAlletraMPHVM.ProtocolType = plan.ConfigAlletrampHvm.ProtocolType
+		}
+		if configAlletraMPHVM.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsNull() &&
+			!plan.ConfigAlletrampHvm.EnableRansomware.IsUnknown() {
+			configAlletraMPHVM.EnableRansomware = plan.ConfigAlletrampHvm.EnableRansomware
+		}
 		configAlletraMPHVM.state = attr.ValueStateKnown
 		state.ConfigAlletrampHvm = configAlletraMPHVM
+
+		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
+		diags = append(diags, pdiags...)
+		if diags.HasError() {
+			return state, diags
+		}
+
+		state.ConfigFromApi = configFromAPI
+
+	case alletraMPBmaasCode:
+		keysMap := map[string]string{
+			"protocol_type": "protocolType",
+		}
+		keysFromMap, pdiags := compare.CheckPlanAttributeAgainstAPIAttribute(
+			ctx, plan.ConfigAlletrampBmaas, datastore.Config, keysMap,
+		)
+		diags = append(diags, pdiags...)
+
+		var configAlletraMPBmaas ConfigAlletrampBmaasValue
+		for k, v := range datastore.Config {
+			if k == "protocolType" {
+				if str, ok := v.(string); ok {
+					configAlletraMPBmaas.ProtocolType = convert.StrToType(&str)
+				}
+			}
+		}
+		// If the API response omits protocol_type (Required), fall back to the
+		// planned/prior value to avoid an inconsistent-result-after-apply error.
+		if configAlletraMPBmaas.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampBmaas.ProtocolType.IsNull() &&
+			!plan.ConfigAlletrampBmaas.ProtocolType.IsUnknown() {
+			configAlletraMPBmaas.ProtocolType = plan.ConfigAlletrampBmaas.ProtocolType
+		}
+		configAlletraMPBmaas.state = attr.ValueStateKnown
+		state.ConfigAlletrampBmaas = configAlletraMPBmaas
 
 		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
 		diags = append(diags, pdiags...)

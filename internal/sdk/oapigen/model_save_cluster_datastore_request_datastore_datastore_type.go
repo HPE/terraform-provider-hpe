@@ -20,7 +20,9 @@ var _ MappedNullable = &SaveClusterDatastoreRequestDatastoreDatastoreType{}
 
 // SaveClusterDatastoreRequestDatastoreDatastoreType struct for SaveClusterDatastoreRequestDatastoreDatastoreType
 type SaveClusterDatastoreRequestDatastoreDatastoreType struct {
-	Id                   *int64                 `json:"id,omitempty"`
+	Id *int64 `json:"id,omitempty"`
+	// The code of the datastore type. If provided, it takes precedence over id.
+	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -38,6 +40,9 @@ func (o SaveClusterDatastoreRequestDatastoreDatastoreType) ToMap() (map[string]i
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
+	}
+	if !IsNil(o.Code) {
+		toSerialize["code"] = o.Code
 	}
 
 	for key, value := range o.AdditionalProperties {
