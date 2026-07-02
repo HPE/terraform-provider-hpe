@@ -10,7 +10,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
-// TestMapResponseToModel_ComputedFieldsKnownAfterApply is a regression test for
+// TestUnitMapResponseToModel_ComputedFieldsKnownAfterApply is a regression test for
 // MORPH-13600. When a subnet is created with only network_id/type_id/name and no
 // CIDR, the API returns nil for cidr, netmask and subnet_address. Those
 // attributes are Computed with UseStateForUnknown, so on create their planned
@@ -18,7 +18,7 @@ import (
 // rather than leaving the unknown plan value in place, otherwise Terraform fails
 // with "Provider returned invalid result object after apply ... still indicated
 // an unknown value".
-func TestMapResponseToModel_ComputedFieldsKnownAfterApply(t *testing.T) {
+func TestUnitMapResponseToModel_ComputedFieldsKnownAfterApply(t *testing.T) {
 	t.Parallel()
 
 	// Simulate the create plan: computed attributes start out unknown.
@@ -73,10 +73,10 @@ func TestMapResponseToModel_ComputedFieldsKnownAfterApply(t *testing.T) {
 	}
 }
 
-// TestMapResponseToModel_ComputedFieldsPopulated verifies the happy path: when
+// TestUnitMapResponseToModel_ComputedFieldsPopulated verifies the happy path: when
 // the API returns values for the derived fields (e.g. an Azure subnet created
 // from config.subnetCidr), they are mapped through into state.
-func TestMapResponseToModel_ComputedFieldsPopulated(t *testing.T) {
+func TestUnitMapResponseToModel_ComputedFieldsPopulated(t *testing.T) {
 	t.Parallel()
 
 	model := &SubnetModel{
