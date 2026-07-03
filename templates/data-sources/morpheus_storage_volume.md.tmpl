@@ -8,8 +8,20 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> **Note** Storage volume names are not guaranteed to be unique. When looking
+up by `name`, this data source returns an error (`multiple storage volumes were
+returned`) if more than one storage volume matches. To retrieve one or more
+storage volumes by name without this restriction, use the
+`hpe_morpheus_storage_volumes` (plural) data source with a `filter` block.
+
 ## Example Usage
 
-{{tffile "examples/data-sources/morpheus_storage_volume/data-source.tf"}}
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_storage_volume/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_storage_volume/example-name.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

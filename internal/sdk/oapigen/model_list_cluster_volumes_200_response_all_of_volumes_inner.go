@@ -58,28 +58,27 @@ type ListClusterVolumes200ResponseAllOfVolumesInner struct {
 	Datastore            NullableListClusterVolumes200ResponseAllOfVolumesInnerDatastore `json:"datastore,omitempty"`
 	DatastoreId          NullableInt64                                                   `json:"datastoreId,omitempty"`
 	DatastoreOption      *string                                                         `json:"datastoreOption,omitempty"`
-	// The storage group the volume belongs to (id and name).
-	StorageGroup         map[string]interface{} `json:"storageGroup,omitempty"`
-	Namespace            NullableString         `json:"namespace,omitempty"`
-	StorageServer        map[string]interface{} `json:"storageServer,omitempty"`
-	Source               *string                `json:"source,omitempty"`
-	UniqueId             NullableString         `json:"uniqueId,omitempty"`
-	InternalId           NullableString         `json:"internalId,omitempty"`
-	ExternalId           *string                `json:"externalId,omitempty"`
-	ProvisionType        NullableString         `json:"provisionType,omitempty"`
-	CopyType             NullableString         `json:"copyType,omitempty"`
-	FiberWwn             NullableString         `json:"fiberWwn,omitempty"`
-	Wwn                  NullableString         `json:"wwn,omitempty"`
-	FileName             NullableString         `json:"fileName,omitempty"`
-	ClaimName            NullableString         `json:"claimName,omitempty"`
-	SharePath            NullableString         `json:"sharePath,omitempty"`
-	SourceId             *string                `json:"sourceId,omitempty"`
-	SourceImage          *string                `json:"sourceImage,omitempty"`
-	ImageType            *string                `json:"imageType,omitempty"`
-	Online               *bool                  `json:"online,omitempty"`
-	RawData              *string                `json:"rawData,omitempty"`
-	CreateForMultiAttach *bool                  `json:"createForMultiAttach,omitempty"`
-	IsMultiAttach        *bool                  `json:"isMultiAttach,omitempty"`
+	StorageGroup         *ListClusterVolumes200ResponseAllOfVolumesInnerStorageGroup     `json:"storageGroup,omitempty"`
+	Namespace            NullableString                                                  `json:"namespace,omitempty"`
+	StorageServer        *ListClusterVolumes200ResponseAllOfVolumesInnerStorageServer    `json:"storageServer,omitempty"`
+	Source               *string                                                         `json:"source,omitempty"`
+	UniqueId             NullableString                                                  `json:"uniqueId,omitempty"`
+	InternalId           NullableString                                                  `json:"internalId,omitempty"`
+	ExternalId           *string                                                         `json:"externalId,omitempty"`
+	ProvisionType        NullableString                                                  `json:"provisionType,omitempty"`
+	CopyType             NullableString                                                  `json:"copyType,omitempty"`
+	FiberWwn             NullableString                                                  `json:"fiberWwn,omitempty"`
+	Wwn                  NullableString                                                  `json:"wwn,omitempty"`
+	FileName             NullableString                                                  `json:"fileName,omitempty"`
+	ClaimName            NullableString                                                  `json:"claimName,omitempty"`
+	SharePath            NullableString                                                  `json:"sharePath,omitempty"`
+	SourceId             *string                                                         `json:"sourceId,omitempty"`
+	SourceImage          *string                                                         `json:"sourceImage,omitempty"`
+	ImageType            *string                                                         `json:"imageType,omitempty"`
+	Online               *bool                                                           `json:"online,omitempty"`
+	RawData              *string                                                         `json:"rawData,omitempty"`
+	CreateForMultiAttach *bool                                                           `json:"createForMultiAttach,omitempty"`
+	IsMultiAttach        *bool                                                           `json:"isMultiAttach,omitempty"`
 	// Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 	StorageProfile       NullableString                                                `json:"storageProfile,omitempty"`
 	Account              NullableListClusterVolumes200ResponseAllOfVolumesInnerAccount `json:"account,omitempty"`
@@ -213,7 +212,7 @@ func (o ListClusterVolumes200ResponseAllOfVolumesInner) ToMap() (map[string]inte
 	if !IsNil(o.DatastoreOption) {
 		toSerialize["datastoreOption"] = o.DatastoreOption
 	}
-	if o.StorageGroup != nil {
+	if !IsNil(o.StorageGroup) {
 		toSerialize["storageGroup"] = o.StorageGroup
 	}
 	if o.Namespace.IsSet() {

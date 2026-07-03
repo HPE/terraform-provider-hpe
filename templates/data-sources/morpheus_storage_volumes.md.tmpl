@@ -1,0 +1,40 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_storage_volumes/data-source.tf" }}
+
+## Supported `filter` keys
+
+Each `filter` block sets `name` to one of the keys below and `values` to one or
+more Go regular expressions. A storage volume matches a block when the key's
+value matches **any** of the supplied `values`; multiple `filter` blocks are
+**ANDed** together.
+
+| Key | Matches |
+|-----|---------|
+| `name` | The storage volume name. |
+| `type_id` | The storage volume type id. |
+| `type_code` | The storage volume type code. |
+| `datastore_id` | The datastore id associated with the volume. |
+| `datastore_name` | The datastore name associated with the volume. |
+| `cloud_id` | The cloud (zone) id the volume belongs to. |
+| `cloud_name` | The cloud (zone) name the volume belongs to. |
+| `storage_server_id` | The storage server id the volume is provisioned on. |
+| `storage_server_name` | The storage server name the volume is provisioned on. |
+| `status` | The current status of the volume. |
+| `uuid` | The UUID of the volume. |
+| `provision_type` | The provisioning type of the volume. |
+| `ref_type` | The reference type. |
+| `ref_id` | The reference id. |
+| `pool_name` | The storage pool name. |
+
+{{ .SchemaMarkdown | trimspace }}
