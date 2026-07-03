@@ -324,9 +324,6 @@ func (r *clusterAffinityGroupResource) Update(
 	plan.TenantIds = savedTenantIds
 	plan.ResourcePermissions = savedRP
 
-	plan.TenantIds = savedTenantIds
-	plan.ResourcePermissions = savedRP
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
