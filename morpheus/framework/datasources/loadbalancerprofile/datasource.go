@@ -586,8 +586,8 @@ func populateServerSSLConfig(
 func populateTagsFromHTTP(ctx context.Context, state *LoadBalancerProfileModel, tags []sdk.LoadBalancerProfileTag24) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag24) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -603,8 +603,8 @@ func populateTagsFromFastTCP(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag25) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -620,8 +620,8 @@ func populateTagsFromFastUDP(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag26) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -637,8 +637,8 @@ func populateTagsFromCookiePersistence(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag27) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -654,8 +654,8 @@ func populateTagsFromSourceIPPersistence(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag28) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -671,8 +671,8 @@ func populateTagsFromGenericPersistence(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag29) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -688,8 +688,8 @@ func populateTagsFromClientSSL(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag30) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})
@@ -705,8 +705,8 @@ func populateTagsFromServerSSL(
 ) {
 	tagSet, diags := convert.ToSetType(ctx, tags, func(t sdk.LoadBalancerProfileTag31) TagsValue {
 		return TagsValue{
-			Name:  convert.StrToType(t.Name),
-			Value: convert.StrToType(t.Value),
+			Name:  convert.StrToType(t.Tag),
+			Value: convert.StrToType(t.Scope),
 			state: attr.ValueStateKnown,
 		}
 	})

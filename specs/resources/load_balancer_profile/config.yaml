@@ -4,7 +4,7 @@ load_balancer_profile:
     # it to the API "on"/"off" string. Replaces the auto-extracted string enum.
     config_http_https_redirect:
       bool:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: >-
           Whether to redirect HTTP traffic to HTTPS. Maps to the API "on"/"off"
           value; leave unset for no redirection. When false ("off"), set
@@ -104,6 +104,18 @@ load_balancer_profile:
       description: >-
         Cookie time type: `session` (LBSessionCookieTime) or `persistence`
         (LBPersistenceCookieTime). Required when cookie_mode is INSERT.
+    # config_http sub-attributes are Optional-only (not Computed) so omitted
+    # values plan as known-null instead of unknown. Read copies the planned
+    # config_http block verbatim into state, so a Computed value left unset would
+    # stay unknown after apply ("All values must be known after apply").
+    config_http.ntlm_authentication:
+      computed_optional_required: optional
+    config_http.redirect_address:
+      computed_optional_required: optional
+    config_http.request_body_size:
+      computed_optional_required: optional
+    config_http.x_forwarded_for:
+      computed_optional_required: optional
     # The 8 config blocks are mutually exclusive (only the one matching
     # service_type may be set).
     config_http:

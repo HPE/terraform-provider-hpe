@@ -375,57 +375,57 @@ func readTagsFromConfig(
 	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.HTTPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.FastTCPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.FastUDPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.CookiePersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.SourceIPPersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.GenericPersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.ClientSSLLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.ServerSSLLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  ptrStr(t.Tag),
+				value: ptrStr(t.Scope),
 			})
 		}
 	}
@@ -520,8 +520,8 @@ func buildTagsForHTTPCreate(ctx context.Context, tags types.Set) []sdk.LoadBalan
 	result := make([]sdk.LoadBalancerProfileTag8, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag8{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -536,8 +536,8 @@ func buildTagsForFastTCPCreate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag9, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag9{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -552,8 +552,8 @@ func buildTagsForFastUDPCreate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag10, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag10{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -568,8 +568,8 @@ func buildTagsForCookieCreate(ctx context.Context, tags types.Set) []sdk.LoadBal
 	result := make([]sdk.LoadBalancerProfileTag11, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag11{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -584,8 +584,8 @@ func buildTagsForSourceIPCreate(ctx context.Context, tags types.Set) []sdk.LoadB
 	result := make([]sdk.LoadBalancerProfileTag12, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag12{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -600,8 +600,8 @@ func buildTagsForGenericCreate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag13, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag13{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -616,8 +616,8 @@ func buildTagsForClientSSLCreate(ctx context.Context, tags types.Set) []sdk.Load
 	result := make([]sdk.LoadBalancerProfileTag14, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag14{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -632,8 +632,8 @@ func buildTagsForServerSSLCreate(ctx context.Context, tags types.Set) []sdk.Load
 	result := make([]sdk.LoadBalancerProfileTag15, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag15{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -649,8 +649,8 @@ func buildTagsForHTTPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalan
 	result := make([]sdk.LoadBalancerProfileTag32, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag32{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -665,8 +665,8 @@ func buildTagsForFastTCPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag33, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag33{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -681,8 +681,8 @@ func buildTagsForFastUDPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag34, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag34{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -697,8 +697,8 @@ func buildTagsForCookieUpdate(ctx context.Context, tags types.Set) []sdk.LoadBal
 	result := make([]sdk.LoadBalancerProfileTag35, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag35{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -713,8 +713,8 @@ func buildTagsForSourceIPUpdate(ctx context.Context, tags types.Set) []sdk.LoadB
 	result := make([]sdk.LoadBalancerProfileTag36, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag36{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -729,8 +729,8 @@ func buildTagsForGenericUpdate(ctx context.Context, tags types.Set) []sdk.LoadBa
 	result := make([]sdk.LoadBalancerProfileTag37, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag37{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -745,8 +745,8 @@ func buildTagsForClientSSLUpdate(ctx context.Context, tags types.Set) []sdk.Load
 	result := make([]sdk.LoadBalancerProfileTag38, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag38{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 
@@ -761,8 +761,8 @@ func buildTagsForServerSSLUpdate(ctx context.Context, tags types.Set) []sdk.Load
 	result := make([]sdk.LoadBalancerProfileTag39, 0, len(pairs))
 	for _, p := range pairs {
 		result = append(result, sdk.LoadBalancerProfileTag39{
-			Name:  sdk.PtrString(p.name),
-			Value: sdk.PtrString(p.value),
+			Tag:   sdk.PtrString(p.name),
+			Scope: sdk.PtrString(p.value),
 		})
 	}
 

@@ -34,6 +34,10 @@ func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" || os.Getenv("TF_ACC_TRANSPORT_ZONE_ID") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID and TF_ACC_TRANSPORT_ZONE_ID to run this test")
+	}
+
 	dsConfig, err := networktransportzone.RenderNetworkTransportZoneDataSourceByIDConfig(t, map[string]string{
 		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
 		"Id":              os.Getenv("TF_ACC_TRANSPORT_ZONE_ID"),
@@ -73,6 +77,10 @@ func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" || os.Getenv("TF_ACC_TRANSPORT_ZONE_NAME") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID and TF_ACC_TRANSPORT_ZONE_NAME to run this test")
+	}
+
 	dsConfig, err := networktransportzone.RenderNetworkTransportZoneDataSourceByNameConfig(t, map[string]string{
 		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
 		"Name":            os.Getenv("TF_ACC_TRANSPORT_ZONE_NAME"),
@@ -108,6 +116,10 @@ func TestAccMorpheusNetworkTransportZoneNotFound(t *testing.T) {
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
+	}
+
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID to run this test")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()

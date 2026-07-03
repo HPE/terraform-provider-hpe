@@ -56,6 +56,14 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// access_key and secret_key are write-only, so their values are available
+	// only from the configuration (they are null in the plan and state).
+	var config StorageBucketModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.AddStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueString(),
 		ProviderType: plan.ProviderType.ValueString(),
@@ -71,18 +79,22 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		retType := "delete"
 		body.RetentionPolicyType = &retType
 	}
-	if !plan.Endpoint.IsNull() || !plan.AccessKey.IsNull() || !plan.SecretKey.IsNull() {
-		// These are typically passed via config; set as additional properties
-		body.AdditionalProperties = map[string]interface{}{}
-		if !plan.Endpoint.IsNull() {
-			body.AdditionalProperties["endpoint"] = plan.Endpoint.ValueString()
-		}
-		if !plan.AccessKey.IsNull() {
-			body.AdditionalProperties["accessKey"] = plan.AccessKey.ValueString()
-		}
-		if !plan.SecretKey.IsNull() {
-			body.AdditionalProperties["secretKey"] = plan.SecretKey.ValueString()
-		}
+	// The SDK serializes the request's `config` oneOf unconditionally, and an
+	// unset oneOf marshals to empty bytes ("unexpected end of JSON input"). The
+	// schema exposes only S3-style credentials (access_key/secret_key/endpoint),
+	// so always attach a (possibly empty) S3 config variant.
+	s3 := sdk.AddStorageBucketsRequestStorageBucketConfigOneOf{}
+	if !config.AccessKey.IsNull() {
+		s3.AccessKey = config.AccessKey.ValueStringPointer()
+	}
+	if !config.SecretKey.IsNull() {
+		s3.SecretKey = config.SecretKey.ValueStringPointer()
+	}
+	if !plan.Endpoint.IsNull() {
+		s3.Endpoint = plan.Endpoint.ValueStringPointer()
+	}
+	body.Config = sdk.AddStorageBucketsRequestStorageBucketConfig{
+		AddStorageBucketsRequestStorageBucketConfigOneOf: &s3,
 	}
 
 	result, httpResp, err := client.StorageAPI.AddStorageBuckets(ctx).
@@ -179,6 +191,13 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	// access_key and secret_key are write-only, so read them from config.
+	var config StorageBucketModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
@@ -196,16 +215,22 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		retType := "delete"
 		body.RetentionPolicyType = &retType
 	}
-	if !plan.Endpoint.IsNull() || !plan.AccessKey.IsNull() || !plan.SecretKey.IsNull() {
-		body.AdditionalProperties = map[string]interface{}{}
+	// Only attach the config oneOf when there is a credential value to send. A
+	// non-nil wrapper with an empty oneOf fails to marshal, and sending an empty
+	// config on a metadata-only update could clear stored credentials.
+	if !config.AccessKey.IsNull() || !config.SecretKey.IsNull() || !plan.Endpoint.IsNull() {
+		s3 := sdk.UpdateStorageBucketsRequestStorageBucketConfigOneOf{}
+		if !config.AccessKey.IsNull() {
+			s3.AccessKey = config.AccessKey.ValueStringPointer()
+		}
+		if !config.SecretKey.IsNull() {
+			s3.SecretKey = config.SecretKey.ValueStringPointer()
+		}
 		if !plan.Endpoint.IsNull() {
-			body.AdditionalProperties["endpoint"] = plan.Endpoint.ValueString()
+			s3.Endpoint = plan.Endpoint.ValueStringPointer()
 		}
-		if !plan.AccessKey.IsNull() {
-			body.AdditionalProperties["accessKey"] = plan.AccessKey.ValueString()
-		}
-		if !plan.SecretKey.IsNull() {
-			body.AdditionalProperties["secretKey"] = plan.SecretKey.ValueString()
+		body.Config = &sdk.UpdateStorageBucketsRequestStorageBucketConfig{
+			UpdateStorageBucketsRequestStorageBucketConfigOneOf: &s3,
 		}
 	}
 

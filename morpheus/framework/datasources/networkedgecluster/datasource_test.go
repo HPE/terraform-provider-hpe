@@ -34,6 +34,10 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" || os.Getenv("TF_ACC_EDGE_CLUSTER_ID") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID and TF_ACC_EDGE_CLUSTER_ID to run this test")
+	}
+
 	dsConfig, err := networkedgecluster.RenderNetworkEdgeClusterDataSourceByIDConfig(t, map[string]string{
 		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
 		"Id":              os.Getenv("TF_ACC_EDGE_CLUSTER_ID"),
@@ -73,6 +77,10 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" || os.Getenv("TF_ACC_EDGE_CLUSTER_NAME") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID and TF_ACC_EDGE_CLUSTER_NAME to run this test")
+	}
+
 	dsConfig, err := networkedgecluster.RenderNetworkEdgeClusterDataSourceByNameConfig(t, map[string]string{
 		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
 		"Name":            os.Getenv("TF_ACC_EDGE_CLUSTER_NAME"),
@@ -108,6 +116,10 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
+	}
+
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("set TF_ACC_NETWORK_SERVER_ID to run this test")
 	}
 
 	providerConfig := testhelpers.ProviderBlock()

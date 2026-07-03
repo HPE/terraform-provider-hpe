@@ -293,25 +293,21 @@ func LoadBalancerProfileResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"https_redirect": schema.BoolAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Whether to redirect HTTP traffic to HTTPS. Maps to the API \"on\"/\"off\" value; leave unset for no redirection. When false (\"off\"), set redirect_address.",
 						MarkdownDescription: "Whether to redirect HTTP traffic to HTTPS. Maps to the API \"on\"/\"off\" value; leave unset for no redirection. When false (\"off\"), set redirect_address.",
 					},
 					"ntlm_authentication": schema.BoolAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Whether NTLM authentication is enabled.",
 						MarkdownDescription: "Whether NTLM authentication is enabled.",
 					},
 					"redirect_address": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Redirect address. Required when httpsRedirect is \"off\".",
 						MarkdownDescription: "Redirect address. Required when httpsRedirect is \"off\".",
 					},
 					"request_body_size": schema.Int64Attribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "Maximum request body size in bytes. Range 1-2147483647.",
 						MarkdownDescription: "Maximum request body size in bytes. Range 1-2147483647.",
 					},
@@ -338,7 +334,6 @@ func LoadBalancerProfileResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"x_forwarded_for": schema.StringAttribute{
 						Optional:            true,
-						Computed:            true,
 						Description:         "X-Forwarded-For header handling.",
 						MarkdownDescription: "X-Forwarded-For header handling.",
 						Validators: []validator.String{

@@ -4,11 +4,8 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -125,26 +122,11 @@ func ResourceIntegrationVRO() *schema.Resource {
 				Description: "The password of the account used to connect to vRO (required for non-aria auth types)",
 				Optional:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
 			"tenant": {
 				Type:        schema.TypeString,
 				Description: "The tenant of the account used to connect to vRO (required for non-aria auth types)",
 				Optional:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
 			},
 			"auth_id": {
 				Type:        schema.TypeString,
@@ -340,8 +322,11 @@ func resourceIntegrationVRORead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	d.Set("password", integration.PasswordHash)
-	d.Set("tenant", integration.TokenHash)
+	// password and tenant are write-only from the API's perspective (it returns
+	// only hashes), so preserve the configured values instead of overwriting
+	// state with the hash.
+	d.Set("password", d.Get("password"))
+	d.Set("tenant", d.Get("tenant"))
 	// d.Set("auth_type", integration.Config)
 
 	return diags

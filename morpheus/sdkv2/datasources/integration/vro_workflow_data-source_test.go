@@ -5,7 +5,6 @@ package integration_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -28,13 +27,11 @@ func TestAccMorpheusDataSourceVroWorkflowExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
 	var dependenciesConfig string
 
-	datasourceConfig, err := dsintegration.RenderVroWorkflowConfig(t, map[string]string{
-		"Name": name,
-	})
+	// Look up the seeded workflow by its real name (the render default), which
+	// matches the Check below. The template quotes the value itself.
+	datasourceConfig, err := dsintegration.RenderVroWorkflowConfig(t, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

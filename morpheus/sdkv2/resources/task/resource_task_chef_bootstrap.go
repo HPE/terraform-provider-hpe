@@ -2,11 +2,8 @@ package task
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 	"strconv"
-	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
@@ -69,14 +66,7 @@ func ResourceTaskChefBootstrap() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The chef databag key",
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				Optional: true,
+				Optional:    true,
 			},
 			"data_bag_key_path": {
 				Type:        schema.TypeString,
@@ -378,7 +368,9 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("chef_server_id", serverId)
 	d.Set("environment", chefBootstrapTask.TaskOptions.ChefEnv)
 	d.Set("run_list", chefBootstrapTask.TaskOptions.ChefRunList)
-	d.Set("data_bag_key", chefBootstrapTask.TaskOptions.ChefDataKeyHash)
+	// data_bag_key is write-only: the API returns only a hash, so preserve the
+	// configured value to keep the plan stable after apply.
+	d.Set("data_bag_key", d.Get("data_bag_key"))
 	d.Set("data_bag_key_path", chefBootstrapTask.TaskOptions.ChefDataKeyPath)
 	d.Set("node_name", chefBootstrapTask.TaskOptions.ChefNodeName)
 	d.Set("node_attributes", chefBootstrapTask.TaskOptions.ChefAttributes)

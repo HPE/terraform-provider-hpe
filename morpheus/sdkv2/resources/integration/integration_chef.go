@@ -4,10 +4,7 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,17 +78,10 @@ func ResourceIntegrationChef() *schema.Resource {
 				ConflictsWith: []string{"credential_id"},
 			},
 			"private_key": {
-				Type:        schema.TypeString,
-				Description: "The private key of the account used to connect to the Chef server",
-				Optional:    true,
-				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
+				Type:          schema.TypeString,
+				Description:   "The private key of the account used to connect to the Chef server",
+				Optional:      true,
+				Sensitive:     true,
 				ConflictsWith: []string{"credential_id"},
 			},
 			"credential_id": {
@@ -106,13 +96,6 @@ func ResourceIntegrationChef() *schema.Resource {
 				Description: "The organization validator key used to connect to the Chef server",
 				Optional:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
 			},
 			/* AWAITING API SUPPORT
 			"databags": {
@@ -367,12 +350,16 @@ func resourceIntegrationChefRead(ctx context.Context, d *schema.ResourceData, me
 
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Config.ChefUser)
-		d.Set("private_key", integration.Config.UserKeyHash)
+		// private_key is write-only: the API returns only a hash, so preserve
+		// the configured value instead of overwriting state with the hash.
+		d.Set("private_key", d.Get("private_key"))
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}
 
-	d.Set("organization_validator_key", integration.Config.OrgKeyHash)
+	// organization_validator_key is write-only: preserve the configured value
+	// rather than storing the API-returned hash.
+	d.Set("organization_validator_key", d.Get("organization_validator_key"))
 
 	// databags
 	/* AWAITING API SUPPORT

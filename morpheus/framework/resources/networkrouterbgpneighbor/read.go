@@ -59,7 +59,9 @@ func getNetworkRouterBgpNeighborAsState(
 	if neighbor.Description.IsSet() {
 		state.Description = convert.StrToType(neighbor.Description.Get())
 	} else {
-		state.Description = types.StringNull()
+		// The API accepts description on write but never echoes it back on read.
+		// Preserve the planned/prior value to avoid an inconsistent-result error.
+		state.Description = plan.Description
 	}
 
 	if neighbor.ForwardingAddress.IsSet() {

@@ -20,10 +20,10 @@ var _ MappedNullable = &LoadBalancerProfileTag1{}
 
 // LoadBalancerProfileTag1 NSX-T tag applied to the load balancer profile.
 type LoadBalancerProfileTag1 struct {
-	// Tag name.
-	Name *string `json:"name,omitempty"`
-	// Tag scope/value.
-	Value                *string                `json:"value,omitempty"`
+	// Tag scope. Maps to the Terraform tag \"value\".
+	Scope *string `json:"scope,omitempty"`
+	// Tag name. Maps to the Terraform tag \"name\".
+	Tag                  *string                `json:"tag,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -39,11 +39,11 @@ func (o LoadBalancerProfileTag1) MarshalJSON() ([]byte, error) {
 
 func (o LoadBalancerProfileTag1) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Name) {
-		toSerialize["name"] = o.Name
+	if !IsNil(o.Scope) {
+		toSerialize["scope"] = o.Scope
 	}
-	if !IsNil(o.Value) {
-		toSerialize["value"] = o.Value
+	if !IsNil(o.Tag) {
+		toSerialize["tag"] = o.Tag
 	}
 
 	for key, value := range o.AdditionalProperties {
