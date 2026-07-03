@@ -180,11 +180,14 @@ func (m NormalizeLineEndingsModifier) PlanModifyString(
 	req planmodifier.StringRequest,
 	resp *planmodifier.StringResponse,
 ) {
-	if req.ConfigValue.IsNull() || req.ConfigValue.IsUnknown() {
+	// Normalize the accumulated planned value (PlanValue), not the raw config:
+	// plan modifiers run sequentially and a prior modifier may have populated
+	// PlanValue while ConfigValue stays null.
+	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
 		return
 	}
 
-	original := req.ConfigValue.ValueString()
+	original := req.PlanValue.ValueString()
 	normalized := strings.ReplaceAll(original, "\r\n", "\n")
 	normalized = strings.ReplaceAll(normalized, "\r", "\n")
 

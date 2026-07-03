@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package modifiers
 
 import (
@@ -12,39 +14,39 @@ func TestNormalizeLineEndingsModifier(t *testing.T) {
 	t.Parallel()
 
 	cases := map[string]struct {
-		config  types.String
+		plan    types.String
 		want    string
-		wantSet bool // whether the modifier overrides PlanValue
+		wantSet bool
 	}{
 		"crlf normalized to lf": {
-			config:  types.StringValue("line1\r\nline2\r\nline3"),
+			plan:    types.StringValue("line1\r\nline2\r\nline3"),
 			want:    "line1\nline2\nline3",
 			wantSet: true,
 		},
 		"lone cr normalized to lf": {
-			config:  types.StringValue("line1\rline2"),
+			plan:    types.StringValue("line1\rline2"),
 			want:    "line1\nline2",
 			wantSet: true,
 		},
 		"mixed cr and crlf": {
-			config:  types.StringValue("a\r\nb\rc\n"),
+			plan:    types.StringValue("a\r\nb\rc\n"),
 			want:    "a\nb\nc\n",
 			wantSet: true,
 		},
 		"lf only left unchanged": {
-			config:  types.StringValue("already\nnormalized\n"),
+			plan:    types.StringValue("already\nnormalized\n"),
 			wantSet: false,
 		},
 		"no line endings left unchanged": {
-			config:  types.StringValue("single line"),
+			plan:    types.StringValue("single line"),
 			wantSet: false,
 		},
-		"null config left unchanged": {
-			config:  types.StringNull(),
+		"null plan left unchanged": {
+			plan:    types.StringNull(),
 			wantSet: false,
 		},
-		"unknown config left unchanged": {
-			config:  types.StringUnknown(),
+		"unknown plan left unchanged": {
+			plan:    types.StringUnknown(),
 			wantSet: false,
 		},
 	}
@@ -54,10 +56,17 @@ func TestNormalizeLineEndingsModifier(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			// The framework initialises PlanValue to the configured value for a
-			// configured attribute; mirror that here.
-			resp := &planmodifier.StringResponse{PlanValue: tc.config}
-			req := planmodifier.StringRequest{ConfigValue: tc.config, PlanValue: tc.config}
+			// ConfigValue is deliberately null for every case. The modifier must
+			// normalize the accumulated PlanValue (as populated by prior plan
+			// modifiers), never the raw ConfigValue — so a case such as "crlf
+			// normalized to lf" with a null ConfigValue and a CRLF PlanValue
+			// exercises the chained-modifier scenario and would fail if the
+			// modifier read ConfigValue.
+			resp := &planmodifier.StringResponse{PlanValue: tc.plan}
+			req := planmodifier.StringRequest{
+				ConfigValue: types.StringNull(),
+				PlanValue:   tc.plan,
+			}
 
 			NormalizeLineEndingsModifier{}.PlanModifyString(context.Background(), req, resp)
 
@@ -70,9 +79,9 @@ func TestNormalizeLineEndingsModifier(t *testing.T) {
 			}
 
 			// When nothing needs normalizing the modifier must leave PlanValue
-			// as the original configured value.
-			if !resp.PlanValue.Equal(tc.config) {
-				t.Errorf("PlanValue changed unexpectedly: got %#v, want %#v", resp.PlanValue, tc.config)
+			// as the accumulated planned value.
+			if !resp.PlanValue.Equal(tc.plan) {
+				t.Errorf("PlanValue changed unexpectedly: got %#v, want %#v", resp.PlanValue, tc.plan)
 			}
 		})
 	}
