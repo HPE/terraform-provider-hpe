@@ -44,7 +44,8 @@ func TestAccMorpheusFindMonitoringCheckTypeByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t,
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t,
 		"example-name.tf.tmpl",
 		"Name", "Web Check",
 	)
@@ -90,7 +91,8 @@ func TestAccMorpheusFindMonitoringCheckTypeById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t,
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t,
 		"example-id.tf.tmpl",
 		"Id", "1",
 	)

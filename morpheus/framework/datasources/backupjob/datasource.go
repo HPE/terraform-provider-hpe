@@ -72,19 +72,41 @@ func timeToType(t *time.Time) types.String {
 func backupJobAsState(
 	j *sdk.GetBackupJobs200ResponseJob,
 ) BackupJobModel {
-	return BackupJobModel{
-		Id:             convert.Int64ToType(j.Id),
-		Name:           convert.StrToType(j.Name),
-		CronExpression: convert.StrToType(j.CronExpression.Get()),
-		DateCreated:    timeToType(j.DateCreated),
-		Enabled:        convert.BoolToType(j.Enabled),
-		ExternalId:     convert.StrToType(j.ExternalId.Get()),
-		LastUpdated:    timeToType(j.LastUpdated),
-		NextFire:       timeToType(j.NextFire.Get()),
-		RetentionCount: convert.Int64ToType(j.RetentionCount.Get()),
-		Source:         convert.StrToType(j.Source),
-		Visibility:     convert.StrToType(j.Visibility),
+	state := BackupJobModel{
+		Id:          convert.Int64ToType(j.Id),
+		Name:        convert.StrToType(j.Name),
+		DateCreated: timeToType(j.DateCreated),
+		Enabled:     convert.BoolToType(j.Enabled),
+		LastUpdated: timeToType(j.LastUpdated),
+		Source:      convert.StrToType(j.Source),
+		Visibility:  convert.StrToType(j.Visibility),
 	}
+
+	if j.CronExpression.IsSet() {
+		state.CronExpression = convert.StrToType(j.CronExpression.Get())
+	} else {
+		state.CronExpression = types.StringNull()
+	}
+
+	if j.ExternalId.IsSet() {
+		state.ExternalId = convert.StrToType(j.ExternalId.Get())
+	} else {
+		state.ExternalId = types.StringNull()
+	}
+
+	if j.NextFire.IsSet() {
+		state.NextFire = timeToType(j.NextFire.Get())
+	} else {
+		state.NextFire = types.StringNull()
+	}
+
+	if j.RetentionCount.IsSet() {
+		state.RetentionCount = convert.Int64ToType(j.RetentionCount.Get())
+	} else {
+		state.RetentionCount = types.Int64Null()
+	}
+
+	return state
 }
 
 func getBackupJobByID(

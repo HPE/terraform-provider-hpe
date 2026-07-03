@@ -10,6 +10,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -61,16 +62,33 @@ func (d *DataSource) Schema(
 func networkPoolServerTypeAsState(
 	t *sdk.GetNetworkPoolServerType200ResponseNetworkPoolServerType,
 ) NetworkPoolServerTypeModel {
-	return NetworkPoolServerTypeModel{
-		Id:              convert.Int64ToType(t.Id),
-		Name:            convert.StrToType(t.Name),
-		Code:            convert.StrToType(t.Code),
-		Description:     convert.StrToType(t.Description.Get()),
-		IntegrationCode: convert.StrToType(t.IntegrationCode.Get()),
-		PoolService:     convert.StrToType(t.PoolService.Get()),
-		Enabled:         convert.BoolToType(t.Enabled),
-		Selectable:      convert.BoolToType(t.Selectable),
+	state := NetworkPoolServerTypeModel{
+		Id:         convert.Int64ToType(t.Id),
+		Name:       convert.StrToType(t.Name),
+		Code:       convert.StrToType(t.Code),
+		Enabled:    convert.BoolToType(t.Enabled),
+		Selectable: convert.BoolToType(t.Selectable),
 	}
+
+	if t.Description.IsSet() {
+		state.Description = convert.StrToType(t.Description.Get())
+	} else {
+		state.Description = types.StringNull()
+	}
+
+	if t.IntegrationCode.IsSet() {
+		state.IntegrationCode = convert.StrToType(t.IntegrationCode.Get())
+	} else {
+		state.IntegrationCode = types.StringNull()
+	}
+
+	if t.PoolService.IsSet() {
+		state.PoolService = convert.StrToType(t.PoolService.Get())
+	} else {
+		state.PoolService = types.StringNull()
+	}
+
+	return state
 }
 
 func getNetworkPoolServerTypeByID(

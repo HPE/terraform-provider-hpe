@@ -44,7 +44,8 @@ func TestAccMorpheusFindBackupJobByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t,
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t,
 		"example-name.tf.tmpl",
 		"Name", "Nightly VM Backup",
 	)
@@ -90,7 +91,8 @@ func TestAccMorpheusFindBackupJobById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(t,
+	dataSourceConfig, err := testhelpers.RenderExample(
+		t,
 		"example-id.tf.tmpl",
 		"Id", "1",
 	)
