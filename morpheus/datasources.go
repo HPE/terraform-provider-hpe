@@ -52,12 +52,9 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageservers"
-<<<<<<< supporting-data-sources
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
-=======
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
->>>>>>> dev-1.6
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
