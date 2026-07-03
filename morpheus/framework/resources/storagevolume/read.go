@@ -60,21 +60,6 @@ func (r *storageVolumeResource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// objectID extracts the numeric "id" from a Morpheus relation object that the
-// read API encodes as a generic JSON object (e.g. storageServer, storageGroup).
-// JSON numbers decode into float64, so the value is asserted as float64 and
-// narrowed to int64. The bool reports whether a usable id was present; a nil map
-// or a missing/non-numeric "id" yields false, letting callers leave the
-// corresponding optional attribute untouched.
-func objectID(obj map[string]interface{}) (int64, bool) {
-	id, ok := obj["id"].(float64)
-	if !ok {
-		return 0, false
-	}
-
-	return int64(id), true
-}
-
 // mapGetResponseToModel maps the API read response onto the Terraform model.
 // Write-only config attributes (config, config_alletramp_bmaas) are NOT overwritten —
 // the API read does not return config, so we preserve whatever the plan/state holds.
@@ -113,8 +98,8 @@ func mapGetResponseToModel(
 		model.TypeCode = types.StringNull()
 	}
 
-	if id, ok := objectID(sv.StorageServer); ok {
-		model.StorageServerId = types.Int64Value(id)
+	if sv.StorageServer != nil && sv.StorageServer.Id != nil {
+		model.StorageServerId = types.Int64Value(*sv.StorageServer.Id)
 	} else {
 		model.StorageServerId = types.Int64Null()
 	}
@@ -156,8 +141,8 @@ func mapGetResponseToModel(
 	// storage_group_id so it round-trips (and imports) cleanly. An absent
 	// group maps to a known null so a group removed out-of-band surfaces as
 	// drift rather than retaining the stale id.
-	if id, ok := objectID(sv.StorageGroup); ok {
-		model.StorageGroupId = types.Int64Value(id)
+	if sv.StorageGroup != nil && sv.StorageGroup.Id != nil {
+		model.StorageGroupId = types.Int64Value(*sv.StorageGroup.Id)
 	} else {
 		model.StorageGroupId = types.Int64Null()
 	}
