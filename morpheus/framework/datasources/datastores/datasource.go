@@ -277,30 +277,33 @@ func datastoreInnerToValue(
 		storageServerObj = types.ObjectNull(StorageServerValue{}.AttributeTypes(ctx))
 	}
 
-	// zone nested object (optional pointer).
-	var zoneObj types.Object
+	// cloud nested object (optional pointer). Morpheus "zones" are Clouds; the
+	// schema exposes this as cloud to match the hpe_morpheus_datastore data
+	// source and resource.
+	var cloudObj types.Object
 	if ds.Zone != nil {
-		zoneObj, _ = types.ObjectValue(
-			ZoneValue{}.AttributeTypes(ctx),
+		cloudObj, _ = types.ObjectValue(
+			CloudValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"id": convert.Int64ToType(ds.Zone.Id),
 			},
 		)
 	} else {
-		zoneObj = types.ObjectNull(ZoneValue{}.AttributeTypes(ctx))
+		cloudObj = types.ObjectNull(CloudValue{}.AttributeTypes(ctx))
 	}
 
-	// zone_pool nested object (optional pointer).
-	var zonePoolObj types.Object
+	// resource_pool nested object (optional pointer). Exposed as resource_pool
+	// (raw API zonePool) to match the provider-wide terminology.
+	var resourcePoolObj types.Object
 	if ds.ZonePool != nil {
-		zonePoolObj, _ = types.ObjectValue(
-			ZonePoolValue{}.AttributeTypes(ctx),
+		resourcePoolObj, _ = types.ObjectValue(
+			ResourcePoolValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
 				"id": convert.Int64ToType(ds.ZonePool.Id),
 			},
 		)
 	} else {
-		zonePoolObj = types.ObjectNull(ZonePoolValue{}.AttributeTypes(ctx))
+		resourcePoolObj = types.ObjectNull(ResourcePoolValue{}.AttributeTypes(ctx))
 	}
 
 	// owner nested object (optional pointer).
@@ -350,8 +353,8 @@ func datastoreInnerToValue(
 		"storage_size":             convert.Int64ToType(ds.StorageSize.Get()),
 		"type":                     types.StringValue(ds.Type),
 		"visibility":               convert.StrToType(ds.Visibility),
-		"zone":                     zoneObj,
-		"zone_pool":                zonePoolObj,
+		"cloud":                    cloudObj,
+		"resource_pool":            resourcePoolObj,
 	}
 
 	return NewDatastoresValue(DatastoresValue{}.AttributeTypes(ctx), attrs)

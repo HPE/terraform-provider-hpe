@@ -82,6 +82,7 @@ Read-Only:
 - `allow_write` (Boolean)
 - `associated_resource_id` (Number) The ID of the resource (Cloud or Cluster) the datastore is associated with.
 - `associated_resource_type` (String) The type of resource the datastore is associated with, either 'Cloud' or 'Cluster'.
+- `cloud` (Attributes) The Cloud this datastore is associated with. (see [below for nested schema](#nestedatt--datastores--cloud))
 - `code` (String)
 - `config` (Attributes) Configuration object. Settings vary by type. (see [below for nested schema](#nestedatt--datastores--config))
 - `datastore_type` (Attributes) (see [below for nested schema](#nestedatt--datastores--datastore_type))
@@ -96,14 +97,21 @@ Read-Only:
 - `name` (String)
 - `online` (Boolean)
 - `owner` (Attributes) (see [below for nested schema](#nestedatt--datastores--owner))
+- `resource_pool` (Attributes) The resource pool this datastore is associated with (for some Cloud datastores). (see [below for nested schema](#nestedatt--datastores--resource_pool))
 - `status` (String) The current status of the datastore, e.g. 'provisioned', 'provisioning', 'failed', 'warning'
 - `status_message` (String) Additional details about the current status of the datastore
 - `storage_server` (Attributes) (see [below for nested schema](#nestedatt--datastores--storage_server))
 - `storage_size` (Number)
 - `type` (String) The underlying type of the datastore, e.g. 'generic', 'cluster', 'nfs', 'vmfs', 'NFS Pool', 'Directory Pool', 'GFS2 Pool (Global File System 2)', 'storage-profile', 'ext'
 - `visibility` (String) Visibility level of the datastore, can be 'private' or 'public'. If not specified, defaults to 'private'.
-- `zone` (Attributes) The zone (Cloud) this datastore belongs to (see [below for nested schema](#nestedatt--datastores--zone))
-- `zone_pool` (Attributes) The zone pool (resource pool) this datastore belongs to (for some Cloud datastores) (see [below for nested schema](#nestedatt--datastores--zone_pool))
+
+<a id="nestedatt--datastores--cloud"></a>
+### Nested Schema for `datastores.cloud`
+
+Read-Only:
+
+- `id` (Number)
+
 
 <a id="nestedatt--datastores--config"></a>
 ### Nested Schema for `datastores.config`
@@ -127,24 +135,16 @@ Read-Only:
 - `id` (Number)
 
 
+<a id="nestedatt--datastores--resource_pool"></a>
+### Nested Schema for `datastores.resource_pool`
+
+Read-Only:
+
+- `id` (Number)
+
+
 <a id="nestedatt--datastores--storage_server"></a>
 ### Nested Schema for `datastores.storage_server`
-
-Read-Only:
-
-- `id` (Number)
-
-
-<a id="nestedatt--datastores--zone"></a>
-### Nested Schema for `datastores.zone`
-
-Read-Only:
-
-- `id` (Number)
-
-
-<a id="nestedatt--datastores--zone_pool"></a>
-### Nested Schema for `datastores.zone_pool`
 
 Read-Only:
 

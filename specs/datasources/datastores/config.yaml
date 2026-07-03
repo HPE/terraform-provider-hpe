@@ -35,6 +35,11 @@ datastores:
   moves:
     - datastores.ref_type: datastores.associated_resource_type
     - datastores.ref_id: datastores.associated_resource_id
+    # Morpheus "zones" are Clouds. Expose the provider-wide terminology
+    # (cloud / resource_pool) to match the hpe_morpheus_datastore data source
+    # and resource, rather than the raw OpenAPI zone / zone_pool names.
+    - datastores.zone: datastores.cloud
+    - datastores.zone_pool: datastores.resource_pool
   removes:
     - max
     - sort
@@ -52,3 +57,7 @@ datastores:
       description: The type of resource the datastore is associated with, either 'Cloud' or 'Cluster'.
     datastores.associated_resource_id:
       description: The ID of the resource (Cloud or Cluster) the datastore is associated with.
+    datastores.cloud:
+      description: The Cloud this datastore is associated with.
+    datastores.resource_pool:
+      description: The resource pool this datastore is associated with (for some Cloud datastores).
