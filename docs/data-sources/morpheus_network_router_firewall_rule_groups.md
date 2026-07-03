@@ -11,14 +11,26 @@ Retrieves the list of firewall rule groups for a specified network router.
 ## Example Usage
 
 ```terraform
-# List all firewall rule groups for a given network router.
+# List firewall rule groups for a network router, optionally filtered.
 data "hpe_morpheus_network_router_firewall_rule_groups" "example" {
   router_id = 5
+
+  # Optional: repeat the block to AND filters together; within a block a
+  # group matches if the chosen field matches ANY value (Go regular
+  # expression). Valid fields: name, id, external_id, status, priority,
+  # group_layer.
+  filter {
+    name   = "name"
+    values = ["Policy_Default.*"]
+  }
 }
 
-# Access individual rule group attributes.
-output "rule_group_names" {
-  value = [for rg in data.hpe_morpheus_network_router_firewall_rule_groups.example.rule_groups : rg.name]
+# Look up a group id by name, e.g. to use as a firewall rule's parent_id.
+output "rule_group_ids_by_name" {
+  value = {
+    for rg in data.hpe_morpheus_network_router_firewall_rule_groups.example.rule_groups :
+    rg.name => rg.id
+  }
 }
 ```
 
@@ -29,9 +41,22 @@ output "rule_group_names" {
 
 - `router_id` (Number) The ID of the network router to list firewall rule groups for.
 
+### Optional
+
+- `filter` (Block Set) Filter block. Repeat to apply multiple filters (all ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/). (see [below for nested schema](#nestedblock--filter))
+
 ### Read-Only
 
 - `rule_groups` (Attributes Set) The list of firewall rule groups for the specified router. (see [below for nested schema](#nestedatt--rule_groups))
+
+<a id="nestedblock--filter"></a>
+### Nested Schema for `filter`
+
+Required:
+
+- `name` (String) The field to filter on. Valid names are: name, id, external_id, status, priority, group_layer.
+- `values` (Set of String) The filter values. A rule group matches the block if the chosen field matches ANY value (Go regular expression).
+
 
 <a id="nestedatt--rule_groups"></a>
 ### Nested Schema for `rule_groups`

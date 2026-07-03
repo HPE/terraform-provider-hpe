@@ -7,8 +7,11 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -74,12 +77,45 @@ func NetworkRouterFirewallRuleGroupsDataSourceSchema(ctx context.Context) schema
 				MarkdownDescription: "The list of firewall rule groups for the specified router.",
 			},
 		},
+		Blocks: map[string]schema.Block{
+			"filter": schema.SetNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Required:            true,
+							Description:         "The field to filter on. Valid names are: name, id, external_id, status, priority, group_layer.",
+							MarkdownDescription: "The field to filter on. Valid names are: name, id, external_id, status, priority, group_layer.",
+							Validators: []validator.String{
+								stringvalidator.OneOf("name", "id", "external_id", "status", "priority", "group_layer"),
+							},
+						},
+						"values": schema.SetAttribute{
+							ElementType:         types.StringType,
+							Required:            true,
+							Description:         "The filter values. A rule group matches the block if the chosen field matches ANY value (Go regular expression).",
+							MarkdownDescription: "The filter values. A rule group matches the block if the chosen field matches ANY value (Go regular expression).",
+							Validators: []validator.Set{
+								setvalidator.SizeAtLeast(1),
+							},
+						},
+					},
+					CustomType: FilterType{
+						ObjectType: types.ObjectType{
+							AttrTypes: FilterValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Description:         "Filter block. Repeat to apply multiple filters (all ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/).",
+				MarkdownDescription: "Filter block. Repeat to apply multiple filters (all ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/).",
+			},
+		},
 	}
 }
 
 type NetworkRouterFirewallRuleGroupsModel struct {
 	RouterId   types.Int64 `tfsdk:"router_id"`
 	RuleGroups types.Set   `tfsdk:"rule_groups"`
+	Filter     types.Set   `tfsdk:"filter"`
 }
 
 var _ basetypes.ObjectTypable = RuleGroupsType{}
@@ -732,5 +768,415 @@ func (v RuleGroupsValue) AttributeTypes(ctx context.Context) map[string]attr.Typ
 		"name":        basetypes.StringType{},
 		"priority":    basetypes.Int64Type{},
 		"status":      basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = FilterType{}
+
+type FilterType struct {
+	basetypes.ObjectType
+}
+
+func (t FilterType) Equal(o attr.Type) bool {
+	other, ok := o.(FilterType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t FilterType) String() string {
+	return "FilterType"
+}
+
+func (t FilterType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewFilterValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewFilterValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	valuesAttribute, ok := attributes["values"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`values is missing from object`)
+
+		return nil, diags
+	}
+
+	valuesVal, ok := valuesAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`values expected to be basetypes.SetValue, was: %T`, valuesAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return FilterValue{
+		Name:   nameVal,
+		Values: valuesVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewFilterValueNull() FilterValue {
+	return FilterValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewFilterValueUnknown() FilterValue {
+	return FilterValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewFilterValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (FilterValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing FilterValue Attribute Value",
+				"While creating a FilterValue value, a missing attribute value was detected. "+
+					"A FilterValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("FilterValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid FilterValue Attribute Type",
+				"While creating a FilterValue value, an invalid attribute value was detected. "+
+					"A FilterValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("FilterValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("FilterValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra FilterValue Attribute Value",
+				"While creating a FilterValue value, an extra attribute value was detected. "+
+					"A FilterValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra FilterValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewFilterValueUnknown(), diags
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewFilterValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	valuesAttribute, ok := attributes["values"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`values is missing from object`)
+
+		return NewFilterValueUnknown(), diags
+	}
+
+	valuesVal, ok := valuesAttribute.(basetypes.SetValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`values expected to be basetypes.SetValue, was: %T`, valuesAttribute))
+	}
+
+	if diags.HasError() {
+		return NewFilterValueUnknown(), diags
+	}
+
+	return FilterValue{
+		Name:   nameVal,
+		Values: valuesVal,
+		state:  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewFilterValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) FilterValue {
+	object, diags := NewFilterValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewFilterValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t FilterType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewFilterValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewFilterValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewFilterValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewFilterValueMust(FilterValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t FilterType) ValueType(ctx context.Context) attr.Value {
+	return FilterValue{}
+}
+
+var _ basetypes.ObjectValuable = FilterValue{}
+
+type FilterValue struct {
+	Name   basetypes.StringValue `tfsdk:"name"`
+	Values basetypes.SetValue    `tfsdk:"values"`
+	state  attr.ValueState
+}
+
+func (v FilterValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["values"] = basetypes.SetType{
+		ElemType: types.StringType,
+	}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		val, err = v.Values.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["values"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v FilterValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v FilterValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v FilterValue) String() string {
+	return "FilterValue"
+}
+
+func (v FilterValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	var valuesVal basetypes.SetValue
+	switch {
+	case v.Values.IsUnknown():
+		valuesVal = types.SetUnknown(types.StringType)
+	case v.Values.IsNull():
+		valuesVal = types.SetNull(types.StringType)
+	default:
+		var d diag.Diagnostics
+		valuesVal, d = types.SetValue(types.StringType, v.Values.Elements())
+		diags.Append(d...)
+	}
+
+	if diags.HasError() {
+		return types.ObjectUnknown(map[string]attr.Type{
+			"name": basetypes.StringType{},
+			"values": basetypes.SetType{
+				ElemType: types.StringType,
+			},
+		}), diags
+	}
+
+	attributeTypes := map[string]attr.Type{
+		"name": basetypes.StringType{},
+		"values": basetypes.SetType{
+			ElemType: types.StringType,
+		},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"name":   v.Name,
+			"values": valuesVal,
+		})
+
+	return objVal, diags
+}
+
+func (v FilterValue) Equal(o attr.Value) bool {
+	other, ok := o.(FilterValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.Values.Equal(other.Values) {
+		return false
+	}
+
+	return true
+}
+
+func (v FilterValue) Type(ctx context.Context) attr.Type {
+	return FilterType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v FilterValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"name": basetypes.StringType{},
+		"values": basetypes.SetType{
+			ElemType: types.StringType,
+		},
 	}
 }
