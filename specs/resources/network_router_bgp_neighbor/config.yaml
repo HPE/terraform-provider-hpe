@@ -88,6 +88,7 @@ network_router_bgp_neighbor:
     restart_mode:
       one_of: [HELPER_ONLY, GR_AND_HELPER, DISABLE]
       default: HELPER_ONLY
+      description: Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)
     route_filtering_type:
       one_of: [IPV4, IPV6]
       default: IPV4

@@ -84,16 +84,10 @@ func (d *DataSource) Read(
 			continue
 		}
 
-		// Description is NullableString — guard with IsSet() and nil-check Get().
-		description := types.StringNull()
-		if rg.Description.IsSet() && rg.Description.Get() != nil {
-			description = types.StringValue(*rg.Description.Get())
-		}
-
 		attrs := map[string]attr.Value{
 			"id":          convert.Int64ToType(rg.Id),
 			"name":        convert.StrToType(rg.Name),
-			"description": description,
+			"description": convert.StrToType(rg.Description.Get()),
 			"external_id": convert.StrToType(rg.ExternalId),
 			"status":      convert.StrToType(rg.Status),
 			"priority":    convert.Int64ToType(rg.Priority),

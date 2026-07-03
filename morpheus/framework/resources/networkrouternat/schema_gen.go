@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -43,6 +44,14 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether the NAT rule is enabled",
 				MarkdownDescription: "Whether the NAT rule is enabled",
 				Default:             booldefault.StaticBool(true),
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).",
+				MarkdownDescription: "The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"firewall": schema.StringAttribute{
 				Optional:            true,
@@ -115,6 +124,7 @@ type NetworkRouterNatModel struct {
 	Description        types.String `tfsdk:"description"`
 	DestinationNetwork types.String `tfsdk:"destination_network"`
 	Enabled            types.Bool   `tfsdk:"enabled"`
+	ExternalId         types.String `tfsdk:"external_id"`
 	Firewall           types.String `tfsdk:"firewall"`
 	Id                 types.Int64  `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`

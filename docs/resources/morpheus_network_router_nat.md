@@ -44,6 +44,7 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 ### Read-Only
 
+- `external_id` (String) The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
 - `id` (Number) The ID of the NAT rule
 
 ## Import

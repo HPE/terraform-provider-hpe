@@ -192,6 +192,12 @@ func getNatAsState(
 
 	state.RouterId = plan.RouterId
 
+	if nat.ExternalId != nil {
+		state.ExternalId = types.StringValue(*nat.ExternalId)
+	} else {
+		state.ExternalId = types.StringNull()
+	}
+
 	if nat.Name != nil {
 		state.Name = types.StringValue(*nat.Name)
 	}

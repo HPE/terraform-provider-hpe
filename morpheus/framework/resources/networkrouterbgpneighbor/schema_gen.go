@@ -191,8 +191,8 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			"restart_mode": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)",
-				MarkdownDescription: "Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)",
+				Description:         "Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)",
+				MarkdownDescription: "Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)",
 				Validators: []validator.String{
 					stringvalidator.OneOf("HELPER_ONLY", "GR_AND_HELPER", "DISABLE"),
 				},
