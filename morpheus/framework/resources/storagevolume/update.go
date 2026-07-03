@@ -40,7 +40,10 @@ func (r *storageVolumeResource) Update(
 	// max_storage is expressed in GiB; convert to bytes (the API unit), matching
 	// the create path.
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
-		body.MaxStorage = sdk.PtrInt64(plan.MaxStorage.ValueInt64() * oneGibibyte)
+		if body.AdditionalProperties == nil {
+			body.AdditionalProperties = make(map[string]interface{})
+		}
+		body.AdditionalProperties["maxStorage"] = plan.MaxStorage.ValueInt64() * oneGibibyte
 	}
 
 	_, httpResp, err := client.StorageAPI.UpdateStorageVolumes(ctx, idParam).
