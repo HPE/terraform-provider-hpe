@@ -74,6 +74,13 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Priority of the NAT rule",
 				Default:             int64default.StaticInt64(100),
 			},
+			"protocol": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.",
+				MarkdownDescription: "Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.",
+				DeprecationMessage:  "Deprecated: use service instead. protocol is retained for backward compatibility.",
+			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the parent network router",
@@ -112,6 +119,7 @@ type NetworkRouterNatModel struct {
 	Id                 types.Int64  `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`
 	Priority           types.Int64  `tfsdk:"priority"`
+	Protocol           types.String `tfsdk:"protocol"`
 	RouterId           types.Int64  `tfsdk:"router_id"`
 	Service            types.String `tfsdk:"service"`
 	SourceNetwork      types.String `tfsdk:"source_network"`

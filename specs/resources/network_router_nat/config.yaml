@@ -16,6 +16,11 @@ network_router_nat:
       string:
         computed_optional_required: optional
         description: The service (protocol) applied to the NAT rule.
+    protocol:
+      string:
+        computed_optional_required: optional
+        description: Protocol for the NAT rule.
+        deprecation_message: "Deprecated: use service instead. protocol is retained for backward compatibility."
     description:
       string:
         computed_optional_required: optional
@@ -46,6 +51,7 @@ network_router_nat:
     - template-action: action
     - template-firewall: firewall
     - template-service: service
+    - template-protocol: protocol
     - template-description: description
     - template-enabled: enabled
     - template-priority: priority
@@ -70,6 +76,9 @@ network_router_nat:
     service:
       computed_optional_required: optional
       description: The service (protocol) applied to the NAT rule (nested under config).
+    protocol:
+      computed_optional_required: computed_optional
+      description: "Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility."
     destination_network:
       computed_optional_required: computed_optional
       description: Destination network

@@ -37,6 +37,7 @@ resource "hpe_morpheus_network_router_nat" "example" {
 - `enabled` (Boolean) Whether the NAT rule is enabled
 - `firewall` (String) The firewall match applied to the NAT rule (nested under config).
 - `priority` (Number) Priority of the NAT rule
+- `protocol` (String, Deprecated) Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.
 - `service` (String) The service (protocol) applied to the NAT rule (nested under config).
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network

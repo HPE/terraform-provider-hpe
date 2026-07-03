@@ -107,6 +107,11 @@ func (r *Resource) Create(
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
+	// protocol is deprecated (superseded by service) but retained for backward
+	// compatibility; still sent so existing configurations keep working.
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		nat.Protocol = plan.Protocol.ValueStringPointer()
+	}
 
 	createReq := sdk.CreateNetworkRouterNatRequest{
 		NetworkRouterNAT: &nat,
@@ -231,6 +236,14 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
+	// protocol is deprecated (superseded by service) but still read back so
+	// existing state stays consistent.
+	if nat.Protocol.IsSet() && nat.Protocol.Get() != nil {
+		state.Protocol = types.StringValue(*nat.Protocol.Get())
+	} else {
+		state.Protocol = types.StringNull()
+	}
+
 	// firewall and service are create-time config options. Read them back from
 	// the response, falling back to the plan value when the API omits them.
 	if nat.Firewall != nil {
@@ -326,6 +339,11 @@ func (r *Resource) Update(
 	}
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
+	}
+	// protocol is deprecated (superseded by service) but retained for backward
+	// compatibility; still sent so existing configurations keep working.
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		nat.Protocol = plan.Protocol.ValueStringPointer()
 	}
 
 	updateReq := sdk.UpdateNetworkRouterNatRequest{
