@@ -1,0 +1,26 @@
+network_pool_server_type:
+  moves:
+    - network_pool_server_type: "" # unnest wrapper
+  removes:
+    - option_types # nested array of option-type objects; not useful for lookup
+  overrides:
+    id:
+      description: The ID of the network pool server type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network pool server type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: The code identifier of the network pool server type
+    description:
+      description: A description of the network pool server type
+    enabled:
+      description: Whether this network pool server type is enabled
+    integration_code:
+      description: The integration code associated with the network pool server type
+    pool_service:
+      description: The pool service backing this network pool server type
+    selectable:
+      description: Whether this network pool server type can be selected

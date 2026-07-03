@@ -1,0 +1,36 @@
+network_router_type:
+  moves:
+    - network_router_type: "" # unnest wrapper
+  removes:
+    - option_types # nested array of option-type objects
+    - bgp_option_types # nested array of option-type objects
+    - nat_option_types # nested array of option-type objects
+    - rule_group_option_types # nested array of option-type objects
+    - rule_option_types # nested array of option-type objects
+  overrides:
+    id:
+      description: The ID of the network router type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network router type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: The code identifier of the network router type
+    description:
+      description: A description of the network router type
+    creatable:
+      description: Whether routers of this type can be created
+    enabled:
+      description: Whether this network router type is enabled
+    has_dhcp:
+      description: Whether this router type supports DHCP
+    has_firewall:
+      description: Whether this router type supports firewall rules
+    has_network_server:
+      description: Whether this router type has an associated network server
+    has_routing:
+      description: Whether this router type supports routing
+    selectable:
+      description: Whether this network router type can be selected
