@@ -1,0 +1,171 @@
+storage_volume:
+  templates:
+    type:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type name.
+    type_code:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type code.
+    type_name:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type name.
+    datastore_name:
+      string:
+        computed_optional_required: computed
+        description: The datastore name associated with the storage volume.
+    cloud_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the cloud the volume belongs to.
+    storage_server_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage server the volume is provisioned on, when present.
+    storage_server_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage server the volume is provisioned on, when present.
+    storage_group_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage group the volume belongs to, when present.
+    storage_group_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage group the volume belongs to, when present.
+  moves:
+    - id: id_params                         # move path-param oneOf block out of the way
+    - storage_volume: ""                    # unnest GET envelope (components/schemas/storageVolume.yaml)
+    - type: type_obj                        # rename nested type object out of the way
+    - zone_id: cloud_id                     # (components/schemas/storageVolume.yaml) rename zone→cloud
+    - template-type: type                   # (template) backward-compat sdkv2 `type` attribute
+    - template-type_code: type_code         # (template)
+    - template-type_name: type_name         # (template)
+    - template-datastore_name: datastore_name  # (template)
+    - template-cloud_name: cloud_name       # (template)
+    - template-storage_server_id: storage_server_id      # (template)
+    - template-storage_server_name: storage_server_name  # (template)
+    - template-storage_group_id: storage_group_id        # (template) flattened from storageGroup map
+    - template-storage_group_name: storage_group_name    # (template) flattened from storageGroup map
+  removes:
+    - id_params                             # (path parameter) oneOf(id,uuid) lookup block
+    - type_obj                              # (components/schemas/storageVolume.yaml) nested object renamed from type
+    - account                               # (components/schemas/storageVolume.yaml) nested object
+    - controller                            # (components/schemas/storageVolume.yaml) nested object; keep controller_id
+    - datastore                             # (components/schemas/storageVolume.yaml) nested object; keep datastore_id
+    - owner                                 # (components/schemas/storageVolume.yaml) nested object
+    - raw_data                              # (components/schemas/storageVolume.yaml) dynamic/unstructured
+    - source_image                          # (components/schemas/storageVolume.yaml) nested/dynamic
+    - storage_server                        # (components/schemas/storageVolume.yaml) nested object
+    - storage_group                         # (components/schemas/storageVolume.yaml) empty/typeless response object; keep storage_group_id/name
+    - zone                                  # (components/schemas/storageVolume.yaml) nested object; keep cloud_id
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+      description: The ID of the storage volume. Conflicts with name.
+    name:
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+      description: The name of the storage volume. Conflicts with id.
+    description:
+      description: The description of the storage volume.
+    status:
+      description: The current status of the storage volume.
+    status_message:
+      description: The status message for the storage volume.
+    active:
+      description: Whether the storage volume is active.
+    online:
+      description: Whether the storage volume is online.
+    max_storage:
+      description: The maximum storage capacity in bytes.
+    used_storage:
+      description: The amount of storage used in bytes.
+    max_iops:
+      description: The maximum IOPS for the storage volume.
+    configurable_iops:
+      description: Whether the IOPS are configurable for this volume.
+    uuid:
+      description: The UUID of the storage volume.
+    external_id:
+      description: The external identifier of the storage volume.
+    internal_id:
+      description: The internal identifier of the storage volume.
+    type_id:
+      description: The storage volume type ID.
+    datastore_id:
+      description: The datastore ID associated with the storage volume.
+    cloud_id:
+      description: The id of the cloud the volume belongs to.
+    controller_id:
+      description: The controller ID for the storage volume.
+    source_id:
+      description: The source ID of the storage volume.
+    pool_name:
+      description: The storage pool name.
+    provision_type:
+      description: The provisioning type of the storage volume.
+    disk_type:
+      description: The disk type of the storage volume.
+    disk_mode:
+      description: The disk mode of the storage volume.
+    device_name:
+      description: The device name of the storage volume.
+    device_display_name:
+      description: The display name of the device.
+    root_volume:
+      description: Whether this is a root volume.
+    read_only:
+      description: Whether the volume is read-only.
+    removable:
+      description: Whether the volume is removable.
+    resizeable:
+      description: Whether the volume is resizeable.
+    unit_number:
+      description: The unit number of the storage volume.
+    display_order:
+      description: The display order of the storage volume.
+    ref_id:
+      description: The reference ID.
+    ref_type:
+      description: The reference type.
+    category:
+      description: The category of the storage volume.
+    namespace:
+      description: The namespace of the storage volume.
+    volume_name:
+      description: The volume name.
+    volume_path:
+      description: The volume path.
+    volume_type:
+      description: The volume type.
+    image_type:
+      description: The image type of the volume.
+    copy_type:
+      description: The copy type of the volume.
+    claim_name:
+      description: The claim name for the volume.
+    file_name:
+      description: The file name of the volume.
+    is_multi_attach:
+      description: Whether the volume supports multi-attach.
+    create_for_multi_attach:
+      description: Whether the volume was created for multi-attach.
+    datastore_option:
+      description: The datastore option for the volume.
+    controller_mount_point:
+      description: The controller mount point.
+    wwn:
+      description: The World Wide Name of the volume.
+    fiber_wwn:
+      description: The Fiber Channel World Wide Name.
+    unique_id:
+      description: The unique identifier of the volume.
+    share_path:
+      description: The share path of the volume.
+    storage_profile:
+      description: The storage profile code for the volume.
