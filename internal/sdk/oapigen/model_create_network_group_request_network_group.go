@@ -20,8 +20,12 @@ var _ MappedNullable = &CreateNetworkGroupRequestNetworkGroup{}
 
 // CreateNetworkGroupRequestNetworkGroup struct for CreateNetworkGroupRequestNetworkGroup
 type CreateNetworkGroupRequestNetworkGroup struct {
-	Name                 *string                  `json:"name,omitempty"`
-	Description          *string                  `json:"description,omitempty"`
+	Name        *string `json:"name,omitempty"`
+	Description *string `json:"description,omitempty"`
+	// Visibility level (public or private)
+	Visibility *string `json:"visibility,omitempty"`
+	// Network group active flag
+	Active               *bool                    `json:"active,omitempty"`
 	Networks             []int64                  `json:"networks,omitempty"`
 	Subnets              []map[string]interface{} `json:"subnets,omitempty"`
 	AdditionalProperties map[string]interface{}   `json:",remain"`
@@ -44,6 +48,12 @@ func (o CreateNetworkGroupRequestNetworkGroup) ToMap() (map[string]interface{}, 
 	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
 	}
 	if !IsNil(o.Networks) {
 		toSerialize["networks"] = o.Networks

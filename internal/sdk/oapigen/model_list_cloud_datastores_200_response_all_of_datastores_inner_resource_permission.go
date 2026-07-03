@@ -20,13 +20,13 @@ var _ MappedNullable = &ListCloudDatastores200ResponseAllOfDatastoresInnerResour
 
 // ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission struct for ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission
 type ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission struct {
-	DefaultStore         *bool                                                                            `json:"defaultStore,omitempty"`
-	DefaultTarget        *bool                                                                            `json:"defaultTarget,omitempty"`
-	CanManage            *bool                                                                            `json:"canManage,omitempty"`
+	DefaultStore         NullableBool                                                                     `json:"defaultStore,omitempty"`
+	DefaultTarget        NullableBool                                                                     `json:"defaultTarget,omitempty"`
+	CanManage            NullableBool                                                                     `json:"canManage,omitempty"`
 	All                  *bool                                                                            `json:"all,omitempty"`
 	Account              *ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionAccount     `json:"account,omitempty"`
 	Sites                []ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                            `json:"allPlans,omitempty"`
+	AllPlans             NullableBool                                                                     `json:"allPlans,omitempty"`
 	Plans                []ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermissionPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                                           `json:",remain"`
 }
@@ -43,14 +43,14 @@ func (o ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission) Ma
 
 func (o ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.DefaultStore) {
-		toSerialize["defaultStore"] = o.DefaultStore
+	if o.DefaultStore.IsSet() {
+		toSerialize["defaultStore"] = o.DefaultStore.Get()
 	}
-	if !IsNil(o.DefaultTarget) {
-		toSerialize["defaultTarget"] = o.DefaultTarget
+	if o.DefaultTarget.IsSet() {
+		toSerialize["defaultTarget"] = o.DefaultTarget.Get()
 	}
-	if !IsNil(o.CanManage) {
-		toSerialize["canManage"] = o.CanManage
+	if o.CanManage.IsSet() {
+		toSerialize["canManage"] = o.CanManage.Get()
 	}
 	if !IsNil(o.All) {
 		toSerialize["all"] = o.All
@@ -61,8 +61,8 @@ func (o ListCloudDatastores200ResponseAllOfDatastoresInnerResourcePermission) To
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
 	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
+	if o.AllPlans.IsSet() {
+		toSerialize["allPlans"] = o.AllPlans.Get()
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

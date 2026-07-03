@@ -20,8 +20,10 @@ var _ MappedNullable = &CreateNetworkGroupRequest{}
 
 // CreateNetworkGroupRequest struct for CreateNetworkGroupRequest
 type CreateNetworkGroupRequest struct {
-	NetworkGroup         *CreateNetworkGroupRequestNetworkGroup `json:"networkGroup,omitempty"`
-	AdditionalProperties map[string]interface{}                 `json:",remain"`
+	NetworkGroup         *CreateNetworkGroupRequestNetworkGroup        `json:"networkGroup,omitempty"`
+	TenantPermissions    *CreateNetworkGroupRequestTenantPermissions   `json:"tenantPermissions,omitempty"`
+	ResourcePermissions  *CreateNetworkGroupRequestResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                        `json:",remain"`
 }
 
 type _CreateNetworkGroupRequest CreateNetworkGroupRequest
@@ -38,6 +40,12 @@ func (o CreateNetworkGroupRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.NetworkGroup) {
 		toSerialize["networkGroup"] = o.NetworkGroup
+	}
+	if !IsNil(o.TenantPermissions) {
+		toSerialize["tenantPermissions"] = o.TenantPermissions
+	}
+	if !IsNil(o.ResourcePermissions) {
+		toSerialize["resourcePermissions"] = o.ResourcePermissions
 	}
 
 	for key, value := range o.AdditionalProperties {

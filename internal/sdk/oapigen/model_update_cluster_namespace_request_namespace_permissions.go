@@ -20,6 +20,7 @@ var _ MappedNullable = &UpdateClusterNamespaceRequestNamespacePermissions{}
 
 // UpdateClusterNamespaceRequestNamespacePermissions struct for UpdateClusterNamespaceRequestNamespacePermissions
 type UpdateClusterNamespaceRequestNamespacePermissions struct {
+	TenantPermissions    *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions   `json:"tenantPermissions,omitempty"`
 	ResourcePermissions  *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions `json:"resourcePermissions,omitempty"`
 	AdditionalProperties map[string]interface{}                                                `json:",remain"`
 }
@@ -36,6 +37,9 @@ func (o UpdateClusterNamespaceRequestNamespacePermissions) MarshalJSON() ([]byte
 
 func (o UpdateClusterNamespaceRequestNamespacePermissions) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.TenantPermissions) {
+		toSerialize["tenantPermissions"] = o.TenantPermissions
+	}
 	if !IsNil(o.ResourcePermissions) {
 		toSerialize["resourcePermissions"] = o.ResourcePermissions
 	}

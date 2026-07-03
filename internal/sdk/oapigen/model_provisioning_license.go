@@ -30,7 +30,7 @@ type ProvisioningLicense struct {
 	LicenseVersion       *string                                                      `json:"licenseVersion,omitempty"`
 	Copies               *int64                                                       `json:"copies,omitempty"`
 	ReservationCount     *int64                                                       `json:"reservationCount,omitempty"`
-	Tenants              []map[string]interface{}                                     `json:"tenants,omitempty"`
+	Tenants              []GetProvisioningLicense200ResponseLicenseTenantsInner       `json:"tenants,omitempty"`
 	VirtualImages        []GetProvisioningLicense200ResponseLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
 	Account              *GetProvisioningLicense200ResponseLicenseAccount             `json:"account,omitempty"`
 	AdditionalProperties map[string]interface{}                                       `json:",remain"`

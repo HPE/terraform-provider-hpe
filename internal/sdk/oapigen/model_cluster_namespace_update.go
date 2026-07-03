@@ -25,7 +25,9 @@ type ClusterNamespaceUpdate struct {
 	// Namespace description
 	Description *string `json:"description,omitempty"`
 	// Namespace active
-	Active               *bool                              `json:"active,omitempty"`
+	Active *bool `json:"active,omitempty"`
+	// Visibility level (public or private)
+	Visibility           *string                            `json:"visibility,omitempty"`
 	Permissions          *ClusterNamespaceUpdatePermissions `json:"permissions,omitempty"`
 	AdditionalProperties map[string]interface{}             `json:",remain"`
 }
@@ -50,6 +52,9 @@ func (o ClusterNamespaceUpdate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
 	}
 	if !IsNil(o.Permissions) {
 		toSerialize["permissions"] = o.Permissions

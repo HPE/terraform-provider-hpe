@@ -21,12 +21,12 @@ var _ MappedNullable = &AddSecurityGroups200ResponseSecurityGroupAllOfResourcePe
 // AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermission struct for AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermission
 type AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermission struct {
 	DefaultStore         *bool                                                                        `json:"defaultStore,omitempty"`
+	AllPlans             *bool                                                                        `json:"allPlans,omitempty"`
 	DefaultTarget        *bool                                                                        `json:"defaultTarget,omitempty"`
 	CanManage            *bool                                                                        `json:"canManage,omitempty"`
 	All                  *bool                                                                        `json:"all,omitempty"`
 	Account              *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionAccount     `json:"account,omitempty"`
 	Sites                []AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                        `json:"allPlans,omitempty"`
 	Plans                []AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                                       `json:",remain"`
 }
@@ -46,6 +46,9 @@ func (o AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermission) ToMap(
 	if !IsNil(o.DefaultStore) {
 		toSerialize["defaultStore"] = o.DefaultStore
 	}
+	if !IsNil(o.AllPlans) {
+		toSerialize["allPlans"] = o.AllPlans
+	}
 	if !IsNil(o.DefaultTarget) {
 		toSerialize["defaultTarget"] = o.DefaultTarget
 	}
@@ -60,9 +63,6 @@ func (o AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermission) ToMap(
 	}
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
-	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

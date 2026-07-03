@@ -25,9 +25,11 @@ type AddClusterNamespaceRequestNamespace struct {
 	// Namespace description
 	Description *string `json:"description,omitempty"`
 	// Namespace active
-	Active               *bool                                                   `json:"active,omitempty"`
-	ResourcePermissions  *AddClusterNamespaceRequestNamespaceResourcePermissions `json:"resourcePermissions,omitempty"`
-	AdditionalProperties map[string]interface{}                                  `json:",remain"`
+	Active *bool `json:"active,omitempty"`
+	// Visibility level (public or private)
+	Visibility           *string                                         `json:"visibility,omitempty"`
+	Permissions          *AddClusterNamespaceRequestNamespacePermissions `json:"permissions,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _AddClusterNamespaceRequestNamespace AddClusterNamespaceRequestNamespace
@@ -49,8 +51,11 @@ func (o AddClusterNamespaceRequestNamespace) ToMap() (map[string]interface{}, er
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
 	}
-	if !IsNil(o.ResourcePermissions) {
-		toSerialize["resourcePermissions"] = o.ResourcePermissions
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Permissions) {
+		toSerialize["permissions"] = o.Permissions
 	}
 
 	for key, value := range o.AdditionalProperties {

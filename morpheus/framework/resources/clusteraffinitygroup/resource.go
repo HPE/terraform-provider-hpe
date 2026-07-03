@@ -184,7 +184,7 @@ func (r *clusterAffinityGroupResource) Update(
 	clusterID := plan.ClusterId.ValueInt64()
 	id := plan.Id.ValueInt64()
 
-	ag := sdk.UpdateCloudAffinityGroupRequestAffinityGroup{}
+	ag := sdk.UpdateClusterAffinityGroupRequestAffinityGroup{}
 	if !plan.Name.IsNull() {
 		v := plan.Name.ValueString()
 		ag.Name = &v

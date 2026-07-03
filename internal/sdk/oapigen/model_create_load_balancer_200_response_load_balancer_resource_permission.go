@@ -20,13 +20,13 @@ var _ MappedNullable = &CreateLoadBalancer200ResponseLoadBalancerResourcePermiss
 
 // CreateLoadBalancer200ResponseLoadBalancerResourcePermission struct for CreateLoadBalancer200ResponseLoadBalancerResourcePermission
 type CreateLoadBalancer200ResponseLoadBalancerResourcePermission struct {
-	DefaultStore         *bool                                                                   `json:"defaultStore,omitempty"`
-	DefaultTarget        *bool                                                                   `json:"defaultTarget,omitempty"`
-	CanManage            *bool                                                                   `json:"canManage,omitempty"`
+	DefaultStore         NullableBool                                                            `json:"defaultStore,omitempty"`
+	DefaultTarget        NullableBool                                                            `json:"defaultTarget,omitempty"`
+	CanManage            NullableBool                                                            `json:"canManage,omitempty"`
 	All                  *bool                                                                   `json:"all,omitempty"`
 	Account              *CreateLoadBalancer200ResponseLoadBalancerResourcePermissionAccount     `json:"account,omitempty"`
 	Sites                []CreateLoadBalancer200ResponseLoadBalancerResourcePermissionSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                   `json:"allPlans,omitempty"`
+	AllPlans             NullableBool                                                            `json:"allPlans,omitempty"`
 	Plans                []CreateLoadBalancer200ResponseLoadBalancerResourcePermissionPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                                  `json:",remain"`
 }
@@ -43,14 +43,14 @@ func (o CreateLoadBalancer200ResponseLoadBalancerResourcePermission) MarshalJSON
 
 func (o CreateLoadBalancer200ResponseLoadBalancerResourcePermission) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.DefaultStore) {
-		toSerialize["defaultStore"] = o.DefaultStore
+	if o.DefaultStore.IsSet() {
+		toSerialize["defaultStore"] = o.DefaultStore.Get()
 	}
-	if !IsNil(o.DefaultTarget) {
-		toSerialize["defaultTarget"] = o.DefaultTarget
+	if o.DefaultTarget.IsSet() {
+		toSerialize["defaultTarget"] = o.DefaultTarget.Get()
 	}
-	if !IsNil(o.CanManage) {
-		toSerialize["canManage"] = o.CanManage
+	if o.CanManage.IsSet() {
+		toSerialize["canManage"] = o.CanManage.Get()
 	}
 	if !IsNil(o.All) {
 		toSerialize["all"] = o.All
@@ -61,8 +61,8 @@ func (o CreateLoadBalancer200ResponseLoadBalancerResourcePermission) ToMap() (ma
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
 	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
+	if o.AllPlans.IsSet() {
+		toSerialize["allPlans"] = o.AllPlans.Get()
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

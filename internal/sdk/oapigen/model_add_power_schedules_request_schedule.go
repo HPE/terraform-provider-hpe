@@ -57,7 +57,9 @@ type AddPowerSchedulesRequestSchedule struct {
 	// Sunday Start time of the day in 24-hour format
 	SundayOnTime *string `json:"sundayOnTime,omitempty"`
 	// Sunday Off time of the day in 24-hour format
-	SundayOffTime        *string                `json:"sundayOffTime,omitempty"`
+	SundayOffTime *string `json:"sundayOffTime,omitempty"`
+	// Visibility level (public or private)
+	Visibility           *string                `json:"visibility,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -127,6 +129,9 @@ func (o AddPowerSchedulesRequestSchedule) ToMap() (map[string]interface{}, error
 	}
 	if !IsNil(o.SundayOffTime) {
 		toSerialize["sundayOffTime"] = o.SundayOffTime
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
 	}
 
 	for key, value := range o.AdditionalProperties {
