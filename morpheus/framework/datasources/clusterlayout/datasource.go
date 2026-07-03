@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -60,12 +60,18 @@ func (d *DataSource) Schema(
 	resp.Schema = ClusterLayoutDataSourceSchema(ctx)
 }
 
-func clusterLayoutAsState(
-	_ context.Context,
-	l *sdk.GetClusterLayout200ResponseLayout,
-) (ClusterLayoutModel, diag.Diagnostics) {
-	var diags diag.Diagnostics
+// timeToType formats a nullable timestamp as an RFC 3339 string.
+func timeToType(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
 
+	return types.StringValue(t.Format(time.RFC3339))
+}
+
+func clusterLayoutAsState(
+	l *sdk.GetClusterLayout200ResponseLayout,
+) ClusterLayoutModel {
 	state := ClusterLayoutModel{
 		Id:                      convert.Int64ToType(l.Id),
 		Name:                    convert.StrToType(l.Name),
@@ -85,19 +91,8 @@ func clusterLayoutAsState(
 		SortOrder:               convert.Int64ToType(l.SortOrder),
 	}
 
-	// DateCreated is *time.Time
-	if l.DateCreated != nil {
-		state.DateCreated = types.StringValue(l.DateCreated.String())
-	} else {
-		state.DateCreated = types.StringNull()
-	}
-
-	// LastUpdated is *time.Time
-	if l.LastUpdated != nil {
-		state.LastUpdated = types.StringValue(l.LastUpdated.String())
-	} else {
-		state.LastUpdated = types.StringNull()
-	}
+	state.DateCreated = timeToType(l.DateCreated)
+	state.LastUpdated = timeToType(l.LastUpdated)
 
 	// Labels is []string
 	if l.Labels != nil {
@@ -106,7 +101,7 @@ func clusterLayoutAsState(
 		state.Labels = convert.StrSliceToSet([]string{})
 	}
 
-	return state, diags
+	return state
 }
 
 func getClusterLayoutByID(
@@ -226,11 +221,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	state, stateDiags := clusterLayoutAsState(ctx, layout)
-	resp.Diagnostics.Append(stateDiags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	state := clusterLayoutAsState(layout)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

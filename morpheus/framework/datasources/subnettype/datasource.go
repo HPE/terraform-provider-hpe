@@ -4,7 +4,6 @@ package subnettype
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -58,8 +57,11 @@ func (d *DataSource) Schema(
 	resp.Schema = SubnetTypeDataSourceSchema(ctx)
 }
 
+// subnetTypeAsState maps a subnet type list item onto the Terraform state model.
+// Subnet types are read from the list endpoint (/api/subnet-types); the list
+// returns full objects, so no per-id fetch is required.
 func subnetTypeAsState(
-	t *sdk.GetSubnetType200ResponseSubnetType,
+	t *sdk.ListSubnetTypes200ResponseAllOfSubnetTypesInner,
 ) SubnetTypeModel {
 	return SubnetTypeModel{
 		Id:                 convert.Int64ToType(t.Id),
@@ -77,56 +79,39 @@ func getSubnetTypeByID(
 	ctx context.Context,
 	id int64,
 	apiClient *sdk.APIClient,
-) (*sdk.GetSubnetType200ResponseSubnetType, error) {
-	r, hresp, err := apiClient.NetworksAPI.GetSubnetType(ctx, id).Execute()
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
+) (*sdk.ListSubnetTypes200ResponseAllOfSubnetTypesInner, error) {
+	rs, hresp, err := apiClient.NetworksAPI.ListSubnetTypes(ctx).Execute()
+	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for subnet type %d: %s", id, providererrors.ErrMsg(err, hresp))
 	}
 
-	if r.SubnetType == nil {
-		return nil, fmt.Errorf("GET failed for subnet type %d: response missing subnetType", id)
+	for i := range rs.SubnetTypes {
+		if rs.SubnetTypes[i].Id != nil && *rs.SubnetTypes[i].Id == id {
+			return &rs.SubnetTypes[i], nil
+		}
 	}
 
-	st := *r.SubnetType
-
-	return &st, nil
+	return nil, fmt.Errorf("%s with id %d", ErrorNoSubnetTypeFound, id)
 }
 
 func getSubnetTypeByName(
 	ctx context.Context,
 	name string,
 	apiClient *sdk.APIClient,
-) (*sdk.GetSubnetType200ResponseSubnetType, error) {
+) (*sdk.ListSubnetTypes200ResponseAllOfSubnetTypesInner, error) {
 	rs, hresp, err := apiClient.NetworksAPI.ListSubnetTypes(ctx).Name(name).Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for subnet type %s: %s", name, providererrors.ErrMsg(err, hresp))
 	}
 
-	// Use JSON round-trip for safe extraction since SDK list types may vary.
-	raw, marshalErr := json.Marshal(rs.SubnetTypes)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("error marshaling subnet types: %w", marshalErr)
-	}
-
-	var subnetTypes []struct {
-		Id   *int64  `json:"id"`
-		Name *string `json:"name"`
-	}
-
-	if unmarshalErr := json.Unmarshal(raw, &subnetTypes); unmarshalErr != nil {
-		return nil, fmt.Errorf("error decoding subnet types: %w", unmarshalErr)
-	}
-
-	var matchedID int64
+	// The Name filter is a partial match; enforce an exact, unique match.
+	var match *sdk.ListSubnetTypes200ResponseAllOfSubnetTypesInner
 
 	var matchCount int
 
-	for _, st := range subnetTypes {
-		if st.Name != nil && *st.Name == name {
-			if st.Id != nil {
-				matchedID = *st.Id
-			}
-
+	for i := range rs.SubnetTypes {
+		if rs.SubnetTypes[i].Name != nil && *rs.SubnetTypes[i].Name == name {
+			match = &rs.SubnetTypes[i]
 			matchCount++
 		}
 	}
@@ -137,14 +122,14 @@ func getSubnetTypeByName(
 		return nil, errors.New(ErrorMultipleSubnetTypes)
 	}
 
-	return getSubnetTypeByID(ctx, matchedID, apiClient)
+	return match, nil
 }
 
 func getSubnetType(
 	ctx context.Context,
 	config *SubnetTypeModel,
 	apiClient *sdk.APIClient,
-) (*sdk.GetSubnetType200ResponseSubnetType, error) {
+) (*sdk.ListSubnetTypes200ResponseAllOfSubnetTypesInner, error) {
 	if !config.Id.IsNull() {
 		return getSubnetTypeByID(ctx, config.Id.ValueInt64(), apiClient)
 	} else if !config.Name.IsNull() {
