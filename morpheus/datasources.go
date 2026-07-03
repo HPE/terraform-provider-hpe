@@ -14,6 +14,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
@@ -50,7 +52,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/serviceplan"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageservers"
+<<<<<<< supporting-data-sources
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
+=======
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
+>>>>>>> dev-1.6
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
@@ -63,6 +70,8 @@ func (p *MorpheusProvider) DataSources(
 		cluster.NewDataSource,
 		cloud.NewDataSource,
 		datastore.NewDataSource,
+		datastores.NewDataSource,
+		datastoretypes.NewDataSource,
 		environment.NewDataSource,
 		group.NewDataSource,
 		instance.NewDataSource,
@@ -90,6 +99,8 @@ func (p *MorpheusProvider) DataSources(
 		serviceplan.NewDataSource,
 		storageserver.NewDataSource,
 		storageservers.NewDataSource,
+		storagevolume.NewDataSource,
+		storagevolumes.NewDataSource,
 		user.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,

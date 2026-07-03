@@ -42,7 +42,7 @@ test:
 # recipe command out of stdout.
 test-json:
 	@pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
-	@env TF_ACC=1 \
+	env TF_ACC=1 \
 	go test -json -cover -count 1 -timeout $(TEST_TIMEOUT) $$pkgs
 
 unit-tests:

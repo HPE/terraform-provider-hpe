@@ -114,6 +114,8 @@ network_router:
                 )
   moves:
     - network_router: ""
+    - permissions: ""
+    - tenant_permissions.accounts: tenant_ids
     - zone: cloud
     - site: group
     - template-group_id: group_id
@@ -169,8 +171,8 @@ network_router:
     - interfaces
     - nats
     - network_server
-    - permissions
     - routes
+    - tenant_permissions
     - type
     # simple computed attributes
     - category
@@ -313,3 +315,13 @@ network_router:
     config_nsxt_gateway_tier1.tier1_ipsec_local_endpoint:
       computed_optional_required: computed_optional
       default: false
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the network router (public or private).
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true
+    tenant_ids:
+      computed_optional_required: computed_optional
+      description: List of tenant account IDs that are allowed access.
+      state_for_unknown: true

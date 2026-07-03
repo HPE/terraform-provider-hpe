@@ -202,7 +202,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_servicenow_workflow":        integrationds.DataSourceServiceNowWorkFlow(),
 			"hpe_morpheus_spec_template":              templateds.DataSourceSpecTemplate(),
 			"hpe_morpheus_storage_bucket":             storageds.DataSourceStorageBucket(),
-			"hpe_morpheus_storage_volume":             storageds.DataSourceStorageVolume(),
 			"hpe_morpheus_storage_volume_type":        storageds.DataSourceStorageVolumeType(),
 			"hpe_morpheus_task":                       taskds.DataSourceTask(),
 			"hpe_morpheus_tasks":                      taskds.DataSourceTasks(),
