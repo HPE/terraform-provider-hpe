@@ -53,7 +53,7 @@ provisioning_license:
       computed_optional_required: required
       description: The name of the provisioning license.
     tenants:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: List of tenant IDs associated with the license.
     virtual_images:
       computed_optional_required: optional

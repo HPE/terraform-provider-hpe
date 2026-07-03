@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package provisioninglicense
 
 import (
@@ -5,6 +7,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -86,7 +90,7 @@ func (r *provisioningLicenseResource) Create(
 		}
 		body.VirtualImages = images
 	}
-	if !plan.Tenants.IsNull() {
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
 		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenants, false)...)
 		if resp.Diagnostics.HasError() {
@@ -132,7 +136,14 @@ func (r *provisioningLicenseResource) Create(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readLicense)
+
+	// The API may normalise the tenants list on GET (e.g. replacing submitted IDs
+	// with the master tenant). Preserve the plan value so Terraform's post-apply
+	// consistency check passes. Read() will surface any real divergence on the
+	// next plan.
+	savedTenants := plan.Tenants
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
+	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -151,6 +162,11 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Detect import: ImportState sets only id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+	priorTenants := state.Tenants
 
 	id := state.Id.ValueInt64()
 
@@ -172,7 +188,15 @@ func (r *provisioningLicenseResource) Read(ctx context.Context, req resource.Rea
 
 		return
 	}
-	mapGetResponseToModel(&state, license)
+	resp.Diagnostics.Append(mapGetResponseToModel(&state, license)...)
+
+	// On normal refresh, preserve tenants from prior state. The API may
+	// silently drop IDs that don't exist in the environment, which would
+	// cause a spurious diff. On import there is no prior state, so we use
+	// the API values that mapGetResponseToModel just populated.
+	if !isImport {
+		state.Tenants = priorTenants
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -223,7 +247,7 @@ func (r *provisioningLicenseResource) Update(
 		}
 		body.VirtualImages = images
 	}
-	if !plan.Tenants.IsNull() {
+	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
 		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenants, false)...)
 		if resp.Diagnostics.HasError() {
@@ -260,7 +284,11 @@ func (r *provisioningLicenseResource) Update(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readLicense)
+
+	// Same as Create: preserve plan value for tenants.
+	savedTenants := plan.Tenants
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
+	plan.Tenants = savedTenants
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -308,7 +336,12 @@ func (r *provisioningLicenseResource) ImportState(
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
 }
 
-func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProvisioningLicense200ResponseLicense) {
+func mapGetResponseToModel(
+	model *ProvisioningLicenseModel,
+	license *sdk.GetProvisioningLicense200ResponseLicense,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if license.Id != nil {
 		model.Id = types.Int64Value(*license.Id)
 	}
@@ -323,4 +356,15 @@ func mapGetResponseToModel(model *ProvisioningLicenseModel, license *sdk.GetProv
 	if license.LicenseType != nil && license.LicenseType.Code != nil {
 		model.LicenseType = types.StringValue(*license.LicenseType.Code)
 	}
+	tenantVals := make([]attr.Value, 0, len(license.Tenants))
+	for _, t := range license.Tenants {
+		if t.Id != nil {
+			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
+		}
+	}
+	list, listDiags := types.ListValue(types.Int64Type, tenantVals)
+	diags.Append(listDiags...)
+	model.Tenants = list
+
+	return diags
 }
