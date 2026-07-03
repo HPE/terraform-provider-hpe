@@ -81,14 +81,18 @@ storage_volumes:
                 computed_optional_required: required
                 description: >-
                   The field to filter on. Valid names are: name, type_id,
-                  type_code, datastore_id, datastore_name, cloud_id, cloud_name,
-                  storage_server_id, storage_server_name, status, uuid,
-                  provision_type, ref_type, ref_id, pool_name.
+                  type_code, type_name, volume_type, volume_name, volume_path,
+                  category, disk_type, disk_mode, device_name, datastore_id,
+                  datastore_name, cloud_id, cloud_name, storage_server_id,
+                  storage_server_name, storage_group_id, storage_group_name,
+                  status, uuid, provision_type, ref_type, ref_id, pool_name,
+                  source, external_id, internal_id, unique_id, namespace,
+                  storage_profile.
                 validators:
                   - custom:
                       imports:
                         - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-                      schema_definition: stringvalidator.OneOf("name", "type_id", "type_code", "datastore_id", "datastore_name", "cloud_id", "cloud_name", "storage_server_id", "storage_server_name", "status", "uuid", "provision_type", "ref_type", "ref_id", "pool_name")
+                      schema_definition: stringvalidator.OneOf("name", "type_id", "type_code", "type_name", "volume_type", "volume_name", "volume_path", "category", "disk_type", "disk_mode", "device_name", "datastore_id", "datastore_name", "cloud_id", "cloud_name", "storage_server_id", "storage_server_name", "storage_group_id", "storage_group_name", "status", "uuid", "provision_type", "ref_type", "ref_id", "pool_name", "source", "external_id", "internal_id", "unique_id", "namespace", "storage_profile")
             - name: values
               set:
                 element_type:

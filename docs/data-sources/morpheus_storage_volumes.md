@@ -99,7 +99,7 @@ value matches **any** of the supplied `values`; multiple `filter` blocks are
 
 Required:
 
-- `name` (String) The field to filter on. Valid names are: name, type_id, type_code, datastore_id, datastore_name, cloud_id, cloud_name, storage_server_id, storage_server_name, status, uuid, provision_type, ref_type, ref_id, pool_name.
+- `name` (String) The field to filter on. Valid names are: name, type_id, type_code, type_name, volume_type, volume_name, volume_path, category, disk_type, disk_mode, device_name, datastore_id, datastore_name, cloud_id, cloud_name, storage_server_id, storage_server_name, storage_group_id, storage_group_name, status, uuid, provision_type, ref_type, ref_id, pool_name, source, external_id, internal_id, unique_id, namespace, storage_profile.
 - `values` (Set of String) The filter values. A storage volume matches the block if the chosen field matches ANY value (Go regular expression).
 
 
