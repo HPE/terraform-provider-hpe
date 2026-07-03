@@ -23,6 +23,7 @@ var _ fmt.Stringer
 type InstanceCreateConfig struct {
 	AmazonInstanceConfiguration7      *AmazonInstanceConfiguration7
 	AzureInstanceConfiguration7       *AzureInstanceConfiguration7
+	BMaaSInstanceConfiguration1       *BMaaSInstanceConfiguration1
 	GenericInstanceConfiguration7     *GenericInstanceConfiguration7
 	GoogleCloudInstanceConfiguration7 *GoogleCloudInstanceConfiguration7
 	HVMInstanceConfiguration2         *HVMInstanceConfiguration2
@@ -44,6 +45,12 @@ func (dst *InstanceCreateConfig) UnmarshalMapstructure(data any) (any, error) {
 
 	if IsEmpty(dst.AzureInstanceConfiguration7) {
 		dst.AzureInstanceConfiguration7 = nil
+	}
+
+	mapstructDecode(data, &dst.BMaaSInstanceConfiguration1)
+
+	if IsEmpty(dst.BMaaSInstanceConfiguration1) {
+		dst.BMaaSInstanceConfiguration1 = nil
 	}
 
 	mapstructDecode(data, &dst.GenericInstanceConfiguration7)
@@ -100,6 +107,19 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 		}
 	} else {
 		dst.AzureInstanceConfiguration7 = nil
+	}
+
+	// try to unmarshal JSON data into BMaaSInstanceConfiguration1
+	err = json.Unmarshal(data, &dst.BMaaSInstanceConfiguration1)
+	if err == nil {
+		jsonBMaaSInstanceConfiguration1, _ := json.Marshal(dst.BMaaSInstanceConfiguration1)
+		if string(jsonBMaaSInstanceConfiguration1) == "{}" { // empty struct
+			dst.BMaaSInstanceConfiguration1 = nil
+		} else {
+			return nil // data stored in dst.BMaaSInstanceConfiguration1, return on the first match
+		}
+	} else {
+		dst.BMaaSInstanceConfiguration1 = nil
 	}
 
 	// try to unmarshal JSON data into GenericInstanceConfiguration7
@@ -165,6 +185,10 @@ func (src InstanceCreateConfig) MarshalJSON() ([]byte, error) {
 
 	if src.AzureInstanceConfiguration7 != nil {
 		return json.Marshal(&src.AzureInstanceConfiguration7)
+	}
+
+	if src.BMaaSInstanceConfiguration1 != nil {
+		return json.Marshal(&src.BMaaSInstanceConfiguration1)
 	}
 
 	if src.GenericInstanceConfiguration7 != nil {
