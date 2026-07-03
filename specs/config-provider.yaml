@@ -1254,6 +1254,14 @@ data_sources:
     read:
       path: /api/data-stores/{id}
       method: GET
+  datastore_types:
+    read:
+      path: /api/data-store-types
+      method: GET
+  datastores:
+    read:
+      path: /api/data-stores
+      method: GET
   environment:
     read:
       path: /api/environments/{id}

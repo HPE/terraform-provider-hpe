@@ -54,6 +54,24 @@ func (r *Resource) Create(
 		ruleGroup.GroupLayer = plan.GroupLayer.ValueStringPointer()
 	}
 
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ruleGroup.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]sdk.CreateNetworkFirewallRuleGroupRequestRuleGroupTenantsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			tenants = append(tenants, sdk.CreateNetworkFirewallRuleGroupRequestRuleGroupTenantsInner{Id: &id})
+		}
+		ruleGroup.Tenants = tenants
+	}
+
 	createReq := &sdk.CreateNetworkFirewallRuleGroupRequest{
 		RuleGroup: ruleGroup,
 	}
@@ -116,6 +134,9 @@ func (r *Resource) Create(
 
 		return
 	}
+
+	// Preserve plan value: API may silently drop tenant IDs that don't exist.
+	state.TenantIds = plan.TenantIds
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

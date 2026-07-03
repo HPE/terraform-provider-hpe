@@ -1,15 +1,47 @@
 cluster_namespace:
   description: "Manages a Morpheus Cluster Namespace resource."
+  templates:
+    tenantIds:
+      set:
+        computed_optional_required: optional
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+    resourcePermissions:
+      single_nested:
+        computed_optional_required: optional
+        description: Resource permissions for group and service plan access.
+        attributes:
+        - name: all
+          bool:
+            computed_optional_required: optional
+            description: Pass true to allow access to all groups.
+        - name: group_ids
+          list:
+            computed_optional_required: optional
+            description: List of group IDs allowed access.
+            element_type:
+              int64: {}
+        - name: all_plans
+          bool:
+            computed_optional_required: optional
+            description: Pass true to allow access to all service plans.
+        - name: plan_ids
+          list:
+            computed_optional_required: optional
+            description: List of service plan IDs allowed access.
+            element_type:
+              int64: {}
   moves:
     - namespace: ""
+    - template-tenantIds: tenant_ids
+    - template-resourcePermissions: resource_permissions
   removes:
     - external_id
     - permissions
     - region_code
-    - resource_permissions
     - status
     - success
-    - visibility
   overrides:
     active:
       computed_optional_required: computed_optional
@@ -37,3 +69,9 @@ cluster_namespace:
             imports:
               - path: github.com/HPE/terraform-provider-hpe/utils/validators
             schema_definition: validators.Lowercase()
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the cluster namespace (public or private).
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true
