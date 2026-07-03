@@ -152,7 +152,8 @@ Read-Only:
 - `source_id` (String)
 - `status` (String)
 - `status_message` (String)
-- `storage_group` (Attributes) The storage group the volume belongs to (id and name). (see [below for nested schema](#nestedatt--storage_volumes--storage_group))
+- `storage_group_id` (Number) The id of the storage group the volume belongs to, when present.
+- `storage_group_name` (String) The name of the storage group the volume belongs to, when present.
 - `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 - `storage_server_id` (Number) The id of the storage server the volume is provisioned on, when present.
 - `storage_server_name` (String) The name of the storage server the volume is provisioned on, when present.
@@ -168,6 +169,3 @@ Read-Only:
 - `volume_path` (String)
 - `volume_type` (String)
 - `wwn` (String)
-
-<a id="nestedatt--storage_volumes--storage_group"></a>
-### Nested Schema for `storage_volumes.storage_group`

@@ -76,45 +76,6 @@ type compiledFilter struct {
 	res   []*regexp.Regexp
 }
 
-// mapInt64 extracts an int64 from a map[string]interface{} key whose JSON
-// value decodes as float64.
-func mapInt64(m map[string]interface{}, key string) (int64, bool) {
-	if m == nil {
-		return 0, false
-	}
-
-	v, ok := m[key]
-	if !ok || v == nil {
-		return 0, false
-	}
-
-	f, ok := v.(float64)
-	if !ok {
-		return 0, false
-	}
-
-	return int64(f), true
-}
-
-// mapString extracts a string from a map[string]interface{} key.
-func mapString(m map[string]interface{}, key string) (string, bool) {
-	if m == nil {
-		return "", false
-	}
-
-	v, ok := m[key]
-	if !ok || v == nil {
-		return "", false
-	}
-
-	s, ok := v.(string)
-	if !ok {
-		return "", false
-	}
-
-	return s, true
-}
-
 // Read refreshes the Terraform state with the latest data.
 func (d *DataSource) Read(
 	ctx context.Context,
@@ -287,12 +248,12 @@ func storageVolumeFieldValue(
 			return *sv.Zone.Name, true
 		}
 	case "storage_server_id":
-		if id, ok := mapInt64(sv.StorageServer, "id"); ok {
-			return strconv.FormatInt(id, 10), true
+		if sv.StorageServer != nil && sv.StorageServer.Id != nil {
+			return strconv.FormatInt(*sv.StorageServer.Id, 10), true
 		}
 	case "storage_server_name":
-		if name, ok := mapString(sv.StorageServer, "name"); ok {
-			return name, true
+		if sv.StorageServer != nil && sv.StorageServer.Name != nil {
+			return *sv.StorageServer.Name, true
 		}
 	case "status":
 		if sv.Status != nil {
@@ -352,20 +313,16 @@ func storageVolumeInnerToValue(
 
 	storageServerID := types.Int64Null()
 	storageServerName := types.StringNull()
-	if id, ok := mapInt64(sv.StorageServer, "id"); ok {
-		storageServerID = types.Int64Value(id)
-	}
-	if name, ok := mapString(sv.StorageServer, "name"); ok {
-		storageServerName = types.StringValue(name)
+	if sv.StorageServer != nil {
+		storageServerID = convert.Int64ToType(sv.StorageServer.Id)
+		storageServerName = convert.StrToType(sv.StorageServer.Name)
 	}
 
-	// StorageGroup is an empty nested object - always null
-	storageGroupVal, diags := types.ObjectValue(
-		StorageGroupValue{}.AttributeTypes(ctx),
-		map[string]attr.Value{},
-	)
-	if diags.HasError() {
-		return StorageVolumesValue{}, diags
+	storageGroupID := types.Int64Null()
+	storageGroupName := types.StringNull()
+	if sv.StorageGroup != nil {
+		storageGroupID = convert.Int64ToType(sv.StorageGroup.Id)
+		storageGroupName = convert.StrToType(sv.StorageGroup.Name)
 	}
 
 	attrs := map[string]attr.Value{
@@ -413,7 +370,8 @@ func storageVolumeInnerToValue(
 		"source_id":               convert.StrToType(sv.SourceId),
 		"status":                  convert.StrToType(sv.Status),
 		"status_message":          convert.StrToType(sv.StatusMessage.Get()),
-		"storage_group":           storageGroupVal,
+		"storage_group_id":        storageGroupID,
+		"storage_group_name":      storageGroupName,
 		"storage_profile":         convert.StrToType(sv.StorageProfile.Get()),
 		"storage_server_id":       storageServerID,
 		"storage_server_name":     storageServerName,

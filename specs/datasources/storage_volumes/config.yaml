@@ -28,6 +28,14 @@ storage_volumes:
       string:
         computed_optional_required: computed
         description: The name of the storage server the volume is provisioned on, when present.
+    storage_group_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage group the volume belongs to, when present.
+    storage_group_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage group the volume belongs to, when present.
   moves:
     - storage_volumes.type: storage_volumes.type_obj                         # rename nested type object out of the way
     - storage_volumes.zone_id: storage_volumes.cloud_id                      # (components/schemas/storageVolume.yaml) rename zone→cloud
@@ -38,6 +46,8 @@ storage_volumes:
     - template-cloud_name: storage_volumes.cloud_name                        # (template)
     - template-storage_server_id: storage_volumes.storage_server_id          # (template)
     - template-storage_server_name: storage_volumes.storage_server_name      # (template)
+    - template-storage_group_id: storage_volumes.storage_group_id            # (template) flattened from storageGroup map
+    - template-storage_group_name: storage_volumes.storage_group_name        # (template) flattened from storageGroup map
   removes:
     - max                                   # (query parameter) pagination
     - offset                                # (query parameter) pagination
@@ -55,6 +65,7 @@ storage_volumes:
     - storage_volumes.raw_data              # (components/schemas/storageVolume.yaml) dynamic/unstructured
     - storage_volumes.source_image          # (components/schemas/storageVolume.yaml) nested/dynamic
     - storage_volumes.storage_server        # (components/schemas/storageVolume.yaml) nested object
+    - storage_volumes.storage_group         # (components/schemas/storageVolume.yaml) empty/typeless response object; keep storage_group_id/name
     - storage_volumes.zone                  # (components/schemas/storageVolume.yaml) nested object; keep cloud_id
   blocks:
     filter:

@@ -23,6 +23,9 @@ const (
 	ErrorNoValidSearchTerms     = `no valid search terms - an id or name is required`
 	ErrorNoStorageVolumeFound   = `no storage volume found`
 	ErrorMultipleStorageVolumes = `multiple storage volumes were returned`
+	// listMax bounds the number of records fetched when resolving a volume by
+	// name via the list endpoint (mirrors the storage_volumes data source).
+	listMax = 250
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -57,45 +60,6 @@ func (d *DataSource) Schema(
 	resp.Schema = StorageVolumeDataSourceSchema(ctx)
 	resp.Schema.Description = "Retrieves information about a single Morpheus storage volume by id or name."
 	resp.Schema.MarkdownDescription = "Retrieves information about a single Morpheus storage volume by id or name."
-}
-
-// mapInt64 extracts an int64 from a map[string]interface{} key whose JSON
-// value decodes as float64.
-func mapInt64(m map[string]interface{}, key string) (int64, bool) {
-	if m == nil {
-		return 0, false
-	}
-
-	v, ok := m[key]
-	if !ok || v == nil {
-		return 0, false
-	}
-
-	f, ok := v.(float64)
-	if !ok {
-		return 0, false
-	}
-
-	return int64(f), true
-}
-
-// mapString extracts a string from a map[string]interface{} key.
-func mapString(m map[string]interface{}, key string) (string, bool) {
-	if m == nil {
-		return "", false
-	}
-
-	v, ok := m[key]
-	if !ok || v == nil {
-		return "", false
-	}
-
-	s, ok := v.(string)
-	if !ok {
-		return "", false
-	}
-
-	return s, true
 }
 
 // storageVolumeAsState maps an API storage volume into the datasource model.
@@ -154,7 +118,6 @@ func storageVolumeAsState(
 		CreateForMultiAttach: convert.BoolToType(sv.CreateForMultiAttach),
 		IsMultiAttach:        convert.BoolToType(sv.IsMultiAttach),
 		StorageProfile:       convert.StrToType(sv.StorageProfile.Get()),
-		StorageGroup:         NewStorageGroupValueNull(),
 	}
 
 	// Type nested object
@@ -180,17 +143,20 @@ func storageVolumeAsState(
 		state.DatastoreName = convert.StrToType(sv.Datastore.Name)
 	}
 
-	// StorageServer map -> storage_server_id / storage_server_name
-	if id, ok := mapInt64(sv.StorageServer, "id"); ok {
-		state.StorageServerId = types.Int64Value(id)
-	} else {
-		state.StorageServerId = types.Int64Null()
+	// StorageServer -> storage_server_id / storage_server_name
+	state.StorageServerId = types.Int64Null()
+	state.StorageServerName = types.StringNull()
+	if sv.StorageServer != nil {
+		state.StorageServerId = convert.Int64ToType(sv.StorageServer.Id)
+		state.StorageServerName = convert.StrToType(sv.StorageServer.Name)
 	}
 
-	if name, ok := mapString(sv.StorageServer, "name"); ok {
-		state.StorageServerName = types.StringValue(name)
-	} else {
-		state.StorageServerName = types.StringNull()
+	// StorageGroup -> storage_group_id / storage_group_name
+	state.StorageGroupId = types.Int64Null()
+	state.StorageGroupName = types.StringNull()
+	if sv.StorageGroup != nil {
+		state.StorageGroupId = convert.Int64ToType(sv.StorageGroup.Id)
+		state.StorageGroupName = convert.StrToType(sv.StorageGroup.Name)
 	}
 
 	return state
@@ -210,7 +176,8 @@ func getStorageVolumeByID(
 
 	if r.StorageVolume == nil {
 		return nil, fmt.Errorf(
-			"GET failed for storage volume %d: response missing storageVolume", id)
+			"GET failed for storage volume %d: response missing storageVolume", id,
+		)
 	}
 
 	return r.StorageVolume, nil
@@ -221,7 +188,7 @@ func getStorageVolumeByName(
 	name string,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetStorageVolumes200ResponseStorageVolume, error) {
-	rs, hresp, err := apiClient.StorageAPI.ListStorageVolumes(ctx).Name(name).Execute()
+	rs, hresp, err := apiClient.StorageAPI.ListStorageVolumes(ctx).Name(name).Max(listMax).Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("GET failed for storage volume %s: %s",
 			name, providererrors.ErrMsg(err, hresp))
@@ -235,9 +202,8 @@ func getStorageVolumeByName(
 		if sv.Name != nil && *sv.Name == name {
 			if sv.Id != nil {
 				matchedID = *sv.Id
+				matchCount++
 			}
-
-			matchCount++
 		}
 	}
 

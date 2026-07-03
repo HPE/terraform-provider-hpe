@@ -161,16 +161,15 @@ func StorageVolumesDataSourceSchema(ctx context.Context) schema.Schema {
 						"status_message": schema.StringAttribute{
 							Computed: true,
 						},
-						"storage_group": schema.SingleNestedAttribute{
-							Attributes: map[string]schema.Attribute{},
-							CustomType: StorageGroupType{
-								ObjectType: types.ObjectType{
-									AttrTypes: StorageGroupValue{}.AttributeTypes(ctx),
-								},
-							},
+						"storage_group_id": schema.Int64Attribute{
 							Computed:            true,
-							Description:         "The storage group the volume belongs to (id and name).",
-							MarkdownDescription: "The storage group the volume belongs to (id and name).",
+							Description:         "The id of the storage group the volume belongs to, when present.",
+							MarkdownDescription: "The id of the storage group the volume belongs to, when present.",
+						},
+						"storage_group_name": schema.StringAttribute{
+							Computed:            true,
+							Description:         "The name of the storage group the volume belongs to, when present.",
+							MarkdownDescription: "The name of the storage group the volume belongs to, when present.",
 						},
 						"storage_profile": schema.StringAttribute{
 							Computed:            true,
@@ -1106,22 +1105,40 @@ func (t StorageVolumesType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`status_message expected to be basetypes.StringValue, was: %T`, statusMessageAttribute))
 	}
 
-	storageGroupAttribute, ok := attributes["storage_group"]
+	storageGroupIdAttribute, ok := attributes["storage_group_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`storage_group is missing from object`)
+			`storage_group_id is missing from object`)
 
 		return nil, diags
 	}
 
-	storageGroupVal, ok := storageGroupAttribute.(basetypes.ObjectValue)
+	storageGroupIdVal, ok := storageGroupIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`storage_group expected to be basetypes.ObjectValue, was: %T`, storageGroupAttribute))
+			fmt.Sprintf(`storage_group_id expected to be basetypes.Int64Value, was: %T`, storageGroupIdAttribute))
+	}
+
+	storageGroupNameAttribute, ok := attributes["storage_group_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_group_name is missing from object`)
+
+		return nil, diags
+	}
+
+	storageGroupNameVal, ok := storageGroupNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_group_name expected to be basetypes.StringValue, was: %T`, storageGroupNameAttribute))
 	}
 
 	storageProfileAttribute, ok := attributes["storage_profile"]
@@ -1443,7 +1460,8 @@ func (t StorageVolumesType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		SourceId:             sourceIdVal,
 		Status:               statusVal,
 		StatusMessage:        statusMessageVal,
-		StorageGroup:         storageGroupVal,
+		StorageGroupId:       storageGroupIdVal,
+		StorageGroupName:     storageGroupNameVal,
 		StorageProfile:       storageProfileVal,
 		StorageServerId:      storageServerIdVal,
 		StorageServerName:    storageServerNameVal,
@@ -2318,22 +2336,40 @@ func NewStorageVolumesValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`status_message expected to be basetypes.StringValue, was: %T`, statusMessageAttribute))
 	}
 
-	storageGroupAttribute, ok := attributes["storage_group"]
+	storageGroupIdAttribute, ok := attributes["storage_group_id"]
 
 	if !ok {
 		diags.AddError(
 			"Attribute Missing",
-			`storage_group is missing from object`)
+			`storage_group_id is missing from object`)
 
 		return NewStorageVolumesValueUnknown(), diags
 	}
 
-	storageGroupVal, ok := storageGroupAttribute.(basetypes.ObjectValue)
+	storageGroupIdVal, ok := storageGroupIdAttribute.(basetypes.Int64Value)
 
 	if !ok {
 		diags.AddError(
 			"Attribute Wrong Type",
-			fmt.Sprintf(`storage_group expected to be basetypes.ObjectValue, was: %T`, storageGroupAttribute))
+			fmt.Sprintf(`storage_group_id expected to be basetypes.Int64Value, was: %T`, storageGroupIdAttribute))
+	}
+
+	storageGroupNameAttribute, ok := attributes["storage_group_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_group_name is missing from object`)
+
+		return NewStorageVolumesValueUnknown(), diags
+	}
+
+	storageGroupNameVal, ok := storageGroupNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_group_name expected to be basetypes.StringValue, was: %T`, storageGroupNameAttribute))
 	}
 
 	storageProfileAttribute, ok := attributes["storage_profile"]
@@ -2655,7 +2691,8 @@ func NewStorageVolumesValue(attributeTypes map[string]attr.Type, attributes map[
 		SourceId:             sourceIdVal,
 		Status:               statusVal,
 		StatusMessage:        statusMessageVal,
-		StorageGroup:         storageGroupVal,
+		StorageGroupId:       storageGroupIdVal,
+		StorageGroupName:     storageGroupNameVal,
 		StorageProfile:       storageProfileVal,
 		StorageServerId:      storageServerIdVal,
 		StorageServerName:    storageServerNameVal,
@@ -2785,7 +2822,8 @@ type StorageVolumesValue struct {
 	SourceId             basetypes.StringValue `tfsdk:"source_id"`
 	Status               basetypes.StringValue `tfsdk:"status"`
 	StatusMessage        basetypes.StringValue `tfsdk:"status_message"`
-	StorageGroup         basetypes.ObjectValue `tfsdk:"storage_group"`
+	StorageGroupId       basetypes.Int64Value  `tfsdk:"storage_group_id"`
+	StorageGroupName     basetypes.StringValue `tfsdk:"storage_group_name"`
 	StorageProfile       basetypes.StringValue `tfsdk:"storage_profile"`
 	StorageServerId      basetypes.Int64Value  `tfsdk:"storage_server_id"`
 	StorageServerName    basetypes.StringValue `tfsdk:"storage_server_name"`
@@ -2805,7 +2843,7 @@ type StorageVolumesValue struct {
 }
 
 func (v StorageVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 60)
+	attrTypes := make(map[string]tftypes.Type, 61)
 
 	var val tftypes.Value
 	var err error
@@ -2854,9 +2892,8 @@ func (v StorageVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 	attrTypes["source_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["status"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["status_message"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["storage_group"] = basetypes.ObjectType{
-		AttrTypes: StorageGroupValue{}.AttributeTypes(ctx),
-	}.TerraformType(ctx)
+	attrTypes["storage_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["storage_group_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_profile"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["storage_server_name"] = basetypes.StringType{}.TerraformType(ctx)
@@ -2877,7 +2914,7 @@ func (v StorageVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 60)
+		vals := make(map[string]tftypes.Value, 61)
 
 		val, err = v.Active.ToTerraformValue(ctx)
 		if err != nil {
@@ -3187,12 +3224,19 @@ func (v StorageVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 		vals["status_message"] = val
 
-		val, err = v.StorageGroup.ToTerraformValue(ctx)
+		val, err = v.StorageGroupId.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
 
-		vals["storage_group"] = val
+		vals["storage_group_id"] = val
+
+		val, err = v.StorageGroupName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_group_name"] = val
 
 		val, err = v.StorageProfile.ToTerraformValue(ctx)
 		if err != nil {
@@ -3328,27 +3372,6 @@ func (v StorageVolumesValue) String() string {
 func (v StorageVolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
-	var storageGroupVal basetypes.ObjectValue
-
-	if v.StorageGroup.IsNull() {
-		storageGroupVal = types.ObjectNull(
-			StorageGroupValue{}.AttributeTypes(ctx),
-		)
-	}
-
-	if v.StorageGroup.IsUnknown() {
-		storageGroupVal = types.ObjectUnknown(
-			StorageGroupValue{}.AttributeTypes(ctx),
-		)
-	}
-
-	if !v.StorageGroup.IsNull() && !v.StorageGroup.IsUnknown() {
-		storageGroupVal = types.ObjectValueMust(
-			StorageGroupValue{}.AttributeTypes(ctx),
-			v.StorageGroup.Attributes(),
-		)
-	}
-
 	attributeTypes := map[string]attr.Type{
 		"active":                  basetypes.BoolType{},
 		"category":                basetypes.StringType{},
@@ -3394,24 +3417,23 @@ func (v StorageVolumesValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		"source_id":               basetypes.StringType{},
 		"status":                  basetypes.StringType{},
 		"status_message":          basetypes.StringType{},
-		"storage_group": basetypes.ObjectType{
-			AttrTypes: StorageGroupValue{}.AttributeTypes(ctx),
-		},
-		"storage_profile":     basetypes.StringType{},
-		"storage_server_id":   basetypes.Int64Type{},
-		"storage_server_name": basetypes.StringType{},
-		"type":                basetypes.StringType{},
-		"type_code":           basetypes.StringType{},
-		"type_id":             basetypes.Int64Type{},
-		"type_name":           basetypes.StringType{},
-		"unique_id":           basetypes.StringType{},
-		"unit_number":         basetypes.StringType{},
-		"used_storage":        basetypes.Int64Type{},
-		"uuid":                basetypes.StringType{},
-		"volume_name":         basetypes.StringType{},
-		"volume_path":         basetypes.StringType{},
-		"volume_type":         basetypes.StringType{},
-		"wwn":                 basetypes.StringType{},
+		"storage_group_id":        basetypes.Int64Type{},
+		"storage_group_name":      basetypes.StringType{},
+		"storage_profile":         basetypes.StringType{},
+		"storage_server_id":       basetypes.Int64Type{},
+		"storage_server_name":     basetypes.StringType{},
+		"type":                    basetypes.StringType{},
+		"type_code":               basetypes.StringType{},
+		"type_id":                 basetypes.Int64Type{},
+		"type_name":               basetypes.StringType{},
+		"unique_id":               basetypes.StringType{},
+		"unit_number":             basetypes.StringType{},
+		"used_storage":            basetypes.Int64Type{},
+		"uuid":                    basetypes.StringType{},
+		"volume_name":             basetypes.StringType{},
+		"volume_path":             basetypes.StringType{},
+		"volume_type":             basetypes.StringType{},
+		"wwn":                     basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -3469,7 +3491,8 @@ func (v StorageVolumesValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 			"source_id":               v.SourceId,
 			"status":                  v.Status,
 			"status_message":          v.StatusMessage,
-			"storage_group":           storageGroupVal,
+			"storage_group_id":        v.StorageGroupId,
+			"storage_group_name":      v.StorageGroupName,
 			"storage_profile":         v.StorageProfile,
 			"storage_server_id":       v.StorageServerId,
 			"storage_server_name":     v.StorageServerName,
@@ -3681,7 +3704,11 @@ func (v StorageVolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.StorageGroup.Equal(other.StorageGroup) {
+	if !v.StorageGroupId.Equal(other.StorageGroupId) {
+		return false
+	}
+
+	if !v.StorageGroupName.Equal(other.StorageGroupName) {
 		return false
 	}
 
@@ -3802,283 +3829,24 @@ func (v StorageVolumesValue) AttributeTypes(ctx context.Context) map[string]attr
 		"source_id":               basetypes.StringType{},
 		"status":                  basetypes.StringType{},
 		"status_message":          basetypes.StringType{},
-		"storage_group": basetypes.ObjectType{
-			AttrTypes: StorageGroupValue{}.AttributeTypes(ctx),
-		},
-		"storage_profile":     basetypes.StringType{},
-		"storage_server_id":   basetypes.Int64Type{},
-		"storage_server_name": basetypes.StringType{},
-		"type":                basetypes.StringType{},
-		"type_code":           basetypes.StringType{},
-		"type_id":             basetypes.Int64Type{},
-		"type_name":           basetypes.StringType{},
-		"unique_id":           basetypes.StringType{},
-		"unit_number":         basetypes.StringType{},
-		"used_storage":        basetypes.Int64Type{},
-		"uuid":                basetypes.StringType{},
-		"volume_name":         basetypes.StringType{},
-		"volume_path":         basetypes.StringType{},
-		"volume_type":         basetypes.StringType{},
-		"wwn":                 basetypes.StringType{},
+		"storage_group_id":        basetypes.Int64Type{},
+		"storage_group_name":      basetypes.StringType{},
+		"storage_profile":         basetypes.StringType{},
+		"storage_server_id":       basetypes.Int64Type{},
+		"storage_server_name":     basetypes.StringType{},
+		"type":                    basetypes.StringType{},
+		"type_code":               basetypes.StringType{},
+		"type_id":                 basetypes.Int64Type{},
+		"type_name":               basetypes.StringType{},
+		"unique_id":               basetypes.StringType{},
+		"unit_number":             basetypes.StringType{},
+		"used_storage":            basetypes.Int64Type{},
+		"uuid":                    basetypes.StringType{},
+		"volume_name":             basetypes.StringType{},
+		"volume_path":             basetypes.StringType{},
+		"volume_type":             basetypes.StringType{},
+		"wwn":                     basetypes.StringType{},
 	}
-}
-
-var _ basetypes.ObjectTypable = StorageGroupType{}
-
-type StorageGroupType struct {
-	basetypes.ObjectType
-}
-
-func (t StorageGroupType) Equal(o attr.Type) bool {
-	other, ok := o.(StorageGroupType)
-
-	if !ok {
-		return false
-	}
-
-	return t.ObjectType.Equal(other.ObjectType)
-}
-
-func (t StorageGroupType) String() string {
-	return "StorageGroupType"
-}
-
-func (t StorageGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return StorageGroupValue{
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewStorageGroupValueNull() StorageGroupValue {
-	return StorageGroupValue{
-		state: attr.ValueStateNull,
-	}
-}
-
-func NewStorageGroupValueUnknown() StorageGroupValue {
-	return StorageGroupValue{
-		state: attr.ValueStateUnknown,
-	}
-}
-
-func NewStorageGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (StorageGroupValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
-	ctx := context.Background()
-
-	for name, attributeType := range attributeTypes {
-		attribute, ok := attributes[name]
-
-		if !ok {
-			diags.AddError(
-				"Missing StorageGroupValue Attribute Value",
-				"While creating a StorageGroupValue value, a missing attribute value was detected. "+
-					"A StorageGroupValue must contain values for all attributes, even if null or unknown. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
-			)
-
-			continue
-		}
-
-		if !attributeType.Equal(attribute.Type(ctx)) {
-			diags.AddError(
-				"Invalid StorageGroupValue Attribute Type",
-				"While creating a StorageGroupValue value, an invalid attribute value was detected. "+
-					"A StorageGroupValue must use a matching attribute type for the value. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
-			)
-		}
-	}
-
-	for name := range attributes {
-		_, ok := attributeTypes[name]
-
-		if !ok {
-			diags.AddError(
-				"Extra StorageGroupValue Attribute Value",
-				"While creating a StorageGroupValue value, an extra attribute value was detected. "+
-					"A StorageGroupValue must not contain values beyond the expected attribute types. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra StorageGroupValue Attribute Name: %s", name),
-			)
-		}
-	}
-
-	if diags.HasError() {
-		return NewStorageGroupValueUnknown(), diags
-	}
-
-	if diags.HasError() {
-		return NewStorageGroupValueUnknown(), diags
-	}
-
-	return StorageGroupValue{
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewStorageGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) StorageGroupValue {
-	object, diags := NewStorageGroupValue(attributeTypes, attributes)
-
-	if diags.HasError() {
-		// This could potentially be added to the diag package.
-		diagsStrings := make([]string, 0, len(diags))
-
-		for _, diagnostic := range diags {
-			diagsStrings = append(diagsStrings, fmt.Sprintf(
-				"%s | %s | %s",
-				diagnostic.Severity(),
-				diagnostic.Summary(),
-				diagnostic.Detail()))
-		}
-
-		panic("NewStorageGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
-	}
-
-	return object
-}
-
-func (t StorageGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
-	if in.Type() == nil {
-		return NewStorageGroupValueNull(), nil
-	}
-
-	if !in.Type().Equal(t.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
-	}
-
-	if !in.IsKnown() {
-		return NewStorageGroupValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewStorageGroupValueNull(), nil
-	}
-
-	attributes := map[string]attr.Value{}
-
-	val := map[string]tftypes.Value{}
-
-	err := in.As(&val)
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[k] = a
-	}
-
-	return NewStorageGroupValueMust(StorageGroupValue{}.AttributeTypes(ctx), attributes), nil
-}
-
-func (t StorageGroupType) ValueType(ctx context.Context) attr.Value {
-	return StorageGroupValue{}
-}
-
-var _ basetypes.ObjectValuable = StorageGroupValue{}
-
-type StorageGroupValue struct {
-	state attr.ValueState
-}
-
-func (v StorageGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 0)
-
-	objectType := tftypes.Object{AttributeTypes: attrTypes}
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 0)
-
-		if err := tftypes.ValidateValue(objectType, vals); err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		return tftypes.NewValue(objectType, vals), nil
-	case attr.ValueStateNull:
-		return tftypes.NewValue(objectType, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-}
-
-func (v StorageGroupValue) IsNull() bool {
-	return v.state == attr.ValueStateNull
-}
-
-func (v StorageGroupValue) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
-}
-
-func (v StorageGroupValue) String() string {
-	return "StorageGroupValue"
-}
-
-func (v StorageGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attributeTypes := map[string]attr.Type{}
-
-	if v.IsNull() {
-		return types.ObjectNull(attributeTypes), diags
-	}
-
-	if v.IsUnknown() {
-		return types.ObjectUnknown(attributeTypes), diags
-	}
-
-	objVal, diags := types.ObjectValue(
-		attributeTypes,
-		map[string]attr.Value{})
-
-	return objVal, diags
-}
-
-func (v StorageGroupValue) Equal(o attr.Value) bool {
-	other, ok := o.(StorageGroupValue)
-
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state != attr.ValueStateKnown {
-		return true
-	}
-
-	return true
-}
-
-func (v StorageGroupValue) Type(ctx context.Context) attr.Type {
-	return StorageGroupType{
-		basetypes.ObjectType{
-			AttrTypes: v.AttributeTypes(ctx),
-		},
-	}
-}
-
-func (v StorageGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{}
 }
 
 var _ basetypes.ObjectTypable = FilterType{}

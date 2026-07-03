@@ -28,6 +28,14 @@ storage_volume:
       string:
         computed_optional_required: computed
         description: The name of the storage server the volume is provisioned on, when present.
+    storage_group_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage group the volume belongs to, when present.
+    storage_group_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage group the volume belongs to, when present.
   moves:
     - id: id_params                         # move path-param oneOf block out of the way
     - storage_volume: ""                    # unnest GET envelope (components/schemas/storageVolume.yaml)
@@ -40,6 +48,8 @@ storage_volume:
     - template-cloud_name: cloud_name       # (template)
     - template-storage_server_id: storage_server_id      # (template)
     - template-storage_server_name: storage_server_name  # (template)
+    - template-storage_group_id: storage_group_id        # (template) flattened from storageGroup map
+    - template-storage_group_name: storage_group_name    # (template) flattened from storageGroup map
   removes:
     - id_params                             # (path parameter) oneOf(id,uuid) lookup block
     - type_obj                              # (components/schemas/storageVolume.yaml) nested object renamed from type
@@ -50,6 +60,7 @@ storage_volume:
     - raw_data                              # (components/schemas/storageVolume.yaml) dynamic/unstructured
     - source_image                          # (components/schemas/storageVolume.yaml) nested/dynamic
     - storage_server                        # (components/schemas/storageVolume.yaml) nested object
+    - storage_group                         # (components/schemas/storageVolume.yaml) empty/typeless response object; keep storage_group_id/name
     - zone                                  # (components/schemas/storageVolume.yaml) nested object; keep cloud_id
   overrides:
     id:
@@ -148,8 +159,6 @@ storage_volume:
       description: The datastore option for the volume.
     controller_mount_point:
       description: The controller mount point.
-    storage_group:
-      description: The storage group the volume belongs to (id and name).
     wwn:
       description: The World Wide Name of the volume.
     fiber_wwn:

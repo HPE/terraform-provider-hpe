@@ -84,7 +84,8 @@ data "hpe_morpheus_storage_volume" "example" {
 - `source_id` (String) The source ID of the storage volume.
 - `status` (String) The current status of the storage volume.
 - `status_message` (String) The status message for the storage volume.
-- `storage_group` (Attributes) The storage group the volume belongs to (id and name). (see [below for nested schema](#nestedatt--storage_group))
+- `storage_group_id` (Number) The id of the storage group the volume belongs to, when present.
+- `storage_group_name` (String) The name of the storage group the volume belongs to, when present.
 - `storage_profile` (String) The storage profile code for the volume.
 - `storage_server_id` (Number) The id of the storage server the volume is provisioned on, when present.
 - `storage_server_name` (String) The name of the storage server the volume is provisioned on, when present.
@@ -100,6 +101,3 @@ data "hpe_morpheus_storage_volume" "example" {
 - `volume_path` (String) The volume path.
 - `volume_type` (String) The volume type.
 - `wwn` (String) The World Wide Name of the volume.
-
-<a id="nestedatt--storage_group"></a>
-### Nested Schema for `storage_group`

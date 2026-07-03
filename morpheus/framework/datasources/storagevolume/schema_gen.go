@@ -4,18 +4,12 @@ package storagevolume
 
 import (
 	"context"
-	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -249,16 +243,15 @@ func StorageVolumeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The status message for the storage volume.",
 				MarkdownDescription: "The status message for the storage volume.",
 			},
-			"storage_group": schema.SingleNestedAttribute{
-				Attributes: map[string]schema.Attribute{},
-				CustomType: StorageGroupType{
-					ObjectType: types.ObjectType{
-						AttrTypes: StorageGroupValue{}.AttributeTypes(ctx),
-					},
-				},
+			"storage_group_id": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "The storage group the volume belongs to (id and name).",
-				MarkdownDescription: "The storage group the volume belongs to (id and name).",
+				Description:         "The id of the storage group the volume belongs to, when present.",
+				MarkdownDescription: "The id of the storage group the volume belongs to, when present.",
+			},
+			"storage_group_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The name of the storage group the volume belongs to, when present.",
+				MarkdownDescription: "The name of the storage group the volume belongs to, when present.",
 			},
 			"storage_profile": schema.StringAttribute{
 				Computed:            true,
@@ -340,322 +333,65 @@ func StorageVolumeDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type StorageVolumeModel struct {
-	Active               types.Bool        `tfsdk:"active"`
-	Category             types.String      `tfsdk:"category"`
-	ClaimName            types.String      `tfsdk:"claim_name"`
-	CloudId              types.Int64       `tfsdk:"cloud_id"`
-	CloudName            types.String      `tfsdk:"cloud_name"`
-	ConfigurableIops     types.Bool        `tfsdk:"configurable_iops"`
-	ControllerId         types.Int64       `tfsdk:"controller_id"`
-	ControllerMountPoint types.String      `tfsdk:"controller_mount_point"`
-	CopyType             types.String      `tfsdk:"copy_type"`
-	CreateForMultiAttach types.Bool        `tfsdk:"create_for_multi_attach"`
-	DatastoreId          types.Int64       `tfsdk:"datastore_id"`
-	DatastoreName        types.String      `tfsdk:"datastore_name"`
-	DatastoreOption      types.String      `tfsdk:"datastore_option"`
-	Description          types.String      `tfsdk:"description"`
-	DeviceDisplayName    types.String      `tfsdk:"device_display_name"`
-	DeviceName           types.String      `tfsdk:"device_name"`
-	DiskMode             types.String      `tfsdk:"disk_mode"`
-	DiskType             types.String      `tfsdk:"disk_type"`
-	DisplayOrder         types.Int64       `tfsdk:"display_order"`
-	ExternalId           types.String      `tfsdk:"external_id"`
-	FiberWwn             types.String      `tfsdk:"fiber_wwn"`
-	FileName             types.String      `tfsdk:"file_name"`
-	Id                   types.Int64       `tfsdk:"id"`
-	ImageType            types.String      `tfsdk:"image_type"`
-	InternalId           types.String      `tfsdk:"internal_id"`
-	IsMultiAttach        types.Bool        `tfsdk:"is_multi_attach"`
-	MaxIops              types.String      `tfsdk:"max_iops"`
-	MaxStorage           types.Int64       `tfsdk:"max_storage"`
-	Name                 types.String      `tfsdk:"name"`
-	Namespace            types.String      `tfsdk:"namespace"`
-	Online               types.Bool        `tfsdk:"online"`
-	PoolName             types.String      `tfsdk:"pool_name"`
-	ProvisionType        types.String      `tfsdk:"provision_type"`
-	ReadOnly             types.Bool        `tfsdk:"read_only"`
-	RefId                types.Int64       `tfsdk:"ref_id"`
-	RefType              types.String      `tfsdk:"ref_type"`
-	Removable            types.Bool        `tfsdk:"removable"`
-	Resizeable           types.Bool        `tfsdk:"resizeable"`
-	RootVolume           types.Bool        `tfsdk:"root_volume"`
-	SharePath            types.String      `tfsdk:"share_path"`
-	Source               types.String      `tfsdk:"source"`
-	SourceId             types.String      `tfsdk:"source_id"`
-	Status               types.String      `tfsdk:"status"`
-	StatusMessage        types.String      `tfsdk:"status_message"`
-	StorageGroup         StorageGroupValue `tfsdk:"storage_group"`
-	StorageProfile       types.String      `tfsdk:"storage_profile"`
-	StorageServerId      types.Int64       `tfsdk:"storage_server_id"`
-	StorageServerName    types.String      `tfsdk:"storage_server_name"`
-	Type                 types.String      `tfsdk:"type"`
-	TypeCode             types.String      `tfsdk:"type_code"`
-	TypeId               types.Int64       `tfsdk:"type_id"`
-	TypeName             types.String      `tfsdk:"type_name"`
-	UniqueId             types.String      `tfsdk:"unique_id"`
-	UnitNumber           types.String      `tfsdk:"unit_number"`
-	UsedStorage          types.Int64       `tfsdk:"used_storage"`
-	Uuid                 types.String      `tfsdk:"uuid"`
-	VolumeName           types.String      `tfsdk:"volume_name"`
-	VolumePath           types.String      `tfsdk:"volume_path"`
-	VolumeType           types.String      `tfsdk:"volume_type"`
-	Wwn                  types.String      `tfsdk:"wwn"`
-}
-
-var _ basetypes.ObjectTypable = StorageGroupType{}
-
-type StorageGroupType struct {
-	basetypes.ObjectType
-}
-
-func (t StorageGroupType) Equal(o attr.Type) bool {
-	other, ok := o.(StorageGroupType)
-
-	if !ok {
-		return false
-	}
-
-	return t.ObjectType.Equal(other.ObjectType)
-}
-
-func (t StorageGroupType) String() string {
-	return "StorageGroupType"
-}
-
-func (t StorageGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	return StorageGroupValue{
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewStorageGroupValueNull() StorageGroupValue {
-	return StorageGroupValue{
-		state: attr.ValueStateNull,
-	}
-}
-
-func NewStorageGroupValueUnknown() StorageGroupValue {
-	return StorageGroupValue{
-		state: attr.ValueStateUnknown,
-	}
-}
-
-func NewStorageGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (StorageGroupValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
-	ctx := context.Background()
-
-	for name, attributeType := range attributeTypes {
-		attribute, ok := attributes[name]
-
-		if !ok {
-			diags.AddError(
-				"Missing StorageGroupValue Attribute Value",
-				"While creating a StorageGroupValue value, a missing attribute value was detected. "+
-					"A StorageGroupValue must contain values for all attributes, even if null or unknown. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
-			)
-
-			continue
-		}
-
-		if !attributeType.Equal(attribute.Type(ctx)) {
-			diags.AddError(
-				"Invalid StorageGroupValue Attribute Type",
-				"While creating a StorageGroupValue value, an invalid attribute value was detected. "+
-					"A StorageGroupValue must use a matching attribute type for the value. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
-					fmt.Sprintf("StorageGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
-			)
-		}
-	}
-
-	for name := range attributes {
-		_, ok := attributeTypes[name]
-
-		if !ok {
-			diags.AddError(
-				"Extra StorageGroupValue Attribute Value",
-				"While creating a StorageGroupValue value, an extra attribute value was detected. "+
-					"A StorageGroupValue must not contain values beyond the expected attribute types. "+
-					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
-					fmt.Sprintf("Extra StorageGroupValue Attribute Name: %s", name),
-			)
-		}
-	}
-
-	if diags.HasError() {
-		return NewStorageGroupValueUnknown(), diags
-	}
-
-	if diags.HasError() {
-		return NewStorageGroupValueUnknown(), diags
-	}
-
-	return StorageGroupValue{
-		state: attr.ValueStateKnown,
-	}, diags
-}
-
-func NewStorageGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) StorageGroupValue {
-	object, diags := NewStorageGroupValue(attributeTypes, attributes)
-
-	if diags.HasError() {
-		// This could potentially be added to the diag package.
-		diagsStrings := make([]string, 0, len(diags))
-
-		for _, diagnostic := range diags {
-			diagsStrings = append(diagsStrings, fmt.Sprintf(
-				"%s | %s | %s",
-				diagnostic.Severity(),
-				diagnostic.Summary(),
-				diagnostic.Detail()))
-		}
-
-		panic("NewStorageGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
-	}
-
-	return object
-}
-
-func (t StorageGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
-	if in.Type() == nil {
-		return NewStorageGroupValueNull(), nil
-	}
-
-	if !in.Type().Equal(t.TerraformType(ctx)) {
-		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
-	}
-
-	if !in.IsKnown() {
-		return NewStorageGroupValueUnknown(), nil
-	}
-
-	if in.IsNull() {
-		return NewStorageGroupValueNull(), nil
-	}
-
-	attributes := map[string]attr.Value{}
-
-	val := map[string]tftypes.Value{}
-
-	err := in.As(&val)
-	if err != nil {
-		return nil, err
-	}
-
-	for k, v := range val {
-		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
-		if err != nil {
-			return nil, err
-		}
-
-		attributes[k] = a
-	}
-
-	return NewStorageGroupValueMust(StorageGroupValue{}.AttributeTypes(ctx), attributes), nil
-}
-
-func (t StorageGroupType) ValueType(ctx context.Context) attr.Value {
-	return StorageGroupValue{}
-}
-
-var _ basetypes.ObjectValuable = StorageGroupValue{}
-
-type StorageGroupValue struct {
-	state attr.ValueState
-}
-
-func (v StorageGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 0)
-
-	objectType := tftypes.Object{AttributeTypes: attrTypes}
-
-	switch v.state {
-	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 0)
-
-		if err := tftypes.ValidateValue(objectType, vals); err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		return tftypes.NewValue(objectType, vals), nil
-	case attr.ValueStateNull:
-		return tftypes.NewValue(objectType, nil), nil
-	case attr.ValueStateUnknown:
-		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
-	default:
-		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
-	}
-}
-
-func (v StorageGroupValue) IsNull() bool {
-	return v.state == attr.ValueStateNull
-}
-
-func (v StorageGroupValue) IsUnknown() bool {
-	return v.state == attr.ValueStateUnknown
-}
-
-func (v StorageGroupValue) String() string {
-	return "StorageGroupValue"
-}
-
-func (v StorageGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	attributeTypes := map[string]attr.Type{}
-
-	if v.IsNull() {
-		return types.ObjectNull(attributeTypes), diags
-	}
-
-	if v.IsUnknown() {
-		return types.ObjectUnknown(attributeTypes), diags
-	}
-
-	objVal, diags := types.ObjectValue(
-		attributeTypes,
-		map[string]attr.Value{})
-
-	return objVal, diags
-}
-
-func (v StorageGroupValue) Equal(o attr.Value) bool {
-	other, ok := o.(StorageGroupValue)
-
-	if !ok {
-		return false
-	}
-
-	if v.state != other.state {
-		return false
-	}
-
-	if v.state != attr.ValueStateKnown {
-		return true
-	}
-
-	return true
-}
-
-func (v StorageGroupValue) Type(ctx context.Context) attr.Type {
-	return StorageGroupType{
-		basetypes.ObjectType{
-			AttrTypes: v.AttributeTypes(ctx),
-		},
-	}
-}
-
-func (v StorageGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
-	return map[string]attr.Type{}
+	Active               types.Bool   `tfsdk:"active"`
+	Category             types.String `tfsdk:"category"`
+	ClaimName            types.String `tfsdk:"claim_name"`
+	CloudId              types.Int64  `tfsdk:"cloud_id"`
+	CloudName            types.String `tfsdk:"cloud_name"`
+	ConfigurableIops     types.Bool   `tfsdk:"configurable_iops"`
+	ControllerId         types.Int64  `tfsdk:"controller_id"`
+	ControllerMountPoint types.String `tfsdk:"controller_mount_point"`
+	CopyType             types.String `tfsdk:"copy_type"`
+	CreateForMultiAttach types.Bool   `tfsdk:"create_for_multi_attach"`
+	DatastoreId          types.Int64  `tfsdk:"datastore_id"`
+	DatastoreName        types.String `tfsdk:"datastore_name"`
+	DatastoreOption      types.String `tfsdk:"datastore_option"`
+	Description          types.String `tfsdk:"description"`
+	DeviceDisplayName    types.String `tfsdk:"device_display_name"`
+	DeviceName           types.String `tfsdk:"device_name"`
+	DiskMode             types.String `tfsdk:"disk_mode"`
+	DiskType             types.String `tfsdk:"disk_type"`
+	DisplayOrder         types.Int64  `tfsdk:"display_order"`
+	ExternalId           types.String `tfsdk:"external_id"`
+	FiberWwn             types.String `tfsdk:"fiber_wwn"`
+	FileName             types.String `tfsdk:"file_name"`
+	Id                   types.Int64  `tfsdk:"id"`
+	ImageType            types.String `tfsdk:"image_type"`
+	InternalId           types.String `tfsdk:"internal_id"`
+	IsMultiAttach        types.Bool   `tfsdk:"is_multi_attach"`
+	MaxIops              types.String `tfsdk:"max_iops"`
+	MaxStorage           types.Int64  `tfsdk:"max_storage"`
+	Name                 types.String `tfsdk:"name"`
+	Namespace            types.String `tfsdk:"namespace"`
+	Online               types.Bool   `tfsdk:"online"`
+	PoolName             types.String `tfsdk:"pool_name"`
+	ProvisionType        types.String `tfsdk:"provision_type"`
+	ReadOnly             types.Bool   `tfsdk:"read_only"`
+	RefId                types.Int64  `tfsdk:"ref_id"`
+	RefType              types.String `tfsdk:"ref_type"`
+	Removable            types.Bool   `tfsdk:"removable"`
+	Resizeable           types.Bool   `tfsdk:"resizeable"`
+	RootVolume           types.Bool   `tfsdk:"root_volume"`
+	SharePath            types.String `tfsdk:"share_path"`
+	Source               types.String `tfsdk:"source"`
+	SourceId             types.String `tfsdk:"source_id"`
+	Status               types.String `tfsdk:"status"`
+	StatusMessage        types.String `tfsdk:"status_message"`
+	StorageGroupId       types.Int64  `tfsdk:"storage_group_id"`
+	StorageGroupName     types.String `tfsdk:"storage_group_name"`
+	StorageProfile       types.String `tfsdk:"storage_profile"`
+	StorageServerId      types.Int64  `tfsdk:"storage_server_id"`
+	StorageServerName    types.String `tfsdk:"storage_server_name"`
+	Type                 types.String `tfsdk:"type"`
+	TypeCode             types.String `tfsdk:"type_code"`
+	TypeId               types.Int64  `tfsdk:"type_id"`
+	TypeName             types.String `tfsdk:"type_name"`
+	UniqueId             types.String `tfsdk:"unique_id"`
+	UnitNumber           types.String `tfsdk:"unit_number"`
+	UsedStorage          types.Int64  `tfsdk:"used_storage"`
+	Uuid                 types.String `tfsdk:"uuid"`
+	VolumeName           types.String `tfsdk:"volume_name"`
+	VolumePath           types.String `tfsdk:"volume_path"`
+	VolumeType           types.String `tfsdk:"volume_type"`
+	Wwn                  types.String `tfsdk:"wwn"`
 }
