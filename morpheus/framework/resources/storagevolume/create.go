@@ -60,10 +60,7 @@ func (r *storageVolumeResource) Create(
 	// storageVolume.maxStorage in bytes (it does not convert), so convert GiB to
 	// bytes here — mirroring the bytes-to-GiB conversion in the read path.
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
-		if body.AdditionalProperties == nil {
-			body.AdditionalProperties = make(map[string]interface{})
-		}
-		body.AdditionalProperties["maxStorage"] = plan.MaxStorage.ValueInt64() * oneGibibyte
+		body.MaxStorage = sdk.PtrInt64(plan.MaxStorage.ValueInt64() * oneGibibyte)
 	}
 
 	if !plan.StorageServerId.IsNull() && !plan.StorageServerId.IsUnknown() {
