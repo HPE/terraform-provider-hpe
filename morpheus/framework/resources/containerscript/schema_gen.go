@@ -5,6 +5,7 @@ package containerscript
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -53,6 +54,9 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The name of the library container script.",
 				MarkdownDescription: "The name of the library container script.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 			"run_as_user": schema.StringAttribute{
 				Optional:            true,
@@ -61,15 +65,22 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"script": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The script content.",
 				MarkdownDescription: "The script content.",
+				PlanModifiers: []planmodifier.String{
+					modifiers.NormalizeLineEndingsModifier{},
+				},
 			},
 			"script_phase": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "The phase of the script.",
 				MarkdownDescription: "The phase of the script.",
-				Default:             stringdefault.StaticString("provision"),
+				Validators: []validator.String{
+					stringvalidator.OneOf("start", "stop", "preProvision", "provision", "postProvision", "preDeploy", "deploy", "reconfigure", "scaleDown", "teardown"),
+				},
+				Default: stringdefault.StaticString("provision"),
 			},
 			"script_type": schema.StringAttribute{
 				Optional:            true,

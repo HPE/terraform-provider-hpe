@@ -36,16 +36,32 @@ container_script:
     name:
       computed_optional_required: required
       description: The name of the library container script.
+      validators:
+      - custom:
+          imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+          schema_definition: stringvalidator.LengthAtMost(255)
     run_as_user:
       computed_optional_required: optional
       description: The user to run the script as.
     script:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: The script content.
+      plan_modifiers:
+      - custom:
+          imports:
+            - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+          schema_definition: modifiers.NormalizeLineEndingsModifier{}
     script_phase:
       computed_optional_required: computed_optional
       description: The phase of the script.
       default: "provision"
+      validators:
+      - custom:
+          imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+          schema_definition: |-
+            stringvalidator.OneOf("start", "stop", "preProvision", "provision", "postProvision", "preDeploy", "deploy", "reconfigure", "scaleDown", "teardown")
     script_type:
       computed_optional_required: computed_optional
       description: The type of the script.
