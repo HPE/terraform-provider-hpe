@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package clusternamespace
 
 import (
@@ -7,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -75,8 +80,17 @@ func (r *clusterNamespaceResource) Create(
 		v := plan.Description.ValueString()
 		ns.Description = &v
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		ns.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ns.Visibility = plan.Visibility.ValueStringPointer()
+	}
+	if perms := buildNamespaceCreatePermissions(ctx, plan, &resp.Diagnostics); perms != nil {
+		ns.Permissions = perms
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	body := sdk.AddClusterNamespaceRequest{
@@ -118,7 +132,18 @@ func (r *clusterNamespaceResource) Create(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readNs)
+
+	// The API silently drops tenant/site/plan IDs that don't exist in the environment.
+	// Preserve plan values so state matches the plan and Terraform's consistency
+	// check passes. Read() will return the API-normalised values, surfacing any
+	// divergence as a plan diff on the next run.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -136,6 +161,12 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Detect import: ImportState sets only cluster_id and id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+	priorTenantIds := state.TenantIds
+	priorRP := state.ResourcePermissions
 
 	clusterID := state.ClusterId.ValueInt64()
 	id := state.Id.ValueInt64()
@@ -159,7 +190,16 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		return
 	}
 
-	mapGetResponseToModel(&state, ns)
+	resp.Diagnostics.Append(mapGetResponseToModel(&state, ns)...)
+
+	// On normal refresh, preserve tenant_ids and resource_permissions from prior
+	// state. The API may silently drop IDs that don't exist in the environment,
+	// which would cause a spurious diff. On import there is no prior state, so
+	// we use the API values that mapGetResponseToModel just populated.
+	if !isImport {
+		state.TenantIds = priorTenantIds
+		state.ResourcePermissions = priorRP
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -194,8 +234,17 @@ func (r *clusterNamespaceResource) Update(
 		v := plan.Description.ValueString()
 		ns.Description = &v
 	}
-	if !plan.Active.IsNull() {
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		ns.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ns.Visibility = plan.Visibility.ValueStringPointer()
+	}
+	if perms := buildNamespaceUpdatePermissions(ctx, plan, &resp.Diagnostics); perms != nil {
+		ns.Permissions = perms
+	}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	body := sdk.UpdateClusterNamespaceRequest{
@@ -223,7 +272,16 @@ func (r *clusterNamespaceResource) Update(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readNs)
+
+	// Same as Create: preserve plan values for tenant_ids and resource_permissions
+	// so the consistency check passes when the API normalises submitted IDs.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
+	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readNs)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -290,7 +348,9 @@ func (r *clusterNamespaceResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) {
+func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNamespace200ResponseNamespace) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if ns.Id != nil {
 		model.Id = types.Int64Value(*ns.Id)
 	}
@@ -300,5 +360,174 @@ func mapGetResponseToModel(model *ClusterNamespaceModel, ns *sdk.GetClusterNames
 	if ns.Description != nil {
 		model.Description = types.StringValue(*ns.Description)
 	}
+	model.Visibility = convert.StrToType(ns.Visibility)
+
+	// Map tenant_ids from permissions.tenantPermissions.accounts
+	if ns.Permissions != nil && ns.Permissions.TenantPermissions != nil {
+		accts := ns.Permissions.TenantPermissions.Accounts
+		tenantVals := make([]attr.Value, 0, len(accts))
+		for _, a := range accts {
+			if a.Id != nil {
+				tenantVals = append(tenantVals, types.Int64Value(*a.Id))
+			}
+		}
+		set, setDiags := types.SetValue(types.Int64Type, tenantVals)
+		diags.Append(setDiags...)
+		model.TenantIds = set
+	} else {
+		emptySet, emptyDiags := types.SetValue(types.Int64Type, []attr.Value{})
+		diags.Append(emptyDiags...)
+		model.TenantIds = emptySet
+	}
+	// Map resource_permissions from permissions.resourcePermissions
+	if ns.Permissions != nil && ns.Permissions.ResourcePermissions != nil {
+		rp := ns.Permissions.ResourcePermissions
+		siteVals := make([]attr.Value, 0, len(rp.Sites))
+		for _, s := range rp.Sites {
+			if s.Id != nil {
+				siteVals = append(siteVals, types.Int64Value(*s.Id))
+			}
+		}
+		planVals := make([]attr.Value, 0, len(rp.Plans))
+		for _, p := range rp.Plans {
+			if p.Id != nil {
+				planVals = append(planVals, types.Int64Value(*p.Id))
+			}
+		}
+		groupIdsList, listDiags := types.ListValue(types.Int64Type, siteVals)
+		diags.Append(listDiags...)
+		planIdsList, planDiags := types.ListValue(types.Int64Type, planVals)
+		diags.Append(planDiags...)
+		rpVal, rpDiags := NewResourcePermissionsValue(
+			map[string]attr.Type{
+				"all":       types.BoolType,
+				"group_ids": types.ListType{ElemType: types.Int64Type},
+				"all_plans": types.BoolType,
+				"plan_ids":  types.ListType{ElemType: types.Int64Type},
+			},
+			map[string]attr.Value{
+				"all":       types.BoolPointerValue(rp.All),
+				"group_ids": groupIdsList,
+				"all_plans": types.BoolPointerValue(rp.AllPlans),
+				"plan_ids":  planIdsList,
+			},
+		)
+		diags.Append(rpDiags...)
+		model.ResourcePermissions = rpVal
+	} else {
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
 	// NOTE: Active is not in the API GET at all. Config value is preserved in state.
+
+	return diags
+}
+
+func buildNamespaceCreatePermissions(
+	ctx context.Context,
+	plan ClusterNamespaceModel,
+	diags *diag.Diagnostics,
+) *sdk.AddClusterNamespaceRequestNamespacePermissions {
+	hasTP := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()
+	hasRP := !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown()
+	if !hasTP && !hasRP {
+		return nil
+	}
+	perms := &sdk.AddClusterNamespaceRequestNamespacePermissions{}
+	if hasTP {
+		var ids []int64
+		diags.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if diags.HasError() {
+			return nil
+		}
+		perms.TenantPermissions = &sdk.AddClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: ids}
+	}
+	if hasRP {
+		rp := sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var siteIDs []int64
+			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+			if diags.HasError() {
+				return nil
+			}
+			sites := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(siteIDs))
+			for i := range siteIDs {
+				id := siteIDs[i]
+				sites = append(sites, sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id})
+			}
+			rp.Sites = sites
+		}
+		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
+			var planIDs []int64
+			diags.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+			if diags.HasError() {
+				return nil
+			}
+			plans := make([]sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(planIDs))
+			for i := range planIDs {
+				id := planIDs[i]
+				plans = append(plans, sdk.AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id})
+			}
+			rp.Plans = plans
+		}
+		perms.ResourcePermissions = &rp
+	}
+
+	return perms
+}
+
+func buildNamespaceUpdatePermissions(
+	ctx context.Context,
+	plan ClusterNamespaceModel,
+	diags *diag.Diagnostics,
+) *sdk.UpdateClusterNamespaceRequestNamespacePermissions {
+	hasTP := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()
+	hasRP := !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown()
+	if !hasTP && !hasRP {
+		return nil
+	}
+	perms := &sdk.UpdateClusterNamespaceRequestNamespacePermissions{}
+	if hasTP {
+		var ids []int64
+		diags.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if diags.HasError() {
+			return nil
+		}
+		perms.TenantPermissions = &sdk.UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions{Accounts: ids}
+	}
+	if hasRP {
+		rp := sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		rp.AllPlans = plan.ResourcePermissions.AllPlans.ValueBoolPointer()
+		if !plan.ResourcePermissions.GroupIds.IsNull() && !plan.ResourcePermissions.GroupIds.IsUnknown() {
+			var siteIDs []int64
+			diags.Append(plan.ResourcePermissions.GroupIds.ElementsAs(ctx, &siteIDs, false)...)
+			if diags.HasError() {
+				return nil
+			}
+			sites := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner, 0, len(siteIDs))
+			for i := range siteIDs {
+				id := siteIDs[i]
+				sites = append(sites, sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{Id: &id})
+			}
+			rp.Sites = sites
+		}
+		if !plan.ResourcePermissions.PlanIds.IsNull() && !plan.ResourcePermissions.PlanIds.IsUnknown() {
+			var planIDs []int64
+			diags.Append(plan.ResourcePermissions.PlanIds.ElementsAs(ctx, &planIDs, false)...)
+			if diags.HasError() {
+				return nil
+			}
+			plans := make([]sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner, 0, len(planIDs))
+			for i := range planIDs {
+				id := planIDs[i]
+				plans = append(plans, sdk.UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{Id: &id})
+			}
+			rp.Plans = plans
+		}
+		perms.ResourcePermissions = &rp
+	}
+
+	return perms
 }

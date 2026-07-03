@@ -41,6 +41,9 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 &nbsp;&nbsp;&nbsp;&nbsp;- **Do not** change the order of volumes or network_interfaces in HCL<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is supported<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Existing volumes can have their size increased but not decreased<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- For BMaaS (bare metal) instances only datastore-backed volumes (e.g. HPE Alletra MP)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  can be added or resized; local disk / RAID volumes such as the RAID1 boot volume<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  are fixed hardware and cannot be added, resized or removed via `Update`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Network interface update is supported for Morpheus versions >= 8.1.2, for earlier<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  versions network_interfaces changes will force a new instance to be created.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
@@ -50,6 +53,12 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
+The `volumes` block manages the disks provisioned as part of the instance. To instead attach an existing
+standalone HPE Alletra MP volume to a BMaaS instance, create an `hpe_morpheus_storage_volume` and export it to the
+instance with `config_alletramp_bmaas.instance_ids` (multi-attach - every node of each listed instance, requires
+`shared = true`) or to a single host with `compute_server_id`. These externally-attached (SAN) volumes are owned by
+the `hpe_morpheus_storage_volume` resource and are intentionally **not** tracked in this resource's `volumes` list, so
+they do not appear here or cause perpetual diffs.<br><br>
 When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
@@ -340,6 +349,16 @@ data "hpe_morpheus_instance_type_layout" "vmware" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "TestInstance"
+  # host_name sets the guest hostname independently of the instance name. When
+  # omitted, Morpheus derives it from the name. It is set at provision time only;
+  # changing it forces the instance to be replaced.
+  host_name        = "webserver01"
+  # labels are organization keywords assigned to the instance.
+  labels = ["terraform", "webserver"]
+  # server_uuids optionally assigns specific UUIDs to the servers provisioned for
+  # this instance (bring-your-own-UUID). Set at provision time only; changing it
+  # forces replacement. When omitted, Morpheus generates the UUIDs.
+  # server_uuids = ["550e8400-e29b-41d4-a716-446655440000"]
   cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
   layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
   instance_type_id = 9
@@ -888,12 +907,23 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `description` (String) A description of the instance.
 - `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
+- `host_name` (String) The hostname of the instance. When not set, Morpheus derives the hostname
+from the instance name, so this value is also computed. Set it to make the
+instance name and hostname differ. The instance update API cannot modify the
+hostname, so changing it forces replacement.
 - `instance_context` (String) Environment
+- `labels` (Set of String) Organization labels (keywords) assigned to the instance.
 - `layout_size` (Number) Apply a multiply factor of containers/vms within the instance.
 - `network_domain_id` (Number) The Network Domain ID to provision the instance into.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
+- `server_uuids` (Set of String) Optional UUIDs to assign to the servers provisioned for this instance.
+Each UUID must be unique - Morpheus rejects a value already in use by
+another server. Set at provision time only; changing it forces
+replacement. When not set, Morpheus generates the UUIDs and they are
+read back here. This is an unordered set: Morpheus does not guarantee
+servers are returned in the order the UUIDs were supplied.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.

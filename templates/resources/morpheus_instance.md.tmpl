@@ -41,6 +41,9 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 &nbsp;&nbsp;&nbsp;&nbsp;- **Do not** change the order of volumes or network_interfaces in HCL<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is supported<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Existing volumes can have their size increased but not decreased<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- For BMaaS (bare metal) instances only datastore-backed volumes (e.g. HPE Alletra MP)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  can be added or resized; local disk / RAID volumes such as the RAID1 boot volume<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  are fixed hardware and cannot be added, resized or removed via `Update`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Network interface update is supported for Morpheus versions >= 8.1.2, for earlier<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  versions network_interfaces changes will force a new instance to be created.<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
@@ -50,6 +53,12 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
+The `volumes` block manages the disks provisioned as part of the instance. To instead attach an existing
+standalone HPE Alletra MP volume to a BMaaS instance, create an `hpe_morpheus_storage_volume` and export it to the
+instance with `config_alletramp_bmaas.instance_ids` (multi-attach - every node of each listed instance, requires
+`shared = true`) or to a single host with `compute_server_id`. These externally-attached (SAN) volumes are owned by
+the `hpe_morpheus_storage_volume` resource and are intentionally **not** tracked in this resource's `volumes` list, so
+they do not appear here or cause perpetual diffs.<br><br>
 When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
 with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
 network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.

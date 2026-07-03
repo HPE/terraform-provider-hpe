@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -29,6 +30,12 @@ func (r *Resource) Read(
 		return
 	}
 
+	// Detect import: ImportState sets network_integration_id, id, and
+	// external_type but not name. On normal refresh, name is always a known
+	// string from prior state.
+	isImport := data.Name.IsNull()
+	priorTenantIds := data.TenantIds
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -50,6 +57,13 @@ func (r *Resource) Read(
 
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
+	}
+
+	// On normal refresh, preserve tenant_ids from prior state. The API may
+	// silently drop IDs that don't exist in the environment. On import there
+	// is no prior state, so we keep the API value from getNetworkFirewallRuleGroupAsState.
+	if !isImport {
+		state.TenantIds = priorTenantIds
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -92,11 +106,29 @@ func getNetworkFirewallRuleGroupAsState(
 	state.Name = convert.StrToType(ruleGroup.Name)
 	state.Priority = convert.Int64ToType(ruleGroup.Priority)
 	state.GroupLayer = convert.StrToType(ruleGroup.GroupLayer)
+	state.Visibility = convert.StrToType(ruleGroup.Visibility)
 
 	if ruleGroup.Description.IsSet() {
 		state.Description = convert.StrToType(ruleGroup.Description.Get())
 	} else {
 		state.Description = types.StringNull()
+	}
+
+	// Build tenant_ids from the Tenants array returned by the API.
+	if len(ruleGroup.Tenants) > 0 {
+		ids := make([]int64, 0, len(ruleGroup.Tenants))
+		for _, t := range ruleGroup.Tenants {
+			if t.Id != nil {
+				ids = append(ids, *t.Id)
+			}
+		}
+		listVal, listDiags := types.SetValueFrom(ctx, types.Int64Type, ids)
+		diags.Append(listDiags...)
+		state.TenantIds = listVal
+	} else {
+		emptySet, emptyDiags := types.SetValue(types.Int64Type, []attr.Value{})
+		diags.Append(emptyDiags...)
+		state.TenantIds = emptySet
 	}
 
 	// network_integration_id and external_type are not returned in the GET response; preserve from prior state.

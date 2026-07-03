@@ -20,15 +20,15 @@ var _ MappedNullable = &ListClusterDatastores200ResponseAllOfDatastoresInnerReso
 
 // ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions struct for ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions
 type ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions struct {
-	DefaultStore         *bool                                                                       `json:"defaultStore,omitempty"`
-	DefaultTarget        *bool                                                                       `json:"defaultTarget,omitempty"`
-	CanManage            *bool                                                                       `json:"canManage,omitempty"`
-	All                  *bool                                                                       `json:"all,omitempty"`
-	Account              *ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsAccount     `json:"account,omitempty"`
-	Sites                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                       `json:"allPlans,omitempty"`
-	Plans                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsPlansInner `json:"plans,omitempty"`
-	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
+	DefaultStore         *bool                                                                               `json:"defaultStore,omitempty"`
+	AllPlans             *bool                                                                               `json:"allPlans,omitempty"`
+	DefaultTarget        *bool                                                                               `json:"defaultTarget,omitempty"`
+	CanManage            *bool                                                                               `json:"canManage,omitempty"`
+	All                  *bool                                                                               `json:"all,omitempty"`
+	Account              *ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissionsAccount     `json:"account,omitempty"`
+	Sites                []ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
+	Plans                []ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissionsPlansInner `json:"plans,omitempty"`
+	AdditionalProperties map[string]interface{}                                                              `json:",remain"`
 }
 
 type _ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions
@@ -46,6 +46,9 @@ func (o ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions)
 	if !IsNil(o.DefaultStore) {
 		toSerialize["defaultStore"] = o.DefaultStore
 	}
+	if !IsNil(o.AllPlans) {
+		toSerialize["allPlans"] = o.AllPlans
+	}
 	if !IsNil(o.DefaultTarget) {
 		toSerialize["defaultTarget"] = o.DefaultTarget
 	}
@@ -60,9 +63,6 @@ func (o ListClusterDatastores200ResponseAllOfDatastoresInnerResourcePermissions)
 	}
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
-	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

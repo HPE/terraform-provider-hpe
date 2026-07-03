@@ -25,16 +25,14 @@ type ClusterAffinityGroupUpdate struct {
 	// Affinity Type
 	AffinityType *string `json:"affinityType,omitempty"`
 	// Active
-	Active *bool                        `json:"active,omitempty"`
-	Pool   *ZoneAffinityGroupCreatePool `json:"pool,omitempty"`
+	Active *bool                           `json:"active,omitempty"`
+	Pool   *ClusterAffinityGroupUpdatePool `json:"pool,omitempty"`
 	// List of Server IDs to include in the Affinity Group
 	Servers []int32 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
-	Visibility *string `json:"visibility,omitempty"`
-	// Array of tenant account ids that are allowed access
-	Tenants              []ZoneAffinityGroupCreateTenantsInner       `json:"tenants,omitempty"`
-	ResourcePermissions  *ZoneAffinityGroupCreateResourcePermissions `json:"resourcePermissions,omitempty"`
-	AdditionalProperties map[string]interface{}                      `json:",remain"`
+	Visibility           *string                                        `json:"visibility,omitempty"`
+	ResourcePermissions  *ClusterAffinityGroupUpdateResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
 
 type _ClusterAffinityGroupUpdate ClusterAffinityGroupUpdate
@@ -66,9 +64,6 @@ func (o ClusterAffinityGroupUpdate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
-	}
-	if !IsNil(o.Tenants) {
-		toSerialize["tenants"] = o.Tenants
 	}
 	if !IsNil(o.ResourcePermissions) {
 		toSerialize["resourcePermissions"] = o.ResourcePermissions

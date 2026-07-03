@@ -405,6 +405,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Group ID to provision the instance into.",
 				MarkdownDescription: "The Group ID to provision the instance into.",
 			},
+			"host_name": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The hostname of the instance. When not set, Morpheus derives the hostname\nfrom the instance name, so this value is also computed. Set it to make the\ninstance name and hostname differ. The instance update API cannot modify the\nhostname, so changing it forces replacement.",
+				MarkdownDescription: "The hostname of the instance. When not set, Morpheus derives the hostname\nfrom the instance name, so this value is also computed. Set it to make the\ninstance name and hostname differ. The instance update API cannot modify the\nhostname, so changing it forces replacement.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"id": schema.Int64Attribute{
 				Computed: true,
 				PlanModifiers: []planmodifier.Int64{
@@ -421,6 +431,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The type of instance by id we want to fetch.",
 				MarkdownDescription: "The type of instance by id we want to fetch.",
+			},
+			"labels": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Organization labels (keywords) assigned to the instance.",
+				MarkdownDescription: "Organization labels (keywords) assigned to the instance.",
 			},
 			"layout_id": schema.Int64Attribute{
 				Required:            true,
@@ -684,6 +701,17 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 			},
+			"server_uuids": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
+				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.RequiresReplace(),
+				},
+			},
 			"service_plan_options": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"cores_per_socket": schema.Int64Attribute{
@@ -856,9 +884,11 @@ type InstanceModel struct {
 	Description        types.String            `tfsdk:"description"`
 	Evars              types.Set               `tfsdk:"evars"`
 	GroupId            types.Int64             `tfsdk:"group_id"`
+	HostName           types.String            `tfsdk:"host_name"`
 	Id                 types.Int64             `tfsdk:"id"`
 	InstanceContext    types.String            `tfsdk:"instance_context"`
 	InstanceTypeId     types.Int64             `tfsdk:"instance_type_id"`
+	Labels             types.Set               `tfsdk:"labels"`
 	LayoutId           types.Int64             `tfsdk:"layout_id"`
 	LayoutSize         types.Int64             `tfsdk:"layout_size"`
 	Name               types.String            `tfsdk:"name"`
@@ -866,6 +896,7 @@ type InstanceModel struct {
 	NetworkInterfaces  types.List              `tfsdk:"network_interfaces"`
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
+	ServerUuids        types.Set               `tfsdk:"server_uuids"`
 	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
 	Status             types.String            `tfsdk:"status"`
 	Tags               types.Set               `tfsdk:"tags"`

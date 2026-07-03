@@ -4,6 +4,7 @@ package instance
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -90,6 +91,78 @@ func TestUnitGetChildNetworksNoSubnet(t *testing.T) {
 
 	if got := children[0].SubnetId; !got.IsNull() {
 		t.Errorf("child subnet_id = %v, want null", got)
+	}
+}
+
+// TestUnitServerUUIDsFromContainerDetails verifies server_uuids is read back
+// from containerDetails[].server.uuid (MORPH-12963), skipping containers with no
+// server or no uuid, and yielding a null set when none are present. server_uuids
+// is an unordered set, so values are compared order-insensitively.
+func TestUnitServerUUIDsFromContainerDetails(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name       string
+		containers []sdk.InstanceContainer2
+		wantNull   bool
+		want       []string
+	}{
+		{
+			name: "collects server uuids",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-1")}},
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+			},
+			want: []string{"uuid-1", "uuid-2"},
+		},
+		{
+			name: "nil server skipped",
+			containers: []sdk.InstanceContainer2{
+				{Server: nil},
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+			},
+			want: []string{"uuid-2"},
+		},
+		{
+			name: "nil uuid skipped -> null",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: nil}},
+			},
+			wantNull: true,
+		},
+		{name: "empty containers -> null", containers: nil, wantNull: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := serverUUIDsFromContainerDetails(tt.containers)
+			if tt.wantNull {
+				if !got.IsNull() {
+					t.Errorf("expected null set, got %v", got)
+				}
+
+				return
+			}
+			var uuids []string
+			if d := got.ElementsAs(ctx, &uuids, false); d.HasError() {
+				t.Fatalf("ElementsAs returned diagnostics: %v", d)
+			}
+			// server_uuids is an unordered set: compare order-insensitively.
+			sort.Strings(uuids)
+			want := append([]string(nil), tt.want...)
+			sort.Strings(want)
+			if len(uuids) != len(want) {
+				t.Fatalf("got %d uuids %v, want %d %v", len(uuids), uuids, len(want), want)
+			}
+			for i := range uuids {
+				if uuids[i] != want[i] {
+					t.Errorf("uuid[%d] = %q, want %q", i, uuids[i], want[i])
+				}
+			}
+		})
 	}
 }
 

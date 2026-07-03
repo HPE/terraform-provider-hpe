@@ -98,6 +98,27 @@ func getRouterAsState(
 		}
 	}
 
+	// Preserve tenant_ids from prior state on normal refresh. The API may
+	// silently drop IDs that don't exist in the environment. On import there
+	// is no prior state, so we read from the API response instead.
+	state.TenantIds = plan.TenantIds
+
+	// Read permissions: visibility + tenant_ids
+	if router.Permissions != nil {
+		if router.Permissions.Visibility != nil {
+			state.Visibility = types.StringValue(*router.Permissions.Visibility)
+		}
+		if importing {
+			var tenantIDs []int64
+			if router.Permissions.TenantPermissions != nil {
+				tenantIDs = router.Permissions.TenantPermissions.Accounts
+			}
+			setVal, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
+			diags.Append(setDiags...)
+			state.TenantIds = setVal
+		}
+	}
+
 	return state, diags
 }
 

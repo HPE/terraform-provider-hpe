@@ -26,6 +26,7 @@ func ResourceSpecTemplateHelm() *schema.Resource {
 		ReadContext:   resourceSpecTemplateHelmRead,
 		UpdateContext: resourceSpecTemplateHelmUpdate,
 		DeleteContext: resourceSpecTemplateHelmDelete,
+		CustomizeDiff: validateSpecTemplateSource,
 
 		Schema: map[string]*schema.Schema{
 			"id": {

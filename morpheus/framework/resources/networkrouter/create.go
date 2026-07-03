@@ -156,6 +156,15 @@ func (r *Resource) Create(
 		})
 	}
 
+	// Apply permissions (visibility + tenant_ids) before the read-back so state reflects them.
+	// A 403 from applyRouterPermissions is an error; the resource will be tainted.
+	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, client)...)
+	if resp.Diagnostics.HasError() {
+		taintResourceState(id)
+
+		return
+	}
+
 	state, pdiags := getRouterAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)

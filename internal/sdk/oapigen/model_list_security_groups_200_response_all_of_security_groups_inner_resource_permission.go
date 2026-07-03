@@ -20,15 +20,15 @@ var _ MappedNullable = &ListSecurityGroups200ResponseAllOfSecurityGroupsInnerRes
 
 // ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission struct for ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission
 type ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission struct {
-	DefaultStore         *bool                                                                       `json:"defaultStore,omitempty"`
-	DefaultTarget        *bool                                                                       `json:"defaultTarget,omitempty"`
-	CanManage            *bool                                                                       `json:"canManage,omitempty"`
-	All                  *bool                                                                       `json:"all,omitempty"`
-	Account              *ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsAccount     `json:"account,omitempty"`
-	Sites                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                       `json:"allPlans,omitempty"`
-	Plans                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsPlansInner `json:"plans,omitempty"`
-	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
+	DefaultStore         *bool                                                                               `json:"defaultStore,omitempty"`
+	AllPlans             *bool                                                                               `json:"allPlans,omitempty"`
+	DefaultTarget        *bool                                                                               `json:"defaultTarget,omitempty"`
+	CanManage            *bool                                                                               `json:"canManage,omitempty"`
+	All                  *bool                                                                               `json:"all,omitempty"`
+	Account              *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount     `json:"account,omitempty"`
+	Sites                []ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner `json:"sites,omitempty"`
+	Plans                []ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionPlansInner `json:"plans,omitempty"`
+	AdditionalProperties map[string]interface{}                                                              `json:",remain"`
 }
 
 type _ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission
@@ -46,6 +46,9 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission)
 	if !IsNil(o.DefaultStore) {
 		toSerialize["defaultStore"] = o.DefaultStore
 	}
+	if !IsNil(o.AllPlans) {
+		toSerialize["allPlans"] = o.AllPlans
+	}
 	if !IsNil(o.DefaultTarget) {
 		toSerialize["defaultTarget"] = o.DefaultTarget
 	}
@@ -60,9 +63,6 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermission)
 	}
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
-	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

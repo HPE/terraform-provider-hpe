@@ -27,9 +27,13 @@ type NetworkFirewallRuleGroupCreate struct {
 	// Network firewall rule group priority
 	Priority *int64 `json:"priority,omitempty"`
 	// Use SecurityPolicy
-	ExternalType         string                 `json:"externalType"`
-	GroupLayer           *string                `json:"groupLayer,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	ExternalType string  `json:"externalType"`
+	GroupLayer   *string `json:"groupLayer,omitempty"`
+	// Visibility level (public or private)
+	Visibility *string `json:"visibility,omitempty"`
+	// Array of tenant accounts
+	Tenants              []NetworkFirewallRuleGroupCreateTenantsInner `json:"tenants,omitempty"`
+	AdditionalProperties map[string]interface{}                       `json:",remain"`
 }
 
 type _NetworkFirewallRuleGroupCreate NetworkFirewallRuleGroupCreate
@@ -54,6 +58,12 @@ func (o NetworkFirewallRuleGroupCreate) ToMap() (map[string]interface{}, error) 
 	toSerialize["externalType"] = o.ExternalType
 	if !IsNil(o.GroupLayer) {
 		toSerialize["groupLayer"] = o.GroupLayer
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 
 	for key, value := range o.AdditionalProperties {
