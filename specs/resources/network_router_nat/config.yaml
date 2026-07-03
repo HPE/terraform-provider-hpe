@@ -8,6 +8,14 @@ network_router_nat:
       string:
         computed_optional_required: required
         description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    firewall:
+      string:
+        computed_optional_required: computed_optional
+        description: The firewall match applied to the NAT rule.
+    service:
+      string:
+        computed_optional_required: optional
+        description: The service (protocol) applied to the NAT rule.
     description:
       string:
         computed_optional_required: optional
@@ -19,12 +27,8 @@ network_router_nat:
       default: true
     priority:
       int64:
-        computed_optional_required: optional
+        computed_optional_required: computed_optional
         description: Priority of the NAT rule.
-    protocol:
-      string:
-        computed_optional_required: optional
-        description: Protocol for the NAT rule.
     source_network:
       string:
         computed_optional_required: optional
@@ -40,10 +44,11 @@ network_router_nat:
   moves:
     - template-name: name
     - template-action: action
+    - template-firewall: firewall
+    - template-service: service
     - template-description: description
     - template-enabled: enabled
     - template-priority: priority
-    - template-protocol: protocol
     - template-source_network: source_network
     - template-destination_network: destination_network
     - template-translated_network: translated_network
@@ -57,6 +62,14 @@ network_router_nat:
     action:
       computed_optional_required: required
       description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    firewall:
+      computed_optional_required: computed_optional
+      description: The firewall match applied to the NAT rule (nested under config).
+      default: MATCH_INTERNAL_ADDRESS
+      one_of: [MATCH_INTERNAL_ADDRESS, MATCH_EXTERNAL_ADDRESS, BYPASS]
+    service:
+      computed_optional_required: optional
+      description: The service (protocol) applied to the NAT rule (nested under config).
     destination_network:
       computed_optional_required: computed_optional
       description: Destination network
@@ -74,9 +87,7 @@ network_router_nat:
     priority:
       computed_optional_required: computed_optional
       description: Priority of the NAT rule
-    protocol:
-      computed_optional_required: computed_optional
-      description: Protocol
+      default: 100
     router_id:
       computed_optional_required: required
       description: The ID of the parent network router

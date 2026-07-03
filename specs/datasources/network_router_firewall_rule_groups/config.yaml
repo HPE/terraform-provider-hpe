@@ -1,0 +1,27 @@
+network_router_firewall_rule_groups:
+  removes:
+    - rule_groups.iac_id         # (inline response schema) - not needed for list
+    - rule_groups.zone           # (inline response schema) - nullable, not useful
+    - rule_groups.zone_pool      # (inline response schema) - nullable, not useful
+    - rule_groups.rules          # (inline response schema) - heavy nested array, use singular DS for details
+  overrides:
+    router_id:
+      computed_optional_required: required
+      description: The ID of the network router to list firewall rule groups for.
+    rule_groups:
+      computed_optional_required: computed
+      description: The list of firewall rule groups for the specified router.
+    rule_groups.id:
+      description: The ID of the firewall rule group.
+    rule_groups.name:
+      description: The name of the firewall rule group.
+    rule_groups.description:
+      description: The description of the firewall rule group.
+    rule_groups.external_id:
+      description: The external ID of the firewall rule group.
+    rule_groups.status:
+      description: The status of the firewall rule group.
+    rule_groups.priority:
+      description: The priority of the firewall rule group.
+    rule_groups.group_layer:
+      description: The group layer of the firewall rule group.

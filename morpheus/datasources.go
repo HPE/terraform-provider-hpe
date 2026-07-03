@@ -32,6 +32,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrulegroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktransportzone"
@@ -74,6 +75,7 @@ func (p *MorpheusProvider) DataSources(
 		networkfirewallrulegroup.NewDataSource,
 		networkrouter.NewDataSource,
 		networkrouterbgpneighbor.NewDataSource,
+		networkrouterfirewallrulegroups.NewDataSource,
 		networkrouterroute.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,

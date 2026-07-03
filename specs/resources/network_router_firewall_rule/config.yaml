@@ -1,6 +1,15 @@
 network_router_firewall_rule:
+  templates:
+    parent_id:
+      string:
+        computed_optional_required: required
+        description: |-
+          The id of the parent firewall rule group the rule belongs to (for NSX-T,
+          e.g. "group-123"). Required to create the rule. Use the
+          hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
   moves:
     - rule: ""
+    - template-parent_id: parent_id
   removes:
     - application
     - application_type
@@ -33,9 +42,16 @@ network_router_firewall_rule:
     name:
       computed_optional_required: required
       description: Name of the firewall rule
+    parent_id:
+      computed_optional_required: required
+      description: |-
+        The id of the parent firewall rule group the rule belongs to (for NSX-T,
+        e.g. "group-123"). Required to create the rule. Use the
+        hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
+      requires_replace: true
     policy:
       computed_optional_required: computed_optional
-      description: Policy action (accept, deny, reject)
+      description: Policy action (accept, block, reject)
       default: "accept"
     port_range:
       computed_optional_required: computed_optional

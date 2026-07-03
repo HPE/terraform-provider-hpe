@@ -5,9 +5,13 @@ package networkrouternat
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -40,6 +44,16 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Whether the NAT rule is enabled",
 				Default:             booldefault.StaticBool(true),
 			},
+			"firewall": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The firewall match applied to the NAT rule (nested under config).",
+				MarkdownDescription: "The firewall match applied to the NAT rule (nested under config).",
+				Validators: []validator.String{
+					stringvalidator.OneOf("MATCH_INTERNAL_ADDRESS", "MATCH_EXTERNAL_ADDRESS", "BYPASS"),
+				},
+				Default: stringdefault.StaticString("MATCH_INTERNAL_ADDRESS"),
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the NAT rule",
@@ -58,12 +72,7 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Priority of the NAT rule",
 				MarkdownDescription: "Priority of the NAT rule",
-			},
-			"protocol": schema.StringAttribute{
-				Optional:            true,
-				Computed:            true,
-				Description:         "Protocol",
-				MarkdownDescription: "Protocol",
+				Default:             int64default.StaticInt64(100),
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
@@ -72,6 +81,11 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
+			},
+			"service": schema.StringAttribute{
+				Optional:            true,
+				Description:         "The service (protocol) applied to the NAT rule (nested under config).",
+				MarkdownDescription: "The service (protocol) applied to the NAT rule (nested under config).",
 			},
 			"source_network": schema.StringAttribute{
 				Optional:            true,
@@ -94,11 +108,12 @@ type NetworkRouterNatModel struct {
 	Description        types.String `tfsdk:"description"`
 	DestinationNetwork types.String `tfsdk:"destination_network"`
 	Enabled            types.Bool   `tfsdk:"enabled"`
+	Firewall           types.String `tfsdk:"firewall"`
 	Id                 types.Int64  `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`
 	Priority           types.Int64  `tfsdk:"priority"`
-	Protocol           types.String `tfsdk:"protocol"`
 	RouterId           types.Int64  `tfsdk:"router_id"`
+	Service            types.String `tfsdk:"service"`
 	SourceNetwork      types.String `tfsdk:"source_network"`
 	TranslatedNetwork  types.String `tfsdk:"translated_network"`
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -43,11 +44,19 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 				Description:         "Name of the firewall rule",
 				MarkdownDescription: "Name of the firewall rule",
 			},
+			"parent_id": schema.StringAttribute{
+				Required:            true,
+				Description:         "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"policy": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Policy action (accept, deny, reject)",
-				MarkdownDescription: "Policy action (accept, deny, reject)",
+				Description:         "Policy action (accept, block, reject)",
+				MarkdownDescription: "Policy action (accept, block, reject)",
 				Default:             stringdefault.StaticString("accept"),
 			},
 			"port_range": schema.StringAttribute{
@@ -85,6 +94,7 @@ type NetworkRouterFirewallRuleModel struct {
 	Enabled   types.Bool   `tfsdk:"enabled"`
 	Id        types.Int64  `tfsdk:"id"`
 	Name      types.String `tfsdk:"name"`
+	ParentId  types.String `tfsdk:"parent_id"`
 	Policy    types.String `tfsdk:"policy"`
 	PortRange types.String `tfsdk:"port_range"`
 	Priority  types.Int64  `tfsdk:"priority"`

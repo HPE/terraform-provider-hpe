@@ -87,6 +87,18 @@ func (r *Resource) Create(
 		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
+	// policy, direction, protocol and port_range are top-level rule fields;
+	// parent_id is nested under config.parentId and is required by NSX-T (its
+	// absence causes a server-side nil pointer). ValueStringPointer yields nil
+	// (omitted) when null/unknown.
+	rule.Policy = plan.Policy.ValueStringPointer()
+	rule.Direction = plan.Direction.ValueStringPointer()
+	rule.Protocol = plan.Protocol.ValueStringPointer()
+	rule.PortRange = plan.PortRange.ValueStringPointer()
+	rule.Config = &sdk.CreateNetworkRouterFirewallRuleRequestRuleConfig{
+		ParentId: plan.ParentId.ValueStringPointer(),
+	}
+
 	createReq := sdk.CreateNetworkRouterFirewallRuleRequest{
 		Rule: &rule,
 	}
@@ -187,17 +199,21 @@ func getFirewallRuleAsState(
 		state.Policy = types.StringNull()
 	}
 
-	if rule != nil && rule.Protocol.IsSet() {
+	if rule != nil && rule.Protocol.IsSet() && rule.Protocol.Get() != nil {
 		state.Protocol = types.StringValue(*rule.Protocol.Get())
 	} else {
 		state.Protocol = types.StringNull()
 	}
 
-	if rule != nil && rule.PortRange.IsSet() {
+	if rule != nil && rule.PortRange.IsSet() && rule.PortRange.Get() != nil {
 		state.PortRange = types.StringValue(*rule.PortRange.Get())
 	} else {
 		state.PortRange = types.StringNull()
 	}
+
+	// parent_id is a create-time (RequiresReplace) input that the response does
+	// not echo back cleanly, so preserve the configured value.
+	state.ParentId = plan.ParentId
 
 	return state, diags
 }
@@ -263,6 +279,14 @@ func (r *Resource) Update(
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		rule.Priority = plan.Priority.ValueInt64Pointer()
+	}
+
+	rule.Policy = plan.Policy.ValueStringPointer()
+	rule.Direction = plan.Direction.ValueStringPointer()
+	rule.Protocol = plan.Protocol.ValueStringPointer()
+	rule.PortRange = plan.PortRange.ValueStringPointer()
+	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
+		ParentId: plan.ParentId.ValueStringPointer(),
 	}
 
 	updateReq := sdk.UpdateNetworkRouterFirewallRuleRequest{

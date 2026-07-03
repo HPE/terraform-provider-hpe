@@ -76,11 +76,18 @@ func (r *Resource) Create(
 
 	routerID := plan.RouterId.ValueInt64()
 
+	// firewall and service are NAT config-context options nested under config.
+	// ValueStringPointer yields nil (omitted) when null/unknown; firewall has a
+	// schema default so it is always sent, service is optional.
+	natConfig := sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action:   plan.Action.ValueString(),
+		Firewall: plan.Firewall.ValueStringPointer(),
+		Service:  plan.Service.ValueStringPointer(),
+	}
+
 	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{
-		Name: plan.Name.ValueString(),
-		Config: sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
-			Action: plan.Action.ValueString(),
-		},
+		Name:   plan.Name.ValueString(),
+		Config: natConfig,
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()
@@ -99,9 +106,6 @@ func (r *Resource) Create(
 	}
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
-	}
-	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
-		nat.Protocol = plan.Protocol.ValueStringPointer()
 	}
 
 	createReq := sdk.CreateNetworkRouterNatRequest{
@@ -209,7 +213,7 @@ func getNatAsState(
 		state.SourceNetwork = types.StringNull()
 	}
 
-	if nat.DestinationNetwork.IsSet() {
+	if nat.DestinationNetwork.IsSet() && nat.DestinationNetwork.Get() != nil {
 		state.DestinationNetwork = types.StringValue(*nat.DestinationNetwork.Get())
 	} else {
 		state.DestinationNetwork = types.StringNull()
@@ -227,10 +231,17 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	if nat.Protocol.IsSet() {
-		state.Protocol = types.StringValue(*nat.Protocol.Get())
+	// firewall and service are create-time config options. Read them back from
+	// the response, falling back to the plan value when the API omits them.
+	if nat.Firewall != nil {
+		state.Firewall = types.StringValue(*nat.Firewall)
 	} else {
-		state.Protocol = types.StringNull()
+		state.Firewall = plan.Firewall
+	}
+	if nat.Service != nil {
+		state.Service = types.StringValue(*nat.Service)
+	} else {
+		state.Service = plan.Service
 	}
 
 	return state, diags
@@ -288,11 +299,15 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
+	natConfig := &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action:   plan.Action.ValueStringPointer(),
+		Firewall: plan.Firewall.ValueStringPointer(),
+		Service:  plan.Service.ValueStringPointer(),
+	}
+
 	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{
-		Name: plan.Name.ValueStringPointer(),
-		Config: &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
-			Action: plan.Action.ValueStringPointer(),
-		},
+		Name:   plan.Name.ValueStringPointer(),
+		Config: natConfig,
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()
@@ -311,9 +326,6 @@ func (r *Resource) Update(
 	}
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
-	}
-	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
-		nat.Protocol = plan.Protocol.ValueStringPointer()
 	}
 
 	updateReq := sdk.UpdateNetworkRouterNatRequest{

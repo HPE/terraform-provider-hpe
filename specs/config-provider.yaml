@@ -1375,6 +1375,10 @@ data_sources:
     read:
       path: /api/networks/routers/{routerId}/routes/{id}
       method: GET
+  network_router_firewall_rule_groups:
+    read:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups
+      method: GET
   network_subnet:
     read:
       path: /api/subnets/{id}

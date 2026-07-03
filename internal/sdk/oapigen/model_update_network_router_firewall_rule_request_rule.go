@@ -25,8 +25,17 @@ type UpdateNetworkRouterFirewallRuleRequestRule struct {
 	// Can be used to enable / disable the rule (true, false). Default is on
 	Enabled *bool `json:"enabled,omitempty"`
 	// Priority for rule
-	Priority             *int64                 `json:"priority,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Priority *int64 `json:"priority,omitempty"`
+	// Rule policy (e.g. accept, block, reject).
+	Policy *string `json:"policy,omitempty"`
+	// Traffic direction (e.g. IN, OUT, IN_OUT).
+	Direction *string `json:"direction,omitempty"`
+	// Protocol for the rule (e.g. TCP, UDP, ICMPv4).
+	Protocol *string `json:"protocol,omitempty"`
+	// Port range for the rule (e.g. 80, 1-65535).
+	PortRange            *string                                           `json:"portRange,omitempty"`
+	Config               *UpdateNetworkRouterFirewallRuleRequestRuleConfig `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}                            `json:",remain"`
 }
 
 type _UpdateNetworkRouterFirewallRuleRequestRule UpdateNetworkRouterFirewallRuleRequestRule
@@ -47,6 +56,21 @@ func (o UpdateNetworkRouterFirewallRuleRequestRule) ToMap() (map[string]interfac
 	}
 	if !IsNil(o.Priority) {
 		toSerialize["priority"] = o.Priority
+	}
+	if !IsNil(o.Policy) {
+		toSerialize["policy"] = o.Policy
+	}
+	if !IsNil(o.Direction) {
+		toSerialize["direction"] = o.Direction
+	}
+	if !IsNil(o.Protocol) {
+		toSerialize["protocol"] = o.Protocol
+	}
+	if !IsNil(o.PortRange) {
+		toSerialize["portRange"] = o.PortRange
+	}
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
 	}
 
 	for key, value := range o.AdditionalProperties {
