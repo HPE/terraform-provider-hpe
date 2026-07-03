@@ -25,8 +25,12 @@ type UpdateNetworkFirewallRuleGroupRequestRuleGroup struct {
 	// Network firewall rule group description
 	Description NullableString `json:"description,omitempty"`
 	// Network firewall rule group priority
-	Priority             NullableInt64          `json:"priority,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Priority NullableInt64 `json:"priority,omitempty"`
+	// Visibility level (public or private)
+	Visibility *string `json:"visibility,omitempty"`
+	// Array of tenant accounts
+	Tenants              []UpdateNetworkFirewallRuleGroupRequestRuleGroupTenantsInner `json:"tenants,omitempty"`
+	AdditionalProperties map[string]interface{}                                       `json:",remain"`
 }
 
 type _UpdateNetworkFirewallRuleGroupRequestRuleGroup UpdateNetworkFirewallRuleGroupRequestRuleGroup
@@ -49,6 +53,12 @@ func (o UpdateNetworkFirewallRuleGroupRequestRuleGroup) ToMap() (map[string]inte
 	}
 	if o.Priority.IsSet() {
 		toSerialize["priority"] = o.Priority.Get()
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 
 	for key, value := range o.AdditionalProperties {

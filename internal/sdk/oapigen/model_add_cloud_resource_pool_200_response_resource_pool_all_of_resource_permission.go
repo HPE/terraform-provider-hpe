@@ -20,13 +20,13 @@ var _ MappedNullable = &AddCloudResourcePool200ResponseResourcePoolAllOfResource
 
 // AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission struct for AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission
 type AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission struct {
-	DefaultStore         *bool                                                                       `json:"defaultStore,omitempty"`
-	DefaultTarget        *bool                                                                       `json:"defaultTarget,omitempty"`
-	CanManage            *bool                                                                       `json:"canManage,omitempty"`
+	DefaultStore         NullableBool                                                                `json:"defaultStore,omitempty"`
+	DefaultTarget        NullableBool                                                                `json:"defaultTarget,omitempty"`
+	CanManage            NullableBool                                                                `json:"canManage,omitempty"`
 	All                  *bool                                                                       `json:"all,omitempty"`
 	Account              *ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsAccount     `json:"account,omitempty"`
 	Sites                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                                                       `json:"allPlans,omitempty"`
+	AllPlans             NullableBool                                                                `json:"allPlans,omitempty"`
 	Plans                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
 }
@@ -43,14 +43,14 @@ func (o AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission) Mars
 
 func (o AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.DefaultStore) {
-		toSerialize["defaultStore"] = o.DefaultStore
+	if o.DefaultStore.IsSet() {
+		toSerialize["defaultStore"] = o.DefaultStore.Get()
 	}
-	if !IsNil(o.DefaultTarget) {
-		toSerialize["defaultTarget"] = o.DefaultTarget
+	if o.DefaultTarget.IsSet() {
+		toSerialize["defaultTarget"] = o.DefaultTarget.Get()
 	}
-	if !IsNil(o.CanManage) {
-		toSerialize["canManage"] = o.CanManage
+	if o.CanManage.IsSet() {
+		toSerialize["canManage"] = o.CanManage.Get()
 	}
 	if !IsNil(o.All) {
 		toSerialize["all"] = o.All
@@ -61,8 +61,8 @@ func (o AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission) ToMa
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
 	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
+	if o.AllPlans.IsSet() {
+		toSerialize["allPlans"] = o.AllPlans.Get()
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

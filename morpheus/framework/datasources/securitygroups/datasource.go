@@ -292,7 +292,7 @@ func tenantIDsToSet(
 }
 
 func siteIDsToSet(
-	sites []sdk.ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsSitesInner,
+	sites []sdk.ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner,
 ) types.Set {
 	if len(sites) == 0 {
 		return types.SetNull(types.Int64Type)

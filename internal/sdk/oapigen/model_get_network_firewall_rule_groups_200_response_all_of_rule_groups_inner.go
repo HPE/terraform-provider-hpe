@@ -20,13 +20,15 @@ var _ MappedNullable = &GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsIn
 
 // GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner struct for GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner
 type GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner struct {
-	Id                   *int64                                                                  `json:"id,omitempty"`
-	Name                 *string                                                                 `json:"name,omitempty"`
-	Description          NullableString                                                          `json:"description,omitempty"`
-	Priority             *int64                                                                  `json:"priority,omitempty"`
-	GroupLayer           *string                                                                 `json:"groupLayer,omitempty"`
-	Rules                []GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInner `json:"rules,omitempty"`
-	AdditionalProperties map[string]interface{}                                                  `json:",remain"`
+	Id                   *int64                                                                    `json:"id,omitempty"`
+	Name                 *string                                                                   `json:"name,omitempty"`
+	Description          NullableString                                                            `json:"description,omitempty"`
+	Priority             *int64                                                                    `json:"priority,omitempty"`
+	GroupLayer           *string                                                                   `json:"groupLayer,omitempty"`
+	Rules                []GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInner   `json:"rules,omitempty"`
+	Visibility           *string                                                                   `json:"visibility,omitempty"`
+	Tenants              []GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner `json:"tenants,omitempty"`
+	AdditionalProperties map[string]interface{}                                                    `json:",remain"`
 }
 
 type _GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner
@@ -58,6 +60,12 @@ func (o GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInner) ToMap() (ma
 	}
 	if !IsNil(o.Rules) {
 		toSerialize["rules"] = o.Rules
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 
 	for key, value := range o.AdditionalProperties {

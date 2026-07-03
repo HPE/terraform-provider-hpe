@@ -31,9 +31,7 @@ type SaveClusterAffinityGroupRequestAffinityGroup struct {
 	// List of Server IDs to include in the Affinity Group
 	Servers []int32 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
-	Visibility *string `json:"visibility,omitempty"`
-	// Array of tenant account ids that are allowed access
-	Tenants              []SaveClusterAffinityGroupRequestAffinityGroupTenantsInner       `json:"tenants,omitempty"`
+	Visibility           *string                                                          `json:"visibility,omitempty"`
 	ResourcePermissions  *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions `json:"resourcePermissions,omitempty"`
 	AdditionalProperties map[string]interface{}                                           `json:",remain"`
 }
@@ -70,9 +68,6 @@ func (o SaveClusterAffinityGroupRequestAffinityGroup) ToMap() (map[string]interf
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
-	}
-	if !IsNil(o.Tenants) {
-		toSerialize["tenants"] = o.Tenants
 	}
 	if !IsNil(o.ResourcePermissions) {
 		toSerialize["resourcePermissions"] = o.ResourcePermissions

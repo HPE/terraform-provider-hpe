@@ -21,12 +21,12 @@ var _ MappedNullable = &ClusterDatastoresResourcePermissions{}
 // ClusterDatastoresResourcePermissions struct for ClusterDatastoresResourcePermissions
 type ClusterDatastoresResourcePermissions struct {
 	DefaultStore         *bool                                            `json:"defaultStore,omitempty"`
+	AllPlans             *bool                                            `json:"allPlans,omitempty"`
 	DefaultTarget        *bool                                            `json:"defaultTarget,omitempty"`
 	CanManage            *bool                                            `json:"canManage,omitempty"`
 	All                  *bool                                            `json:"all,omitempty"`
 	Account              *ClusterDatastoresResourcePermissionsAccount     `json:"account,omitempty"`
 	Sites                []ClusterDatastoresResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AllPlans             *bool                                            `json:"allPlans,omitempty"`
 	Plans                []ClusterDatastoresResourcePermissionsPlansInner `json:"plans,omitempty"`
 	AdditionalProperties map[string]interface{}                           `json:",remain"`
 }
@@ -46,6 +46,9 @@ func (o ClusterDatastoresResourcePermissions) ToMap() (map[string]interface{}, e
 	if !IsNil(o.DefaultStore) {
 		toSerialize["defaultStore"] = o.DefaultStore
 	}
+	if !IsNil(o.AllPlans) {
+		toSerialize["allPlans"] = o.AllPlans
+	}
 	if !IsNil(o.DefaultTarget) {
 		toSerialize["defaultTarget"] = o.DefaultTarget
 	}
@@ -60,9 +63,6 @@ func (o ClusterDatastoresResourcePermissions) ToMap() (map[string]interface{}, e
 	}
 	if o.Sites != nil {
 		toSerialize["sites"] = o.Sites
-	}
-	if !IsNil(o.AllPlans) {
-		toSerialize["allPlans"] = o.AllPlans
 	}
 	if o.Plans != nil {
 		toSerialize["plans"] = o.Plans

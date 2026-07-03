@@ -20,8 +20,9 @@ var _ MappedNullable = &UpdateClusterAffinityGroupRequest{}
 
 // UpdateClusterAffinityGroupRequest struct for UpdateClusterAffinityGroupRequest
 type UpdateClusterAffinityGroupRequest struct {
-	AffinityGroup        *UpdateCloudAffinityGroupRequestAffinityGroup `json:"affinityGroup,omitempty"`
-	AdditionalProperties map[string]interface{}                        `json:",remain"`
+	AffinityGroup        *UpdateClusterAffinityGroupRequestAffinityGroup     `json:"affinityGroup,omitempty"`
+	TenantPermissions    *UpdateClusterAffinityGroupRequestTenantPermissions `json:"tenantPermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                              `json:",remain"`
 }
 
 type _UpdateClusterAffinityGroupRequest UpdateClusterAffinityGroupRequest
@@ -38,6 +39,9 @@ func (o UpdateClusterAffinityGroupRequest) ToMap() (map[string]interface{}, erro
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.AffinityGroup) {
 		toSerialize["affinityGroup"] = o.AffinityGroup
+	}
+	if !IsNil(o.TenantPermissions) {
+		toSerialize["tenantPermissions"] = o.TenantPermissions
 	}
 
 	for key, value := range o.AdditionalProperties {

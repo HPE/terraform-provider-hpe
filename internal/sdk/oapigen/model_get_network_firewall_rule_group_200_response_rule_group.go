@@ -20,13 +20,15 @@ var _ MappedNullable = &GetNetworkFirewallRuleGroup200ResponseRuleGroup{}
 
 // GetNetworkFirewallRuleGroup200ResponseRuleGroup struct for GetNetworkFirewallRuleGroup200ResponseRuleGroup
 type GetNetworkFirewallRuleGroup200ResponseRuleGroup struct {
-	Id                   *int64                                                      `json:"id,omitempty"`
-	Name                 *string                                                     `json:"name,omitempty"`
-	Description          NullableString                                              `json:"description,omitempty"`
-	Priority             *int64                                                      `json:"priority,omitempty"`
-	GroupLayer           *string                                                     `json:"groupLayer,omitempty"`
-	Rules                []GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInner `json:"rules,omitempty"`
-	AdditionalProperties map[string]interface{}                                      `json:",remain"`
+	Id                   *int64                                                        `json:"id,omitempty"`
+	Name                 *string                                                       `json:"name,omitempty"`
+	Description          NullableString                                                `json:"description,omitempty"`
+	Priority             *int64                                                        `json:"priority,omitempty"`
+	GroupLayer           *string                                                       `json:"groupLayer,omitempty"`
+	Rules                []GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInner   `json:"rules,omitempty"`
+	Visibility           *string                                                       `json:"visibility,omitempty"`
+	Tenants              []GetNetworkFirewallRuleGroup200ResponseRuleGroupTenantsInner `json:"tenants,omitempty"`
+	AdditionalProperties map[string]interface{}                                        `json:",remain"`
 }
 
 type _GetNetworkFirewallRuleGroup200ResponseRuleGroup GetNetworkFirewallRuleGroup200ResponseRuleGroup
@@ -58,6 +60,12 @@ func (o GetNetworkFirewallRuleGroup200ResponseRuleGroup) ToMap() (map[string]int
 	}
 	if !IsNil(o.Rules) {
 		toSerialize["rules"] = o.Rules
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 
 	for key, value := range o.AdditionalProperties {
