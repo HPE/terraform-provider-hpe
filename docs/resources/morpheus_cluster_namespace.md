@@ -44,8 +44,31 @@ Optional:
 
 - `all` (Boolean) Pass true to allow access to all groups.
 - `all_plans` (Boolean) Pass true to allow access to all service plans.
-- `group_ids` (List of Number) List of group IDs allowed access.
-- `plan_ids` (List of Number) List of service plan IDs allowed access.
+- `groups` (Attributes Set) Set of groups allowed access. (see [below for nested schema](#nestedatt--resource_permissions--groups))
+- `plans` (Attributes Set) Set of service plans allowed access. (see [below for nested schema](#nestedatt--resource_permissions--plans))
+
+<a id="nestedatt--resource_permissions--groups"></a>
+### Nested Schema for `resource_permissions.groups`
+
+Required:
+
+- `id` (Number) Group ID.
+
+Optional:
+
+- `default` (Boolean) Whether this is the default group.
+
+
+<a id="nestedatt--resource_permissions--plans"></a>
+### Nested Schema for `resource_permissions.plans`
+
+Required:
+
+- `id` (Number) Service plan ID.
+
+Optional:
+
+- `default` (Boolean) Whether this is the default service plan.
 
 ## Import
 

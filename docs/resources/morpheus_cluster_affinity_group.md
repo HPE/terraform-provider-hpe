@@ -43,7 +43,18 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 Optional:
 
 - `all` (Boolean) Pass true to allow access to all groups.
-- `group_ids` (List of Number) List of group IDs allowed access.
+- `groups` (Attributes Set) Set of groups allowed access. (see [below for nested schema](#nestedatt--resource_permissions--groups))
+
+<a id="nestedatt--resource_permissions--groups"></a>
+### Nested Schema for `resource_permissions.groups`
+
+Required:
+
+- `id` (Number) Group ID.
+
+Optional:
+
+- `default` (Boolean) Whether this is the default group.
 
 ## Import
 
