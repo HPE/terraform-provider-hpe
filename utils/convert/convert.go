@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"math/big"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -21,6 +22,16 @@ func StrToType(s *string) types.String {
 	}
 
 	return types.StringValue(*s)
+}
+
+// TimeToType formats a nullable timestamp as an RFC 3339 string, returning a
+// null value when the timestamp is nil.
+func TimeToType(t *time.Time) types.String {
+	if t == nil {
+		return types.StringNull()
+	}
+
+	return types.StringValue(t.Format(time.RFC3339))
 }
 
 func StrSliceToSet(items []string) types.Set {

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -93,14 +92,14 @@ func populateClusterData(
 	data.ExternalId = convert.StrToType(cluster.ExternalId.Get())
 	data.DatacenterId = convert.StrToType(cluster.DatacenterId.Get())
 	data.Status = convert.StrToType(cluster.Status)
-	data.StatusDate = timeToType(cluster.StatusDate.Get())
+	data.StatusDate = convert.TimeToType(cluster.StatusDate.Get())
 	data.StatusMessage = convert.StrToType(cluster.StatusMessage.Get())
 	data.InventoryLevel = convert.StrToType(cluster.InventoryLevel)
-	data.LastSync = timeToType(cluster.LastSync.Get())
-	data.NextRunDate = timeToType(cluster.NextRunDate.Get())
+	data.LastSync = convert.TimeToType(cluster.LastSync.Get())
+	data.NextRunDate = convert.TimeToType(cluster.NextRunDate.Get())
 	data.LastSyncDuration = convert.Int64ToType(cluster.LastSyncDuration.Get())
-	data.DateCreated = timeToType(cluster.DateCreated)
-	data.LastUpdated = timeToType(cluster.LastUpdated)
+	data.DateCreated = convert.TimeToType(cluster.DateCreated)
+	data.LastUpdated = convert.TimeToType(cluster.LastUpdated)
 	data.Managed = convert.BoolToType(cluster.Managed)
 	data.Labels = convert.StrSliceToSet(cluster.Labels)
 	data.AutoRecoverPowerState = convert.BoolToType(cluster.AutoRecoverPowerState)
@@ -381,14 +380,6 @@ func buildServersSet(
 	diags.Append(serverDiags...)
 
 	return result, diags
-}
-
-func timeToType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }
 
 func getClusterByID(

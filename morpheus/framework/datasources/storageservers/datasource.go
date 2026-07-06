@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -301,7 +300,7 @@ func storageServerInnerToValue(
 		"category":         convert.StrToType(ss.Category.Get()),
 		"cloud_id":         cloudIDVal,
 		"cloud_name":       cloudNameVal,
-		"date_created":     timeToType(ss.DateCreated),
+		"date_created":     convert.TimeToType(ss.DateCreated),
 		"description":      convert.StrToType(ss.Description.Get()),
 		"disk_count":       int32PtrToType(ss.DiskCount.Get()),
 		"enabled":          convert.BoolToType(ss.Enabled),
@@ -311,7 +310,7 @@ func storageServerInnerToValue(
 		"id":               convert.Int64ToType(ss.Id),
 		"internal_id":      convert.StrToType(ss.InternalId.Get()),
 		"internal_ip":      convert.StrToType(ss.InternalIp.Get()),
-		"last_updated":     timeToType(ss.LastUpdated),
+		"last_updated":     convert.TimeToType(ss.LastUpdated),
 		"max_storage":      convert.Int64ToType(ss.MaxStorage.Get()),
 		"name":             convert.StrToType(ss.Name),
 		"ref_id":           convert.Int64ToType(ss.RefId),
@@ -325,7 +324,7 @@ func storageServerInnerToValue(
 		"service_username": convert.StrToType(ss.ServiceUsername.Get()),
 		"service_version":  convert.StrToType(ss.ServiceVersion.Get()),
 		"status":           convert.StrToType(ss.Status.Get()),
-		"status_date":      timeToType(ss.StatusDate),
+		"status_date":      convert.TimeToType(ss.StatusDate),
 		"status_message":   convert.StrToType(ss.StatusMessage.Get()),
 		"type_code":        typeCode,
 		"type_id":          typeID,
@@ -379,13 +378,4 @@ func int32PtrToType(i *int32) types.Int64 {
 	}
 
 	return types.Int64Value(int64(*i))
-}
-
-// timeToType formats a nullable timestamp as an RFC 3339 string.
-func timeToType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }

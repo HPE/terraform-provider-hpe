@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -149,8 +148,8 @@ func populateLoadBalancerState(
 	state.Port = convert.Int64ToType(lb.Port)
 	state.TenantId = convert.Int64ToType(lb.AccountId)
 	state.Uuid = convert.StrToType(lb.Uuid)
-	state.DateCreated = timeToType(lb.DateCreated)
-	state.LastUpdated = timeToType(lb.LastUpdated)
+	state.DateCreated = convert.TimeToType(lb.DateCreated)
+	state.LastUpdated = convert.TimeToType(lb.LastUpdated)
 
 	// Nullable typed fields
 	state.Username = convert.StrToType(lb.Username.Get())
@@ -181,14 +180,6 @@ func populateLoadBalancerState(
 	state.Config = mapEmptyConfig(lb.Config)
 	state.InstancePrice = mapEmptyInstancePrice(lb.InstancePrice)
 	state.VipPools = mapEmptyVipPools(ctx, lb.VipPools)
-}
-
-func timeToType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }
 
 func mapCloud(c *sdk.GetLoadBalancer200ResponseLoadBalancerCloud) CloudValue {
