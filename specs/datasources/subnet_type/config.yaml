@@ -1,0 +1,26 @@
+subnet_type:
+  moves:
+    - subnet_type: "" # unnest wrapper
+  removes:
+    - option_types # nested array of option-type objects; not useful for lookup
+  overrides:
+    id:
+      description: The ID of the subnet type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the subnet type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: The code identifier of the subnet type
+    description:
+      description: A description of the subnet type
+    creatable:
+      description: Whether subnets of this type can be created
+    deletable:
+      description: Whether subnets of this type can be deleted
+    dhcp_server_editable:
+      description: Whether the DHCP server setting is editable for this subnet type
+    can_assign_pool:
+      description: Whether a network pool can be assigned to this subnet type
