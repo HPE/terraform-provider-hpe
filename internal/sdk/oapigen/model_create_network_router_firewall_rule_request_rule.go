@@ -26,14 +26,22 @@ type CreateNetworkRouterFirewallRuleRequestRule struct {
 	Enabled *bool `json:"enabled,omitempty"`
 	// Priority for rule
 	Priority *int64 `json:"priority,omitempty"`
-	// Rule policy (e.g. accept, block, reject).
+	// Rule policy / action. Valid values depend on the network router type (see ruleOptionTypes).
 	Policy *string `json:"policy,omitempty"`
-	// Traffic direction (e.g. IN, OUT, IN_OUT).
+	// Traffic direction the rule applies to (for example incoming, outgoing, bidirectional).
 	Direction *string `json:"direction,omitempty"`
-	// Protocol for the rule (e.g. TCP, UDP, ICMPv4).
+	// Source match type (for example any, cidr, group, instance).
+	SourceType *string `json:"sourceType,omitempty"`
+	// Destination match type (for example any, cidr, group, instance).
+	DestinationType *string `json:"destinationType,omitempty"`
+	// Network protocol the rule matches (for example tcp, udp, icmp, any).
 	Protocol *string `json:"protocol,omitempty"`
-	// Port range for the rule (e.g. 80, 1-65535).
-	PortRange            *string                                           `json:"portRange,omitempty"`
+	// Port or port range the rule matches (for example 443 or 8080-8090).
+	PortRange *string `json:"portRange,omitempty"`
+	// Application the rule matches, when supported by the network router type.
+	Application *string `json:"application,omitempty"`
+	// Description of the firewall rule.
+	Description          *string                                           `json:"description,omitempty"`
 	Config               *CreateNetworkRouterFirewallRuleRequestRuleConfig `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                            `json:",remain"`
 }
@@ -63,11 +71,23 @@ func (o CreateNetworkRouterFirewallRuleRequestRule) ToMap() (map[string]interfac
 	if !IsNil(o.Direction) {
 		toSerialize["direction"] = o.Direction
 	}
+	if !IsNil(o.SourceType) {
+		toSerialize["sourceType"] = o.SourceType
+	}
+	if !IsNil(o.DestinationType) {
+		toSerialize["destinationType"] = o.DestinationType
+	}
 	if !IsNil(o.Protocol) {
 		toSerialize["protocol"] = o.Protocol
 	}
 	if !IsNil(o.PortRange) {
 		toSerialize["portRange"] = o.PortRange
+	}
+	if !IsNil(o.Application) {
+		toSerialize["application"] = o.Application
+	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

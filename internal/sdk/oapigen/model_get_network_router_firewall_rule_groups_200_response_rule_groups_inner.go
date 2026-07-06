@@ -20,18 +20,22 @@ var _ MappedNullable = &GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsI
 
 // GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner struct for GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner
 type GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner struct {
-	Id                   *int64                                                                   `json:"id,omitempty"`
-	Name                 *string                                                                  `json:"name,omitempty"`
-	Description          NullableString                                                           `json:"description,omitempty"`
-	ExternalId           *string                                                                  `json:"externalId,omitempty"`
-	IacId                NullableString                                                           `json:"iacId,omitempty"`
-	Zone                 NullableString                                                           `json:"zone,omitempty"`
-	ZonePool             NullableString                                                           `json:"zonePool,omitempty"`
-	Status               *string                                                                  `json:"status,omitempty"`
-	Priority             *int64                                                                   `json:"priority,omitempty"`
-	GroupLayer           *string                                                                  `json:"groupLayer,omitempty"`
-	Rules                []GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner `json:"rules,omitempty"`
-	AdditionalProperties map[string]interface{}                                                   `json:",remain"`
+	Id          *int64         `json:"id,omitempty"`
+	Name        *string        `json:"name,omitempty"`
+	Description NullableString `json:"description,omitempty"`
+	ExternalId  *string        `json:"externalId,omitempty"`
+	IacId       NullableString `json:"iacId,omitempty"`
+	Zone        NullableString `json:"zone,omitempty"`
+	ZonePool    NullableString `json:"zonePool,omitempty"`
+	Status      *string        `json:"status,omitempty"`
+	Priority    *int64         `json:"priority,omitempty"`
+	GroupLayer  *string        `json:"groupLayer,omitempty"`
+	// Visibility of the rule group, either 'public' or 'private'.
+	Visibility *string `json:"visibility,omitempty"`
+	// Tenants that have been granted access to the rule group.
+	Tenants              []GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerTenantsInner `json:"tenants,omitempty"`
+	Rules                []GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner   `json:"rules,omitempty"`
+	AdditionalProperties map[string]interface{}                                                     `json:",remain"`
 }
 
 type _GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner
@@ -75,6 +79,12 @@ func (o GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner) ToMap() (m
 	}
 	if !IsNil(o.GroupLayer) {
 		toSerialize["groupLayer"] = o.GroupLayer
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 	if !IsNil(o.Rules) {
 		toSerialize["rules"] = o.Rules
