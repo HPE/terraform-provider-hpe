@@ -44,10 +44,9 @@ func TestAccMorpheusFindNetworkRouterTypeByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := networkroutertype.RenderNetworkRouterTypeDataSourceByNameConfig(
 		t,
-		"example-name.tf.tmpl",
-		"Name", "Tier 1 Gateway",
+		map[string]string{"Name": "Tier 1 Gateway"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,10 +90,9 @@ func TestAccMorpheusFindNetworkRouterTypeById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := networkroutertype.RenderNetworkRouterTypeDataSourceByIDConfig(
 		t,
-		"example-id.tf.tmpl",
-		"Id", "4",
+		map[string]string{"Id": "4"},
 	)
 	if err != nil {
 		t.Fatal(err)

@@ -44,10 +44,9 @@ func TestAccMorpheusFindMonitoringCheckTypeByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := monitoringchecktype.RenderMonitoringCheckTypeDataSourceByNameConfig(
 		t,
-		"example-name.tf.tmpl",
-		"Name", "Web Check",
+		map[string]string{"Name": "Web Check"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,10 +90,9 @@ func TestAccMorpheusFindMonitoringCheckTypeById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := monitoringchecktype.RenderMonitoringCheckTypeDataSourceByIDConfig(
 		t,
-		"example-id.tf.tmpl",
-		"Id", "1",
+		map[string]string{"Id": "1"},
 	)
 	if err != nil {
 		t.Fatal(err)

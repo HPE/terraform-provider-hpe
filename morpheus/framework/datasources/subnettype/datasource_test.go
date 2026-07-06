@@ -44,10 +44,9 @@ func TestAccMorpheusFindSubnetTypeByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := subnettype.RenderSubnetTypeDataSourceByNameConfig(
 		t,
-		"example-name.tf.tmpl",
-		"Name", "VLAN",
+		map[string]string{"Name": "VLAN"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,10 +90,9 @@ func TestAccMorpheusFindSubnetTypeById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := subnettype.RenderSubnetTypeDataSourceByIDConfig(
 		t,
-		"example-id.tf.tmpl",
-		"Id", "6",
+		map[string]string{"Id": "6"},
 	)
 	if err != nil {
 		t.Fatal(err)

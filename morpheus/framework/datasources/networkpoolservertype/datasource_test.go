@@ -44,10 +44,9 @@ func TestAccMorpheusFindNetworkPoolServerTypeByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := networkpoolservertype.RenderNetworkPoolServerTypeDataSourceByNameConfig(
 		t,
-		"example-name.tf.tmpl",
-		"Name", "Infoblox",
+		map[string]string{"Name": "Infoblox"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,10 +90,9 @@ func TestAccMorpheusFindNetworkPoolServerTypeById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := networkpoolservertype.RenderNetworkPoolServerTypeDataSourceByIDConfig(
 		t,
-		"example-id.tf.tmpl",
-		"Id", "3",
+		map[string]string{"Id": "3"},
 	)
 	if err != nil {
 		t.Fatal(err)

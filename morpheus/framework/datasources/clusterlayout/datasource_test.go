@@ -44,10 +44,9 @@ func TestAccMorpheusFindClusterLayoutByName(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := clusterlayout.RenderClusterLayoutDataSourceByNameConfig(
 		t,
-		"example-name.tf.tmpl",
-		"Name", "Kubernetes Cluster",
+		map[string]string{"Name": "Kubernetes Cluster"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -91,10 +90,9 @@ func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	dataSourceConfig, err := testhelpers.RenderExample(
+	dataSourceConfig, err := clusterlayout.RenderClusterLayoutDataSourceByIDConfig(
 		t,
-		"example-id.tf.tmpl",
-		"Id", "7",
+		map[string]string{"Id": "7"},
 	)
 	if err != nil {
 		t.Fatal(err)
