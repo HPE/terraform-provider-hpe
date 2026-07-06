@@ -21,7 +21,11 @@ var _ MappedNullable = &UpdateNetworkRouterNatRequestNetworkRouterNATConfig{}
 // UpdateNetworkRouterNatRequestNetworkRouterNATConfig NAT config-context options (bound to the NAT's config map).
 type UpdateNetworkRouterNatRequestNetworkRouterNATConfig struct {
 	// The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
-	Action               *string                `json:"action,omitempty"`
+	Action *string `json:"action,omitempty"`
+	// Firewall match type for the NAT rule.
+	Firewall *string `json:"firewall,omitempty"`
+	// Service path for the NAT rule.
+	Service              *string                `json:"service,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -39,6 +43,12 @@ func (o UpdateNetworkRouterNatRequestNetworkRouterNATConfig) ToMap() (map[string
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Action) {
 		toSerialize["action"] = o.Action
+	}
+	if !IsNil(o.Firewall) {
+		toSerialize["firewall"] = o.Firewall
+	}
+	if !IsNil(o.Service) {
+		toSerialize["service"] = o.Service
 	}
 
 	for key, value := range o.AdditionalProperties {

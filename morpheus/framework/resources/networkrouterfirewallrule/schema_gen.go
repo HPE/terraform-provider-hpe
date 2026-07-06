@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -17,6 +18,24 @@ import (
 func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"application": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Application the rule matches (depends on the network router type)",
+				MarkdownDescription: "Application the rule matches (depends on the network router type)",
+			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
+				MarkdownDescription: "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
+			},
+			"destination_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Destination match type (for example cidr, group, tier, instance)",
+				MarkdownDescription: "Destination match type (for example cidr, group, tier, instance)",
+			},
 			"direction": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -43,11 +62,19 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 				Description:         "Name of the firewall rule",
 				MarkdownDescription: "Name of the firewall rule",
 			},
+			"parent_id": schema.StringAttribute{
+				Required:            true,
+				Description:         "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"policy": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Policy action (accept, deny, reject)",
-				MarkdownDescription: "Policy action (accept, deny, reject)",
+				Description:         "Policy action (accept, block, reject)",
+				MarkdownDescription: "Policy action (accept, block, reject)",
 				Default:             stringdefault.StaticString("accept"),
 			},
 			"port_range": schema.StringAttribute{
@@ -76,18 +103,29 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"source_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Source match type (for example cidr, group, tier, all)",
+				MarkdownDescription: "Source match type (for example cidr, group, tier, all)",
+			},
 		},
 	}
 }
 
 type NetworkRouterFirewallRuleModel struct {
-	Direction types.String `tfsdk:"direction"`
-	Enabled   types.Bool   `tfsdk:"enabled"`
-	Id        types.Int64  `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	Policy    types.String `tfsdk:"policy"`
-	PortRange types.String `tfsdk:"port_range"`
-	Priority  types.Int64  `tfsdk:"priority"`
-	Protocol  types.String `tfsdk:"protocol"`
-	RouterId  types.Int64  `tfsdk:"router_id"`
+	Application     types.String `tfsdk:"application"`
+	Description     types.String `tfsdk:"description"`
+	DestinationType types.String `tfsdk:"destination_type"`
+	Direction       types.String `tfsdk:"direction"`
+	Enabled         types.Bool   `tfsdk:"enabled"`
+	Id              types.Int64  `tfsdk:"id"`
+	Name            types.String `tfsdk:"name"`
+	ParentId        types.String `tfsdk:"parent_id"`
+	Policy          types.String `tfsdk:"policy"`
+	PortRange       types.String `tfsdk:"port_range"`
+	Priority        types.Int64  `tfsdk:"priority"`
+	Protocol        types.String `tfsdk:"protocol"`
+	RouterId        types.Int64  `tfsdk:"router_id"`
+	SourceType      types.String `tfsdk:"source_type"`
 }

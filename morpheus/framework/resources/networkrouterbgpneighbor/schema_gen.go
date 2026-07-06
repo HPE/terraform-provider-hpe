@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -190,11 +191,12 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			"restart_mode": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)",
-				MarkdownDescription: "Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)",
+				Description:         "Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)",
+				MarkdownDescription: "Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)",
 				Validators: []validator.String{
-					stringvalidator.OneOf("HELPER_ONLY", "GRACEFUL_RESTART", "DISABLE"),
+					stringvalidator.OneOf("HELPER_ONLY", "GR_AND_HELPER", "DISABLE"),
 				},
+				Default: stringdefault.StaticString("HELPER_ONLY"),
 			},
 			"route_filtering_in": schema.StringAttribute{
 				Optional:            true,
@@ -216,6 +218,7 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.OneOf("IPV4", "IPV6"),
 				},
+				Default: stringdefault.StaticString("IPV4"),
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
