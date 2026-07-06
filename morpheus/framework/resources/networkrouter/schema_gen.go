@@ -19,7 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -379,6 +381,16 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Used to enable shared group access. Conflicts with group_id.",
 				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id.",
 			},
+			"tenant_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "List of tenant account IDs that are allowed access.",
+				MarkdownDescription: "List of tenant account IDs that are allowed access.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"type_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -390,6 +402,19 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Int64{
 					int64validator.AlsoRequires(path.Expressions{path.MatchRoot("config")}...),
 				},
+			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The visibility of the network router (public or private).",
+				MarkdownDescription: "The visibility of the network router (public or private).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("public", "private"),
+				},
+				Default: stringdefault.StaticString("private"),
 			},
 		},
 	}
@@ -408,7 +433,9 @@ type NetworkRouterModel struct {
 	Name                   types.String                `tfsdk:"name"`
 	NetworkIntegrationId   types.Int64                 `tfsdk:"network_integration_id"`
 	SharedGroupAccess      types.Bool                  `tfsdk:"shared_group_access"`
+	TenantIds              types.Set                   `tfsdk:"tenant_ids"`
 	TypeId                 types.Int64                 `tfsdk:"type_id"`
+	Visibility             types.String                `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxtGatewayTier0Type{}

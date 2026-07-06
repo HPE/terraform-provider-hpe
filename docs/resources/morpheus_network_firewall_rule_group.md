@@ -35,6 +35,8 @@ resource "hpe_morpheus_network_firewall_rule_group" "example" {
 - `description` (String) Network firewall rule group description
 - `group_layer` (String) The group layer of the firewall rule group
 - `priority` (Number) Network firewall rule group priority
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access. Only configurable from a master tenant account.
+- `visibility` (String) The visibility of the firewall rule group (public or private).
 
 ### Read-Only
 

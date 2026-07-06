@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package clusteraffinitygroup
 
 import (
@@ -7,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -16,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -73,9 +78,42 @@ func (r *clusterAffinityGroupResource) Create(
 		Name: &name,
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ag.Visibility = plan.Visibility.ValueStringPointer()
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			resp.Diagnostics.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
+			}
+			rp.Sites = sites
+		}
+		ag.ResourcePermissions = &rp
+	}
 
 	body := sdk.SaveClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{Accounts: ids}
 	}
 
 	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
@@ -113,7 +151,18 @@ func (r *clusterAffinityGroupResource) Create(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readAg)
+
+	// The API silently drops tenant/site IDs that don't exist in the environment.
+	// Preserve plan values so state matches the plan and Terraform's consistency
+	// check passes. Read() will return the API-normalised values, surfacing any
+	// divergence as a plan diff on the next run.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -135,6 +184,12 @@ func (r *clusterAffinityGroupResource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Detect import: ImportState sets only cluster_id and id; name is null.
+	// On normal refresh, name is always a known string from prior state.
+	isImport := state.Name.IsNull()
+	priorTenantIds := state.TenantIds
+	priorRP := state.ResourcePermissions
 
 	clusterID := state.ClusterId.ValueInt64()
 	id := state.Id.ValueInt64()
@@ -158,7 +213,16 @@ func (r *clusterAffinityGroupResource) Read(
 		return
 	}
 
-	mapGetResponseToModel(&state, ag)
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &state, ag)...)
+
+	// On normal refresh, preserve tenant_ids and resource_permissions from prior
+	// state. The API may silently drop IDs that don't exist in the environment,
+	// which would cause a spurious diff. On import there is no prior state, so
+	// we use the API values that mapGetResponseToModel just populated.
+	if !isImport {
+		state.TenantIds = priorTenantIds
+		state.ResourcePermissions = priorRP
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -190,9 +254,42 @@ func (r *clusterAffinityGroupResource) Update(
 		ag.Name = &v
 	}
 	ag.Active = plan.Active.ValueBoolPointer()
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ag.Visibility = plan.Visibility.ValueStringPointer()
+	}
+	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
+		rp := sdk.UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions{}
+		rp.All = plan.ResourcePermissions.All.ValueBoolPointer()
+		if !plan.ResourcePermissions.Groups.IsNull() && !plan.ResourcePermissions.Groups.IsUnknown() {
+			var groups []GroupsValue
+			resp.Diagnostics.Append(plan.ResourcePermissions.Groups.ElementsAs(ctx, &groups, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			sites := make([]sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner, 0, len(groups))
+			for _, g := range groups {
+				id := g.Id.ValueInt64()
+				inner := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{Id: &id}
+				if !g.Default.IsNull() && !g.Default.IsUnknown() {
+					inner.Default = g.Default.ValueBoolPointer()
+				}
+				sites = append(sites, inner)
+			}
+			rp.Sites = sites
+		}
+		ag.ResourcePermissions = &rp
+	}
 
 	body := sdk.UpdateClusterAffinityGroupRequest{
 		AffinityGroup: &ag,
+	}
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		body.TenantPermissions = &sdk.UpdateClusterAffinityGroupRequestTenantPermissions{Accounts: ids}
 	}
 
 	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).
@@ -216,7 +313,16 @@ func (r *clusterAffinityGroupResource) Update(
 
 		return
 	}
-	mapGetResponseToModel(&plan, readAg)
+
+	// Same as Create: preserve plan values for tenant_ids and resource_permissions
+	// so the consistency check passes when the API normalises submitted IDs.
+	savedTenantIds := plan.TenantIds
+	savedRP := plan.ResourcePermissions
+
+	resp.Diagnostics.Append(mapGetResponseToModel(ctx, &plan, readAg)...)
+
+	plan.TenantIds = savedTenantIds
+	plan.ResourcePermissions = savedRP
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -283,7 +389,13 @@ func (r *clusterAffinityGroupResource) ImportState(
 // Ensure unused imports are satisfied.
 var _ *http.Response
 
-func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup) {
+func mapGetResponseToModel(
+	ctx context.Context,
+	model *ClusterAffinityGroupModel,
+	ag *sdk.GetClusterAffinityGroup200ResponseAffinityGroup,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
 	if ag.Id != nil {
 		model.Id = types.Int64Value(*ag.Id)
 	}
@@ -293,4 +405,52 @@ func mapGetResponseToModel(model *ClusterAffinityGroupModel, ag *sdk.GetClusterA
 	if ag.Active != nil {
 		model.Active = types.BoolValue(*ag.Active)
 	}
+	model.Visibility = convert.StrToType(ag.Visibility)
+
+	tenantVals := make([]attr.Value, 0, len(ag.Tenants))
+	for _, t := range ag.Tenants {
+		if t.Id != nil {
+			tenantVals = append(tenantVals, types.Int64Value(*t.Id))
+		}
+	}
+	set, setDiags := types.SetValue(types.Int64Type, tenantVals)
+	diags.Append(setDiags...)
+	model.TenantIds = set
+
+	if ag.ResourcePermissions != nil {
+		groupVals := make([]GroupsValue, 0, len(ag.ResourcePermissions.Sites))
+		for _, s := range ag.ResourcePermissions.Sites {
+			if s.Id != nil {
+				var defaultVal types.Bool
+				if s.Default != nil {
+					defaultVal = types.BoolValue(*s.Default)
+				} else {
+					defaultVal = types.BoolNull()
+				}
+				groupVals = append(groupVals, GroupsValue{
+					Id:      types.Int64Value(*s.Id),
+					Default: defaultVal,
+					state:   attr.ValueStateKnown,
+				})
+			}
+		}
+		groupsSet, d := types.SetValueFrom(ctx, GroupsValue{}.Type(ctx), groupVals)
+		diags.Append(d...)
+		rp, rpDiags := NewResourcePermissionsValue(
+			map[string]attr.Type{
+				"all":    types.BoolType,
+				"groups": types.SetType{ElemType: GroupsValue{}.Type(ctx)},
+			},
+			map[string]attr.Value{
+				"all":    types.BoolPointerValue(ag.ResourcePermissions.All),
+				"groups": groupsSet,
+			},
+		)
+		diags.Append(rpDiags...)
+		model.ResourcePermissions = rp
+	} else {
+		model.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
+
+	return diags
 }

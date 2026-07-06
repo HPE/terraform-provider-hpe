@@ -29,10 +29,46 @@ resource "hpe_morpheus_cluster_namespace" "example" {
 
 - `active` (Boolean) Whether the namespace is active.
 - `description` (String) The description of the namespace.
+- `resource_permissions` (Attributes) Resource permissions for group and service plan access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `visibility` (String) The visibility of the cluster namespace (public or private).
 
 ### Read-Only
 
 - `id` (Number) The ID of the cluster namespace.
+
+<a id="nestedatt--resource_permissions"></a>
+### Nested Schema for `resource_permissions`
+
+Optional:
+
+- `all` (Boolean) Pass true to allow access to all groups.
+- `all_plans` (Boolean) Pass true to allow access to all service plans.
+- `groups` (Attributes Set) Set of groups allowed access. (see [below for nested schema](#nestedatt--resource_permissions--groups))
+- `plans` (Attributes Set) Set of service plans allowed access. (see [below for nested schema](#nestedatt--resource_permissions--plans))
+
+<a id="nestedatt--resource_permissions--groups"></a>
+### Nested Schema for `resource_permissions.groups`
+
+Required:
+
+- `id` (Number) Group ID.
+
+Optional:
+
+- `default` (Boolean) Whether this is the default group.
+
+
+<a id="nestedatt--resource_permissions--plans"></a>
+### Nested Schema for `resource_permissions.plans`
+
+Required:
+
+- `id` (Number) Service plan ID.
+
+Optional:
+
+- `default` (Boolean) Whether this is the default service plan.
 
 ## Import
 

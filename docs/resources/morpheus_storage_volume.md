@@ -68,7 +68,9 @@ but are never stored in Terraform state. Because Terraform cannot detect changes
 to a write-only value, each is paired with a companion version argument
 (`config_wo_version` and `config_alletramp_bmaas_wo_version`). Increment the
 version argument whenever you change the corresponding configuration to recreate
-the volume with the new values.
+the volume with the new values. Recreating a storage volume is destructive: the
+existing volume (and any data on the array) is deleted and a new one is
+provisioned, not updated in place.
 
 #### Alletra MP BMaaS volume
 

@@ -1,0 +1,31 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_datastores/data-source.tf" }}
+
+## Supported `filter` keys
+
+Each `filter` block sets `name` to one of the keys below and `values` to one or
+more Go regular expressions. A datastore matches a block when the key's value
+matches **any** of the supplied `values`; multiple `filter` blocks are **ANDed**
+together.
+
+| Key | Matches |
+|-----|---------|
+| `name` | The datastore name. |
+| `code` | The datastore code. |
+| `type` | The underlying type (e.g. `nfs`, `vmfs`, `generic`, `cluster`). |
+| `status` | The datastore status (e.g. `provisioned`, `failed`, `warning`). |
+| `visibility` | The visibility, `public` or `private`. |
+| `associated_resource_type` | The associated resource type, either `Cloud` or `Cluster`. |
+
+{{ .SchemaMarkdown | trimspace }}
