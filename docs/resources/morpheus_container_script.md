@@ -42,7 +42,9 @@ resource "hpe_morpheus_container_script" "example" {
 
 ### Read-Only
 
+- `date_created` (String) The date the library container script was created.
 - `id` (Number) The ID of the library container script.
+- `last_updated` (String) The date the library container script was last updated.
 
 ## Import
 

@@ -13,6 +13,7 @@ package sdk
 
 import (
 	"encoding/json"
+	"time"
 )
 
 // checks if the Script type satisfies the MappedNullable interface at compile time
@@ -37,6 +38,8 @@ type Script struct {
 	RunAsPassword        NullableString         `json:"runAsPassword,omitempty"`
 	SudoUser             *bool                  `json:"sudoUser,omitempty"`
 	FailOnError          *bool                  `json:"failOnError,omitempty"`
+	DateCreated          *time.Time             `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -102,6 +105,12 @@ func (o Script) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.FailOnError) {
 		toSerialize["failOnError"] = o.FailOnError
+	}
+	if !IsNil(o.DateCreated) {
+		toSerialize["dateCreated"] = o.DateCreated
+	}
+	if !IsNil(o.LastUpdated) {
+		toSerialize["lastUpdated"] = o.LastUpdated
 	}
 
 	for key, value := range o.AdditionalProperties {
