@@ -82,12 +82,15 @@ func getRouterAsState(
 			state.TypeId = convert.Int64ToType(router.Type.Id)
 		}
 
-		if router.Zone != nil && router.Zone.Id != nil {
-			state.CloudId = convert.Int64ToType(router.Zone.Id)
-		}
-
+		// cloud_id is only meaningful for router types that do not use a network
+		// integration. When a networkServer is present the API derives the zone
+		// from it, and a freshly-applied resource leaves cloud_id unset, so only
+		// surface the zone as cloud_id when there is no integration - otherwise
+		// import would not match apply.
 		if router.NetworkServer != nil && router.NetworkServer.Id != nil {
 			state.NetworkIntegrationId = convert.Int64ToType(router.NetworkServer.Id)
+		} else if router.Zone != nil && router.Zone.Id != nil {
+			state.CloudId = convert.Int64ToType(router.Zone.Id)
 		}
 
 		// On import, site == null means shared group access
@@ -96,9 +99,74 @@ func getRouterAsState(
 		} else {
 			state.SharedGroupAccess = types.BoolValue(true)
 		}
+
+		// Hydrate the config from the API. NSX-T gateway types use their typed
+		// config block (matching how they are applied); any other type uses the
+		// generic dynamic config.
+		var typeCode string
+		if router.Type != nil && router.Type.Code != nil {
+			typeCode = *router.Type.Code
+		}
+		diags.Append(hydrateImportedConfig(ctx, typeCode, router.Config, &state)...)
+	}
+
+	// Preserve tenant_ids from prior state on normal refresh. The API may
+	// silently drop IDs that don't exist in the environment. On import there
+	// is no prior state, so we read from the API response instead.
+	state.TenantIds = plan.TenantIds
+
+	// Read permissions: visibility + tenant_ids
+	if router.Permissions != nil {
+		if router.Permissions.Visibility != nil {
+			state.Visibility = types.StringValue(*router.Permissions.Visibility)
+		}
+		if importing {
+			var tenantIDs []int64
+			if router.Permissions.TenantPermissions != nil {
+				tenantIDs = router.Permissions.TenantPermissions.Accounts
+			}
+			setVal, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
+			diags.Append(setDiags...)
+			state.TenantIds = setVal
+		}
 	}
 
 	return state, diags
+}
+
+// hydrateImportedConfig populates the config representation on import. The typed
+// NSX-T blocks are used for the NSX-T gateway types (so import matches how they
+// are applied); any other type uses the generic dynamic config.
+func hydrateImportedConfig(
+	ctx context.Context,
+	typeCode string,
+	config map[string]interface{},
+	state *NetworkRouterModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	switch typeCode {
+	case codeNSXTTier0Gateway:
+		cfg, d := tier0ConfigFromMap(ctx, config)
+		diags.Append(d...)
+		state.ConfigNsxtGatewayTier0 = cfg
+	case codeNSXTTier1Gateway:
+		cfg, d := tier1ConfigFromMap(ctx, config)
+		diags.Append(d...)
+		state.ConfigNsxtGatewayTier1 = cfg
+	default:
+		if len(config) > 0 {
+			dyn, err := convert.MapToDynamic(ctx, config)
+			if err != nil {
+				diags.AddError(readOperation,
+					"failed to map network router config: "+err.Error())
+			} else {
+				state.Config = dyn
+			}
+		}
+	}
+
+	return diags
 }
 
 func (r *Resource) Read(

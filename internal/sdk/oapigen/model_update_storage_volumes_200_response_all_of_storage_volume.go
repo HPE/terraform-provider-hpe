@@ -20,66 +20,65 @@ var _ MappedNullable = &UpdateStorageVolumes200ResponseAllOfStorageVolume{}
 
 // UpdateStorageVolumes200ResponseAllOfStorageVolume struct for UpdateStorageVolumes200ResponseAllOfStorageVolume
 type UpdateStorageVolumes200ResponseAllOfStorageVolume struct {
-	Id                   *int64                                                       `json:"id,omitempty"`
-	Name                 *string                                                      `json:"name,omitempty"`
-	Description          NullableString                                               `json:"description,omitempty"`
-	Controller           *UpdateStorageVolumes200ResponseAllOfStorageVolumeController `json:"controller,omitempty"`
-	ControllerId         NullableInt64                                                `json:"controllerId,omitempty"`
-	ControllerMountPoint NullableString                                               `json:"controllerMountPoint,omitempty"`
-	Resizeable           NullableBool                                                 `json:"resizeable,omitempty"`
-	RootVolume           *bool                                                        `json:"rootVolume,omitempty"`
-	UnitNumber           NullableString                                               `json:"unitNumber,omitempty"`
-	DeviceName           *string                                                      `json:"deviceName,omitempty"`
-	DeviceDisplayName    *string                                                      `json:"deviceDisplayName,omitempty"`
-	VolumeName           *string                                                      `json:"volumeName,omitempty"`
-	VolumePath           *string                                                      `json:"volumePath,omitempty"`
-	VolumeType           *string                                                      `json:"volumeType,omitempty"`
-	RefType              *string                                                      `json:"refType,omitempty"`
-	RefId                *int64                                                       `json:"refId,omitempty"`
-	DiskMode             *string                                                      `json:"diskMode,omitempty"`
-	DiskType             *string                                                      `json:"diskType,omitempty"`
-	Type                 *UpdateStorageVolumes200ResponseAllOfStorageVolumeType       `json:"type,omitempty"`
-	TypeId               *int64                                                       `json:"typeId,omitempty"`
-	Category             *string                                                      `json:"category,omitempty"`
-	Status               *string                                                      `json:"status,omitempty"`
-	StatusMessage        NullableString                                               `json:"statusMessage,omitempty"`
-	ConfigurableIOPS     *bool                                                        `json:"configurableIOPS,omitempty"`
-	MaxStorage           *int64                                                       `json:"maxStorage,omitempty"`
-	UsedStorage          *int64                                                       `json:"usedStorage,omitempty"`
-	DisplayOrder         *int64                                                       `json:"displayOrder,omitempty"`
-	MaxIOPS              NullableString                                               `json:"maxIOPS,omitempty"`
-	Uuid                 *string                                                      `json:"uuid,omitempty"`
-	Active               *bool                                                        `json:"active,omitempty"`
-	ReadOnly             *bool                                                        `json:"readOnly,omitempty"`
-	Removable            *bool                                                        `json:"removable,omitempty"`
-	PoolName             *string                                                      `json:"poolName,omitempty"`
-	Zone                 *UpdateStorageVolumes200ResponseAllOfStorageVolumeZone       `json:"zone,omitempty"`
-	ZoneId               *int64                                                       `json:"zoneId,omitempty"`
-	Datastore            *UpdateStorageVolumes200ResponseAllOfStorageVolumeDatastore  `json:"datastore,omitempty"`
-	DatastoreId          NullableInt64                                                `json:"datastoreId,omitempty"`
-	DatastoreOption      *string                                                      `json:"datastoreOption,omitempty"`
-	// The storage group the volume belongs to (id and name).
-	StorageGroup         map[string]interface{} `json:"storageGroup,omitempty"`
-	Namespace            NullableString         `json:"namespace,omitempty"`
-	StorageServer        map[string]interface{} `json:"storageServer,omitempty"`
-	Source               *string                `json:"source,omitempty"`
-	UniqueId             NullableString         `json:"uniqueId,omitempty"`
-	InternalId           NullableString         `json:"internalId,omitempty"`
-	ExternalId           *string                `json:"externalId,omitempty"`
-	ProvisionType        NullableString         `json:"provisionType,omitempty"`
-	CopyType             NullableString         `json:"copyType,omitempty"`
-	FiberWwn             NullableString         `json:"fiberWwn,omitempty"`
-	Wwn                  NullableString         `json:"wwn,omitempty"`
-	FileName             NullableString         `json:"fileName,omitempty"`
-	ClaimName            NullableString         `json:"claimName,omitempty"`
-	SharePath            NullableString         `json:"sharePath,omitempty"`
-	SourceId             *string                `json:"sourceId,omitempty"`
-	SourceImage          *string                `json:"sourceImage,omitempty"`
-	ImageType            *string                `json:"imageType,omitempty"`
-	Online               *bool                  `json:"online,omitempty"`
-	RawData              *string                `json:"rawData,omitempty"`
-	CreateForMultiAttach *bool                  `json:"createForMultiAttach,omitempty"`
-	IsMultiAttach        *bool                  `json:"isMultiAttach,omitempty"`
+	Id                   *int64                                                          `json:"id,omitempty"`
+	Name                 *string                                                         `json:"name,omitempty"`
+	Description          NullableString                                                  `json:"description,omitempty"`
+	Controller           *UpdateStorageVolumes200ResponseAllOfStorageVolumeController    `json:"controller,omitempty"`
+	ControllerId         NullableInt64                                                   `json:"controllerId,omitempty"`
+	ControllerMountPoint NullableString                                                  `json:"controllerMountPoint,omitempty"`
+	Resizeable           NullableBool                                                    `json:"resizeable,omitempty"`
+	RootVolume           *bool                                                           `json:"rootVolume,omitempty"`
+	UnitNumber           NullableString                                                  `json:"unitNumber,omitempty"`
+	DeviceName           *string                                                         `json:"deviceName,omitempty"`
+	DeviceDisplayName    *string                                                         `json:"deviceDisplayName,omitempty"`
+	VolumeName           *string                                                         `json:"volumeName,omitempty"`
+	VolumePath           *string                                                         `json:"volumePath,omitempty"`
+	VolumeType           *string                                                         `json:"volumeType,omitempty"`
+	RefType              *string                                                         `json:"refType,omitempty"`
+	RefId                *int64                                                          `json:"refId,omitempty"`
+	DiskMode             *string                                                         `json:"diskMode,omitempty"`
+	DiskType             *string                                                         `json:"diskType,omitempty"`
+	Type                 *UpdateStorageVolumes200ResponseAllOfStorageVolumeType          `json:"type,omitempty"`
+	TypeId               *int64                                                          `json:"typeId,omitempty"`
+	Category             *string                                                         `json:"category,omitempty"`
+	Status               *string                                                         `json:"status,omitempty"`
+	StatusMessage        NullableString                                                  `json:"statusMessage,omitempty"`
+	ConfigurableIOPS     *bool                                                           `json:"configurableIOPS,omitempty"`
+	MaxStorage           *int64                                                          `json:"maxStorage,omitempty"`
+	UsedStorage          *int64                                                          `json:"usedStorage,omitempty"`
+	DisplayOrder         *int64                                                          `json:"displayOrder,omitempty"`
+	MaxIOPS              NullableString                                                  `json:"maxIOPS,omitempty"`
+	Uuid                 *string                                                         `json:"uuid,omitempty"`
+	Active               *bool                                                           `json:"active,omitempty"`
+	ReadOnly             *bool                                                           `json:"readOnly,omitempty"`
+	Removable            *bool                                                           `json:"removable,omitempty"`
+	PoolName             *string                                                         `json:"poolName,omitempty"`
+	Zone                 *UpdateStorageVolumes200ResponseAllOfStorageVolumeZone          `json:"zone,omitempty"`
+	ZoneId               *int64                                                          `json:"zoneId,omitempty"`
+	Datastore            *UpdateStorageVolumes200ResponseAllOfStorageVolumeDatastore     `json:"datastore,omitempty"`
+	DatastoreId          NullableInt64                                                   `json:"datastoreId,omitempty"`
+	DatastoreOption      *string                                                         `json:"datastoreOption,omitempty"`
+	StorageGroup         *UpdateStorageVolumes200ResponseAllOfStorageVolumeStorageGroup  `json:"storageGroup,omitempty"`
+	Namespace            NullableString                                                  `json:"namespace,omitempty"`
+	StorageServer        *UpdateStorageVolumes200ResponseAllOfStorageVolumeStorageServer `json:"storageServer,omitempty"`
+	Source               *string                                                         `json:"source,omitempty"`
+	UniqueId             NullableString                                                  `json:"uniqueId,omitempty"`
+	InternalId           NullableString                                                  `json:"internalId,omitempty"`
+	ExternalId           *string                                                         `json:"externalId,omitempty"`
+	ProvisionType        NullableString                                                  `json:"provisionType,omitempty"`
+	CopyType             NullableString                                                  `json:"copyType,omitempty"`
+	FiberWwn             NullableString                                                  `json:"fiberWwn,omitempty"`
+	Wwn                  NullableString                                                  `json:"wwn,omitempty"`
+	FileName             NullableString                                                  `json:"fileName,omitempty"`
+	ClaimName            NullableString                                                  `json:"claimName,omitempty"`
+	SharePath            NullableString                                                  `json:"sharePath,omitempty"`
+	SourceId             *string                                                         `json:"sourceId,omitempty"`
+	SourceImage          *string                                                         `json:"sourceImage,omitempty"`
+	ImageType            *string                                                         `json:"imageType,omitempty"`
+	Online               *bool                                                           `json:"online,omitempty"`
+	RawData              *string                                                         `json:"rawData,omitempty"`
+	CreateForMultiAttach *bool                                                           `json:"createForMultiAttach,omitempty"`
+	IsMultiAttach        *bool                                                           `json:"isMultiAttach,omitempty"`
 	// Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 	StorageProfile       NullableString                                            `json:"storageProfile,omitempty"`
 	Account              *UpdateStorageVolumes200ResponseAllOfStorageVolumeAccount `json:"account,omitempty"`
@@ -213,7 +212,7 @@ func (o UpdateStorageVolumes200ResponseAllOfStorageVolume) ToMap() (map[string]i
 	if !IsNil(o.DatastoreOption) {
 		toSerialize["datastoreOption"] = o.DatastoreOption
 	}
-	if o.StorageGroup != nil {
+	if !IsNil(o.StorageGroup) {
 		toSerialize["storageGroup"] = o.StorageGroup
 	}
 	if o.Namespace.IsSet() {

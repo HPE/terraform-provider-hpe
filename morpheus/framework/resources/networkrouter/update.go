@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -78,6 +79,12 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Apply permissions (visibility + tenant_ids).
+	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, client)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	newState, diags := getRouterAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -110,4 +117,57 @@ func buildUpdateConfig(ctx context.Context, plan NetworkRouterModel) map[string]
 	}
 
 	return nil
+}
+
+// applyRouterPermissions calls UpdateNetworkRouterPermissions when visibility or tenant_ids
+// are set in the plan. A 403 response is an error because group-scoped routers do not
+// support tenant permissions and the caller must resolve the conflict.
+func applyRouterPermissions(
+	ctx context.Context,
+	id int64,
+	plan NetworkRouterModel,
+	client *sdk.APIClient,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if plan.Visibility.IsNull() && plan.TenantIds.IsNull() {
+		return diags
+	}
+
+	perms := sdk.UpdateNetworkRouterPermissionsRequestPermissions{}
+
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		perms.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		diags.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if diags.HasError() {
+			return diags
+		}
+		perms.TenantPermissions = &sdk.UpdateNetworkRouterPermissionsRequestPermissionsTenantPermissions{
+			Accounts: ids,
+		}
+	}
+
+	permReq := sdk.UpdateNetworkRouterPermissionsRequest{Permissions: &perms}
+
+	_, hresp, err := client.NetworksAPI.UpdateNetworkRouterPermissions(ctx, id).
+		UpdateNetworkRouterPermissionsRequest(permReq).Execute()
+	if err != nil {
+		if hresp != nil && hresp.StatusCode == http.StatusForbidden {
+			errfmt.DiagErrorf(&diags, errfmt.OpUpdate, "network router permissions",
+				"network router %d permissions PUT returned 403"+
+					" (group-scoped routers may not support tenant permissions): %s",
+				id, errfmt.SafeErrMsg(err, hresp))
+
+			return diags
+		}
+
+		errfmt.DiagErrorf(&diags, errfmt.OpUpdate, "network router permissions",
+			"network router %d permissions PUT failed: %s", id, errfmt.SafeErrMsg(err, hresp))
+	}
+
+	return diags
 }

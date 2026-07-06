@@ -5,12 +5,14 @@ package containerscript
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -24,6 +26,14 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The category of the library container script.",
 				MarkdownDescription: "The category of the library container script.",
+			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the library container script was created.",
+				MarkdownDescription: "The date the library container script was created.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"fail_on_error": schema.BoolAttribute{
 				Optional:            true,
@@ -49,10 +59,18 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The labels of the library container script.",
 				MarkdownDescription: "The labels of the library container script.",
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the library container script was last updated.",
+				MarkdownDescription: "The date the library container script was last updated.",
+			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "The name of the library container script.",
 				MarkdownDescription: "The name of the library container script.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 			"run_as_user": schema.StringAttribute{
 				Optional:            true,
@@ -61,15 +79,34 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"script": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The script content.",
 				MarkdownDescription: "The script content.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					modifiers.NormalizeLineEndingsModifier{},
+				},
 			},
 			"script_phase": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "The phase of the script.",
 				MarkdownDescription: "The phase of the script.",
-				Default:             stringdefault.StaticString("provision"),
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						"start",
+						"stop",
+						"preProvision",
+						"provision",
+						"postProvision",
+						"preDeploy",
+						"deploy",
+						"reconfigure",
+						"scaleDown",
+						"teardown",
+					),
+				},
+				Default: stringdefault.StaticString("provision"),
 			},
 			"script_type": schema.StringAttribute{
 				Optional:            true,
@@ -106,9 +143,11 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 
 type ContainerScriptModel struct {
 	Category      types.String `tfsdk:"category"`
+	DateCreated   types.String `tfsdk:"date_created"`
 	FailOnError   types.Bool   `tfsdk:"fail_on_error"`
 	Id            types.Int64  `tfsdk:"id"`
 	Labels        types.List   `tfsdk:"labels"`
+	LastUpdated   types.String `tfsdk:"last_updated"`
 	Name          types.String `tfsdk:"name"`
 	RunAsUser     types.String `tfsdk:"run_as_user"`
 	Script        types.String `tfsdk:"script"`

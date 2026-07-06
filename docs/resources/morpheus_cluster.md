@@ -35,7 +35,7 @@ resource "hpe_morpheus_cluster" "example_hvm" {
     dynamic_placement = false
     cpu_arch          = "x86_64"
     cpu_model         = "host-model"
-    power_policy      = "default"
+    power_policy      = "balanced"
   }
 
   server = {

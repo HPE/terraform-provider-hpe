@@ -190,6 +190,19 @@ func PowerScheduleResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("00:00"),
 			},
+			"visibility": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The visibility of the power schedule (public or private).",
+				MarkdownDescription: "The visibility of the power schedule (public or private).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("public", "private"),
+				},
+				Default: stringdefault.StaticString("private"),
+			},
 			"wednesday_off_time": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -236,6 +249,7 @@ type PowerScheduleModel struct {
 	TotalMonthlyHoursSaved types.Float64 `tfsdk:"total_monthly_hours_saved"`
 	TuesdayOffTime         types.String  `tfsdk:"tuesday_off_time"`
 	TuesdayOnTime          types.String  `tfsdk:"tuesday_on_time"`
+	Visibility             types.String  `tfsdk:"visibility"`
 	WednesdayOffTime       types.String  `tfsdk:"wednesday_off_time"`
 	WednesdayOnTime        types.String  `tfsdk:"wednesday_on_time"`
 }

@@ -1,0 +1,78 @@
+datastore_types:
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, code,
+                  external_type, disk_type, creatable, is_plugin.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "code", "external_type", "disk_type", "creatable", "is_plugin")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A datastore type matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+  removes:
+    - datastore_types.plugin_managed_volume_refresh
+    - datastore_types.is_embedded
+    - datastore_types.image_target_capable
+    - datastore_types.heartbeat_target_capable
+    - datastore_types.checkpoint_target_capable
+    - datastore_types.supports_vm_secure_metadata_capable
+    - datastore_types.discoverable
+    - datastore_types.has_maintenance_mode
+    # Curate option_types to a useful subset.
+    - datastore_types.option_types.advanced
+    - datastore_types.option_types.config
+    - datastore_types.option_types.contextual_default
+    - datastore_types.option_types.creatable
+    - datastore_types.option_types.depends_on_code
+    - datastore_types.option_types.description
+    - datastore_types.option_types.display_value_on_details
+    - datastore_types.option_types.editable
+    - datastore_types.option_types.enabled
+    - datastore_types.option_types.export_meta
+    - datastore_types.option_types.field_add_on
+    - datastore_types.option_types.field_class
+    - datastore_types.option_types.field_code
+    - datastore_types.option_types.field_component
+    - datastore_types.option_types.field_group
+    - datastore_types.option_types.field_input
+    - datastore_types.option_types.help_block
+    - datastore_types.option_types.help_block_field_code
+    - datastore_types.option_types.labels
+    - datastore_types.option_types.local_credential
+    - datastore_types.option_types.no_blank
+    - datastore_types.option_types.option_list
+    - datastore_types.option_types.option_source_type
+    - datastore_types.option_types.place_holder
+    - datastore_types.option_types.require_on_code
+    - datastore_types.option_types.show_on_create
+    - datastore_types.option_types.show_on_edit
+    - datastore_types.option_types.verify_pattern
+    - datastore_types.option_types.visible_on_code
+    - datastore_types.option_types.wrapper_class
+  overrides:
+    datastore_types:
+      computed_optional_required: computed
+      description: The list of datastore types matching the supplied filters.

@@ -49,6 +49,7 @@ resource "hpe_morpheus_power_schedule" "example" {
 - `thursday_on_time` (String) The Thursday on time for the power schedule.
 - `tuesday_off_time` (String) The Tuesday off time for the power schedule.
 - `tuesday_on_time` (String) The Tuesday on time for the power schedule.
+- `visibility` (String) The visibility of the power schedule (public or private).
 - `wednesday_off_time` (String) The Wednesday off time for the power schedule.
 - `wednesday_on_time` (String) The Wednesday on time for the power schedule.
 
