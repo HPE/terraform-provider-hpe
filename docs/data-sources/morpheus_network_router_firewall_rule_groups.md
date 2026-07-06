@@ -70,3 +70,13 @@ Read-Only:
 - `name` (String) The name of the firewall rule group.
 - `priority` (Number) The priority of the firewall rule group.
 - `status` (String) The status of the firewall rule group.
+- `tenants` (Attributes Set) Tenants granted access to the rule group. Only returned to master-tenant callers; empty otherwise. (see [below for nested schema](#nestedatt--rule_groups--tenants))
+- `visibility` (String) Visibility of the rule group, either 'private' or 'public'. Only returned to master-tenant callers; null otherwise.
+
+<a id="nestedatt--rule_groups--tenants"></a>
+### Nested Schema for `rule_groups.tenants`
+
+Read-Only:
+
+- `id` (Number) The ID of the tenant.
+- `name` (String) The name of the tenant.

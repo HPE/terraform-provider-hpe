@@ -104,6 +104,18 @@ func (r *Resource) Create(
 	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
 		rule.PortRange = plan.PortRange.ValueStringPointer()
 	}
+	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
+		rule.SourceType = plan.SourceType.ValueStringPointer()
+	}
+	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
+		rule.DestinationType = plan.DestinationType.ValueStringPointer()
+	}
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		rule.Application = plan.Application.ValueStringPointer()
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		rule.Description = plan.Description.ValueStringPointer()
+	}
 	rule.Config = &sdk.CreateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
 	}
@@ -216,6 +228,13 @@ func getFirewallRuleAsState(
 	state.Policy = convert.StrToType(rule.Policy)
 	state.Protocol = convert.StrToType(rule.Protocol.Get())
 	state.PortRange = convert.StrToType(rule.PortRange.Get())
+	state.SourceType = convert.StrToType(rule.SourceType)
+	state.DestinationType = convert.StrToType(rule.DestinationType)
+	state.Application = convert.StrToType(rule.Application.Get())
+
+	// description is a write-only input: the API accepts it on create/update but
+	// does not return it, so preserve the configured/prior value.
+	state.Description = plan.Description
 
 	// parent_id is a create-time (RequiresReplace) input that the response does
 	// not echo back cleanly, so preserve the configured value.
@@ -298,6 +317,18 @@ func (r *Resource) Update(
 	}
 	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
 		rule.PortRange = plan.PortRange.ValueStringPointer()
+	}
+	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
+		rule.SourceType = plan.SourceType.ValueStringPointer()
+	}
+	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
+		rule.DestinationType = plan.DestinationType.ValueStringPointer()
+	}
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		rule.Application = plan.Application.ValueStringPointer()
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		rule.Description = plan.Description.ValueStringPointer()
 	}
 	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),

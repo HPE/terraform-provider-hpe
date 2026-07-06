@@ -85,6 +85,27 @@ func (d *DataSource) Read(
 			continue
 		}
 
+		// tenants and visibility are only returned to master-tenant callers;
+		// they are absent otherwise (tenants -> empty set, visibility -> null).
+		tenantObjs := make([]attr.Value, 0, len(rg.Tenants))
+		for j := range rg.Tenants {
+			t := rg.Tenants[j]
+			tv, tdiags := NewTenantsValue(TenantsValue{}.AttributeTypes(ctx), map[string]attr.Value{
+				"id":   convert.Int64ToType(t.Id),
+				"name": convert.StrToType(t.Name),
+			})
+			resp.Diagnostics.Append(tdiags...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
+			tenantObjs = append(tenantObjs, tv)
+		}
+		tenantsSet, tsDiags := types.SetValue(TenantsValue{}.Type(ctx), tenantObjs)
+		resp.Diagnostics.Append(tsDiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		attrs := map[string]attr.Value{
 			"id":          convert.Int64ToType(rg.Id),
 			"name":        convert.StrToType(rg.Name),
@@ -93,6 +114,8 @@ func (d *DataSource) Read(
 			"status":      convert.StrToType(rg.Status),
 			"priority":    convert.Int64ToType(rg.Priority),
 			"group_layer": convert.StrToType(rg.GroupLayer),
+			"tenants":     tenantsSet,
+			"visibility":  convert.StrToType(rg.Visibility),
 		}
 
 		v, diags := NewRuleGroupsValue(RuleGroupsValue{}.AttributeTypes(ctx), attrs)

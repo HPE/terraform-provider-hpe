@@ -32,16 +32,30 @@ hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
 
 ### Optional
 
+- `application` (String) Application the rule matches (depends on the network router type)
+- `config` (Attributes) Network-router-type-specific rule configuration. (see [below for nested schema](#nestedatt--config))
+- `description` (String) Description of the firewall rule. This is a write-only input: the API
+accepts it on create and update but does not return it, so it cannot be
+used for drift detection.
+- `destination_type` (String) Destination match type (for example cidr, group, tier, instance)
 - `direction` (String) Direction (ingress or egress)
 - `enabled` (Boolean) Whether the firewall rule is enabled
 - `policy` (String) Policy action (accept, block, reject)
 - `port_range` (String) Port range
 - `priority` (Number) Priority of the firewall rule
 - `protocol` (String) Protocol
+- `source_type` (String) Source match type (for example cidr, group, tier, all)
 
 ### Read-Only
 
 - `id` (Number) The ID of the firewall rule
+
+<a id="nestedatt--config"></a>
+### Nested Schema for `config`
+
+Optional:
+
+- `parent_id` (String) External id of the parent firewall rule group (required by NSX-T).
 
 ## Import
 

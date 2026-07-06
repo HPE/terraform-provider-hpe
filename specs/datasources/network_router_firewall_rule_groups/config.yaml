@@ -58,3 +58,15 @@ network_router_firewall_rule_groups:
       description: The priority of the firewall rule group.
     rule_groups.group_layer:
       description: The group layer of the firewall rule group.
+    rule_groups.visibility:
+      description: >-
+        Visibility of the rule group, either 'private' or 'public'. Only
+        returned to master-tenant callers; null otherwise.
+    rule_groups.tenants:
+      description: >-
+        Tenants granted access to the rule group. Only returned to master-tenant
+        callers; empty otherwise.
+    rule_groups.tenants.id:
+      description: The ID of the tenant.
+    rule_groups.tenants.name:
+      description: The name of the tenant.
