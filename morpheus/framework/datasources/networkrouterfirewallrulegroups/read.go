@@ -71,7 +71,8 @@ func (d *DataSource) Read(
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(summary, fmt.Sprintf(
 			"LIST failed for network router firewall rule groups (router_id=%d): %s",
-			routerID, providererrors.ErrMsg(err, hresp)))
+			routerID, providererrors.ErrMsg(err, hresp),
+		))
 
 		return
 	}
