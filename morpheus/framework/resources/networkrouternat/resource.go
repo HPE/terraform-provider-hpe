@@ -210,9 +210,7 @@ func getNatAsState(
 
 	state.ExternalId = convert.StrToType(nat.ExternalId)
 
-	if nat.Name != nil {
-		state.Name = types.StringValue(*nat.Name)
-	}
+	state.Name = convert.StrToType(nat.Name)
 
 	if nat.Action != nil {
 		state.Action = types.StringValue(*nat.Action)
@@ -222,9 +220,7 @@ func getNatAsState(
 
 	state.Description = convert.StrToType(nat.Description)
 
-	if nat.Enabled != nil {
-		state.Enabled = types.BoolValue(*nat.Enabled)
-	}
+	state.Enabled = convert.BoolToType(nat.Enabled)
 
 	state.SourceNetwork = convert.StrToType(nat.SourceNetwork)
 
