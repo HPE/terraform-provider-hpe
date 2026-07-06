@@ -117,7 +117,9 @@ resource "hpe_morpheus_container_script" "example" {
 		resource.TestCheckResourceAttr(resourceName, "script_type", "bash"),
 		resource.TestCheckResourceAttr(resourceName, "script", "apt-get update && apt-get install -y curl wget"),
 		resource.TestCheckResourceAttr(resourceName, "sudo_user", "true"),
-		resource.TestCheckResourceAttr(resourceName, "fail_on_error", "false"),
+		resource.TestCheckResourceAttr(resourceName, "fail_on_error", "true"),
+		resource.TestCheckResourceAttrSet(resourceName, "date_created"),
+		resource.TestCheckResourceAttrSet(resourceName, "last_updated"),
 	)
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
 		PreApply: []plancheck.PlanCheck{

@@ -22,6 +22,10 @@ container_script:
     category:
       computed_optional_required: optional
       description: The category of the library container script.
+    date_created:
+      computed_optional_required: computed
+      description: The date the library container script was created.
+      state_for_unknown: true
     fail_on_error:
       computed_optional_required: computed_optional
       description: Whether the script fails on error.
@@ -33,14 +37,12 @@ container_script:
     labels:
       computed_optional_required: computed_optional
       description: The labels of the library container script.
+    last_updated:
+      computed_optional_required: computed
+      description: The date the library container script was last updated.
     name:
       computed_optional_required: required
       description: The name of the library container script.
-      validators:
-      - custom:
-          imports:
-            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-          schema_definition: stringvalidator.LengthAtMost(255)
     run_as_user:
       computed_optional_required: optional
       description: The user to run the script as.
@@ -69,12 +71,6 @@ container_script:
       computed_optional_required: computed_optional
       description: The phase of the script.
       default: "provision"
-      validators:
-      - custom:
-          imports:
-            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-          schema_definition: |-
-            stringvalidator.OneOf("start", "stop", "preProvision", "provision", "postProvision", "preDeploy", "deploy", "reconfigure", "scaleDown", "teardown")
     script_type:
       computed_optional_required: computed_optional
       description: The type of the script.

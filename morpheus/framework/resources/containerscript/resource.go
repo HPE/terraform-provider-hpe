@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -24,6 +25,13 @@ var (
 	_ resource.ResourceWithConfigure   = &containerScriptResource{}
 	_ resource.ResourceWithImportState = &containerScriptResource{}
 )
+
+// maskedScriptSentinel is the placeholder the API returns for the script body of
+// a global script owned by another account (see serializeContainerScript in the
+// Morpheus API). When the API returns this (or omits the script entirely), the
+// real content is unavailable, so the read mappers preserve the prior state
+// value rather than overwriting it and causing a perpetual diff.
+const maskedScriptSentinel = "************"
 
 type containerScriptResource struct {
 	configure.ResourceWithMorpheusConfigure
@@ -347,10 +355,11 @@ func mapGetResponseToModel(
 	if script.ScriptType != nil {
 		model.ScriptType = types.StringValue(*script.ScriptType)
 	}
-	if script.Script != nil {
+	// Preserve the prior state value when the API omits the script body (nil) or
+	// masks it for a global script owned by another account (maskedScriptSentinel).
+	// Overwriting would clobber the configured value and cause a perpetual diff.
+	if script.Script != nil && *script.Script != maskedScriptSentinel {
 		model.Script = types.StringValue(*script.Script)
-	} else {
-		model.Script = types.StringNull()
 	}
 	if script.RunAsUser.IsSet() && script.RunAsUser.Get() != nil {
 		model.RunAsUser = types.StringValue(*script.RunAsUser.Get())
@@ -362,6 +371,12 @@ func mapGetResponseToModel(
 	}
 	if script.FailOnError != nil {
 		model.FailOnError = types.BoolValue(*script.FailOnError)
+	}
+	if script.DateCreated != nil {
+		model.DateCreated = types.StringValue(script.DateCreated.Format(time.RFC3339))
+	}
+	if script.LastUpdated != nil {
+		model.LastUpdated = types.StringValue(script.LastUpdated.Format(time.RFC3339))
 	}
 }
 
@@ -452,10 +467,9 @@ func mapGenericScriptToModel(
 	if v, ok := m["scriptType"].(string); ok {
 		model.ScriptType = types.StringValue(v)
 	}
-	if v, ok := m["script"].(string); ok {
+	// Preserve prior state when the API omits (absent) or masks the script body.
+	if v, ok := m["script"].(string); ok && v != maskedScriptSentinel {
 		model.Script = types.StringValue(v)
-	} else {
-		model.Script = types.StringNull()
 	}
 	if v, ok := m["runAsUser"].(string); ok && v != "" {
 		model.RunAsUser = types.StringValue(v)
@@ -467,5 +481,11 @@ func mapGenericScriptToModel(
 	}
 	if v, ok := m["failOnError"].(bool); ok {
 		model.FailOnError = types.BoolValue(v)
+	}
+	if v, ok := m["dateCreated"].(string); ok && v != "" {
+		model.DateCreated = types.StringValue(v)
+	}
+	if v, ok := m["lastUpdated"].(string); ok && v != "" {
+		model.LastUpdated = types.StringValue(v)
 	}
 }

@@ -27,6 +27,14 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The category of the library container script.",
 				MarkdownDescription: "The category of the library container script.",
 			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the library container script was created.",
+				MarkdownDescription: "The date the library container script was created.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"fail_on_error": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -50,6 +58,11 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "The labels of the library container script.",
 				MarkdownDescription: "The labels of the library container script.",
+			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the library container script was last updated.",
+				MarkdownDescription: "The date the library container script was last updated.",
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -80,7 +93,18 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The phase of the script.",
 				MarkdownDescription: "The phase of the script.",
 				Validators: []validator.String{
-					stringvalidator.OneOf("start", "stop", "preProvision", "provision", "postProvision", "preDeploy", "deploy", "reconfigure", "scaleDown", "teardown"),
+					stringvalidator.OneOf(
+						"start",
+						"stop",
+						"preProvision",
+						"provision",
+						"postProvision",
+						"preDeploy",
+						"deploy",
+						"reconfigure",
+						"scaleDown",
+						"teardown",
+					),
 				},
 				Default: stringdefault.StaticString("provision"),
 			},
@@ -119,9 +143,11 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 
 type ContainerScriptModel struct {
 	Category      types.String `tfsdk:"category"`
+	DateCreated   types.String `tfsdk:"date_created"`
 	FailOnError   types.Bool   `tfsdk:"fail_on_error"`
 	Id            types.Int64  `tfsdk:"id"`
 	Labels        types.List   `tfsdk:"labels"`
+	LastUpdated   types.String `tfsdk:"last_updated"`
 	Name          types.String `tfsdk:"name"`
 	RunAsUser     types.String `tfsdk:"run_as_user"`
 	Script        types.String `tfsdk:"script"`
