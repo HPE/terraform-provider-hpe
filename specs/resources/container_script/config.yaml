@@ -47,7 +47,20 @@ container_script:
     script:
       computed_optional_required: computed_optional
       description: The script content.
+      # Two plan modifiers, in declared order (order is significant):
+      #   1. UseStateForUnknown - hold the prior script value in the plan when the
+      #      config is unchanged, so this Optional+Computed field does not report a
+      #      spurious "known after apply" diff.
+      #   2. NormalizeLineEndingsModifier - fold CRLF/CR to LF so line-ending churn
+      #      alone does not surface as a diff.
+      # UseStateForUnknown is spelled out as an explicit custom modifier (instead
+      # of the state_for_unknown: true sugar) purely to keep both modifiers in one
+      # ordered list; the generated schema is identical either way.
       plan_modifiers:
+      - custom:
+          imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+          schema_definition: stringplanmodifier.UseStateForUnknown()
       - custom:
           imports:
             - path: github.com/HPE/terraform-provider-hpe/utils/modifiers

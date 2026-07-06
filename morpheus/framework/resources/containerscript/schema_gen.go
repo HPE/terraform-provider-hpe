@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -69,6 +70,7 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The script content.",
 				MarkdownDescription: "The script content.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					modifiers.NormalizeLineEndingsModifier{},
 				},
 			},
