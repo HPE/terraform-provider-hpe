@@ -204,25 +204,15 @@ func getFirewallRuleAsState(
 		return state, diags
 	}
 
-	if rule.Id != nil {
-		state.Id = types.Int64Value(*rule.Id)
-	}
+	state.Id = convert.Int64ToType(rule.Id)
 
 	state.RouterId = plan.RouterId
 
-	if rule.Name != nil {
-		state.Name = types.StringValue(*rule.Name)
-	}
+	state.Name = convert.StrToType(rule.Name)
 
-	if rule.Enabled != nil {
-		state.Enabled = types.BoolValue(*rule.Enabled)
-	}
+	state.Enabled = convert.BoolToType(rule.Enabled)
 
-	if rule.Priority != nil {
-		state.Priority = types.Int64Value(*rule.Priority)
-	} else {
-		state.Priority = types.Int64Null()
-	}
+	state.Priority = convert.Int64ToType(rule.Priority)
 
 	state.Direction = convert.StrToType(rule.Direction)
 	state.Policy = convert.StrToType(rule.Policy)

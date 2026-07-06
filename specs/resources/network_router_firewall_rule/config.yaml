@@ -7,13 +7,22 @@ network_router_firewall_rule:
           The id of the parent firewall rule group the rule belongs to (for NSX-T,
           e.g. "group-123"). Required to create the rule. Use the
           hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
+    description:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          Description of the firewall rule. This is a write-only input: the API
+          accepts it on create and update but does not return it, so it cannot be
+          used for drift detection.
   moves:
     - rule: ""
     - template-parent_id: parent_id
+    - template-description: description
   removes:
     - application_type
     - applications
     - code
+    - config                          # request config wrapper; parent_id pinned top-level via templates
     - destination
     - destination_port_range
     - group_name
