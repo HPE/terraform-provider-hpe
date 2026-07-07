@@ -2,14 +2,10 @@ cluster_affinity_group:
   moves:
     - affinity_group: ""                 # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
   removes:
-    - affinity_type                      # (components/schemas/clusterAffinityGroup.yaml) noise
-    - pool                               # (components/schemas/clusterAffinityGroup.yaml) complex object
-    - ref_id                             # (components/schemas/clusterAffinityGroup.yaml) internal
-    - ref_type                           # (components/schemas/clusterAffinityGroup.yaml) internal
-    - resource_permissions               # (components/schemas/clusterAffinityGroup.yaml) complex object
-    - servers                            # (components/schemas/clusterAffinityGroup.yaml) complex array
-    - source                             # (components/schemas/clusterAffinityGroup.yaml) internal
-    - tenants                            # (components/schemas/clusterAffinityGroup.yaml) complex array
+    - resource_permissions               # (components/schemas/clusterAffinityGroup.yaml) freeform nested object
+    - servers                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
+    - source                             # (components/schemas/clusterAffinityGroup.yaml) internal field
+    - tenants                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
   overrides:
     id:
       computed_optional_required: computed_optional
@@ -22,3 +18,21 @@ cluster_affinity_group:
     cluster_id:
       computed_optional_required: required
       description: The ID of the parent cluster.
+    active:
+      description: Whether the affinity group is active.
+      computed_optional_required: computed
+    affinity_type:
+      description: The type of affinity (e.g. affinity, anti-affinity).
+      computed_optional_required: computed
+    pool:
+      description: The resource pool object associated with the affinity group.
+      computed_optional_required: computed
+    ref_id:
+      description: The reference ID.
+      computed_optional_required: computed
+    ref_type:
+      description: The reference type.
+      computed_optional_required: computed
+    visibility:
+      description: The visibility setting for the affinity group.
+      computed_optional_required: computed

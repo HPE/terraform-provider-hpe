@@ -40,9 +40,20 @@ data "hpe_morpheus_network_router_firewall_rule" "example" {
 
 ### Read-Only
 
+- `application` (String) The application associated with the rule.
+- `application_type` (String) The application type.
+- `code` (String) The internal code identifier.
+- `destination_port_range` (String) The destination port range.
+- `destination_type` (String) The destination type.
 - `direction` (String)
 - `enabled` (Boolean)
+- `group_name` (String) The group name this rule belongs to.
 - `policy` (String)
 - `port_range` (String)
 - `priority` (Number)
 - `protocol` (String)
+- `rule_type` (String) The type of the firewall rule.
+- `source_group` (String) The source group.
+- `source_port_range` (String) The source port range.
+- `source_tier` (String) The source tier.
+- `source_type` (String) The source type.

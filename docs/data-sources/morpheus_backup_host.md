@@ -38,11 +38,56 @@ data "hpe_morpheus_backup_host" "example" {
 
 ### Read-Only
 
+- `backup_provider` (Attributes) The backup provider object. (see [below for nested schema](#nestedatt--backup_provider))
+- `backup_repository` (Attributes) The backup repository object. (see [below for nested schema](#nestedatt--backup_repository))
+- `backup_type` (Attributes) The backup type object. (see [below for nested schema](#nestedatt--backup_type))
+- `cron_expression` (String) The cron expression for the backup schedule.
+- `date_created` (String) The date the backup was created.
 - `enabled` (Boolean) Whether the backup is enabled
 - `host` (Attributes) Present when locationType is `server` (see [below for nested schema](#nestedatt--host))
 - `job_id` (Number) The ID of the Backup Job associated with this backup
+- `last_updated` (String) The date the backup was last updated.
+- `location` (String) The backup storage location.
+- `location_type` (String) The backup storage location type.
+- `retention_count` (Number) The number of backups to retain.
+- `schedule` (Attributes) The backup schedule object. (see [below for nested schema](#nestedatt--schedule))
 - `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) used for this backup
+- `target_all` (Boolean) Whether to target all databases.
+- `target_host` (String) The target database host.
+- `target_name` (String) The target database name.
 - `target_path` (String) The file or directory path on the target host being backed up
+- `target_port` (Number) The target database port.
+- `target_username` (String) The target database username.
+- `volume_path` (String) The LVM volume path.
+
+<a id="nestedatt--backup_provider"></a>
+### Nested Schema for `backup_provider`
+
+Read-Only:
+
+- `code` (String) Backup Provider Code
+- `id` (Number) Backup Provider ID
+- `name` (String) Backup Provider Name
+
+
+<a id="nestedatt--backup_repository"></a>
+### Nested Schema for `backup_repository`
+
+Read-Only:
+
+- `id` (Number) Backup Repository ID
+- `name` (String) Backup Repository Name
+
+
+<a id="nestedatt--backup_type"></a>
+### Nested Schema for `backup_type`
+
+Read-Only:
+
+- `code` (String) Backup Type Code
+- `id` (Number) Backup Type ID
+- `name` (String) Backup Type Name
+
 
 <a id="nestedatt--host"></a>
 ### Nested Schema for `host`
@@ -51,3 +96,13 @@ Read-Only:
 
 - `id` (Number) Host (server) ID
 - `name` (String) Host (server) name
+
+
+<a id="nestedatt--schedule"></a>
+### Nested Schema for `schedule`
+
+Read-Only:
+
+- `cron` (String) Schedule Cron Expression
+- `id` (Number) Schedule ID
+- `name` (String) Schedule Name

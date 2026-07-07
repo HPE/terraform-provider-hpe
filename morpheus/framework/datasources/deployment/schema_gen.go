@@ -17,10 +17,25 @@ import (
 func DeploymentDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"account_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The account ID that owns the deployment.",
+				MarkdownDescription: "The account ID that owns the deployment.",
+			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the deployment was created.",
+				MarkdownDescription: "The date the deployment was created.",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the deployment.",
 				MarkdownDescription: "The description of the deployment.",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the deployment.",
+				MarkdownDescription: "The external ID of the deployment.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -31,6 +46,11 @@ func DeploymentDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the deployment was last updated.",
+				MarkdownDescription: "The date the deployment was last updated.",
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -40,12 +60,22 @@ func DeploymentDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"version_count": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The number of versions in the deployment.",
+				MarkdownDescription: "The number of versions in the deployment.",
+			},
 		},
 	}
 }
 
 type DeploymentModel struct {
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
+	AccountId    types.Int64  `tfsdk:"account_id"`
+	DateCreated  types.String `tfsdk:"date_created"`
+	Description  types.String `tfsdk:"description"`
+	ExternalId   types.String `tfsdk:"external_id"`
+	Id           types.Int64  `tfsdk:"id"`
+	LastUpdated  types.String `tfsdk:"last_updated"`
+	Name         types.String `tfsdk:"name"`
+	VersionCount types.Int64  `tfsdk:"version_count"`
 }

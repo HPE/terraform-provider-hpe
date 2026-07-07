@@ -4,17 +4,10 @@ package monitoringalert
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
-	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
-
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
-	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -55,128 +48,4 @@ func (d *DataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = MonitoringAlertDataSourceSchema(ctx)
-}
-
-func monitoringAlertAsState(
-	alert *sdk.GetAlerts200ResponseAllOfAlert,
-) MonitoringAlertModel {
-	return MonitoringAlertModel{
-		Id:          convert.Int64ToType(alert.Id),
-		Name:        convert.StrToType(alert.Name),
-		Active:      convert.BoolToType(alert.Active),
-		AllApps:     convert.BoolToType(alert.AllApps),
-		AllChecks:   convert.BoolToType(alert.AllChecks),
-		AllGroups:   convert.BoolToType(alert.AllGroups),
-		MinDuration: convert.Int64ToType(alert.MinDuration),
-		MinSeverity: convert.StrToType(alert.MinSeverity),
-	}
-}
-
-func getByID(
-	ctx context.Context,
-	id int64,
-	apiClient *sdk.APIClient,
-) (*sdk.GetAlerts200ResponseAllOfAlert, error) {
-	r, hresp, err := apiClient.AlertsAPI.GetAlerts(ctx, id).Execute()
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(
-			"GET failed for monitoring alert %d: %s", id, providererrors.ErrMsg(err, hresp),
-		)
-	}
-
-	if r.Alert == nil {
-		return nil, fmt.Errorf(
-			"GET failed for monitoring alert %d: response missing alert", id,
-		)
-	}
-
-	alert := *r.Alert
-
-	return &alert, nil
-}
-
-func getByName(
-	ctx context.Context,
-	name string,
-	apiClient *sdk.APIClient,
-) (*sdk.GetAlerts200ResponseAllOfAlert, error) {
-	rs, hresp, err := apiClient.AlertsAPI.ListAlerts(ctx).Execute()
-	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf(
-			"GET failed for monitoring alert %s: %s", name, providererrors.ErrMsg(err, hresp),
-		)
-	}
-
-	var matched []sdk.ListAlerts200ResponseAllOfAlertsInner
-
-	for _, o := range rs.Alerts {
-		if o.Name != nil && *o.Name == name {
-			matched = append(matched, o)
-		}
-	}
-
-	if len(matched) == 0 {
-		return nil, errors.New(ErrorNoAlertFound)
-	} else if len(matched) > 1 {
-		return nil, errors.New(ErrorMultipleAlerts)
-	}
-
-	if matched[0].Id == nil {
-		return nil, fmt.Errorf("GET failed for monitoring alert %s: response missing id", name)
-	}
-
-	return getByID(ctx, *matched[0].Id, apiClient)
-}
-
-func getMonitoringAlert(
-	ctx context.Context,
-	config *MonitoringAlertModel,
-	apiClient *sdk.APIClient,
-) (*sdk.GetAlerts200ResponseAllOfAlert, error) {
-	if !config.Id.IsNull() {
-		return getByID(ctx, config.Id.ValueInt64(), apiClient)
-	} else if !config.Name.IsNull() {
-		return getByName(ctx, config.Name.ValueString(), apiClient)
-	}
-
-	return nil, errors.New(ErrorNoValidSearchTerms)
-}
-
-// Read refreshes the Terraform state with the latest data.
-func (d *DataSource) Read(
-	ctx context.Context,
-	req datasource.ReadRequest,
-	resp *datasource.ReadResponse,
-) {
-	var config MonitoringAlertModel
-
-	diags := req.Config.Get(ctx, &config)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	apiClient, err := d.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			summary,
-			"could not create sdk client",
-		)
-
-		return
-	}
-
-	alert, err := getMonitoringAlert(ctx, &config, apiClient)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			summary,
-			err.Error(),
-		)
-
-		return
-	}
-
-	state := monitoringAlertAsState(alert)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

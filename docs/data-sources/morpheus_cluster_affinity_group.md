@@ -40,5 +40,16 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 
 ### Read-Only
 
-- `active` (Boolean) Active
-- `visibility` (String)
+- `active` (Boolean) Whether the affinity group is active.
+- `affinity_type` (String) The type of affinity (e.g. affinity, anti-affinity).
+- `pool` (Attributes) The resource pool object associated with the affinity group. (see [below for nested schema](#nestedatt--pool))
+- `ref_id` (Number) The reference ID.
+- `ref_type` (String) The reference type.
+- `visibility` (String) The visibility setting for the affinity group.
+
+<a id="nestedatt--pool"></a>
+### Nested Schema for `pool`
+
+Read-Only:
+
+- `id` (Number)

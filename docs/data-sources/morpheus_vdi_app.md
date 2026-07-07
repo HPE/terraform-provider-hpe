@@ -32,5 +32,9 @@ data "hpe_morpheus_vdi_app" "example" {
 
 ### Read-Only
 
+- `date_created` (String) The date the VDI app was created.
 - `description` (String) The description of the VDI app.
+- `icon_path` (String) The icon path for the VDI app.
+- `last_updated` (String) The date the VDI app was last updated.
 - `launch_prefix` (String) The RDS app name prefix.
+- `logo` (String) The logo path for the VDI app.

@@ -37,6 +37,11 @@ func MonitoringAlertDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Trigger for all check groups.",
 				MarkdownDescription: "Trigger for all check groups.",
 			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the alert was created.",
+				MarkdownDescription: "The date the alert was created.",
+			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -45,6 +50,11 @@ func MonitoringAlertDataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
+			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the alert was last updated.",
+				MarkdownDescription: "The date the alert was last updated.",
 			},
 			"min_duration": schema.Int64Attribute{
 				Computed:            true,
@@ -74,7 +84,9 @@ type MonitoringAlertModel struct {
 	AllApps     types.Bool   `tfsdk:"all_apps"`
 	AllChecks   types.Bool   `tfsdk:"all_checks"`
 	AllGroups   types.Bool   `tfsdk:"all_groups"`
+	DateCreated types.String `tfsdk:"date_created"`
 	Id          types.Int64  `tfsdk:"id"`
+	LastUpdated types.String `tfsdk:"last_updated"`
 	MinDuration types.Int64  `tfsdk:"min_duration"`
 	MinSeverity types.String `tfsdk:"min_severity"`
 	Name        types.String `tfsdk:"name"`

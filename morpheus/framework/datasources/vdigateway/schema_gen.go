@@ -17,6 +17,11 @@ import (
 func VdiGatewayDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the VDI gateway was created.",
+				MarkdownDescription: "The date the VDI gateway was created.",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the VDI gateway.",
@@ -36,6 +41,11 @@ func VdiGatewayDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the VDI gateway was last updated.",
+				MarkdownDescription: "The date the VDI gateway was last updated.",
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -50,8 +60,10 @@ func VdiGatewayDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type VdiGatewayModel struct {
+	DateCreated types.String `tfsdk:"date_created"`
 	Description types.String `tfsdk:"description"`
 	GatewayUrl  types.String `tfsdk:"gateway_url"`
 	Id          types.Int64  `tfsdk:"id"`
+	LastUpdated types.String `tfsdk:"last_updated"`
 	Name        types.String `tfsdk:"name"`
 }

@@ -23,6 +23,92 @@ import (
 func BackupHostDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"backup_provider": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Backup Provider Code",
+						MarkdownDescription: "Backup Provider Code",
+					},
+					"id": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Backup Provider ID",
+						MarkdownDescription: "Backup Provider ID",
+					},
+					"name": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Backup Provider Name",
+						MarkdownDescription: "Backup Provider Name",
+					},
+				},
+				CustomType: BackupProviderType{
+					ObjectType: types.ObjectType{
+						AttrTypes: BackupProviderValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The backup provider object.",
+				MarkdownDescription: "The backup provider object.",
+			},
+			"backup_repository": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Backup Repository ID",
+						MarkdownDescription: "Backup Repository ID",
+					},
+					"name": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Backup Repository Name",
+						MarkdownDescription: "Backup Repository Name",
+					},
+				},
+				CustomType: BackupRepositoryType{
+					ObjectType: types.ObjectType{
+						AttrTypes: BackupRepositoryValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The backup repository object.",
+				MarkdownDescription: "The backup repository object.",
+			},
+			"backup_type": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Backup Type Code",
+						MarkdownDescription: "Backup Type Code",
+					},
+					"id": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Backup Type ID",
+						MarkdownDescription: "Backup Type ID",
+					},
+					"name": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Backup Type Name",
+						MarkdownDescription: "Backup Type Name",
+					},
+				},
+				CustomType: BackupTypeType{
+					ObjectType: types.ObjectType{
+						AttrTypes: BackupTypeValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The backup type object.",
+				MarkdownDescription: "The backup type object.",
+			},
+			"cron_expression": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The cron expression for the backup schedule.",
+				MarkdownDescription: "The cron expression for the backup schedule.",
+			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the backup was created.",
+				MarkdownDescription: "The date the backup was created.",
+			},
 			"enabled": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether the backup is enabled",
@@ -64,6 +150,21 @@ func BackupHostDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the Backup Job associated with this backup",
 				MarkdownDescription: "The ID of the Backup Job associated with this backup",
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the backup was last updated.",
+				MarkdownDescription: "The date the backup was last updated.",
+			},
+			"location": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The backup storage location.",
+				MarkdownDescription: "The backup storage location.",
+			},
+			"location_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The backup storage location type.",
+				MarkdownDescription: "The backup storage location type.",
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -73,28 +174,1363 @@ func BackupHostDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"retention_count": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The number of backups to retain.",
+				MarkdownDescription: "The number of backups to retain.",
+			},
+			"schedule": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"cron": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Schedule Cron Expression",
+						MarkdownDescription: "Schedule Cron Expression",
+					},
+					"id": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Schedule ID",
+						MarkdownDescription: "Schedule ID",
+					},
+					"name": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Schedule Name",
+						MarkdownDescription: "Schedule Name",
+					},
+				},
+				CustomType: ScheduleType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ScheduleValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The backup schedule object.",
+				MarkdownDescription: "The backup schedule object.",
+			},
 			"storage_provider_id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the storage provider (Bucket or File Share) used for this backup",
 				MarkdownDescription: "The ID of the storage provider (Bucket or File Share) used for this backup",
+			},
+			"target_all": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether to target all databases.",
+				MarkdownDescription: "Whether to target all databases.",
+			},
+			"target_host": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The target database host.",
+				MarkdownDescription: "The target database host.",
+			},
+			"target_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The target database name.",
+				MarkdownDescription: "The target database name.",
 			},
 			"target_path": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The file or directory path on the target host being backed up",
 				MarkdownDescription: "The file or directory path on the target host being backed up",
 			},
+			"target_port": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The target database port.",
+				MarkdownDescription: "The target database port.",
+			},
+			"target_username": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The target database username.",
+				MarkdownDescription: "The target database username.",
+			},
+			"volume_path": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The LVM volume path.",
+				MarkdownDescription: "The LVM volume path.",
+			},
 		},
 	}
 }
 
 type BackupHostModel struct {
-	Enabled           types.Bool   `tfsdk:"enabled"`
-	Host              HostValue    `tfsdk:"host"`
-	Id                types.Int64  `tfsdk:"id"`
-	JobId             types.Int64  `tfsdk:"job_id"`
-	Name              types.String `tfsdk:"name"`
-	StorageProviderId types.Int64  `tfsdk:"storage_provider_id"`
-	TargetPath        types.String `tfsdk:"target_path"`
+	BackupProvider    BackupProviderValue   `tfsdk:"backup_provider"`
+	BackupRepository  BackupRepositoryValue `tfsdk:"backup_repository"`
+	BackupType        BackupTypeValue       `tfsdk:"backup_type"`
+	CronExpression    types.String          `tfsdk:"cron_expression"`
+	DateCreated       types.String          `tfsdk:"date_created"`
+	Enabled           types.Bool            `tfsdk:"enabled"`
+	Host              HostValue             `tfsdk:"host"`
+	Id                types.Int64           `tfsdk:"id"`
+	JobId             types.Int64           `tfsdk:"job_id"`
+	LastUpdated       types.String          `tfsdk:"last_updated"`
+	Location          types.String          `tfsdk:"location"`
+	LocationType      types.String          `tfsdk:"location_type"`
+	Name              types.String          `tfsdk:"name"`
+	RetentionCount    types.Int64           `tfsdk:"retention_count"`
+	Schedule          ScheduleValue         `tfsdk:"schedule"`
+	StorageProviderId types.Int64           `tfsdk:"storage_provider_id"`
+	TargetAll         types.Bool            `tfsdk:"target_all"`
+	TargetHost        types.String          `tfsdk:"target_host"`
+	TargetName        types.String          `tfsdk:"target_name"`
+	TargetPath        types.String          `tfsdk:"target_path"`
+	TargetPort        types.Int64           `tfsdk:"target_port"`
+	TargetUsername    types.String          `tfsdk:"target_username"`
+	VolumePath        types.String          `tfsdk:"volume_path"`
+}
+
+var _ basetypes.ObjectTypable = BackupProviderType{}
+
+type BackupProviderType struct {
+	basetypes.ObjectType
+}
+
+func (t BackupProviderType) Equal(o attr.Type) bool {
+	other, ok := o.(BackupProviderType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t BackupProviderType) String() string {
+	return "BackupProviderType"
+}
+
+func (t BackupProviderType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewBackupProviderValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupProviderValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return BackupProviderValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupProviderValueNull() BackupProviderValue {
+	return BackupProviderValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewBackupProviderValueUnknown() BackupProviderValue {
+	return BackupProviderValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewBackupProviderValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (BackupProviderValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing BackupProviderValue Attribute Value",
+				"While creating a BackupProviderValue value, a missing attribute value was detected. "+
+					"A BackupProviderValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupProviderValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid BackupProviderValue Attribute Type",
+				"While creating a BackupProviderValue value, an invalid attribute value was detected. "+
+					"A BackupProviderValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupProviderValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("BackupProviderValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra BackupProviderValue Attribute Value",
+				"While creating a BackupProviderValue value, an extra attribute value was detected. "+
+					"A BackupProviderValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra BackupProviderValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewBackupProviderValueUnknown(), diags
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewBackupProviderValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewBackupProviderValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewBackupProviderValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewBackupProviderValueUnknown(), diags
+	}
+
+	return BackupProviderValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupProviderValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) BackupProviderValue {
+	object, diags := NewBackupProviderValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewBackupProviderValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t BackupProviderType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewBackupProviderValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewBackupProviderValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupProviderValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewBackupProviderValueMust(BackupProviderValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t BackupProviderType) ValueType(ctx context.Context) attr.Value {
+	return BackupProviderValue{}
+}
+
+var _ basetypes.ObjectValuable = BackupProviderValue{}
+
+type BackupProviderValue struct {
+	Code  basetypes.StringValue `tfsdk:"code"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v BackupProviderValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Code.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v BackupProviderValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v BackupProviderValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v BackupProviderValue) String() string {
+	return "BackupProviderValue"
+}
+
+func (v BackupProviderValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"code": v.Code,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v BackupProviderValue) Equal(o attr.Value) bool {
+	other, ok := o.(BackupProviderValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v BackupProviderValue) Type(ctx context.Context) attr.Type {
+	return BackupProviderType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v BackupProviderValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = BackupRepositoryType{}
+
+type BackupRepositoryType struct {
+	basetypes.ObjectType
+}
+
+func (t BackupRepositoryType) Equal(o attr.Type) bool {
+	other, ok := o.(BackupRepositoryType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t BackupRepositoryType) String() string {
+	return "BackupRepositoryType"
+}
+
+func (t BackupRepositoryType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewBackupRepositoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupRepositoryValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return BackupRepositoryValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupRepositoryValueNull() BackupRepositoryValue {
+	return BackupRepositoryValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewBackupRepositoryValueUnknown() BackupRepositoryValue {
+	return BackupRepositoryValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewBackupRepositoryValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (BackupRepositoryValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing BackupRepositoryValue Attribute Value",
+				"While creating a BackupRepositoryValue value, a missing attribute value was detected. "+
+					"A BackupRepositoryValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupRepositoryValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid BackupRepositoryValue Attribute Type",
+				"While creating a BackupRepositoryValue value, an invalid attribute value was detected. "+
+					"A BackupRepositoryValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupRepositoryValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("BackupRepositoryValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra BackupRepositoryValue Attribute Value",
+				"While creating a BackupRepositoryValue value, an extra attribute value was detected. "+
+					"A BackupRepositoryValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra BackupRepositoryValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewBackupRepositoryValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewBackupRepositoryValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewBackupRepositoryValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewBackupRepositoryValueUnknown(), diags
+	}
+
+	return BackupRepositoryValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupRepositoryValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) BackupRepositoryValue {
+	object, diags := NewBackupRepositoryValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewBackupRepositoryValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t BackupRepositoryType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewBackupRepositoryValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewBackupRepositoryValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupRepositoryValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewBackupRepositoryValueMust(BackupRepositoryValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t BackupRepositoryType) ValueType(ctx context.Context) attr.Value {
+	return BackupRepositoryValue{}
+}
+
+var _ basetypes.ObjectValuable = BackupRepositoryValue{}
+
+type BackupRepositoryValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v BackupRepositoryValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v BackupRepositoryValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v BackupRepositoryValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v BackupRepositoryValue) String() string {
+	return "BackupRepositoryValue"
+}
+
+func (v BackupRepositoryValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v BackupRepositoryValue) Equal(o attr.Value) bool {
+	other, ok := o.(BackupRepositoryValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v BackupRepositoryValue) Type(ctx context.Context) attr.Type {
+	return BackupRepositoryType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v BackupRepositoryValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = BackupTypeType{}
+
+type BackupTypeType struct {
+	basetypes.ObjectType
+}
+
+func (t BackupTypeType) Equal(o attr.Type) bool {
+	other, ok := o.(BackupTypeType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t BackupTypeType) String() string {
+	return "BackupTypeType"
+}
+
+func (t BackupTypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewBackupTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupTypeValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return BackupTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupTypeValueNull() BackupTypeValue {
+	return BackupTypeValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewBackupTypeValueUnknown() BackupTypeValue {
+	return BackupTypeValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewBackupTypeValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (BackupTypeValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing BackupTypeValue Attribute Value",
+				"While creating a BackupTypeValue value, a missing attribute value was detected. "+
+					"A BackupTypeValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupTypeValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid BackupTypeValue Attribute Type",
+				"While creating a BackupTypeValue value, an invalid attribute value was detected. "+
+					"A BackupTypeValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("BackupTypeValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("BackupTypeValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra BackupTypeValue Attribute Value",
+				"While creating a BackupTypeValue value, an extra attribute value was detected. "+
+					"A BackupTypeValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra BackupTypeValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewBackupTypeValueUnknown(), diags
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewBackupTypeValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewBackupTypeValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewBackupTypeValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewBackupTypeValueUnknown(), diags
+	}
+
+	return BackupTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewBackupTypeValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) BackupTypeValue {
+	object, diags := NewBackupTypeValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewBackupTypeValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t BackupTypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewBackupTypeValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewBackupTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewBackupTypeValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewBackupTypeValueMust(BackupTypeValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t BackupTypeType) ValueType(ctx context.Context) attr.Value {
+	return BackupTypeValue{}
+}
+
+var _ basetypes.ObjectValuable = BackupTypeValue{}
+
+type BackupTypeValue struct {
+	Code  basetypes.StringValue `tfsdk:"code"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v BackupTypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Code.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v BackupTypeValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v BackupTypeValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v BackupTypeValue) String() string {
+	return "BackupTypeValue"
+}
+
+func (v BackupTypeValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"code": v.Code,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v BackupTypeValue) Equal(o attr.Value) bool {
+	other, ok := o.(BackupTypeValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v BackupTypeValue) Type(ctx context.Context) attr.Type {
+	return BackupTypeType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v BackupTypeValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = HostType{}
@@ -475,6 +1911,443 @@ func (v HostValue) Type(ctx context.Context) attr.Type {
 
 func (v HostValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ScheduleType{}
+
+type ScheduleType struct {
+	basetypes.ObjectType
+}
+
+func (t ScheduleType) Equal(o attr.Type) bool {
+	other, ok := o.(ScheduleType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ScheduleType) String() string {
+	return "ScheduleType"
+}
+
+func (t ScheduleType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewScheduleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewScheduleValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	cronAttribute, ok := attributes["cron"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cron is missing from object`)
+
+		return nil, diags
+	}
+
+	cronVal, ok := cronAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cron expected to be basetypes.StringValue, was: %T`, cronAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ScheduleValue{
+		Cron:  cronVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewScheduleValueNull() ScheduleValue {
+	return ScheduleValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewScheduleValueUnknown() ScheduleValue {
+	return ScheduleValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewScheduleValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ScheduleValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ScheduleValue Attribute Value",
+				"While creating a ScheduleValue value, a missing attribute value was detected. "+
+					"A ScheduleValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ScheduleValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ScheduleValue Attribute Type",
+				"While creating a ScheduleValue value, an invalid attribute value was detected. "+
+					"A ScheduleValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ScheduleValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ScheduleValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ScheduleValue Attribute Value",
+				"While creating a ScheduleValue value, an extra attribute value was detected. "+
+					"A ScheduleValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ScheduleValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewScheduleValueUnknown(), diags
+	}
+
+	cronAttribute, ok := attributes["cron"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cron is missing from object`)
+
+		return NewScheduleValueUnknown(), diags
+	}
+
+	cronVal, ok := cronAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cron expected to be basetypes.StringValue, was: %T`, cronAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewScheduleValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewScheduleValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewScheduleValueUnknown(), diags
+	}
+
+	return ScheduleValue{
+		Cron:  cronVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewScheduleValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ScheduleValue {
+	object, diags := NewScheduleValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewScheduleValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ScheduleType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewScheduleValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewScheduleValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewScheduleValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewScheduleValueMust(ScheduleValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ScheduleType) ValueType(ctx context.Context) attr.Value {
+	return ScheduleValue{}
+}
+
+var _ basetypes.ObjectValuable = ScheduleValue{}
+
+type ScheduleValue struct {
+	Cron  basetypes.StringValue `tfsdk:"cron"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v ScheduleValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["cron"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Cron.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cron"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ScheduleValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ScheduleValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ScheduleValue) String() string {
+	return "ScheduleValue"
+}
+
+func (v ScheduleValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"cron": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"cron": v.Cron,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v ScheduleValue) Equal(o attr.Value) bool {
+	other, ok := o.(ScheduleValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Cron.Equal(other.Cron) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v ScheduleValue) Type(ctx context.Context) attr.Type {
+	return ScheduleType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ScheduleValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"cron": basetypes.StringType{},
 		"id":   basetypes.Int64Type{},
 		"name": basetypes.StringType{},
 	}

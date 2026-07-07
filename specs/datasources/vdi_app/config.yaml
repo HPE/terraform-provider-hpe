@@ -1,11 +1,6 @@
 vdi_app:
   moves:
     - vdi_app: ""                    # unnest wrapper (GET /api/vdi-apps/{id})
-  removes:
-    - date_created                   # (vdiApp) read-only timestamp
-    - icon_path                      # (vdiApp) read-only internal path
-    - last_updated                   # (vdiApp) read-only timestamp
-    - logo                           # (vdiApp) read-only internal path
   overrides:
     id:
       description: The ID of the VDI app.
@@ -15,7 +10,19 @@ vdi_app:
       description: The name of the VDI app.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
+    date_created:
+      description: The date the VDI app was created.
+      computed_optional_required: computed
     description:
       description: The description of the VDI app.
+    icon_path:
+      description: The icon path for the VDI app.
+      computed_optional_required: computed
+    last_updated:
+      description: The date the VDI app was last updated.
+      computed_optional_required: computed
     launch_prefix:
       description: The RDS app name prefix.
+    logo:
+      description: The logo path for the VDI app.
+      computed_optional_required: computed

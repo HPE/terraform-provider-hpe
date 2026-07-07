@@ -23,7 +23,14 @@ func ClusterNamespaceDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the parent cluster.",
 			},
 			"description": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The description of the namespace.",
+				MarkdownDescription: "The description of the namespace.",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the namespace.",
+				MarkdownDescription: "The external ID of the namespace.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -44,7 +51,9 @@ func ClusterNamespaceDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"visibility": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The visibility setting for the namespace.",
+				MarkdownDescription: "The visibility setting for the namespace.",
 			},
 		},
 	}
@@ -53,6 +62,7 @@ func ClusterNamespaceDataSourceSchema(ctx context.Context) schema.Schema {
 type ClusterNamespaceModel struct {
 	ClusterId   types.Int64  `tfsdk:"cluster_id"`
 	Description types.String `tfsdk:"description"`
+	ExternalId  types.String `tfsdk:"external_id"`
 	Id          types.Int64  `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Visibility  types.String `tfsdk:"visibility"`

@@ -32,12 +32,27 @@ data "hpe_morpheus_container_script" "example" {
 
 ### Read-Only
 
+- `account` (Attributes) The account associated with the script. (see [below for nested schema](#nestedatt--account))
 - `category` (String) The category of the library container script.
+- `code` (String) The internal code identifier for the script.
+- `date_created` (String) The date the script was created.
 - `fail_on_error` (Boolean) Whether the script fails on error.
 - `labels` (Set of String) The labels of the library container script.
+- `last_updated` (String) The date the script was last updated.
 - `run_as_user` (String) The user to run the script as.
 - `script` (String) The script content.
+- `script_method` (String) The method used to run the script (e.g. write, static).
 - `script_phase` (String) The phase of the script.
+- `script_service` (String) The service type for the script.
 - `script_type` (String) The type of the script.
 - `script_version` (String) The version of the script.
+- `sort_order` (Number) The sort order of the script.
 - `sudo_user` (Boolean) Whether to run the script as sudo.
+
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)

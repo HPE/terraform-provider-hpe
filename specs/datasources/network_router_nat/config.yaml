@@ -1,17 +1,6 @@
 network_router_nat:
   moves:
     - network_router_nat: ""             # unnest wrapper (components/schemas/networkRouterNat.yaml)
-  removes:
-    - date_created                       # (components/schemas/networkRouterNat.yaml) read-only timestamp
-    - external_id                        # (components/schemas/networkRouterNat.yaml) internal
-    - internal_id                        # (components/schemas/networkRouterNat.yaml) internal
-    - last_updated                       # (components/schemas/networkRouterNat.yaml) read-only timestamp
-    - match_ipv6destination_prefix       # (components/schemas/networkRouterNat.yaml) advanced/noise
-    - provider_id                        # (components/schemas/networkRouterNat.yaml) internal
-    - ref_id                             # (components/schemas/networkRouterNat.yaml) internal
-    - ref_type                           # (components/schemas/networkRouterNat.yaml) internal
-    - sync_source                        # (components/schemas/networkRouterNat.yaml) internal
-    - translated_ipv4source_prefix       # (components/schemas/networkRouterNat.yaml) advanced/noise
   overrides:
     id:
       computed_optional_required: computed_optional
@@ -24,3 +13,36 @@ network_router_nat:
     router_id:
       computed_optional_required: required
       description: The ID of the parent network router.
+    date_created:
+      description: The date the NAT rule was created.
+      computed_optional_required: computed
+    description:
+      description: The description of the NAT rule.
+      computed_optional_required: computed
+    external_id:
+      description: The external ID of the NAT rule.
+      computed_optional_required: computed
+    internal_id:
+      description: The internal ID of the NAT rule.
+      computed_optional_required: computed
+    last_updated:
+      description: The date the NAT rule was last updated.
+      computed_optional_required: computed
+    match_ipv6destination_prefix:
+      description: The IPv6 destination prefix to match.
+      computed_optional_required: computed
+    provider_id:
+      description: The provider ID of the NAT rule.
+      computed_optional_required: computed
+    ref_id:
+      description: The reference ID.
+      computed_optional_required: computed
+    ref_type:
+      description: The reference type.
+      computed_optional_required: computed
+    sync_source:
+      description: The synchronization source.
+      computed_optional_required: computed
+    translated_ipv4source_prefix:
+      description: The translated IPv4 source prefix.
+      computed_optional_required: computed

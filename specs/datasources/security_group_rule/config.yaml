@@ -3,17 +3,7 @@ security_group_rule:
     - id: security_group_id              # path param {id} is the security group ID - move BEFORE unnest
     - rule: ""                           # unnest wrapper (components/schemas/securityGroupRule.yaml)
   removes:
-    - custom_rule                        # (components/schemas/securityGroupRule.yaml) internal
-    - destination_group                  # (components/schemas/securityGroupRule.yaml) complex object
-    - destination_port_range             # (components/schemas/securityGroupRule.yaml) noise
-    - destination_tier                   # (components/schemas/securityGroupRule.yaml) complex object
-    - enabled                            # (components/schemas/securityGroupRule.yaml) noise (string not bool)
-    - external_id                        # (components/schemas/securityGroupRule.yaml) internal
-    - instance_type_id                   # (components/schemas/securityGroupRule.yaml) internal
     - sg_id                              # (path param) redundant - rule id comes from unnested rule.id
-    - source_group                       # (components/schemas/securityGroupRule.yaml) complex object
-    - source_port_range                  # (components/schemas/securityGroupRule.yaml) noise
-    - source_tier                        # (components/schemas/securityGroupRule.yaml) complex object
   overrides:
     id:
       computed_optional_required: computed_optional
@@ -26,3 +16,33 @@ security_group_rule:
     security_group_id:
       computed_optional_required: required
       description: The ID of the parent security group.
+    custom_rule:
+      description: Whether this is a custom rule.
+      computed_optional_required: computed
+    destination_group:
+      description: The destination security group object.
+      computed_optional_required: computed
+    destination_port_range:
+      description: The destination port range.
+      computed_optional_required: computed
+    destination_tier:
+      description: The destination tier object.
+      computed_optional_required: computed
+    enabled:
+      description: Whether the rule is enabled.
+      computed_optional_required: computed
+    external_id:
+      description: The external ID of the rule.
+      computed_optional_required: computed
+    instance_type_id:
+      description: The instance type ID associated with the rule.
+      computed_optional_required: computed
+    source_group:
+      description: The source security group object.
+      computed_optional_required: computed
+    source_port_range:
+      description: The source port range.
+      computed_optional_required: computed
+    source_tier:
+      description: The source tier object.
+      computed_optional_required: computed

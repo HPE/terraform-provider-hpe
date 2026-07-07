@@ -40,12 +40,57 @@ data "hpe_morpheus_security_group_rule" "example" {
 
 ### Read-Only
 
+- `custom_rule` (Boolean) Whether this is a custom rule.
 - `destination` (String)
+- `destination_group` (Attributes) The destination security group object. (see [below for nested schema](#nestedatt--destination_group))
+- `destination_port_range` (String) The destination port range.
+- `destination_tier` (Attributes) The destination tier object. (see [below for nested schema](#nestedatt--destination_tier))
 - `destination_type` (String)
 - `direction` (String)
+- `enabled` (String) Whether the rule is enabled.
+- `external_id` (String) The external ID of the rule.
+- `instance_type_id` (String) The instance type ID associated with the rule.
 - `policy` (String)
 - `port_range` (String)
 - `protocol` (String)
 - `rule_type` (String)
 - `source` (String)
+- `source_group` (Attributes) The source security group object. (see [below for nested schema](#nestedatt--source_group))
+- `source_port_range` (String) The source port range.
+- `source_tier` (Attributes) The source tier object. (see [below for nested schema](#nestedatt--source_tier))
 - `source_type` (String)
+
+<a id="nestedatt--destination_group"></a>
+### Nested Schema for `destination_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--destination_tier"></a>
+### Nested Schema for `destination_tier`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--source_group"></a>
+### Nested Schema for `source_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--source_tier"></a>
+### Nested Schema for `source_tier`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)

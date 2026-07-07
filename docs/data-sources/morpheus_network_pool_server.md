@@ -33,13 +33,28 @@ data "hpe_morpheus_network_pool_server" "example" {
 ### Read-Only
 
 - `config` (Dynamic) Pool server type-specific configuration object.
+- `date_created` (String) The date the pool server was created.
 - `enabled` (Boolean) Whether the network pool server is enabled.
 - `ignore_ssl` (Boolean) Whether to ignore SSL certificate errors.
+- `last_updated` (String) The date the pool server was last updated.
 - `network_filter` (String) Filter expression for which networks to sync.
+- `service_host` (String) The service hostname for the IPAM integration.
 - `service_mode` (String) The service mode (e.g. static or dhcp).
+- `service_port` (Number) The service port for the IPAM integration.
 - `service_throttle_rate` (Number) Rate limit (in milliseconds) for API requests to the pool server.
 - `service_url` (String) The service URL for the IPAM integration.
 - `service_username` (String) The service username for authentication.
 - `status` (String) The current status of the network pool server.
+- `status_date` (String) The date of the last status change.
 - `tenant_match` (String) Tenant matching expression for multi-tenancy.
+- `type` (Attributes) The pool server type object. (see [below for nested schema](#nestedatt--type))
 - `zone_filter` (String) Filter expression for which DNS zones to sync.
+
+<a id="nestedatt--type"></a>
+### Nested Schema for `type`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `name` (String)

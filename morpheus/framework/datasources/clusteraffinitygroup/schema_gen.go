@@ -4,12 +4,18 @@ package clusteraffinitygroup
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -19,8 +25,13 @@ func ClusterAffinityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"active": schema.BoolAttribute{
 				Computed:            true,
-				Description:         "Active",
-				MarkdownDescription: "Active",
+				Description:         "Whether the affinity group is active.",
+				MarkdownDescription: "Whether the affinity group is active.",
+			},
+			"affinity_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The type of affinity (e.g. affinity, anti-affinity).",
+				MarkdownDescription: "The type of affinity (e.g. affinity, anti-affinity).",
 			},
 			"cluster_id": schema.Int64Attribute{
 				Required:            true,
@@ -45,17 +56,377 @@ func ClusterAffinityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"pool": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"id": schema.Int64Attribute{
+						Computed: true,
+					},
+				},
+				CustomType: PoolType{
+					ObjectType: types.ObjectType{
+						AttrTypes: PoolValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The resource pool object associated with the affinity group.",
+				MarkdownDescription: "The resource pool object associated with the affinity group.",
+			},
+			"ref_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The reference ID.",
+				MarkdownDescription: "The reference ID.",
+			},
+			"ref_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The reference type.",
+				MarkdownDescription: "The reference type.",
+			},
 			"visibility": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The visibility setting for the affinity group.",
+				MarkdownDescription: "The visibility setting for the affinity group.",
 			},
 		},
 	}
 }
 
 type ClusterAffinityGroupModel struct {
-	Active     types.Bool   `tfsdk:"active"`
-	ClusterId  types.Int64  `tfsdk:"cluster_id"`
-	Id         types.Int64  `tfsdk:"id"`
-	Name       types.String `tfsdk:"name"`
-	Visibility types.String `tfsdk:"visibility"`
+	Active       types.Bool   `tfsdk:"active"`
+	AffinityType types.String `tfsdk:"affinity_type"`
+	ClusterId    types.Int64  `tfsdk:"cluster_id"`
+	Id           types.Int64  `tfsdk:"id"`
+	Name         types.String `tfsdk:"name"`
+	Pool         PoolValue    `tfsdk:"pool"`
+	RefId        types.Int64  `tfsdk:"ref_id"`
+	RefType      types.String `tfsdk:"ref_type"`
+	Visibility   types.String `tfsdk:"visibility"`
+}
+
+var _ basetypes.ObjectTypable = PoolType{}
+
+type PoolType struct {
+	basetypes.ObjectType
+}
+
+func (t PoolType) Equal(o attr.Type) bool {
+	other, ok := o.(PoolType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t PoolType) String() string {
+	return "PoolType"
+}
+
+func (t PoolType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewPoolValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPoolValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return PoolValue{
+		Id:    idVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPoolValueNull() PoolValue {
+	return PoolValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewPoolValueUnknown() PoolValue {
+	return PoolValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewPoolValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (PoolValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing PoolValue Attribute Value",
+				"While creating a PoolValue value, a missing attribute value was detected. "+
+					"A PoolValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid PoolValue Attribute Type",
+				"While creating a PoolValue value, an invalid attribute value was detected. "+
+					"A PoolValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("PoolValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra PoolValue Attribute Value",
+				"While creating a PoolValue value, an extra attribute value was detected. "+
+					"A PoolValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra PoolValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewPoolValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewPoolValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return NewPoolValueUnknown(), diags
+	}
+
+	return PoolValue{
+		Id:    idVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewPoolValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) PoolValue {
+	object, diags := NewPoolValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewPoolValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t PoolType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewPoolValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewPoolValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewPoolValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewPoolValueMust(PoolValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t PoolType) ValueType(ctx context.Context) attr.Value {
+	return PoolValue{}
+}
+
+var _ basetypes.ObjectValuable = PoolValue{}
+
+type PoolValue struct {
+	Id    basetypes.Int64Value `tfsdk:"id"`
+	state attr.ValueState
+}
+
+func (v PoolValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v PoolValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v PoolValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v PoolValue) String() string {
+	return "PoolValue"
+}
+
+func (v PoolValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id": basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id": v.Id,
+		})
+
+	return objVal, diags
+}
+
+func (v PoolValue) Equal(o attr.Value) bool {
+	other, ok := o.(PoolValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	return true
+}
+
+func (v PoolValue) Type(ctx context.Context) attr.Type {
+	return PoolType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v PoolValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id": basetypes.Int64Type{},
+	}
 }

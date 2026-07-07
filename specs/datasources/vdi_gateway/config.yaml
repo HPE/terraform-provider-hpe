@@ -3,8 +3,6 @@ vdi_gateway:
     - vdi_gateway: ""                # unnest wrapper (GET /api/vdi-gateways/{id})
   removes:
     - api_key                        # (vdiGateway) sensitive credential
-    - date_created                   # (vdiGateway) read-only timestamp
-    - last_updated                   # (vdiGateway) read-only timestamp
   overrides:
     id:
       description: The ID of the VDI gateway.
@@ -14,7 +12,13 @@ vdi_gateway:
       description: The name of the VDI gateway.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
+    date_created:
+      description: The date the VDI gateway was created.
+      computed_optional_required: computed
     description:
       description: The description of the VDI gateway.
     gateway_url:
       description: The URL of the VDI gateway.
+    last_updated:
+      description: The date the VDI gateway was last updated.
+      computed_optional_required: computed

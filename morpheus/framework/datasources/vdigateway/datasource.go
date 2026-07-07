@@ -4,17 +4,10 @@ package vdigateway
 
 import (
 	"context"
-	"errors"
-	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
-	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
-
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
-	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
-	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -55,118 +48,4 @@ func (d *DataSource) Schema(
 	resp *datasource.SchemaResponse,
 ) {
 	resp.Schema = VdiGatewayDataSourceSchema(ctx)
-}
-
-func vdiGatewayAsState(
-	gw *sdk.GetVDIGateways200ResponseVdiGateway,
-) VdiGatewayModel {
-	return VdiGatewayModel{
-		Id:          convert.Int64ToType(gw.Id),
-		Name:        convert.StrToType(gw.Name),
-		Description: convert.StrToType(gw.Description.Get()),
-		GatewayUrl:  convert.StrToType(gw.GatewayUrl.Get()),
-	}
-}
-
-func getByID(
-	ctx context.Context,
-	id int64,
-	apiClient *sdk.APIClient,
-) (*sdk.GetVDIGateways200ResponseVdiGateway, error) {
-	r, hresp, err := apiClient.VDIAPI.GetVDIGateways(ctx, id).Execute()
-	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for vdi gateway %d: %s", id, providererrors.ErrMsg(err, hresp))
-	}
-
-	if r.VdiGateway == nil {
-		return nil, fmt.Errorf("GET failed for vdi gateway %d: response missing vdiGateway", id)
-	}
-
-	gw := *r.VdiGateway
-
-	return &gw, nil
-}
-
-func getByName(
-	ctx context.Context,
-	name string,
-	apiClient *sdk.APIClient,
-) (*sdk.GetVDIGateways200ResponseVdiGateway, error) {
-	rs, hresp, err := apiClient.VDIAPI.ListVDIGateways(ctx).Name(name).Execute()
-	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("GET failed for vdi gateway %s: %s", name, providererrors.ErrMsg(err, hresp))
-	}
-
-	var matched []sdk.ListVDIGateways200ResponseAllOfVdiGatewaysInner
-
-	for _, o := range rs.VdiGateways {
-		if o.Name != nil && *o.Name == name {
-			matched = append(matched, o)
-		}
-	}
-
-	if len(matched) == 0 {
-		return nil, errors.New(ErrorNoVdiGatewayFound)
-	} else if len(matched) > 1 {
-		return nil, errors.New(ErrorMultipleVdiGWs)
-	}
-
-	if matched[0].Id == nil {
-		return nil, fmt.Errorf("GET failed for vdi gateway %s: response missing id", name)
-	}
-
-	return getByID(ctx, *matched[0].Id, apiClient)
-}
-
-func getVdiGateway(
-	ctx context.Context,
-	config *VdiGatewayModel,
-	apiClient *sdk.APIClient,
-) (*sdk.GetVDIGateways200ResponseVdiGateway, error) {
-	if !config.Id.IsNull() {
-		return getByID(ctx, config.Id.ValueInt64(), apiClient)
-	} else if !config.Name.IsNull() {
-		return getByName(ctx, config.Name.ValueString(), apiClient)
-	}
-
-	return nil, errors.New(ErrorNoValidSearchTerms)
-}
-
-// Read refreshes the Terraform state with the latest data.
-func (d *DataSource) Read(
-	ctx context.Context,
-	req datasource.ReadRequest,
-	resp *datasource.ReadResponse,
-) {
-	var config VdiGatewayModel
-
-	diags := req.Config.Get(ctx, &config)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
-	apiClient, err := d.NewClient(ctx)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			summary,
-			"could not create sdk client",
-		)
-
-		return
-	}
-
-	gw, err := getVdiGateway(ctx, &config, apiClient)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			summary,
-			err.Error(),
-		)
-
-		return
-	}
-
-	state := vdiGatewayAsState(gw)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

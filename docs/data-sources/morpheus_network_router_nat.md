@@ -41,13 +41,23 @@ data "hpe_morpheus_network_router_nat" "example" {
 ### Read-Only
 
 - `action` (String)
-- `description` (String)
+- `date_created` (String) The date the NAT rule was created.
+- `description` (String) The description of the NAT rule.
 - `destination_network` (String)
 - `destination_ports` (String)
 - `enabled` (Boolean)
+- `external_id` (String) The external ID of the NAT rule.
+- `internal_id` (String) The internal ID of the NAT rule.
+- `last_updated` (String) The date the NAT rule was last updated.
+- `match_ipv6destination_prefix` (String) The IPv6 destination prefix to match.
 - `priority` (Number)
 - `protocol` (String)
+- `provider_id` (String) The provider ID of the NAT rule.
+- `ref_id` (String) The reference ID.
+- `ref_type` (String) The reference type.
 - `source_network` (String)
 - `source_ports` (String)
+- `sync_source` (String) The synchronization source.
+- `translated_ipv4source_prefix` (String) The translated IPv4 source prefix.
 - `translated_network` (String)
 - `translated_ports` (String)

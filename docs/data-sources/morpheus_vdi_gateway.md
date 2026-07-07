@@ -32,5 +32,7 @@ data "hpe_morpheus_vdi_gateway" "example" {
 
 ### Read-Only
 
+- `date_created` (String) The date the VDI gateway was created.
 - `description` (String) The description of the VDI gateway.
 - `gateway_url` (String) The URL of the VDI gateway.
+- `last_updated` (String) The date the VDI gateway was last updated.

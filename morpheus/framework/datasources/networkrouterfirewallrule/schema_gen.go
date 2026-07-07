@@ -17,11 +17,41 @@ import (
 func NetworkRouterFirewallRuleDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"application": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The application associated with the rule.",
+				MarkdownDescription: "The application associated with the rule.",
+			},
+			"application_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The application type.",
+				MarkdownDescription: "The application type.",
+			},
+			"code": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal code identifier.",
+				MarkdownDescription: "The internal code identifier.",
+			},
+			"destination_port_range": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The destination port range.",
+				MarkdownDescription: "The destination port range.",
+			},
+			"destination_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The destination type.",
+				MarkdownDescription: "The destination type.",
+			},
 			"direction": schema.StringAttribute{
 				Computed: true,
 			},
 			"enabled": schema.BoolAttribute{
 				Computed: true,
+			},
+			"group_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The group name this rule belongs to.",
+				MarkdownDescription: "The group name this rule belongs to.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -58,18 +88,54 @@ func NetworkRouterFirewallRuleDataSourceSchema(ctx context.Context) schema.Schem
 				Description:         "The ID of the parent network router.",
 				MarkdownDescription: "The ID of the parent network router.",
 			},
+			"rule_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The type of the firewall rule.",
+				MarkdownDescription: "The type of the firewall rule.",
+			},
+			"source_group": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source group.",
+				MarkdownDescription: "The source group.",
+			},
+			"source_port_range": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source port range.",
+				MarkdownDescription: "The source port range.",
+			},
+			"source_tier": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source tier.",
+				MarkdownDescription: "The source tier.",
+			},
+			"source_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source type.",
+				MarkdownDescription: "The source type.",
+			},
 		},
 	}
 }
 
 type NetworkRouterFirewallRuleModel struct {
-	Direction types.String `tfsdk:"direction"`
-	Enabled   types.Bool   `tfsdk:"enabled"`
-	Id        types.Int64  `tfsdk:"id"`
-	Name      types.String `tfsdk:"name"`
-	Policy    types.String `tfsdk:"policy"`
-	PortRange types.String `tfsdk:"port_range"`
-	Priority  types.Int64  `tfsdk:"priority"`
-	Protocol  types.String `tfsdk:"protocol"`
-	RouterId  types.Int64  `tfsdk:"router_id"`
+	Application          types.String `tfsdk:"application"`
+	ApplicationType      types.String `tfsdk:"application_type"`
+	Code                 types.String `tfsdk:"code"`
+	DestinationPortRange types.String `tfsdk:"destination_port_range"`
+	DestinationType      types.String `tfsdk:"destination_type"`
+	Direction            types.String `tfsdk:"direction"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	GroupName            types.String `tfsdk:"group_name"`
+	Id                   types.Int64  `tfsdk:"id"`
+	Name                 types.String `tfsdk:"name"`
+	Policy               types.String `tfsdk:"policy"`
+	PortRange            types.String `tfsdk:"port_range"`
+	Priority             types.Int64  `tfsdk:"priority"`
+	Protocol             types.String `tfsdk:"protocol"`
+	RouterId             types.Int64  `tfsdk:"router_id"`
+	RuleType             types.String `tfsdk:"rule_type"`
+	SourceGroup          types.String `tfsdk:"source_group"`
+	SourcePortRange      types.String `tfsdk:"source_port_range"`
+	SourceTier           types.String `tfsdk:"source_tier"`
+	SourceType           types.String `tfsdk:"source_type"`
 }

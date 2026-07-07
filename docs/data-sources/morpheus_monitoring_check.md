@@ -34,7 +34,20 @@ data "hpe_morpheus_monitoring_check" "example" {
 
 - `active` (Boolean) Whether the check is active.
 - `check_interval` (Number) Check interval in seconds.
+- `check_type` (Attributes) The check type object. (see [below for nested schema](#nestedatt--check_type))
 - `config` (Dynamic) Check type-specific configuration object.
+- `date_created` (String) The date the check was created.
 - `description` (String) The description of the monitoring check.
-- `in_uptime` (Boolean) Whether the check affects account-wide availability calculations.
+- `in_uptime` (Boolean)
+- `last_updated` (String) The date the check was last updated.
 - `severity` (String) Severity level threshold for sending notifications.
+
+<a id="nestedatt--check_type"></a>
+### Nested Schema for `check_type`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `metric_name` (String)
+- `name` (String)

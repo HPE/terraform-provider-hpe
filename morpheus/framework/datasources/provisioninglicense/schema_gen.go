@@ -23,10 +23,20 @@ import (
 func ProvisioningLicenseDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"copies": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The number of copies of the license.",
+				MarkdownDescription: "The number of copies of the license.",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the provisioning license.",
 				MarkdownDescription: "The description of the provisioning license.",
+			},
+			"full_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The full name of the provisioning license.",
+				MarkdownDescription: "The full name of the provisioning license.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -58,6 +68,11 @@ func ProvisioningLicenseDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The type of the license.",
 				MarkdownDescription: "The type of the license.",
 			},
+			"license_version": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The version of the license.",
+				MarkdownDescription: "The version of the license.",
+			},
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -67,15 +82,30 @@ func ProvisioningLicenseDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"org_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The organization name on the license.",
+				MarkdownDescription: "The organization name on the license.",
+			},
+			"reservation_count": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The number of reservations for the license.",
+				MarkdownDescription: "The number of reservations for the license.",
+			},
 		},
 	}
 }
 
 type ProvisioningLicenseModel struct {
-	Description types.String     `tfsdk:"description"`
-	Id          types.Int64      `tfsdk:"id"`
-	LicenseType LicenseTypeValue `tfsdk:"license_type"`
-	Name        types.String     `tfsdk:"name"`
+	Copies           types.Int64      `tfsdk:"copies"`
+	Description      types.String     `tfsdk:"description"`
+	FullName         types.String     `tfsdk:"full_name"`
+	Id               types.Int64      `tfsdk:"id"`
+	LicenseType      LicenseTypeValue `tfsdk:"license_type"`
+	LicenseVersion   types.String     `tfsdk:"license_version"`
+	Name             types.String     `tfsdk:"name"`
+	OrgName          types.String     `tfsdk:"org_name"`
+	ReservationCount types.Int64      `tfsdk:"reservation_count"`
 }
 
 var _ basetypes.ObjectTypable = LicenseTypeType{}

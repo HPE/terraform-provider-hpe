@@ -32,8 +32,13 @@ data "hpe_morpheus_provisioning_license" "example" {
 
 ### Read-Only
 
+- `copies` (Number) The number of copies of the license.
 - `description` (String) The description of the provisioning license.
+- `full_name` (String) The full name of the provisioning license.
 - `license_type` (Attributes) The type of the license. (see [below for nested schema](#nestedatt--license_type))
+- `license_version` (String) The version of the license.
+- `org_name` (String) The organization name on the license.
+- `reservation_count` (Number) The number of reservations for the license.
 
 <a id="nestedatt--license_type"></a>
 ### Nested Schema for `license_type`

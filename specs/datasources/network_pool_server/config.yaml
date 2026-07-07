@@ -10,20 +10,14 @@ network_pool_server:
     - template-config: config                    # dynamic fallback for type-specific config
 
   removes:
-    - account                                    # (components/schemas/networkPoolServer.yaml)
+    - account                                    # (components/schemas/networkPoolServer.yaml) complex nested object
     - credential                                 # (components/schemas/networkPoolServer.yaml) sensitive object
-    - date_created                               # (components/schemas/networkPoolServer.yaml) timestamp
-    - integration                                # (components/schemas/networkPoolServer.yaml) read-only object
-    - last_updated                               # (components/schemas/networkPoolServer.yaml) timestamp
-    - pools                                      # (components/schemas/networkPoolServer.yaml) read-only array
-    - service_host                               # (components/schemas/networkPoolServer.yaml) read-only
+    - integration                                # (components/schemas/networkPoolServer.yaml) complex nested object
+    - pools                                      # (components/schemas/networkPoolServer.yaml) complex nested array
     - service_password                           # (components/schemas/networkPoolServer.yaml) sensitive
     - service_password_hash                      # (components/schemas/networkPoolServer.yaml) sensitive
-    - service_port                               # (components/schemas/networkPoolServer.yaml) read-only
-    - status_date                                # (components/schemas/networkPoolServer.yaml) timestamp
-    - status_message                             # (components/schemas/networkPoolServer.yaml) read-only
+    - status_message                             # (components/schemas/networkPoolServer.yaml) transient runtime state
     - success                                    # envelope field
-    - type                                       # (components/schemas/networkPoolServer.yaml) read-only object
 
   overrides:
     id:
@@ -34,8 +28,8 @@ network_pool_server:
       description: The name of the network pool server.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
-    config:
-      description: Pool server type-specific configuration object.
+    date_created:
+      description: The date the pool server was created.
       computed_optional_required: computed
     enabled:
       description: Whether the network pool server is enabled.
@@ -43,11 +37,20 @@ network_pool_server:
     ignore_ssl:
       description: Whether to ignore SSL certificate errors.
       computed_optional_required: computed
+    last_updated:
+      description: The date the pool server was last updated.
+      computed_optional_required: computed
     network_filter:
       description: Filter expression for which networks to sync.
       computed_optional_required: computed
+    service_host:
+      description: The service hostname for the IPAM integration.
+      computed_optional_required: computed
     service_mode:
       description: The service mode (e.g. static or dhcp).
+      computed_optional_required: computed
+    service_port:
+      description: The service port for the IPAM integration.
       computed_optional_required: computed
     service_throttle_rate:
       description: Rate limit (in milliseconds) for API requests to the pool server.
@@ -61,8 +64,14 @@ network_pool_server:
     status:
       description: The current status of the network pool server.
       computed_optional_required: computed
+    status_date:
+      description: The date of the last status change.
+      computed_optional_required: computed
     tenant_match:
       description: Tenant matching expression for multi-tenancy.
+      computed_optional_required: computed
+    type:
+      description: The pool server type object.
       computed_optional_required: computed
     zone_filter:
       description: Filter expression for which DNS zones to sync.

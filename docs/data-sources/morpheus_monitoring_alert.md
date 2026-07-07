@@ -36,5 +36,7 @@ data "hpe_morpheus_monitoring_alert" "example" {
 - `all_apps` (Boolean) Trigger for all apps.
 - `all_checks` (Boolean) Trigger for all checks.
 - `all_groups` (Boolean) Trigger for all check groups.
+- `date_created` (String) The date the alert was created.
+- `last_updated` (String) The date the alert was last updated.
 - `min_duration` (Number) Duration in minutes of the delay before sending notifications.
 - `min_severity` (String) Severity level threshold for sending notifications.

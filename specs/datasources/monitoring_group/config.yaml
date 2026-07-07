@@ -2,27 +2,24 @@ monitoring_group:
   moves:
     - check_group: ""                # unnest wrapper (GET /api/monitoring/groups/{id})
   removes:
-    - account                        # (checkGroup) read-only nested object
-    - availability                   # (checkGroup) read-only metric
-    - check_type                     # (checkGroup) read-only nested object
-    - checks                         # (checkGroup) read-only nested array
-    - create_incident                # (checkGroup) read-only flag
+    - account                        # (checkGroup) read-only nested object (use tenant DS)
+    - availability                   # (checkGroup) transient runtime metric
+    - checks                         # (checkGroup) read-only nested array (use monitoring_check DS)
+    - create_incident                # (checkGroup) transient runtime state
     - created_by                     # (checkGroup) read-only nested object
-    - date_created                   # (checkGroup) read-only timestamp
-    - health                         # (checkGroup) read-only metric
-    - history                        # (checkGroup) read-only metric
+    - health                         # (checkGroup) transient runtime metric
+    - history                        # (checkGroup) transient runtime metric
     - instance                       # (checkGroup) read-only nested object
-    - last_check_status              # (checkGroup) read-only status
-    - last_error                     # (checkGroup) read-only status
-    - last_error_date                # (checkGroup) read-only timestamp
-    - last_metric                    # (checkGroup) read-only metric
-    - last_run_date                  # (checkGroup) read-only timestamp
-    - last_success_date              # (checkGroup) read-only timestamp
-    - last_timer                     # (checkGroup) read-only metric
-    - last_updated                   # (checkGroup) read-only timestamp
-    - last_warning_date              # (checkGroup) read-only timestamp
-    - muted                          # (checkGroup) read-only status
-    - outage_time                    # (checkGroup) read-only metric
+    - last_check_status              # (checkGroup) transient runtime metric
+    - last_error                     # (checkGroup) transient runtime metric
+    - last_error_date                # (checkGroup) transient runtime metric
+    - last_metric                    # (checkGroup) transient runtime metric
+    - last_run_date                  # (checkGroup) transient runtime metric
+    - last_success_date              # (checkGroup) transient runtime metric
+    - last_timer                     # (checkGroup) transient runtime metric
+    - last_warning_date              # (checkGroup) transient runtime metric
+    - muted                          # (checkGroup) transient runtime state
+    - outage_time                    # (checkGroup) transient runtime metric
   overrides:
     id:
       description: The ID of the monitoring group.
@@ -32,10 +29,17 @@ monitoring_group:
       description: The name of the monitoring group.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
+    check_type:
+      description: The check type object associated with the group.
+      computed_optional_required: computed
+    date_created:
+      description: The date the monitoring group was created.
+      computed_optional_required: computed
     description:
       description: The description of the monitoring group.
-    in_uptime:
-      description: Whether the group affects account-wide availability calculations.
+    last_updated:
+      description: The date the group was last updated.
+      computed_optional_required: computed
     min_happy:
       description: Minimum number of checks that must be happy to keep the group healthy.
     severity:

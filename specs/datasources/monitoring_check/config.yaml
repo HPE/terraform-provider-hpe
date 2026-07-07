@@ -10,35 +10,32 @@ monitoring_check:
     - template-config: config                    # dynamic fallback for type-specific config
 
   removes:
-    - account                                    # (components/schemas/check.yaml)
-    - api_key                                    # (components/schemas/check.yaml) sensitive
-    - availability                               # (components/schemas/check.yaml) computed noise
-    - check_agent                                # (components/schemas/check.yaml) read-only
-    - check_spec                                 # (components/schemas/check.yaml) read-only
-    - check_type                                 # (components/schemas/check.yaml) read-only object
-    - container                                  # (components/schemas/check.yaml) read-only
-    - create_incident                            # (components/schemas/check.yaml) read-only
-    - created_by                                 # (components/schemas/check.yaml) read-only
-    - date_created                               # (components/schemas/check.yaml) timestamp
-    - deleted                                    # (components/schemas/check.yaml) read-only
-    - end_date                                   # (components/schemas/check.yaml) read-only
-    - health                                     # (components/schemas/check.yaml) computed noise
-    - last_box_stats                             # (components/schemas/check.yaml) computed noise
-    - last_check_status                          # (components/schemas/check.yaml) computed noise
-    - last_error                                 # (components/schemas/check.yaml) computed noise
-    - last_error_date                            # (components/schemas/check.yaml) computed noise
-    - last_message                               # (components/schemas/check.yaml) computed noise
-    - last_metric                                # (components/schemas/check.yaml) computed noise
-    - last_run_date                              # (components/schemas/check.yaml) computed noise
-    - last_stats                                 # (components/schemas/check.yaml) computed noise
-    - last_success_date                          # (components/schemas/check.yaml) computed noise
-    - last_timer                                 # (components/schemas/check.yaml) computed noise
-    - last_updated                               # (components/schemas/check.yaml) timestamp
-    - last_warning_date                          # (components/schemas/check.yaml) computed noise
-    - muted                                      # (components/schemas/check.yaml) read-only
-    - next_run_date                              # (components/schemas/check.yaml) computed noise
-    - outage_time                                # (components/schemas/check.yaml) computed noise
-    - start_date                                 # (components/schemas/check.yaml) read-only
+    - account                                    # (components/schemas/check.yaml) nested object (use tenant DS)
+    - api_key                                    # (components/schemas/check.yaml) sensitive credential
+    - availability                               # (components/schemas/check.yaml) transient runtime metric
+    - check_agent                                # (components/schemas/check.yaml) transient runtime state
+    - check_spec                                 # (components/schemas/check.yaml) transient runtime state
+    - container                                  # (components/schemas/check.yaml) read-only nested object
+    - create_incident                            # (components/schemas/check.yaml) transient runtime state
+    - created_by                                 # (components/schemas/check.yaml) read-only nested object
+    - deleted                                    # (components/schemas/check.yaml) transient runtime state
+    - end_date                                   # (components/schemas/check.yaml) transient runtime state
+    - health                                     # (components/schemas/check.yaml) transient runtime metric
+    - last_box_stats                             # (components/schemas/check.yaml) transient runtime metric
+    - last_check_status                          # (components/schemas/check.yaml) transient runtime metric
+    - last_error                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_error_date                            # (components/schemas/check.yaml) transient runtime metric
+    - last_message                               # (components/schemas/check.yaml) transient runtime metric
+    - last_metric                                # (components/schemas/check.yaml) transient runtime metric
+    - last_run_date                              # (components/schemas/check.yaml) transient runtime metric
+    - last_stats                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_success_date                          # (components/schemas/check.yaml) transient runtime metric
+    - last_timer                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_warning_date                          # (components/schemas/check.yaml) transient runtime metric
+    - muted                                      # (components/schemas/check.yaml) transient runtime state
+    - next_run_date                              # (components/schemas/check.yaml) transient runtime state
+    - outage_time                                # (components/schemas/check.yaml) transient runtime metric
+    - start_date                                 # (components/schemas/check.yaml) transient runtime state
     - success                                    # envelope field
 
   overrides:
@@ -56,14 +53,20 @@ monitoring_check:
     check_interval:
       description: Check interval in seconds.
       computed_optional_required: computed
+    check_type:
+      description: The check type object.
+      computed_optional_required: computed
     config:
       description: Check type-specific configuration object.
+      computed_optional_required: computed
+    date_created:
+      description: The date the check was created.
       computed_optional_required: computed
     description:
       description: The description of the monitoring check.
       computed_optional_required: computed
-    in_uptime:
-      description: Whether the check affects account-wide availability calculations.
+    last_updated:
+      description: The date the check was last updated.
       computed_optional_required: computed
     severity:
       description: Severity level threshold for sending notifications.

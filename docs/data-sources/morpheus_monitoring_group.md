@@ -32,7 +32,20 @@ data "hpe_morpheus_monitoring_group" "example" {
 
 ### Read-Only
 
+- `check_type` (Attributes) The check type object associated with the group. (see [below for nested schema](#nestedatt--check_type))
+- `date_created` (String) The date the monitoring group was created.
 - `description` (String) The description of the monitoring group.
-- `in_uptime` (Boolean) Whether the group affects account-wide availability calculations.
+- `in_uptime` (Boolean)
+- `last_updated` (String) The date the group was last updated.
 - `min_happy` (Number) Minimum number of checks that must be happy to keep the group healthy.
 - `severity` (String) Maximum severity level this group can incur on an incident when failing.
+
+<a id="nestedatt--check_type"></a>
+### Nested Schema for `check_type`
+
+Read-Only:
+
+- `code` (String)
+- `id` (Number)
+- `metric_name` (String)
+- `name` (String)

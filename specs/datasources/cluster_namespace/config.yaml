@@ -2,9 +2,8 @@ cluster_namespace:
   moves:
     - namespace: ""                      # unnest wrapper (components/schemas/clusterNamespace.yaml)
   removes:
-    - external_id                        # (components/schemas/clusterNamespace.yaml) internal
-    - permissions                        # (components/schemas/clusterNamespace.yaml) complex object
-    - status                             # (components/schemas/clusterNamespace.yaml) read-only
+    - permissions                        # (components/schemas/clusterNamespace.yaml) freeform nested object
+    - status                             # (components/schemas/clusterNamespace.yaml) transient runtime state
   overrides:
     id:
       computed_optional_required: computed_optional
@@ -17,3 +16,12 @@ cluster_namespace:
     cluster_id:
       computed_optional_required: required
       description: The ID of the parent cluster.
+    description:
+      description: The description of the namespace.
+      computed_optional_required: computed
+    external_id:
+      description: The external ID of the namespace.
+      computed_optional_required: computed
+    visibility:
+      description: The visibility setting for the namespace.
+      computed_optional_required: computed

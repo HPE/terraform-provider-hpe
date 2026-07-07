@@ -17,10 +17,20 @@ import (
 func VdiAppDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the VDI app was created.",
+				MarkdownDescription: "The date the VDI app was created.",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The description of the VDI app.",
 				MarkdownDescription: "The description of the VDI app.",
+			},
+			"icon_path": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The icon path for the VDI app.",
+				MarkdownDescription: "The icon path for the VDI app.",
 			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
@@ -31,10 +41,20 @@ func VdiAppDataSourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
 			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the VDI app was last updated.",
+				MarkdownDescription: "The date the VDI app was last updated.",
+			},
 			"launch_prefix": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The RDS app name prefix.",
 				MarkdownDescription: "The RDS app name prefix.",
+			},
+			"logo": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The logo path for the VDI app.",
+				MarkdownDescription: "The logo path for the VDI app.",
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,
@@ -50,8 +70,12 @@ func VdiAppDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type VdiAppModel struct {
+	DateCreated  types.String `tfsdk:"date_created"`
 	Description  types.String `tfsdk:"description"`
+	IconPath     types.String `tfsdk:"icon_path"`
 	Id           types.Int64  `tfsdk:"id"`
+	LastUpdated  types.String `tfsdk:"last_updated"`
 	LaunchPrefix types.String `tfsdk:"launch_prefix"`
+	Logo         types.String `tfsdk:"logo"`
 	Name         types.String `tfsdk:"name"`
 }

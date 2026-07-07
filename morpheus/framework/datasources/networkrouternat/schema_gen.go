@@ -20,8 +20,15 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 			"action": schema.StringAttribute{
 				Computed: true,
 			},
+			"date_created": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the NAT rule was created.",
+				MarkdownDescription: "The date the NAT rule was created.",
+			},
 			"description": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The description of the NAT rule.",
+				MarkdownDescription: "The description of the NAT rule.",
 			},
 			"destination_network": schema.StringAttribute{
 				Computed: true,
@@ -32,6 +39,11 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 			"enabled": schema.BoolAttribute{
 				Computed: true,
 			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the NAT rule.",
+				MarkdownDescription: "The external ID of the NAT rule.",
+			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -40,6 +52,21 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
 				},
+			},
+			"internal_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal ID of the NAT rule.",
+				MarkdownDescription: "The internal ID of the NAT rule.",
+			},
+			"last_updated": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The date the NAT rule was last updated.",
+				MarkdownDescription: "The date the NAT rule was last updated.",
+			},
+			"match_ipv6destination_prefix": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The IPv6 destination prefix to match.",
+				MarkdownDescription: "The IPv6 destination prefix to match.",
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,
@@ -56,6 +83,21 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 			"protocol": schema.StringAttribute{
 				Computed: true,
 			},
+			"provider_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The provider ID of the NAT rule.",
+				MarkdownDescription: "The provider ID of the NAT rule.",
+			},
+			"ref_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The reference ID.",
+				MarkdownDescription: "The reference ID.",
+			},
+			"ref_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The reference type.",
+				MarkdownDescription: "The reference type.",
+			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the parent network router.",
@@ -66,6 +108,16 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 			},
 			"source_ports": schema.StringAttribute{
 				Computed: true,
+			},
+			"sync_source": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The synchronization source.",
+				MarkdownDescription: "The synchronization source.",
+			},
+			"translated_ipv4source_prefix": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The translated IPv4 source prefix.",
+				MarkdownDescription: "The translated IPv4 source prefix.",
 			},
 			"translated_network": schema.StringAttribute{
 				Computed: true,
@@ -78,18 +130,28 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkRouterNatModel struct {
-	Action             types.String `tfsdk:"action"`
-	Description        types.String `tfsdk:"description"`
-	DestinationNetwork types.String `tfsdk:"destination_network"`
-	DestinationPorts   types.String `tfsdk:"destination_ports"`
-	Enabled            types.Bool   `tfsdk:"enabled"`
-	Id                 types.Int64  `tfsdk:"id"`
-	Name               types.String `tfsdk:"name"`
-	Priority           types.Int64  `tfsdk:"priority"`
-	Protocol           types.String `tfsdk:"protocol"`
-	RouterId           types.Int64  `tfsdk:"router_id"`
-	SourceNetwork      types.String `tfsdk:"source_network"`
-	SourcePorts        types.String `tfsdk:"source_ports"`
-	TranslatedNetwork  types.String `tfsdk:"translated_network"`
-	TranslatedPorts    types.String `tfsdk:"translated_ports"`
+	Action                     types.String `tfsdk:"action"`
+	DateCreated                types.String `tfsdk:"date_created"`
+	Description                types.String `tfsdk:"description"`
+	DestinationNetwork         types.String `tfsdk:"destination_network"`
+	DestinationPorts           types.String `tfsdk:"destination_ports"`
+	Enabled                    types.Bool   `tfsdk:"enabled"`
+	ExternalId                 types.String `tfsdk:"external_id"`
+	Id                         types.Int64  `tfsdk:"id"`
+	InternalId                 types.String `tfsdk:"internal_id"`
+	LastUpdated                types.String `tfsdk:"last_updated"`
+	MatchIpv6destinationPrefix types.String `tfsdk:"match_ipv6destination_prefix"`
+	Name                       types.String `tfsdk:"name"`
+	Priority                   types.Int64  `tfsdk:"priority"`
+	Protocol                   types.String `tfsdk:"protocol"`
+	ProviderId                 types.String `tfsdk:"provider_id"`
+	RefId                      types.String `tfsdk:"ref_id"`
+	RefType                    types.String `tfsdk:"ref_type"`
+	RouterId                   types.Int64  `tfsdk:"router_id"`
+	SourceNetwork              types.String `tfsdk:"source_network"`
+	SourcePorts                types.String `tfsdk:"source_ports"`
+	SyncSource                 types.String `tfsdk:"sync_source"`
+	TranslatedIpv4sourcePrefix types.String `tfsdk:"translated_ipv4source_prefix"`
+	TranslatedNetwork          types.String `tfsdk:"translated_network"`
+	TranslatedPorts            types.String `tfsdk:"translated_ports"`
 }

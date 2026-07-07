@@ -2,15 +2,10 @@ provisioning_license:
   moves:
     - license: ""                    # unnest wrapper (GET /api/provisioning-licenses/{id})
   removes:
-    - account                        # (provisioningLicense) read-only nested object
-    - copies                         # (provisioningLicense) read-only count
-    - full_name                      # (provisioningLicense) read-only metadata
+    - account                        # (provisioningLicense) read-only nested object (use tenant DS)
     - license_key                    # (provisioningLicense) sensitive credential
-    - license_version                # (provisioningLicense) read-only metadata
-    - org_name                       # (provisioningLicense) read-only metadata
-    - reservation_count              # (provisioningLicense) read-only count
-    - tenants                        # (provisioningLicense) read-only nested array
-    - virtual_images                 # (provisioningLicense) read-only nested array
+    - tenants                        # (provisioningLicense) read-only nested array (use tenant DS)
+    - virtual_images                 # (provisioningLicense) read-only nested array (use image DS)
   overrides:
     id:
       description: The ID of the provisioning license.
@@ -20,7 +15,22 @@ provisioning_license:
       description: The name of the provisioning license.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
+    copies:
+      description: The number of copies of the license.
+      computed_optional_required: computed
     description:
       description: The description of the provisioning license.
+    full_name:
+      description: The full name of the provisioning license.
+      computed_optional_required: computed
     license_type:
       description: The type of the license.
+    license_version:
+      description: The version of the license.
+      computed_optional_required: computed
+    org_name:
+      description: The organization name on the license.
+      computed_optional_required: computed
+    reservation_count:
+      description: The number of reservations for the license.
+      computed_optional_required: computed

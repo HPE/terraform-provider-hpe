@@ -32,4 +32,9 @@ data "hpe_morpheus_deployment" "example" {
 
 ### Read-Only
 
+- `account_id` (Number) The account ID that owns the deployment.
+- `date_created` (String) The date the deployment was created.
 - `description` (String) The description of the deployment.
+- `external_id` (String) The external ID of the deployment.
+- `last_updated` (String) The date the deployment was last updated.
+- `version_count` (Number) The number of versions in the deployment.

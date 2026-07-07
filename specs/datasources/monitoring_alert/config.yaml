@@ -1,13 +1,49 @@
 monitoring_alert:
   moves:
     - alert: ""                      # unnest wrapper (GET /api/monitoring/alerts/{id})
+
   removes:
-    - apps                           # (alert) read-only nested array
-    - check_groups                   # (alert) read-only nested array
-    - checks                         # (alert) read-only nested array
-    - contacts                       # (alert) read-only nested array
-    - date_created                   # (alert) read-only timestamp
-    - last_updated                   # (alert) read-only timestamp
+    - account                        # (allOf embedded checkGroup/check) nested object
+    - api_key                        # (allOf embedded check) sensitive credential
+    - app                            # (allOf embedded) nested object from check
+    - apps                           # (alert) complex nested array
+    - availability                   # (allOf embedded checkGroup/check) transient runtime metric
+    - check_agent                    # (allOf embedded check) transient runtime state
+    - check_groups                   # (alert) complex nested array
+    - check_interval                 # (allOf embedded check) duplicated field
+    - check_spec                     # (allOf embedded check) transient runtime state
+    - check_type                     # (allOf embedded checkGroup/check) duplicated nested object
+    - checks                         # (alert) complex nested array
+    - config                         # (allOf embedded check) duplicated field
+    - contacts                       # (alert) complex nested array
+    - container                      # (allOf embedded check) duplicated nested object
+    - create_incident                # (allOf embedded checkGroup/check) transient runtime state
+    - created_by                     # (allOf embedded checkGroup/check) duplicated nested object
+    - deleted                        # (allOf embedded check) transient runtime state
+    - description                    # (allOf embedded checkGroup/check) duplicated field
+    - end_date                       # (allOf embedded check) transient runtime state
+    - health                         # (allOf embedded checkGroup/check) transient runtime metric
+    - history                        # (allOf embedded checkGroup) transient runtime metric
+    - in_uptime                      # (allOf embedded checkGroup/check) transient runtime state
+    - instance                       # (allOf embedded checkGroup) duplicated nested object
+    - last_box_stats                 # (allOf embedded check) transient runtime metric
+    - last_check_status              # (allOf embedded checkGroup/check) transient runtime metric
+    - last_error                     # (allOf embedded checkGroup/check) transient runtime metric
+    - last_error_date                # (allOf embedded checkGroup/check) transient runtime metric
+    - last_message                   # (allOf embedded check) transient runtime metric
+    - last_metric                    # (allOf embedded checkGroup/check) transient runtime metric
+    - last_run_date                  # (allOf embedded checkGroup/check) transient runtime metric
+    - last_stats                     # (allOf embedded check) transient runtime metric
+    - last_success_date              # (allOf embedded checkGroup/check) transient runtime metric
+    - last_timer                     # (allOf embedded checkGroup/check) transient runtime metric
+    - last_warning_date              # (allOf embedded checkGroup/check) transient runtime metric
+    - min_happy                      # (allOf embedded checkGroup) duplicated field
+    - muted                          # (allOf embedded checkGroup/check) transient runtime state
+    - next_run_date                  # (allOf embedded check) transient runtime state
+    - outage_time                    # (allOf embedded checkGroup/check) transient runtime metric
+    - severity                       # (allOf embedded checkGroup/check) duplicated field
+    - start_date                     # (allOf embedded check) transient runtime state
+
   overrides:
     id:
       description: The ID of the monitoring alert.
@@ -25,6 +61,12 @@ monitoring_alert:
       description: Trigger for all checks.
     all_groups:
       description: Trigger for all check groups.
+    date_created:
+      description: The date the alert was created.
+      computed_optional_required: computed
+    last_updated:
+      description: The date the alert was last updated.
+      computed_optional_required: computed
     min_duration:
       description: Duration in minutes of the delay before sending notifications.
     min_severity:

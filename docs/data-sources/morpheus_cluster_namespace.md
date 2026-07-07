@@ -40,5 +40,6 @@ data "hpe_morpheus_cluster_namespace" "example" {
 
 ### Read-Only
 
-- `description` (String)
-- `visibility` (String)
+- `description` (String) The description of the namespace.
+- `external_id` (String) The external ID of the namespace.
+- `visibility` (String) The visibility setting for the namespace.
