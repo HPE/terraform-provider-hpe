@@ -1110,23 +1110,19 @@ func getInstanceEnvVars(
 	var diags diag.Diagnostics
 	resp, hresp, err := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
 
-	// Some platforms (e.g. HPE VME) do not expose this endpoint and return 404.
-	// That is expected — there simply are no env vars — so return quietly without
-	// a diagnostic (erroring here would fail the whole instance Read, and reading
-	// resp.Envs would panic on the nil resp).
-	if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-		return nil, diags
-	}
-
-	// Any other failure (nil response or a non-200 status) is unexpected. Surface
-	// a warning rather than failing the Read (env vars are supplementary) and
-	// return none. The SDK's decode error is unreliable on valid 200s (polymorphic
-	// fields it cannot model), so the HTTP status is the primary signal and err is
-	// only used for context.
+	// GET /api/instances/{id}/envs is not always reachable — e.g. MORPH-13817
+	// observed it returning 404 against an HPE VME appliance (root cause on that
+	// platform unconfirmed). On a nil response or any non-200 there are no env vars
+	// to set: surface a warning for visibility, but never error (that would fail
+	// the whole instance Read) and never dereference the nil resp (the panic this
+	// guards against). The SDK's decode error is unreliable on valid 200s
+	// (polymorphic fields it cannot model), so the HTTP status is the primary
+	// signal and err is only used for context.
 	if hresp == nil || hresp.StatusCode != http.StatusOK || resp == nil {
 		diags.AddWarning(
 			"Could not read instance environment variables",
-			fmt.Sprintf("Environment variables were not populated for instance %d: %s",
+			fmt.Sprintf("The environment variables endpoint returned no usable result "+
+				"for instance %d, so no environment variables were read into state: %s",
 				id, errfmt.ErrMsg(err, hresp)),
 		)
 
