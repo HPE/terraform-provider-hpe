@@ -1108,13 +1108,28 @@ func getInstanceEnvVars(
 	client *sdk.APIClient,
 ) ([]sdk.GetEnvVariables200ResponseEnvsInner, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	resp, hresp, _ := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
-	// The SDK can return a decode error on an otherwise-valid 200 response
-	// (polymorphic fields it cannot model), so the error is intentionally ignored
-	// and we gate on the HTTP status instead. Some platforms (e.g. HPE VME) do not
-	// expose this endpoint and return 404; treat a nil response or any non-200
-	// status as "no env vars" rather than dereferencing a nil resp and panicking.
+	resp, hresp, err := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
+
+	// Some platforms (e.g. HPE VME) do not expose this endpoint and return 404.
+	// That is expected — there simply are no env vars — so return quietly without
+	// a diagnostic (erroring here would fail the whole instance Read, and reading
+	// resp.Envs would panic on the nil resp).
+	if hresp != nil && hresp.StatusCode == http.StatusNotFound {
+		return nil, diags
+	}
+
+	// Any other failure (nil response or a non-200 status) is unexpected. Surface
+	// a warning rather than failing the Read (env vars are supplementary) and
+	// return none. The SDK's decode error is unreliable on valid 200s (polymorphic
+	// fields it cannot model), so the HTTP status is the primary signal and err is
+	// only used for context.
 	if hresp == nil || hresp.StatusCode != http.StatusOK || resp == nil {
+		diags.AddWarning(
+			"Could not read instance environment variables",
+			fmt.Sprintf("Environment variables were not populated for instance %d: %s",
+				id, errfmt.ErrMsg(err, hresp)),
+		)
+
 		return nil, diags
 	}
 
