@@ -1108,18 +1108,15 @@ func getInstanceEnvVars(
 	client *sdk.APIClient,
 ) ([]sdk.GetEnvVariables200ResponseEnvsInner, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	resp, _, _ := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
-	// ignoring errors for now, the sdk can't parse some of the unused fields
-	// due to polymorphic values
-
-	// if err != nil || hresp.StatusCode != http.StatusOK {
-	// diags.AddError(
-	// 	"populate instance resource",
-	// 	fmt.Sprintf("instance %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
-	// )
-
-	// return nil, diags
-	// }
+	resp, hresp, _ := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
+	// The SDK can return a decode error on an otherwise-valid 200 response
+	// (polymorphic fields it cannot model), so the error is intentionally ignored
+	// and we gate on the HTTP status instead. Some platforms (e.g. HPE VME) do not
+	// expose this endpoint and return 404; treat a nil response or any non-200
+	// status as "no env vars" rather than dereferencing a nil resp and panicking.
+	if hresp == nil || hresp.StatusCode != http.StatusOK || resp == nil {
+		return nil, diags
+	}
 
 	return resp.Envs, diags
 }
