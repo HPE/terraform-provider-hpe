@@ -15,34 +15,23 @@ network_router_nat:
       description: The ID of the parent network router.
     date_created:
       description: The date the NAT rule was created.
-      computed_optional_required: computed
     description:
       description: The description of the NAT rule.
-      computed_optional_required: computed
     external_id:
       description: The external ID of the NAT rule.
-      computed_optional_required: computed
     internal_id:
       description: The internal ID of the NAT rule.
-      computed_optional_required: computed
     last_updated:
       description: The date the NAT rule was last updated.
-      computed_optional_required: computed
     match_ipv6destination_prefix:
       description: The IPv6 destination prefix to match.
-      computed_optional_required: computed
     provider_id:
       description: The provider ID of the NAT rule.
-      computed_optional_required: computed
     ref_id:
       description: The reference ID.
-      computed_optional_required: computed
     ref_type:
       description: The reference type.
-      computed_optional_required: computed
     sync_source:
       description: The synchronization source.
-      computed_optional_required: computed
     translated_ipv4source_prefix:
       description: The translated IPv4 source prefix.
-      computed_optional_required: computed

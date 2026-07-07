@@ -16,18 +16,13 @@ deployment:
       conflicts_with: ["id"]
     account_id:
       description: The account ID that owns the deployment.
-      computed_optional_required: computed
     date_created:
       description: The date the deployment was created.
-      computed_optional_required: computed
     description:
       description: The description of the deployment.
     external_id:
       description: The external ID of the deployment.
-      computed_optional_required: computed
     last_updated:
       description: The date the deployment was last updated.
-      computed_optional_required: computed
     version_count:
       description: The number of versions in the deployment.
-      computed_optional_required: computed

@@ -30,49 +30,33 @@ network_pool_server:
       computed_optional_required: computed_optional
     date_created:
       description: The date the pool server was created.
-      computed_optional_required: computed
     enabled:
       description: Whether the network pool server is enabled.
-      computed_optional_required: computed
     ignore_ssl:
       description: Whether to ignore SSL certificate errors.
-      computed_optional_required: computed
     last_updated:
       description: The date the pool server was last updated.
-      computed_optional_required: computed
     network_filter:
       description: Filter expression for which networks to sync.
-      computed_optional_required: computed
     service_host:
       description: The service hostname for the IPAM integration.
-      computed_optional_required: computed
     service_mode:
       description: The service mode (e.g. static or dhcp).
-      computed_optional_required: computed
     service_port:
       description: The service port for the IPAM integration.
-      computed_optional_required: computed
     service_throttle_rate:
       description: Rate limit (in milliseconds) for API requests to the pool server.
-      computed_optional_required: computed
     service_url:
       description: The service URL for the IPAM integration.
-      computed_optional_required: computed
     service_username:
       description: The service username for authentication.
-      computed_optional_required: computed
     status:
       description: The current status of the network pool server.
-      computed_optional_required: computed
     status_date:
       description: The date of the last status change.
-      computed_optional_required: computed
     tenant_match:
       description: Tenant matching expression for multi-tenancy.
-      computed_optional_required: computed
     type:
       description: The pool server type object.
-      computed_optional_required: computed
     zone_filter:
       description: Filter expression for which DNS zones to sync.
-      computed_optional_required: computed

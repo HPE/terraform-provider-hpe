@@ -20,19 +20,13 @@ cluster_affinity_group:
       description: The ID of the parent cluster.
     active:
       description: Whether the affinity group is active.
-      computed_optional_required: computed
     affinity_type:
       description: The type of affinity (e.g. affinity, anti-affinity).
-      computed_optional_required: computed
     pool:
       description: The resource pool object associated with the affinity group.
-      computed_optional_required: computed
     ref_id:
       description: The reference ID.
-      computed_optional_required: computed
     ref_type:
       description: The reference type.
-      computed_optional_required: computed
     visibility:
       description: The visibility setting for the affinity group.
-      computed_optional_required: computed

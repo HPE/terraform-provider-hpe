@@ -17,20 +17,15 @@ provisioning_license:
       conflicts_with: ["id"]
     copies:
       description: The number of copies of the license.
-      computed_optional_required: computed
     description:
       description: The description of the provisioning license.
     full_name:
       description: The full name of the provisioning license.
-      computed_optional_required: computed
     license_type:
       description: The type of the license.
     license_version:
       description: The version of the license.
-      computed_optional_required: computed
     org_name:
       description: The organization name on the license.
-      computed_optional_required: computed
     reservation_count:
       description: The number of reservations for the license.
-      computed_optional_required: computed

@@ -18,10 +18,7 @@ cluster_namespace:
       description: The ID of the parent cluster.
     description:
       description: The description of the namespace.
-      computed_optional_required: computed
     external_id:
       description: The external ID of the namespace.
-      computed_optional_required: computed
     visibility:
       description: The visibility setting for the namespace.
-      computed_optional_required: computed

@@ -63,10 +63,8 @@ monitoring_alert:
       description: Trigger for all check groups.
     date_created:
       description: The date the alert was created.
-      computed_optional_required: computed
     last_updated:
       description: The date the alert was last updated.
-      computed_optional_required: computed
     min_duration:
       description: Duration in minutes of the delay before sending notifications.
     min_severity:

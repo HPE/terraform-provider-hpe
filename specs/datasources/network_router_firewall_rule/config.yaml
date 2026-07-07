@@ -20,34 +20,23 @@ network_router_firewall_rule:
       description: The ID of the parent network router.
     application:
       description: The application associated with the rule.
-      computed_optional_required: computed
     application_type:
       description: The application type.
-      computed_optional_required: computed
     code:
       description: The internal code identifier.
-      computed_optional_required: computed
     destination_port_range:
       description: The destination port range.
-      computed_optional_required: computed
     destination_type:
       description: The destination type.
-      computed_optional_required: computed
     group_name:
       description: The group name this rule belongs to.
-      computed_optional_required: computed
     rule_type:
       description: The type of the firewall rule.
-      computed_optional_required: computed
     source_group:
       description: The source group.
-      computed_optional_required: computed
     source_port_range:
       description: The source port range.
-      computed_optional_required: computed
     source_tier:
       description: The source tier.
-      computed_optional_required: computed
     source_type:
       description: The source type.
-      computed_optional_required: computed

@@ -14,40 +14,33 @@ container_script:
       conflicts_with: ["id"]
     account:
       description: The account associated with the script.
-      computed_optional_required: computed
     category:
       description: The category of the library container script.
     code:
       description: The internal code identifier for the script.
-      computed_optional_required: computed
     date_created:
       description: The date the script was created.
-      computed_optional_required: computed
     fail_on_error:
       description: Whether the script fails on error.
     labels:
       description: The labels of the library container script.
     last_updated:
       description: The date the script was last updated.
-      computed_optional_required: computed
     run_as_user:
       description: The user to run the script as.
     script:
       description: The script content.
     script_method:
       description: The method used to run the script (e.g. write, static).
-      computed_optional_required: computed
     script_phase:
       description: The phase of the script.
     script_service:
       description: The service type for the script.
-      computed_optional_required: computed
     script_type:
       description: The type of the script.
     script_version:
       description: The version of the script.
     sort_order:
       description: The sort order of the script.
-      computed_optional_required: computed
     sudo_user:
       description: Whether to run the script as sudo.

@@ -31,15 +31,12 @@ monitoring_group:
       conflicts_with: ["id"]
     check_type:
       description: The check type object associated with the group.
-      computed_optional_required: computed
     date_created:
       description: The date the monitoring group was created.
-      computed_optional_required: computed
     description:
       description: The description of the monitoring group.
     last_updated:
       description: The date the group was last updated.
-      computed_optional_required: computed
     min_happy:
       description: Minimum number of checks that must be happy to keep the group healthy.
     severity:

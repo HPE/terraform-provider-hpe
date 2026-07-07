@@ -18,31 +18,21 @@ security_group_rule:
       description: The ID of the parent security group.
     custom_rule:
       description: Whether this is a custom rule.
-      computed_optional_required: computed
     destination_group:
       description: The destination security group object.
-      computed_optional_required: computed
     destination_port_range:
       description: The destination port range.
-      computed_optional_required: computed
     destination_tier:
       description: The destination tier object.
-      computed_optional_required: computed
     enabled:
       description: Whether the rule is enabled.
-      computed_optional_required: computed
     external_id:
       description: The external ID of the rule.
-      computed_optional_required: computed
     instance_type_id:
       description: The instance type ID associated with the rule.
-      computed_optional_required: computed
     source_group:
       description: The source security group object.
-      computed_optional_required: computed
     source_port_range:
       description: The source port range.
-      computed_optional_required: computed
     source_tier:
       description: The source tier object.
-      computed_optional_required: computed

@@ -49,25 +49,17 @@ monitoring_check:
       computed_optional_required: computed_optional
     active:
       description: Whether the check is active.
-      computed_optional_required: computed
     check_interval:
       description: Check interval in seconds.
-      computed_optional_required: computed
     check_type:
       description: The check type object.
-      computed_optional_required: computed
     config:
       description: Check type-specific configuration object.
-      computed_optional_required: computed
     date_created:
       description: The date the check was created.
-      computed_optional_required: computed
     description:
       description: The description of the monitoring check.
-      computed_optional_required: computed
     last_updated:
       description: The date the check was last updated.
-      computed_optional_required: computed
     severity:
       description: Severity level threshold for sending notifications.
-      computed_optional_required: computed

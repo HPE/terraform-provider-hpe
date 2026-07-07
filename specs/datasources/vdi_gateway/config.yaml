@@ -14,11 +14,9 @@ vdi_gateway:
       conflicts_with: ["id"]
     date_created:
       description: The date the VDI gateway was created.
-      computed_optional_required: computed
     description:
       description: The description of the VDI gateway.
     gateway_url:
       description: The URL of the VDI gateway.
     last_updated:
       description: The date the VDI gateway was last updated.
-      computed_optional_required: computed
