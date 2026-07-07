@@ -1110,13 +1110,15 @@ func getInstanceEnvVars(
 	var diags diag.Diagnostics
 	resp, hresp, err := client.InstancesAPI.GetEnvVariables(ctx, id).Execute()
 
-	// GET /api/instances/{id}/envs is not always reachable — e.g. MORPH-13817
-	// observed it returning 404 against an HPE VME appliance (root cause on that
-	// platform unconfirmed). On a nil response or any non-200 there are no env vars
-	// to set: surface a warning for visibility, but never error (that would fail
-	// the whole instance Read) and never dereference the nil resp (the panic this
-	// guards against). The SDK's decode error is unreliable on valid 200s
-	// (polymorphic fields it cannot model), so the HTTP status is the primary
+	// GET /api/instances/{id}/envs is gated by the "provisioning-environment"
+	// permission, which requires the "environmentVariables" license feature.
+	// Reduced editions that do not license it (e.g. HPE VM Essentials) — or a role
+	// lacking the permission — disable the endpoint, so it returns a non-200
+	// (MORPH-13817 saw a 404 on VME). On a nil response or any non-200 there are no
+	// env vars to set: surface a warning for visibility, but never error (that
+	// would fail the whole instance Read) and never dereference the nil resp (the
+	// panic this guards against). The SDK's decode error is unreliable on valid
+	// 200s (polymorphic fields it cannot model), so the HTTP status is the primary
 	// signal and err is only used for context.
 	if hresp == nil || hresp.StatusCode != http.StatusOK || resp == nil {
 		diags.AddWarning(
