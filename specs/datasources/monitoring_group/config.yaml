@@ -1,0 +1,42 @@
+monitoring_group:
+  moves:
+    - check_group: ""                # unnest wrapper (GET /api/monitoring/groups/{id})
+  removes:
+    - account                        # (checkGroup) read-only nested object
+    - availability                   # (checkGroup) read-only metric
+    - check_type                     # (checkGroup) read-only nested object
+    - checks                         # (checkGroup) read-only nested array
+    - create_incident                # (checkGroup) read-only flag
+    - created_by                     # (checkGroup) read-only nested object
+    - date_created                   # (checkGroup) read-only timestamp
+    - health                         # (checkGroup) read-only metric
+    - history                        # (checkGroup) read-only metric
+    - instance                       # (checkGroup) read-only nested object
+    - last_check_status              # (checkGroup) read-only status
+    - last_error                     # (checkGroup) read-only status
+    - last_error_date                # (checkGroup) read-only timestamp
+    - last_metric                    # (checkGroup) read-only metric
+    - last_run_date                  # (checkGroup) read-only timestamp
+    - last_success_date              # (checkGroup) read-only timestamp
+    - last_timer                     # (checkGroup) read-only metric
+    - last_updated                   # (checkGroup) read-only timestamp
+    - last_warning_date              # (checkGroup) read-only timestamp
+    - muted                          # (checkGroup) read-only status
+    - outage_time                    # (checkGroup) read-only metric
+  overrides:
+    id:
+      description: The ID of the monitoring group.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the monitoring group.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    description:
+      description: The description of the monitoring group.
+    in_uptime:
+      description: Whether the group affects account-wide availability calculations.
+    min_happy:
+      description: Minimum number of checks that must be happy to keep the group healthy.
+    severity:
+      description: Maximum severity level this group can incur on an incident when failing.

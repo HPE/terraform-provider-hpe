@@ -1,0 +1,69 @@
+network_pool_server:
+  templates:
+    config:
+      dynamic:
+        description: Pool server type-specific configuration object.
+        computed_optional_required: computed
+
+  moves:
+    - network_pool_server: ""                    # unnest wrapper (components/schemas/networkPoolServer.yaml)
+    - template-config: config                    # dynamic fallback for type-specific config
+
+  removes:
+    - account                                    # (components/schemas/networkPoolServer.yaml)
+    - credential                                 # (components/schemas/networkPoolServer.yaml) sensitive object
+    - date_created                               # (components/schemas/networkPoolServer.yaml) timestamp
+    - integration                                # (components/schemas/networkPoolServer.yaml) read-only object
+    - last_updated                               # (components/schemas/networkPoolServer.yaml) timestamp
+    - pools                                      # (components/schemas/networkPoolServer.yaml) read-only array
+    - service_host                               # (components/schemas/networkPoolServer.yaml) read-only
+    - service_password                           # (components/schemas/networkPoolServer.yaml) sensitive
+    - service_password_hash                      # (components/schemas/networkPoolServer.yaml) sensitive
+    - service_port                               # (components/schemas/networkPoolServer.yaml) read-only
+    - status_date                                # (components/schemas/networkPoolServer.yaml) timestamp
+    - status_message                             # (components/schemas/networkPoolServer.yaml) read-only
+    - success                                    # envelope field
+    - type                                       # (components/schemas/networkPoolServer.yaml) read-only object
+
+  overrides:
+    id:
+      description: The ID of the network pool server.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network pool server.
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    config:
+      description: Pool server type-specific configuration object.
+      computed_optional_required: computed
+    enabled:
+      description: Whether the network pool server is enabled.
+      computed_optional_required: computed
+    ignore_ssl:
+      description: Whether to ignore SSL certificate errors.
+      computed_optional_required: computed
+    network_filter:
+      description: Filter expression for which networks to sync.
+      computed_optional_required: computed
+    service_mode:
+      description: The service mode (e.g. static or dhcp).
+      computed_optional_required: computed
+    service_throttle_rate:
+      description: Rate limit (in milliseconds) for API requests to the pool server.
+      computed_optional_required: computed
+    service_url:
+      description: The service URL for the IPAM integration.
+      computed_optional_required: computed
+    service_username:
+      description: The service username for authentication.
+      computed_optional_required: computed
+    status:
+      description: The current status of the network pool server.
+      computed_optional_required: computed
+    tenant_match:
+      description: Tenant matching expression for multi-tenancy.
+      computed_optional_required: computed
+    zone_filter:
+      description: Filter expression for which DNS zones to sync.
+      computed_optional_required: computed

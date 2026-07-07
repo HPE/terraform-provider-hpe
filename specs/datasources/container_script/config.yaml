@@ -1,0 +1,39 @@
+container_script:
+  moves:
+    - container_script: ""           # unnest wrapper (GET /api/library/container-scripts/{id})
+  removes:
+    - account                        # (script) read-only internal
+    - code                           # (script) read-only internal identifier
+    - date_created                   # (script) read-only timestamp
+    - last_updated                   # (script) read-only timestamp
+    - run_as_password                # (script) sensitive credential
+    - script_method                  # (script) read-only internal
+    - script_service                 # (script) read-only internal
+    - sort_order                     # (script) read-only internal
+  overrides:
+    id:
+      description: The ID of the library container script.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the library container script.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    category:
+      description: The category of the library container script.
+    fail_on_error:
+      description: Whether the script fails on error.
+    labels:
+      description: The labels of the library container script.
+    run_as_user:
+      description: The user to run the script as.
+    script:
+      description: The script content.
+    script_phase:
+      description: The phase of the script.
+    script_type:
+      description: The type of the script.
+    script_version:
+      description: The version of the script.
+    sudo_user:
+      description: Whether to run the script as sudo.

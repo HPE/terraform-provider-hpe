@@ -1,0 +1,32 @@
+certificate:
+  moves:
+    - certificate: ""                # unnest wrapper (GET /api/certificates/{id})
+  removes:
+    - account_id                     # (certificateResponse) read-only internal
+    - category                       # (certificateResponse) read-only metadata
+    - cert_file                      # (certificateResponse) sensitive PEM content
+    - cert_type                      # (certificateResponse) read-only metadata
+    - chain_file                     # (certificateResponse) sensitive PEM content
+    - common_name                    # (certificateResponse) read-only metadata
+    - generated                      # (certificateResponse) read-only metadata
+    - integration_id                 # (certificateResponse) read-only internal
+    - key_file                       # (certificateResponse) sensitive private key
+    - key_file_md5                   # (certificateResponse) sensitive hash
+    - self_signed                    # (certificateResponse) read-only metadata
+    - type                           # (certificateResponse) read-only nested object
+    - wildcard                       # (certificateResponse) read-only metadata
+  overrides:
+    id:
+      description: The ID of the certificate.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the certificate.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    description:
+      description: A description of the certificate.
+    domain_name:
+      description: The domain name this certificate is tied to.
+    enabled:
+      description: Whether the certificate is enabled.

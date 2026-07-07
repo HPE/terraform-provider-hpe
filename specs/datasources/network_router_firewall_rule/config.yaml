@@ -1,0 +1,31 @@
+network_router_firewall_rule:
+  moves:
+    - rule: ""                           # unnest wrapper (components/schemas/networkRouterFirewallRule.yaml)
+  removes:
+    - application                        # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - application_type                   # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - applications                       # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - code                               # (components/schemas/networkRouterFirewallRule.yaml) internal
+    - destination                        # (components/schemas/networkRouterFirewallRule.yaml) complex array
+    - destination_port_range             # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - destination_type                   # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - group_name                         # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - profiles                           # (components/schemas/networkRouterFirewallRule.yaml) complex array
+    - rule_type                          # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - source                             # (components/schemas/networkRouterFirewallRule.yaml) complex array
+    - source_group                       # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - source_port_range                  # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - source_tier                        # (components/schemas/networkRouterFirewallRule.yaml) noise
+    - source_type                        # (components/schemas/networkRouterFirewallRule.yaml) noise
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the firewall rule.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the firewall rule.
+      conflicts_with: ["id"]
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router.

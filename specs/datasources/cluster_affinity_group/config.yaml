@@ -1,0 +1,24 @@
+cluster_affinity_group:
+  moves:
+    - affinity_group: ""                 # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
+  removes:
+    - affinity_type                      # (components/schemas/clusterAffinityGroup.yaml) noise
+    - pool                               # (components/schemas/clusterAffinityGroup.yaml) complex object
+    - ref_id                             # (components/schemas/clusterAffinityGroup.yaml) internal
+    - ref_type                           # (components/schemas/clusterAffinityGroup.yaml) internal
+    - resource_permissions               # (components/schemas/clusterAffinityGroup.yaml) complex object
+    - servers                            # (components/schemas/clusterAffinityGroup.yaml) complex array
+    - source                             # (components/schemas/clusterAffinityGroup.yaml) internal
+    - tenants                            # (components/schemas/clusterAffinityGroup.yaml) complex array
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the cluster affinity group.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the cluster affinity group.
+      conflicts_with: ["id"]
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the parent cluster.

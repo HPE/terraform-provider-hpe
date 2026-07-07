@@ -1,0 +1,26 @@
+network_router_nat:
+  moves:
+    - network_router_nat: ""             # unnest wrapper (components/schemas/networkRouterNat.yaml)
+  removes:
+    - date_created                       # (components/schemas/networkRouterNat.yaml) read-only timestamp
+    - external_id                        # (components/schemas/networkRouterNat.yaml) internal
+    - internal_id                        # (components/schemas/networkRouterNat.yaml) internal
+    - last_updated                       # (components/schemas/networkRouterNat.yaml) read-only timestamp
+    - match_ipv6destination_prefix       # (components/schemas/networkRouterNat.yaml) advanced/noise
+    - provider_id                        # (components/schemas/networkRouterNat.yaml) internal
+    - ref_id                             # (components/schemas/networkRouterNat.yaml) internal
+    - ref_type                           # (components/schemas/networkRouterNat.yaml) internal
+    - sync_source                        # (components/schemas/networkRouterNat.yaml) internal
+    - translated_ipv4source_prefix       # (components/schemas/networkRouterNat.yaml) advanced/noise
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the NAT rule.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the NAT rule.
+      conflicts_with: ["id"]
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router.

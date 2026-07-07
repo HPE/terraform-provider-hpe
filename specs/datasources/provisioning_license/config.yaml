@@ -1,0 +1,26 @@
+provisioning_license:
+  moves:
+    - license: ""                    # unnest wrapper (GET /api/provisioning-licenses/{id})
+  removes:
+    - account                        # (provisioningLicense) read-only nested object
+    - copies                         # (provisioningLicense) read-only count
+    - full_name                      # (provisioningLicense) read-only metadata
+    - license_key                    # (provisioningLicense) sensitive credential
+    - license_version                # (provisioningLicense) read-only metadata
+    - org_name                       # (provisioningLicense) read-only metadata
+    - reservation_count              # (provisioningLicense) read-only count
+    - tenants                        # (provisioningLicense) read-only nested array
+    - virtual_images                 # (provisioningLicense) read-only nested array
+  overrides:
+    id:
+      description: The ID of the provisioning license.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the provisioning license.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    description:
+      description: The description of the provisioning license.
+    license_type:
+      description: The type of the license.

@@ -1,0 +1,31 @@
+monitoring_alert:
+  moves:
+    - alert: ""                      # unnest wrapper (GET /api/monitoring/alerts/{id})
+  removes:
+    - apps                           # (alert) read-only nested array
+    - check_groups                   # (alert) read-only nested array
+    - checks                         # (alert) read-only nested array
+    - contacts                       # (alert) read-only nested array
+    - date_created                   # (alert) read-only timestamp
+    - last_updated                   # (alert) read-only timestamp
+  overrides:
+    id:
+      description: The ID of the monitoring alert.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the monitoring alert.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    active:
+      description: Whether the alert is active.
+    all_apps:
+      description: Trigger for all apps.
+    all_checks:
+      description: Trigger for all checks.
+    all_groups:
+      description: Trigger for all check groups.
+    min_duration:
+      description: Duration in minutes of the delay before sending notifications.
+    min_severity:
+      description: Severity level threshold for sending notifications.

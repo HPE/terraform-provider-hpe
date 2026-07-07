@@ -1,0 +1,70 @@
+monitoring_check:
+  templates:
+    config:
+      dynamic:
+        description: Check type-specific configuration object.
+        computed_optional_required: computed
+
+  moves:
+    - check: ""                                  # unnest wrapper (components/schemas/check.yaml)
+    - template-config: config                    # dynamic fallback for type-specific config
+
+  removes:
+    - account                                    # (components/schemas/check.yaml)
+    - api_key                                    # (components/schemas/check.yaml) sensitive
+    - availability                               # (components/schemas/check.yaml) computed noise
+    - check_agent                                # (components/schemas/check.yaml) read-only
+    - check_spec                                 # (components/schemas/check.yaml) read-only
+    - check_type                                 # (components/schemas/check.yaml) read-only object
+    - container                                  # (components/schemas/check.yaml) read-only
+    - create_incident                            # (components/schemas/check.yaml) read-only
+    - created_by                                 # (components/schemas/check.yaml) read-only
+    - date_created                               # (components/schemas/check.yaml) timestamp
+    - deleted                                    # (components/schemas/check.yaml) read-only
+    - end_date                                   # (components/schemas/check.yaml) read-only
+    - health                                     # (components/schemas/check.yaml) computed noise
+    - last_box_stats                             # (components/schemas/check.yaml) computed noise
+    - last_check_status                          # (components/schemas/check.yaml) computed noise
+    - last_error                                 # (components/schemas/check.yaml) computed noise
+    - last_error_date                            # (components/schemas/check.yaml) computed noise
+    - last_message                               # (components/schemas/check.yaml) computed noise
+    - last_metric                                # (components/schemas/check.yaml) computed noise
+    - last_run_date                              # (components/schemas/check.yaml) computed noise
+    - last_stats                                 # (components/schemas/check.yaml) computed noise
+    - last_success_date                          # (components/schemas/check.yaml) computed noise
+    - last_timer                                 # (components/schemas/check.yaml) computed noise
+    - last_updated                               # (components/schemas/check.yaml) timestamp
+    - last_warning_date                          # (components/schemas/check.yaml) computed noise
+    - muted                                      # (components/schemas/check.yaml) read-only
+    - next_run_date                              # (components/schemas/check.yaml) computed noise
+    - outage_time                                # (components/schemas/check.yaml) computed noise
+    - start_date                                 # (components/schemas/check.yaml) read-only
+    - success                                    # envelope field
+
+  overrides:
+    id:
+      description: The ID of the monitoring check.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the monitoring check.
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    active:
+      description: Whether the check is active.
+      computed_optional_required: computed
+    check_interval:
+      description: Check interval in seconds.
+      computed_optional_required: computed
+    config:
+      description: Check type-specific configuration object.
+      computed_optional_required: computed
+    description:
+      description: The description of the monitoring check.
+      computed_optional_required: computed
+    in_uptime:
+      description: Whether the check affects account-wide availability calculations.
+      computed_optional_required: computed
+    severity:
+      description: Severity level threshold for sending notifications.
+      computed_optional_required: computed

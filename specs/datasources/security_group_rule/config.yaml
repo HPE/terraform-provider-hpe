@@ -1,0 +1,28 @@
+security_group_rule:
+  moves:
+    - id: security_group_id              # path param {id} is the security group ID - move BEFORE unnest
+    - rule: ""                           # unnest wrapper (components/schemas/securityGroupRule.yaml)
+  removes:
+    - custom_rule                        # (components/schemas/securityGroupRule.yaml) internal
+    - destination_group                  # (components/schemas/securityGroupRule.yaml) complex object
+    - destination_port_range             # (components/schemas/securityGroupRule.yaml) noise
+    - destination_tier                   # (components/schemas/securityGroupRule.yaml) complex object
+    - enabled                            # (components/schemas/securityGroupRule.yaml) noise (string not bool)
+    - external_id                        # (components/schemas/securityGroupRule.yaml) internal
+    - instance_type_id                   # (components/schemas/securityGroupRule.yaml) internal
+    - sg_id                              # (path param) redundant - rule id comes from unnested rule.id
+    - source_group                       # (components/schemas/securityGroupRule.yaml) complex object
+    - source_port_range                  # (components/schemas/securityGroupRule.yaml) noise
+    - source_tier                        # (components/schemas/securityGroupRule.yaml) complex object
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the security group rule.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the security group rule.
+      conflicts_with: ["id"]
+    security_group_id:
+      computed_optional_required: required
+      description: The ID of the parent security group.
