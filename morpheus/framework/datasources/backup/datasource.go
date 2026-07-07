@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -180,13 +179,13 @@ func populateBackupState(
 	data.Name = convert.StrToType(b.Name)
 	data.ContainerId = convert.Int64ToType(b.ContainerId.Get())
 	data.CronExpression = convert.StrToType(b.CronExpression.Get())
-	data.DateCreated = timeToType(b.DateCreated)
+	data.DateCreated = convert.TimeToType(b.DateCreated)
 	data.Enabled = convert.BoolToType(b.Enabled)
 	data.LastStatus = convert.StrToType(b.LastStatus.Get())
-	data.LastUpdated = timeToType(b.LastUpdated)
+	data.LastUpdated = convert.TimeToType(b.LastUpdated)
 	data.Location = convert.StrToType(b.Location.Get())
 	data.LocationType = convert.StrToType(b.LocationType)
-	data.NextFire = timeToType(b.NextFire.Get())
+	data.NextFire = convert.TimeToType(b.NextFire.Get())
 	data.RetentionCount = convert.Int64ToType(b.RetentionCount.Get())
 	data.TargetAll = convert.BoolToType(b.TargetAll.Get())
 	data.TargetHost = convert.StrToType(b.TargetHost.Get())
@@ -208,15 +207,6 @@ func populateBackupState(
 	data.Schedule = scheduleValue(b.Schedule)
 	data.Stats = statsValue(b.Stats)
 	data.StorageProvider = storageProviderValue(b.StorageProvider)
-}
-
-// timeToType formats an optional time as an RFC3339 string value.
-func timeToType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
 }
 
 // int32ToType converts an optional int32 to a Terraform Int64 value.
@@ -322,7 +312,7 @@ func lastResultValue(
 	}
 
 	return LastResultValue{
-		DateCreated: timeToType(in.DateCreated),
+		DateCreated: convert.TimeToType(in.DateCreated),
 		Id:          convert.Int64ToType(in.Id),
 		Status:      convert.StrToType(in.Status),
 		state:       attr.ValueStateKnown,

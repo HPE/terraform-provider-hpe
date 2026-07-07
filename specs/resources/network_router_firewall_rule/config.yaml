@@ -1,14 +1,30 @@
 network_router_firewall_rule:
+  templates:
+    parent_id:
+      string:
+        computed_optional_required: required
+        description: |-
+          The id of the parent firewall rule group the rule belongs to (for NSX-T,
+          e.g. "group-123"). Required to create the rule. Use the
+          hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
+    description:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          Description of the firewall rule. This is a write-only input: the API
+          accepts it on create and update but does not return it, so it cannot be
+          used for drift detection.
   moves:
     - rule: ""
+    - template-parent_id: parent_id
+    - template-description: description
   removes:
-    - application
     - application_type
     - applications
     - code
+    - config                          # request config wrapper; parent_id pinned top-level via templates
     - destination
     - destination_port_range
-    - destination_type
     - group_name
     - profiles
     - rule_type
@@ -16,7 +32,6 @@ network_router_firewall_rule:
     - source_group
     - source_port_range
     - source_tier
-    - source_type
     - success
   overrides:
     direction:
@@ -33,9 +48,16 @@ network_router_firewall_rule:
     name:
       computed_optional_required: required
       description: Name of the firewall rule
+    parent_id:
+      computed_optional_required: required
+      description: |-
+        The id of the parent firewall rule group the rule belongs to (for NSX-T,
+        e.g. "group-123"). Required to create the rule. Use the
+        hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
+      requires_replace: true
     policy:
       computed_optional_required: computed_optional
-      description: Policy action (accept, deny, reject)
+      description: Policy action (accept, block, reject)
       default: "accept"
     port_range:
       computed_optional_required: computed_optional
@@ -46,6 +68,21 @@ network_router_firewall_rule:
     protocol:
       computed_optional_required: computed_optional
       description: Protocol
+    source_type:
+      computed_optional_required: computed_optional
+      description: Source match type (for example cidr, group, tier, all)
+    destination_type:
+      computed_optional_required: computed_optional
+      description: Destination match type (for example cidr, group, tier, instance)
+    application:
+      computed_optional_required: computed_optional
+      description: Application the rule matches (depends on the network router type)
+    description:
+      computed_optional_required: computed_optional
+      description: |-
+        Description of the firewall rule. This is a write-only input: the API
+        accepts it on create and update but does not return it, so it cannot be
+        used for drift detection.
     router_id:
       computed_optional_required: required
       description: The ID of the parent network router

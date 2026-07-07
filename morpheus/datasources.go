@@ -8,9 +8,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backupjob"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuptype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
@@ -25,6 +27,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancerpool"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancerprofile"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/loadbalancervirtualserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringchecktype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdhcpserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkdomain"
@@ -32,9 +35,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpool"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolservertype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterbgpneighbor"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrulegroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterroute"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkroutertype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktransportzone"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networktype"
@@ -49,6 +55,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storageservers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 )
 
@@ -80,6 +87,7 @@ func (p *MorpheusProvider) DataSources(
 		networkfirewallrulegroup.NewDataSource,
 		networkrouter.NewDataSource,
 		networkrouterbgpneighbor.NewDataSource,
+		networkrouterfirewallrulegroups.NewDataSource,
 		networkrouterroute.NewDataSource,
 		ostype.NewDataSource,
 		ostypeimage.NewDataSource,
@@ -100,5 +108,12 @@ func (p *MorpheusProvider) DataSources(
 		networkpool.NewDataSource,
 		networktype.NewDataSource,
 		instancesnapshot.NewDataSource,
+		// resource-reference lookup data sources (avoid hard-coded IDs)
+		backupjob.NewDataSource,
+		clusterlayout.NewDataSource,
+		monitoringchecktype.NewDataSource,
+		networkpoolservertype.NewDataSource,
+		networkroutertype.NewDataSource,
+		subnettype.NewDataSource,
 	}
 }

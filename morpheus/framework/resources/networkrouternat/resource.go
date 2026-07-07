@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -76,11 +77,22 @@ func (r *Resource) Create(
 
 	routerID := plan.RouterId.ValueInt64()
 
+	// firewall and service are NAT config-context options nested under config.
+	// firewall has a schema default so it is normally set; service is optional.
+	// Guard both so an unknown value is omitted rather than sent as "".
+	natConfig := sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action: plan.Action.ValueString(),
+	}
+	if !plan.Firewall.IsNull() && !plan.Firewall.IsUnknown() {
+		natConfig.Firewall = plan.Firewall.ValueStringPointer()
+	}
+	if !plan.Service.IsNull() && !plan.Service.IsUnknown() {
+		natConfig.Service = plan.Service.ValueStringPointer()
+	}
+
 	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{
-		Name: plan.Name.ValueString(),
-		Config: sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
-			Action: plan.Action.ValueString(),
-		},
+		Name:   plan.Name.ValueString(),
+		Config: natConfig,
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()
@@ -100,6 +112,8 @@ func (r *Resource) Create(
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
+	// protocol is deprecated (superseded by service) but retained for backward
+	// compatibility; still sent so existing configurations keep working.
 	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
 		nat.Protocol = plan.Protocol.ValueStringPointer()
 	}
@@ -129,20 +143,31 @@ func (r *Resource) Create(
 	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
-	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	taintState := func() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "network_router_nat",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
+	}
+
+	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			createOperation,
+			fmt.Sprintf("NAT %d was created but could not be read", id),
+		)
+		taintState()
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		taintState()
+	}
 }
 
 // Read
@@ -183,9 +208,9 @@ func getNatAsState(
 
 	state.RouterId = plan.RouterId
 
-	if nat.Name != nil {
-		state.Name = types.StringValue(*nat.Name)
-	}
+	state.ExternalId = convert.StrToType(nat.ExternalId)
+
+	state.Name = convert.StrToType(nat.Name)
 
 	if nat.Action != nil {
 		state.Action = types.StringValue(*nat.Action)
@@ -193,33 +218,15 @@ func getNatAsState(
 		state.Action = plan.Action
 	}
 
-	if nat.Description != nil {
-		state.Description = types.StringValue(*nat.Description)
-	} else {
-		state.Description = types.StringNull()
-	}
+	state.Description = convert.StrToType(nat.Description)
 
-	if nat.Enabled != nil {
-		state.Enabled = types.BoolValue(*nat.Enabled)
-	}
+	state.Enabled = convert.BoolToType(nat.Enabled)
 
-	if nat.SourceNetwork != nil {
-		state.SourceNetwork = types.StringValue(*nat.SourceNetwork)
-	} else {
-		state.SourceNetwork = types.StringNull()
-	}
+	state.SourceNetwork = convert.StrToType(nat.SourceNetwork)
 
-	if nat.DestinationNetwork.IsSet() {
-		state.DestinationNetwork = types.StringValue(*nat.DestinationNetwork.Get())
-	} else {
-		state.DestinationNetwork = types.StringNull()
-	}
+	state.DestinationNetwork = convert.StrToType(nat.DestinationNetwork.Get())
 
-	if nat.TranslatedNetwork != nil {
-		state.TranslatedNetwork = types.StringValue(*nat.TranslatedNetwork)
-	} else {
-		state.TranslatedNetwork = types.StringNull()
-	}
+	state.TranslatedNetwork = convert.StrToType(nat.TranslatedNetwork)
 
 	if nat.Priority != nil {
 		state.Priority = types.Int64Value(int64(*nat.Priority))
@@ -227,10 +234,21 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	if nat.Protocol.IsSet() {
-		state.Protocol = types.StringValue(*nat.Protocol.Get())
+	// protocol is deprecated (superseded by service) but still read back so
+	// existing state stays consistent.
+	state.Protocol = convert.StrToType(nat.Protocol.Get())
+
+	// firewall and service are create-time config options. Read them back from
+	// the response, falling back to the plan value when the API omits them.
+	if nat.Firewall != nil {
+		state.Firewall = types.StringValue(*nat.Firewall)
 	} else {
-		state.Protocol = types.StringNull()
+		state.Firewall = plan.Firewall
+	}
+	if nat.Service != nil {
+		state.Service = types.StringValue(*nat.Service)
+	} else {
+		state.Service = plan.Service
 	}
 
 	return state, diags
@@ -288,11 +306,19 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
+	natConfig := &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action: plan.Action.ValueStringPointer(),
+	}
+	if !plan.Firewall.IsNull() && !plan.Firewall.IsUnknown() {
+		natConfig.Firewall = plan.Firewall.ValueStringPointer()
+	}
+	if !plan.Service.IsNull() && !plan.Service.IsUnknown() {
+		natConfig.Service = plan.Service.ValueStringPointer()
+	}
+
 	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{
-		Name: plan.Name.ValueStringPointer(),
-		Config: &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
-			Action: plan.Action.ValueStringPointer(),
-		},
+		Name:   plan.Name.ValueStringPointer(),
+		Config: natConfig,
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		nat.Description = plan.Description.ValueStringPointer()
@@ -312,6 +338,8 @@ func (r *Resource) Update(
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
+	// protocol is deprecated (superseded by service) but retained for backward
+	// compatibility; still sent so existing configurations keep working.
 	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
 		nat.Protocol = plan.Protocol.ValueStringPointer()
 	}

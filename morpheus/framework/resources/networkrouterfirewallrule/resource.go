@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -87,6 +88,38 @@ func (r *Resource) Create(
 		rule.Priority = plan.Priority.ValueInt64Pointer()
 	}
 
+	// policy, direction, protocol and port_range are top-level rule fields;
+	// parent_id is nested under config.parentId and is required by NSX-T (its
+	// absence causes a server-side nil pointer). Guard the optional fields so an
+	// unknown value is omitted rather than sent as "".
+	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
+		rule.Policy = plan.Policy.ValueStringPointer()
+	}
+	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
+		rule.Direction = plan.Direction.ValueStringPointer()
+	}
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		rule.Protocol = plan.Protocol.ValueStringPointer()
+	}
+	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
+		rule.PortRange = plan.PortRange.ValueStringPointer()
+	}
+	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
+		rule.SourceType = plan.SourceType.ValueStringPointer()
+	}
+	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
+		rule.DestinationType = plan.DestinationType.ValueStringPointer()
+	}
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		rule.Application = plan.Application.ValueStringPointer()
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		rule.Description = plan.Description.ValueStringPointer()
+	}
+	rule.Config = &sdk.CreateNetworkRouterFirewallRuleRequestRuleConfig{
+		ParentId: plan.ParentId.ValueStringPointer(),
+	}
+
 	createReq := sdk.CreateNetworkRouterFirewallRuleRequest{
 		Rule: &rule,
 	}
@@ -112,20 +145,31 @@ func (r *Resource) Create(
 	id := *result.Id.Get()
 	plan.Id = types.Int64Value(id)
 
-	state, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	taintState := func() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "network_router_firewall_rule",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
+	}
+
+	state, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			createOperation,
+			fmt.Sprintf("firewall rule %d was created but could not be read", id),
+		)
+		taintState()
 
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		taintState()
+	}
 }
 
 // Read
@@ -154,50 +198,37 @@ func getFirewallRuleAsState(
 	}
 
 	rule := resp.Rule
+	if rule == nil {
+		diags.AddError("API returned nil", "Rule is nil in the response")
 
-	if rule != nil && rule.Id != nil {
-		state.Id = types.Int64Value(*rule.Id)
+		return state, diags
 	}
+
+	state.Id = convert.Int64ToType(rule.Id)
 
 	state.RouterId = plan.RouterId
 
-	if rule != nil && rule.Name != nil {
-		state.Name = types.StringValue(*rule.Name)
-	}
+	state.Name = convert.StrToType(rule.Name)
 
-	if rule != nil && rule.Enabled != nil {
-		state.Enabled = types.BoolValue(*rule.Enabled)
-	}
+	state.Enabled = convert.BoolToType(rule.Enabled)
 
-	if rule != nil && rule.Priority != nil {
-		state.Priority = types.Int64Value(*rule.Priority)
-	} else {
-		state.Priority = types.Int64Null()
-	}
+	state.Priority = convert.Int64ToType(rule.Priority)
 
-	if rule != nil && rule.Direction != nil {
-		state.Direction = types.StringValue(*rule.Direction)
-	} else {
-		state.Direction = types.StringNull()
-	}
+	state.Direction = convert.StrToType(rule.Direction)
+	state.Policy = convert.StrToType(rule.Policy)
+	state.Protocol = convert.StrToType(rule.Protocol.Get())
+	state.PortRange = convert.StrToType(rule.PortRange.Get())
+	state.SourceType = convert.StrToType(rule.SourceType)
+	state.DestinationType = convert.StrToType(rule.DestinationType)
+	state.Application = convert.StrToType(rule.Application.Get())
 
-	if rule != nil && rule.Policy != nil {
-		state.Policy = types.StringValue(*rule.Policy)
-	} else {
-		state.Policy = types.StringNull()
-	}
+	// description is a write-only input: the API accepts it on create/update but
+	// does not return it, so preserve the configured/prior value.
+	state.Description = plan.Description
 
-	if rule != nil && rule.Protocol.IsSet() {
-		state.Protocol = types.StringValue(*rule.Protocol.Get())
-	} else {
-		state.Protocol = types.StringNull()
-	}
-
-	if rule != nil && rule.PortRange.IsSet() {
-		state.PortRange = types.StringValue(*rule.PortRange.Get())
-	} else {
-		state.PortRange = types.StringNull()
-	}
+	// parent_id is a create-time (RequiresReplace) input that the response does
+	// not echo back cleanly, so preserve the configured value.
+	state.ParentId = plan.ParentId
 
 	return state, diags
 }
@@ -263,6 +294,34 @@ func (r *Resource) Update(
 
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		rule.Priority = plan.Priority.ValueInt64Pointer()
+	}
+
+	if !plan.Policy.IsNull() && !plan.Policy.IsUnknown() {
+		rule.Policy = plan.Policy.ValueStringPointer()
+	}
+	if !plan.Direction.IsNull() && !plan.Direction.IsUnknown() {
+		rule.Direction = plan.Direction.ValueStringPointer()
+	}
+	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
+		rule.Protocol = plan.Protocol.ValueStringPointer()
+	}
+	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
+		rule.PortRange = plan.PortRange.ValueStringPointer()
+	}
+	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
+		rule.SourceType = plan.SourceType.ValueStringPointer()
+	}
+	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
+		rule.DestinationType = plan.DestinationType.ValueStringPointer()
+	}
+	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
+		rule.Application = plan.Application.ValueStringPointer()
+	}
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		rule.Description = plan.Description.ValueStringPointer()
+	}
+	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
+		ParentId: plan.ParentId.ValueStringPointer(),
 	}
 
 	updateReq := sdk.UpdateNetworkRouterFirewallRuleRequest{

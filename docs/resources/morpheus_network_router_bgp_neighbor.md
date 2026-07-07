@@ -50,7 +50,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
 - `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
 - `protocol_address` (String) Protocol address (NSX-V distributed router)
 - `remote_as` (String) Remote AS number
-- `restart_mode` (String) Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)
+- `restart_mode` (String) Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)
 - `route_filtering_in` (String) Inbound route filter name
 - `route_filtering_out` (String) Outbound route filter name
 - `route_filtering_type` (String) Address family for route filtering (e.g. IPV4, IPV6)

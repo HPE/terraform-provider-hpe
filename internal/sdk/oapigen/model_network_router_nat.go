@@ -42,6 +42,8 @@ type NetworkRouterNat struct {
 	InternalId                 NullableString         `json:"internalId,omitempty"`
 	ExternalId                 *string                `json:"externalId,omitempty"`
 	ProviderId                 *string                `json:"providerId,omitempty"`
+	Firewall                   *string                `json:"firewall,omitempty"`
+	Service                    *string                `json:"service,omitempty"`
 	DateCreated                *time.Time             `json:"dateCreated,omitempty"`
 	LastUpdated                *time.Time             `json:"lastUpdated,omitempty"`
 	AdditionalProperties       map[string]interface{} `json:",remain"`
@@ -121,6 +123,12 @@ func (o NetworkRouterNat) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ProviderId) {
 		toSerialize["providerId"] = o.ProviderId
+	}
+	if !IsNil(o.Firewall) {
+		toSerialize["firewall"] = o.Firewall
+	}
+	if !IsNil(o.Service) {
+		toSerialize["service"] = o.Service
 	}
 	if !IsNil(o.DateCreated) {
 		toSerialize["dateCreated"] = o.DateCreated

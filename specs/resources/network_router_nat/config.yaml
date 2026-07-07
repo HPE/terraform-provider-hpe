@@ -1,89 +1,86 @@
 network_router_nat:
+  # protocol/firewall/service are pinned via templates: protocol is deprecated
+  # (needs a deprecation_message, which only a template supports) and
+  # firewall/service are request config-context fields sent nested under config
+  # by the resource, so they are kept as plain top-level string attributes.
   templates:
-    name:
-      string:
-        computed_optional_required: required
-        description: Name of the NAT rule.
-    action:
-      string:
-        computed_optional_required: required
-        description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
-    description:
-      string:
-        computed_optional_required: optional
-        description: Description of the NAT rule.
-    enabled:
-      bool:
-        computed_optional_required: computed_optional
-        description: Whether the NAT rule is enabled.
-      default: true
-    priority:
-      int64:
-        computed_optional_required: optional
-        description: Priority of the NAT rule.
     protocol:
       string:
-        computed_optional_required: optional
-        description: Protocol for the NAT rule.
-    source_network:
+        computed_optional_required: computed_optional
+        description: "Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility."
+        deprecation_message: "Deprecated: use service instead. protocol is retained for backward compatibility."
+    firewall:
+      string:
+        computed_optional_required: computed_optional
+        description: The firewall match applied to the NAT rule (nested under config).
+    service:
       string:
         computed_optional_required: optional
-        description: Source network for the NAT rule.
-    destination_network:
-      string:
-        computed_optional_required: optional
-        description: Destination network for the NAT rule.
-    translated_network:
-      string:
-        computed_optional_required: optional
-        description: Translated network for the NAT rule.
+        description: The service (protocol) applied to the NAT rule (nested under config).
   moves:
-    - template-name: name
-    - template-action: action
-    - template-description: description
-    - template-enabled: enabled
-    - template-priority: priority
-    - template-protocol: protocol
-    - template-source_network: source_network
-    - template-destination_network: destination_network
-    - template-translated_network: translated_network
+    - network_router_nat: ""          # unnest the API envelope (standard pattern)
+    - template-protocol: protocol     # pin deprecated protocol
+    - template-firewall: firewall     # pin config-context firewall
+    - template-service: service       # pin config-context service
   removes:
-    - network_router_nat
     - success
+    - config                          # request config wrapper; firewall/service pinned top-level via templates
+    - source_ports                    # (networkRouterNat.yaml) not exposed
+    - destination_ports               # (networkRouterNat.yaml) not exposed
+    - translated_ports                # (networkRouterNat.yaml) not exposed
+    - match_ipv6destination_prefix    # (networkRouterNat.yaml) not exposed
+    - translated_ipv4source_prefix    # (networkRouterNat.yaml) not exposed
+    - ref_type                        # (networkRouterNat.yaml) internal
+    - ref_id                          # (networkRouterNat.yaml) internal
+    - sync_source                     # (networkRouterNat.yaml) read-only
+    - internal_id                     # (networkRouterNat.yaml) read-only
+    - provider_id                     # (networkRouterNat.yaml) read-only
+    - date_created                    # (networkRouterNat.yaml) read-only
+    - last_updated                    # (networkRouterNat.yaml) read-only
   overrides:
-    description:
-      computed_optional_required: computed_optional
-      description: Description of the NAT rule
-    action:
-      computed_optional_required: required
-      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
-    destination_network:
-      computed_optional_required: computed_optional
-      description: Destination network
-    enabled:
-      computed_optional_required: computed_optional
-      description: Whether the NAT rule is enabled
-      default: true
     id:
       computed_optional_required: computed
       description: The ID of the NAT rule
       state_for_unknown: true
-    name:
-      computed_optional_required: required
-      description: Name of the NAT rule
-    priority:
-      computed_optional_required: computed_optional
-      description: Priority of the NAT rule
-    protocol:
-      computed_optional_required: computed_optional
-      description: Protocol
+    external_id:
+      computed_optional_required: computed
+      description: The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
+      state_for_unknown: true
     router_id:
       computed_optional_required: required
       description: The ID of the parent network router
       requires_replace: true
+    name:
+      computed_optional_required: required
+      description: Name of the NAT rule
+    action:
+      computed_optional_required: required
+      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    description:
+      computed_optional_required: computed_optional
+      description: Description of the NAT rule
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the NAT rule is enabled
+      default: true
+    priority:
+      computed_optional_required: computed_optional
+      description: Priority of the NAT rule
+      default: 100
     source_network:
       computed_optional_required: computed_optional
       description: Source network
+    destination_network:
+      computed_optional_required: computed_optional
+      description: Destination network
     translated_network:
       computed_optional_required: computed_optional
       description: Translated network
+    firewall:
+      computed_optional_required: computed_optional
+      description: The firewall match applied to the NAT rule (nested under config).
+      default: MATCH_INTERNAL_ADDRESS
+      one_of: [MATCH_INTERNAL_ADDRESS, MATCH_EXTERNAL_ADDRESS, BYPASS]
+    service:
+      computed_optional_required: optional
+      description: The service (protocol) applied to the NAT rule (nested under config).

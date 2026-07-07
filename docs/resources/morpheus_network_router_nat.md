@@ -35,13 +35,16 @@ resource "hpe_morpheus_network_router_nat" "example" {
 - `description` (String) Description of the NAT rule
 - `destination_network` (String) Destination network
 - `enabled` (Boolean) Whether the NAT rule is enabled
+- `firewall` (String) The firewall match applied to the NAT rule (nested under config).
 - `priority` (Number) Priority of the NAT rule
-- `protocol` (String) Protocol
+- `protocol` (String, Deprecated) Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.
+- `service` (String) The service (protocol) applied to the NAT rule (nested under config).
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network
 
 ### Read-Only
 
+- `external_id` (String) The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
 - `id` (Number) The ID of the NAT rule
 
 ## Import

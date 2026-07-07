@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,15 +71,6 @@ func int32PtrToType(i *int32) types.Int64 {
 	return types.Int64Value(int64(*i))
 }
 
-// timeToType formats a nullable timestamp as an RFC 3339 string.
-func timeToType(t *time.Time) types.String {
-	if t == nil {
-		return types.StringNull()
-	}
-
-	return types.StringValue(t.Format(time.RFC3339))
-}
-
 // cloudIDName derives the cloud (zone) id and name for a storage server. A
 // storage server is cloud-scoped only when its refType is ComputeZone, in which
 // case refId is the cloud id; the name is looked up from the supplied map.
@@ -136,7 +126,7 @@ func storageServerAsState(
 		Enabled:         convert.BoolToType(ss.Enabled),
 		Status:          convert.StrToType(ss.Status.Get()),
 		StatusMessage:   convert.StrToType(ss.StatusMessage.Get()),
-		StatusDate:      timeToType(ss.StatusDate),
+		StatusDate:      convert.TimeToType(ss.StatusDate),
 		ErrorMessage:    convert.StrToType(ss.ErrorMessage.Get()),
 		InternalId:      convert.StrToType(ss.InternalId.Get()),
 		ExternalId:      convert.StrToType(ss.ExternalId.Get()),
@@ -156,8 +146,8 @@ func storageServerAsState(
 		MaxStorage:      convert.Int64ToType(ss.MaxStorage.Get()),
 		UsedStorage:     convert.Int64ToType(ss.UsedStorage.Get()),
 		DiskCount:       int32PtrToType(ss.DiskCount.Get()),
-		DateCreated:     timeToType(ss.DateCreated),
-		LastUpdated:     timeToType(ss.LastUpdated),
+		DateCreated:     convert.TimeToType(ss.DateCreated),
+		LastUpdated:     convert.TimeToType(ss.LastUpdated),
 		RefType:         convert.StrToType(ss.RefType),
 		RefId:           convert.Int64ToType(ss.RefId),
 	}

@@ -1,0 +1,26 @@
+monitoring_check_type:
+  moves:
+    - check_type: "" # unnest wrapper
+  overrides:
+    id:
+      description: The ID of the monitoring check type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the monitoring check type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: The code identifier of the monitoring check type
+    metric_name:
+      description: The primary metric name reported by this check type
+    default_interval:
+      description: The default polling interval (in seconds) for this check type
+    create_incident:
+      description: Whether checks of this type create incidents on failure
+    in_uptime:
+      description: Whether checks of this type count towards uptime
+    push_only:
+      description: Whether this check type only accepts pushed results
+    tunnel_supported:
+      description: Whether this check type supports tunneled connectivity

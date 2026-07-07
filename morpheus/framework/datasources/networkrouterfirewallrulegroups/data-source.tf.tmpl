@@ -1,0 +1,21 @@
+# List firewall rule groups for a network router, optionally filtered.
+data "hpe_morpheus_network_router_firewall_rule_groups" "example" {
+  router_id = {{.RouterId}}
+
+  # Optional: repeat the block to AND filters together; within a block a
+  # group matches if the chosen field matches ANY value (Go regular
+  # expression). Valid fields: name, id, external_id, status, priority,
+  # group_layer.
+  filter {
+    name   = "name"
+    values = ["Policy_Default.*"]
+  }
+}
+
+# Look up a group id by name, e.g. to use as a firewall rule's parent_id.
+output "rule_group_ids_by_name" {
+  value = {
+    for rg in data.hpe_morpheus_network_router_firewall_rule_groups.example.rule_groups :
+    rg.name => rg.id
+  }
+}

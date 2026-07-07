@@ -20,8 +20,8 @@ var _ MappedNullable = &GetNetworkRouterFirewallRuleGroups200Response{}
 
 // GetNetworkRouterFirewallRuleGroups200Response struct for GetNetworkRouterFirewallRuleGroups200Response
 type GetNetworkRouterFirewallRuleGroups200Response struct {
-	RuleGroups           interface{}            `json:"ruleGroups,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	RuleGroups           []GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInner `json:"ruleGroups,omitempty"`
+	AdditionalProperties map[string]interface{}                                         `json:",remain"`
 }
 
 type _GetNetworkRouterFirewallRuleGroups200Response GetNetworkRouterFirewallRuleGroups200Response
@@ -36,7 +36,7 @@ func (o GetNetworkRouterFirewallRuleGroups200Response) MarshalJSON() ([]byte, er
 
 func (o GetNetworkRouterFirewallRuleGroups200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if o.RuleGroups != nil {
+	if !IsNil(o.RuleGroups) {
 		toSerialize["ruleGroups"] = o.RuleGroups
 	}
 
