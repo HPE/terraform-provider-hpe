@@ -1202,6 +1202,14 @@ data_sources:
     read:
       path: /api/backups/{id}
       method: GET
+  backup_host:
+    read:
+      path: /api/backups/{id}
+      method: GET
+  backup_instance:
+    read:
+      path: /api/backups/{id}
+      method: GET
   backup_type:
     read:
       path: /api/backups/types/{id}
@@ -1242,9 +1250,17 @@ data_sources:
     read:
       path: /api/clusters/{clusterId}
       method: GET
+  cluster_affinity_group:
+    read:
+      path: /api/clusters/{clusterId}/affinity-groups/{id}
+      method: GET
   cluster_layout:
     read:
       path: /api/library/cluster-layouts/{id}
+      method: GET
+  cluster_namespace:
+    read:
+      path: /api/clusters/{clusterId}/namespaces/{id}
       method: GET
   contact:
     read:
@@ -1341,6 +1357,14 @@ data_sources:
   network_router_bgp_neighbor:
     read:
       path: /api/networks/routers/{routerId}/bgp-neighbors/{id}
+      method: GET
+  network_router_firewall_rule:
+    read:
+      path: /api/networks/routers/{routerId}/firewall-rules/{id}
+      method: GET
+  network_router_nat:
+    read:
+      path: /api/networks/routers/{routerId}/nats/{id}
       method: GET
   # network datasource
   network:
@@ -1467,6 +1491,10 @@ data_sources:
     read:
       path: /api/security-groups/{id}
       method: GET
+  security_group_rule:
+    read:
+      path: /api/security-groups/{id}/rules/{sgId}
+      method: GET
   security_package:
     read:
       path: /api/security-packages/{id}
@@ -1542,4 +1570,44 @@ data_sources:
   workflow:
     read:
       path: /api/task-sets/{id}
+      method: GET
+  certificate:
+    read:
+      path: /api/certificates/{id}
+      method: GET
+  vdi_app:
+    read:
+      path: /api/vdi-apps/{id}
+      method: GET
+  vdi_gateway:
+    read:
+      path: /api/vdi-gateways/{id}
+      method: GET
+  container_script:
+    read:
+      path: /api/library/container-scripts/{id}
+      method: GET
+  deployment:
+    read:
+      path: /api/deployments/{deploymentId}
+      method: GET
+  provisioning_license:
+    read:
+      path: /api/provisioning-licenses/{id}
+      method: GET
+  monitoring_alert:
+    read:
+      path: /api/monitoring/alerts/{id}
+      method: GET
+  monitoring_check:
+    read:
+      path: /api/monitoring/checks/{id}
+      method: GET
+  monitoring_group:
+    read:
+      path: /api/monitoring/groups/{id}
+      method: GET
+  network_pool_server:
+    read:
+      path: /api/networks/pool-servers/{id}
       method: GET
