@@ -40,24 +40,24 @@ data "hpe_morpheus_network_router_nat" "example" {
 
 ### Read-Only
 
-- `action` (String)
+- `action` (String) The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
 - `date_created` (String) The date the NAT rule was created.
 - `description` (String) The description of the NAT rule.
-- `destination_network` (String)
-- `destination_ports` (String)
-- `enabled` (Boolean)
+- `destination_network` (String) Destination network.
+- `destination_ports` (String) The destination ports.
+- `enabled` (Boolean) Whether the NAT rule is enabled.
 - `external_id` (String) The external ID of the NAT rule.
 - `internal_id` (String) The internal ID of the NAT rule.
 - `last_updated` (String) The date the NAT rule was last updated.
 - `match_ipv6destination_prefix` (String) The IPv6 destination prefix to match.
-- `priority` (Number)
-- `protocol` (String)
+- `priority` (Number) Priority of the NAT rule.
+- `protocol` (String) The protocol for the NAT rule.
 - `provider_id` (String) The provider ID of the NAT rule.
 - `ref_id` (String) The reference ID.
 - `ref_type` (String) The reference type.
-- `source_network` (String)
-- `source_ports` (String)
+- `source_network` (String) Source network.
+- `source_ports` (String) The source ports.
 - `sync_source` (String) The synchronization source.
 - `translated_ipv4source_prefix` (String) The translated IPv4 source prefix.
-- `translated_network` (String)
-- `translated_ports` (String)
+- `translated_network` (String) Translated network.
+- `translated_ports` (String) The translated ports.

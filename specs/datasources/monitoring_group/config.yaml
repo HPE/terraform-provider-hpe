@@ -31,10 +31,20 @@ monitoring_group:
       conflicts_with: ["id"]
     check_type:
       description: The check type object associated with the group.
+    check_type.code:
+      description: The code of the check type.
+    check_type.id:
+      description: The ID of the check type.
+    check_type.metric_name:
+      description: The metric name of the check type.
+    check_type.name:
+      description: The name of the check type.
     date_created:
       description: The date the monitoring group was created.
     description:
       description: The description of the monitoring group.
+    in_uptime:
+      description: Whether the group affects account-wide availability calculations.
     last_updated:
       description: The date the group was last updated.
     min_happy:

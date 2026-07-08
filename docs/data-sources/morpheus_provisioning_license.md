@@ -45,6 +45,6 @@ data "hpe_morpheus_provisioning_license" "example" {
 
 Read-Only:
 
-- `code` (String)
-- `id` (Number)
-- `name` (String)
+- `code` (String) The code of the license type.
+- `id` (Number) The ID of the license type.
+- `name` (String) The name of the license type.

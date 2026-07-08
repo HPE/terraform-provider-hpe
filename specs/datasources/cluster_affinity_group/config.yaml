@@ -24,6 +24,8 @@ cluster_affinity_group:
       description: The type of affinity (e.g. affinity, anti-affinity).
     pool:
       description: The resource pool object associated with the affinity group.
+    pool.id:
+      description: The ID of the resource pool.
     ref_id:
       description: The reference ID.
     ref_type:

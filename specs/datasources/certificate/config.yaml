@@ -35,6 +35,8 @@ certificate:
       description: The integration ID associated with the certificate.
     self_signed:
       description: Whether the certificate is self-signed.
+    type:
+      description: The certificate type reference object.
     type.id:
       description: The certificate type object ID.
     type.code:

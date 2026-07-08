@@ -36,16 +36,24 @@ func MonitoringCheckDataSourceSchema(ctx context.Context) schema.Schema {
 			"check_type": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"code": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The code of the check type.",
+						MarkdownDescription: "The code of the check type.",
 					},
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the check type.",
+						MarkdownDescription: "The ID of the check type.",
 					},
 					"metric_name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The metric name of the check type.",
+						MarkdownDescription: "The metric name of the check type.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the check type.",
+						MarkdownDescription: "The name of the check type.",
 					},
 				},
 				CustomType: CheckTypeType{
@@ -82,7 +90,9 @@ func MonitoringCheckDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"in_uptime": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Whether the check affects account-wide availability calculations.",
+				MarkdownDescription: "Whether the check affects account-wide availability calculations.",
 			},
 			"last_updated": schema.StringAttribute{
 				Computed:            true,

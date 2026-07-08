@@ -54,5 +54,5 @@ data "hpe_morpheus_container_script" "example" {
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
+- `id` (Number) The ID of the account.
+- `name` (String) The name of the account.

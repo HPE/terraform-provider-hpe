@@ -18,7 +18,9 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"action": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
+				MarkdownDescription: "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
 			},
 			"date_created": schema.StringAttribute{
 				Computed:            true,
@@ -31,13 +33,19 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The description of the NAT rule.",
 			},
 			"destination_network": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Destination network.",
+				MarkdownDescription: "Destination network.",
 			},
 			"destination_ports": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The destination ports.",
+				MarkdownDescription: "The destination ports.",
 			},
 			"enabled": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Whether the NAT rule is enabled.",
+				MarkdownDescription: "Whether the NAT rule is enabled.",
 			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
@@ -78,10 +86,14 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"priority": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Priority of the NAT rule.",
+				MarkdownDescription: "Priority of the NAT rule.",
 			},
 			"protocol": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The protocol for the NAT rule.",
+				MarkdownDescription: "The protocol for the NAT rule.",
 			},
 			"provider_id": schema.StringAttribute{
 				Computed:            true,
@@ -104,10 +116,14 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the parent network router.",
 			},
 			"source_network": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Source network.",
+				MarkdownDescription: "Source network.",
 			},
 			"source_ports": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The source ports.",
+				MarkdownDescription: "The source ports.",
 			},
 			"sync_source": schema.StringAttribute{
 				Computed:            true,
@@ -120,10 +136,14 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The translated IPv4 source prefix.",
 			},
 			"translated_network": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Translated network.",
+				MarkdownDescription: "Translated network.",
 			},
 			"translated_ports": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The translated ports.",
+				MarkdownDescription: "The translated ports.",
 			},
 		},
 	}

@@ -119,13 +119,19 @@ func NetworkPoolServerDataSourceSchema(ctx context.Context) schema.Schema {
 			"type": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"code": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The code of the pool server type.",
+						MarkdownDescription: "The code of the pool server type.",
 					},
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the pool server type.",
+						MarkdownDescription: "The ID of the pool server type.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the pool server type.",
+						MarkdownDescription: "The name of the pool server type.",
 					},
 				},
 				CustomType: TypeType{

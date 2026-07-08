@@ -53,12 +53,22 @@ monitoring_check:
       description: Check interval in seconds.
     check_type:
       description: The check type object.
+    check_type.code:
+      description: The code of the check type.
+    check_type.id:
+      description: The ID of the check type.
+    check_type.metric_name:
+      description: The metric name of the check type.
+    check_type.name:
+      description: The name of the check type.
     config:
       description: Check type-specific configuration object.
     date_created:
       description: The date the check was created.
     description:
       description: The description of the monitoring check.
+    in_uptime:
+      description: Whether the check affects account-wide availability calculations.
     last_updated:
       description: The date the check was last updated.
     severity:

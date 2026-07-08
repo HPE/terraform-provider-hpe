@@ -59,7 +59,9 @@ func ClusterAffinityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 			"pool": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the resource pool.",
+						MarkdownDescription: "The ID of the resource pool.",
 					},
 				},
 				CustomType: PoolType{

@@ -14,6 +14,10 @@ container_script:
       conflicts_with: ["id"]
     account:
       description: The account associated with the script.
+    account.id:
+      description: The ID of the account.
+    account.name:
+      description: The name of the account.
     category:
       description: The category of the library container script.
     code:

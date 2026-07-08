@@ -45,13 +45,13 @@ data "hpe_morpheus_network_router_firewall_rule" "example" {
 - `code` (String) The internal code identifier.
 - `destination_port_range` (String) The destination port range.
 - `destination_type` (String) The destination type.
-- `direction` (String)
-- `enabled` (Boolean)
+- `direction` (String) Direction (ingress or egress).
+- `enabled` (Boolean) Whether the firewall rule is enabled.
 - `group_name` (String) The group name this rule belongs to.
-- `policy` (String)
-- `port_range` (String)
-- `priority` (Number)
-- `protocol` (String)
+- `policy` (String) Policy action (accept, block, reject).
+- `port_range` (String) Port range.
+- `priority` (Number) Priority of the firewall rule.
+- `protocol` (String) Protocol.
 - `rule_type` (String) The type of the firewall rule.
 - `source_group` (String) The source group.
 - `source_port_range` (String) The source port range.

@@ -26,10 +26,14 @@ func ContainerScriptDataSourceSchema(ctx context.Context) schema.Schema {
 			"account": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the account.",
+						MarkdownDescription: "The ID of the account.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the account.",
+						MarkdownDescription: "The name of the account.",
 					},
 				},
 				CustomType: AccountType{

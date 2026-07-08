@@ -28,8 +28,20 @@ network_router_firewall_rule:
       description: The destination port range.
     destination_type:
       description: The destination type.
+    direction:
+      description: Direction (ingress or egress).
+    enabled:
+      description: Whether the firewall rule is enabled.
     group_name:
       description: The group name this rule belongs to.
+    policy:
+      description: Policy action (accept, block, reject).
+    port_range:
+      description: Port range.
+    priority:
+      description: Priority of the firewall rule.
+    protocol:
+      description: Protocol.
     rule_type:
       description: The type of the firewall rule.
     source_group:

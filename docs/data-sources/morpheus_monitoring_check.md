@@ -38,7 +38,7 @@ data "hpe_morpheus_monitoring_check" "example" {
 - `config` (Dynamic) Check type-specific configuration object.
 - `date_created` (String) The date the check was created.
 - `description` (String) The description of the monitoring check.
-- `in_uptime` (Boolean)
+- `in_uptime` (Boolean) Whether the check affects account-wide availability calculations.
 - `last_updated` (String) The date the check was last updated.
 - `severity` (String) Severity level threshold for sending notifications.
 
@@ -47,7 +47,7 @@ data "hpe_morpheus_monitoring_check" "example" {
 
 Read-Only:
 
-- `code` (String)
-- `id` (Number)
-- `metric_name` (String)
-- `name` (String)
+- `code` (String) The code of the check type.
+- `id` (Number) The ID of the check type.
+- `metric_name` (String) The metric name of the check type.
+- `name` (String) The name of the check type.

@@ -29,15 +29,21 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Whether this is a custom rule.",
 			},
 			"destination": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The destination for the rule.",
+				MarkdownDescription: "The destination for the rule.",
 			},
 			"destination_group": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the destination security group.",
+						MarkdownDescription: "The ID of the destination security group.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the destination security group.",
+						MarkdownDescription: "The name of the destination security group.",
 					},
 				},
 				CustomType: DestinationGroupType{
@@ -57,10 +63,14 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 			"destination_tier": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the destination tier.",
+						MarkdownDescription: "The ID of the destination tier.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the destination tier.",
+						MarkdownDescription: "The name of the destination tier.",
 					},
 				},
 				CustomType: DestinationTierType{
@@ -73,10 +83,14 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The destination tier object.",
 			},
 			"destination_type": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The destination type for the rule.",
+				MarkdownDescription: "The destination type for the rule.",
 			},
 			"direction": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The direction of the rule (ingress or egress).",
+				MarkdownDescription: "The direction of the rule (ingress or egress).",
 			},
 			"enabled": schema.StringAttribute{
 				Computed:            true,
@@ -112,16 +126,24 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"policy": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The policy (accept or deny).",
+				MarkdownDescription: "The policy (accept or deny).",
 			},
 			"port_range": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The port range for the rule.",
+				MarkdownDescription: "The port range for the rule.",
 			},
 			"protocol": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The protocol (tcp, udp, icmp, etc.).",
+				MarkdownDescription: "The protocol (tcp, udp, icmp, etc.).",
 			},
 			"rule_type": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The rule type.",
+				MarkdownDescription: "The rule type.",
 			},
 			"security_group_id": schema.Int64Attribute{
 				Required:            true,
@@ -129,15 +151,21 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The ID of the parent security group.",
 			},
 			"source": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The source for the rule.",
+				MarkdownDescription: "The source for the rule.",
 			},
 			"source_group": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the source security group.",
+						MarkdownDescription: "The ID of the source security group.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the source security group.",
+						MarkdownDescription: "The name of the source security group.",
 					},
 				},
 				CustomType: SourceGroupType{
@@ -157,10 +185,14 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 			"source_tier": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"id": schema.Int64Attribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The ID of the source tier.",
+						MarkdownDescription: "The ID of the source tier.",
 					},
 					"name": schema.StringAttribute{
-						Computed: true,
+						Computed:            true,
+						Description:         "The name of the source tier.",
+						MarkdownDescription: "The name of the source tier.",
 					},
 				},
 				CustomType: SourceTierType{
@@ -173,7 +205,9 @@ func SecurityGroupRuleDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The source tier object.",
 			},
 			"source_type": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "The source type for the rule.",
+				MarkdownDescription: "The source type for the rule.",
 			},
 		},
 	}

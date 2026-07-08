@@ -41,32 +41,32 @@ data "hpe_morpheus_security_group_rule" "example" {
 ### Read-Only
 
 - `custom_rule` (Boolean) Whether this is a custom rule.
-- `destination` (String)
+- `destination` (String) The destination for the rule.
 - `destination_group` (Attributes) The destination security group object. (see [below for nested schema](#nestedatt--destination_group))
 - `destination_port_range` (String) The destination port range.
 - `destination_tier` (Attributes) The destination tier object. (see [below for nested schema](#nestedatt--destination_tier))
-- `destination_type` (String)
-- `direction` (String)
+- `destination_type` (String) The destination type for the rule.
+- `direction` (String) The direction of the rule (ingress or egress).
 - `enabled` (String) Whether the rule is enabled.
 - `external_id` (String) The external ID of the rule.
 - `instance_type_id` (String) The instance type ID associated with the rule.
-- `policy` (String)
-- `port_range` (String)
-- `protocol` (String)
-- `rule_type` (String)
-- `source` (String)
+- `policy` (String) The policy (accept or deny).
+- `port_range` (String) The port range for the rule.
+- `protocol` (String) The protocol (tcp, udp, icmp, etc.).
+- `rule_type` (String) The rule type.
+- `source` (String) The source for the rule.
 - `source_group` (Attributes) The source security group object. (see [below for nested schema](#nestedatt--source_group))
 - `source_port_range` (String) The source port range.
 - `source_tier` (Attributes) The source tier object. (see [below for nested schema](#nestedatt--source_tier))
-- `source_type` (String)
+- `source_type` (String) The source type for the rule.
 
 <a id="nestedatt--destination_group"></a>
 ### Nested Schema for `destination_group`
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
+- `id` (Number) The ID of the destination security group.
+- `name` (String) The name of the destination security group.
 
 
 <a id="nestedatt--destination_tier"></a>
@@ -74,8 +74,8 @@ Read-Only:
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
+- `id` (Number) The ID of the destination tier.
+- `name` (String) The name of the destination tier.
 
 
 <a id="nestedatt--source_group"></a>
@@ -83,8 +83,8 @@ Read-Only:
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
+- `id` (Number) The ID of the source security group.
+- `name` (String) The name of the source security group.
 
 
 <a id="nestedatt--source_tier"></a>
@@ -92,5 +92,5 @@ Read-Only:
 
 Read-Only:
 
-- `id` (Number)
-- `name` (String)
+- `id` (Number) The ID of the source tier.
+- `name` (String) The name of the source tier.

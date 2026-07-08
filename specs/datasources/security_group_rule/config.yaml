@@ -18,21 +18,55 @@ security_group_rule:
       description: The ID of the parent security group.
     custom_rule:
       description: Whether this is a custom rule.
+    destination:
+      description: The destination for the rule.
     destination_group:
       description: The destination security group object.
+    destination_group.id:
+      description: The ID of the destination security group.
+    destination_group.name:
+      description: The name of the destination security group.
     destination_port_range:
       description: The destination port range.
     destination_tier:
       description: The destination tier object.
+    destination_tier.id:
+      description: The ID of the destination tier.
+    destination_tier.name:
+      description: The name of the destination tier.
+    destination_type:
+      description: The destination type for the rule.
+    direction:
+      description: The direction of the rule (ingress or egress).
     enabled:
       description: Whether the rule is enabled.
     external_id:
       description: The external ID of the rule.
     instance_type_id:
       description: The instance type ID associated with the rule.
+    policy:
+      description: The policy (accept or deny).
+    port_range:
+      description: The port range for the rule.
+    protocol:
+      description: The protocol (tcp, udp, icmp, etc.).
+    rule_type:
+      description: The rule type.
+    source:
+      description: The source for the rule.
     source_group:
       description: The source security group object.
+    source_group.id:
+      description: The ID of the source security group.
+    source_group.name:
+      description: The name of the source security group.
     source_port_range:
       description: The source port range.
     source_tier:
       description: The source tier object.
+    source_tier.id:
+      description: The ID of the source tier.
+    source_tier.name:
+      description: The name of the source tier.
+    source_type:
+      description: The source type for the rule.

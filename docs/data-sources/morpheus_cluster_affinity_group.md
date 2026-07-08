@@ -52,4 +52,4 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 
 Read-Only:
 
-- `id` (Number)
+- `id` (Number) The ID of the resource pool.

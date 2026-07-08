@@ -23,6 +23,12 @@ provisioning_license:
       description: The full name of the provisioning license.
     license_type:
       description: The type of the license.
+    license_type.code:
+      description: The code of the license type.
+    license_type.id:
+      description: The ID of the license type.
+    license_type.name:
+      description: The name of the license type.
     license_version:
       description: The version of the license.
     org_name:

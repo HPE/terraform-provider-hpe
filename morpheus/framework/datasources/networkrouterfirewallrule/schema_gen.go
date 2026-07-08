@@ -43,10 +43,14 @@ func NetworkRouterFirewallRuleDataSourceSchema(ctx context.Context) schema.Schem
 				MarkdownDescription: "The destination type.",
 			},
 			"direction": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Direction (ingress or egress).",
+				MarkdownDescription: "Direction (ingress or egress).",
 			},
 			"enabled": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Whether the firewall rule is enabled.",
+				MarkdownDescription: "Whether the firewall rule is enabled.",
 			},
 			"group_name": schema.StringAttribute{
 				Computed:            true,
@@ -72,16 +76,24 @@ func NetworkRouterFirewallRuleDataSourceSchema(ctx context.Context) schema.Schem
 				},
 			},
 			"policy": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Policy action (accept, block, reject).",
+				MarkdownDescription: "Policy action (accept, block, reject).",
 			},
 			"port_range": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Port range.",
+				MarkdownDescription: "Port range.",
 			},
 			"priority": schema.Int64Attribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Priority of the firewall rule.",
+				MarkdownDescription: "Priority of the firewall rule.",
 			},
 			"protocol": schema.StringAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Protocol.",
+				MarkdownDescription: "Protocol.",
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,

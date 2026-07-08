@@ -58,5 +58,11 @@ network_pool_server:
       description: Tenant matching expression for multi-tenancy.
     type:
       description: The pool server type object.
+    type.code:
+      description: The code of the pool server type.
+    type.id:
+      description: The ID of the pool server type.
+    type.name:
+      description: The name of the pool server type.
     zone_filter:
       description: Filter expression for which DNS zones to sync.

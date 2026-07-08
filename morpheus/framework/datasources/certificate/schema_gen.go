@@ -109,7 +109,9 @@ func CertificateDataSourceSchema(ctx context.Context) schema.Schema {
 						AttrTypes: TypeValue{}.AttributeTypes(ctx),
 					},
 				},
-				Computed: true,
+				Computed:            true,
+				Description:         "The certificate type reference object.",
+				MarkdownDescription: "The certificate type reference object.",
 			},
 			"wildcard": schema.BoolAttribute{
 				Computed:            true,
