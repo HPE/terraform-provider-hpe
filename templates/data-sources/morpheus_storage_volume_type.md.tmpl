@@ -8,6 +8,9 @@ description: |-
 
 {{ .Description | trimspace }}
 
+A storage volume type can be looked up by `id`, `name`, or `code`. Exactly one of
+these attributes should be set.
+
 ## Example Usage
 
 {{tffile "examples/data-sources/morpheus_storage_volume_type/data-source.tf"}}

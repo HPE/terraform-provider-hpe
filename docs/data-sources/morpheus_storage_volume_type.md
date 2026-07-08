@@ -8,6 +8,9 @@ description: |-
 
 Provides a Morpheus storage volume type data source.
 
+A storage volume type can be looked up by `id`, `name`, or `code`. Exactly one of
+these attributes should be set.
+
 ## Example Usage
 
 ```terraform
@@ -21,7 +24,10 @@ data "hpe_morpheus_storage_volume_type" "example" {
 
 ### Optional
 
-- `category` (String) The category of the storage volume type
 - `code` (String) The code of the storage volume type
-- `id` (Number) The ID of the stroage volume type
+- `id` (Number) The ID of the storage volume type
 - `name` (String) The name of the storage volume type
+
+### Read-Only
+
+- `category` (String) The category of the storage volume type

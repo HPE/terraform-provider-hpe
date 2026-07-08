@@ -17,7 +17,7 @@ import (
 func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
@@ -44,6 +44,14 @@ func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_storage_volume_type.example",
 			"id",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"code",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"category",
 		),
 	}
 

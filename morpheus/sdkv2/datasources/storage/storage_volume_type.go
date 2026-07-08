@@ -22,27 +22,28 @@ func DataSourceStorageVolumeType() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
-				Description:   "The ID of the stroage volume type",
+				Description:   "The ID of the storage volume type",
 				Optional:      true,
-				ConflictsWith: []string{"name"},
 				Computed:      true,
+				ConflictsWith: []string{"name", "code"},
 			},
 			"name": {
 				Type:          schema.TypeString,
 				Description:   "The name of the storage volume type",
 				Optional:      true,
-				ConflictsWith: []string{"id"},
+				Computed:      true,
+				ConflictsWith: []string{"id", "code"},
 			},
 			"code": {
-				Type:        schema.TypeString,
-				Description: "The code of the storage volume type",
-				Optional:    true,
-				Computed:    true,
+				Type:          schema.TypeString,
+				Description:   "The code of the storage volume type",
+				Optional:      true,
+				Computed:      true,
+				ConflictsWith: []string{"id", "name"},
 			},
 			"category": {
 				Type:        schema.TypeString,
 				Description: "The category of the storage volume type",
-				Optional:    true,
 				Computed:    true,
 			},
 		},
@@ -66,6 +67,13 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
+	var code string
+	if v, ok := d.Get("code").(string); ok {
+		code = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("code", d.Get("code")))
+	}
+
 	var id int
 	if v, ok := d.Get("id").(int); ok {
 		id = v
@@ -75,12 +83,15 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 
 	var resp *morpheus.Response
 	var err error
-	if id == 0 && name != "" {
-		resp, err = client.FindStorageVolumeTypeByName(name)
-	} else if id != 0 {
+	switch {
+	case id != 0:
 		resp, err = client.GetStorageVolumeType(int64(id), &morpheus.Request{})
-	} else {
-		return diag.Errorf("Storage volume type cannot be read without name or id")
+	case name != "":
+		resp, err = client.FindStorageVolumeTypeByName(name)
+	case code != "":
+		resp, err = client.FindStorageVolumeTypeByCode(code)
+	default:
+		return diag.Errorf("Storage volume type cannot be read without name, code, or id")
 	}
 
 	if err != nil {
