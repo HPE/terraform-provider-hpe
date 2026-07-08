@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -74,32 +73,16 @@ func certificateAsState(
 	}
 
 	// category (nullable)
-	if cert.Category.IsSet() {
-		state.Category = convert.StrToType(cert.Category.Get())
-	} else {
-		state.Category = types.StringNull()
-	}
+	state.Category = convert.StrToType(cert.Category.Get())
 
 	// cert_type (nullable)
-	if cert.CertType.IsSet() {
-		state.CertType = convert.StrToType(cert.CertType.Get())
-	} else {
-		state.CertType = types.StringNull()
-	}
+	state.CertType = convert.StrToType(cert.CertType.Get())
 
 	// common_name (nullable)
-	if cert.CommonName.IsSet() {
-		state.CommonName = convert.StrToType(cert.CommonName.Get())
-	} else {
-		state.CommonName = types.StringNull()
-	}
+	state.CommonName = convert.StrToType(cert.CommonName.Get())
 
 	// integration_id (nullable)
-	if cert.IntegrationId.IsSet() {
-		state.IntegrationId = convert.Int64ToType(cert.IntegrationId.Get())
-	} else {
-		state.IntegrationId = types.Int64Null()
-	}
+	state.IntegrationId = convert.Int64ToType(cert.IntegrationId.Get())
 
 	// type nested object {id, code}
 	state.Type = NewTypeValueNull()

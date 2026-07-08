@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -71,11 +70,7 @@ func deploymentAsState(
 	}
 
 	// Nullable fields
-	if dep.ExternalId.IsSet() {
-		state.ExternalId = convert.StrToType(dep.ExternalId.Get())
-	} else {
-		state.ExternalId = types.StringNull()
-	}
+	state.ExternalId = convert.StrToType(dep.ExternalId.Get())
 
 	return state
 }

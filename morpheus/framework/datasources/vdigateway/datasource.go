@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -68,17 +67,9 @@ func vdiGatewayAsState(
 	}
 
 	// Nullable fields
-	if gw.Description.IsSet() {
-		state.Description = convert.StrToType(gw.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
+	state.Description = convert.StrToType(gw.Description.Get())
 
-	if gw.GatewayUrl.IsSet() {
-		state.GatewayUrl = convert.StrToType(gw.GatewayUrl.Get())
-	} else {
-		state.GatewayUrl = types.StringNull()
-	}
+	state.GatewayUrl = convert.StrToType(gw.GatewayUrl.Get())
 
 	return state
 }

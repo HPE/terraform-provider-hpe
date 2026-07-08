@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
@@ -69,23 +68,11 @@ func vdiAppAsState(
 	}
 
 	// Nullable fields
-	if app.Description.IsSet() {
-		state.Description = convert.StrToType(app.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
+	state.Description = convert.StrToType(app.Description.Get())
 
-	if app.IconPath.IsSet() {
-		state.IconPath = convert.StrToType(app.IconPath.Get())
-	} else {
-		state.IconPath = types.StringNull()
-	}
+	state.IconPath = convert.StrToType(app.IconPath.Get())
 
-	if app.Logo.IsSet() {
-		state.Logo = convert.StrToType(app.Logo.Get())
-	} else {
-		state.Logo = types.StringNull()
-	}
+	state.Logo = convert.StrToType(app.Logo.Get())
 
 	return state
 }

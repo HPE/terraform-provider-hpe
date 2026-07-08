@@ -93,18 +93,10 @@ func containerScriptAsState(
 	}
 
 	// ScriptMethod — nullable
-	if s.ScriptMethod.IsSet() {
-		state.ScriptMethod = convert.StrToType(s.ScriptMethod.Get())
-	} else {
-		state.ScriptMethod = types.StringNull()
-	}
+	state.ScriptMethod = convert.StrToType(s.ScriptMethod.Get())
 
 	// ScriptService — nullable
-	if s.ScriptService.IsSet() {
-		state.ScriptService = convert.StrToType(s.ScriptService.Get())
-	} else {
-		state.ScriptService = types.StringNull()
-	}
+	state.ScriptService = convert.StrToType(s.ScriptService.Get())
 
 	// Account — nested {id, name}
 	if s.Account != nil {

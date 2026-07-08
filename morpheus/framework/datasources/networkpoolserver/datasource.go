@@ -76,24 +76,12 @@ func networkPoolServerAsState(
 		TenantMatch:     convert.StrToType(server.TenantMatch.Get()),
 	}
 
-	if server.IgnoreSsl.IsSet() {
-		state.IgnoreSsl = convert.BoolToType(server.IgnoreSsl.Get())
-	} else {
-		state.IgnoreSsl = types.BoolNull()
-	}
+	state.IgnoreSsl = convert.BoolToType(server.IgnoreSsl.Get())
 
-	if server.ServiceThrottleRate.IsSet() {
-		state.ServiceThrottleRate = convert.Int64ToType(server.ServiceThrottleRate.Get())
-	} else {
-		state.ServiceThrottleRate = types.Int64Null()
-	}
+	state.ServiceThrottleRate = convert.Int64ToType(server.ServiceThrottleRate.Get())
 
 	// service_host (nullable)
-	if server.ServiceHost.IsSet() {
-		state.ServiceHost = convert.StrToType(server.ServiceHost.Get())
-	} else {
-		state.ServiceHost = types.StringNull()
-	}
+	state.ServiceHost = convert.StrToType(server.ServiceHost.Get())
 
 	// service_port (nullable int32 in SDK -> int64 in schema)
 	if p := server.ServicePort.Get(); p != nil {

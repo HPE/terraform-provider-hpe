@@ -115,60 +115,23 @@ func ruleAsState(
 		DestinationType: convert.StrToType(rule.DestinationType),
 	}
 
-	// Nullable string fields — guarded with .IsSet()
-	if rule.Name.IsSet() {
-		state.Name = convert.StrToType(rule.Name.Get())
-	} else {
-		state.Name = types.StringNull()
-	}
+	state.Name = convert.StrToType(rule.Name.Get())
 
-	if rule.PortRange.IsSet() {
-		state.PortRange = convert.StrToType(rule.PortRange.Get())
-	} else {
-		state.PortRange = types.StringNull()
-	}
+	state.PortRange = convert.StrToType(rule.PortRange.Get())
 
-	if rule.Source.IsSet() {
-		state.Source = convert.StrToType(rule.Source.Get())
-	} else {
-		state.Source = types.StringNull()
-	}
+	state.Source = convert.StrToType(rule.Source.Get())
 
-	if rule.Destination.IsSet() {
-		state.Destination = convert.StrToType(rule.Destination.Get())
-	} else {
-		state.Destination = types.StringNull()
-	}
+	state.Destination = convert.StrToType(rule.Destination.Get())
 
-	if rule.DestinationPortRange.IsSet() {
-		state.DestinationPortRange = convert.StrToType(rule.DestinationPortRange.Get())
-	} else {
-		state.DestinationPortRange = types.StringNull()
-	}
+	state.DestinationPortRange = convert.StrToType(rule.DestinationPortRange.Get())
 
-	if rule.SourcePortRange.IsSet() {
-		state.SourcePortRange = convert.StrToType(rule.SourcePortRange.Get())
-	} else {
-		state.SourcePortRange = types.StringNull()
-	}
+	state.SourcePortRange = convert.StrToType(rule.SourcePortRange.Get())
 
-	if rule.Enabled.IsSet() {
-		state.Enabled = convert.StrToType(rule.Enabled.Get())
-	} else {
-		state.Enabled = types.StringNull()
-	}
+	state.Enabled = convert.StrToType(rule.Enabled.Get())
 
-	if rule.ExternalId.IsSet() {
-		state.ExternalId = convert.StrToType(rule.ExternalId.Get())
-	} else {
-		state.ExternalId = types.StringNull()
-	}
+	state.ExternalId = convert.StrToType(rule.ExternalId.Get())
 
-	if rule.InstanceTypeId.IsSet() {
-		state.InstanceTypeId = convert.StrToType(rule.InstanceTypeId.Get())
-	} else {
-		state.InstanceTypeId = types.StringNull()
-	}
+	state.InstanceTypeId = convert.StrToType(rule.InstanceTypeId.Get())
 
 	// Nested objects — nil-check parent pointer
 	state.SourceGroup = sourceGroupValue(rule.SourceGroup)

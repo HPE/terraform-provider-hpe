@@ -181,11 +181,7 @@ func populateBackupInstanceState(
 	data.LastUpdated = convert.TimeToType(b.LastUpdated)
 
 	// container_id — nullable
-	if b.ContainerId.IsSet() {
-		data.ContainerId = convert.Int64ToType(b.ContainerId.Get())
-	} else {
-		data.ContainerId = types.Int64Null()
-	}
+	data.ContainerId = convert.Int64ToType(b.ContainerId.Get())
 
 	// instance_id — nested Instance object
 	if b.Instance != nil && b.Instance.Id != nil {
@@ -208,72 +204,29 @@ func populateBackupInstanceState(
 		data.StorageProviderId = types.Int64Null()
 	}
 
-	// Nullable scalar fields — guarded with .IsSet()
-	if b.Location.IsSet() {
-		data.Location = convert.StrToType(b.Location.Get())
-	} else {
-		data.Location = types.StringNull()
-	}
+	data.Location = convert.StrToType(b.Location.Get())
 
-	if b.CronExpression.IsSet() {
-		data.CronExpression = convert.StrToType(b.CronExpression.Get())
-	} else {
-		data.CronExpression = types.StringNull()
-	}
+	data.CronExpression = convert.StrToType(b.CronExpression.Get())
 
-	if b.RetentionCount.IsSet() {
-		data.RetentionCount = convert.Int64ToType(b.RetentionCount.Get())
-	} else {
-		data.RetentionCount = types.Int64Null()
-	}
+	data.RetentionCount = convert.Int64ToType(b.RetentionCount.Get())
 
-	if b.TargetAll.IsSet() {
-		data.TargetAll = convert.BoolToType(b.TargetAll.Get())
-	} else {
-		data.TargetAll = types.BoolNull()
-	}
+	data.TargetAll = convert.BoolToType(b.TargetAll.Get())
 
-	if b.TargetHost.IsSet() {
-		data.TargetHost = convert.StrToType(b.TargetHost.Get())
-	} else {
-		data.TargetHost = types.StringNull()
-	}
+	data.TargetHost = convert.StrToType(b.TargetHost.Get())
 
-	if b.TargetName.IsSet() {
-		data.TargetName = convert.StrToType(b.TargetName.Get())
-	} else {
-		data.TargetName = types.StringNull()
-	}
+	data.TargetName = convert.StrToType(b.TargetName.Get())
 
-	if b.TargetPath.IsSet() {
-		data.TargetPath = convert.StrToType(b.TargetPath.Get())
-	} else {
-		data.TargetPath = types.StringNull()
-	}
+	data.TargetPath = convert.StrToType(b.TargetPath.Get())
 
-	if b.TargetPort.IsSet() {
-		p := b.TargetPort.Get()
-		if p != nil {
-			v := int64(*p)
-			data.TargetPort = convert.Int64ToType(&v)
-		} else {
-			data.TargetPort = types.Int64Null()
-		}
+	if p := b.TargetPort.Get(); p != nil {
+		data.TargetPort = types.Int64Value(int64(*p))
 	} else {
 		data.TargetPort = types.Int64Null()
 	}
 
-	if b.TargetUsername.IsSet() {
-		data.TargetUsername = convert.StrToType(b.TargetUsername.Get())
-	} else {
-		data.TargetUsername = types.StringNull()
-	}
+	data.TargetUsername = convert.StrToType(b.TargetUsername.Get())
 
-	if b.VolumePath.IsSet() {
-		data.VolumePath = convert.StrToType(b.VolumePath.Get())
-	} else {
-		data.VolumePath = types.StringNull()
-	}
+	data.VolumePath = convert.StrToType(b.VolumePath.Get())
 
 	// backup_provider — nested {id, code, name}
 	data.BackupProvider = backupProviderValue(b.BackupProvider)

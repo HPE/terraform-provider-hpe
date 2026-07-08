@@ -72,11 +72,7 @@ func monitoringCheckAsState(
 		Description: convert.StrToType(check.Description.Get()),
 	}
 
-	if check.CheckInterval.IsSet() {
-		state.CheckInterval = convert.Int64ToType(check.CheckInterval.Get())
-	} else {
-		state.CheckInterval = types.Int64Null()
-	}
+	state.CheckInterval = convert.Int64ToType(check.CheckInterval.Get())
 
 	state.DateCreated = convert.TimeToType(check.DateCreated)
 	state.LastUpdated = convert.TimeToType(check.LastUpdated.Get())

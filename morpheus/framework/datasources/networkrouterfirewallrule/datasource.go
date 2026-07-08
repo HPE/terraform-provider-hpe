@@ -77,60 +77,28 @@ func firewallRuleAsState(
 	}
 
 	// Protocol — nullable
-	if rule.Protocol.IsSet() {
-		state.Protocol = convert.StrToType(rule.Protocol.Get())
-	} else {
-		state.Protocol = types.StringNull()
-	}
+	state.Protocol = convert.StrToType(rule.Protocol.Get())
 
 	// Application — nullable
-	if rule.Application.IsSet() {
-		state.Application = convert.StrToType(rule.Application.Get())
-	} else {
-		state.Application = types.StringNull()
-	}
+	state.Application = convert.StrToType(rule.Application.Get())
 
 	// Code — nullable
-	if rule.Code.IsSet() {
-		state.Code = convert.StrToType(rule.Code.Get())
-	} else {
-		state.Code = types.StringNull()
-	}
+	state.Code = convert.StrToType(rule.Code.Get())
 
 	// PortRange — nullable
-	if rule.PortRange.IsSet() {
-		state.PortRange = convert.StrToType(rule.PortRange.Get())
-	} else {
-		state.PortRange = types.StringNull()
-	}
+	state.PortRange = convert.StrToType(rule.PortRange.Get())
 
 	// SourcePortRange — nullable
-	if rule.SourcePortRange.IsSet() {
-		state.SourcePortRange = convert.StrToType(rule.SourcePortRange.Get())
-	} else {
-		state.SourcePortRange = types.StringNull()
-	}
+	state.SourcePortRange = convert.StrToType(rule.SourcePortRange.Get())
 
 	// DestinationPortRange — nullable
-	if rule.DestinationPortRange.IsSet() {
-		state.DestinationPortRange = convert.StrToType(rule.DestinationPortRange.Get())
-	} else {
-		state.DestinationPortRange = types.StringNull()
-	}
+	state.DestinationPortRange = convert.StrToType(rule.DestinationPortRange.Get())
 
 	// SourceGroup — nullable
-	if rule.SourceGroup.IsSet() {
-		state.SourceGroup = convert.StrToType(rule.SourceGroup.Get())
-	} else {
-		state.SourceGroup = types.StringNull()
-	}
+	state.SourceGroup = convert.StrToType(rule.SourceGroup.Get())
 
 	// SourceTier — nullable
-	if rule.SourceTier.IsSet() {
-		state.SourceTier = convert.StrToType(rule.SourceTier.Get())
-	} else {
-		state.SourceTier = types.StringNull()
-	}
+	state.SourceTier = convert.StrToType(rule.SourceTier.Get())
 
 	return state
 }

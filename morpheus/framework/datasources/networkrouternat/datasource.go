@@ -98,39 +98,19 @@ func natAsState(
 	}
 
 	// RefType — nullable
-	if nat.RefType.IsSet() {
-		state.RefType = convert.StrToType(nat.RefType.Get())
-	} else {
-		state.RefType = types.StringNull()
-	}
+	state.RefType = convert.StrToType(nat.RefType.Get())
 
 	// RefId — nullable
-	if nat.RefId.IsSet() {
-		state.RefId = convert.StrToType(nat.RefId.Get())
-	} else {
-		state.RefId = types.StringNull()
-	}
+	state.RefId = convert.StrToType(nat.RefId.Get())
 
 	// InternalId — nullable
-	if nat.InternalId.IsSet() {
-		state.InternalId = convert.StrToType(nat.InternalId.Get())
-	} else {
-		state.InternalId = types.StringNull()
-	}
+	state.InternalId = convert.StrToType(nat.InternalId.Get())
 
 	// MatchIpv6DestinationPrefix — nullable
-	if nat.MatchIpv6DestinationPrefix.IsSet() {
-		state.MatchIpv6destinationPrefix = convert.StrToType(nat.MatchIpv6DestinationPrefix.Get())
-	} else {
-		state.MatchIpv6destinationPrefix = types.StringNull()
-	}
+	state.MatchIpv6destinationPrefix = convert.StrToType(nat.MatchIpv6DestinationPrefix.Get())
 
 	// TranslatedIpv4SourcePrefix — nullable
-	if nat.TranslatedIpv4SourcePrefix.IsSet() {
-		state.TranslatedIpv4sourcePrefix = convert.StrToType(nat.TranslatedIpv4SourcePrefix.Get())
-	} else {
-		state.TranslatedIpv4sourcePrefix = types.StringNull()
-	}
+	state.TranslatedIpv4sourcePrefix = convert.StrToType(nat.TranslatedIpv4SourcePrefix.Get())
 
 	return state
 }
