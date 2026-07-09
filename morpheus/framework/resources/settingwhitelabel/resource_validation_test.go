@@ -14,11 +14,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/settingwhitelabel"
 )
 
-// TestSettingWhitelabelColorValidators exercises the schema-level hex-color
-// validators on primary_color and secondary_color directly, without a live
-// Morpheus backend. It guards the regression reported where an invalid color
-// (e.g. "not-a-color") was accepted instead of rejected.
-func TestSettingWhitelabelColorValidators(t *testing.T) {
+// TestSettingWhitelabelColorValidators verifies that the hex-color validator is
+// wired to both primary_color and secondary_color in the generated schema and
+// rejects invalid colors, without a live Morpheus backend. It guards the
+// regression reported where an invalid color (e.g. "not-a-color") was accepted
+// instead of rejected. The validator's own behaviour is covered in depth by
+// utils/validators hex color tests.
+func TestUnitSettingWhitelabelColorValidators(t *testing.T) {
 	t.Parallel()
 
 	ctx := context.Background()

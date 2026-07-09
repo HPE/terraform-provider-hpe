@@ -76,26 +76,16 @@ setting_whitelabel:
       validators:
         - custom:
             imports:
-              - path: regexp
-              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-            schema_definition: |-
-              stringvalidator.RegexMatches(
-              regexp.MustCompile(`^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`),
-              "must be a valid hex color code, for example #1a73e8, #fff, or #1a73e8ff",
-              )
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.HexColor()
     secondary_color:
       computed_optional_required: optional
       description: The header background color.
       validators:
         - custom:
             imports:
-              - path: regexp
-              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-            schema_definition: |-
-              stringvalidator.RegexMatches(
-              regexp.MustCompile(`^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`),
-              "must be a valid hex color code, for example #1a73e8, #fff, or #1a73e8ff",
-              )
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.HexColor()
     support_menu_links:
       computed_optional_required: optional
       description: Support menu links as a JSON string.
