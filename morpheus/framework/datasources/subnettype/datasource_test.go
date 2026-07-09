@@ -46,7 +46,7 @@ func TestAccMorpheusFindSubnetTypeByName(t *testing.T) {
 
 	dataSourceConfig, err := subnettype.RenderSubnetTypeDataSourceByNameConfig(
 		t,
-		map[string]string{"Name": "VLAN"},
+		map[string]string{"Name": "Esxi Subnet"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,7 @@ func TestAccMorpheusFindSubnetTypeByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_subnet_type.example",
 			"name",
-			"VLAN",
+			"Esxi Subnet",
 		),
 	}
 

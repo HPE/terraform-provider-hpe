@@ -64,13 +64,13 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_id",
-			"1",
+			"797",
 		),
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_name",
-			"Example workflow",
+			"qatf-ttestacc-full-operational-workflow-1",
 		),
 	}
 

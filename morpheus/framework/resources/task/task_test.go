@@ -17,10 +17,10 @@ import (
 )
 
 const (
-	testWorkflowName              = "A Test"
-	testFailureWorkflowName       = "A Failure"
-	testIfOperationalWorkflowId   = "140"
-	testElseOperationalWorkflowId = "102"
+	testWorkflowName              = "qatf-ttestacc-full-operational-workflow-2"
+	testFailureWorkflowName       = "qatf-ttestacc-full-operational-workflow-1"
+	testIfOperationalWorkflowId   = "797"
+	testElseOperationalWorkflowId = "796"
 )
 
 func TestMain(m *testing.M) {
