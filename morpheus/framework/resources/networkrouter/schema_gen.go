@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -341,14 +342,16 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "Group ID",
-				MarkdownDescription: "Group ID",
+				Description:         "Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.",
+				MarkdownDescription: "Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Int64{
 					int64validator.ConflictsWith(path.Expressions{
-						path.MatchRoot("group_id"),
+						path.MatchRoot("shared_group_access"),
+						path.MatchRoot("tenant_ids"),
+						path.MatchRoot("visibility"),
 					}...),
 				},
 			},
@@ -378,8 +381,15 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"shared_group_access": schema.BoolAttribute{
 				Optional:            true,
-				Description:         "Used to enable shared group access. Conflicts with group_id.",
-				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id.",
+				Description:         "Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.",
+				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.",
+				Validators: []validator.Bool{
+					boolvalidator.ConflictsWith(path.Expressions{
+						path.MatchRoot("group_id"),
+						path.MatchRoot("tenant_ids"),
+						path.MatchRoot("visibility"),
+					}...),
+				},
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
@@ -414,7 +424,6 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.String{
 					stringvalidator.OneOf("public", "private"),
 				},
-				Default: stringdefault.StaticString("private"),
 			},
 		},
 	}

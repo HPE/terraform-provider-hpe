@@ -130,17 +130,19 @@ func applyRouterPermissions(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	if plan.Visibility.IsNull() && plan.TenantIds.IsNull() {
+	visSet := !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown()
+	tenSet := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()
+	if !visSet && !tenSet {
 		return diags
 	}
 
 	perms := sdk.UpdateNetworkRouterPermissionsRequestPermissions{}
 
-	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+	if visSet {
 		perms.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+	if tenSet {
 		var ids []int64
 		diags.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
 		if diags.HasError() {
