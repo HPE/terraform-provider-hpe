@@ -73,14 +73,14 @@ resource "hpe_morpheus_network_router" "example" {
 - `enabled` (Boolean) Can be used to enable / disable the network router (true, false). Default is on
 - `network_integration_id` (Number) Required when router type supports a network integration
 - `shared_group_access` (Boolean) Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
 - `type_id` (Number) The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.
-- `visibility` (String) The visibility of the network router (public or private).
 
 ### Read-Only
 
 - `code` (String)
 - `id` (Number) The ID of this resource.
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `visibility` (String) The visibility of the network router (public or private).
 
 <a id="nestedatt--config_nsxt_gateway_tier0"></a>
 ### Nested Schema for `config_nsxt_gateway_tier0`
