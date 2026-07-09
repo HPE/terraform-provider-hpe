@@ -4,9 +4,12 @@ package settingwhitelabel
 
 import (
 	"context"
+	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -57,11 +60,23 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The primary button background color.",
 				MarkdownDescription: "The primary button background color.",
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`),
+						"must be a valid hex color code, for example #1a73e8, #fff, or #1a73e8ff",
+					),
+				},
 			},
 			"secondary_color": schema.StringAttribute{
 				Optional:            true,
 				Description:         "The header background color.",
 				MarkdownDescription: "The header background color.",
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$`),
+						"must be a valid hex color code, for example #1a73e8, #fff, or #1a73e8ff",
+					),
+				},
 			},
 			"support_menu_links": schema.StringAttribute{
 				Optional:            true,
