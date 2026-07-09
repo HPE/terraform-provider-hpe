@@ -18,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
 )
 
 var (
@@ -359,7 +360,7 @@ func mapGetResponseToModel(
 	// masks it for a global script owned by another account (maskedScriptSentinel).
 	// Overwriting would clobber the configured value and cause a perpetual diff.
 	if script.Script != nil && *script.Script != maskedScriptSentinel {
-		model.Script = types.StringValue(*script.Script)
+		model.Script = customtypes.NewNormalizedLineEndingsStringValue(*script.Script)
 	}
 	if script.RunAsUser.IsSet() && script.RunAsUser.Get() != nil {
 		model.RunAsUser = types.StringValue(*script.RunAsUser.Get())
@@ -469,7 +470,7 @@ func mapGenericScriptToModel(
 	}
 	// Preserve prior state when the API omits (absent) or masks the script body.
 	if v, ok := m["script"].(string); ok && v != maskedScriptSentinel {
-		model.Script = types.StringValue(v)
+		model.Script = customtypes.NewNormalizedLineEndingsStringValue(v)
 	}
 	if v, ok := m["runAsUser"].(string); ok && v != "" {
 		model.RunAsUser = types.StringValue(v)
