@@ -28,7 +28,7 @@ type ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerT
 	Code                 *string                                                                                      `json:"code,omitempty"`
 	ContainerVersion     *string                                                                                      `json:"containerVersion,omitempty"`
 	ProvisionType        *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeProvisionType `json:"provisionType,omitempty"`
-	VirtualImage         NullableString                                                                               `json:"virtualImage,omitempty"`
+	VirtualImage         *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeVirtualImage  `json:"virtualImage,omitempty"`
 	Category             *string                                                                                      `json:"category,omitempty"`
 	Config               map[string]interface{}                                                                       `json:"config,omitempty"`
 	ContainerPorts       []map[string]interface{}                                                                     `json:"containerPorts,omitempty"`
@@ -74,8 +74,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContain
 	if !IsNil(o.ProvisionType) {
 		toSerialize["provisionType"] = o.ProvisionType
 	}
-	if o.VirtualImage.IsSet() {
-		toSerialize["virtualImage"] = o.VirtualImage.Get()
+	if !IsNil(o.VirtualImage) {
+		toSerialize["virtualImage"] = o.VirtualImage
 	}
 	if !IsNil(o.Category) {
 		toSerialize["category"] = o.Category
