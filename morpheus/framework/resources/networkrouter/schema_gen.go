@@ -342,8 +342,8 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.",
-				MarkdownDescription: "Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.",
+				Description:         "Sets the group that this router is scoped to.",
+				MarkdownDescription: "Sets the group that this router is scoped to.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -381,8 +381,8 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"shared_group_access": schema.BoolAttribute{
 				Optional:            true,
-				Description:         "Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.",
-				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.",
+				Description:         "Used to enable shared group access. Conflicts with group_id.",
+				MarkdownDescription: "Used to enable shared group access. Conflicts with group_id.",
 				Validators: []validator.Bool{
 					boolvalidator.ConflictsWith(path.Expressions{
 						path.MatchRoot("group_id"),
