@@ -234,9 +234,16 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	// protocol is deprecated (superseded by service) but still read back so
-	// existing state stays consistent.
-	state.Protocol = convert.StrToType(nat.Protocol.Get())
+	// protocol is deprecated (superseded by service) and the API no longer
+	// persists it, so it is omitted from the response. Fall back to the plan
+	// value when the API omits it (matching action/firewall/service) so the
+	// configured value round-trips and does not produce an inconsistent result
+	// after apply.
+	if p := nat.Protocol.Get(); p != nil {
+		state.Protocol = types.StringValue(*p)
+	} else {
+		state.Protocol = plan.Protocol
+	}
 
 	// firewall and service are create-time config options. Read them back from
 	// the response, falling back to the plan value when the API omits them.

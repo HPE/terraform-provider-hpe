@@ -147,6 +147,7 @@ resource "hpe_morpheus_network_router_nat" "example" {
   source_network     = "10.1.0.0/24"
   translated_network = "192.168.1.1"
   description        = "Updated SNAT rule"
+  protocol           = "tcp"
 }
 `
 
@@ -162,6 +163,10 @@ resource "hpe_morpheus_network_router_nat" "example" {
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.1.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated SNAT rule"),
+		// protocol is deprecated and dropped by the API; verify the configured
+		// value still round-trips (regression guard for the inconsistent-result
+		// -after-apply defect).
+		resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
 	)
 
 	checkInPlaceUpdate := resource.ConfigPlanChecks{
