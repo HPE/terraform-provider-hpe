@@ -502,6 +502,25 @@ func resourceInstanceTypeRead(ctx context.Context, d *schema.ResourceData, meta 
 	stateInputs := matchTemplatesWithSchema(inputs, optionTypeIDs)
 	d.Set("option_type_ids", stateInputs)
 
+	// masked_value is write-only: the API returns only a salted hash that cannot
+	// be reproduced from the configured plaintext, so reading the hash back would
+	// cause a permanent diff. Preserve the configured masked_value from prior
+	// state (keyed by env var name) instead.
+	priorMaskedValues := make(map[string]string)
+	if raw, ok := d.Get("evar").([]any); ok {
+		for _, e := range raw {
+			m, ok := e.(map[string]any)
+			if !ok {
+				continue
+			}
+			name, _ := m["name"].(string)
+			mv, _ := m["masked_value"].(string)
+			if name != "" && mv != "" {
+				priorMaskedValues[name] = mv
+			}
+		}
+	}
+
 	var evars []map[string]any
 	if instanceTypePayload.EnvironmentVariables != nil {
 		// iterate over the array of environment variables
@@ -510,7 +529,9 @@ func resourceInstanceTypeRead(ctx context.Context, d *schema.ResourceData, meta 
 			envPayload := make(map[string]any)
 			envPayload["name"] = environmentVariable.Name
 			if environmentVariable.Masked {
-				envPayload["masked_value"] = environmentVariable.DefaultValueHash
+				if v, ok := priorMaskedValues[environmentVariable.Name]; ok {
+					envPayload["masked_value"] = v
+				}
 			} else {
 				envPayload["value"] = environmentVariable.DefaultValue
 			}

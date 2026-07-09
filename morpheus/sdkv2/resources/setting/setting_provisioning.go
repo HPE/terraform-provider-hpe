@@ -335,10 +335,10 @@ func resourceSettingProvisioningRead(ctx context.Context, d *schema.ResourceData
 	d.Set("reuse_sequence", provisioningSetting.ReuseSequence)
 	d.Set("show_console_keyboard_settings", provisioningSetting.ShowConsoleKeyboardSettings)
 	d.Set("cloudinit_username", provisioningSetting.CloudInitUsername)
-	d.Set("cloudinit_password", provisioningSetting.CloudInitPasswordHash)
-	// d.Set("cloudinit_keypair_id", provisioningSetting.Cloudinitkeypair.ID)
-	d.Set("windows_password", provisioningSetting.WindowsPasswordHash)
-	d.Set("pxe_root_password", provisioningSetting.PXERootPasswordHash)
+	// cloudinit_password, windows_password and pxe_root_password are write-only:
+	// the API returns only a salted hash that cannot be reproduced from the
+	// configured plaintext, so reading it back would cause a permanent diff.
+	// Leave those attributes as the value already held in state.
 
 	return diags
 }
