@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
@@ -364,6 +365,13 @@ func (client *Client) Execute(req *Request) (*Response, error) {
 	httpResp, err := client.HTTPClient.Do(httpReq)
 	if httpResp == nil || err != nil {
 		if httpResp == nil {
+			// HTTPClient.Do only returns a nil response when the request
+			// never completed (connection refused, DNS failure, TLS error,
+			// or timeout). In that case err carries the real cause, so wrap
+			// it instead of swallowing it behind a bare "nil HTTP response".
+			if err != nil {
+				return resp, fmt.Errorf("nil HTTP response: %w", err)
+			}
 			return resp, errors.New("nil HTTP response")
 		}
 		return resp, err

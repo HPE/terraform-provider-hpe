@@ -1,0 +1,68 @@
+network_pool_server:
+  templates:
+    config:
+      dynamic:
+        description: Pool server type-specific configuration object.
+        computed_optional_required: computed
+
+  moves:
+    - network_pool_server: ""                    # unnest wrapper (components/schemas/networkPoolServer.yaml)
+    - template-config: config                    # dynamic fallback for type-specific config
+
+  removes:
+    - account                                    # (components/schemas/networkPoolServer.yaml) complex nested object
+    - credential                                 # (components/schemas/networkPoolServer.yaml) sensitive object
+    - integration                                # (components/schemas/networkPoolServer.yaml) complex nested object
+    - pools                                      # (components/schemas/networkPoolServer.yaml) complex nested array
+    - service_password                           # (components/schemas/networkPoolServer.yaml) sensitive
+    - service_password_hash                      # (components/schemas/networkPoolServer.yaml) sensitive
+    - status_message                             # (components/schemas/networkPoolServer.yaml) transient runtime state
+    - success                                    # envelope field
+
+  overrides:
+    id:
+      description: The ID of the network pool server.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network pool server.
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    date_created:
+      description: The date the pool server was created.
+    enabled:
+      description: Whether the network pool server is enabled.
+    ignore_ssl:
+      description: Whether to ignore SSL certificate errors.
+    last_updated:
+      description: The date the pool server was last updated.
+    network_filter:
+      description: Filter expression for which networks to sync.
+    service_host:
+      description: The service hostname for the IPAM integration.
+    service_mode:
+      description: The service mode (e.g. static or dhcp).
+    service_port:
+      description: The service port for the IPAM integration.
+    service_throttle_rate:
+      description: Rate limit (in milliseconds) for API requests to the pool server.
+    service_url:
+      description: The service URL for the IPAM integration.
+    service_username:
+      description: The service username for authentication.
+    status:
+      description: The current status of the network pool server.
+    status_date:
+      description: The date of the last status change.
+    tenant_match:
+      description: Tenant matching expression for multi-tenancy.
+    type:
+      description: The pool server type object.
+    type.code:
+      description: The code of the pool server type.
+    type.id:
+      description: The ID of the pool server type.
+    type.name:
+      description: The name of the pool server type.
+    zone_filter:
+      description: Filter expression for which DNS zones to sync.

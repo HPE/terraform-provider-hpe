@@ -2,7 +2,6 @@ package modifiers
 
 import (
 	"context"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -157,41 +156,4 @@ func (m int64UseStateForUnknownUnlessModifier) PlanModifyInt64(
 
 	// No trigger changed: carry the prior value forward.
 	resp.PlanValue = req.StateValue
-}
-
-// NormalizeLineEndingsModifier normalizes CRLF ("\r\n") and lone CR ("\r") line
-// endings to LF ("\n") in the planned string value. Some Morpheus APIs store
-// text (for example script content) with LF line endings, so a configuration
-// authored with CRLF line endings (common on Windows) would otherwise produce
-// an "inconsistent result after apply" error because the planned value ("\r\n")
-// differs from the value the API returns ("\n").
-type NormalizeLineEndingsModifier struct{}
-
-func (m NormalizeLineEndingsModifier) Description(_ context.Context) string {
-	return "Normalizes CRLF and CR line endings to LF to match the API."
-}
-
-func (m NormalizeLineEndingsModifier) MarkdownDescription(ctx context.Context) string {
-	return m.Description(ctx)
-}
-
-func (m NormalizeLineEndingsModifier) PlanModifyString(
-	_ context.Context,
-	req planmodifier.StringRequest,
-	resp *planmodifier.StringResponse,
-) {
-	// Normalize the accumulated planned value (PlanValue), not the raw config:
-	// plan modifiers run sequentially and a prior modifier may have populated
-	// PlanValue while ConfigValue stays null.
-	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
-		return
-	}
-
-	original := req.PlanValue.ValueString()
-	normalized := strings.ReplaceAll(original, "\r\n", "\n")
-	normalized = strings.ReplaceAll(normalized, "\r", "\n")
-
-	if normalized != original {
-		resp.PlanValue = types.StringValue(normalized)
-	}
 }

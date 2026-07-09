@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+description: |-
+  Reads a Morpheus instance backup.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus Instance Backup resource by its ID or name.
+
+An instance backup is a typed projection of the underlying backup object, exposing instance-specific fields (the associated instance, container, etc.).
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_backup_instance/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_backup_instance/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

@@ -21,26 +21,26 @@ var _ MappedNullable = &ListScripts200ResponseAllOfContainerScriptsInner{}
 
 // ListScripts200ResponseAllOfContainerScriptsInner struct for ListScripts200ResponseAllOfContainerScriptsInner
 type ListScripts200ResponseAllOfContainerScriptsInner struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	Code                 *string                `json:"code,omitempty"`
-	Account              NullableString         `json:"account,omitempty"`
-	Name                 *string                `json:"name,omitempty"`
-	Labels               []string               `json:"labels,omitempty"`
-	Category             NullableString         `json:"category,omitempty"`
-	SortOrder            *int64                 `json:"sortOrder,omitempty"`
-	ScriptVersion        *string                `json:"scriptVersion,omitempty"`
-	ScriptPhase          *string                `json:"scriptPhase,omitempty"`
-	ScriptType           *string                `json:"scriptType,omitempty"`
-	Script               *string                `json:"script,omitempty"`
-	ScriptService        NullableString         `json:"scriptService,omitempty"`
-	ScriptMethod         NullableString         `json:"scriptMethod,omitempty"`
-	RunAsUser            NullableString         `json:"runAsUser,omitempty"`
-	RunAsPassword        NullableString         `json:"runAsPassword,omitempty"`
-	SudoUser             *bool                  `json:"sudoUser,omitempty"`
-	FailOnError          *bool                  `json:"failOnError,omitempty"`
-	DateCreated          *time.Time             `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Id                   *int64                                                          `json:"id,omitempty"`
+	Code                 *string                                                         `json:"code,omitempty"`
+	Account              NullableListScripts200ResponseAllOfContainerScriptsInnerAccount `json:"account,omitempty"`
+	Name                 *string                                                         `json:"name,omitempty"`
+	Labels               []string                                                        `json:"labels,omitempty"`
+	Category             NullableString                                                  `json:"category,omitempty"`
+	SortOrder            *int64                                                          `json:"sortOrder,omitempty"`
+	ScriptVersion        *string                                                         `json:"scriptVersion,omitempty"`
+	ScriptPhase          *string                                                         `json:"scriptPhase,omitempty"`
+	ScriptType           *string                                                         `json:"scriptType,omitempty"`
+	Script               *string                                                         `json:"script,omitempty"`
+	ScriptService        NullableString                                                  `json:"scriptService,omitempty"`
+	ScriptMethod         NullableString                                                  `json:"scriptMethod,omitempty"`
+	RunAsUser            NullableString                                                  `json:"runAsUser,omitempty"`
+	RunAsPassword        NullableString                                                  `json:"runAsPassword,omitempty"`
+	SudoUser             *bool                                                           `json:"sudoUser,omitempty"`
+	FailOnError          *bool                                                           `json:"failOnError,omitempty"`
+	DateCreated          *time.Time                                                      `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                                      `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                                          `json:",remain"`
 }
 
 type _ListScripts200ResponseAllOfContainerScriptsInner ListScripts200ResponseAllOfContainerScriptsInner

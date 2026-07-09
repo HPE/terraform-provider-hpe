@@ -49,24 +49,23 @@ container_script:
     script:
       computed_optional_required: computed_optional
       description: The script content.
-      # Two plan modifiers, in declared order (order is significant):
-      #   1. UseStateForUnknown - hold the prior script value in the plan when the
-      #      config is unchanged, so this Optional+Computed field does not report a
-      #      spurious "known after apply" diff.
-      #   2. NormalizeLineEndingsModifier - fold CRLF/CR to LF so line-ending churn
-      #      alone does not surface as a diff.
-      # UseStateForUnknown is spelled out as an explicit custom modifier (instead
-      # of the state_for_unknown: true sugar) purely to keep both modifiers in one
-      # ordered list; the generated schema is identical either way.
+      # The API stores/returns the script body with LF line endings, but a
+      # practitioner may author it with CRLF (e.g. on Windows). normalize_line_endings
+      # applies a semantic-equality custom type that treats CRLF/CR and LF as equal,
+      # avoiding both "inconsistent result after apply" and perpetual diffs. This must
+      # NOT be done with a plan modifier that rewrites the planned value: Terraform
+      # Core rejects a planned value that differs from a set config value ("provider
+      # produced invalid plan"), which is why the earlier normalize plan modifier
+      # failed for CRLF input (MORPH-12525).
+      normalize_line_endings: true
+      # UseStateForUnknown holds the prior script value in the plan when the config is
+      # unchanged, so this Optional+Computed field does not report a spurious
+      # "known after apply" diff.
       plan_modifiers:
       - custom:
           imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
           schema_definition: stringplanmodifier.UseStateForUnknown()
-      - custom:
-          imports:
-            - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
-          schema_definition: modifiers.NormalizeLineEndingsModifier{}
     script_phase:
       computed_optional_required: computed_optional
       description: The phase of the script.

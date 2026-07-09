@@ -57,6 +57,25 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
+
+	// missing-data-sources — new data sources (Groups A/B/C)
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuphost"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backupinstance"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/certificate"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusteraffinitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusternamespace"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/containerscript"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/deployment"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringalert"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringcheck"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringgroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouternat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/provisioninglicense"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygrouprule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdiapp"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdigateway"
 )
 
 func (p *MorpheusProvider) DataSources(
@@ -115,5 +134,26 @@ func (p *MorpheusProvider) DataSources(
 		networkpoolservertype.NewDataSource,
 		networkroutertype.NewDataSource,
 		subnettype.NewDataSource,
+		// missing-data-sources — child resource data sources (Group B)
+		networkrouternat.NewDataSource,
+		networkrouterfirewallrule.NewDataSource,
+		securitygrouprule.NewDataSource,
+		clusternamespace.NewDataSource,
+		clusteraffinitygroup.NewDataSource,
+		// missing-data-sources — standalone data sources (Group A)
+		certificate.NewDataSource,
+		vdiapp.NewDataSource,
+		vdigateway.NewDataSource,
+		containerscript.NewDataSource,
+		deployment.NewDataSource,
+		provisioninglicense.NewDataSource,
+		monitoringalert.NewDataSource,
+		monitoringgroup.NewDataSource,
+		// missing-data-sources — config-bearing data sources (Group C)
+		monitoringcheck.NewDataSource,
+		networkpoolserver.NewDataSource,
+		// missing-data-sources — backup data sources (Group D)
+		backuphost.NewDataSource,
+		backupinstance.NewDataSource,
 	}
 }

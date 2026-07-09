@@ -1,0 +1,34 @@
+cluster_affinity_group:
+  moves:
+    - affinity_group: ""                 # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
+  removes:
+    - resource_permissions               # (components/schemas/clusterAffinityGroup.yaml) freeform nested object
+    - servers                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
+    - source                             # (components/schemas/clusterAffinityGroup.yaml) internal field
+    - tenants                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the cluster affinity group.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the cluster affinity group.
+      conflicts_with: ["id"]
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the parent cluster.
+    active:
+      description: Whether the affinity group is active.
+    affinity_type:
+      description: The type of affinity (e.g. affinity, anti-affinity).
+    pool:
+      description: The resource pool object associated with the affinity group.
+    pool.id:
+      description: The ID of the resource pool.
+    ref_id:
+      description: The reference ID.
+    ref_type:
+      description: The reference type.
+    visibility:
+      description: The visibility setting for the affinity group.
