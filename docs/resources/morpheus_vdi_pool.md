@@ -44,7 +44,7 @@ resource "hpe_morpheus_vdi_pool" "example" {
 - `idle_timeout` (Number) The idle timeout in minutes.
 - `initial_pool_size` (Number) The initial size of the pool to be allocated on creation.
 - `max_idle` (Number) Sets the maximum number of idle instances on standby in the pool.
-- `max_session_timeout` (Number) The maximum session timeout in minutes.
+- `max_session_timeout` (Number, Deprecated) Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.
 - `min_idle` (Number) Sets the minimum number of idle instances on standby in the pool.
 - `persistent_user` (Boolean) Whether users are persistent across sessions.
 - `recyclable` (Boolean) Whether VDI pool instances are recyclable.
