@@ -5,7 +5,7 @@ network_router:
         computed_optional_required: computed_optional
     config:
       dynamic:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: Generic configuration object for network routers.
         validators:
           - custom:

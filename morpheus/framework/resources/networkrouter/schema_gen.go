@@ -52,7 +52,6 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Generic configuration object for network routers.",
 				MarkdownDescription: "Generic configuration object for network routers.",
 				Validators: []validator.Dynamic{
