@@ -46,7 +46,7 @@ func TestAccMorpheusFindNetworkRouterTypeByName(t *testing.T) {
 
 	dataSourceConfig, err := networkroutertype.RenderNetworkRouterTypeDataSourceByNameConfig(
 		t,
-		map[string]string{"Name": "Tier 1 Gateway"},
+		map[string]string{"Name": "OVS Bridge Domain"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,7 @@ func TestAccMorpheusFindNetworkRouterTypeByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_router_type.example",
 			"name",
-			"Tier 1 Gateway",
+			"OVS Bridge Domain",
 		),
 	}
 
@@ -92,7 +92,7 @@ func TestAccMorpheusFindNetworkRouterTypeById(t *testing.T) {
 
 	dataSourceConfig, err := networkroutertype.RenderNetworkRouterTypeDataSourceByIDConfig(
 		t,
-		map[string]string{"Id": "4"},
+		map[string]string{"Id": "7"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -102,7 +102,7 @@ func TestAccMorpheusFindNetworkRouterTypeById(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_router_type.example",
 			"id",
-			"4",
+			"7",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_network_router_type.example",
