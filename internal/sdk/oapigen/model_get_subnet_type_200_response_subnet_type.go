@@ -15,11 +15,11 @@ import (
 	"encoding/json"
 )
 
-// checks if the SubnetType type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &SubnetType{}
+// checks if the GetSubnetType200ResponseSubnetType type satisfies the MappedNullable interface at compile time
+var _ MappedNullable = &GetSubnetType200ResponseSubnetType{}
 
-// SubnetType struct for SubnetType
-type SubnetType struct {
+// GetSubnetType200ResponseSubnetType struct for GetSubnetType200ResponseSubnetType
+type GetSubnetType200ResponseSubnetType struct {
 	Id                   *int64                                               `json:"id,omitempty"`
 	Code                 *string                                              `json:"code,omitempty"`
 	Name                 *string                                              `json:"name,omitempty"`
@@ -32,9 +32,9 @@ type SubnetType struct {
 	AdditionalProperties map[string]interface{}                               `json:",remain"`
 }
 
-type _SubnetType SubnetType
+type _GetSubnetType200ResponseSubnetType GetSubnetType200ResponseSubnetType
 
-func (o SubnetType) MarshalJSON() ([]byte, error) {
+func (o GetSubnetType200ResponseSubnetType) MarshalJSON() ([]byte, error) {
 	toSerialize, err := o.ToMap()
 	if err != nil {
 		return []byte{}, err
@@ -42,7 +42,7 @@ func (o SubnetType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(toSerialize)
 }
 
-func (o SubnetType) ToMap() (map[string]interface{}, error) {
+func (o GetSubnetType200ResponseSubnetType) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
@@ -79,43 +79,43 @@ func (o SubnetType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSubnetType struct {
-	value *SubnetType
+type NullableGetSubnetType200ResponseSubnetType struct {
+	value *GetSubnetType200ResponseSubnetType
 	isSet bool
 }
 
-func (v NullableSubnetType) Get() *SubnetType {
+func (v NullableGetSubnetType200ResponseSubnetType) Get() *GetSubnetType200ResponseSubnetType {
 	return v.value
 }
 
-func (v *NullableSubnetType) Set(val *SubnetType) {
+func (v *NullableGetSubnetType200ResponseSubnetType) Set(val *GetSubnetType200ResponseSubnetType) {
 	v.value = val
 	v.isSet = true
 }
 
-func (v NullableSubnetType) IsSet() bool {
+func (v NullableGetSubnetType200ResponseSubnetType) IsSet() bool {
 	return v.isSet
 }
 
-func (v *NullableSubnetType) Unset() {
+func (v *NullableGetSubnetType200ResponseSubnetType) Unset() {
 	v.value = nil
 	v.isSet = false
 }
 
-func NewNullableSubnetType(val *SubnetType) *NullableSubnetType {
-	return &NullableSubnetType{value: val, isSet: true}
+func NewNullableGetSubnetType200ResponseSubnetType(val *GetSubnetType200ResponseSubnetType) *NullableGetSubnetType200ResponseSubnetType {
+	return &NullableGetSubnetType200ResponseSubnetType{value: val, isSet: true}
 }
 
-func (v NullableSubnetType) MarshalJSON() ([]byte, error) {
+func (v NullableGetSubnetType200ResponseSubnetType) MarshalJSON() ([]byte, error) {
 	return json.Marshal(v.value)
 }
 
-func (v *NullableSubnetType) UnmarshalJSON(src []byte) error {
+func (v *NullableGetSubnetType200ResponseSubnetType) UnmarshalJSON(src []byte) error {
 	v.isSet = true
 	return json.Unmarshal(src, &v.value)
 }
 
-func (v NullableSubnetType) UnmarshalMapstructure(data any) (any, error) {
+func (v NullableGetSubnetType200ResponseSubnetType) UnmarshalMapstructure(data any) (any, error) {
 	if err := mapstructDecode(data, &v.value); err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (v NullableSubnetType) UnmarshalMapstructure(data any) (any, error) {
 	return v, nil
 }
 
-func (o *SubnetType) UnmarshalJSON(data []byte) (err error) {
+func (o *GetSubnetType200ResponseSubnetType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }
 

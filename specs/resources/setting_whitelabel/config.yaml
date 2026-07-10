@@ -73,9 +73,19 @@ setting_whitelabel:
     primary_color:
       computed_optional_required: optional
       description: The primary button background color.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.HexColor()
     secondary_color:
       computed_optional_required: optional
       description: The header background color.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.HexColor()
     support_menu_links:
       computed_optional_required: optional
       description: Support menu links as a JSON string.

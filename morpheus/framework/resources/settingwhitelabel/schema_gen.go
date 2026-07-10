@@ -5,8 +5,10 @@ package settingwhitelabel
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -57,11 +59,17 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The primary button background color.",
 				MarkdownDescription: "The primary button background color.",
+				Validators: []validator.String{
+					validators.HexColor(),
+				},
 			},
 			"secondary_color": schema.StringAttribute{
 				Optional:            true,
 				Description:         "The header background color.",
 				MarkdownDescription: "The header background color.",
+				Validators: []validator.String{
+					validators.HexColor(),
+				},
 			},
 			"support_menu_links": schema.StringAttribute{
 				Optional:            true,

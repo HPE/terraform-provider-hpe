@@ -64,7 +64,6 @@ security_group:
       description: The visibility of the security group.
       default: "private"
     resource_permission_groups_all:
-      default: false
       state_for_unknown: true
       validators:
         - custom:

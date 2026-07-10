@@ -70,7 +70,6 @@ func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Validators: []validator.Bool{
 					boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids")),
 				},
-				Default: booldefault.StaticBool(false),
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
