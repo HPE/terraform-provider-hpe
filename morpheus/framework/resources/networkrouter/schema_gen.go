@@ -407,6 +407,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.",
 				MarkdownDescription: "The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Int64{
