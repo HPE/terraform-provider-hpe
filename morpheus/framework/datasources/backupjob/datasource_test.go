@@ -46,7 +46,7 @@ func TestAccMorpheusFindBackupJobByName(t *testing.T) {
 
 	dataSourceConfig, err := backupjob.RenderBackupJobDataSourceByNameConfig(
 		t,
-		map[string]string{"Name": "Nightly VM Backup"},
+		map[string]string{"Name": "Morpheus Appliance"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,7 @@ func TestAccMorpheusFindBackupJobByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_backup_job.example",
 			"name",
-			"Nightly VM Backup",
+			"Morpheus Appliance",
 		),
 	}
 

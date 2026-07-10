@@ -37,6 +37,11 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 
 	resourceConfig, err := task.RenderTaskNestedWorkflowConfig(t, map[string]string{
 		"Name": name,
+		// Environment-specific fixture: an operational workflow that exists in
+		// the acceptance test environment. Kept out of the example defaults so
+		// it doesn't leak into user-facing docs.
+		"OperationalWorkflowId":   "797",
+		"OperationalWorkflowName": "full-operational-workflow-1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -64,13 +69,13 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_id",
-			"1",
+			"797",
 		),
 
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_name",
-			"Example workflow",
+			"full-operational-workflow-1",
 		),
 	}
 

@@ -46,7 +46,7 @@ func TestAccMorpheusFindClusterLayoutByName(t *testing.T) {
 
 	dataSourceConfig, err := clusterlayout.RenderClusterLayoutDataSourceByNameConfig(
 		t,
-		map[string]string{"Name": "Kubernetes Cluster"},
+		map[string]string{"Name": "HVM 1.3 Cluster on HVM/Ubuntu 24.04"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,7 @@ func TestAccMorpheusFindClusterLayoutByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cluster_layout.example",
 			"name",
-			"Kubernetes Cluster",
+			"HVM 1.3 Cluster on HVM/Ubuntu 24.04",
 		),
 	}
 
@@ -92,7 +92,7 @@ func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 
 	dataSourceConfig, err := clusterlayout.RenderClusterLayoutDataSourceByIDConfig(
 		t,
-		map[string]string{"Id": "7"},
+		map[string]string{"Id": "449"},
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -102,7 +102,7 @@ func TestAccMorpheusFindClusterLayoutById(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_cluster_layout.example",
 			"id",
-			"7",
+			"449",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_cluster_layout.example",
