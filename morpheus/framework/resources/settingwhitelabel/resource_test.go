@@ -2,6 +2,7 @@ package settingwhitelabel_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -122,6 +123,70 @@ func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
 			{Config: providerConfig + createConfig, Check: createChecks},
 			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
 			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}
+
+// TestAccMorpheusSettingWhitelabel_validationInvalidPrimaryColor verifies that a
+// non-hex primary_color is rejected at plan time instead of being silently
+// accepted. The validation error fires before any API call.
+func TestAccMorpheusSettingWhitelabel_validationInvalidPrimaryColor(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"PrimaryColor": "not-a-color",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile(`must be a valid hex color code`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusSettingWhitelabel_validationInvalidSecondaryColor verifies that a
+// non-hex secondary_color is rejected at plan time instead of being silently
+// accepted. The validation error fires before any API call.
+func TestAccMorpheusSettingWhitelabel_validationInvalidSecondaryColor(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"SecondaryColor": "not-a-color",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				ExpectError: regexp.MustCompile(`must be a valid hex color code`),
+			},
 		},
 	})
 }
