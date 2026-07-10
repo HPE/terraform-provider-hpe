@@ -41,7 +41,7 @@ data "hpe_morpheus_role" "example" {
 - `multitenant_locked` (Boolean) Multitenant Locked prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant*
 - `permissions` (Attributes) The set of permissions to assign to the role (see [below for nested schema](#nestedatt--permissions))
 - `role_type` (String) Role type
-- `tenant_copies` (Attributes List) The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise). (see [below for nested schema](#nestedatt--tenant_copies))
+- `tenant_copies` (Attributes Set) The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise. (see [below for nested schema](#nestedatt--tenant_copies))
 
 <a id="nestedatt--default_persona"></a>
 ### Nested Schema for `default_persona`
@@ -202,9 +202,9 @@ Read-Only:
 
 Read-Only:
 
-- `diverged` (Boolean) Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.
+- `diverged` (Boolean) Whether the subtenant has modified (diverged) its copy, which stops further propagation of changes from the master role.
 - `role_id` (Number) The id of the propagated per-tenant role copy.
-- `tenant_id` (Number) The id of the subtenant (tenant/account) the copy belongs to.
+- `tenant_id` (Number) The id of the subtenant (account) the copy belongs to.
 
 ## Permissions
 

@@ -315,9 +315,10 @@ func roleAsState(
 	}
 
 	// tenant_copies is populated from the role show response on Morpheus 9.0.2
-	// and later. Nil-safe: older appliances omit the field, so
-	// role.Role.TenantCopies is nil and this yields an empty list.
-	var tenantCopies []TenantCopiesValue
+	// and later. Older appliances omit the field, so role.Role.TenantCopies is
+	// nil; the slice is initialized (not left nil) so an empty result yields a
+	// known empty set rather than a null set.
+	tenantCopies := make([]TenantCopiesValue, 0)
 	for _, v := range role.Role.TenantCopies {
 		tenantCopies = append(tenantCopies, TenantCopiesValue{
 			TenantId: convert.Int64ToType(v.TenantId),
@@ -326,12 +327,12 @@ func roleAsState(
 			state:    attr.ValueStateKnown,
 		})
 	}
-	tenantCopiesList, tcDiags := types.ListValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
+	tenantCopiesSet, tcDiags := types.SetValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
 	diags.Append(tcDiags...)
 	if diags.HasError() {
 		return state, diags
 	}
-	state.TenantCopies = tenantCopiesList
+	state.TenantCopies = tenantCopiesSet
 
 	return state, diags
 }

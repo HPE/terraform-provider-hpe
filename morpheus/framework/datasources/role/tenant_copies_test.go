@@ -24,7 +24,7 @@ import (
 // appliances it is skipped rather than asserting a field the appliance cannot
 // return.
 //
-// Note: this asserts tenant_copies is a known (possibly empty) list. Verifying
+// Note: this asserts tenant_copies is a known (possibly empty) set. Verifying
 // non-empty copies additionally requires a subtenant with the master role
 // propagated into it; that fuller multitenant scenario is left as a follow-up.
 func TestAccMorpheusFindRoleTenantCopies(t *testing.T) {
@@ -68,7 +68,7 @@ data "hpe_morpheus_role" "test" {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_role.test", "multitenant", "true",
 		),
-		// tenant_copies is a known, computed list on >= 9.0.2 (0+ entries).
+		// tenant_copies is a known, computed set on >= 9.0.2 (0+ entries).
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_role.test", "tenant_copies.#",
 		),

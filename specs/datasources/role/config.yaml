@@ -488,28 +488,6 @@ role:
                   computed_optional_required: computed
             description: Set the access level for the specified workflows (taskSets)
         description: The set of permissions to assign to the role
-    tenant_copies:
-      list_nested:
-        computed_optional_required: computed
-        description: >-
-          The per-tenant copies of this role. When multitenant is true, Morpheus
-          propagates a copy of the role into each subtenant with a new id; this
-          lists those copies. Only populated on Morpheus 9.0.2 and later (empty
-          otherwise).
-        nested_object:
-          attributes:
-          - name: tenant_id
-            int64:
-              computed_optional_required: computed
-              description: The id of the subtenant (tenant/account) the copy belongs to.
-          - name: role_id
-            int64:
-              computed_optional_required: computed
-              description: The id of the propagated per-tenant role copy.
-          - name: diverged
-            bool:
-              computed_optional_required: computed
-              description: Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.
   includes:
     - role.id
     - role.name
@@ -518,11 +496,11 @@ role:
     - role.multitenant
     - role.multitenant_locked
     - role.role_type
+    - role.tenant_copies
   moves:
     - role: "" # unnest role wrapper to root
     - template-default_persona: default_persona
     - template-permissions: permissions
-    - template-tenant_copies: tenant_copies
   overrides:
     id:
       computed_optional_required: computed_optional

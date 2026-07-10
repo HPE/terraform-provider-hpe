@@ -15,8 +15,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-// TestAccMorpheusRoleTenantCopiesOk verifies that the computed tenant_copies
-// attribute is populated as a known list on a multitenant master role, and that
+// TestAccMorpheusRoleResourceTenantCopiesOk verifies that the computed tenant_copies
+// attribute is populated as a known set on a multitenant master role, and that
 // each entry exposes tenant_id, role_id, and diverged.
 //
 // The role show API only returns tenantCopies on Morpheus 9.0.2 and later,
@@ -24,10 +24,10 @@ import (
 // appliances it is skipped rather than asserting a field the appliance cannot
 // return.
 //
-// Note: this asserts tenant_copies is a known (possibly empty) list. Verifying
+// Note: this asserts tenant_copies is a known (possibly empty) set. Verifying
 // non-empty copies additionally requires a subtenant with the master role
 // propagated into it; that fuller multitenant scenario is left as a follow-up.
-func TestAccMorpheusRoleTenantCopiesOk(t *testing.T) {
+func TestAccMorpheusRoleResourceTenantCopiesOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
@@ -60,7 +60,7 @@ resource "hpe_morpheus_role" "tenant_copies" {
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "multitenant", "true"),
-		// tenant_copies is a known, computed list on >= 9.0.2 (0+ entries).
+		// tenant_copies is a known, computed set on >= 9.0.2 (0+ entries).
 		resource.TestCheckResourceAttrSet(resourceName, "tenant_copies.#"),
 	)
 

@@ -524,41 +524,19 @@ role:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier
             schema_definition: objectplanmodifier.UseStateForUnknown()
-    tenant_copies:
-      list_nested:
-        computed_optional_required: computed
-        description: >-
-          The per-tenant copies of this role. When multitenant is true, Morpheus
-          propagates a copy of the role into each subtenant with a new id; this
-          lists those copies. Only populated on Morpheus 9.0.2 and later (empty
-          otherwise).
-        nested_object:
-          attributes:
-          - name: tenant_id
-            int64:
-              computed_optional_required: computed
-              description: The id of the subtenant (tenant/account) the copy belongs to.
-          - name: role_id
-            int64:
-              computed_optional_required: computed
-              description: The id of the propagated per-tenant role copy.
-          - name: diverged
-            bool:
-              computed_optional_required: computed
-              description: Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.
   includes:
     - role.name
     - role.description
     - role.landing_url
     - role.multitenant
     - role.multitenant_locked
+    - role.tenant_copies
   moves:
     - role: "" # unnest role wrapper to root
     - template-id: id
     - template-default_persona_code: default_persona_code
     - template-role_type: role_type
     - template-permissions: permissions
-    - template-tenant_copies: tenant_copies
   overrides:
     name:
       computed_optional_required: required

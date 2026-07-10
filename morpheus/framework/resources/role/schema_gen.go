@@ -631,13 +631,13 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("user"),
 			},
-			"tenant_copies": schema.ListNestedAttribute{
+			"tenant_copies": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"diverged": schema.BoolAttribute{
 							Computed:            true,
-							Description:         "Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.",
-							MarkdownDescription: "Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.",
+							Description:         "Whether the subtenant has modified (diverged) its copy, which stops further propagation of changes from the master role.",
+							MarkdownDescription: "Whether the subtenant has modified (diverged) its copy, which stops further propagation of changes from the master role.",
 						},
 						"role_id": schema.Int64Attribute{
 							Computed:            true,
@@ -646,8 +646,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"tenant_id": schema.Int64Attribute{
 							Computed:            true,
-							Description:         "The id of the subtenant (tenant/account) the copy belongs to.",
-							MarkdownDescription: "The id of the subtenant (tenant/account) the copy belongs to.",
+							Description:         "The id of the subtenant (account) the copy belongs to.",
+							MarkdownDescription: "The id of the subtenant (account) the copy belongs to.",
 						},
 					},
 					CustomType: TenantCopiesType{
@@ -657,8 +657,8 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Computed:            true,
-				Description:         "The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise).",
-				MarkdownDescription: "The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise).",
+				Description:         "The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise.",
+				MarkdownDescription: "The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise.",
 			},
 		},
 	}
@@ -674,7 +674,7 @@ type RoleModel struct {
 	Name               types.String     `tfsdk:"name"`
 	Permissions        PermissionsValue `tfsdk:"permissions"`
 	RoleType           types.String     `tfsdk:"role_type"`
-	TenantCopies       types.List       `tfsdk:"tenant_copies"`
+	TenantCopies       types.Set        `tfsdk:"tenant_copies"`
 }
 
 var _ basetypes.ObjectTypable = PermissionsType{}
