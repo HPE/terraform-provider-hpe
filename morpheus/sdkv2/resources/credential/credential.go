@@ -521,15 +521,18 @@ func resourceCredentialRead(ctx context.Context, d *schema.ResourceData, meta an
 		d.Set("credential_store_integration_id", credential.Integration.ID)
 	}
 
+	// Secret fields (secret_key, client_secret, password, api_key) are
+	// write-only: the API returns only a salted hash that cannot be reproduced
+	// from the configured plaintext, so reading it back would cause a permanent
+	// diff. Leave those attributes as the value already held in state (the
+	// configured plaintext) and only read back the non-secret identity fields.
 	switch credential.Type.Code {
 	case credentialTypeAccessKeySecret:
 		d.Set("access_key", credential.Username)
-		d.Set("secret_key", credential.PasswordHash)
 	case credentialTypeAPIKey:
-		d.Set("api_key", credential.PasswordHash)
+		// api_key is write-only; preserve the configured value.
 	case credentialTypeClientIDSecret:
 		d.Set("client_id", credential.Username)
-		d.Set("client_secret", credential.PasswordHash)
 	case credentialTypeEmailPrivateKey:
 		d.Set("email", credential.Username)
 		d.Set("key_pair_id", credential.AuthKey.ID)
@@ -539,16 +542,13 @@ func resourceCredentialRead(ctx context.Context, d *schema.ResourceData, meta an
 		d.Set("key_pair_id", credential.AuthKey.ID)
 	case credentialTypeUsernameAPIKey:
 		d.Set("username", credential.Username)
-		d.Set("api_key", credential.PasswordHash)
 	case credentialTypeUsernameKeypair:
 		d.Set("username", credential.Username)
 		d.Set("key_pair_id", credential.AuthKey.ID)
 	case credentialTypeUsernamePassword:
 		d.Set("username", credential.Username)
-		d.Set("password", credential.PasswordHash)
 	case credentialTypeUsernamePasswordKeypair:
 		d.Set("username", credential.Username)
-		d.Set("password", credential.PasswordHash)
 		d.Set("key_pair_id", credential.AuthKey.ID)
 	}
 

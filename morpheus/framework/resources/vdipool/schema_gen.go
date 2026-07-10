@@ -5,9 +5,11 @@ package vdipool
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -68,8 +70,12 @@ func VdiPoolResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"idle_timeout": schema.Int64Attribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The idle timeout in minutes.",
 				MarkdownDescription: "The idle timeout in minutes.",
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"initial_pool_size": schema.Int64Attribute{
 				Optional:            true,
@@ -90,8 +96,9 @@ func VdiPoolResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"max_session_timeout": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The maximum session timeout in minutes.",
-				MarkdownDescription: "The maximum session timeout in minutes.",
+				Description:         "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.",
+				MarkdownDescription: "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.",
+				DeprecationMessage:  "max_session_timeout is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release.",
 			},
 			"min_idle": schema.Int64Attribute{
 				Optional:            true,
