@@ -631,6 +631,35 @@ func RoleResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("user"),
 			},
+			"tenant_copies": schema.ListNestedAttribute{
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"diverged": schema.BoolAttribute{
+							Computed:            true,
+							Description:         "Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.",
+							MarkdownDescription: "Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.",
+						},
+						"role_id": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The id of the propagated per-tenant role copy.",
+							MarkdownDescription: "The id of the propagated per-tenant role copy.",
+						},
+						"tenant_id": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The id of the subtenant (tenant/account) the copy belongs to.",
+							MarkdownDescription: "The id of the subtenant (tenant/account) the copy belongs to.",
+						},
+					},
+					CustomType: TenantCopiesType{
+						ObjectType: types.ObjectType{
+							AttrTypes: TenantCopiesValue{}.AttributeTypes(ctx),
+						},
+					},
+				},
+				Computed:            true,
+				Description:         "The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise).",
+				MarkdownDescription: "The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise).",
+			},
 		},
 	}
 }
@@ -645,6 +674,7 @@ type RoleModel struct {
 	Name               types.String     `tfsdk:"name"`
 	Permissions        PermissionsValue `tfsdk:"permissions"`
 	RoleType           types.String     `tfsdk:"role_type"`
+	TenantCopies       types.List       `tfsdk:"tenant_copies"`
 }
 
 var _ basetypes.ObjectTypable = PermissionsType{}
@@ -7569,5 +7599,442 @@ func (v WorkflowPermissionsValue) AttributeTypes(ctx context.Context) map[string
 		"access": basetypes.StringType{},
 		"id":     basetypes.Int64Type{},
 		"name":   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = TenantCopiesType{}
+
+type TenantCopiesType struct {
+	basetypes.ObjectType
+}
+
+func (t TenantCopiesType) Equal(o attr.Type) bool {
+	other, ok := o.(TenantCopiesType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t TenantCopiesType) String() string {
+	return "TenantCopiesType"
+}
+
+func (t TenantCopiesType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewTenantCopiesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTenantCopiesValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	divergedAttribute, ok := attributes["diverged"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`diverged is missing from object`)
+
+		return nil, diags
+	}
+
+	divergedVal, ok := divergedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`diverged expected to be basetypes.BoolValue, was: %T`, divergedAttribute))
+	}
+
+	roleIdAttribute, ok := attributes["role_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role_id is missing from object`)
+
+		return nil, diags
+	}
+
+	roleIdVal, ok := roleIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role_id expected to be basetypes.Int64Value, was: %T`, roleIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return nil, diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.Int64Value, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return TenantCopiesValue{
+		Diverged: divergedVal,
+		RoleId:   roleIdVal,
+		TenantId: tenantIdVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTenantCopiesValueNull() TenantCopiesValue {
+	return TenantCopiesValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewTenantCopiesValueUnknown() TenantCopiesValue {
+	return TenantCopiesValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewTenantCopiesValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (TenantCopiesValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing TenantCopiesValue Attribute Value",
+				"While creating a TenantCopiesValue value, a missing attribute value was detected. "+
+					"A TenantCopiesValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TenantCopiesValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid TenantCopiesValue Attribute Type",
+				"While creating a TenantCopiesValue value, an invalid attribute value was detected. "+
+					"A TenantCopiesValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("TenantCopiesValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("TenantCopiesValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra TenantCopiesValue Attribute Value",
+				"While creating a TenantCopiesValue value, an extra attribute value was detected. "+
+					"A TenantCopiesValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra TenantCopiesValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewTenantCopiesValueUnknown(), diags
+	}
+
+	divergedAttribute, ok := attributes["diverged"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`diverged is missing from object`)
+
+		return NewTenantCopiesValueUnknown(), diags
+	}
+
+	divergedVal, ok := divergedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`diverged expected to be basetypes.BoolValue, was: %T`, divergedAttribute))
+	}
+
+	roleIdAttribute, ok := attributes["role_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`role_id is missing from object`)
+
+		return NewTenantCopiesValueUnknown(), diags
+	}
+
+	roleIdVal, ok := roleIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`role_id expected to be basetypes.Int64Value, was: %T`, roleIdAttribute))
+	}
+
+	tenantIdAttribute, ok := attributes["tenant_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`tenant_id is missing from object`)
+
+		return NewTenantCopiesValueUnknown(), diags
+	}
+
+	tenantIdVal, ok := tenantIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`tenant_id expected to be basetypes.Int64Value, was: %T`, tenantIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewTenantCopiesValueUnknown(), diags
+	}
+
+	return TenantCopiesValue{
+		Diverged: divergedVal,
+		RoleId:   roleIdVal,
+		TenantId: tenantIdVal,
+		state:    attr.ValueStateKnown,
+	}, diags
+}
+
+func NewTenantCopiesValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) TenantCopiesValue {
+	object, diags := NewTenantCopiesValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewTenantCopiesValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t TenantCopiesType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewTenantCopiesValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewTenantCopiesValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewTenantCopiesValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewTenantCopiesValueMust(TenantCopiesValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t TenantCopiesType) ValueType(ctx context.Context) attr.Value {
+	return TenantCopiesValue{}
+}
+
+var _ basetypes.ObjectValuable = TenantCopiesValue{}
+
+type TenantCopiesValue struct {
+	Diverged basetypes.BoolValue  `tfsdk:"diverged"`
+	RoleId   basetypes.Int64Value `tfsdk:"role_id"`
+	TenantId basetypes.Int64Value `tfsdk:"tenant_id"`
+	state    attr.ValueState
+}
+
+func (v TenantCopiesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["diverged"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["role_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["tenant_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Diverged.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["diverged"] = val
+
+		val, err = v.RoleId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["role_id"] = val
+
+		val, err = v.TenantId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["tenant_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v TenantCopiesValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v TenantCopiesValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v TenantCopiesValue) String() string {
+	return "TenantCopiesValue"
+}
+
+func (v TenantCopiesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"diverged":  basetypes.BoolType{},
+		"role_id":   basetypes.Int64Type{},
+		"tenant_id": basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"diverged":  v.Diverged,
+			"role_id":   v.RoleId,
+			"tenant_id": v.TenantId,
+		})
+
+	return objVal, diags
+}
+
+func (v TenantCopiesValue) Equal(o attr.Value) bool {
+	other, ok := o.(TenantCopiesValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Diverged.Equal(other.Diverged) {
+		return false
+	}
+
+	if !v.RoleId.Equal(other.RoleId) {
+		return false
+	}
+
+	if !v.TenantId.Equal(other.TenantId) {
+		return false
+	}
+
+	return true
+}
+
+func (v TenantCopiesValue) Type(ctx context.Context) attr.Type {
+	return TenantCopiesType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v TenantCopiesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"diverged":  basetypes.BoolType{},
+		"role_id":   basetypes.Int64Type{},
+		"tenant_id": basetypes.Int64Type{},
 	}
 }

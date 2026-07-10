@@ -52,6 +52,7 @@ resource "hpe_morpheus_role" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of the role
+- `tenant_copies` (Attributes List) The per-tenant copies of this role. When multitenant is true, Morpheus propagates a copy of the role into each subtenant with a new id; this lists those copies. Only populated on Morpheus 9.0.2 and later (empty otherwise). (see [below for nested schema](#nestedatt--tenant_copies))
 
 <a id="nestedatt--permissions"></a>
 ### Nested Schema for `permissions`
@@ -227,6 +228,17 @@ Required:
 Read-Only:
 
 - `name` (String)
+
+
+
+<a id="nestedatt--tenant_copies"></a>
+### Nested Schema for `tenant_copies`
+
+Read-Only:
+
+- `diverged` (Boolean) Whether the subtenant has modified (diverged) its copy, which stops further propagation from the master role.
+- `role_id` (Number) The id of the propagated per-tenant role copy.
+- `tenant_id` (Number) The id of the subtenant (tenant/account) the copy belongs to.
 
 ## Roles
 

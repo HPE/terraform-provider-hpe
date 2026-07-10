@@ -314,6 +314,25 @@ func roleAsState(
 		state.RoleType = types.StringValue(consts.RoleTypeTenant)
 	}
 
+	// tenant_copies is populated from the role show response on Morpheus 9.0.2
+	// and later. Nil-safe: older appliances omit the field, so
+	// role.Role.TenantCopies is nil and this yields an empty list.
+	var tenantCopies []TenantCopiesValue
+	for _, v := range role.Role.TenantCopies {
+		tenantCopies = append(tenantCopies, TenantCopiesValue{
+			TenantId: convert.Int64ToType(v.TenantId),
+			RoleId:   convert.Int64ToType(v.RoleId),
+			Diverged: convert.BoolToType(v.Diverged),
+			state:    attr.ValueStateKnown,
+		})
+	}
+	tenantCopiesList, tcDiags := types.ListValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
+	diags.Append(tcDiags...)
+	if diags.HasError() {
+		return state, diags
+	}
+	state.TenantCopies = tenantCopiesList
+
 	return state, diags
 }
 
