@@ -32,7 +32,7 @@ func (r *Resource) Create(
 		return
 	}
 
-	resp.Diagnostics.Append(req.Config.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
