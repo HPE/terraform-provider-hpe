@@ -34,7 +34,7 @@ network_router:
     group_id:
       int64:
         computed_optional_required: required
-        description: Sets the group that this router is scoped to.
+        description: Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.
         validators:
           - custom:
               imports:
@@ -49,7 +49,7 @@ network_router:
     shared_group_access:
       bool:
         computed_optional_required: optional
-        description: Used to enable shared group access. Conflicts with group_id.
+        description: Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.
         validators:
           - custom:
               imports:
