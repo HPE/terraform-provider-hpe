@@ -17,8 +17,8 @@ import (
 )
 
 const (
-	testWorkflowName              = "qatf-ttestacc-full-operational-workflow-2"
-	testFailureWorkflowName       = "qatf-ttestacc-full-operational-workflow-1"
+	testWorkflowName              = "full-operational-workflow-2"
+	testFailureWorkflowName       = "full-operational-workflow-1"
 	testIfOperationalWorkflowId   = "797"
 	testElseOperationalWorkflowId = "796"
 )

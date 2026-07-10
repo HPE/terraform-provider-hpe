@@ -41,7 +41,7 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 		// the acceptance test environment. Kept out of the example defaults so
 		// it doesn't leak into user-facing docs.
 		"OperationalWorkflowId":   "797",
-		"OperationalWorkflowName": "qatf-ttestacc-full-operational-workflow-1",
+		"OperationalWorkflowName": "full-operational-workflow-1",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +75,7 @@ func TestAccMorpheusTaskNestedWorkflowExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_nested_workflow.example",
 			"operational_workflow_name",
-			"qatf-ttestacc-full-operational-workflow-1",
+			"full-operational-workflow-1",
 		),
 	}
 
