@@ -1,0 +1,28 @@
+deployment:
+  moves:
+    - deployment: ""                 # unnest wrapper (GET /api/deployments/{deploymentId})
+  removes:
+    - deployment_id                  # (deployment) redundant path param artifact
+    - max_versions                   # (deployment) query param, not a response field
+    - versions                       # (deployment) read-only nested array (use versions data source)
+  overrides:
+    id:
+      description: The ID of the deployment.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the deployment.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    account_id:
+      description: The account ID that owns the deployment.
+    date_created:
+      description: The date the deployment was created.
+    description:
+      description: The description of the deployment.
+    external_id:
+      description: The external ID of the deployment.
+    last_updated:
+      description: The date the deployment was last updated.
+    version_count:
+      description: The number of versions in the deployment.

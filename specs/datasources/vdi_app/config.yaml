@@ -1,0 +1,24 @@
+vdi_app:
+  moves:
+    - vdi_app: ""                    # unnest wrapper (GET /api/vdi-apps/{id})
+  overrides:
+    id:
+      description: The ID of the VDI app.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the VDI app.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    date_created:
+      description: The date the VDI app was created.
+    description:
+      description: The description of the VDI app.
+    icon_path:
+      description: The icon path for the VDI app.
+    last_updated:
+      description: The date the VDI app was last updated.
+    launch_prefix:
+      description: The RDS app name prefix.
+    logo:
+      description: The logo path for the VDI app.

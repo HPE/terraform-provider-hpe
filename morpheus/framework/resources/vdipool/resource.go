@@ -96,7 +96,11 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		v := float32(plan.MaxIdle.ValueInt64())
 		oneOf.MaxIdle = &v
 	}
-	if !plan.IdleTimeout.IsNull() {
+	// idle_timeout is Optional+Computed: when the practitioner omits it the plan
+	// value is unknown, so only send it when a concrete value was configured.
+	// Otherwise Morpheus applies its own default and the read-back stays
+	// consistent.
+	if !plan.IdleTimeout.IsNull() && !plan.IdleTimeout.IsUnknown() {
 		v := float32(plan.IdleTimeout.ValueInt64())
 		oneOf.AllocationTimeoutMinutes = &v
 	}
@@ -162,6 +166,10 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
+	// max_session_timeout is not backed by the Morpheus API (deprecated); retain
+	// the planned value in state rather than round-tripping it through the API.
+	state.MaxSessionTimeout = plan.MaxSessionTimeout
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
@@ -182,6 +190,10 @@ func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, re
 
 		return
 	}
+
+	// max_session_timeout is not backed by the Morpheus API (deprecated); keep
+	// the existing value from prior state rather than round-tripping it.
+	model.MaxSessionTimeout = state.MaxSessionTimeout
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
 }
@@ -249,7 +261,7 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 		v := float32(plan.InitialPoolSize.ValueInt64())
 		body.InitialPoolSize = &v
 	}
-	if !plan.IdleTimeout.IsNull() {
+	if !plan.IdleTimeout.IsNull() && !plan.IdleTimeout.IsUnknown() {
 		v := float32(plan.IdleTimeout.ValueInt64())
 		body.AllocationTimeoutMinutes = &v
 	}
@@ -268,6 +280,10 @@ func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// max_session_timeout is not backed by the Morpheus API (deprecated); retain
+	// the planned value in state rather than round-tripping it through the API.
+	state.MaxSessionTimeout = plan.MaxSessionTimeout
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
