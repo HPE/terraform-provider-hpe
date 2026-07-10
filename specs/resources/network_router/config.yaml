@@ -329,10 +329,11 @@ network_router:
       computed_optional_required: computed_optional
       default: false
     visibility:
-      computed_optional_required: computed
+      computed_optional_required: computed_optional
       description: The visibility of the network router (public or private).
+      one_of: [public, private]
       state_for_unknown: true
     tenant_ids:
-      computed_optional_required: computed
+      computed_optional_required: computed_optional
       description: List of tenant account IDs that are allowed access.
       state_for_unknown: true

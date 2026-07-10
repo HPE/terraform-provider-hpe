@@ -393,6 +393,7 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
+				Optional:            true,
 				Computed:            true,
 				Description:         "List of tenant account IDs that are allowed access.",
 				MarkdownDescription: "List of tenant account IDs that are allowed access.",
@@ -413,11 +414,15 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"visibility": schema.StringAttribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The visibility of the network router (public or private).",
 				MarkdownDescription: "The visibility of the network router (public or private).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("public", "private"),
 				},
 			},
 		},
