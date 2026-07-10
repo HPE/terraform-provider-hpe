@@ -23,7 +23,7 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var plan, state NetworkRouterModel
+	var plan, state, config NetworkRouterModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -31,6 +31,11 @@ func (r *Resource) Update(
 	}
 
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -80,7 +85,7 @@ func (r *Resource) Update(
 	}
 
 	// Apply permissions (visibility + tenant_ids).
-	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, client)...)
+	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, config, client)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -126,12 +131,15 @@ func applyRouterPermissions(
 	ctx context.Context,
 	id int64,
 	plan NetworkRouterModel,
+	config NetworkRouterModel,
 	client *sdk.APIClient,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	visSet := !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown()
-	tenSet := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown()
+	visSet := !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() &&
+		!config.Visibility.IsNull() && !config.Visibility.IsUnknown()
+	tenSet := !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() &&
+		!config.TenantIds.IsNull() && !config.TenantIds.IsUnknown()
 	if !visSet && !tenSet {
 		return diags
 	}
