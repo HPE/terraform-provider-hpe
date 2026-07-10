@@ -202,6 +202,8 @@ network_router:
   overrides:
     id:
       state_for_unknown: true
+    code:
+      state_for_unknown: true
     cloud_id:
       requires_replace: true
     group_id:

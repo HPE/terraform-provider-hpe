@@ -49,6 +49,9 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"code": schema.StringAttribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
