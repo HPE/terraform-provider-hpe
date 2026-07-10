@@ -222,7 +222,9 @@ func resourceIntegrationDockerRegistryRead(ctx context.Context, d *schema.Resour
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	d.Set("password", integration.PasswordHash)
+	// password is write-only: the API returns only a salted hash that cannot be
+	// reproduced from the configured plaintext, so reading it back would cause a
+	// permanent diff. Leave it as the value already held in state.
 
 	return diags
 }
