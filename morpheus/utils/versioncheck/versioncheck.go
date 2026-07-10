@@ -15,6 +15,7 @@ import (
 	goversion "github.com/hashicorp/go-version"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // Version is a parsed, comparable version. It aliases hashicorp/go-version's
@@ -27,11 +28,8 @@ type Version = goversion.Version
 // checks) should skip their logic on error rather than fail.
 func Appliance(ctx context.Context, client *sdk.APIClient) (*Version, error) {
 	resp, hresp, err := client.HealthAPI.ListHealth(ctx).Execute()
-	if err != nil {
-		return nil, fmt.Errorf("query appliance version: %w", err)
-	}
-	if hresp == nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("query appliance version: unexpected health response")
+	if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("query appliance version: %s", errfmt.ErrMsg(err, hresp))
 	}
 	if resp.Health == nil || resp.Health.BuildVersion == nil {
 		return nil, fmt.Errorf("appliance health response did not include a build version")
