@@ -7,9 +7,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
-	"github.com/HPE/terraform-provider-opsramp/internal/data"
-	"github.com/HPE/terraform-provider-opsramp/internal/resources"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/data"
+	"github.com/HPE/terraform-provider-hpe/opsramp/resources"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"

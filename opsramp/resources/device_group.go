@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

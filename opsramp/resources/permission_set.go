@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/resource"

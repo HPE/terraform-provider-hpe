@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/acctest"
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )

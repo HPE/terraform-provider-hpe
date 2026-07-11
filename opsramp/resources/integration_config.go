@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"

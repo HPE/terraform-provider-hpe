@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"

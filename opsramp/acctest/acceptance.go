@@ -11,8 +11,8 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
-	providerpkg "github.com/HPE/terraform-provider-opsramp/internal/provider"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
+	providerpkg "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	tfacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"

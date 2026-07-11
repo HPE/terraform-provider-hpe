@@ -9,7 +9,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client" // Adjust import path to match your client package
+	"github.com/HPE/terraform-provider-hpe/opsramp/client" // Adjust import path to match your client package
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

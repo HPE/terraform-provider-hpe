@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/acctest"
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 

@@ -5,7 +5,7 @@ package resources
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-opsramp/internal/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"

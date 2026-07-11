@@ -7,7 +7,7 @@ import (
 	"context"
 	"testing"
 
-	providerimpl "github.com/HPE/terraform-provider-opsramp/internal/provider"
+	providerimpl "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
 )
 
