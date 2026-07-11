@@ -143,7 +143,7 @@ func (p *OpsRampProvider) Resources(ctx context.Context) []func() resource.Resou
 		resources.NewFirstResponsePolicy,
 		resources.NewCredentialSet,
 		resources.NewManagementProfile,
-		resources.NewScheduleMaintenance,
+		resources.NewScheduledMaintenance,
 		resources.NewMetricAlertDefinition,
 		resources.NewLogAlertDefinition,
 	}

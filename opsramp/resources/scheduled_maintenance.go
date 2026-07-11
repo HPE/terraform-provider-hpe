@@ -24,17 +24,17 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ScheduleMaintenanceResource{}
-var _ resource.ResourceWithImportState = &ScheduleMaintenanceResource{}
-var _ resource.ResourceWithModifyPlan = &ScheduleMaintenanceResource{}
+var _ resource.Resource = &ScheduledMaintenanceResource{}
+var _ resource.ResourceWithImportState = &ScheduledMaintenanceResource{}
+var _ resource.ResourceWithModifyPlan = &ScheduledMaintenanceResource{}
 
-// ScheduleMaintenanceResource defines the resource implementation.
-type ScheduleMaintenanceResource struct {
+// ScheduledMaintenanceResource defines the resource implementation.
+type ScheduledMaintenanceResource struct {
 	BaseResource
 }
 
-// ScheduleMaintenanceModel maps Terraform schema attributes to the provider model.
-type ScheduleMaintenanceModel struct {
+// ScheduledMaintenanceModel maps Terraform schema attributes to the provider model.
+type ScheduledMaintenanceModel struct {
 	Id                types.String `tfsdk:"id"`
 	Client            types.String `tfsdk:"client"`
 	Name              types.String `tfsdk:"name"`
@@ -46,7 +46,7 @@ type ScheduleMaintenanceModel struct {
 	Status            types.String `tfsdk:"status"`
 
 	// Schedule timing
-	Schedule *ScheduleMaintenanceScheduleModel `tfsdk:"schedule"`
+	Schedule *ScheduledMaintenanceScheduleModel `tfsdk:"schedule"`
 
 	// Resources
 	DeviceIds      types.Set `tfsdk:"device_ids"`
@@ -54,7 +54,7 @@ type ScheduleMaintenanceModel struct {
 	SiteIds        types.Set `tfsdk:"site_ids"`
 
 	// Alert conditions
-	AlertConditions *ScheduleMaintenanceAlertConditionsModel `tfsdk:"alert_conditions"`
+	AlertConditions *ScheduledMaintenanceAlertConditionsModel `tfsdk:"alert_conditions"`
 
 	UserIds               types.Set `tfsdk:"user_ids"`
 	UserGroupIds          types.Set `tfsdk:"user_group_ids"`
@@ -62,18 +62,18 @@ type ScheduleMaintenanceModel struct {
 	NotifyBeforeEndTime   int64     `tfsdk:"notify_before_end_time"`
 }
 
-// ScheduleMaintenanceScheduleModel represents the schedule timing block
-type ScheduleMaintenanceScheduleModel struct {
-	Type      types.String                     `tfsdk:"type"`
-	StartTime types.String                     `tfsdk:"start_time"`
-	EndTime   types.String                     `tfsdk:"end_time"`
-	EndBy     types.String                     `tfsdk:"end_by"`
-	Timezone  types.String                     `tfsdk:"timezone"`
-	Pattern   *ScheduleMaintenancePatternModel `tfsdk:"pattern"`
+// ScheduledMaintenanceScheduleModel represents the schedule timing block
+type ScheduledMaintenanceScheduleModel struct {
+	Type      types.String                      `tfsdk:"type"`
+	StartTime types.String                      `tfsdk:"start_time"`
+	EndTime   types.String                      `tfsdk:"end_time"`
+	EndBy     types.String                      `tfsdk:"end_by"`
+	Timezone  types.String                      `tfsdk:"timezone"`
+	Pattern   *ScheduledMaintenancePatternModel `tfsdk:"pattern"`
 }
 
-// ScheduleMaintenancePatternModel represents the recurrence pattern
-type ScheduleMaintenancePatternModel struct {
+// ScheduledMaintenancePatternModel represents the recurrence pattern
+type ScheduledMaintenancePatternModel struct {
 	Type            types.String `tfsdk:"type"`
 	WeekDays        types.String `tfsdk:"week_days"`
 	DayOfWeek       types.String `tfsdk:"day_of_week"`
@@ -84,31 +84,31 @@ type ScheduleMaintenancePatternModel struct {
 	DayOfMonth      types.String `tfsdk:"day_of_month"`
 }
 
-// ScheduleMaintenanceAlertConditionsModel represents alert conditions
-type ScheduleMaintenanceAlertConditionsModel struct {
-	MatchingType types.String                        `tfsdk:"matching_type"`
-	Rules        []ScheduleMaintenanceAlertRuleModel `tfsdk:"rules"`
+// ScheduledMaintenanceAlertConditionsModel represents alert conditions
+type ScheduledMaintenanceAlertConditionsModel struct {
+	MatchingType types.String                         `tfsdk:"matching_type"`
+	Rules        []ScheduledMaintenanceAlertRuleModel `tfsdk:"rules"`
 }
 
-// ScheduleMaintenanceAlertRuleModel represents a single alert condition rule
-type ScheduleMaintenanceAlertRuleModel struct {
+// ScheduledMaintenanceAlertRuleModel represents a single alert condition rule
+type ScheduledMaintenanceAlertRuleModel struct {
 	Key      types.String `tfsdk:"key"`
 	Operator types.String `tfsdk:"operator"`
 	Value    types.String `tfsdk:"value"`
 }
 
-// NewScheduleMaintenance creates a new instance of the resource.
-func NewScheduleMaintenance() resource.Resource {
-	return &ScheduleMaintenanceResource{}
+// NewScheduledMaintenance creates a new instance of the resource.
+func NewScheduledMaintenance() resource.Resource {
+	return &ScheduledMaintenanceResource{}
 }
 
 // Metadata returns the resource type name.
-func (r *ScheduleMaintenanceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_schedule_maintenance"
+func (r *ScheduledMaintenanceResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_scheduled_maintenance"
 }
 
 // Schema defines the schema for the resource.
-func (r *ScheduleMaintenanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *ScheduledMaintenanceResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		MarkdownDescription: "Manages an OpsRamp Scheduled Maintenance Window. Supports one-time and recurring schedules with device, device group, and location targeting.",
 		Attributes: map[string]schema.Attribute{
@@ -325,16 +325,16 @@ func (r *ScheduleMaintenanceResource) Schema(_ context.Context, _ resource.Schem
 }
 
 // getTenantId determines which tenant ID to use based on the optional client parameter
-func (r *ScheduleMaintenanceResource) getTenantId(clientId types.String) string {
+func (r *ScheduledMaintenanceResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
 	return r.apiClient.TenantId
 }
 
-// mapScheduleMaintenanceResponse maps an API response onto a model in place.
+// mapScheduledMaintenanceResponse maps an API response onto a model in place.
 // It is used by Create, Read, and Update to keep state consistent.
-func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse, model *ScheduleMaintenanceModel) {
+func mapScheduledMaintenanceResponse(existing *client.ScheduledMaintenanceResponse, model *ScheduledMaintenanceModel) {
 	model.Name = types.StringValue(existing.Name)
 	model.Description = types.StringValue(existing.Description)
 	model.RunRBA = types.BoolValue(existing.RunRBA)
@@ -344,7 +344,7 @@ func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse
 	model.Status = types.StringValue(existing.Status)
 
 	// Fully rebuild Schedule from API response (required for import and drift detection)
-	sched := ScheduleMaintenanceScheduleModel{
+	sched := ScheduledMaintenanceScheduleModel{
 		Type:      types.StringValue(existing.Schedule.Type),
 		StartTime: types.StringValue(existing.Schedule.StartTime),
 		EndTime:   types.StringValue(existing.Schedule.EndTime),
@@ -355,7 +355,7 @@ func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse
 		sched.EndBy = types.StringValue(existing.Schedule.EndBy)
 	}
 	if existing.Schedule.Pattern != nil {
-		pat := &ScheduleMaintenancePatternModel{
+		pat := &ScheduledMaintenancePatternModel{
 			Type:            types.StringValue(existing.Schedule.Pattern.Type),
 			WeekDays:        types.StringNull(),
 			DayOfWeek:       types.StringNull(),
@@ -395,7 +395,7 @@ func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse
 
 	// Rebuild alert conditions when present in the response
 	if existing.AlertConditions != nil {
-		ac := &ScheduleMaintenanceAlertConditionsModel{
+		ac := &ScheduledMaintenanceAlertConditionsModel{
 			MatchingType: types.StringValue(existing.AlertConditions.MatchingType),
 		}
 		for _, rule := range existing.AlertConditions.Rules {
@@ -411,7 +411,7 @@ func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse
 				mappedKey = "resourceName"
 			}
 
-			ac.Rules = append(ac.Rules, ScheduleMaintenanceAlertRuleModel{
+			ac.Rules = append(ac.Rules, ScheduledMaintenanceAlertRuleModel{
 				Key:      types.StringValue(mappedKey),
 				Operator: types.StringValue(rule.Operator),
 				Value:    types.StringValue(rule.Value),
@@ -424,8 +424,8 @@ func mapScheduleMaintenanceResponse(existing *client.ScheduleMaintenanceResponse
 }
 
 // Create handles the creation of the resource.
-func (r *ScheduleMaintenanceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan ScheduleMaintenanceModel
+func (r *ScheduledMaintenanceResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan ScheduledMaintenanceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -436,7 +436,7 @@ func (r *ScheduleMaintenanceResource) Create(ctx context.Context, req resource.C
 
 	apiReq := r.buildRequest(plan)
 
-	created, err := r.apiClient.CreateScheduleMaintenance(tenantId, apiReq)
+	created, err := r.apiClient.CreateScheduledMaintenance(tenantId, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error",
 			fmt.Sprintf("Could not create schedule maintenance: %s", err.Error()))
@@ -446,12 +446,12 @@ func (r *ScheduleMaintenanceResource) Create(ctx context.Context, req resource.C
 	plan.Id = types.StringValue(created.UniqueId)
 
 	// Fetch the freshly created resource to populate all computed fields (including Status).
-	existing, err := r.apiClient.GetScheduleMaintenance(tenantId, created.UniqueId)
+	existing, err := r.apiClient.GetScheduledMaintenance(tenantId, created.UniqueId)
 	if err != nil {
 		// Non-fatal: store what we know and let the next Read reconcile.
 		plan.Status = types.StringValue("Pending")
 	} else {
-		mapScheduleMaintenanceResponse(existing, &plan)
+		mapScheduledMaintenanceResponse(existing, &plan)
 	}
 
 	diags = resp.State.Set(ctx, &plan)
@@ -459,8 +459,8 @@ func (r *ScheduleMaintenanceResource) Create(ctx context.Context, req resource.C
 }
 
 // Read handles reading the resource state.
-func (r *ScheduleMaintenanceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state ScheduleMaintenanceModel
+func (r *ScheduledMaintenanceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state ScheduledMaintenanceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -469,7 +469,7 @@ func (r *ScheduleMaintenanceResource) Read(ctx context.Context, req resource.Rea
 
 	tenantId := r.getTenantId(state.Client)
 
-	existing, err := r.apiClient.GetScheduleMaintenance(tenantId, state.Id.ValueString())
+	existing, err := r.apiClient.GetScheduledMaintenance(tenantId, state.Id.ValueString())
 	if err != nil {
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
@@ -481,22 +481,22 @@ func (r *ScheduleMaintenanceResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	// Update scalar fields from response
-	mapScheduleMaintenanceResponse(existing, &state)
+	mapScheduledMaintenanceResponse(existing, &state)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 }
 
 // Update handles updating the resource.
-func (r *ScheduleMaintenanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan ScheduleMaintenanceModel
+func (r *ScheduledMaintenanceResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan ScheduledMaintenanceModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var state ScheduleMaintenanceModel
+	var state ScheduledMaintenanceModel
 	diags = req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -507,7 +507,7 @@ func (r *ScheduleMaintenanceResource) Update(ctx context.Context, req resource.U
 
 	apiReq := r.buildRequest(plan)
 
-	_, err := r.apiClient.UpdateScheduleMaintenance(tenantId, state.Id.ValueString(), apiReq)
+	_, err := r.apiClient.UpdateScheduledMaintenance(tenantId, state.Id.ValueString(), apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error",
 			fmt.Sprintf("Could not update schedule maintenance: %s", err.Error()))
@@ -517,12 +517,12 @@ func (r *ScheduleMaintenanceResource) Update(ctx context.Context, req resource.U
 	plan.Id = state.Id
 
 	// Fetch the updated resource to populate all computed fields (including Status).
-	existing, err := r.apiClient.GetScheduleMaintenance(tenantId, state.Id.ValueString())
+	existing, err := r.apiClient.GetScheduledMaintenance(tenantId, state.Id.ValueString())
 	if err != nil {
 		// Non-fatal: carry Status over from prior state and let the next Read reconcile.
 		plan.Status = state.Status
 	} else {
-		mapScheduleMaintenanceResponse(existing, &plan)
+		mapScheduledMaintenanceResponse(existing, &plan)
 	}
 
 	diags = resp.State.Set(ctx, &plan)
@@ -530,8 +530,8 @@ func (r *ScheduleMaintenanceResource) Update(ctx context.Context, req resource.U
 }
 
 // Delete handles deleting the resource.
-func (r *ScheduleMaintenanceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state ScheduleMaintenanceModel
+func (r *ScheduledMaintenanceResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state ScheduledMaintenanceModel
 	diags := req.State.Get(ctx, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -540,7 +540,7 @@ func (r *ScheduleMaintenanceResource) Delete(ctx context.Context, req resource.D
 
 	tenantId := r.getTenantId(state.Client)
 
-	err := r.apiClient.DeleteScheduleMaintenance(tenantId, state.Id.ValueString())
+	err := r.apiClient.DeleteScheduledMaintenance(tenantId, state.Id.ValueString())
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
@@ -550,20 +550,17 @@ func (r *ScheduleMaintenanceResource) Delete(ctx context.Context, req resource.D
 }
 
 // ImportState handles resource import.
-// Use "<client_id>:<sm_id>" or just "<sm_id>" as the import ID.
-func (r *ScheduleMaintenanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importId := req.ID
-
-	var state ScheduleMaintenanceModel
-
-	if strings.Contains(importId, ":") {
-		parts := strings.SplitN(importId, ":", 2)
-		state.Client = types.StringValue(parts[0])
-		state.Id = types.StringValue(parts[1])
-	} else {
-		state.Id = types.StringValue(importId)
-		state.Client = types.StringNull()
+// Import ID format: <sm_id> or <client_id>:<sm_id> (MSP only)
+func (r *ScheduledMaintenanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
 	}
+
+	var state ScheduledMaintenanceModel
+	state.Client = parsed.Client
+	state.Id = types.StringValue(parsed.Parts[0])
 
 	state.Name = types.StringUnknown()
 	state.Description = types.StringUnknown()
@@ -574,7 +571,7 @@ func (r *ScheduleMaintenanceResource) ImportState(ctx context.Context, req resou
 	state.RunEscalateAction = types.BoolUnknown()
 
 	// Initialize Schedule with Unknown values — Read will populate the real values.
-	state.Schedule = &ScheduleMaintenanceScheduleModel{
+	state.Schedule = &ScheduledMaintenanceScheduleModel{
 		Type:      types.StringUnknown(),
 		StartTime: types.StringUnknown(),
 		EndTime:   types.StringUnknown(),
@@ -588,6 +585,8 @@ func (r *ScheduleMaintenanceResource) ImportState(ctx context.Context, req resou
 	state.DeviceIds = types.SetNull(types.StringType)
 	state.DeviceGroupIds = types.SetNull(types.StringType)
 	state.SiteIds = types.SetNull(types.StringType)
+	state.UserIds = types.SetNull(types.StringType)
+	state.UserGroupIds = types.SetNull(types.StringType)
 	state.AlertConditions = nil
 
 	diags := resp.State.Set(ctx, &state)
@@ -595,8 +594,8 @@ func (r *ScheduleMaintenanceResource) ImportState(ctx context.Context, req resou
 }
 
 // buildRequest converts the Terraform model to the API request
-func (r *ScheduleMaintenanceResource) buildRequest(plan ScheduleMaintenanceModel) client.ScheduleMaintenanceRequest {
-	apiReq := client.ScheduleMaintenanceRequest{
+func (r *ScheduledMaintenanceResource) buildRequest(plan ScheduledMaintenanceModel) client.ScheduledMaintenanceRequest {
+	apiReq := client.ScheduledMaintenanceRequest{
 		Name:              plan.Name.ValueString(),
 		Description:       plan.Description.ValueString(),
 		RunRBA:            plan.RunRBA.ValueBool(),
@@ -607,7 +606,7 @@ func (r *ScheduleMaintenanceResource) buildRequest(plan ScheduleMaintenanceModel
 
 	// Build schedule
 	if plan.Schedule != nil {
-		apiReq.Schedule = client.ScheduleMaintenanceTime{
+		apiReq.Schedule = client.ScheduledMaintenanceTime{
 			Type:      plan.Schedule.Type.ValueString(),
 			StartTime: plan.Schedule.StartTime.ValueString(),
 			EndTime:   plan.Schedule.EndTime.ValueString(),
@@ -680,7 +679,7 @@ func (r *ScheduleMaintenanceResource) buildRequest(plan ScheduleMaintenanceModel
 }
 
 // ModifyPlan validates cross-field constraints on the plan.
-func (r *ScheduleMaintenanceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *ScheduledMaintenanceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 
 	// Skip on destroy
@@ -688,7 +687,7 @@ func (r *ScheduleMaintenanceResource) ModifyPlan(ctx context.Context, req resour
 		return
 	}
 
-	var plan ScheduleMaintenanceModel
+	var plan ScheduledMaintenanceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return

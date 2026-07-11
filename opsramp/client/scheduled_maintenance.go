@@ -8,8 +8,8 @@ import (
 	"fmt"
 )
 
-// CreateScheduleMaintenance creates a new scheduled maintenance window.
-func (c *OpsRampClient) CreateScheduleMaintenance(tenantId string, request ScheduleMaintenanceRequest) (*ScheduleMaintenanceCreateResponse, error) {
+// CreateScheduledMaintenance creates a new scheduled maintenance window.
+func (c *OpsRampClient) CreateScheduledMaintenance(tenantId string, request ScheduledMaintenanceRequest) (*ScheduledMaintenanceCreateResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -22,7 +22,7 @@ func (c *OpsRampClient) CreateScheduleMaintenance(tenantId string, request Sched
 		return nil, err
 	}
 
-	var response ScheduleMaintenanceCreateResponse
+	var response ScheduledMaintenanceCreateResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
@@ -30,8 +30,8 @@ func (c *OpsRampClient) CreateScheduleMaintenance(tenantId string, request Sched
 	return &response, nil
 }
 
-// GetScheduleMaintenance retrieves a scheduled maintenance window by ID.
-func (c *OpsRampClient) GetScheduleMaintenance(tenantId string, smId string) (*ScheduleMaintenanceResponse, error) {
+// GetScheduledMaintenance retrieves a scheduled maintenance window by ID.
+func (c *OpsRampClient) GetScheduledMaintenance(tenantId string, smId string) (*ScheduledMaintenanceResponse, error) {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s", c.BaseUrl, tenantId, smId)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
@@ -39,7 +39,7 @@ func (c *OpsRampClient) GetScheduleMaintenance(tenantId string, smId string) (*S
 		return nil, err
 	}
 
-	var response ScheduleMaintenanceResponse
+	var response ScheduledMaintenanceResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
@@ -47,8 +47,8 @@ func (c *OpsRampClient) GetScheduleMaintenance(tenantId string, smId string) (*S
 	return &response, nil
 }
 
-// UpdateScheduleMaintenance updates an existing scheduled maintenance window.
-func (c *OpsRampClient) UpdateScheduleMaintenance(tenantId string, smId string, request ScheduleMaintenanceRequest) (*ScheduleMaintenanceCreateResponse, error) {
+// UpdateScheduledMaintenance updates an existing scheduled maintenance window.
+func (c *OpsRampClient) UpdateScheduledMaintenance(tenantId string, smId string, request ScheduledMaintenanceRequest) (*ScheduledMaintenanceCreateResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (c *OpsRampClient) UpdateScheduleMaintenance(tenantId string, smId string, 
 		return nil, err
 	}
 
-	var response ScheduleMaintenanceCreateResponse
+	var response ScheduledMaintenanceCreateResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
@@ -69,16 +69,16 @@ func (c *OpsRampClient) UpdateScheduleMaintenance(tenantId string, smId string, 
 	return &response, nil
 }
 
-// DeleteScheduleMaintenance deletes a scheduled maintenance window.
-func (c *OpsRampClient) DeleteScheduleMaintenance(tenantId string, smId string) error {
+// DeleteScheduledMaintenance deletes a scheduled maintenance window.
+func (c *OpsRampClient) DeleteScheduledMaintenance(tenantId string, smId string) error {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s", c.BaseUrl, tenantId, smId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
 	return err
 }
 
-// AddScheduleMaintenanceResources adds devices, device groups, and locations to a maintenance window.
-func (c *OpsRampClient) AddScheduleMaintenanceResources(tenantId string, smId string, request ScheduleMaintenanceResourcesRequest) error {
+// AddScheduledMaintenanceResources adds devices, device groups, and locations to a maintenance window.
+func (c *OpsRampClient) AddScheduledMaintenanceResources(tenantId string, smId string, request ScheduledMaintenanceResourcesRequest) error {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -90,8 +90,8 @@ func (c *OpsRampClient) AddScheduleMaintenanceResources(tenantId string, smId st
 	return err
 }
 
-// RemoveScheduleMaintenanceResources removes devices, device groups, and locations from a maintenance window.
-func (c *OpsRampClient) RemoveScheduleMaintenanceResources(tenantId string, smId string, request ScheduleMaintenanceResourcesRequest) error {
+// RemoveScheduledMaintenanceResources removes devices, device groups, and locations from a maintenance window.
+func (c *OpsRampClient) RemoveScheduledMaintenanceResources(tenantId string, smId string, request ScheduledMaintenanceResourcesRequest) error {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -103,9 +103,9 @@ func (c *OpsRampClient) RemoveScheduleMaintenanceResources(tenantId string, smId
 	return err
 }
 
-// GetScheduleMaintenanceResourcesByType returns assigned resources of the given type.
+// GetScheduledMaintenanceResourcesByType returns assigned resources of the given type.
 // resourceType must be one of: "resources", "deviceGroups", "sites".
-func (c *OpsRampClient) GetScheduleMaintenanceResourcesByType(tenantId string, smId string, resourceType string) (*ScheduleMaintenanceResourceTypeResponse, error) {
+func (c *OpsRampClient) GetScheduledMaintenanceResourcesByType(tenantId string, smId string, resourceType string) (*ScheduledMaintenanceResourceTypeResponse, error) {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s/resources/%s", c.BaseUrl, tenantId, smId, resourceType)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
@@ -113,7 +113,7 @@ func (c *OpsRampClient) GetScheduleMaintenanceResourcesByType(tenantId string, s
 		return nil, err
 	}
 
-	var response ScheduleMaintenanceResourceTypeResponse
+	var response ScheduledMaintenanceResourceTypeResponse
 	if err := json.Unmarshal(body, &response); err != nil {
 		return nil, err
 	}
@@ -121,8 +121,8 @@ func (c *OpsRampClient) GetScheduleMaintenanceResourcesByType(tenantId string, s
 	return &response, nil
 }
 
-// ScheduleMaintenanceAction executes an action (resume or suspend) on a maintenance window.
-func (c *OpsRampClient) ScheduleMaintenanceAction(tenantId string, smId string, action string) error {
+// ScheduledMaintenanceAction executes an action (resume or suspend) on a maintenance window.
+func (c *OpsRampClient) ScheduledMaintenanceAction(tenantId string, smId string, action string) error {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s/%s", c.BaseUrl, tenantId, smId, action)
 
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)

@@ -5,23 +5,23 @@ package client
 
 // Scheduled Maintenance Window models
 
-// ScheduleMaintenanceRequest represents the request body to create/update a maintenance window
-type ScheduleMaintenanceRequest struct {
+// ScheduledMaintenanceRequest represents the request body to create/update a maintenance window
+type ScheduledMaintenanceRequest struct {
 	Name              string                   `json:"name"`
 	Description       string                   `json:"description"`
 	RunRBA            bool                     `json:"runRBA"`
 	InstallPatch      bool                     `json:"installPatch"`
 	RunEscalateAction bool                     `json:"runEscalateAction,omitempty"`
 	CorrelateAlerts   bool                     `json:"correlateAlerts"`
-	Schedule          ScheduleMaintenanceTime  `json:"schedule"`
+	Schedule          ScheduledMaintenanceTime `json:"schedule"`
 	Devices           []ScheduleDevice         `json:"devices,omitempty"`
 	DeviceGroups      []ScheduleDeviceGroup    `json:"deviceGroups,omitempty"`
 	Locations         []ScheduleLocation       `json:"locations,omitempty"`
 	AlertConditions   *ScheduleAlertConditions `json:"alertConditions,omitempty"`
 }
 
-// ScheduleMaintenanceTime represents the schedule timing configuration
-type ScheduleMaintenanceTime struct {
+// ScheduledMaintenanceTime represents the schedule timing configuration
+type ScheduledMaintenanceTime struct {
 	Type      string             `json:"type"`              // "one-time" or "recurring"
 	StartTime string             `json:"startTime"`         // ISO 8601 format
 	EndTime   string             `json:"endTime"`           // ISO 8601 format
@@ -73,8 +73,8 @@ type ScheduleAlertRule struct {
 	Value    string `json:"value"`
 }
 
-// ScheduleMaintenanceResponse represents the full response for a maintenance window
-type ScheduleMaintenanceResponse struct {
+// ScheduledMaintenanceResponse represents the full response for a maintenance window
+type ScheduledMaintenanceResponse struct {
 	Id                string                   `json:"id,omitempty"`
 	UniqueId          string                   `json:"uniqueId"`
 	Name              string                   `json:"name"`
@@ -85,7 +85,7 @@ type ScheduleMaintenanceResponse struct {
 	DontInstallPatch  string                   `json:"dontInstallPatch,omitempty"`
 	RunEscalateAction bool                     `json:"runEscalateAction"`
 	CorrelateAlerts   bool                     `json:"correlateAlerts"`
-	Schedule          ScheduleMaintenanceTime  `json:"schedule"`
+	Schedule          ScheduledMaintenanceTime `json:"schedule"`
 	Devices           []ScheduleDeviceResponse `json:"devices,omitempty"`
 	DeviceGroups      []ScheduleDeviceGroup    `json:"deviceGroups,omitempty"`
 	Locations         []ScheduleLocation       `json:"locations,omitempty"`
@@ -103,15 +103,15 @@ type ScheduleDeviceResponse struct {
 	Type           string                 `json:"type,omitempty"`
 }
 
-// ScheduleMaintenanceResourcesRequest is used for POST/DELETE .../resources
-type ScheduleMaintenanceResourcesRequest struct {
+// ScheduledMaintenanceResourcesRequest is used for POST/DELETE .../resources
+type ScheduledMaintenanceResourcesRequest struct {
 	Devices      []ScheduleDevice      `json:"devices,omitempty"`
 	DeviceGroups []ScheduleDeviceGroup `json:"deviceGroups,omitempty"`
 	Locations    []ScheduleLocation    `json:"locations,omitempty"`
 }
 
-// ScheduleMaintenanceResourceTypeResponse is the response from GET .../resources/{type}
-type ScheduleMaintenanceResourceTypeResponse struct {
+// ScheduledMaintenanceResourceTypeResponse is the response from GET .../resources/{type}
+type ScheduledMaintenanceResourceTypeResponse struct {
 	Results      []map[string]interface{} `json:"results,omitempty"`
 	TotalResults int                      `json:"totalResults,omitempty"`
 	PageNo       int                      `json:"pageNo,omitempty"`
@@ -120,7 +120,7 @@ type ScheduleMaintenanceResourceTypeResponse struct {
 	NextPage     bool                     `json:"nextPage,omitempty"`
 }
 
-// ScheduleMaintenanceCreateResponse is the minimal response from create/update
-type ScheduleMaintenanceCreateResponse struct {
+// ScheduledMaintenanceCreateResponse is the minimal response from create/update
+type ScheduledMaintenanceCreateResponse struct {
 	UniqueId string `json:"uniqueId"`
 }

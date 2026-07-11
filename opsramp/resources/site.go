@@ -210,6 +210,8 @@ func mapSiteResponseToModel(api *client.Site, model *SiteModel) diag.Diagnostics
 		model.SearchQuery = types.StringValue(api.FilterCriteria.SearchQuery)
 	}
 
+	model.Resources = types.SetNull(types.StringType)
+
 	return diags
 }
 
