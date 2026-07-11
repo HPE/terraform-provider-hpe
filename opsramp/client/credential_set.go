@@ -1,0 +1,81 @@
+// SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
+// SPDX-License-Identifier: Apache-2.0
+
+package client
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+// CreateCredentialSet creates a new credential set
+func (c *OpsRampClient) CreateCredentialSet(tenantId string, data CredentialSet) (*CredentialSet, error) {
+	rb, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/credentialSets", c.BaseUrl, tenantId)
+
+	body, err := c.NewJsonRequest("POST", apiUrl, rb)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseBody CredentialSet
+	err = json.Unmarshal([]byte(body), &responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responseBody, nil
+}
+
+// GetCredentialSet retrieves a credential set by ID
+func (c *OpsRampClient) GetCredentialSet(tenantId string, credentialSetId string) (*CredentialSet, error) {
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/credentialSets/%s", c.BaseUrl, tenantId, credentialSetId)
+
+	body, err := c.NewJsonRequest("GET", apiUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseBody CredentialSet
+	err = json.Unmarshal([]byte(body), &responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responseBody, nil
+}
+
+// UpdateCredentialSet updates an existing credential set
+func (c *OpsRampClient) UpdateCredentialSet(tenantId string, credentialSetId string, data CredentialSet) (*CredentialSet, error) {
+	rb, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/credentialSets/%s", c.BaseUrl, tenantId, credentialSetId)
+
+	body, err := c.NewJsonRequest("POST", apiUrl, rb)
+	if err != nil {
+		return nil, err
+	}
+
+	var responseBody CredentialSet
+	err = json.Unmarshal([]byte(body), &responseBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return &responseBody, nil
+}
+
+// DeleteCredentialSet deletes a credential set
+func (c *OpsRampClient) DeleteCredentialSet(tenantId string, credentialSetId string) error {
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/credentialSets/%s", c.BaseUrl, tenantId, credentialSetId)
+
+	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+	return err
+}
