@@ -15,14 +15,13 @@ import (
 
 // Ensure interface satisfaction
 var _ datasource.DataSource = &customEventAlertSourceDataSource{}
-var _ datasource.DataSourceWithConfigure = &customEventAlertSourceDataSource{}
 
 func NewCustomEventAlertSourceDataSource() datasource.DataSource {
 	return &customEventAlertSourceDataSource{}
 }
 
 type customEventAlertSourceDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 type customEventAlertSourceModel struct {
@@ -58,23 +57,6 @@ func (d *customEventAlertSourceDataSource) Schema(_ context.Context, _ datasourc
 			},
 		},
 	}
-}
-
-func (d *customEventAlertSourceDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	c, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	d.apiClient = c
 }
 
 func (d *customEventAlertSourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

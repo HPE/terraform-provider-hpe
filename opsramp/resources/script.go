@@ -29,7 +29,7 @@ var _ resource.ResourceWithImportState = &ScriptResource{}
 
 // ScriptResource defines the resource implementation.
 type ScriptResource struct {
-	apiClient *client.OpsRampClient
+	BaseResource
 }
 
 // ScriptParameterModel represents a single script parameter in Terraform state.
@@ -216,24 +216,6 @@ func (r *ScriptResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			},
 		},
 	}
-}
-
-// Configure prepares the resource with client.
-func (r *ScriptResource) Configure(_ context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	c, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	r.apiClient = c
 }
 
 // resolveTenantId determines the effective tenant ID.

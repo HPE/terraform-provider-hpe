@@ -428,7 +428,12 @@ func (r *MetricAlertDefinitionResource) buildRequest(ctx context.Context, plan *
 }
 
 // modify plan
-func (r *MetricAlertDefinitionResource) modifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *MetricAlertDefinitionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	// Don't validate during destroy — plan is null.
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
 	var plan MetricAlertDefinitionModel
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)

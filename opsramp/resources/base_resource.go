@@ -5,8 +5,11 @@ package resources
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
+	"github.com/HPE/terraform-provider-hpe/opsramp/utils/clientfactory"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -15,20 +18,36 @@ import (
 
 // Base Resource struct with the shared ModifyPlan method
 type BaseResource struct {
-	apiClient *client.OpsRampClient
+	clientFactory *clientfactory.ClientFactory
+	apiClient     *client.OpsRampClient
 }
 
-// Configure prepares the resource with the shared API client instance.
+// Configure prepares the resource by resolving the API client from the factory.
+// Resource Configure is called on each Terraform operation, so transient failures
+// are retried automatically on the next plan/apply.
 func (r *BaseResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	if req.ProviderData == nil {
 		return
 	}
 
-	c, ok := req.ProviderData.(*client.OpsRampClient)
+	f, ok := req.ProviderData.(*clientfactory.ClientFactory)
 	if !ok {
 		resp.Diagnostics.AddError(
 			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
+			"Expected *client.ClientFactory",
+		)
+		return
+	}
+
+	r.clientFactory = f
+
+	c, err := f.Client()
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to Create OpsRamp API Client",
+			"An unexpected error occurred when creating the OpsRamp API client. "+
+				"If the error is not clear, please contact the provider developers.\n\n"+
+				"OpsRamp Client Error: "+err.Error(),
 		)
 		return
 	}

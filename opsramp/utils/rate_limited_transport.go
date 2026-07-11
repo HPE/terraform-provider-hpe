@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
 // SPDX-License-Identifier: Apache-2.0
 
-package client
+package utils
 
 import (
 	"log"

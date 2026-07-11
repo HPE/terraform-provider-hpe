@@ -6,7 +6,6 @@ package data
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -21,7 +20,7 @@ func NewDataRoleSource() datasource.DataSource {
 }
 
 type dataRoleSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 func (d *dataRoleSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -53,23 +52,6 @@ func (d *dataRoleSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 			},
 		},
 	}
-}
-
-func (d *dataRoleSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	d.apiClient = client
 }
 
 func (d *dataRoleSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

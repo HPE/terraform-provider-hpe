@@ -33,15 +33,15 @@ type serviceDeskCategoryLookupModel struct {
 }
 
 type serviceDeskUrgencyDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 type serviceDeskBusinessImpactDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 type serviceDeskCategoryDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 func NewServiceDeskUrgencyDataSource() datasource.DataSource {
@@ -54,23 +54,6 @@ func NewServiceDeskBusinessImpactDataSource() datasource.DataSource {
 
 func NewServiceDeskCategoryDataSource() datasource.DataSource {
 	return &serviceDeskCategoryDataSource{}
-}
-
-func configureServiceDeskLookupDataSource(providerData any, target **client.OpsRampClient, resp *datasource.ConfigureResponse) {
-	if providerData == nil {
-		return
-	}
-
-	configuredClient, ok := providerData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	*target = configuredClient
 }
 
 func resolveLookupTenantID(apiClient *client.OpsRampClient, configuredClient types.String) string {
@@ -109,10 +92,6 @@ func (d *serviceDeskUrgencyDataSource) Schema(_ context.Context, _ datasource.Sc
 	resp.Schema = serviceDeskLookupSchema("Looks up an OpsRamp service desk urgency by name and returns its string ID.")
 }
 
-func (d *serviceDeskUrgencyDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	configureServiceDeskLookupDataSource(req.ProviderData, &d.apiClient, resp)
-}
-
 func (d *serviceDeskUrgencyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
@@ -143,10 +122,6 @@ func (d *serviceDeskBusinessImpactDataSource) Metadata(_ context.Context, req da
 
 func (d *serviceDeskBusinessImpactDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = serviceDeskLookupSchema("Looks up an OpsRamp service desk business impact by name and returns its string ID.")
-}
-
-func (d *serviceDeskBusinessImpactDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	configureServiceDeskLookupDataSource(req.ProviderData, &d.apiClient, resp)
 }
 
 func (d *serviceDeskBusinessImpactDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -200,10 +175,6 @@ func (d *serviceDeskCategoryDataSource) Schema(_ context.Context, _ datasource.S
 			},
 		},
 	}
-}
-
-func (d *serviceDeskCategoryDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	configureServiceDeskLookupDataSource(req.ProviderData, &d.apiClient, resp)
 }
 
 func (d *serviceDeskCategoryDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

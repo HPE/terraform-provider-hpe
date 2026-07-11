@@ -6,7 +6,6 @@ package data
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -14,14 +13,13 @@ import (
 
 // Ensure interface satisfaction
 var _ datasource.DataSource = &resourceLookupDataSource{}
-var _ datasource.DataSourceWithConfigure = &resourceLookupDataSource{}
 
 func NewResourceLookupDataSource() datasource.DataSource {
 	return &resourceLookupDataSource{}
 }
 
 type resourceLookupDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 // DS config model
@@ -53,23 +51,6 @@ func (d *resourceLookupDataSource) Schema(_ context.Context, _ datasource.Schema
 			},
 		},
 	}
-}
-
-func (d *resourceLookupDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	d.apiClient = client
 }
 
 func (d *resourceLookupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

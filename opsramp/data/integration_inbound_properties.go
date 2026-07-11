@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -15,14 +14,13 @@ import (
 
 // Ensure interface satisfaction
 var _ datasource.DataSource = &integrationInboundPropertiesDataSource{}
-var _ datasource.DataSourceWithConfigure = &integrationInboundPropertiesDataSource{}
 
 func NewIntegrationInboundPropertiesDataSource() datasource.DataSource {
 	return &integrationInboundPropertiesDataSource{}
 }
 
 type integrationInboundPropertiesDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 type integrationInboundPropertiesModel struct {
@@ -100,23 +98,6 @@ func (d *integrationInboundPropertiesDataSource) Schema(_ context.Context, _ dat
 			},
 		},
 	}
-}
-
-func (d *integrationInboundPropertiesDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	c, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	d.apiClient = c
 }
 
 func (d *integrationInboundPropertiesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

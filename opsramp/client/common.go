@@ -14,6 +14,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/utils"
 )
 
 // OpsRampClient handles API communication.
@@ -33,7 +35,7 @@ type OAuthTokenResponse struct {
 
 // NewOpsRampClient creates a new client and retrieves the OAuth token.
 func NewOpsRampClient(clientID string, clientSecret string, endpoint string, tenant string) (*OpsRampClient, error) {
-	rateLimitedTransport := NewRateLimitedTransport(&http.Transport{})
+	rateLimitedTransport := utils.NewRateLimitedTransport(&http.Transport{})
 
 	client := &http.Client{
 		Transport: rateLimitedTransport,

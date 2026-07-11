@@ -14,14 +14,13 @@ import (
 
 // Ensure interface satisfaction
 var _ datasource.DataSource = &resourceTenantDataSource{}
-var _ datasource.DataSourceWithConfigure = &resourceTenantDataSource{}
 
 func NewResourceTenantDataSource() datasource.DataSource {
 	return &resourceTenantDataSource{}
 }
 
 type resourceTenantDataSource struct {
-	apiClient *client.OpsRampClient
+	BaseData
 }
 
 // DS config model
@@ -48,23 +47,6 @@ func (d *resourceTenantDataSource) Schema(_ context.Context, _ datasource.Schema
 			},
 		},
 	}
-}
-
-func (d *resourceTenantDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	client, ok := req.ProviderData.(*client.OpsRampClient)
-	if !ok {
-		resp.Diagnostics.AddError(
-			"Unexpected Resource Configure Type",
-			"Expected *client.OpsRampClient",
-		)
-		return
-	}
-
-	d.apiClient = client
 }
 
 func (d *resourceTenantDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {

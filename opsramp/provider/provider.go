@@ -7,9 +7,9 @@ import (
 	"context"
 	"os"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/HPE/terraform-provider-hpe/opsramp/data"
 	"github.com/HPE/terraform-provider-hpe/opsramp/resources"
+	"github.com/HPE/terraform-provider-hpe/opsramp/utils/clientfactory"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/ephemeral"
@@ -103,22 +103,14 @@ func (p *OpsRampProvider) Configure(ctx context.Context, req provider.ConfigureR
 		endpoint = config.Endpoint.ValueString()
 	}
 
-	// Create a new OpsRamp client using the configuration values
-	client, err := client.NewOpsRampClient(client_id, client_secret, endpoint, tenant)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Create OpsRamp API Client",
-			"An unexpected error occurred when creating the OpsRamp API client. "+
-				"If the error is not clear, please contact the provider developers.\n\n"+
-				"OpsRamp Client Error: "+err.Error(),
-		)
-		return
-	}
+	// Store configuration in a ClientFactory. The actual API client (and OAuth
+	// token retrieval) is deferred until a resource or data source needs it.
+	// This prevents a failed initial connection from permanently blocking the
+	// provider in long-lived debug sessions.
+	factory := clientfactory.NewClientFactory(client_id, client_secret, endpoint, tenant)
 
-	// Make the HashiCups client available during DataSource and Resource
-	// type Configure methods.
-	resp.DataSourceData = client
-	resp.ResourceData = client
+	resp.DataSourceData = factory
+	resp.ResourceData = factory
 }
 
 func (p *OpsRampProvider) Resources(ctx context.Context) []func() resource.Resource {
