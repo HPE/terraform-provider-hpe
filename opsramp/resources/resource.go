@@ -294,9 +294,17 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 }
 
 // ImportState handles importing an existing resource.
+// Import ID format: <resource_uuid> or <client_id>:<resource_uuid> (MSP only)
 func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	uuid := req.ID
-	tenantId := r.apiClient.TenantId
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	uuid := parsed.Parts[0]
+
 	res, err := r.apiClient.GetResource(tenantId, uuid)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -307,7 +315,7 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 	}
 
 	state := ResourceModel{
-		Client:       types.StringNull(),
+		Client:       parsed.Client,
 		Uuid:         types.StringValue(res.Uuid),
 		ResourceName: types.StringValue(res.GeneralInfo.ResourceName),
 		ResourceType: types.StringValue(res.GeneralInfo.ResourceType),

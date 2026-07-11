@@ -280,27 +280,17 @@ func (r *CustomIntegrationResource) Delete(ctx context.Context, req resource.Del
 }
 
 // ImportState handles resource import.
+// Import ID format: <integration_id> or <client_id>:<integration_id> (MSP only)
 func (r *CustomIntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Import format: "integration_id" or "client_id:integration_id"
-	importId := req.ID
-
-	var state CustomIntegrationModel
-
-	if strings.Contains(importId, ":") {
-		// Format: client_id:integration_id
-		parts := strings.SplitN(importId, ":", 2)
-		state.Client = types.StringValue(parts[0])
-		state.Id = types.StringValue(parts[1])
-	} else {
-		// Format: integration_id (partner level)
-		state.Id = types.StringValue(importId)
-		state.Client = types.StringNull()
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
 	}
 
-	// Initialize computed fields as unknown until Read populates them
-	state.DisplayName = types.StringUnknown()
-	state.ClientId = types.StringUnknown()
-	state.ClientSecret = types.StringUnknown()
+	var state CustomIntegrationModel
+	state.Client = parsed.Client
+	state.Id = types.StringValue(parsed.Parts[0])
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

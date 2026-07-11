@@ -413,27 +413,17 @@ func (r *ScriptResource) Delete(ctx context.Context, req resource.DeleteRequest,
 }
 
 // ImportState handles importing an existing resource.
-// Import ID format: "{categoryId}/{scriptId}" or "{tenantId}/{categoryId}/{scriptId}"
+// Import ID format: <category_id>:<script_id> or <client_id>:<category_id>:<script_id> (MSP only)
 func (r *ScriptResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-
-	var tenantId, categoryId, scriptId string
-	switch len(parts) {
-	case 2:
-		tenantId = r.apiClient.TenantId
-		categoryId = parts[0]
-		scriptId = parts[1]
-	case 3:
-		tenantId = parts[0]
-		categoryId = parts[1]
-		scriptId = parts[2]
-	default:
-		resp.Diagnostics.AddError(
-			"Invalid Import ID",
-			"Expected format: '{categoryId}/{scriptId}' or '{tenantId}/{categoryId}/{scriptId}'",
-		)
+	parsed, err := r.ParseImportID(req.ID, 2)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
+
+	tenantId := r.TenantForImport(parsed)
+	categoryId := parsed.Parts[0]
+	scriptId := parsed.Parts[1]
 
 	existing, err := r.apiClient.GetScript(tenantId, categoryId, scriptId)
 	if err != nil {
@@ -445,11 +435,7 @@ func (r *ScriptResource) ImportState(ctx context.Context, req resource.ImportSta
 	}
 
 	var state ScriptModel
-	if len(parts) == 3 {
-		state.Client = types.StringValue(tenantId)
-	} else {
-		state.Client = types.StringNull()
-	}
+	state.Client = parsed.Client
 	state.CategoryId = types.StringValue(categoryId)
 
 	populateModelFromAPI(&state, existing)

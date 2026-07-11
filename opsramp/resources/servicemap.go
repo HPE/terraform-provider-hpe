@@ -337,9 +337,17 @@ func (r *ServicemapResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 // ImportState handles importing an existing servicemap.
+// Import ID format: <servicemap_id> or <client_id>:<servicemap_id> (MSP only)
 func (r *ServicemapResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	id := req.ID
-	tenantId := r.apiClient.TenantId
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	id := parsed.Parts[0]
+
 	existing, err := r.apiClient.GetServicemap(tenantId, id)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -358,7 +366,7 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 	}
 
 	state := ServicemapModel{
-		Client:         types.StringNull(),
+		Client:         parsed.Client,
 		Id:             types.StringValue(existing.Id),
 		Name:           types.StringValue(existing.Name),
 		Type:           types.StringValue(existing.Type),

@@ -1149,28 +1149,17 @@ func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteReq
 }
 
 // ImportState handles resource import.
+// Import ID format: <integration_id> or <client_id>:<integration_id> (MSP only)
 func (r *IntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importId := req.ID
-
-	var state IntegrationModel
-
-	if strings.Contains(importId, ":") {
-		// Format: client_id:integration_id
-		parts := strings.SplitN(importId, ":", 2)
-		state.Client = types.StringValue(parts[0])
-		state.Id = types.StringValue(parts[1])
-	} else {
-		// Format: integration_id (provider-tenant level)
-		state.Id = types.StringValue(importId)
-		state.Client = types.StringNull()
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
 	}
 
-	// Initialize computed fields as unknown
-	state.DisplayName = types.StringUnknown()
-	state.Description = types.StringUnknown()
-	state.Application = types.StringUnknown()
-	state.Category = types.StringUnknown()
-	state.Status = types.StringUnknown()
+	var state IntegrationModel
+	state.Client = parsed.Client
+	state.Id = types.StringValue(parsed.Parts[0])
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

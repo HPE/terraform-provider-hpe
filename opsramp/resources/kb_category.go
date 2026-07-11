@@ -227,22 +227,16 @@ func (r *KBCategoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 }
 
 // ImportState handles importing an existing resource.
-// Import ID format: "{categoryId}" or "{tenantId}/{categoryId}"
+// Import ID format: <category_id> or <client_id>:<category_id> (MSP only)
 func (r *KBCategoryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-
-	var tenantId, categoryId string
-	switch len(parts) {
-	case 1:
-		tenantId = r.apiClient.TenantId
-		categoryId = parts[0]
-	case 2:
-		tenantId = parts[0]
-		categoryId = parts[1]
-	default:
-		resp.Diagnostics.AddError("Invalid Import ID", "Expected format: '{categoryId}' or '{tenantId}/{categoryId}'")
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
+
+	tenantId := r.TenantForImport(parsed)
+	categoryId := parsed.Parts[0]
 
 	existing, err := r.apiClient.GetKBCategory(tenantId, categoryId)
 	if err != nil {
@@ -251,11 +245,7 @@ func (r *KBCategoryResource) ImportState(ctx context.Context, req resource.Impor
 	}
 
 	var state KBCategoryModel
-	if len(parts) == 2 {
-		state.Client = types.StringValue(tenantId)
-	} else {
-		state.Client = types.StringNull()
-	}
+	state.Client = parsed.Client
 	populateKBCategoryModel(&state, existing)
 
 	resp.State.Set(ctx, &state)

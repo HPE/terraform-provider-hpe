@@ -386,9 +386,17 @@ func (r *SiteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	resp.State.RemoveResource(ctx)
 }
 
+// ImportState handles importing an existing site.
+// Import ID format: <site_id> or <client_id>:<site_id> (MSP only)
 func (r *SiteResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	siteId := req.ID
-	tenantId := r.apiClient.TenantId
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	siteId := parsed.Parts[0]
 	var diags diag.Diagnostics
 
 	existing, err := r.apiClient.GetSite(tenantId, siteId)
@@ -397,7 +405,7 @@ func (r *SiteResource) ImportState(ctx context.Context, req resource.ImportState
 		return
 	}
 
-	state := SiteModel{Client: types.StringValue(tenantId)}
+	state := SiteModel{Client: parsed.Client}
 	diags = mapSiteResponseToModel(existing, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {

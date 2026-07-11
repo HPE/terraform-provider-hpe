@@ -353,29 +353,18 @@ func (r *IntegrationConfigResource) Delete(ctx context.Context, req resource.Del
 }
 
 // ImportState handles resource import.
-// Import ID format: integration_id:config_id or client_id:integration_id:config_id
+// Import ID format: <integration_id>:<config_id> or <client_id>:<integration_id>:<config_id> (MSP only)
 func (r *IntegrationConfigResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	importId := req.ID
-
-	var state IntegrationConfigModel
-
-	parts := strings.Split(importId, ":")
-	switch len(parts) {
-	case 2:
-		// Format: integration_id:config_id
-		state.IntegrationId = types.StringValue(parts[0])
-		state.Id = types.StringValue(parts[1])
-		state.Client = types.StringNull()
-	case 3:
-		// Format: client_id:integration_id:config_id
-		state.Client = types.StringValue(parts[0])
-		state.IntegrationId = types.StringValue(parts[1])
-		state.Id = types.StringValue(parts[2])
-	default:
-		resp.Diagnostics.AddError("Invalid Import ID",
-			"Import ID must be in the format 'integration_id:config_id' or 'client_id:integration_id:config_id'.")
+	parsed, err := r.ParseImportID(req.ID, 2)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
+
+	var state IntegrationConfigModel
+	state.Client = parsed.Client
+	state.IntegrationId = types.StringValue(parsed.Parts[0])
+	state.Id = types.StringValue(parsed.Parts[1])
 
 	state.Name = types.StringUnknown()
 	state.Config = types.StringUnknown()

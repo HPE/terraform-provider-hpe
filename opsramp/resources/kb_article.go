@@ -301,22 +301,16 @@ func (r *KBArticleResource) Delete(ctx context.Context, req resource.DeleteReque
 }
 
 // ImportState handles importing an existing resource.
-// Import ID format: "{articleId}" or "{tenantId}/{articleId}"
+// Import ID format: <article_id> or <client_id>:<article_id> (MSP only)
 func (r *KBArticleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-
-	var tenantId, articleId string
-	switch len(parts) {
-	case 1:
-		tenantId = r.apiClient.TenantId
-		articleId = parts[0]
-	case 2:
-		tenantId = parts[0]
-		articleId = parts[1]
-	default:
-		resp.Diagnostics.AddError("Invalid Import ID", "Expected format: '{articleId}' or '{tenantId}/{articleId}'")
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
+
+	tenantId := r.TenantForImport(parsed)
+	articleId := parsed.Parts[0]
 
 	existing, err := r.apiClient.GetKBArticle(tenantId, articleId)
 	if err != nil {
@@ -325,11 +319,7 @@ func (r *KBArticleResource) ImportState(ctx context.Context, req resource.Import
 	}
 
 	var state KBArticleModel
-	if len(parts) == 2 {
-		state.Client = types.StringValue(tenantId)
-	} else {
-		state.Client = types.StringNull()
-	}
+	state.Client = parsed.Client
 	populateKBArticleModel(&state, existing)
 
 	resp.State.Set(ctx, &state)

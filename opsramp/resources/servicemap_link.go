@@ -184,21 +184,18 @@ func (r *ServicemapResourceLink) Delete(ctx context.Context, req resource.Delete
 }
 
 // ImportState handles importing an existing servicemap link.
-// Import ID format: "{parent_id}/{link_id}"
+// Import ID format: <parent_id>:<link_id> or <client_id>:<parent_id>:<link_id> (MSP only)
 func (r *ServicemapResourceLink) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.Split(req.ID, "/")
-	if len(parts) != 2 {
-		resp.Diagnostics.AddError(
-			"Invalid Import ID",
-			"Expected format: '{parent_id}/{link_id}'",
-		)
+	parsed, err := r.ParseImportID(req.ID, 2)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
 
 	state := ServicemapLinkModel{
-		Client: types.StringNull(),
-		Parent: types.StringValue(parts[0]),
-		Link:   types.StringValue(parts[1]),
+		Client: parsed.Client,
+		Parent: types.StringValue(parsed.Parts[0]),
+		Link:   types.StringValue(parsed.Parts[1]),
 	}
 
 	resp.State.Set(ctx, &state)

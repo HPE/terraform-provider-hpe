@@ -388,30 +388,25 @@ func (r *IntegrationEventResource) Delete(ctx context.Context, req resource.Dele
 }
 
 // ImportState handles import.
-// Import ID format: integration_id:event_id or client_id:integration_id:event_id
+// Import ID format: integration_id:event_id or client_id:integration_id:event_id (MSP only)
 func (r *IntegrationEventResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, ":", 3)
-	var state IntegrationEventModel
-
-	switch len(parts) {
-	case 2:
-		state.Client = types.StringNull()
-		state.IntegrationId = types.StringValue(parts[0])
-		state.Id = types.StringValue(parts[1])
-	case 3:
-		state.Client = types.StringValue(parts[0])
-		state.IntegrationId = types.StringValue(parts[1])
-		state.Id = types.StringValue(parts[2])
-	default:
-		resp.Diagnostics.AddError("Invalid Import ID",
-			"Expected format: integration_id:event_id or client_id:integration_id:event_id")
+	parsed, err := r.ParseImportID(req.ID, 2)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
 		return
 	}
+
+	var state IntegrationEventModel
+	state.Client = parsed.Client
+	state.IntegrationId = types.StringValue(parsed.Parts[0])
+	state.Id = types.StringValue(parsed.Parts[1])
 
 	state.Name = types.StringUnknown()
 	state.Entity = types.StringUnknown()
 	state.EventType = types.StringUnknown()
 	state.EventLevel = types.StringUnknown()
+	state.Headers = types.MapNull(types.StringType)
+	state.ResponseHeaders = types.MapNull(types.StringType)
 
 	diags := resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
