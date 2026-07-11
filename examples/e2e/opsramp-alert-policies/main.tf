@@ -10,10 +10,10 @@ terraform {
 
 provider "hpe" {
   opsramp {
-    client_id = "632PB3dqU8Vh9MuNRntJgx2AxyXsExuh"
-    client_secret = "eCFChgyvPGYwxYNY7yWmg4AaAeSum4DGZde264aedskycpez2dd6eRmVhuhmfXfJ"
-    endpoint      = "hpe-spain.api.pov.opsramp.com"
-    tenant        = "ca491372-d8ad-4ada-bd9c-0c4bd1c5a19b"
+    client_id = "abcdefghijklmnopqrstuvwxyz123456"
+    client_secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ab"
+    endpoint      = "tenant.api.pov.opsramp.com"
+    tenant        = "abcdefgh-1234-5678-90ab-cdefghijklmn"
   }
 }
 
