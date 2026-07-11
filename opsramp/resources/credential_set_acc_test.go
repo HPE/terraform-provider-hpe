@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -27,10 +26,10 @@ func TestAccCredentialSetResource(t *testing.T) {
 				{
 					Config: testAccCredentialSetConfig(credentialSetName, description),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureCredentialSetExists(t, "opsramp_credential_set.test_credential_set"),
-						resource.TestCheckResourceAttrSet("opsramp_credential_set.test_credential_set", "id"),
-						resource.TestCheckResourceAttr("opsramp_credential_set.test_credential_set", "name", credentialSetName),
-						resource.TestCheckResourceAttr("opsramp_credential_set.test_credential_set", "description", description),
+						testAccEnsureCredentialSetExists(t, "hpe_opsramp_credential_set.test_credential_set"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_credential_set.test_credential_set", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_credential_set.test_credential_set", "name", credentialSetName),
+						resource.TestCheckResourceAttr("hpe_opsramp_credential_set.test_credential_set", "description", description),
 					),
 				},
 			},
@@ -41,7 +40,7 @@ func TestAccCredentialSetResource(t *testing.T) {
 func testAccCredentialSetConfig(name string, description string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_credential_set" "test_credential_set" {
+resource "hpe_opsramp_credential_set" "test_credential_set" {
   name                = "%s"
   description         = "%s"
 
@@ -73,7 +72,8 @@ func testAccEnsureCredentialSetExists(t *testing.T, resourceName string) resourc
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -102,11 +102,12 @@ func testAccCheckCredentialSetDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_credential_set" {
+			if rs.Type != "hpe_opsramp_credential_set" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

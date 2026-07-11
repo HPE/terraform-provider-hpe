@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
@@ -33,16 +32,16 @@ func TestAccManagementProfile(t *testing.T) {
 				Config: testAccManagementProfileConfig(managementProfileName, description),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"opsramp_management_profile.test_management_profile",
+						"hpe_opsramp_management_profile.test_management_profile",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(managementProfileName),
 					),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureManagementProfileExists(t, "opsramp_management_profile.test_management_profile"),
-					resource.TestCheckResourceAttrSet("opsramp_management_profile.test_management_profile", "uuid"),
-					resource.TestCheckResourceAttrSet("opsramp_management_profile.test_management_profile", "id"),
-					resource.TestCheckResourceAttr("opsramp_management_profile.test_management_profile", "name", managementProfileName),
+					testAccEnsureManagementProfileExists(t, "hpe_opsramp_management_profile.test_management_profile"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "uuid"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_management_profile.test_management_profile", "name", managementProfileName),
 				),
 			},
 			// Update and Read testing
@@ -50,16 +49,16 @@ func TestAccManagementProfile(t *testing.T) {
 				Config: testAccManagementProfileConfig(managementProfileName, description+" updated"),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"opsramp_management_profile.test_management_profile",
+						"hpe_opsramp_management_profile.test_management_profile",
 						tfjsonpath.New("name"),
 						knownvalue.StringExact(managementProfileName),
 					),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureManagementProfileExists(t, "opsramp_management_profile.test_management_profile"),
-					resource.TestCheckResourceAttrSet("opsramp_management_profile.test_management_profile", "uuid"),
-					resource.TestCheckResourceAttrSet("opsramp_management_profile.test_management_profile", "id"),
-					resource.TestCheckResourceAttr("opsramp_management_profile.test_management_profile", "name", managementProfileName),
+					testAccEnsureManagementProfileExists(t, "hpe_opsramp_management_profile.test_management_profile"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "uuid"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_management_profile.test_management_profile", "name", managementProfileName),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -72,7 +71,7 @@ func testAccManagementProfileConfig(name string, description string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_management_profile" "test_management_profile" {
+resource "hpe_opsramp_management_profile" "test_management_profile" {
   name = "%s"
   description = "%s"
 }`, acctest.ProviderConfigHCL(), name, description)
@@ -92,7 +91,8 @@ func testAccEnsureManagementProfileExists(t *testing.T, managementProfileName st
 			return fmt.Errorf("invalid management profile id in state for %s: %w", rs.Primary.Attributes["id"], err)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -121,11 +121,12 @@ func testAccCheckManagementProfileDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_management_profile" {
+			if rs.Type != "hpe_opsramp_management_profile" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

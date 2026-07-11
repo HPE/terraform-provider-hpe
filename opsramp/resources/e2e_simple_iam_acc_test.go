@@ -29,18 +29,18 @@ func TestAccE2ESimpleIAM(t *testing.T) {
 				{
 					Config: testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsurePermissionSetExists(t, "opsramp_permission_set.admin_perms"),
-						testAccEnsurePermissionSetExists(t, "opsramp_permission_set.view_perms"),
-						testAccEnsureRoleExists(t, "opsramp_role.admin_role"),
-						testAccEnsureRoleExists(t, "opsramp_role.view_role"),
-						testAccEnsureUserExists(t, "opsramp_user.admin"),
-						testAccEnsureUserGroupExists(t, "opsramp_user_group.admin_group"),
-						resource.TestCheckResourceAttr("opsramp_permission_set.admin_perms", "name", adminPerms),
-						resource.TestCheckResourceAttr("opsramp_permission_set.view_perms", "name", viewPerms),
-						resource.TestCheckResourceAttr("opsramp_role.admin_role", "name", adminRole),
-						resource.TestCheckResourceAttr("opsramp_role.view_role", "name", viewRole),
-						resource.TestCheckResourceAttr("opsramp_user.admin", "login_name", userName),
-						resource.TestCheckResourceAttr("opsramp_user_group.admin_group", "name", groupName),
+						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.admin_perms"),
+						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.view_perms"),
+						testAccEnsureRoleExists(t, "hpe_opsramp_role.admin_role"),
+						testAccEnsureRoleExists(t, "hpe_opsramp_role.view_role"),
+						testAccEnsureUserExists(t, "hpe_opsramp_user.admin"),
+						testAccEnsureUserGroupExists(t, "hpe_opsramp_user_group.admin_group"),
+						resource.TestCheckResourceAttr("hpe_opsramp_permission_set.admin_perms", "name", adminPerms),
+						resource.TestCheckResourceAttr("hpe_opsramp_permission_set.view_perms", "name", viewPerms),
+						resource.TestCheckResourceAttr("hpe_opsramp_role.admin_role", "name", adminRole),
+						resource.TestCheckResourceAttr("hpe_opsramp_role.view_role", "name", viewRole),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.admin", "login_name", userName),
+						resource.TestCheckResourceAttr("hpe_opsramp_user_group.admin_group", "name", groupName),
 					),
 				},
 			},
@@ -51,7 +51,7 @@ func TestAccE2ESimpleIAM(t *testing.T) {
 func testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_permission_set" "admin_perms" {
+resource "hpe_opsramp_permission_set" "admin_perms" {
 	name        = "%s"
 	description = "Full administrative access"
 
@@ -67,7 +67,7 @@ resource "opsramp_permission_set" "admin_perms" {
 	]
 }
 
-resource "opsramp_permission_set" "view_perms" {
+resource "hpe_opsramp_permission_set" "view_perms" {
 	name        = "%s"
 	description = "View-only access"
 
@@ -83,25 +83,25 @@ resource "opsramp_permission_set" "view_perms" {
 	]
 }
 
-resource "opsramp_role" "admin_role" {
+resource "hpe_opsramp_role" "admin_role" {
 	name        = "%s"
 	description = "Administrative role"
 
 	permissions = [
-		opsramp_permission_set.admin_perms.unique_id
+		hpe_opsramp_permission_set.admin_perms.unique_id
 	]
 }
 
-resource "opsramp_role" "view_role" {
+resource "hpe_opsramp_role" "view_role" {
 	name        = "%s"
 	description = "View-only role"
 
 	permissions = [
-		opsramp_permission_set.view_perms.unique_id
+		hpe_opsramp_permission_set.view_perms.unique_id
 	]
 }
 
-resource "opsramp_user" "admin" {
+resource "hpe_opsramp_user" "admin" {
 	login_name = "%s"
 	password   = "E2ETestP@ss1234!"
 	first_name = "E2E"
@@ -132,16 +132,16 @@ resource "opsramp_user" "admin" {
 	change_password = false
 }
 
-resource "opsramp_user_group" "admin_group" {
+resource "hpe_opsramp_user_group" "admin_group" {
 	name        = "%s"
 	description = "E2E test admin group"
 
 	roles = [
-		opsramp_role.admin_role.id
+		hpe_opsramp_role.admin_role.id
 	]
 
 	users = [
-		opsramp_user.admin.id
+		hpe_opsramp_user.admin.id
 	]
 }
 `, acctest.ProviderConfigHCL(), adminPerms, viewPerms, adminRole, viewRole, userName, userName, groupName)

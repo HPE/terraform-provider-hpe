@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -31,40 +30,40 @@ func TestAccDeviceGroupResource(t *testing.T) {
 					Config: testAccDeviceGroupConfig(groupNameOne, "resourceType = \"Server\""),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"opsramp_device_group.test_group",
+							"hpe_opsramp_device_group.test_group",
 							tfjsonpath.New("name"),
 							knownvalue.StringExact(groupNameOne),
 						),
 						statecheck.ExpectKnownValue(
-							"opsramp_device_group.test_group",
+							"hpe_opsramp_device_group.test_group",
 							tfjsonpath.New("entity_type"),
 							knownvalue.StringExact("DEVICE_GROUP"),
 						),
 					},
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.test_group"),
-						resource.TestCheckResourceAttrSet("opsramp_device_group.test_group", "id"),
-						resource.TestCheckResourceAttr("opsramp_device_group.test_group", "search_query", "resourceType = \"Server\""),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.test_group"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_device_group.test_group", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "search_query", "resourceType = \"Server\""),
 					),
 				},
 				{
 					Config: testAccDeviceGroupConfig(groupNameTwo, "name CONTAINS \"updated\""),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
-							"opsramp_device_group.test_group",
+							"hpe_opsramp_device_group.test_group",
 							tfjsonpath.New("name"),
 							knownvalue.StringExact(groupNameTwo),
 						),
 						statecheck.ExpectKnownValue(
-							"opsramp_device_group.test_group",
+							"hpe_opsramp_device_group.test_group",
 							tfjsonpath.New("entity_type"),
 							knownvalue.StringExact("DEVICE_GROUP"),
 						),
 					},
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.test_group"),
-						resource.TestCheckResourceAttr("opsramp_device_group.test_group", "search_query", "name CONTAINS \"updated\""),
-						resource.TestCheckResourceAttr("opsramp_device_group.test_group", "name", groupNameTwo),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.test_group"),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "search_query", "name CONTAINS \"updated\""),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "name", groupNameTwo),
 					),
 				},
 			},
@@ -75,7 +74,7 @@ func TestAccDeviceGroupResource(t *testing.T) {
 func testAccDeviceGroupConfig(name string, searchQuery string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_device_group" "test_group" {
+resource "hpe_opsramp_device_group" "test_group" {
 	name         = "%s"
 	search_query = %q
 }
@@ -96,7 +95,8 @@ func testAccEnsureDeviceGroupExists(t *testing.T, resourceName string) resource.
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -125,11 +125,12 @@ func testAccCheckDeviceGroupDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_device_group" {
+			if rs.Type != "hpe_opsramp_device_group" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

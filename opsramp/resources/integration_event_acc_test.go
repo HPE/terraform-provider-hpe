@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// opsramp_integration_event – uses base notifier
+// hpe_opsramp_integration_event – uses base notifier
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
@@ -31,29 +30,36 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 			{
 				Config: testAccIntegrationEventBaseNotifierConfig(eventName, true),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationEventExists(t, "opsramp_integration_event.test"),
-					resource.TestCheckResourceAttrSet("opsramp_integration_event.test", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "name", eventName),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "entity", "DEFAULT_RESOURCE"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "event_type", "CREATE"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "use_base_notifier", "true"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "active", "true"),
+					testAccEnsureIntegrationEventExists(t, "hpe_opsramp_integration_event.test"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_event.test", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "name", eventName),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "entity", "DEFAULT_RESOURCE"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "event_type", "CREATE"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "use_base_notifier", "true"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "active", "true"),
 				),
 			},
 			// Update – rename and change active state
 			{
 				Config: testAccIntegrationEventBaseNotifierConfig(eventNameUpdated, false),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "name", eventNameUpdated),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test", "active", "false"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "name", eventNameUpdated),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "active", "false"),
 				),
+			},
+			// ImportState testing — import ID is <integration_id>:<event_id>
+			{
+				ResourceName:      "hpe_opsramp_integration_event.test",
+				ImportState:       true,
+				ImportStateIdFunc: testAccIntegrationEventImportStateIdFunc("hpe_opsramp_integration_event.test"),
+				ImportStateVerify: true,
 			},
 		},
 	})
 }
 
 // ---------------------------------------------------------------------------
-// opsramp_integration_event – overrides notifier (OAUTH2)
+// hpe_opsramp_integration_event – overrides notifier (OAUTH2)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
@@ -67,10 +73,10 @@ func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
 			{
 				Config: testAccIntegrationEventOverrideNotifierConfig(eventName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationEventExists(t, "opsramp_integration_event.test_override"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test_override", "use_base_notifier", "false"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test_override", "notifier.auth_type", "OAUTH2"),
-					resource.TestCheckResourceAttr("opsramp_integration_event.test_override", "notifier.grant_type", "PASSWORD"),
+					testAccEnsureIntegrationEventExists(t, "hpe_opsramp_integration_event.test_override"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "use_base_notifier", "false"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "notifier.auth_type", "OAUTH2"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "notifier.grant_type", "PASSWORD"),
 				),
 			},
 		},
@@ -86,7 +92,7 @@ func testAccIntegrationEventParentConfig(pos int) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration" "event_parent" {
+resource "hpe_opsramp_integration" "event_parent" {
   display_name = "tf-acc-event-parent - %d"
   application  = "CUSTOM"
   category     = "Custom"
@@ -107,8 +113,8 @@ func testAccIntegrationEventBaseNotifierConfig(name string, enabled bool) string
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration_event" "test" {
-  integration_id         = opsramp_integration.event_parent.id
+resource "hpe_opsramp_integration_event" "test" {
+  integration_id         = hpe_opsramp_integration.event_parent.id
   name                   = %q
   entity                 = "DEFAULT_RESOURCE"
   event_type             = "CREATE"
@@ -129,8 +135,8 @@ func testAccIntegrationEventOverrideNotifierConfig(name string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration_event" "test_override" {
-  integration_id         = opsramp_integration.event_parent.id
+resource "hpe_opsramp_integration_event" "test_override" {
+  integration_id         = hpe_opsramp_integration.event_parent.id
   name                   = %q
   entity                 = "DEFAULT_RESOURCE"
   event_type             = "UPDATE"
@@ -180,7 +186,8 @@ func testAccEnsureIntegrationEventExists(t *testing.T, resourceName string) reso
 
 		integrationID := rs.Primary.Attributes["integration_id"]
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -209,11 +216,12 @@ func testAccCheckIntegrationEventDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_integration_event" {
+			if rs.Type != "hpe_opsramp_integration_event" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -232,5 +240,20 @@ func testAccCheckIntegrationEventDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+// testAccIntegrationEventImportStateIdFunc builds the composite import ID: <integration_id>:<event_id>
+func testAccIntegrationEventImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		integrationID := rs.Primary.Attributes["integration_id"]
+		eventID := rs.Primary.ID
+
+		return integrationID + ":" + eventID, nil
 	}
 }

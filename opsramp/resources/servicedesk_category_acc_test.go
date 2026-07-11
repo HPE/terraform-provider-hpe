@@ -25,10 +25,10 @@ func TestAccServicedeskCategoryResource(t *testing.T) {
 				{
 					Config: testAccServicedeskCategoryConfig(catName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicedeskCategoryExists(t, "opsramp_servicedesk_category.test_category"),
-						resource.TestCheckResourceAttrSet("opsramp_servicedesk_category.test_category", "id"),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_category.test_category", "name", catName),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_category.test_category", "ticket_type", "serviceRequests"),
+						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.test_category"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_category.test_category", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_category.test_category", "name", catName),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_category.test_category", "ticket_type", "serviceRequests"),
 					),
 				},
 			},
@@ -39,7 +39,7 @@ func TestAccServicedeskCategoryResource(t *testing.T) {
 func testAccServicedeskCategoryConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_category" "test_category" {
+resource "hpe_opsramp_servicedesk_category" "test_category" {
 	name        = "%s"
 	description = "Acceptance test category"
 	ticket_type = "serviceRequests"
@@ -85,7 +85,7 @@ func testAccCheckServicedeskCategoryDestroy(t *testing.T) resource.TestCheckFunc
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_servicedesk_category" {
+			if rs.Type != "hpe_opsramp_servicedesk_category" {
 				continue
 			}
 

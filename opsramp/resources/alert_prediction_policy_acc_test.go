@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,10 +25,10 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 				{
 					Config: testAccAlertPredictionPolicyConfig(policyName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertPredictionPolicyExists(t, "opsramp_alert_prediction_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("opsramp_alert_prediction_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("opsramp_alert_prediction_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr("opsramp_alert_prediction_policy.test_policy", "seasonality_time_frame", "7D"),
+						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.test_policy"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_prediction_policy.test_policy", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.test_policy", "name", policyName),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.test_policy", "seasonality_time_frame", "7D"),
 					),
 				},
 			},
@@ -40,7 +39,7 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 func testAccAlertPredictionPolicyConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_alert_prediction_policy" "test_policy" {
+resource "hpe_opsramp_alert_prediction_policy" "test_policy" {
 	name = "%s"
 
 	enabled_mode = "OFF"
@@ -66,7 +65,8 @@ func testAccEnsureAlertPredictionPolicyExists(t *testing.T, resourceName string)
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -95,11 +95,12 @@ func testAccCheckAlertPredictionPolicyDestroy(t *testing.T) resource.TestCheckFu
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_alert_prediction_policy" {
+			if rs.Type != "hpe_opsramp_alert_prediction_policy" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

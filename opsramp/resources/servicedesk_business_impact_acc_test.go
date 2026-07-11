@@ -25,9 +25,9 @@ func TestAccServicedeskBusinessImpactResource(t *testing.T) {
 				{
 					Config: testAccServicedeskBusinessImpactConfig(impactName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicedeskBusinessImpactExists(t, "opsramp_servicedesk_business_impact.test_impact"),
-						resource.TestCheckResourceAttrSet("opsramp_servicedesk_business_impact.test_impact", "id"),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_business_impact.test_impact", "name", impactName),
+						testAccEnsureServicedeskBusinessImpactExists(t, "hpe_opsramp_servicedesk_business_impact.test_impact"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_business_impact.test_impact", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_business_impact.test_impact", "name", impactName),
 					),
 				},
 			},
@@ -37,7 +37,7 @@ func TestAccServicedeskBusinessImpactResource(t *testing.T) {
 func testAccServicedeskBusinessImpactConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_business_impact" "test_impact" {
+resource "hpe_opsramp_servicedesk_business_impact" "test_impact" {
 	name        = "%s"
 	description = "Acceptance test business impact"
 }
@@ -82,7 +82,7 @@ func testAccCheckServicedeskBusinessImpactDestroy(t *testing.T) resource.TestChe
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_servicedesk_business_impact" {
+			if rs.Type != "hpe_opsramp_servicedesk_business_impact" {
 				continue
 			}
 

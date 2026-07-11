@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,10 +25,17 @@ func TestAccKBCategoryResource(t *testing.T) {
 				{
 					Config: testAccKBCategoryConfig(catName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureKBCategoryExists(t, "opsramp_kb_category.test_category"),
-						resource.TestCheckResourceAttrSet("opsramp_kb_category.test_category", "id"),
-						resource.TestCheckResourceAttr("opsramp_kb_category.test_category", "name", catName),
+						testAccEnsureKBCategoryExists(t, "hpe_opsramp_kb_category.test_category"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_kb_category.test_category", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_kb_category.test_category", "name", catName),
 					),
+				},
+				// ImportState testing
+				{
+					ResourceName:      "hpe_opsramp_kb_category.test_category",
+					ImportState:       true,
+					ImportStateIdFunc: testAccKBCategoryImportStateIdFunc("hpe_opsramp_kb_category.test_category"),
+					ImportStateVerify: true,
 				},
 			},
 		})
@@ -39,7 +45,7 @@ func TestAccKBCategoryResource(t *testing.T) {
 func testAccKBCategoryConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_kb_category" "test_category" {
+resource "hpe_opsramp_kb_category" "test_category" {
 	name        = "%s"
 	description = "Acceptance test KB category"
 }
@@ -60,7 +66,8 @@ func testAccEnsureKBCategoryExists(t *testing.T, resourceName string) resource.T
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -89,11 +96,12 @@ func testAccCheckKBCategoryDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_kb_category" {
+			if rs.Type != "hpe_opsramp_kb_category" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -112,5 +120,16 @@ func testAccCheckKBCategoryDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testAccKBCategoryImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
 	}
 }

@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,10 +25,18 @@ func TestAccCustomIntegrationResource(t *testing.T) {
 				{
 					Config: testAccCustomIntegrationConfig(displayName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureCustomIntegrationExists(t, "opsramp_custom_integration.test_integration"),
-						resource.TestCheckResourceAttrSet("opsramp_custom_integration.test_integration", "id"),
-						resource.TestCheckResourceAttr("opsramp_custom_integration.test_integration", "display_name", displayName),
+						testAccEnsureCustomIntegrationExists(t, "hpe_opsramp_custom_integration.test_integration"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_custom_integration.test_integration", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_custom_integration.test_integration", "display_name", displayName),
 					),
+				},
+				// ImportState testing
+				{
+					ResourceName:            "hpe_opsramp_custom_integration.test_integration",
+					ImportState:             true,
+					ImportStateIdFunc:       testAccCustomIntegrationImportStateIdFunc("hpe_opsramp_custom_integration.test_integration"),
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"api_client_id", "api_client_secret", "role_name"},
 				},
 			},
 		})
@@ -40,7 +47,7 @@ func testAccCustomIntegrationConfig(displayName string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_permission_set" "test_role_perms" {
+resource "hpe_opsramp_permission_set" "test_role_perms" {
 	name        = "Test permissions for %s"
 	description = "Permissions for role test"
 
@@ -52,17 +59,17 @@ resource "opsramp_permission_set" "test_role_perms" {
 	]
 }
 
-resource "opsramp_role" "test_role" {
+resource "hpe_opsramp_role" "test_role" {
 	name        = "Test role for %s"
 	description = "Acceptance test role"
 
 	permissions = [
-		opsramp_permission_set.test_role_perms.unique_id
+		hpe_opsramp_permission_set.test_role_perms.unique_id
 	]
 }
-resource "opsramp_custom_integration" "test_integration" {
+resource "hpe_opsramp_custom_integration" "test_integration" {
 	display_name = "%s"
-	role_name    = opsramp_role.test_role.name
+	role_name    = hpe_opsramp_role.test_role.name
 }
 `, acctest.ProviderConfigHCL(), displayName, displayName, displayName)
 }
@@ -81,7 +88,8 @@ func testAccEnsureCustomIntegrationExists(t *testing.T, resourceName string) res
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -110,11 +118,12 @@ func testAccCheckCustomIntegrationDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_custom_integration" {
+			if rs.Type != "hpe_opsramp_custom_integration" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -131,5 +140,16 @@ func testAccCheckCustomIntegrationDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testAccCustomIntegrationImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
 	}
 }

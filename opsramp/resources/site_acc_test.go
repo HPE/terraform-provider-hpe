@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -38,10 +37,10 @@ func TestAccSiteResource(t *testing.T) {
 						"name CONTAINS \"init\"",
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureSiteExists(t, "opsramp_site.test_site"),
-						resource.TestCheckResourceAttrSet("opsramp_site.test_site", "id"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "name", siteNameOne),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "state", "València"),
+						testAccEnsureSiteExists(t, "hpe_opsramp_site.test_site"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_site.test_site", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "name", siteNameOne),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "state", "València"),
 					),
 				},
 				{
@@ -58,18 +57,25 @@ func TestAccSiteResource(t *testing.T) {
 						"name CONTAINS \"updated\"",
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureSiteExists(t, "opsramp_site.test_site"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "name", siteNameTwo),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "description", "Updated site description"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "address", "Vicente Aleixandre, 1"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "city", "Las Rozas de Madrid"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "state", "Madrid"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "country", "Spain"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "zip", "28232"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "phone_number", "911237104"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "phone_extension", "34"),
-						resource.TestCheckResourceAttr("opsramp_site.test_site", "search_query", "name CONTAINS \"updated\""),
+						testAccEnsureSiteExists(t, "hpe_opsramp_site.test_site"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "name", siteNameTwo),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "description", "Updated site description"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "address", "Vicente Aleixandre, 1"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "city", "Las Rozas de Madrid"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "state", "Madrid"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "country", "Spain"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "zip", "28232"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "phone_number", "911237104"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "phone_extension", "34"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "search_query", "name CONTAINS \"updated\""),
 					),
+				},
+				// ImportState testing
+				{
+					ResourceName:      "hpe_opsramp_site.test_site",
+					ImportState:       true,
+					ImportStateIdFunc: testAccSiteImportStateIdFunc("hpe_opsramp_site.test_site"),
+					ImportStateVerify: true,
 				},
 			},
 		})
@@ -79,7 +85,7 @@ func TestAccSiteResource(t *testing.T) {
 func testAccSiteConfig(name string, description string, address string, city string, state string, country string, zip string, phoneNumber string, phoneExtension string, searchQuery string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_site" "test_site" {
+resource "hpe_opsramp_site" "test_site" {
 	name            = "%s"
 	description     = "%s"
 	address         = "%s"
@@ -108,7 +114,8 @@ func testAccEnsureSiteExists(t *testing.T, resourceName string) resource.TestChe
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -137,11 +144,12 @@ func testAccCheckSiteDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_site" {
+			if rs.Type != "hpe_opsramp_site" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -158,5 +166,16 @@ func testAccCheckSiteDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testAccSiteImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
 	}
 }

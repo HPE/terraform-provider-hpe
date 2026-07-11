@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,10 +25,10 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 				{
 					Config: testAccFirstResponsePolicyConfig(policyName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureFirstResponsePolicyExists(t, "opsramp_first_response_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("opsramp_first_response_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("opsramp_first_response_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr("opsramp_first_response_policy.test_policy", "enabled_mode", "OBSERVED"),
+						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.test_policy"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_first_response_policy.test_policy", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy", "name", policyName),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy", "enabled_mode", "OBSERVED"),
 					),
 				},
 			},
@@ -40,7 +39,7 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 func testAccFirstResponsePolicyConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_first_response_policy" "test_policy" {
+resource "hpe_opsramp_first_response_policy" "test_policy" {
 	name = "%s"
 
 	enabled_mode = "OBSERVED"
@@ -70,7 +69,8 @@ func testAccEnsureFirstResponsePolicyExists(t *testing.T, resourceName string) r
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -99,11 +99,12 @@ func testAccCheckFirstResponsePolicyDestroy(t *testing.T) resource.TestCheckFunc
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_first_response_policy" {
+			if rs.Type != "hpe_opsramp_first_response_policy" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

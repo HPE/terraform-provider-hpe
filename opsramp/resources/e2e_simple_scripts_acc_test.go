@@ -27,13 +27,13 @@ func TestAccE2ESimpleScripts(t *testing.T) {
 				{
 					Config: testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureScriptCategoryExists(t, "opsramp_script_category.automation"),
-						testAccEnsureScriptCategoryExists(t, "opsramp_script_category.linux"),
-						testAccEnsureScriptExists(t, "opsramp_script.restart_service"),
-						resource.TestCheckResourceAttr("opsramp_script_category.automation", "name", parentCat),
-						resource.TestCheckResourceAttr("opsramp_script_category.linux", "name", childCat),
-						resource.TestCheckResourceAttr("opsramp_script.restart_service", "name", scriptName),
-						resource.TestCheckResourceAttr("opsramp_script.restart_service", "execution_type", "SHELL"),
+						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.automation"),
+						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.linux"),
+						testAccEnsureScriptExists(t, "hpe_opsramp_script.restart_service"),
+						resource.TestCheckResourceAttr("hpe_opsramp_script_category.automation", "name", parentCat),
+						resource.TestCheckResourceAttr("hpe_opsramp_script_category.linux", "name", childCat),
+						resource.TestCheckResourceAttr("hpe_opsramp_script.restart_service", "name", scriptName),
+						resource.TestCheckResourceAttr("hpe_opsramp_script.restart_service", "execution_type", "SHELL"),
 					),
 				},
 			},
@@ -44,17 +44,17 @@ func TestAccE2ESimpleScripts(t *testing.T) {
 func testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_script_category" "automation" {
+resource "hpe_opsramp_script_category" "automation" {
 	name = "%s"
 }
 
-resource "opsramp_script_category" "linux" {
+resource "hpe_opsramp_script_category" "linux" {
 	name      = "%s"
-	parent_id = opsramp_script_category.automation.uuid
+	parent_id = hpe_opsramp_script_category.automation.uuid
 }
 
-resource "opsramp_script" "restart_service" {
-	category_id     = opsramp_script_category.linux.uuid
+resource "hpe_opsramp_script" "restart_service" {
+	category_id     = hpe_opsramp_script_category.linux.uuid
 	name            = "%s"
 	description     = "Restart a service on a Linux machine."
 	platforms       = ["LINUX"]

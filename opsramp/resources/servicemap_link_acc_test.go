@@ -9,6 +9,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func TestAccServicemapLinkResource(t *testing.T) {
@@ -23,17 +24,25 @@ func TestAccServicemapLinkResource(t *testing.T) {
 				{
 					Config: testAccServicemapLinkConfig(rootName, linkedName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("opsramp_servicemap_link.test_link", "parent"),
-						resource.TestCheckResourceAttrSet("opsramp_servicemap_link.test_link", "link"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap_link.test_link", "parent"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap_link.test_link", "link"),
 						resource.TestCheckResourceAttrPair(
-							"opsramp_servicemap_link.test_link", "parent",
-							"opsramp_servicemap.test_link_root", "id",
+							"hpe_opsramp_servicemap_link.test_link", "parent",
+							"hpe_opsramp_servicemap.test_link_root", "id",
 						),
 						resource.TestCheckResourceAttrPair(
-							"opsramp_servicemap_link.test_link", "link",
-							"opsramp_servicemap.test_link_target", "id",
+							"hpe_opsramp_servicemap_link.test_link", "link",
+							"hpe_opsramp_servicemap.test_link_target", "id",
 						),
 					),
+				},
+				// ImportState testing — import ID is <parent_id>:<link_id>
+				{
+					ResourceName:                         "hpe_opsramp_servicemap_link.test_link",
+					ImportState:                          true,
+					ImportStateIdFunc:                    testAccServicemapLinkImportStateIdFunc("hpe_opsramp_servicemap_link.test_link"),
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "parent",
 				},
 			},
 		})
@@ -43,19 +52,34 @@ func TestAccServicemapLinkResource(t *testing.T) {
 func testAccServicemapLinkConfig(rootName string, linkedName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicemap" "test_link_root" {
+resource "hpe_opsramp_servicemap" "test_link_root" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicemap" "test_link_target" {
+resource "hpe_opsramp_servicemap" "test_link_target" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicemap_link" "test_link" {
-	parent = opsramp_servicemap.test_link_root.id
-	link   = opsramp_servicemap.test_link_target.id
+resource "hpe_opsramp_servicemap_link" "test_link" {
+	parent = hpe_opsramp_servicemap.test_link_root.id
+	link   = hpe_opsramp_servicemap.test_link_target.id
 }
 `, acctest.ProviderConfigHCL(), rootName, linkedName)
+}
+
+// testAccServicemapLinkImportStateIdFunc builds the composite import ID: <parent_id>:<link_id>
+func testAccServicemapLinkImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		parentID := rs.Primary.Attributes["parent"]
+		linkID := rs.Primary.Attributes["link"]
+
+		return parentID + ":" + linkID, nil
+	}
 }

@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,12 +25,12 @@ func TestAccUserResource(t *testing.T) {
 				{
 					Config: testAccUserConfig(loginName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureUserExists(t, "opsramp_user.test_user"),
-						resource.TestCheckResourceAttrSet("opsramp_user.test_user", "id"),
-						resource.TestCheckResourceAttr("opsramp_user.test_user", "login_name", loginName),
-						resource.TestCheckResourceAttr("opsramp_user.test_user", "first_name", "AccTest"),
-						resource.TestCheckResourceAttr("opsramp_user.test_user", "last_name", "User"),
-						resource.TestCheckResourceAttr("opsramp_user.test_user", "country", "Spain"),
+						testAccEnsureUserExists(t, "hpe_opsramp_user.test_user"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_user.test_user", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "login_name", loginName),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "first_name", "AccTest"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "last_name", "User"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "country", "Spain"),
 					),
 				},
 			},
@@ -42,7 +41,7 @@ func TestAccUserResource(t *testing.T) {
 func testAccUserConfig(loginName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_user" "test_user" {
+resource "hpe_opsramp_user" "test_user" {
 	login_name = "%s"
 	password   = "AccTestP@ss1234!"
 	first_name = "AccTest"
@@ -89,7 +88,8 @@ func testAccEnsureUserExists(t *testing.T, resourceName string) resource.TestChe
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -118,11 +118,12 @@ func testAccCheckUserDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_user" {
+			if rs.Type != "hpe_opsramp_user" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

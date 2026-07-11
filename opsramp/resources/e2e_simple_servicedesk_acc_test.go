@@ -32,18 +32,18 @@ func TestAccE2ESimpleServicedesk(t *testing.T) {
 				{
 					Config: testAccE2ESimpleServicedeskConfig(cat1, cat2, cat3, impact1, impact2, impact3, urgency1, urgency2, urgency3),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicedeskCategoryExists(t, "opsramp_servicedesk_category.category1"),
-						testAccEnsureServicedeskCategoryExists(t, "opsramp_servicedesk_category.category2"),
-						testAccEnsureServicedeskCategoryExists(t, "opsramp_servicedesk_category.category3"),
-						testAccEnsureServicedeskBusinessImpactExists(t, "opsramp_servicedesk_business_impact.impact1"),
-						testAccEnsureServicedeskBusinessImpactExists(t, "opsramp_servicedesk_business_impact.impact2"),
-						testAccEnsureServicedeskBusinessImpactExists(t, "opsramp_servicedesk_business_impact.impact3"),
-						testAccEnsureServicedeskUrgencyExists(t, "opsramp_servicedesk_urgency.urgency1"),
-						testAccEnsureServicedeskUrgencyExists(t, "opsramp_servicedesk_urgency.urgency2"),
-						testAccEnsureServicedeskUrgencyExists(t, "opsramp_servicedesk_urgency.urgency3"),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_category.category1", "name", cat1),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_business_impact.impact1", "name", impact1),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_urgency.urgency1", "name", urgency1),
+						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.category1"),
+						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.category2"),
+						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.category3"),
+						testAccEnsureServicedeskBusinessImpactExists(t, "hpe_opsramp_servicedesk_business_impact.impact1"),
+						testAccEnsureServicedeskBusinessImpactExists(t, "hpe_opsramp_servicedesk_business_impact.impact2"),
+						testAccEnsureServicedeskBusinessImpactExists(t, "hpe_opsramp_servicedesk_business_impact.impact3"),
+						testAccEnsureServicedeskUrgencyExists(t, "hpe_opsramp_servicedesk_urgency.urgency1"),
+						testAccEnsureServicedeskUrgencyExists(t, "hpe_opsramp_servicedesk_urgency.urgency2"),
+						testAccEnsureServicedeskUrgencyExists(t, "hpe_opsramp_servicedesk_urgency.urgency3"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_category.category1", "name", cat1),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_business_impact.impact1", "name", impact1),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_urgency.urgency1", "name", urgency1),
 					),
 				},
 			},
@@ -54,50 +54,50 @@ func TestAccE2ESimpleServicedesk(t *testing.T) {
 func testAccE2ESimpleServicedeskConfig(cat1, cat2, cat3, impact1, impact2, impact3, urgency1, urgency2, urgency3 string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_category" "category1" {
+resource "hpe_opsramp_servicedesk_category" "category1" {
 	name        = "%s"
 	description = "Category1 Description"
 	ticket_type = "serviceRequests"
 }
 
-resource "opsramp_servicedesk_category" "category2" {
+resource "hpe_opsramp_servicedesk_category" "category2" {
 	name        = "%s"
 	description = "Category2 Description"
 	ticket_type = "incidents"
 }
 
-resource "opsramp_servicedesk_category" "category3" {
+resource "hpe_opsramp_servicedesk_category" "category3" {
 	name        = "%s"
 	description = "Category3 Description"
 	ticket_type = "problems"
 }
 
-resource "opsramp_servicedesk_business_impact" "impact1" {
+resource "hpe_opsramp_servicedesk_business_impact" "impact1" {
 	name        = "%s"
 	description = "Business Impact1 Description"
 }
 
-resource "opsramp_servicedesk_business_impact" "impact2" {
+resource "hpe_opsramp_servicedesk_business_impact" "impact2" {
 	name        = "%s"
 	description = "Business Impact2 Description"
 }
 
-resource "opsramp_servicedesk_business_impact" "impact3" {
+resource "hpe_opsramp_servicedesk_business_impact" "impact3" {
 	name        = "%s"
 	description = "Business Impact3 Description"
 }
 
-resource "opsramp_servicedesk_urgency" "urgency1" {
+resource "hpe_opsramp_servicedesk_urgency" "urgency1" {
 	name        = "%s"
 	description = "Urgency1 Description"
 }
 
-resource "opsramp_servicedesk_urgency" "urgency2" {
+resource "hpe_opsramp_servicedesk_urgency" "urgency2" {
 	name        = "%s"
 	description = "Urgency2 Description"
 }
 
-resource "opsramp_servicedesk_urgency" "urgency3" {
+resource "hpe_opsramp_servicedesk_urgency" "urgency3" {
 	name        = "%s"
 	description = "Urgency3 Description"
 }

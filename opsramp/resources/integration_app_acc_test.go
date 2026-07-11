@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// opsramp_integration_app – Kubernetes-2.0 SDK APP
+// hpe_opsramp_integration_app – Kubernetes-2.0 SDK APP
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationAppResourceKubernetes(t *testing.T) {
@@ -29,11 +28,11 @@ func TestAccIntegrationAppResourceKubernetes(t *testing.T) {
 			{
 				Config: testAccIntegrationAppKubernetesConfig(configName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationAppExists(t, "opsramp_integration_app.test_with_cfg"),
-					testAccEnsureIntegrationConfigExists(t, "opsramp_integration_config.test_app_cfg"),
-					resource.TestCheckResourceAttrSet("opsramp_integration_app.test_with_cfg", "id"),
-					resource.TestCheckResourceAttrSet("opsramp_integration_config.test_app_cfg", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test_app_cfg", "name", configName),
+					testAccEnsureIntegrationAppExists(t, "hpe_opsramp_integration_app.test_with_cfg"),
+					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test_app_cfg"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_app.test_with_cfg", "id"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_config.test_app_cfg", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test_app_cfg", "name", configName),
 				),
 			},
 		},
@@ -48,14 +47,14 @@ func testAccIntegrationAppKubernetesConfig(configName string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration_app" "test_with_cfg" {
+resource "hpe_opsramp_integration_app" "test_with_cfg" {
   application                    = "Kubernetes-2.0"
   version                        = "2.3.0"
   bypass_resource_reconciliation = true
 }
 
-resource "opsramp_integration_config" "test_app_cfg" {
-  integration_id = opsramp_integration_app.test_with_cfg.id
+resource "hpe_opsramp_integration_config" "test_app_cfg" {
+  integration_id = hpe_opsramp_integration_app.test_with_cfg.id
   name           = %q
   config         = jsonencode({
     Etcd                       = true
@@ -100,7 +99,8 @@ func testAccEnsureIntegrationAppExists(t *testing.T, resourceName string) resour
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -129,11 +129,12 @@ func testAccCheckIntegrationAppDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_integration_app" {
+			if rs.Type != "hpe_opsramp_integration_app" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

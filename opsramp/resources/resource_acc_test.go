@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -31,23 +30,23 @@ func TestAccResource(t *testing.T) {
 				Config: testAccResourceConfig(resourceName, "one", hostname),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"opsramp_resource.test_resource",
+						"hpe_opsramp_resource.test_resource",
 						tfjsonpath.New("resource_name"),
 						knownvalue.StringExact(resourceName),
 					),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureResourceExists(t, "opsramp_resource.test_resource"),
-					resource.TestCheckResourceAttrSet("opsramp_resource.test_resource", "uuid"),
-					resource.TestCheckResourceAttr("opsramp_resource.test_resource", "alias_name", "one"),
-					resource.TestCheckResourceAttr("opsramp_resource.test_resource", "resource_name", resourceName),
+					testAccEnsureResourceExists(t, "hpe_opsramp_resource.test_resource"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_resource.test_resource", "uuid"),
+					resource.TestCheckResourceAttr("hpe_opsramp_resource.test_resource", "alias_name", "one"),
+					resource.TestCheckResourceAttr("hpe_opsramp_resource.test_resource", "resource_name", resourceName),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:                         "opsramp_resource.test_resource",
+				ResourceName:                         "hpe_opsramp_resource.test_resource",
 				ImportState:                          true,
-				ImportStateIdFunc:                    testAccResourceImportStateIdFunc("opsramp_resource.test_resource"),
+				ImportStateIdFunc:                    testAccResourceImportStateIdFunc("hpe_opsramp_resource.test_resource"),
 				ImportStateVerify:                    true,
 				ImportStateVerifyIdentifierAttribute: "uuid",
 			},
@@ -56,16 +55,16 @@ func TestAccResource(t *testing.T) {
 				Config: testAccResourceConfig(resourceName, "onetwo", hostname),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
-						"opsramp_resource.test_resource",
+						"hpe_opsramp_resource.test_resource",
 						tfjsonpath.New("resource_name"),
 						knownvalue.StringExact(resourceName),
 					),
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureResourceExists(t, "opsramp_resource.test_resource"),
-					resource.TestCheckResourceAttrSet("opsramp_resource.test_resource", "uuid"),
-					resource.TestCheckResourceAttr("opsramp_resource.test_resource", "alias_name", "onetwo"),
-					resource.TestCheckResourceAttr("opsramp_resource.test_resource", "resource_name", resourceName),
+					testAccEnsureResourceExists(t, "hpe_opsramp_resource.test_resource"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_resource.test_resource", "uuid"),
+					resource.TestCheckResourceAttr("hpe_opsramp_resource.test_resource", "alias_name", "onetwo"),
+					resource.TestCheckResourceAttr("hpe_opsramp_resource.test_resource", "resource_name", resourceName),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -77,7 +76,7 @@ func TestAccResource(t *testing.T) {
 func testAccResourceConfig(name string, alias string, hostname string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_resource" "test_resource" {
+resource "hpe_opsramp_resource" "test_resource" {
 	resource_name = "%s"
 	alias_name = "%s"
 	hostname = "%s"
@@ -99,7 +98,8 @@ func testAccEnsureResourceExists(t *testing.T, resourceName string) resource.Tes
 			return fmt.Errorf("resource uuid is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}

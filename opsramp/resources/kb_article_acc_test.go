@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -27,9 +26,9 @@ func TestAccKBArticleResource(t *testing.T) {
 				{
 					Config: testAccKBArticleConfig(catName, articleSubject),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureKBArticleExists(t, "opsramp_kb_article.test_article"),
-						resource.TestCheckResourceAttrSet("opsramp_kb_article.test_article", "id"),
-						resource.TestCheckResourceAttr("opsramp_kb_article.test_article", "subject", articleSubject),
+						testAccEnsureKBArticleExists(t, "hpe_opsramp_kb_article.test_article"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_kb_article.test_article", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_kb_article.test_article", "subject", articleSubject),
 					),
 				},
 			},
@@ -40,15 +39,15 @@ func TestAccKBArticleResource(t *testing.T) {
 func testAccKBArticleConfig(catName string, subject string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_kb_category" "test_art_category" {
+resource "hpe_opsramp_kb_category" "test_art_category" {
 	name        = "%s"
 	description = "Category for article test"
 }
 
-resource "opsramp_kb_article" "test_article" {
+resource "hpe_opsramp_kb_article" "test_article" {
 	subject     = "%s"
 	content     = "Acceptance test article content"
-	category_id = opsramp_kb_category.test_art_category.id
+	category_id = hpe_opsramp_kb_category.test_art_category.id
 }
 `, acctest.ProviderConfigHCL(), catName, subject)
 }
@@ -67,7 +66,8 @@ func testAccEnsureKBArticleExists(t *testing.T, resourceName string) resource.Te
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -96,11 +96,12 @@ func testAccCheckKBArticleDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_kb_article" {
+			if rs.Type != "hpe_opsramp_kb_article" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

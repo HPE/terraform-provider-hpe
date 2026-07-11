@@ -15,6 +15,7 @@ import (
 
 func TestAccClientResource(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
+		acctest.SkipIfNotMSP(t)
 		clientName := acctest.RandomName("client")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -25,11 +26,11 @@ func TestAccClientResource(t *testing.T) {
 				{
 					Config: testAccClientConfig(clientName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureClientExists(t, "opsramp_client.test_client"),
-						resource.TestCheckResourceAttrSet("opsramp_client.test_client", "id"),
-						resource.TestCheckResourceAttr("opsramp_client.test_client", "name", clientName),
-						resource.TestCheckResourceAttr("opsramp_client.test_client", "country", "Spain"),
-						resource.TestCheckResourceAttr("opsramp_client.test_client", "time_zone", "Europe/Paris"),
+						testAccEnsureClientExists(t, "hpe_opsramp_client.test_client"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_client.test_client", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_client.test_client", "name", clientName),
+						resource.TestCheckResourceAttr("hpe_opsramp_client.test_client", "country", "Spain"),
+						resource.TestCheckResourceAttr("hpe_opsramp_client.test_client", "time_zone", "Europe/Paris"),
 					),
 				},
 			},
@@ -40,7 +41,7 @@ func TestAccClientResource(t *testing.T) {
 func testAccClientConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_client" "test_client" {
+resource "hpe_opsramp_client" "test_client" {
 	name      = "%s"
 	address   = "Valencia, Spain"
 	country   = "Spain"
@@ -93,7 +94,7 @@ func testAccCheckClientDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_client" {
+			if rs.Type != "hpe_opsramp_client" {
 				continue
 			}
 

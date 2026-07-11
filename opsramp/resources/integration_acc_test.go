@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// opsramp_integration – CUSTOM-EVENT (inbound-only with mapping attributes)
+// hpe_opsramp_integration – CUSTOM-EVENT (inbound-only with mapping attributes)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_CustomEvent(t *testing.T) {
@@ -31,28 +30,36 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 			{
 				Config: testAccIntegrationCustomEventConfig(displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationExists(t, "opsramp_integration.test"),
-					resource.TestCheckResourceAttrSet("opsramp_integration.test", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration.test", "display_name", displayName),
-					resource.TestCheckResourceAttr("opsramp_integration.test", "application", "CUSTOM-EVENT"),
-					resource.TestCheckResourceAttr("opsramp_integration.test", "category", "Monitoring"),
-					resource.TestCheckResourceAttr("opsramp_integration.test", "inbound.enable_drop_alerts", "true"),
+					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "display_name", displayName),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "application", "CUSTOM-EVENT"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "category", "Monitoring"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "inbound.enable_drop_alerts", "true"),
 				),
 			},
 			// Update – change display_name and toggle enable_drop_alerts
 			{
 				Config: testAccIntegrationCustomEventConfigUpdated(displayNameUpdated),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("opsramp_integration.test", "display_name", displayNameUpdated),
-					resource.TestCheckResourceAttr("opsramp_integration.test", "inbound.enable_drop_alerts", "false"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "display_name", displayNameUpdated),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "inbound.enable_drop_alerts", "false"),
 				),
+			},
+			// ImportState testing
+			{
+				ResourceName:            "hpe_opsramp_integration.test",
+				ImportState:             true,
+				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"application", "inbound"},
 			},
 		},
 	})
 }
 
 // ---------------------------------------------------------------------------
-// opsramp_integration – CUSTOM (inbound OAUTH2 + outbound REST_API)
+// hpe_opsramp_integration – CUSTOM (inbound OAUTH2 + outbound REST_API)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_Custom(t *testing.T) {
@@ -66,19 +73,27 @@ func TestAccIntegrationResource_Custom(t *testing.T) {
 			{
 				Config: testAccIntegrationCustomConfig(displayName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationExists(t, "opsramp_integration.test_custom"),
-					resource.TestCheckResourceAttrSet("opsramp_integration.test_custom", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration.test_custom", "application", "CUSTOM"),
-					resource.TestCheckResourceAttr("opsramp_integration.test_custom", "inbound.auth_type", "OAUTH2"),
-					resource.TestCheckResourceAttr("opsramp_integration.test_custom", "outbound.auth_type", "BASIC"),
+					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test_custom"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_custom", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test_custom", "application", "CUSTOM"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test_custom", "inbound.auth_type", "OAUTH2"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test_custom", "outbound.auth_type", "BASIC"),
 				),
+			},
+			// ImportState testing
+			{
+				ResourceName:            "hpe_opsramp_integration.test_custom",
+				ImportState:             true,
+				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test_custom"),
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"application", "inbound", "outbound"},
 			},
 		},
 	})
 }
 
 // ---------------------------------------------------------------------------
-// opsramp_integration – NEWRELIC (pre-configured, inbound auto-provisioned)
+// hpe_opsramp_integration – NEWRELIC (pre-configured, inbound auto-provisioned)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_NewRelic(t *testing.T) {
@@ -90,11 +105,11 @@ func TestAccIntegrationResource_NewRelic(t *testing.T) {
 			{
 				Config: testAccIntegrationNewRelicConfig(),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationExists(t, "opsramp_integration.test_newrelic"),
-					resource.TestCheckResourceAttrSet("opsramp_integration.test_newrelic", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration.test_newrelic", "application", "NEWRELIC"),
-					resource.TestCheckResourceAttrSet("opsramp_integration.test_newrelic", "inbound.token"),
-					resource.TestCheckResourceAttrSet("opsramp_integration.test_newrelic", "inbound.webhook_url"),
+					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test_newrelic"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_newrelic", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration.test_newrelic", "application", "NEWRELIC"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_newrelic", "inbound.token"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_newrelic", "inbound.webhook_url"),
 				),
 			},
 		},
@@ -109,14 +124,14 @@ func testAccIntegrationCustomEventConfig(displayName string) string {
 	return fmt.Sprintf(`
 %s
 
-data "opsramp_custom_event_alert_source" "custom_source" {
+data "hpe_opsramp_custom_event_alert_source" "custom_source" {
   name      = "Custom"
 }
 
-resource "opsramp_integration" "test" {
+resource "hpe_opsramp_integration" "test" {
   display_name    = %q
   application     = "CUSTOM-EVENT"
-  alert_source_id = data.opsramp_custom_event_alert_source.custom_source.id
+  alert_source_id = data.hpe_opsramp_custom_event_alert_source.custom_source.id
 
   inbound = {
     auth_type          = "WEBHOOK"
@@ -136,14 +151,14 @@ resource "opsramp_integration" "test" {
 func testAccIntegrationCustomEventConfigUpdated(displayName string) string {
 	return fmt.Sprintf(`
 %s
-data "opsramp_custom_event_alert_source" "custom_source" {
+data "hpe_opsramp_custom_event_alert_source" "custom_source" {
   name      = "Custom"
 }
   
-resource "opsramp_integration" "test" {
+resource "hpe_opsramp_integration" "test" {
   display_name    = %q
   application     = "CUSTOM-EVENT"
-  alert_source_id = data.opsramp_custom_event_alert_source.custom_source.id
+  alert_source_id = data.hpe_opsramp_custom_event_alert_source.custom_source.id
 
   inbound = {
     auth_type          = "WEBHOOK"
@@ -164,7 +179,7 @@ func testAccIntegrationCustomConfig(displayName string) string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration" "test_custom" {
+resource "hpe_opsramp_integration" "test_custom" {
   display_name = %q
   application  = "CUSTOM"
   category     = "Custom"
@@ -187,7 +202,7 @@ func testAccIntegrationNewRelicConfig() string {
 	return fmt.Sprintf(`
 %s
 
-resource "opsramp_integration" "test_newrelic" {
+resource "hpe_opsramp_integration" "test_newrelic" {
   application = "NEWRELIC"
 
   inbound = {
@@ -216,7 +231,8 @@ func testAccEnsureIntegrationExists(t *testing.T, resourceName string) resource.
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -245,11 +261,12 @@ func testAccCheckIntegrationDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_integration" {
+			if rs.Type != "hpe_opsramp_integration" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -266,5 +283,16 @@ func testAccCheckIntegrationDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testAccIntegrationImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
 	}
 }

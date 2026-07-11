@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -15,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// opsramp_integration_config – SNMP integration with schedule
+// hpe_opsramp_integration_config – SNMP integration with schedule
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
@@ -31,20 +30,20 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 			{
 				Config: testAccIntegrationConfigWithScheduleConfig(configName, "DAILY", 1, "01"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationConfigExists(t, "opsramp_integration_config.test"),
-					resource.TestCheckResourceAttrSet("opsramp_integration_config.test", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "name", configName),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "schedule.pattern_type", "DAILY"),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "schedule.pattern", "1"),
+					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_config.test", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "name", configName),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern_type", "DAILY"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern", "1"),
 				),
 			},
 			// Update – rename and change schedule
 			{
 				Config: testAccIntegrationConfigWithScheduleConfig(configNameUpdated, "HOURLY", 2, "3"),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "name", configNameUpdated),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "schedule.pattern_type", "HOURLY"),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test", "schedule.pattern", "2"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "name", configNameUpdated),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern_type", "HOURLY"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern", "2"),
 				),
 			},
 		},
@@ -52,7 +51,7 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// opsramp_integration_config – config without schedule (all_resources)
+// hpe_opsramp_integration_config – config without schedule (all_resources)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
@@ -66,10 +65,10 @@ func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
 			{
 				Config: testAccIntegrationConfigNoScheduleConfig(configName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testAccEnsureIntegrationConfigExists(t, "opsramp_integration_config.test_nosched"),
-					resource.TestCheckResourceAttrSet("opsramp_integration_config.test_nosched", "id"),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test_nosched", "name", configName),
-					resource.TestCheckResourceAttr("opsramp_integration_config.test_nosched", "all_resources", "true"),
+					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test_nosched"),
+					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_config.test_nosched", "id"),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test_nosched", "name", configName),
+					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test_nosched", "all_resources", "true"),
 				),
 			},
 		},
@@ -83,16 +82,16 @@ func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
 func testAccIntegrationConfigWithScheduleConfig(name string, patternType string, pattern int, startTime string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_management_profile" "test_management_profile" {
+resource "hpe_opsramp_management_profile" "test_management_profile" {
   name = "Test Management Profile - 1"
   description = "Management profile for integration config acceptance tests"
 }
-resource "opsramp_integration" "config_parent" {
+resource "hpe_opsramp_integration" "config_parent" {
   application  = "SNMP"
   display_name = "tf-acc-snmp-config-parent - 1"
-  profile_id = opsramp_management_profile.test_management_profile.uuid
+  profile_id = hpe_opsramp_management_profile.test_management_profile.uuid
 }
-resource "opsramp_credential_set" "snmp_credential_set" {
+resource "hpe_opsramp_credential_set" "snmp_credential_set" {
   name        = "SNMP Credential Set - 1"
   description = "Credential set for SNMP tests"
 
@@ -110,8 +109,8 @@ resource "opsramp_credential_set" "snmp_credential_set" {
   community           = "public"
 }
 
-resource "opsramp_integration_config" "test" {
-  integration_id = opsramp_integration.config_parent.id
+resource "hpe_opsramp_integration_config" "test" {
+  integration_id = hpe_opsramp_integration.config_parent.id
   name           = %q
   config         = jsonencode({
     nmapResult      = true
@@ -119,7 +118,7 @@ resource "opsramp_integration_config" "test" {
     discoveryType   = "Iprange"
     ipRange         = "10.0.0.1"
     networkDepth    = "1"
-	credentials     = [opsramp_credential_set.snmp_credential_set.id]
+	credentials     = [hpe_opsramp_credential_set.snmp_credential_set.id]
 	packetCount     = "default"
   })
 
@@ -137,16 +136,16 @@ resource "opsramp_integration_config" "test" {
 func testAccIntegrationConfigNoScheduleConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_management_profile" "test_management_profile" {
-  name = "Test Management Profile 2"
+resource "hpe_opsramp_management_profile" "test_management_profile" {
+  name = "Test Management Profile - 2"
   description = "Management profile for integration config acceptance tests"
 }
-resource "opsramp_integration" "config_parent" {
+resource "hpe_opsramp_integration" "config_parent" {
   application  = "SNMP"
   display_name = "tf-acc-snmp-config-parent 2"
-  profile_id = opsramp_management_profile.test_management_profile.uuid
+  profile_id = hpe_opsramp_management_profile.test_management_profile.uuid
 }
-resource "opsramp_credential_set" "snmp_credential_set" {
+resource "hpe_opsramp_credential_set" "snmp_credential_set" {
   name        = "SNMP Credential Set - 2"
   description = "Credential set for SNMP tests"
 
@@ -163,8 +162,8 @@ resource "opsramp_credential_set" "snmp_credential_set" {
   ssh_credential_type = "PASSWORD"
   community           = "public"
 }
-resource "opsramp_integration_config" "test_nosched" {
-  integration_id = opsramp_integration.config_parent.id
+resource "hpe_opsramp_integration_config" "test_nosched" {
+  integration_id = hpe_opsramp_integration.config_parent.id
   name           = %q
   config         = jsonencode({
     nmapResult      = true
@@ -172,7 +171,7 @@ resource "opsramp_integration_config" "test_nosched" {
     discoveryType   = "Iprange"
     ipRange         = "10.0.1.1"
     networkDepth    = "1"
-    credentials     = [opsramp_credential_set.snmp_credential_set.id]
+    credentials     = [hpe_opsramp_credential_set.snmp_credential_set.id]
 	packetCount     = "default"
   })
   all_resources = true
@@ -200,7 +199,8 @@ func testAccEnsureIntegrationConfigExists(t *testing.T, resourceName string) res
 
 		integrationID := rs.Primary.Attributes["integration_id"]
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -229,11 +229,12 @@ func testAccCheckIntegrationConfigDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_integration_config" {
+			if rs.Type != "hpe_opsramp_integration_config" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

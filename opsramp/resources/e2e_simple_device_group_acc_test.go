@@ -31,17 +31,17 @@ func TestAccE2ESimpleDeviceGroup(t *testing.T) {
 				{
 					Config: testAccE2ESimpleDeviceGroupConfig(res1, res2, res3, rootGroup, childRes, childQuery, childMixed),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureResourceExists(t, "opsramp_resource.resource1"),
-						testAccEnsureResourceExists(t, "opsramp_resource.resource2"),
-						testAccEnsureResourceExists(t, "opsramp_resource.resource3"),
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.device_group_root"),
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.device_group_resources"),
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.device_group_query"),
-						testAccEnsureDeviceGroupExists(t, "opsramp_device_group.device_group_mixed"),
-						resource.TestCheckResourceAttr("opsramp_device_group.device_group_root", "name", rootGroup),
-						resource.TestCheckResourceAttr("opsramp_device_group.device_group_resources", "name", childRes),
-						resource.TestCheckResourceAttr("opsramp_device_group.device_group_query", "name", childQuery),
-						resource.TestCheckResourceAttr("opsramp_device_group.device_group_mixed", "name", childMixed),
+						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource1"),
+						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource2"),
+						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource3"),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.device_group_root"),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.device_group_resources"),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.device_group_query"),
+						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.device_group_mixed"),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.device_group_root", "name", rootGroup),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.device_group_resources", "name", childRes),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.device_group_query", "name", childQuery),
+						resource.TestCheckResourceAttr("hpe_opsramp_device_group.device_group_mixed", "name", childMixed),
 					),
 				},
 			},
@@ -52,43 +52,43 @@ func TestAccE2ESimpleDeviceGroup(t *testing.T) {
 func testAccE2ESimpleDeviceGroupConfig(res1, res2, res3, rootGroup, childRes, childQuery, childMixed string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_resource" "resource1" {
+resource "hpe_opsramp_resource" "resource1" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-resource "opsramp_resource" "resource2" {
+resource "hpe_opsramp_resource" "resource2" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-resource "opsramp_resource" "resource3" {
+resource "hpe_opsramp_resource" "resource3" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-resource "opsramp_device_group" "device_group_root" {
+resource "hpe_opsramp_device_group" "device_group_root" {
 	name      = "%s"
 	resources = []
 }
 
-resource "opsramp_device_group" "device_group_resources" {
-	parent_id = opsramp_device_group.device_group_root.id
+resource "hpe_opsramp_device_group" "device_group_resources" {
+	parent_id = hpe_opsramp_device_group.device_group_root.id
 	name      = "%s"
-	resources = [opsramp_resource.resource1.uuid]
+	resources = [hpe_opsramp_resource.resource1.uuid]
 }
 
-resource "opsramp_device_group" "device_group_query" {
-	parent_id    = opsramp_device_group.device_group_root.id
+resource "hpe_opsramp_device_group" "device_group_query" {
+	parent_id    = hpe_opsramp_device_group.device_group_root.id
 	name         = "%s"
-	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", opsramp_resource.resource2.uuid)
+	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
 }
 
-resource "opsramp_device_group" "device_group_mixed" {
-	parent_id    = opsramp_device_group.device_group_root.id
+resource "hpe_opsramp_device_group" "device_group_mixed" {
+	parent_id    = hpe_opsramp_device_group.device_group_root.id
 	name         = "%s"
-	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", opsramp_resource.resource2.uuid)
-	resources    = [opsramp_resource.resource3.uuid]
+	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
+	resources    = [hpe_opsramp_resource.resource3.uuid]
 }
 `, acctest.ProviderConfigHCL(), res1, res2, res3, rootGroup, childRes, childQuery, childMixed)
 }

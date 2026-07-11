@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,9 +25,9 @@ func TestAccUserGroupResource(t *testing.T) {
 				{
 					Config: testAccUserGroupConfig(groupName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureUserGroupExists(t, "opsramp_user_group.test_group"),
-						resource.TestCheckResourceAttrSet("opsramp_user_group.test_group", "unique_id"),
-						resource.TestCheckResourceAttr("opsramp_user_group.test_group", "name", groupName),
+						testAccEnsureUserGroupExists(t, "hpe_opsramp_user_group.test_group"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_user_group.test_group", "unique_id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user_group.test_group", "name", groupName),
 					),
 				},
 			},
@@ -39,7 +38,7 @@ func TestAccUserGroupResource(t *testing.T) {
 func testAccUserGroupConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_user_group" "test_group" {
+resource "hpe_opsramp_user_group" "test_group" {
 	name        = "%s"
 	description = "Acceptance test user group"
 }
@@ -60,7 +59,8 @@ func testAccEnsureUserGroupExists(t *testing.T, resourceName string) resource.Te
 			return fmt.Errorf("resource unique_id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -89,11 +89,12 @@ func testAccCheckUserGroupDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_user_group" {
+			if rs.Type != "hpe_opsramp_user_group" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

@@ -5,6 +5,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
@@ -23,6 +24,7 @@ import (
 // Ensure implementation satisfies the expected interfaces
 var _ resource.Resource = &AlertCorrelationPolicyResource{}
 var _ resource.ResourceWithModifyPlan = &AlertCorrelationPolicyResource{}
+var _ resource.ResourceWithImportState = &AlertCorrelationPolicyResource{}
 
 // AlertCorrelationPolicyResource defines the resource implementation.
 type AlertCorrelationPolicyResource struct {
@@ -31,18 +33,19 @@ type AlertCorrelationPolicyResource struct {
 
 // AlertCorrelationPolicyModel maps Terraform schema attributes to the provider model.
 type AlertCorrelationPolicyModel struct {
-	Client               types.String               `tfsdk:"client"`
-	Id                   types.String               `tfsdk:"id"`
-	Name                 types.String               `tfsdk:"name"`
-	EnabledMode          types.String               `tfsdk:"enabled_mode"`
-	Precedence           types.Int64                `tfsdk:"precedence"`
-	Type                 types.String               `tfsdk:"type"`
-	FilterQuery          types.String               `tfsdk:"filter_query"`
-	InferenceQuery       types.String               `tfsdk:"inference_query"`
-	Review               types.Bool                 `tfsdk:"review"`
-	InferenceSubject     types.String               `tfsdk:"inference_subject"`
-	AlgorithmCorrelation *AlgorithmCorrelationModel `tfsdk:"algorithm_correlation"`
-	MachineLearning      *MachineLearningModel      `tfsdk:"machine_learning"`
+	Client                   types.String               `tfsdk:"client"`
+	Id                       types.String               `tfsdk:"id"`
+	Name                     types.String               `tfsdk:"name"`
+	EnabledMode              types.String               `tfsdk:"enabled_mode"`
+	OrganizationMatchingType types.String               `tfsdk:"organization_matching_type"`
+	Precedence               types.Int64                `tfsdk:"precedence"`
+	Type                     types.String               `tfsdk:"type"`
+	FilterQuery              types.String               `tfsdk:"filter_query"`
+	InferenceQuery           types.String               `tfsdk:"inference_query"`
+	Review                   types.Bool                 `tfsdk:"review"`
+	InferenceSubject         types.String               `tfsdk:"inference_subject"`
+	AlgorithmCorrelation     *AlgorithmCorrelationModel `tfsdk:"algorithm_correlation"`
+	MachineLearning          *MachineLearningModel      `tfsdk:"machine_learning"`
 }
 
 // AlgorithmCorrelationModel represents algorithm correlation settings
@@ -104,6 +107,17 @@ func (r *AlertCorrelationPolicyResource) Schema(_ context.Context, _ resource.Sc
 			"id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "The unique identifier of the alert correlation policy.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"organization_matching_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "The organization matching type for partner policies. Required when creating a policy at MSP level with a client override. Valid values: `ALL`, `INCLUDE`, `EXCLUDE`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("ALL", "INCLUDE", "EXCLUDE"),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -280,6 +294,10 @@ func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client
 		InferenceSubject: plan.InferenceSubject.ValueString(),
 	}
 
+	if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
+		policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+	}
+
 	if !plan.Precedence.IsNull() && !plan.Precedence.IsUnknown() {
 		policy.Precedence = int(plan.Precedence.ValueInt64())
 	}
@@ -350,13 +368,17 @@ func mapAlertCorrelationPolicyToState(resp *client.AlertCorrelationPolicy, state
 	state.InferenceQuery = types.StringValue(resp.InferenceQuery)
 	state.Review = types.BoolValue(resp.Review)
 
+	if resp.OrganizationMatchingType != "" {
+		state.OrganizationMatchingType = types.StringValue(resp.OrganizationMatchingType)
+	} else {
+		state.OrganizationMatchingType = types.StringNull()
+	}
+
 	if resp.Precedence != 0 {
 		state.Precedence = types.Int64Value(int64(resp.Precedence))
 	}
 
-	if resp.InferenceSubject != "" {
-		state.InferenceSubject = types.StringValue(resp.InferenceSubject)
-	}
+	state.InferenceSubject = types.StringValue(resp.InferenceSubject)
 
 	if resp.AlgorithmCorrelation != nil {
 		ac := &AlgorithmCorrelationModel{}
@@ -523,4 +545,31 @@ func (r *AlertCorrelationPolicyResource) Delete(ctx context.Context, req resourc
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+// ImportState handles importing an existing alert correlation policy.
+// Import ID format: <policy_id> or <client_id>:<policy_id> (MSP only)
+func (r *AlertCorrelationPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	policyId := parsed.Parts[0]
+
+	existing, err := r.apiClient.GetAlertCorrelationPolicy(tenantId, policyId)
+	if err != nil {
+		resp.Diagnostics.AddError("Error Importing Alert Correlation Policy",
+			fmt.Sprintf("Could not import alert correlation policy with ID '%s': %s", policyId, err))
+		return
+	}
+
+	var state AlertCorrelationPolicyModel
+	state.Client = parsed.Client
+	mapAlertCorrelationPolicyToState(existing, &state)
+
+	diags := resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }

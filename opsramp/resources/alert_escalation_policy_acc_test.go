@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -27,10 +26,10 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 				{
 					Config: testAccAlertEscalationPolicyConfig(policyName, groupName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertEscalationPolicyExists(t, "opsramp_alert_escalation_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("opsramp_alert_escalation_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("opsramp_alert_escalation_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr("opsramp_alert_escalation_policy.test_policy", "enabled_mode", "OBSERVED"),
+						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.test_policy"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_escalation_policy.test_policy", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.test_policy", "name", policyName),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.test_policy", "enabled_mode", "OBSERVED"),
 					),
 				},
 			},
@@ -41,12 +40,12 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 func testAccAlertEscalationPolicyConfig(policyName string, groupName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_user_group" "esc_test_group" {
+resource "hpe_opsramp_user_group" "esc_test_group" {
 	name        = "%s"
 	description = "Group for escalation policy test"
 }
 
-resource "opsramp_alert_escalation_policy" "test_policy" {
+resource "hpe_opsramp_alert_escalation_policy" "test_policy" {
 	name         = "%s"
 	precedence   = 1
 	enabled_mode = "OBSERVED"
@@ -63,7 +62,7 @@ resource "opsramp_alert_escalation_policy" "test_policy" {
 			action             = "NOTIFICATION"
 			recipients = [
 				{
-					id   = opsramp_user_group.esc_test_group.unique_id
+					id   = hpe_opsramp_user_group.esc_test_group.unique_id
 					type = "USERGROUP"
 				}
 			]
@@ -72,6 +71,7 @@ resource "opsramp_alert_escalation_policy" "test_policy" {
 		}
 	]
 	search_query = "subject CONTAINS \"test\""
+	resource_search_query = "name CONTAINS \"test\""
 }
 `, acctest.ProviderConfigHCL(), groupName, policyName)
 }
@@ -90,7 +90,8 @@ func testAccEnsureAlertEscalationPolicyExists(t *testing.T, resourceName string)
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -119,11 +120,12 @@ func testAccCheckAlertEscalationPolicyDestroy(t *testing.T) resource.TestCheckFu
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_alert_escalation_policy" {
+			if rs.Type != "hpe_opsramp_alert_escalation_policy" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

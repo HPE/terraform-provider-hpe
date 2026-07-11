@@ -25,9 +25,9 @@ func TestAccServicedeskUrgencyResource(t *testing.T) {
 				{
 					Config: testAccServicedeskUrgencyConfig(urgencyName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicedeskUrgencyExists(t, "opsramp_servicedesk_urgency.test_urgency"),
-						resource.TestCheckResourceAttrSet("opsramp_servicedesk_urgency.test_urgency", "id"),
-						resource.TestCheckResourceAttr("opsramp_servicedesk_urgency.test_urgency", "name", urgencyName),
+						testAccEnsureServicedeskUrgencyExists(t, "hpe_opsramp_servicedesk_urgency.test_urgency"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_urgency.test_urgency", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_urgency.test_urgency", "name", urgencyName),
 					),
 				},
 			},
@@ -38,7 +38,7 @@ func TestAccServicedeskUrgencyResource(t *testing.T) {
 func testAccServicedeskUrgencyConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_urgency" "test_urgency" {
+resource "hpe_opsramp_servicedesk_urgency" "test_urgency" {
 	name        = "%s"
 	description = "Acceptance test urgency"
 }
@@ -83,7 +83,7 @@ func testAccCheckServicedeskUrgencyDestroy(t *testing.T) resource.TestCheckFunc 
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_servicedesk_urgency" {
+			if rs.Type != "hpe_opsramp_servicedesk_urgency" {
 				continue
 			}
 

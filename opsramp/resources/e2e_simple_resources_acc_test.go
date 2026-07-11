@@ -26,10 +26,10 @@ func TestAccE2ESimpleResources(t *testing.T) {
 				{
 					Config: testAccE2ESimpleResourcesConfig(res1Name, res2Name, res2Host),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureResourceExists(t, "opsramp_resource.resource1"),
-						testAccEnsureResourceExists(t, "opsramp_resource.resource2"),
-						resource.TestCheckResourceAttr("opsramp_resource.resource1", "resource_name", res1Name),
-						resource.TestCheckResourceAttr("opsramp_resource.resource2", "hostname", res2Host),
+						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource1"),
+						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource2"),
+						resource.TestCheckResourceAttr("hpe_opsramp_resource.resource1", "resource_name", res1Name),
+						resource.TestCheckResourceAttr("hpe_opsramp_resource.resource2", "hostname", res2Host),
 					),
 				},
 			},
@@ -40,13 +40,13 @@ func TestAccE2ESimpleResources(t *testing.T) {
 func testAccE2ESimpleResourcesConfig(res1Name string, res2Name string, res2Host string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_resource" "resource1" {
+resource "hpe_opsramp_resource" "resource1" {
 	alias_name    = "%s"
 	resource_name = "%s"
 	resource_type = "Other"
 }
 
-resource "opsramp_resource" "resource2" {
+resource "hpe_opsramp_resource" "resource2" {
 	alias_name    = "%s"
 	hostname      = "%s"
 	resource_type = "Other"

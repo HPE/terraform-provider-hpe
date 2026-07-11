@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,11 +25,18 @@ func TestAccServicemapResource(t *testing.T) {
 				{
 					Config: testAccServicemapConfig(smName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.test_sm"),
-						resource.TestCheckResourceAttrSet("opsramp_servicemap.test_sm", "id"),
-						resource.TestCheckResourceAttr("opsramp_servicemap.test_sm", "name", smName),
-						resource.TestCheckResourceAttr("opsramp_servicemap.test_sm", "type", "Service"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap.test_sm", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.test_sm", "name", smName),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.test_sm", "type", "Service"),
 					),
+				},
+				// ImportState testing
+				{
+					ResourceName:      "hpe_opsramp_servicemap.test_sm",
+					ImportState:       true,
+					ImportStateIdFunc: testAccServicemapImportStateIdFunc("hpe_opsramp_servicemap.test_sm"),
+					ImportStateVerify: true,
 				},
 			},
 		})
@@ -50,10 +56,10 @@ func TestAccServicemapWithChildResource(t *testing.T) {
 				{
 					Config: testAccServicemapWithChildConfig(rootName, childName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.test_sm_root"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.test_sm_child"),
-						resource.TestCheckResourceAttr("opsramp_servicemap.test_sm_root", "name", rootName),
-						resource.TestCheckResourceAttr("opsramp_servicemap.test_sm_child", "name", childName),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm_root"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm_child"),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.test_sm_root", "name", rootName),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.test_sm_child", "name", childName),
 					),
 				},
 			},
@@ -64,7 +70,7 @@ func TestAccServicemapWithChildResource(t *testing.T) {
 func testAccServicemapConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicemap" "test_sm" {
+resource "hpe_opsramp_servicemap" "test_sm" {
 	name = "%s"
 	type = "Service"
 }
@@ -74,15 +80,15 @@ resource "opsramp_servicemap" "test_sm" {
 func testAccServicemapWithChildConfig(rootName string, childName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicemap" "test_sm_root" {
+resource "hpe_opsramp_servicemap" "test_sm_root" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicemap" "test_sm_child" {
+resource "hpe_opsramp_servicemap" "test_sm_child" {
 	name   = "%s"
 	type   = "Service"
-	parent = opsramp_servicemap.test_sm_root.id
+	parent = hpe_opsramp_servicemap.test_sm_root.id
 }
 `, acctest.ProviderConfigHCL(), rootName, childName)
 }
@@ -101,7 +107,8 @@ func testAccEnsureServicemapExists(t *testing.T, resourceName string) resource.T
 			return fmt.Errorf("resource id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -130,11 +137,12 @@ func testAccCheckServicemapDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_servicemap" {
+			if rs.Type != "hpe_opsramp_servicemap" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -151,5 +159,16 @@ func testAccCheckServicemapDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+func testAccServicemapImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		return rs.Primary.ID, nil
 	}
 }

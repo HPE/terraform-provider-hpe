@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,9 +25,9 @@ func TestAccPermissionSetResource(t *testing.T) {
 				{
 					Config: testAccPermissionSetConfig(permName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsurePermissionSetExists(t, "opsramp_permission_set.test_perms"),
-						resource.TestCheckResourceAttrSet("opsramp_permission_set.test_perms", "unique_id"),
-						resource.TestCheckResourceAttr("opsramp_permission_set.test_perms", "name", permName),
+						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.test_perms"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_permission_set.test_perms", "unique_id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_permission_set.test_perms", "name", permName),
 					),
 				},
 			},
@@ -39,7 +38,7 @@ func TestAccPermissionSetResource(t *testing.T) {
 func testAccPermissionSetConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_permission_set" "test_perms" {
+resource "hpe_opsramp_permission_set" "test_perms" {
 	name        = "%s"
 	description = "Acceptance test permission set"
 
@@ -71,7 +70,8 @@ func testAccEnsurePermissionSetExists(t *testing.T, resourceName string) resourc
 			return fmt.Errorf("resource unique_id is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -100,11 +100,12 @@ func testAccCheckPermissionSetDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_permission_set" {
+			if rs.Type != "hpe_opsramp_permission_set" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}

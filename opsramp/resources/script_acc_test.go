@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -27,11 +26,20 @@ func TestAccScriptResource(t *testing.T) {
 				{
 					Config: testAccScriptConfig(catName, scriptName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureScriptExists(t, "opsramp_script.test_script"),
-						resource.TestCheckResourceAttrSet("opsramp_script.test_script", "uuid"),
-						resource.TestCheckResourceAttr("opsramp_script.test_script", "name", scriptName),
-						resource.TestCheckResourceAttr("opsramp_script.test_script", "execution_type", "SHELL"),
+						testAccEnsureScriptExists(t, "hpe_opsramp_script.test_script"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_script.test_script", "uuid"),
+						resource.TestCheckResourceAttr("hpe_opsramp_script.test_script", "name", scriptName),
+						resource.TestCheckResourceAttr("hpe_opsramp_script.test_script", "execution_type", "SHELL"),
 					),
+				},
+				// ImportState testing — import ID is <category_id>:<script_uuid>
+				{
+					ResourceName:                         "hpe_opsramp_script.test_script",
+					ImportState:                          true,
+					ImportStateIdFunc:                    testAccScriptImportStateIdFunc("hpe_opsramp_script.test_script"),
+					ImportStateVerify:                    true,
+					ImportStateVerifyIdentifierAttribute: "uuid",
+					ImportStateVerifyIgnore:              []string{"attachment"},
 				},
 			},
 		})
@@ -41,12 +49,12 @@ func TestAccScriptResource(t *testing.T) {
 func testAccScriptConfig(catName string, scriptName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_script_category" "script_test_cat" {
+resource "hpe_opsramp_script_category" "script_test_cat" {
 	name = "%s"
 }
 
-resource "opsramp_script" "test_script" {
-	category_id     = opsramp_script_category.script_test_cat.uuid
+resource "hpe_opsramp_script" "test_script" {
+	category_id     = hpe_opsramp_script_category.script_test_cat.uuid
 	name            = "%s"
 	description     = "Acceptance test script"
 	platforms       = ["LINUX"]
@@ -85,7 +93,8 @@ func testAccEnsureScriptExists(t *testing.T, resourceName string) resource.TestC
 			return fmt.Errorf("resource uuid is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -116,11 +125,12 @@ func testAccCheckScriptDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_script" {
+			if rs.Type != "hpe_opsramp_script" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
@@ -144,5 +154,20 @@ func testAccCheckScriptDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		return nil
+	}
+}
+
+// testAccScriptImportStateIdFunc builds the composite import ID: <category_id>:<script_uuid>
+func testAccScriptImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("Not found: %s", resourceName)
+		}
+
+		categoryID := rs.Primary.Attributes["category_id"]
+		scriptUUID := rs.Primary.Attributes["uuid"]
+
+		return categoryID + ":" + scriptUUID, nil
 	}
 }

@@ -38,14 +38,14 @@ func TestAccE2ESimpleAlertPolicies(t *testing.T) {
 						sdCat, sdImpact, sdUrgency,
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertCorrelationPolicyExists(t, "opsramp_alert_correlation_policy.topology"),
-						testAccEnsureAlertPredictionPolicyExists(t, "opsramp_alert_prediction_policy.prediction"),
-						testAccEnsureFirstResponsePolicyExists(t, "opsramp_first_response_policy.frp"),
-						testAccEnsureAlertEscalationPolicyExists(t, "opsramp_alert_escalation_policy.escalation"),
-						resource.TestCheckResourceAttr("opsramp_alert_correlation_policy.topology", "name", corrPolicy),
-						resource.TestCheckResourceAttr("opsramp_alert_prediction_policy.prediction", "name", predPolicy),
-						resource.TestCheckResourceAttr("opsramp_first_response_policy.frp", "name", frpPolicy),
-						resource.TestCheckResourceAttr("opsramp_alert_escalation_policy.escalation", "name", escPolicy),
+						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.topology"),
+						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.prediction"),
+						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.frp"),
+						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.escalation"),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.topology", "name", corrPolicy),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.prediction", "name", predPolicy),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.frp", "name", frpPolicy),
+						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.escalation", "name", escPolicy),
 					),
 				},
 			},
@@ -56,12 +56,12 @@ func TestAccE2ESimpleAlertPolicies(t *testing.T) {
 func testAccE2ESimpleAlertPoliciesConfig(corrPolicy, predPolicy, frpPolicy, escPolicy, userGroup, smName, kbCat, kbArticle, sdCat, sdImpact, sdUrgency string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_user_group" "alert_test_group" {
+resource "hpe_opsramp_user_group" "alert_test_group" {
 	name        = "%s"
 	description = "User group for alert policy test"
 }
 
-resource "opsramp_alert_correlation_policy" "topology" {
+resource "hpe_opsramp_alert_correlation_policy" "topology" {
 	name = "%s"
 
 	enabled_mode    = "OBSERVED"
@@ -77,7 +77,7 @@ resource "opsramp_alert_correlation_policy" "topology" {
 	inference_subject = ""
 }
 
-resource "opsramp_first_response_policy" "frp" {
+resource "hpe_opsramp_first_response_policy" "frp" {
 	name = "%s"
 
 	enabled_mode = "OBSERVED"
@@ -91,7 +91,7 @@ resource "opsramp_first_response_policy" "frp" {
 	}
 }
 
-resource "opsramp_alert_prediction_policy" "prediction" {
+resource "hpe_opsramp_alert_prediction_policy" "prediction" {
 	name = "%s"
 
 	enabled_mode = "OFF"
@@ -101,39 +101,39 @@ resource "opsramp_alert_prediction_policy" "prediction" {
 	generate_prediction_alert = true
 }
 
-resource "opsramp_kb_category" "alert_kb_cat" {
+resource "hpe_opsramp_kb_category" "alert_kb_cat" {
 	name        = "%s"
 	description = "KB category for alert policy test"
 }
 
-resource "opsramp_kb_article" "alert_kb_article" {
+resource "hpe_opsramp_kb_article" "alert_kb_article" {
 	subject     = "%s"
 	content     = "Article for alert policy testing"
-	category_id = opsramp_kb_category.alert_kb_cat.id
+	category_id = hpe_opsramp_kb_category.alert_kb_cat.id
 }
 
-resource "opsramp_servicemap" "alert_sm" {
+resource "hpe_opsramp_servicemap" "alert_sm" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicedesk_category" "alert_sd_cat" {
+resource "hpe_opsramp_servicedesk_category" "alert_sd_cat" {
 	name        = "%s"
 	description = "Category for escalation test"
 	ticket_type = "serviceRequests"
 }
 
-resource "opsramp_servicedesk_business_impact" "alert_sd_impact" {
+resource "hpe_opsramp_servicedesk_business_impact" "alert_sd_impact" {
 	name        = "%s"
 	description = "Business impact for escalation test"
 }
 
-resource "opsramp_servicedesk_urgency" "alert_sd_urgency" {
+resource "hpe_opsramp_servicedesk_urgency" "alert_sd_urgency" {
 	name        = "%s"
 	description = "Urgency for escalation test"
 }
 
-resource "opsramp_alert_escalation_policy" "escalation" {
+resource "hpe_opsramp_alert_escalation_policy" "escalation" {
 	name         = "%s"
 	precedence   = 1
 	enabled_mode = "OBSERVED"
@@ -150,7 +150,7 @@ resource "opsramp_alert_escalation_policy" "escalation" {
 			action             = "NOTIFICATION"
 			recipients = [
 				{
-					id   = opsramp_user_group.alert_test_group.unique_id
+					id   = hpe_opsramp_user_group.alert_test_group.unique_id
 					type = "USERGROUP"
 				}
 			]
@@ -164,12 +164,12 @@ resource "opsramp_alert_escalation_policy" "escalation" {
 				priority              = "Normal"
 				subject               = "Event $alert.subject have been found"
 				description           = "Event description $alert.description"
-				assignee_group_id     = opsramp_user_group.alert_test_group.unique_id
-				category_id           = opsramp_servicedesk_category.alert_sd_cat.id
+				assignee_group_id     = hpe_opsramp_user_group.alert_test_group.unique_id
+				category_id           = hpe_opsramp_servicedesk_category.alert_sd_cat.id
 				sub_category_id       = ""
-				business_impact_id    = opsramp_servicedesk_business_impact.alert_sd_impact.id
-				urgency_id            = opsramp_servicedesk_urgency.alert_sd_urgency.id
-				knowledge_article_ids = [opsramp_kb_article.alert_kb_article.id]
+				business_impact_id    = hpe_opsramp_servicedesk_business_impact.alert_sd_impact.id
+				urgency_id            = hpe_opsramp_servicedesk_urgency.alert_sd_urgency.id
+				knowledge_article_ids = [hpe_opsramp_kb_article.alert_kb_article.id]
 				cc                    = "test@example.com"
 			}
 			update_incident = {
@@ -183,7 +183,7 @@ resource "opsramp_alert_escalation_policy" "escalation" {
 		}
 	]
 	search_query          = "subject CONTAINS \"test\""
-	resource_search_query = "serviceGroups.uniqueId = \"${opsramp_servicemap.alert_sm.id}\""
+	resource_search_query = "serviceGroups.uniqueId = \"${hpe_opsramp_servicemap.alert_sm.id}\""
 }
 `, acctest.ProviderConfigHCL(), userGroup, corrPolicy, frpPolicy, predPolicy, kbCat, kbArticle, smName, sdCat, sdImpact, sdUrgency, escPolicy)
 }

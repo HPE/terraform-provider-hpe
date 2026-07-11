@@ -32,22 +32,22 @@ func TestAccE2ESimpleServicemap(t *testing.T) {
 				{
 					Config: testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1, child2, child21, child22, linkedRoot),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_root"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_child1"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_child2"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_child21"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_child22"),
-						testAccEnsureServicemapExists(t, "opsramp_servicemap.servicemap_linked_root"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_root"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_child1"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_child2"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_child21"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_child22"),
+						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_linked_root"),
 						resource.TestCheckResourceAttrPair(
-							"opsramp_servicemap_link.servicemap_link", "parent",
-							"opsramp_servicemap.servicemap_root", "id",
+							"hpe_opsramp_servicemap_link.servicemap_link", "parent",
+							"hpe_opsramp_servicemap.servicemap_root", "id",
 						),
 						resource.TestCheckResourceAttrPair(
-							"opsramp_servicemap_link.servicemap_link", "link",
-							"opsramp_servicemap.servicemap_linked_root", "id",
+							"hpe_opsramp_servicemap_link.servicemap_link", "link",
+							"hpe_opsramp_servicemap.servicemap_linked_root", "id",
 						),
-						resource.TestCheckResourceAttr("opsramp_servicemap.servicemap_root", "name", rootName),
-						resource.TestCheckResourceAttr("opsramp_servicemap.servicemap_linked_root", "name", linkedRoot),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.servicemap_root", "name", rootName),
+						resource.TestCheckResourceAttr("hpe_opsramp_servicemap.servicemap_linked_root", "name", linkedRoot),
 					),
 				},
 			},
@@ -58,55 +58,55 @@ func TestAccE2ESimpleServicemap(t *testing.T) {
 func testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1, child2, child21, child22, linkedRoot string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_resource" "resource1" {
+resource "hpe_opsramp_resource" "resource1" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-resource "opsramp_resource" "resource2" {
+resource "hpe_opsramp_resource" "resource2" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-resource "opsramp_servicemap" "servicemap_root" {
+resource "hpe_opsramp_servicemap" "servicemap_root" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicemap" "servicemap_child1" {
+resource "hpe_opsramp_servicemap" "servicemap_child1" {
 	name   = "%s"
 	type   = "Service"
-	parent = opsramp_servicemap.servicemap_root.id
+	parent = hpe_opsramp_servicemap.servicemap_root.id
 }
 
-resource "opsramp_servicemap" "servicemap_child2" {
+resource "hpe_opsramp_servicemap" "servicemap_child2" {
 	name   = "%s"
 	type   = "Service"
-	parent = opsramp_servicemap.servicemap_root.id
+	parent = hpe_opsramp_servicemap.servicemap_root.id
 }
 
-resource "opsramp_servicemap" "servicemap_child21" {
+resource "hpe_opsramp_servicemap" "servicemap_child21" {
 	name      = "%s"
 	type      = "Resource"
-	parent    = opsramp_servicemap.servicemap_child2.id
-	resources = [opsramp_resource.resource1.uuid]
+	parent    = hpe_opsramp_servicemap.servicemap_child2.id
+	resources = [hpe_opsramp_resource.resource1.uuid]
 }
 
-resource "opsramp_servicemap" "servicemap_child22" {
+resource "hpe_opsramp_servicemap" "servicemap_child22" {
 	name         = "%s"
 	type         = "Resource"
-	parent       = opsramp_servicemap.servicemap_child2.id
+	parent       = hpe_opsramp_servicemap.servicemap_child2.id
 	search_query = "resourceType = \"Server\" AND name CONTAINS \"Test\""
 }
 
-resource "opsramp_servicemap" "servicemap_linked_root" {
+resource "hpe_opsramp_servicemap" "servicemap_linked_root" {
 	name = "%s"
 	type = "Service"
 }
 
-resource "opsramp_servicemap_link" "servicemap_link" {
-	parent = opsramp_servicemap.servicemap_root.id
-	link   = opsramp_servicemap.servicemap_linked_root.id
+resource "hpe_opsramp_servicemap_link" "servicemap_link" {
+	parent = hpe_opsramp_servicemap.servicemap_root.id
+	link   = hpe_opsramp_servicemap.servicemap_linked_root.id
 }
 `, acctest.ProviderConfigHCL(), res1, res2, rootName, child1, child2, child21, child22, linkedRoot)
 }

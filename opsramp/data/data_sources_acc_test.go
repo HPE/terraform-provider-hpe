@@ -20,8 +20,8 @@ func TestAccTenantDataSource(t *testing.T) {
 				{
 					Config: testAccTenantDataSourceConfig(),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_tenant.test", "id"),
-						resource.TestCheckResourceAttrSet("data.opsramp_tenant.test", "name"),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_tenant.test", "uuid"),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_tenant.test", "name"),
 					),
 				},
 			},
@@ -38,8 +38,8 @@ func TestAccRoleDataSource(t *testing.T) {
 				{
 					Config: testAccRoleDataSourceConfig(),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_role.test", "id"),
-						resource.TestCheckResourceAttr("data.opsramp_role.test", "name", "Client Administrator"),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_role.test", "id"),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_role.test", "name", "Client Administrator"),
 					),
 				},
 			},
@@ -58,7 +58,7 @@ func TestAccResourceLookupDataSource(t *testing.T) {
 				{
 					Config: testAccResourceLookupDataSourceConfig(resourceName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_resource_lookup.test", "exists"),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_resource_lookup.test", "exists"),
 					),
 				},
 			},
@@ -77,8 +77,8 @@ func TestAccServicedeskBusinessImpactDataSource(t *testing.T) {
 				{
 					Config: testAccServicedeskBusinessImpactDataSourceConfig(impactName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_servicedesk_business_impact.test", "id"),
-						resource.TestCheckResourceAttr("data.opsramp_servicedesk_business_impact.test", "name", impactName),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_servicedesk_business_impact.test", "id"),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_servicedesk_business_impact.test", "name", impactName),
 					),
 				},
 			},
@@ -97,8 +97,8 @@ func TestAccServicedeskCategoryDataSource(t *testing.T) {
 				{
 					Config: testAccServicedeskCategoryDataSourceConfig(catName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_servicedesk_category.test", "id"),
-						resource.TestCheckResourceAttr("data.opsramp_servicedesk_category.test", "name", catName),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_servicedesk_category.test", "id"),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_servicedesk_category.test", "name", catName),
 					),
 				},
 			},
@@ -117,8 +117,8 @@ func TestAccServicedeskUrgencyDataSource(t *testing.T) {
 				{
 					Config: testAccServicedeskUrgencyDataSourceConfig(urgencyName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						resource.TestCheckResourceAttrSet("data.opsramp_servicedesk_urgency.test", "id"),
-						resource.TestCheckResourceAttr("data.opsramp_servicedesk_urgency.test", "name", urgencyName),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_servicedesk_urgency.test", "id"),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_servicedesk_urgency.test", "name", urgencyName),
 					),
 				},
 			},
@@ -129,14 +129,14 @@ func TestAccServicedeskUrgencyDataSource(t *testing.T) {
 func testAccTenantDataSourceConfig() string {
 	return fmt.Sprintf(`
 %s
-data "opsramp_tenant" "test" {}
+data "hpe_opsramp_tenant" "test" {}
 `, acctest.ProviderConfigHCL())
 }
 
 func testAccRoleDataSourceConfig() string {
 	return fmt.Sprintf(`
 %s
-data "opsramp_role" "test" {
+data "hpe_opsramp_role" "test" {
 	name = "Client Administrator"
 }
 `, acctest.ProviderConfigHCL())
@@ -145,13 +145,13 @@ data "opsramp_role" "test" {
 func testAccResourceLookupDataSourceConfig(resourceName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_resource" "lookup_test" {
+resource "hpe_opsramp_resource" "lookup_test" {
 	resource_name = "%s"
 	resource_type = "Linux"
 }
 
-data "opsramp_resource_lookup" "test" {
-	query = format("name = \"%%s\"", opsramp_resource.lookup_test.resource_name)
+data "hpe_opsramp_resource_lookup" "test" {
+	query = format("name = \"%%s\"", hpe_opsramp_resource.lookup_test.resource_name)
 }
 `, acctest.ProviderConfigHCL(), resourceName)
 }
@@ -159,13 +159,13 @@ data "opsramp_resource_lookup" "test" {
 func testAccServicedeskBusinessImpactDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_business_impact" "ds_test" {
+resource "hpe_opsramp_servicedesk_business_impact" "ds_test" {
 	name        = "%s"
 	description = "Data source test business impact"
 }
 
-data "opsramp_servicedesk_business_impact" "test" {
-	name = opsramp_servicedesk_business_impact.ds_test.name
+data "hpe_opsramp_servicedesk_business_impact" "test" {
+	name = hpe_opsramp_servicedesk_business_impact.ds_test.name
 }
 `, acctest.ProviderConfigHCL(), name)
 }
@@ -173,14 +173,14 @@ data "opsramp_servicedesk_business_impact" "test" {
 func testAccServicedeskCategoryDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_category" "ds_test" {
+resource "hpe_opsramp_servicedesk_category" "ds_test" {
 	name        = "%s"
 	description = "Data source test category"
 	ticket_type = "serviceRequests"
 }
 
-data "opsramp_servicedesk_category" "test" {
-	name = opsramp_servicedesk_category.ds_test.name
+data "hpe_opsramp_servicedesk_category" "test" {
+	name = hpe_opsramp_servicedesk_category.ds_test.name
 }
 `, acctest.ProviderConfigHCL(), name)
 }
@@ -188,13 +188,13 @@ data "opsramp_servicedesk_category" "test" {
 func testAccServicedeskUrgencyDataSourceConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_servicedesk_urgency" "ds_test" {
+resource "hpe_opsramp_servicedesk_urgency" "ds_test" {
 	name        = "%s"
 	description = "Data source test urgency"
 }
 
-data "opsramp_servicedesk_urgency" "test" {
-	name = opsramp_servicedesk_urgency.ds_test.name
+data "hpe_opsramp_servicedesk_urgency" "test" {
+	name = hpe_opsramp_servicedesk_urgency.ds_test.name
 }
 `, acctest.ProviderConfigHCL(), name)
 }

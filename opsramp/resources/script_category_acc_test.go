@@ -5,7 +5,6 @@ package resources_test
 
 import (
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
@@ -26,9 +25,9 @@ func TestAccScriptCategoryResource(t *testing.T) {
 				{
 					Config: testAccScriptCategoryConfig(catName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureScriptCategoryExists(t, "opsramp_script_category.test_category"),
-						resource.TestCheckResourceAttrSet("opsramp_script_category.test_category", "uuid"),
-						resource.TestCheckResourceAttr("opsramp_script_category.test_category", "name", catName),
+						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_category"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_script_category.test_category", "uuid"),
+						resource.TestCheckResourceAttr("hpe_opsramp_script_category.test_category", "name", catName),
 					),
 				},
 			},
@@ -49,10 +48,10 @@ func TestAccScriptCategoryWithParentResource(t *testing.T) {
 				{
 					Config: testAccScriptCategoryWithParentConfig(parentName, childName),
 					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureScriptCategoryExists(t, "opsramp_script_category.test_parent"),
-						testAccEnsureScriptCategoryExists(t, "opsramp_script_category.test_child"),
-						resource.TestCheckResourceAttr("opsramp_script_category.test_parent", "name", parentName),
-						resource.TestCheckResourceAttr("opsramp_script_category.test_child", "name", childName),
+						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_parent"),
+						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_child"),
+						resource.TestCheckResourceAttr("hpe_opsramp_script_category.test_parent", "name", parentName),
+						resource.TestCheckResourceAttr("hpe_opsramp_script_category.test_child", "name", childName),
 					),
 				},
 			},
@@ -63,7 +62,7 @@ func TestAccScriptCategoryWithParentResource(t *testing.T) {
 func testAccScriptCategoryConfig(name string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_script_category" "test_category" {
+resource "hpe_opsramp_script_category" "test_category" {
 	name = "%s"
 }
 `, acctest.ProviderConfigHCL(), name)
@@ -72,13 +71,13 @@ resource "opsramp_script_category" "test_category" {
 func testAccScriptCategoryWithParentConfig(parentName string, childName string) string {
 	return fmt.Sprintf(`
 %s
-resource "opsramp_script_category" "test_parent" {
+resource "hpe_opsramp_script_category" "test_parent" {
 	name = "%s"
 }
 
-resource "opsramp_script_category" "test_child" {
+resource "hpe_opsramp_script_category" "test_child" {
 	name      = "%s"
-	parent_id = opsramp_script_category.test_parent.uuid
+	parent_id = hpe_opsramp_script_category.test_parent.uuid
 }
 `, acctest.ProviderConfigHCL(), parentName, childName)
 }
@@ -97,7 +96,7 @@ func testAccEnsureScriptCategoryExists(t *testing.T, resourceName string) resour
 			return fmt.Errorf("resource uuid is empty in state for %s", resourceName)
 		}
 
-		tenantID := os.Getenv("OPSRAMP_TENANT")
+		tenantID, ok := acctest.LookupProviderEnv("tenant")
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}
@@ -126,11 +125,12 @@ func testAccCheckScriptCategoryDestroy(t *testing.T) resource.TestCheckFunc {
 		}
 
 		for _, rs := range s.RootModule().Resources {
-			if rs.Type != "opsramp_script_category" {
+			if rs.Type != "hpe_opsramp_script_category" {
 				continue
 			}
 
-			tenantID := os.Getenv("OPSRAMP_TENANT")
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
 			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 				tenantID = clientID
 			}
