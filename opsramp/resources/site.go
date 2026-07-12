@@ -115,11 +115,13 @@ func (r *SiteResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 			"phone_number": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "The primary phone number for the site.",
 			},
 			"phone_extension": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
+				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "The phone extension for the site.",
 			},
 			"parent_id": schema.Int64Attribute{
@@ -230,6 +232,9 @@ func (r *SiteResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	site := translatePlanToSite(plan)
 
+	// Save planned resources before mapSiteResponseToModel overwrites them with null.
+	resources := setToStringSlice(plan.Resources)
+
 	created, err := r.apiClient.CreateSite(tenantId, site)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
@@ -241,8 +246,6 @@ func (r *SiteResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	resources := setToStringSlice(plan.Resources)
 
 	if len(resources) > 0 {
 		err = r.apiClient.AddSiteChilds(tenantId, created.Uuid, resources)
@@ -286,11 +289,18 @@ func (r *SiteResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
+	// Preserve resources before mapSiteResponseToModel overwrites them with null.
+	// The API response includes all resources (explicit + query-matched) so we
+	// cannot use it to reconstruct the explicitly-managed set.
+	savedResources := state.Resources
+
 	diags = mapSiteResponseToModel(existing, &state)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	state.Resources = savedResources
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)
@@ -319,6 +329,10 @@ func (r *SiteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		tenantId = state.Client.ValueString()
 	}
 
+	// Save resource sets before mapSiteResponseToModel overwrites them with null.
+	oldIds := setToStringSlice(state.Resources)
+	newIds := setToStringSlice(plan.Resources)
+
 	updated, err := r.apiClient.UpdateSite(tenantId, state.Uuid.ValueString(), translatePlanToSite(plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
@@ -333,8 +347,6 @@ func (r *SiteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	state.Client = plan.Client
 
 	// Unset resources is equivalent to []: always reconcile.
-	oldIds := setToStringSlice(state.Resources)
-	newIds := setToStringSlice(plan.Resources)
 	toAdd := stringSetDiff(newIds, oldIds)
 	toRemove := stringSetDiff(oldIds, newIds)
 
