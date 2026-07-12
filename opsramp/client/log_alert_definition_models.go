@@ -1,5 +1,4 @@
-// SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
-// SPDX-License-Identifier: Apache-2.0
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package client
 
@@ -17,13 +16,13 @@ type LogAlertWrapper struct {
 
 // LogAlertDefinition represents a log alert definition
 type LogAlertDefinition struct {
-	AlertID     string              `json:"alertId,omitempty"`
-	Name        string              `json:"name"`
-	Type        string              `json:"type"`
-	TenantID    string              `json:"tenantId,omitempty"`
-	AlertNoData string              `json:"alertNoData"`
-	Conditions  []LogAlertCondition `json:"conditions"`
-	Schedule    *LogAlertSchedule   `json:"schedule,omitempty"`
+	AlertID            string               `json:"alertId,omitempty"`
+	Name               string               `json:"name"`
+	Type               string               `json:"type"`
+	TenantID           string               `json:"tenantId,omitempty"`
+	AlertNoData        string               `json:"alertNoData"`
+	Conditions         []LogAlertCondition  `json:"conditions"`
+	Schedule           *LogAlertSchedule    `json:"schedule,omitempty"`
 	Notification       LogAlertNotification `json:"notification"`
 	Query              string               `json:"query,omitempty"`
 	AdvancedQuery      string               `json:"advancedQuery,omitempty"`

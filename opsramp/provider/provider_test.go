@@ -1,5 +1,4 @@
-// SPDX-FileCopyrightText: Copyright Hewlett Packard Enterprise Development LP
-// SPDX-License-Identifier: Apache-2.0
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package provider_test
 
