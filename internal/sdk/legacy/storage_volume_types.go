@@ -75,6 +75,9 @@ func (client *Client) FindStorageVolumeTypeByName(name string) (*Response, error
 		return resp, err
 	}
 	listResult := resp.Result.(*ListStorageVolumeTypesResult)
+	if listResult.StorageVolumeTypes == nil {
+		return resp, fmt.Errorf("found 0 storage volume types named %v", name)
+	}
 	StorageVolumeTypeCount := len(*listResult.StorageVolumeTypes)
 	if StorageVolumeTypeCount != 1 {
 		return resp, fmt.Errorf("found %d storage volume types named %v", StorageVolumeTypeCount, name)
@@ -95,6 +98,9 @@ func (client *Client) FindStorageVolumeTypeByCode(code string) (*Response, error
 		return resp, err
 	}
 	listResult := resp.Result.(*ListStorageVolumeTypesResult)
+	if listResult.StorageVolumeTypes == nil {
+		return resp, fmt.Errorf("found 0 storage volume types with code %v", code)
+	}
 	StorageVolumeTypeCount := len(*listResult.StorageVolumeTypes)
 	if StorageVolumeTypeCount != 1 {
 		return resp, fmt.Errorf("found %d storage volume types with code %v", StorageVolumeTypeCount, code)
