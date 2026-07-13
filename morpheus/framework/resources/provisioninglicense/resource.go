@@ -138,12 +138,16 @@ func (r *provisioningLicenseResource) Create(
 	}
 
 	// The API may normalise the tenants list on GET (e.g. replacing submitted IDs
-	// with the master tenant). Preserve the plan value so Terraform's post-apply
-	// consistency check passes. Read() will surface any real divergence on the
-	// next plan.
+	// with the master tenant). When the user supplied tenants, preserve that
+	// (known) plan value so Terraform's post-apply consistency check passes.
+	// When tenants were omitted the plan value is unknown/null, so keep the
+	// API-populated value from mapGetResponseToModel to avoid leaving a computed
+	// attribute unknown after apply. Read() surfaces any real divergence later.
 	savedTenants := plan.Tenants
 	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
-	plan.Tenants = savedTenants
+	if !savedTenants.IsUnknown() && !savedTenants.IsNull() {
+		plan.Tenants = savedTenants
+	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -285,10 +289,13 @@ func (r *provisioningLicenseResource) Update(
 		return
 	}
 
-	// Same as Create: preserve plan value for tenants.
+	// Same as Create: preserve a user-supplied (known) tenants value; otherwise
+	// keep the API-populated value so the attribute is known after apply.
 	savedTenants := plan.Tenants
 	resp.Diagnostics.Append(mapGetResponseToModel(&plan, readLicense)...)
-	plan.Tenants = savedTenants
+	if !savedTenants.IsUnknown() && !savedTenants.IsNull() {
+		plan.Tenants = savedTenants
+	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)

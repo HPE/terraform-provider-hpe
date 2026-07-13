@@ -3,12 +3,18 @@ vdi_pool:
   templates:
     idle_timeout:
       int64:
-        computed_optional_required: optional
+        computed_optional_required: computed_optional
         description: The idle timeout in minutes.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(0)
     max_session_timeout:
       int64:
         computed_optional_required: optional
-        description: The maximum session timeout in minutes.
+        description: "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
+        deprecation_message: "max_session_timeout is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release."
   moves:
     - vdi_pool: ""
     - template-idle_timeout: idle_timeout
@@ -67,7 +73,7 @@ vdi_pool:
       description: The ID of the VDI pool.
       state_for_unknown: true
     idle_timeout:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: The idle timeout in minutes.
     initial_pool_size:
       computed_optional_required: computed_optional
@@ -80,7 +86,7 @@ vdi_pool:
       description: Max limit on number of allocations and instances within the pool.
     max_session_timeout:
       computed_optional_required: optional
-      description: The maximum session timeout in minutes.
+      description: "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
     min_idle:
       computed_optional_required: computed_optional
       description: Sets the minimum number of idle instances on standby in the pool.

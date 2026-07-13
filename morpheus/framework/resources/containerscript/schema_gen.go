@@ -5,7 +5,7 @@ package containerscript
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
+	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
@@ -78,13 +78,13 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The user to run the script as.",
 			},
 			"script": schema.StringAttribute{
+				CustomType:          customtypes.NormalizedLineEndingsStringType{},
 				Optional:            true,
 				Computed:            true,
 				Description:         "The script content.",
 				MarkdownDescription: "The script content.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
-					modifiers.NormalizeLineEndingsModifier{},
 				},
 			},
 			"script_phase": schema.StringAttribute{
@@ -142,17 +142,17 @@ func ContainerScriptResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type ContainerScriptModel struct {
-	Category      types.String `tfsdk:"category"`
-	DateCreated   types.String `tfsdk:"date_created"`
-	FailOnError   types.Bool   `tfsdk:"fail_on_error"`
-	Id            types.Int64  `tfsdk:"id"`
-	Labels        types.List   `tfsdk:"labels"`
-	LastUpdated   types.String `tfsdk:"last_updated"`
-	Name          types.String `tfsdk:"name"`
-	RunAsUser     types.String `tfsdk:"run_as_user"`
-	Script        types.String `tfsdk:"script"`
-	ScriptPhase   types.String `tfsdk:"script_phase"`
-	ScriptType    types.String `tfsdk:"script_type"`
-	ScriptVersion types.String `tfsdk:"script_version"`
-	SudoUser      types.Bool   `tfsdk:"sudo_user"`
+	Category      types.String                            `tfsdk:"category"`
+	DateCreated   types.String                            `tfsdk:"date_created"`
+	FailOnError   types.Bool                              `tfsdk:"fail_on_error"`
+	Id            types.Int64                             `tfsdk:"id"`
+	Labels        types.List                              `tfsdk:"labels"`
+	LastUpdated   types.String                            `tfsdk:"last_updated"`
+	Name          types.String                            `tfsdk:"name"`
+	RunAsUser     types.String                            `tfsdk:"run_as_user"`
+	Script        customtypes.NormalizedLineEndingsString `tfsdk:"script"`
+	ScriptPhase   types.String                            `tfsdk:"script_phase"`
+	ScriptType    types.String                            `tfsdk:"script_type"`
+	ScriptVersion types.String                            `tfsdk:"script_version"`
+	SudoUser      types.Bool                              `tfsdk:"sudo_user"`
 }

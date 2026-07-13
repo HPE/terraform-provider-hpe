@@ -212,7 +212,11 @@ func (r *networkGroupResource) Read(ctx context.Context, req resource.ReadReques
 	// mapResponseToModel never touches tenant_ids or resource_permissions, so on
 	// a normal refresh those fields carry forward from the prior state naturally.
 	// On import there is no prior state, so we explicitly populate them from the
-	// API response.
+	// API response. Note: the API always injects the owner (root) tenant into the
+	// Tenants slice on GET; the import state will therefore contain an extra entry
+	// in tenant_ids that was not present in the apply state when the user's config
+	// does not include the owner tenant. The acceptance test uses
+	// ImportStateVerifyIgnore for these fields accordingly.
 	if isImport {
 		tenantSet, tenantDiags := networkGroupTenantIdsFromAPI(group.Tenants)
 		resp.Diagnostics.Append(tenantDiags...)
