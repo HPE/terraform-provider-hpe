@@ -25,21 +25,20 @@ func DataSourceStorageVolumeType() *schema.Resource {
 				Description:   "The ID of the storage volume type",
 				Optional:      true,
 				Computed:      true,
-				ConflictsWith: []string{"name", "code"},
+				ConflictsWith: []string{"name"},
 			},
 			"name": {
 				Type:          schema.TypeString,
 				Description:   "The name of the storage volume type",
 				Optional:      true,
 				Computed:      true,
-				ConflictsWith: []string{"id", "code"},
+				ConflictsWith: []string{"id"},
 			},
 			"code": {
-				Type:          schema.TypeString,
-				Description:   "The code of the storage volume type",
-				Optional:      true,
-				Computed:      true,
-				ConflictsWith: []string{"id", "name"},
+				Type:        schema.TypeString,
+				Description: "The code of the storage volume type",
+				Optional:    true,
+				Computed:    true,
 			},
 			"category": {
 				Type:        schema.TypeString,
@@ -94,10 +93,10 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	switch {
 	case id != 0:
 		resp, err = client.GetStorageVolumeType(int64(id), &morpheus.Request{})
-	case name != "":
-		resp, err = client.FindStorageVolumeTypeByName(name, category)
 	case code != "":
 		resp, err = client.FindStorageVolumeTypeByCode(code)
+	case name != "":
+		resp, err = client.FindStorageVolumeTypeByName(name, category)
 	default:
 		return diag.Errorf("Storage volume type cannot be read without name, code, or id")
 	}
