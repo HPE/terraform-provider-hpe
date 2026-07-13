@@ -21,28 +21,18 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
 
 ### Uploading logos and favicon
 
-The `header_logo_wo`, `footer_logo_wo`, `login_logo_wo` and `favicon_wo`
-attributes are **write-only local paths to image files** that the provider
-uploads to Morpheus. Logos accept `png`, `jpg` or `svg`; the favicon accepts
-`ico` or `png`. Remote URLs are not supported.
-
-Because the paths are write-only they are never stored in Terraform state. Each
-is paired with a `*_wo_version` number: set a version when you first upload an
-image, and **bump the version** whenever you want to upload a replacement (or
-clear the path and bump the version to reset that image). Changing the path
-alone does not trigger an upload.
+The `header_logo`, `footer_logo`, `login_logo` and `favicon` attributes are
+**local paths to image files** that the provider uploads to Morpheus. Logos
+accept `png`, `jpg` or `svg`; the favicon accepts `ico` or `png`. Remote URLs are
+not supported.
 
 ```terraform
 resource "hpe_morpheus_setting_whitelabel" "example" {
-  enabled                = true
-  header_logo_wo         = "${path.module}/images/header.png"
-  header_logo_wo_version = 1
-  footer_logo_wo         = "${path.module}/images/footer.png"
-  footer_logo_wo_version = 1
-  login_logo_wo          = "${path.module}/images/login.png"
-  login_logo_wo_version  = 1
-  favicon_wo             = "${path.module}/images/favicon.ico"
-  favicon_wo_version     = 1
+  enabled     = true
+  header_logo = "${path.module}/images/header.png"
+  footer_logo = "${path.module}/images/footer.png"
+  login_logo  = "${path.module}/images/login.png"
+  favicon     = "${path.module}/images/favicon.ico"
 }
 ```
 
@@ -51,18 +41,12 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
 
 ### Optional
 
-> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
-
 - `appliance_name` (String) The appliance name. Master account only.
 - `enabled` (Boolean) Whether the whitelabel feature is enabled.
-- `favicon_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Local path to a favicon image file (ico/png) to upload (Write Only). Remote URLs are not supported.
-- `favicon_wo_version` (Number) Favicon version. Bump to upload/replace favicon_wo; bump with favicon_wo unset to reset the favicon.
-- `footer_logo_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Local path to a footer logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
-- `footer_logo_wo_version` (Number) Footer logo version. Bump to upload/replace footer_logo_wo; bump with footer_logo_wo unset to reset the footer logo.
-- `header_logo_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Local path to a header logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
-- `header_logo_wo_version` (Number) Header logo version. Bump to upload/replace header_logo_wo; bump with header_logo_wo unset to reset the header logo.
-- `login_logo_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Local path to a login logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
-- `login_logo_wo_version` (Number) Login logo version. Bump to upload/replace login_logo_wo; bump with login_logo_wo unset to reset the login logo.
+- `favicon` (String) Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.
+- `footer_logo` (String) Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
+- `header_logo` (String) Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
+- `login_logo` (String) Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
 - `primary_color` (String) The primary button background color.
 - `secondary_color` (String) The header background color.
 - `support_menu_links` (String) Support menu links as a JSON string.
@@ -73,19 +57,19 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
 
 ## Limitations
 
-- **Local file paths only.** `header_logo_wo`, `footer_logo_wo`, `login_logo_wo`
-  and `favicon_wo` must reference image files on the machine running Terraform.
-  Remote URLs are not supported because the Morpheus whitelabel images API
-  accepts uploaded file content only (there is no server-side URL fetch).
-- **Uploads are driven by the version number.** The image paths are write-only
-  and never stored in state, so Terraform cannot detect when a path or a file's
-  contents change. To upload a new or changed image, bump its `*_wo_version`. To
-  reset an image, remove the path and bump its `*_wo_version`.
+- **Local file paths only.** `header_logo`, `footer_logo`, `login_logo` and
+  `favicon` must reference image files on the machine running Terraform. Remote
+  URLs are not supported because the Morpheus whitelabel images API accepts
+  uploaded file content only (there is no server-side URL fetch).
+- **File content changes are not detected.** If a file's contents change but its
+  path stays the same, Terraform will not detect a change and will not re-upload.
+  Force a re-upload by changing the path or running
+  `terraform apply -replace=hpe_morpheus_setting_whitelabel.<name>`.
 - **Server-side changes are not reconciled.** Logos changed or removed directly in
   the Morpheus UI/API are not read back into Terraform state.
 - **Uploaded values are not round-tripped.** The value you set is a local path; the
   API stores the file and returns a different server-generated storage URL, which
-  is intentionally not surfaced as an attribute value.
+  is intentionally not surfaced as the attribute value.
 - **Import cannot populate image paths.** The API only exposes the stored image
   URL, not your local path.
 

@@ -13,7 +13,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -21,17 +20,16 @@ import (
 )
 
 // TestAccMorpheusSettingWhitelabelResourceImagesOk is the regression test for
-// MORPH-12625. The logo/favicon attributes are write-only local file paths
-// (header_logo_wo, ...) uploaded via the multipart images endpoint, each paired
-// with a *_wo_version trigger. Previously the logos were sent (and silently
-// dropped) via the JSON settings endpoint and read back as null, producing a
-// "provider produced an unexpected new value ... but now null" error on apply.
+// MORPH-12625. header_logo, footer_logo, login_logo and favicon are local image
+// file paths that the provider uploads via the multipart images endpoint.
+// Previously they were sent (and silently dropped) via the JSON settings
+// endpoint and read back as null, producing a "provider produced an unexpected
+// new value ... but now null" error on apply.
 //
 // Step 1 applies a config that sets all four images (this alone reproduced the
 // original failure). Step 2 is a plan-only step asserting the follow-up plan is
-// empty (the values round-trip consistently). Step 3 bumps a single version to
-// re-upload one image in place. Because the *_wo values are write-only they are
-// never present in state, so assertions use the *_wo_version attributes.
+// empty (the configured paths round-trip consistently). Steps 3-4 remove the
+// images and assert they are reset.
 func TestAccMorpheusSettingWhitelabelResourceImagesOk(t *testing.T) {
 	// Singleton resource in Morpheus: must not run in parallel.
 	defer testhelpers.RecordResult(t)
@@ -47,7 +45,6 @@ func TestAccMorpheusSettingWhitelabelResourceImagesOk(t *testing.T) {
 
 	dir := t.TempDir()
 	headerLogo := writeTestPNG(t, dir, "header.png")
-	headerLogoV2 := writeTestPNG(t, dir, "header-v2.png")
 	footerLogo := writeTestPNG(t, dir, "footer.png")
 	loginLogo := writeTestPNG(t, dir, "login.png")
 	// The favicon field also accepts image/png per the Morpheus domain
@@ -56,67 +53,57 @@ func TestAccMorpheusSettingWhitelabelResourceImagesOk(t *testing.T) {
 
 	resourceName := "hpe_morpheus_setting_whitelabel.images"
 
-	create := imagesConfig(applianceName, headerLogo, 1, footerLogo, loginLogo, favicon)
-	updated := imagesConfig(applianceName, headerLogoV2, 2, footerLogo, loginLogo, favicon)
+	withImages := providerConfig + fmt.Sprintf(`
+resource "hpe_morpheus_setting_whitelabel" "images" {
+  enabled        = true
+  appliance_name = %q
+  header_logo    = %q
+  footer_logo    = %q
+  login_logo     = %q
+  favicon        = %q
+}
+`, applianceName, headerLogo, footerLogo, loginLogo, favicon)
+
+	withoutImages := providerConfig + fmt.Sprintf(`
+resource "hpe_morpheus_setting_whitelabel" "images" {
+  enabled        = true
+  appliance_name = %q
+}
+`, applianceName)
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttr(resourceName, "appliance_name", applianceName),
-		resource.TestCheckResourceAttr(resourceName, "header_logo_wo_version", "1"),
-		resource.TestCheckResourceAttr(resourceName, "footer_logo_wo_version", "1"),
-		resource.TestCheckResourceAttr(resourceName, "login_logo_wo_version", "1"),
-		resource.TestCheckResourceAttr(resourceName, "favicon_wo_version", "1"),
-		// Write-only values are never stored in state.
-		resource.TestCheckNoResourceAttr(resourceName, "header_logo_wo"),
-		resource.TestCheckNoResourceAttr(resourceName, "favicon_wo"),
+		// The configured local paths are preserved verbatim in state (not
+		// overwritten with the server-generated storage URL).
+		resource.TestCheckResourceAttr(resourceName, "header_logo", headerLogo),
+		resource.TestCheckResourceAttr(resourceName, "footer_logo", footerLogo),
+		resource.TestCheckResourceAttr(resourceName, "login_logo", loginLogo),
+		resource.TestCheckResourceAttr(resourceName, "favicon", favicon),
 	)
 
-	updateChecks := resource.ComposeAggregateTestCheckFunc(
+	resetChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "appliance_name", applianceName),
-		resource.TestCheckResourceAttr(resourceName, "header_logo_wo_version", "2"),
-		resource.TestCheckResourceAttr(resourceName, "footer_logo_wo_version", "1"),
+		resource.TestCheckNoResourceAttr(resourceName, "header_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "footer_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "login_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "favicon"),
 	)
-
-	checkInPlaceUpdate := resource.ConfigPlanChecks{
-		PreApply: []plancheck.PlanCheck{
-			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
-		},
-	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			// Apply with all four images set. Prior to the fix this apply failed
 			// with an inconsistent-result error.
-			{Config: providerConfig + create, Check: createChecks},
-			// The values must round-trip: a re-plan is empty.
-			{Config: providerConfig + create, ExpectNonEmptyPlan: false, PlanOnly: true},
-			// Bumping header_logo_wo_version re-uploads that image in place.
-			{Config: providerConfig + updated, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
-			{Config: providerConfig + updated, ExpectNonEmptyPlan: false, PlanOnly: true},
+			{Config: withImages, Check: createChecks},
+			// The configured paths must round-trip: a re-plan is empty.
+			{Config: withImages, ExpectNonEmptyPlan: false, PlanOnly: true},
+			// Removing the images resets them to null.
+			{Config: withoutImages, Check: resetChecks},
+			{Config: withoutImages, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
-}
-
-// imagesConfig renders a whitelabel resource that sets all four write-only image
-// paths. headerVersion is parameterised so a test step can bump it to trigger a
-// re-upload of the header logo.
-func imagesConfig(applianceName, headerLogo string, headerVersion int, footerLogo, loginLogo, favicon string) string {
-	return fmt.Sprintf(`
-resource "hpe_morpheus_setting_whitelabel" "images" {
-  enabled                = true
-  appliance_name         = %q
-  header_logo_wo         = %q
-  header_logo_wo_version = %d
-  footer_logo_wo         = %q
-  footer_logo_wo_version = 1
-  login_logo_wo          = %q
-  login_logo_wo_version  = 1
-  favicon_wo             = %q
-  favicon_wo_version     = 1
-}
-`, applianceName, headerLogo, headerVersion, footerLogo, loginLogo, favicon)
 }
 
 // writeTestPNG writes a minimal valid 1x1 PNG image to dir/name and returns its
