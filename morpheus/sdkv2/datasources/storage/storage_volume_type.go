@@ -4,6 +4,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -94,7 +95,7 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	case id != 0:
 		resp, err = client.GetStorageVolumeType(int64(id), &morpheus.Request{})
 	case name != "":
-		resp, err = client.FindStorageVolumeTypeByName(name, code, category)
+		resp, err = getStorageVolumeTypeByName(client, name, code, category)
 	default:
 		return diag.Errorf("Storage volume type cannot be read without name or id")
 	}
@@ -134,4 +135,47 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	d.Set("category", storageVolumeType.Category)
 
 	return diags
+}
+
+func getStorageVolumeTypeByName(
+	client *morpheus.Client,
+	name string,
+	code string,
+	category string,
+) (*morpheus.Response, error) {
+	// Find by name, then get by ID. An optional code and/or category can be
+	// supplied to narrow the search so that names that are only unique within a
+	// code or category resolve to a single record.
+	queryParams := map[string]string{
+		"name": name,
+	}
+	if code != "" {
+		queryParams["code"] = code
+	}
+	if category != "" {
+		queryParams["category"] = category
+	}
+	resp, err := client.ListStorageVolumeTypes(&morpheus.Request{
+		QueryParams: queryParams,
+	})
+	if err != nil {
+		return resp, err
+	}
+	listResult, ok := resp.Result.(*morpheus.ListStorageVolumeTypesResult)
+	if !ok {
+		return resp, helpers.TypeAssertFailError("Result", resp.Result)
+	}
+	if listResult.StorageVolumeTypes == nil {
+		return resp, fmt.Errorf("found 0 storage volume types named %v", name)
+	}
+	storageVolumeTypeCount := len(*listResult.StorageVolumeTypes)
+	if storageVolumeTypeCount != 1 {
+		return resp, fmt.Errorf(
+			"found %d storage volume types named %v",
+			storageVolumeTypeCount,
+			name,
+		)
+	}
+	firstRecord := (*listResult.StorageVolumeTypes)[0]
+	return client.GetStorageVolumeType(firstRecord.ID, &morpheus.Request{})
 }
