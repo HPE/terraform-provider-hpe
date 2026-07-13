@@ -52,8 +52,9 @@ setting_whitelabel:
       computed_optional_required: optional
       description: The appliance name. Master account only.
     enabled:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: Whether the whitelabel feature is enabled.
+      state_for_unknown: true
     favicon:
       computed_optional_required: optional
       description: Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.

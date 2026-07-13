@@ -259,7 +259,7 @@ func (r *settingWhitelabelResource) uploadImages(
 	var openFiles []*os.File
 	defer func() {
 		for _, f := range openFiles {
-			_ = f.Close()
+			f.Close()
 		}
 	}()
 
@@ -341,7 +341,7 @@ func (r *settingWhitelabelResource) uploadImages(
 
 func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
 	settings := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
-	if !plan.Enabled.IsNull() {
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		settings.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 	if !plan.ApplianceName.IsNull() {

@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -24,8 +25,12 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Whether the whitelabel feature is enabled.",
 				MarkdownDescription: "Whether the whitelabel feature is enabled.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"favicon": schema.StringAttribute{
 				Optional:            true,

@@ -1,6 +1,7 @@
 package settingwhitelabel_test
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 	"testing"
@@ -187,6 +188,66 @@ func TestAccMorpheusSettingWhitelabel_validationInvalidSecondaryColor(t *testing
 				Config:      providerConfig + resourceConfig,
 				ExpectError: regexp.MustCompile(`must be a valid hex color code`),
 			},
+		},
+	})
+}
+
+func TestAccMorpheusSettingWhitelabelResourceImagesOk(t *testing.T) {
+	// We can't run this test in parallel as it's a singleton resource in Morpheus.
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dir := t.TempDir()
+	headerLogo := testhelpers.WritePNG(t, dir, "header.png")
+	footerLogo := testhelpers.WritePNG(t, dir, "footer.png")
+	loginLogo := testhelpers.WritePNG(t, dir, "login.png")
+	favicon := testhelpers.WritePNG(t, dir, "favicon.ico")
+
+	resourceName := "hpe_morpheus_setting_whitelabel.images"
+
+	withImages := providerConfig + fmt.Sprintf(`
+resource "hpe_morpheus_setting_whitelabel" "images" {
+  header_logo = %q
+  footer_logo = %q
+  login_logo  = %q
+  favicon     = %q
+}
+`, headerLogo, footerLogo, loginLogo, favicon)
+
+	withoutImages := providerConfig + `
+resource "hpe_morpheus_setting_whitelabel" "images" {
+}
+`
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "header_logo", headerLogo),
+		resource.TestCheckResourceAttr(resourceName, "footer_logo", footerLogo),
+		resource.TestCheckResourceAttr(resourceName, "login_logo", loginLogo),
+		resource.TestCheckResourceAttr(resourceName, "favicon", favicon),
+	)
+
+	resetChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckNoResourceAttr(resourceName, "header_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "footer_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "login_logo"),
+		resource.TestCheckNoResourceAttr(resourceName, "favicon"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{Config: withImages, Check: createChecks},
+			{Config: withImages, ExpectNonEmptyPlan: false, PlanOnly: true},
+			{Config: withoutImages, Check: resetChecks},
+			{Config: withoutImages, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
 }
