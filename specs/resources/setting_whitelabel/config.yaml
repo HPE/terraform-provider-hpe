@@ -18,20 +18,68 @@ setting_whitelabel:
       string:
         computed_optional_required: optional
         description: Support menu links as a JSON string.
+    header_logo_wo:
+      string:
+        computed_optional_required: optional
+        description: Local path to a header logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
+        write_only: true
+    header_logo_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Header logo version. Bump to upload/replace header_logo_wo; bump with header_logo_wo unset to reset the header logo.
+    footer_logo_wo:
+      string:
+        computed_optional_required: optional
+        description: Local path to a footer logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
+        write_only: true
+    footer_logo_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Footer logo version. Bump to upload/replace footer_logo_wo; bump with footer_logo_wo unset to reset the footer logo.
+    login_logo_wo:
+      string:
+        computed_optional_required: optional
+        description: Local path to a login logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.
+        write_only: true
+    login_logo_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Login logo version. Bump to upload/replace login_logo_wo; bump with login_logo_wo unset to reset the login logo.
+    favicon_wo:
+      string:
+        computed_optional_required: optional
+        description: Local path to a favicon image file (ico/png) to upload (Write Only). Remote URLs are not supported.
+        write_only: true
+    favicon_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Favicon version. Bump to upload/replace favicon_wo; bump with favicon_wo unset to reset the favicon.
   moves:
     - whitelabel_settings: ""
     - template-id: id
     - template-primary_color: primary_color
     - template-secondary_color: secondary_color
     - template-support_menu_links_str: support_menu_links
+    - template-header_logo_wo: header_logo_wo
+    - template-header_logo_wo_version: header_logo_wo_version
+    - template-footer_logo_wo: footer_logo_wo
+    - template-footer_logo_wo_version: footer_logo_wo_version
+    - template-login_logo_wo: login_logo_wo
+    - template-login_logo_wo_version: login_logo_wo_version
+    - template-favicon_wo: favicon_wo
+    - template-favicon_wo_version: favicon_wo_version
   removes:
     - copyright_string
     - disable_support_menu
+    - favicon
     - footer_bg_color
     - footer_fg_color
+    - footer_logo
     - header_bg_color
     - header_fg_color
+    - header_logo
     - login_bg_color
+    - login_logo
     - nav_bg_color
     - nav_fg_color
     - nav_hover_color
@@ -54,22 +102,10 @@ setting_whitelabel:
     enabled:
       computed_optional_required: optional
       description: Whether the whitelabel feature is enabled.
-    favicon:
-      computed_optional_required: optional
-      description: The favicon URL or path.
-    footer_logo:
-      computed_optional_required: optional
-      description: The footer logo URL or path.
-    header_logo:
-      computed_optional_required: optional
-      description: The header logo URL or path.
     id:
       computed_optional_required: computed
       description: The fixed identifier for the whitelabel settings singleton.
       state_for_unknown: true
-    login_logo:
-      computed_optional_required: optional
-      description: The login logo URL or path.
     primary_color:
       computed_optional_required: optional
       description: The primary button background color.

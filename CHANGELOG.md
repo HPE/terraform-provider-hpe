@@ -31,6 +31,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Enhancements to existing resources
 
+- hpe_morpheus_setting_whitelabel — Logo and favicon images are now uploaded to Morpheus (previously the values were accepted but silently dropped). **Breaking change:** `header_logo`, `footer_logo`, `login_logo` and `favicon` have been replaced by write-only local file paths `header_logo_wo`, `footer_logo_wo`, `login_logo_wo` and `favicon_wo`, each paired with a `*_wo_version` trigger. Update configurations to the new attribute names and set a `*_wo_version`; bump the version to upload a replacement image (or clear the path and bump the version to reset it).
 - hpe_morpheus_instance — Added `subnet_id` to `network_interfaces` (required by some clouds, e.g. Azure); added a computed `status` attribute and out-of-band deletion detection (the instance is removed from state when the underlying VM no longer exists)
 - hpe_morpheus_service_plan (data source) — Added a `cloud_id` filter (region/zone)
 - hpe_morpheus_identity_source_saml — Exposed the SP metadata (`entity_id`, `acs_url`) as computed outputs
@@ -39,6 +40,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Resolved issues
 
+- `hpe_morpheus_setting_whitelabel` accepted `header_logo`, `footer_logo`, `login_logo` and `favicon` on apply but returned them as null on refresh (MORPH-12625); logos are now uploaded via the whitelabel images endpoint using the write-only `*_wo` attributes
 - `hpe_morpheus_form` dropped attributes on read for the secGroup field
 - `hpe_morpheus_form` cross-field leakage between option_type reads
 - `hpe_morpheus_form` no attribute generated for plain cascade keys

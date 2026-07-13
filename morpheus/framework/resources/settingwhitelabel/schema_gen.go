@@ -27,20 +27,38 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether the whitelabel feature is enabled.",
 				MarkdownDescription: "Whether the whitelabel feature is enabled.",
 			},
-			"favicon": schema.StringAttribute{
+			"favicon_wo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The favicon URL or path.",
-				MarkdownDescription: "The favicon URL or path.",
+				WriteOnly:           true,
+				Description:         "Local path to a favicon image file (ico/png) to upload (Write Only). Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a favicon image file (ico/png) to upload (Write Only). Remote URLs are not supported.",
 			},
-			"footer_logo": schema.StringAttribute{
+			"favicon_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The footer logo URL or path.",
-				MarkdownDescription: "The footer logo URL or path.",
+				Description:         "Favicon version. Bump to upload/replace favicon_wo; bump with favicon_wo unset to reset the favicon.",
+				MarkdownDescription: "Favicon version. Bump to upload/replace favicon_wo; bump with favicon_wo unset to reset the favicon.",
 			},
-			"header_logo": schema.StringAttribute{
+			"footer_logo_wo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The header logo URL or path.",
-				MarkdownDescription: "The header logo URL or path.",
+				WriteOnly:           true,
+				Description:         "Local path to a footer logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a footer logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+			},
+			"footer_logo_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Footer logo version. Bump to upload/replace footer_logo_wo; bump with footer_logo_wo unset to reset the footer logo.",
+				MarkdownDescription: "Footer logo version. Bump to upload/replace footer_logo_wo; bump with footer_logo_wo unset to reset the footer logo.",
+			},
+			"header_logo_wo": schema.StringAttribute{
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Local path to a header logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a header logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+			},
+			"header_logo_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Header logo version. Bump to upload/replace header_logo_wo; bump with header_logo_wo unset to reset the header logo.",
+				MarkdownDescription: "Header logo version. Bump to upload/replace header_logo_wo; bump with header_logo_wo unset to reset the header logo.",
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -50,10 +68,16 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"login_logo": schema.StringAttribute{
+			"login_logo_wo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The login logo URL or path.",
-				MarkdownDescription: "The login logo URL or path.",
+				WriteOnly:           true,
+				Description:         "Local path to a login logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a login logo image file (png/jpg/svg) to upload (Write Only). Remote URLs are not supported.",
+			},
+			"login_logo_wo_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Login logo version. Bump to upload/replace login_logo_wo; bump with login_logo_wo unset to reset the login logo.",
+				MarkdownDescription: "Login logo version. Bump to upload/replace login_logo_wo; bump with login_logo_wo unset to reset the login logo.",
 			},
 			"primary_color": schema.StringAttribute{
 				Optional:            true,
@@ -83,14 +107,18 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type SettingWhitelabelModel struct {
-	ApplianceName    types.String `tfsdk:"appliance_name"`
-	Enabled          types.Bool   `tfsdk:"enabled"`
-	Favicon          types.String `tfsdk:"favicon"`
-	FooterLogo       types.String `tfsdk:"footer_logo"`
-	HeaderLogo       types.String `tfsdk:"header_logo"`
-	Id               types.String `tfsdk:"id"`
-	LoginLogo        types.String `tfsdk:"login_logo"`
-	PrimaryColor     types.String `tfsdk:"primary_color"`
-	SecondaryColor   types.String `tfsdk:"secondary_color"`
-	SupportMenuLinks types.String `tfsdk:"support_menu_links"`
+	ApplianceName       types.String `tfsdk:"appliance_name"`
+	Enabled             types.Bool   `tfsdk:"enabled"`
+	FaviconWo           types.String `tfsdk:"favicon_wo"`
+	FaviconWoVersion    types.Int64  `tfsdk:"favicon_wo_version"`
+	FooterLogoWo        types.String `tfsdk:"footer_logo_wo"`
+	FooterLogoWoVersion types.Int64  `tfsdk:"footer_logo_wo_version"`
+	HeaderLogoWo        types.String `tfsdk:"header_logo_wo"`
+	HeaderLogoWoVersion types.Int64  `tfsdk:"header_logo_wo_version"`
+	Id                  types.String `tfsdk:"id"`
+	LoginLogoWo         types.String `tfsdk:"login_logo_wo"`
+	LoginLogoWoVersion  types.Int64  `tfsdk:"login_logo_wo_version"`
+	PrimaryColor        types.String `tfsdk:"primary_color"`
+	SecondaryColor      types.String `tfsdk:"secondary_color"`
+	SupportMenuLinks    types.String `tfsdk:"support_menu_links"`
 }
