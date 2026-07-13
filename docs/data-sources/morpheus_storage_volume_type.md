@@ -8,8 +8,9 @@ description: |-
 
 Provides a Morpheus storage volume type data source.
 
-A storage volume type can be looked up by `id`, `name`, or `code`. Exactly one of
-these attributes should be set.
+A storage volume type can be looked up by `id`, `name`, or `code`. When looking up
+by `name`, an optional `category` can be supplied to filter the results to a single
+storage volume type.
 
 ## Example Usage
 
