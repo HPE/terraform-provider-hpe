@@ -177,5 +177,6 @@ func getStorageVolumeTypeByName(
 		)
 	}
 	firstRecord := (*listResult.StorageVolumeTypes)[0]
+
 	return client.GetStorageVolumeType(firstRecord.ID, &morpheus.Request{})
 }
