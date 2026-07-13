@@ -5,7 +5,7 @@ network_router:
         computed_optional_required: computed_optional
     config:
       dynamic:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: Generic configuration object for network routers.
         validators:
           - custom:
@@ -34,7 +34,7 @@ network_router:
     group_id:
       int64:
         computed_optional_required: required
-        description: Group ID
+        description: Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.
         validators:
           - custom:
               imports:
@@ -42,12 +42,25 @@ network_router:
                 - path: github.com/hashicorp/terraform-plugin-framework/path
               schema_definition: |-
                 int64validator.ConflictsWith(path.Expressions{
-                  path.MatchRoot("group_id"),
+                  path.MatchRoot("shared_group_access"),
+                  path.MatchRoot("tenant_ids"),
+                  path.MatchRoot("visibility"),
                 }...)
     shared_group_access:
       bool:
         computed_optional_required: optional
-        description: Used to enable shared group access. Conflicts with group_id.
+        description: Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                boolvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("group_id"),
+                  path.MatchRoot("tenant_ids"),
+                  path.MatchRoot("visibility"),
+                }...)
     network_integration_id:
       int64:
         computed_optional_required: optional
@@ -189,6 +202,8 @@ network_router:
   overrides:
     id:
       state_for_unknown: true
+    code:
+      state_for_unknown: true
     cloud_id:
       requires_replace: true
     group_id:
@@ -197,6 +212,7 @@ network_router:
       requires_replace: true
     type_id:
       requires_replace: true
+      state_for_unknown: true
     enabled:
       default: true
     enable_bgp:
@@ -318,7 +334,6 @@ network_router:
     visibility:
       computed_optional_required: computed_optional
       description: The visibility of the network router (public or private).
-      default: "private"
       one_of: [public, private]
       state_for_unknown: true
     tenant_ids:
