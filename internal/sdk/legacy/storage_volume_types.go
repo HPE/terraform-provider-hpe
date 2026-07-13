@@ -64,12 +64,18 @@ func (client *Client) GetStorageVolumeType(id int64, req *Request) (*Response, e
 	})
 }
 
-func (client *Client) FindStorageVolumeTypeByName(name string) (*Response, error) {
-	// Find by name, then get by ID
+func (client *Client) FindStorageVolumeTypeByName(name string, category string) (*Response, error) {
+	// Find by name, then get by ID. When a category is supplied, narrow the
+	// search so that names that are only unique within a category resolve to a
+	// single record.
+	queryParams := map[string]string{
+		"name": name,
+	}
+	if category != "" {
+		queryParams["category"] = category
+	}
 	resp, err := client.ListStorageVolumeTypes(&Request{
-		QueryParams: map[string]string{
-			"name": name,
-		},
+		QueryParams: queryParams,
 	})
 	if err != nil {
 		return resp, err
