@@ -46,6 +46,9 @@ func TestAccMorpheusDataSourceFileTemplateExampleOk(t *testing.T) {
 	if currentDependency, err := template.RenderFileTemplateConfig(t, map[string]string{
 		"Name": name,
 		"Code": strings.ToLower(name),
+		// Unique per-test label avoids a concurrent-insert race on shared label
+		// names ("must be unique") with the other parallel template tests.
+		"Labels": `["` + name + `"]`,
 	}); err != nil {
 		t.Fatal(err)
 	} else {

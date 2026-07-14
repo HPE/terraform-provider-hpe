@@ -110,7 +110,7 @@ func TestAccMorpheusInstanceResourceUserGroupStorageProfile(t *testing.T) {
 	// reference test environment, consistent with the other instance tests
 	// (resource pool, layout, network, datastore). kvm-cache-none is a standard
 	// KVM/HVM storage profile code.
-	userGroup := "1"
+	userGroup := "62"
 	storageProfile := "kvm-cache-none"
 
 	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{

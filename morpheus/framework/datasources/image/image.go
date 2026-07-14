@@ -201,6 +201,15 @@ func getImageByName(
 	// two different structs. To avoid code duplication we marshal the image from
 	// the list response into JSON, and then unmarshal it into the struct used by
 	// the get by ID endpoint.
+	//
+	// The generated oneOf wrapper for config marshals to nothing (nil, nil) when
+	// neither variant is set -- which encoding/json rejects as "unexpected end of
+	// JSON input". Images whose config is an empty object hit this, so drop an
+	// effectively-empty config before marshalling (it round-trips as omitted).
+	if image.Config != nil && image.Config.GetActualInstance() == nil {
+		image.Config = nil
+	}
+
 	imgJSON, err := image.MarshalJSON()
 	if err != nil {
 		// it is very unlikely for this to error out, if it does it likely indicates

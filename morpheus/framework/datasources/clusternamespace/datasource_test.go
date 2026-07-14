@@ -34,12 +34,16 @@ provider "hpe" {
 }
 `
 
-const clusterID = "571"
+// clusterID identifies a namespace-capable Kubernetes cluster on the target
+// appliance. These tests are gated on the kubernetes_cluster capability and are
+// skipped unless it is enabled; override the ID for the target environment via
+// TF_VAR_testacc_morpheus_cluster_id.
+var clusterID = testhelpers.KubernetesClusterID("571")
 
 func TestAccMorpheusFindClusterNamespaceByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -86,7 +90,7 @@ data "hpe_morpheus_cluster_namespace" "example" {
 func TestAccMorpheusFindClusterNamespaceById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -132,7 +136,7 @@ func TestAccMorpheusFindClusterNamespaceById(t *testing.T) {
 func TestAccMorpheusFindClusterNamespaceNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

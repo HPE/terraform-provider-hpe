@@ -64,6 +64,15 @@ const (
 	NetworkLoadBalancer Capability = "network_loadbalancer"
 	Subnet              Capability = "subnet"
 
+	// NetworkLoadBalancerHAProxy marks tests that provision an HAProxy container
+	// load balancer. This needs the HAProxy load-balancer instance type/layout
+	// (load-balancer-haproxy-1.7) seeded on the appliance and a cloud able to
+	// provision the backing container. It is distinct from NetworkLoadBalancer,
+	// which only signals general load-balancer API support (e.g. NSX-T, config
+	// validation, data sources). Gate HAProxy-provisioning tests on this so they
+	// skip on environments lacking the HAProxy layout/infrastructure.
+	NetworkLoadBalancerHAProxy Capability = "network_loadbalancer_haproxy"
+
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"
@@ -79,6 +88,15 @@ const (
 	// Container/Orchestration
 	Kubernetes Capability = "kubernetes"
 	Docker     Capability = "docker"
+
+	// KubernetesCluster marks tests that require a live, healthy Kubernetes
+	// cluster on the target appliance -- one that can provision HKS workers and
+	// supports cluster namespaces. This is distinct from Kubernetes, which only
+	// signals that Kubernetes library artifacts (spec templates, blueprints,
+	// cluster layouts/types) can be exercised without a running cluster. Gate
+	// namespace and HKS-provisioning tests on this so they skip on environments
+	// that advertise "kubernetes" but have no usable cluster.
+	KubernetesCluster Capability = "kubernetes_cluster"
 
 	// Storage
 	Alletra      Capability = "alletra"
