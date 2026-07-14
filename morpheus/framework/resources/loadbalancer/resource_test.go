@@ -25,7 +25,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer, capabilities.NetworkLoadBalancerHAProxy)
 
 	t.Parallel()
 
@@ -76,7 +76,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer)
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkLoadBalancer, capabilities.NetworkLoadBalancerHAProxy)
 
 	t.Parallel()
 

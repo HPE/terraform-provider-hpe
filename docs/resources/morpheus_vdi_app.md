@@ -23,12 +23,12 @@ resource "hpe_morpheus_vdi_app" "example" {
 
 ### Required
 
+- `launch_prefix` (String) The RDS app name prefix.
 - `name` (String) The name of the VDI app.
 
 ### Optional
 
 - `description` (String) The description of the VDI app.
-- `launch_prefix` (String) The RDS app name prefix.
 
 ### Read-Only
 

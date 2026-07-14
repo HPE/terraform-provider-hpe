@@ -69,7 +69,7 @@ data "hpe_morpheus_service_plan" "test" {
 		"Name":             name,
 		"CloudId":          "data.hpe_morpheus_cloud.test.id",
 		"GroupId":          "data.hpe_morpheus_group.test.id",
-		"LayoutId":         "219", // HVM 1.2 Cluster on HVM/Ubuntu 24.04
+		"LayoutId":         "449", // HVM 1.3 Cluster on HVM/Ubuntu 24.04
 		"Label1":           "terraform",
 		"Label2":           "test",
 		"CreateUser":       "false",
@@ -122,7 +122,7 @@ data "hpe_morpheus_service_plan" "test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_hvm",
 			"layout_id",
-			"219",
+			"449",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_hvm",
@@ -255,7 +255,7 @@ data "hpe_morpheus_service_plan" "test" {
 		"Name":                   name,
 		"CloudId":                "data.hpe_morpheus_cloud.test.id",
 		"GroupId":                "data.hpe_morpheus_group.test.id",
-		"LayoutId":               "219", // HVM 1.2 Cluster on HVM/Ubuntu 24.04
+		"LayoutId":               "449", // HVM 1.3 Cluster on HVM/Ubuntu 24.04
 		"Label1":                 "terraform",
 		"Label2":                 "test",
 		"ClusterTypeCode":        "mvm-cluster",
@@ -306,7 +306,7 @@ data "hpe_morpheus_service_plan" "test" {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_generic_hvm",
 			"layout_id",
-			"219",
+			"449",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_generic_hvm",
@@ -469,7 +469,7 @@ resource "hpe_morpheus_cluster" "test" {
 	description = "Initial description"
 	cloud_id    = data.hpe_morpheus_cloud.test.id
 	group_id    = data.hpe_morpheus_group.test.id
-	layout_id   = 219
+	layout_id   = 449
 
 	labels = ["terraform", "test"]
 
@@ -494,7 +494,7 @@ resource "hpe_morpheus_cluster" "test" {
 	description = "Updated description"
 	cloud_id    = data.hpe_morpheus_cloud.test.id
 	group_id    = data.hpe_morpheus_group.test.id
-	layout_id   = 219
+	layout_id   = 449
 
 	labels = ["terraform-updated", "test-updated"]
 
@@ -656,7 +656,7 @@ resource "hpe_morpheus_cluster" "test" {
 	description       = "Initial description"
 	cloud_id          = data.hpe_morpheus_cloud.test.id
 	group_id          = data.hpe_morpheus_group.test.id
-	layout_id         = 219
+	layout_id         = 449
 	cluster_type_code = "mvm-cluster"
 
 	labels = ["terraform", "test"]
@@ -678,7 +678,7 @@ resource "hpe_morpheus_cluster" "test" {
 	description       = "Updated description"
 	cloud_id          = data.hpe_morpheus_cloud.test.id
 	group_id          = data.hpe_morpheus_group.test.id
-	layout_id         = 219
+	layout_id         = 449
 	cluster_type_code = "mvm-cluster"
 
 	labels = ["terraform-updated", "test-updated"]
