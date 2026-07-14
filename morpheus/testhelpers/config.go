@@ -5,7 +5,7 @@ import "os"
 // EnvKubernetesClusterID is the environment variable that supplies the ID of a
 // namespace-capable Kubernetes cluster for tests gated on the
 // kubernetes_cluster capability (cluster namespaces, HKS provisioning).
-const EnvKubernetesClusterID = "TF_VAR_testacc_morpheus_cluster_id"
+const EnvKubernetesClusterID = "TF_VAR_testacc_morpheus_k8s_cluster_id"
 
 // KubernetesClusterID returns the Kubernetes cluster ID to use for
 // namespace/HKS tests, taking TF_VAR_testacc_morpheus_cluster_id when set and
