@@ -208,7 +208,7 @@ func TestAccMorpheusSettingWhitelabelResourceImagesOk(t *testing.T) {
 	headerLogo := testhelpers.WritePNG(t, dir, "header.png")
 	footerLogo := testhelpers.WritePNG(t, dir, "footer.png")
 	loginLogo := testhelpers.WritePNG(t, dir, "login.png")
-	favicon := testhelpers.WritePNG(t, dir, "favicon.ico")
+	favicon := testhelpers.WritePNG(t, dir, "favicon.png")
 
 	resourceName := "hpe_morpheus_setting_whitelabel.images"
 

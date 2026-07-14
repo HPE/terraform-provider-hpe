@@ -2,6 +2,7 @@ package settingwhitelabel
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -74,8 +75,9 @@ func (r *settingWhitelabelResource) Create(
 
 	// Upload any logo/favicon image files via the multipart images endpoint. On
 	// create there is no prior state, so no resets are performed.
-	r.uploadImages(ctx, client, &plan, nil, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	if err := r.uploadImages(ctx, client, &plan, nil); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "setting_whitelabel", "images", err, nil)
+
 		return
 	}
 
@@ -155,8 +157,9 @@ func (r *settingWhitelabelResource) Update(
 	}
 
 	// Upload changed logo/favicon files and reset any that were cleared.
-	r.uploadImages(ctx, client, &plan, &state, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	if err := r.uploadImages(ctx, client, &plan, &state); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "setting_whitelabel", "images", err, nil)
+
 		return
 	}
 
@@ -237,10 +240,10 @@ func (r *settingWhitelabelResource) readIntoModel(
 	mapResponseToModel(model, settings)
 }
 
-// uploadImages uploads any logo/favicon image files referenced by the plan to
-// the multipart whitelabel images endpoint, and resets any images that were
-// present in the prior state but cleared in the plan. prior may be nil (on
-// Create), in which case no resets are performed.
+// uploadImages uploads the logo/favicon image files referenced by the plan to
+// the multipart whitelabel images endpoint. It first resets any images that
+// were set in the prior state but cleared in the new plan; prior may be nil (on
+// Create), in which case nothing is reset.
 //
 // The four image attributes (header_logo, footer_logo, login_logo, favicon) are
 // local file paths. The API stores the uploaded bytes and, on read, returns a
@@ -252,91 +255,127 @@ func (r *settingWhitelabelResource) uploadImages(
 	client *sdk.APIClient,
 	plan *SettingWhitelabelModel,
 	prior *SettingWhitelabelModel,
-	diagnostics *diag.Diagnostics,
-) {
+) error {
+	if err := resetClearedImages(ctx, client, plan, prior); err != nil {
+		return err
+	}
+
 	imgReq := client.WhitelabelSettingsAPI.UpdateWhitelabelImages(ctx)
-
-	var openFiles []*os.File
-	defer func() {
-		for _, f := range openFiles {
-			f.Close()
-		}
-	}()
-
 	upload := false
-	addFile := func(pathVal types.String, attach func(*os.File)) bool {
-		if pathVal.IsNull() || pathVal.IsUnknown() {
-			return true
-		}
-		f, err := os.Open(pathVal.ValueString())
-		if err != nil {
-			diagnostics.AddError("could not read whitelabel image file", err.Error())
 
-			return false
-		}
-		openFiles = append(openFiles, f)
-		attach(f)
+	headerLogo, err := openImageFile(plan.HeaderLogo)
+	if err != nil {
+		return err
+	}
+	if headerLogo != nil {
+		defer headerLogo.Close()
+		imgReq = imgReq.HeaderLogoFile(headerLogo)
 		upload = true
-
-		return true
 	}
 
-	if !addFile(plan.HeaderLogo, func(f *os.File) { imgReq = imgReq.HeaderLogoFile(f) }) {
-		return
+	footerLogo, err := openImageFile(plan.FooterLogo)
+	if err != nil {
+		return err
 	}
-	if !addFile(plan.FooterLogo, func(f *os.File) { imgReq = imgReq.FooterLogoFile(f) }) {
-		return
-	}
-	if !addFile(plan.LoginLogo, func(f *os.File) { imgReq = imgReq.LoginLogoFile(f) }) {
-		return
-	}
-	if !addFile(plan.Favicon, func(f *os.File) { imgReq = imgReq.FaviconFile(f) }) {
-		return
+	if footerLogo != nil {
+		defer footerLogo.Close()
+		imgReq = imgReq.FooterLogoFile(footerLogo)
+		upload = true
 	}
 
-	if upload {
-		_, httpResp, err := imgReq.Execute()
-		if err := errfmt.CheckResponse(err, httpResp); err != nil {
-			errfmt.DiagError(diagnostics, errfmt.OpUpdate, "setting_whitelabel", "images", err, httpResp)
-
-			return
-		}
+	loginLogo, err := openImageFile(plan.LoginLogo)
+	if err != nil {
+		return err
+	}
+	if loginLogo != nil {
+		defer loginLogo.Close()
+		imgReq = imgReq.LoginLogoFile(loginLogo)
+		upload = true
 	}
 
+	favicon, err := openImageFile(plan.Favicon)
+	if err != nil {
+		return err
+	}
+	if favicon != nil {
+		defer favicon.Close()
+		imgReq = imgReq.FaviconFile(favicon)
+		upload = true
+	}
+
+	if !upload {
+		return nil
+	}
+
+	_, httpResp, err := imgReq.Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		return fmt.Errorf("uploading whitelabel images: %w", err)
+	}
+
+	return nil
+}
+
+// openImageFile opens the image file at path for upload, returning (nil, nil)
+// when the path is unset. The caller is responsible for closing the file.
+func openImageFile(path types.String) (*os.File, error) {
+	if path.IsNull() || path.IsUnknown() {
+		return nil, nil
+	}
+
+	f, err := os.Open(path.ValueString())
+	if err != nil {
+		return nil, fmt.Errorf("could not read whitelabel image file: %w", err)
+	}
+
+	return f, nil
+}
+
+// resetClearedImages resets any images that were set in the prior state but
+// cleared in the new plan. prior may be nil (on Create), in which case there is
+// nothing to reset. Resets go through the JSON settings endpoint, which honours
+// the reset flags (the multipart images endpoint's favicon reset field is
+// misnamed in the spec).
+func resetClearedImages(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan *SettingWhitelabelModel,
+	prior *SettingWhitelabelModel,
+) error {
 	if prior == nil {
-		return
+		return nil
 	}
 
-	// Reset images that were set previously but cleared in the new plan. The JSON
-	// settings endpoint honours the reset flags (the multipart endpoint's favicon
-	// reset field is misnamed in the spec), so route resets there.
 	resets := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
 	needReset := false
-	clearImage := func(planVal, priorVal types.String, setReset func()) {
-		if planVal.IsNull() && !priorVal.IsNull() {
-			setReset()
-			needReset = true
-		}
+	if plan.HeaderLogo.IsNull() && !prior.HeaderLogo.IsNull() {
+		resets.ResetHeaderLogo = boolPtr(true)
+		needReset = true
 	}
-	clearImage(plan.HeaderLogo, prior.HeaderLogo, func() { resets.ResetHeaderLogo = boolPtr(true) })
-	clearImage(plan.FooterLogo, prior.FooterLogo, func() { resets.ResetFooterLogo = boolPtr(true) })
-	clearImage(plan.LoginLogo, prior.LoginLogo, func() { resets.ResetLoginLogo = boolPtr(true) })
-	clearImage(plan.Favicon, prior.Favicon, func() { resets.ResetFavicon = boolPtr(true) })
+	if plan.FooterLogo.IsNull() && !prior.FooterLogo.IsNull() {
+		resets.ResetFooterLogo = boolPtr(true)
+		needReset = true
+	}
+	if plan.LoginLogo.IsNull() && !prior.LoginLogo.IsNull() {
+		resets.ResetLoginLogo = boolPtr(true)
+		needReset = true
+	}
+	if plan.Favicon.IsNull() && !prior.Favicon.IsNull() {
+		resets.ResetFavicon = boolPtr(true)
+		needReset = true
+	}
 
 	if !needReset {
-		return
+		return nil
 	}
 
-	body := sdk.UpdateWhitelabelSettingsRequest{
-		WhitelabelSettings: &resets,
-	}
+	body := sdk.UpdateWhitelabelSettingsRequest{WhitelabelSettings: &resets}
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(diagnostics, errfmt.OpUpdate, "setting_whitelabel", "reset-images", err, httpResp)
-
-		return
+		return fmt.Errorf("resetting whitelabel images: %w", err)
 	}
+
+	return nil
 }
 
 func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
