@@ -29,7 +29,7 @@ func VdiAppResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"launch_prefix": schema.StringAttribute{
-				Optional:            true,
+				Required:            true,
 				Description:         "The RDS app name prefix.",
 				MarkdownDescription: "The RDS app name prefix.",
 			},
