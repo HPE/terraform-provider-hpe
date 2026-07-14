@@ -30,6 +30,9 @@ func TestAccMorpheusFileTemplateExampleOk(t *testing.T) {
 
 	resourceConfig, err := template.RenderFileTemplateConfig(t, map[string]string{
 		"Name": name,
+		// Unique per-test label avoids a concurrent-insert race on shared label
+		// names ("must be unique") with the other parallel template tests.
+		"Labels": `["` + name + `"]`,
 	})
 	if err != nil {
 		t.Fatal(err)
