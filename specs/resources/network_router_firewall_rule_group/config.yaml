@@ -1,0 +1,69 @@
+network_router_firewall_rule_group:
+  description: "Manages a network router firewall rule group resource in Morpheus."
+  templates:
+    tenant_ids:
+      set:
+        computed_optional_required: computed_optional
+        description: |-
+          List of tenant account IDs that are allowed access to this firewall rule
+          group. Only configurable from a master tenant account. Note: the API does
+          not return this field on individual GET responses; the configured value is
+          preserved in state and will be null after import.
+        element_type:
+          int64: {}
+  moves:
+    - rule_group: ""                     # unnest envelope wrapper (networkFirewallRuleGroupCreate)
+    - template-tenant_ids: tenant_ids
+  removes:
+    - success
+    - iac_id
+    - rules
+    - tenants                            # replaced by tenant_ids template
+    - zone                               # read-only infrastructure metadata (mapped: cloud)
+    - zone_pool                          # read-only infrastructure metadata
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the firewall rule group
+      state_for_unknown: true
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: Network router firewall rule group name
+    description:
+      computed_optional_required: computed_optional
+      description: Network router firewall rule group description
+    external_type:
+      computed_optional_required: required
+      requires_replace: true
+      description: |-
+        The external type of the firewall rule group (e.g. SecurityPolicy for NSX-T).
+        This field is write-only: the API does not return it after creation so it
+        cannot be used for drift detection.
+    group_layer:
+      computed_optional_required: computed_optional
+      requires_replace: true
+      description: The group layer of the firewall rule group
+    priority:
+      computed_optional_required: computed_optional
+      description: Network router firewall rule group priority
+    visibility:
+      computed_optional_required: computed_optional
+      description: |-
+        The visibility of the firewall rule group (public or private). Note: the API
+        does not return this field on individual GET responses; the configured value
+        is preserved in state and will be null after import.
+      default: "private"
+      one_of: [public, private]
+    external_id:
+      computed_optional_required: computed
+      description: |-
+        The external ID of the firewall rule group as assigned by the network
+        provider (e.g. "group-123" for NSX-T). Use this as the parent_id when
+        creating hpe_morpheus_network_router_firewall_rule resources.
+    status:
+      computed_optional_required: computed
+      description: The current status of the firewall rule group
