@@ -6,20 +6,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 	"slices"
-	"strings"
 
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
 	"github.com/cenkalti/backoff/v5"
-	semver "github.com/hashicorp/go-version"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 )
 
 var (
@@ -95,45 +93,17 @@ func (g *Resource) ModifyPlan(
 		return
 	}
 
-	// Get appliance version from the health API
-	apiResp, hresp, err := client.HealthAPI.ListHealth(ctx).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		// If we can't get a health response, skip validation
-		return
-	}
-
-	health := apiResp.Health
-	if health == nil || health.BuildVersion == nil {
-		return
-	}
-
-	versionParts := strings.Split(*health.BuildVersion, ".")
-	if len(versionParts) < 3 {
-		resp.Diagnostics.AddError(
-			"Unable to Parse Appliance Version",
-			"Not enough components - expect at least major.minor.patch, got %s"+
-				*health.BuildVersion,
-		)
-	}
-
-	trimmedVersion := strings.Join(versionParts[:3], ".")
-
-	version, err := semver.NewVersion(trimmedVersion)
+	// Determine the appliance version to decide whether attribute-shape changes
+	// require a resource replacement. Skip the check (rather than block the plan)
+	// if the version cannot be determined.
+	morphVersion, err := versioncheck.Appliance(ctx, client)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Parse Appliance Version",
-			fmt.Sprintf(
-				"Unable to parse appliance version %s: %v",
-				*health.BuildVersion, err.Error(),
-			),
-		)
-
 		return
 	}
 
 	// Check for network updates that require a resource replacement
 	networkConstraint := &morpheusConstraint{
-		morphVersion: version,
+		morphVersion: morphVersion,
 		plan:         plan.NetworkInterfaces,
 		state:        state.NetworkInterfaces,
 		constraint:   ">= 8.1.2",
@@ -144,7 +114,7 @@ func (g *Resource) ModifyPlan(
 
 	// Check for service plan options updates that require a resource replacement
 	servicePlanOptionsConstraint := &morpheusConstraint{
-		morphVersion: version,
+		morphVersion: morphVersion,
 		plan:         plan.ServicePlanOptions,
 		state:        state.ServicePlanOptions,
 		constraint:   ">= 8.1.2",
@@ -155,7 +125,7 @@ func (g *Resource) ModifyPlan(
 }
 
 type morpheusConstraint struct {
-	morphVersion *semver.Version
+	morphVersion *versioncheck.Version
 	plan         attr.Value
 	state        attr.Value
 	constraint   string
@@ -172,12 +142,8 @@ func (m *morpheusConstraint) checkForAttributeUpdate(
 	}
 
 	// Build constraint
-	versionCheck, err := semver.NewConstraint(m.constraint)
-	if err != nil {
-		return
-	}
-
-	if versionCheck.Check(m.morphVersion) {
+	ok, err := versioncheck.Satisfies(m.morphVersion, m.constraint)
+	if err != nil || ok {
 		return
 	}
 
