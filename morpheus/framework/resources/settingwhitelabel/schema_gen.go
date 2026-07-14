@@ -36,25 +36,16 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.",
 				MarkdownDescription: "Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.",
-				Validators: []validator.String{
-					validators.ImageFile(".ico", ".png"),
-				},
 			},
 			"footer_logo": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 				MarkdownDescription: "Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
-				Validators: []validator.String{
-					validators.ImageFile(".png", ".jpg", ".jpeg", ".svg"),
-				},
 			},
 			"header_logo": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 				MarkdownDescription: "Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
-				Validators: []validator.String{
-					validators.ImageFile(".png", ".jpg", ".jpeg", ".svg"),
-				},
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -68,9 +59,6 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 				MarkdownDescription: "Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
-				Validators: []validator.String{
-					validators.ImageFile(".png", ".jpg", ".jpeg", ".svg"),
-				},
 			},
 			"primary_color": schema.StringAttribute{
 				Optional:            true,

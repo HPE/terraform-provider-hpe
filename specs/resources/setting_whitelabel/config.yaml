@@ -58,27 +58,12 @@ setting_whitelabel:
     favicon:
       computed_optional_required: optional
       description: Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.
-      validators:
-        - custom:
-            imports:
-              - path: github.com/HPE/terraform-provider-hpe/utils/validators
-            schema_definition: validators.ImageFile(".ico", ".png")
     footer_logo:
       computed_optional_required: optional
       description: Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
-      validators:
-        - custom:
-            imports:
-              - path: github.com/HPE/terraform-provider-hpe/utils/validators
-            schema_definition: validators.ImageFile(".png", ".jpg", ".jpeg", ".svg")
     header_logo:
       computed_optional_required: optional
       description: Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
-      validators:
-        - custom:
-            imports:
-              - path: github.com/HPE/terraform-provider-hpe/utils/validators
-            schema_definition: validators.ImageFile(".png", ".jpg", ".jpeg", ".svg")
     id:
       computed_optional_required: computed
       description: The fixed identifier for the whitelabel settings singleton.
@@ -86,11 +71,6 @@ setting_whitelabel:
     login_logo:
       computed_optional_required: optional
       description: Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
-      validators:
-        - custom:
-            imports:
-              - path: github.com/HPE/terraform-provider-hpe/utils/validators
-            schema_definition: validators.ImageFile(".png", ".jpg", ".jpeg", ".svg")
     primary_color:
       computed_optional_required: optional
       description: The primary button background color.
