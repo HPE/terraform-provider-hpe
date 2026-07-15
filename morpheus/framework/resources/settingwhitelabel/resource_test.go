@@ -234,7 +234,7 @@ resource "hpe_morpheus_setting_whitelabel" "images" {
 		resource.TestCheckResourceAttr(resourceName, "favicon", favicon),
 	)
 
-	resetChecks := resource.ComposeAggregateTestCheckFunc(
+	clearedChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckNoResourceAttr(resourceName, "header_logo"),
 		resource.TestCheckNoResourceAttr(resourceName, "footer_logo"),
 		resource.TestCheckNoResourceAttr(resourceName, "login_logo"),
@@ -246,7 +246,7 @@ resource "hpe_morpheus_setting_whitelabel" "images" {
 		Steps: []resource.TestStep{
 			{Config: withImages, Check: createChecks},
 			{Config: withImages, ExpectNonEmptyPlan: false, PlanOnly: true},
-			{Config: withoutImages, Check: resetChecks},
+			{Config: withoutImages, Check: clearedChecks},
 			{Config: withoutImages, ExpectNonEmptyPlan: false, PlanOnly: true},
 		},
 	})
