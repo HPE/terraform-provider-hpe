@@ -28,19 +28,21 @@ type GetRole200ResponseRole struct {
 	Authority   *string        `json:"authority,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
-	LandingUrl           NullableString                        `json:"landingUrl,omitempty"`
-	Scope                *string                               `json:"scope,omitempty"`
-	RoleType             *string                               `json:"roleType,omitempty"`
-	Multitenant          *bool                                 `json:"multitenant,omitempty"`
-	MultitenantLocked    *bool                                 `json:"multitenantLocked,omitempty"`
-	ParentRoleId         NullableString                        `json:"parentRoleId,omitempty"`
-	Diverged             *bool                                 `json:"diverged,omitempty"`
-	OwnerId              *int64                                `json:"ownerId,omitempty"`
-	Owner                *GetRole200ResponseRoleOwner          `json:"owner,omitempty"`
-	DefaultPersona       *GetRole200ResponseRoleDefaultPersona `json:"defaultPersona,omitempty"`
-	DateCreated          *time.Time                            `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                            `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	LandingUrl        NullableString `json:"landingUrl,omitempty"`
+	Scope             *string        `json:"scope,omitempty"`
+	RoleType          *string        `json:"roleType,omitempty"`
+	Multitenant       *bool          `json:"multitenant,omitempty"`
+	MultitenantLocked *bool          `json:"multitenantLocked,omitempty"`
+	ParentRoleId      NullableString `json:"parentRoleId,omitempty"`
+	Diverged          *bool          `json:"diverged,omitempty"`
+	// The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise.
+	TenantCopies         []GetRole200ResponseRoleTenantCopiesInner `json:"tenantCopies,omitempty"`
+	OwnerId              *int64                                    `json:"ownerId,omitempty"`
+	Owner                *GetRole200ResponseRoleOwner              `json:"owner,omitempty"`
+	DefaultPersona       *GetRole200ResponseRoleDefaultPersona     `json:"defaultPersona,omitempty"`
+	DateCreated          *time.Time                                `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                    `json:",remain"`
 }
 
 type _GetRole200ResponseRole GetRole200ResponseRole
@@ -87,6 +89,9 @@ func (o GetRole200ResponseRole) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Diverged) {
 		toSerialize["diverged"] = o.Diverged
+	}
+	if !IsNil(o.TenantCopies) {
+		toSerialize["tenantCopies"] = o.TenantCopies
 	}
 	if !IsNil(o.OwnerId) {
 		toSerialize["ownerId"] = o.OwnerId

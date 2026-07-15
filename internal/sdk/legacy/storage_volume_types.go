@@ -63,23 +63,3 @@ func (client *Client) GetStorageVolumeType(id int64, req *Request) (*Response, e
 		Result:      &GetStorageVolumeTypeResult{},
 	})
 }
-
-func (client *Client) FindStorageVolumeTypeByName(name string) (*Response, error) {
-	// Find by name, then get by ID
-	resp, err := client.ListStorageVolumeTypes(&Request{
-		QueryParams: map[string]string{
-			"name": name,
-		},
-	})
-	if err != nil {
-		return resp, err
-	}
-	listResult := resp.Result.(*ListStorageVolumeTypesResult)
-	StorageVolumeTypeCount := len(*listResult.StorageVolumeTypes)
-	if StorageVolumeTypeCount != 1 {
-		return resp, fmt.Errorf("found %d storage volume types named %v", StorageVolumeTypeCount, name)
-	}
-	firstRecord := (*listResult.StorageVolumeTypes)[0]
-	StorageVolumeTypeID := firstRecord.ID
-	return client.GetStorageVolumeType(StorageVolumeTypeID, &Request{})
-}

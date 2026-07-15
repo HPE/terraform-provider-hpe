@@ -19,7 +19,7 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
       id = 8
     }
     pool = {
-      id = "pool-574"
+      id = "pool-1"
     }
   }
 

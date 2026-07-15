@@ -79,7 +79,8 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `NetworkServer` | `network_server` | Network server / service integration (e.g. NSX-T) |
 | `NetworkRouter` | `network_router` | Network routers |
 | `NetworkFirewall` | `network_firewall` | Firewall rules |
-| `NetworkLoadBalancer` | `network_loadbalancer` | Load balancers |
+| `NetworkLoadBalancer` | `network_loadbalancer` | Load balancers (general API: NSX-T, config validation, data sources) |
+| `NetworkLoadBalancerHAProxy` | `network_loadbalancer_haproxy` | HAProxy container LB provisioning (needs the `load-balancer-haproxy-1.7` layout + a cloud that can provision the container) |
 | `Subnet` | `subnet` | Subnets |
 
 ### Automation Integrations
@@ -95,7 +96,8 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
-| `Kubernetes` | `kubernetes` | Kubernetes clusters |
+| `Kubernetes` | `kubernetes` | Kubernetes library artifacts (spec templates, blueprints, cluster layouts/types) -- no running cluster required |
+| `KubernetesCluster` | `kubernetes_cluster` | A live, healthy Kubernetes cluster (HKS worker provisioning + cluster namespaces). Omit on environments that lack a usable cluster |
 | `Docker` | `docker` | Docker/container registries |
 
 ### Storage & VDI

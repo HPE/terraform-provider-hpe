@@ -530,6 +530,7 @@ role:
     - role.landing_url
     - role.multitenant
     - role.multitenant_locked
+    - role.tenant_copies
   moves:
     - role: "" # unnest role wrapper to root
     - template-id: id

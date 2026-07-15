@@ -64,7 +64,13 @@ func TestAccMorpheusNetworkGroupResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_network_group.example",
+				// The API always injects the owner (root) tenant into the Tenants
+				// slice on GET, so the import state contains an extra entry in
+				// tenant_ids that was not present in the apply state. resource_permissions
+				// may similarly include API-assigned defaults. All other attributes
+				// (name, description, visibility, active, id) must still round-trip.
+				ImportStateVerifyIgnore: []string{"tenant_ids", "resource_permissions"},
+				ResourceName:            "hpe_morpheus_network_group.example",
 			},
 		},
 	})

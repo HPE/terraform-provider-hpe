@@ -26,14 +26,14 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
-	clusterID := "571"
+	clusterID := testhelpers.KubernetesClusterID("571")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
@@ -87,14 +87,14 @@ func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 func TestAccMorpheusClusterNamespaceResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Kubernetes)
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
 
-	clusterID := "571"
+	clusterID := testhelpers.KubernetesClusterID("571")
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))

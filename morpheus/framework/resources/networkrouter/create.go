@@ -25,9 +25,14 @@ func (r *Resource) Create(
 	req resource.CreateRequest,
 	resp *resource.CreateResponse,
 ) {
-	var plan NetworkRouterModel
+	var plan, config NetworkRouterModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -182,7 +187,7 @@ func (r *Resource) Create(
 
 	// Apply permissions (visibility + tenant_ids) before the read-back so state reflects them.
 	// A 403 from applyRouterPermissions is an error; the resource will be tainted.
-	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, client)...)
+	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, config, client)...)
 	if resp.Diagnostics.HasError() {
 		taintResourceState(id)
 

@@ -4,6 +4,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -22,26 +23,27 @@ func DataSourceStorageVolumeType() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Type:          schema.TypeInt,
-				Description:   "The ID of the stroage volume type",
+				Description:   "The ID of the storage volume type",
 				Optional:      true,
-				ConflictsWith: []string{"name"},
 				Computed:      true,
+				ConflictsWith: []string{"name"},
 			},
 			"name": {
 				Type:          schema.TypeString,
 				Description:   "The name of the storage volume type",
 				Optional:      true,
+				Computed:      true,
 				ConflictsWith: []string{"id"},
 			},
 			"code": {
 				Type:        schema.TypeString,
-				Description: "The code of the storage volume type",
+				Description: "The code of the storage volume type. When set alongside name, the lookup is filtered to this code.",
 				Optional:    true,
 				Computed:    true,
 			},
 			"category": {
 				Type:        schema.TypeString,
-				Description: "The category of the storage volume type",
+				Description: "The category of the storage volume type. When set alongside name, the lookup is filtered to this category.",
 				Optional:    true,
 				Computed:    true,
 			},
@@ -66,6 +68,20 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
+	var code string
+	if v, ok := d.Get("code").(string); ok {
+		code = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("code", d.Get("code")))
+	}
+
+	var category string
+	if v, ok := d.Get("category").(string); ok {
+		category = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("category", d.Get("category")))
+	}
+
 	var id int
 	if v, ok := d.Get("id").(int); ok {
 		id = v
@@ -75,11 +91,12 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 
 	var resp *morpheus.Response
 	var err error
-	if id == 0 && name != "" {
-		resp, err = client.FindStorageVolumeTypeByName(name)
-	} else if id != 0 {
+	switch {
+	case id != 0:
 		resp, err = client.GetStorageVolumeType(int64(id), &morpheus.Request{})
-	} else {
+	case name != "":
+		resp, err = getStorageVolumeTypeByName(client, name, code, category)
+	default:
 		return diag.Errorf("Storage volume type cannot be read without name or id")
 	}
 
@@ -118,4 +135,48 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	d.Set("category", storageVolumeType.Category)
 
 	return diags
+}
+
+func getStorageVolumeTypeByName(
+	client *morpheus.Client,
+	name string,
+	code string,
+	category string,
+) (*morpheus.Response, error) {
+	// Find by name, then get by ID. An optional code and/or category can be
+	// supplied to narrow the search so that names that are only unique within a
+	// code or category resolve to a single record.
+	queryParams := map[string]string{
+		"name": name,
+	}
+	if code != "" {
+		queryParams["code"] = code
+	}
+	if category != "" {
+		queryParams["category"] = category
+	}
+	resp, err := client.ListStorageVolumeTypes(&morpheus.Request{
+		QueryParams: queryParams,
+	})
+	if err != nil {
+		return resp, err
+	}
+	listResult, ok := resp.Result.(*morpheus.ListStorageVolumeTypesResult)
+	if !ok {
+		return resp, helpers.TypeAssertFailError("Result", resp.Result)
+	}
+	if listResult.StorageVolumeTypes == nil {
+		return resp, fmt.Errorf("found 0 storage volume types named %v", name)
+	}
+	storageVolumeTypeCount := len(*listResult.StorageVolumeTypes)
+	if storageVolumeTypeCount != 1 {
+		return resp, fmt.Errorf(
+			"found %d storage volume types named %v",
+			storageVolumeTypeCount,
+			name,
+		)
+	}
+	firstRecord := (*listResult.StorageVolumeTypes)[0]
+
+	return client.GetStorageVolumeType(firstRecord.ID, &morpheus.Request{})
 }
