@@ -92,7 +92,7 @@ func (r *vdiPoolResource) Create(ctx context.Context, req resource.CreateRequest
 		v := float32(plan.InitialPoolSize.ValueInt64())
 		oneOf.InitialPoolSize = &v
 	}
-	if !plan.MaxIdle.IsNull() {
+	if !plan.MaxIdle.IsNull() && !plan.MaxIdle.IsUnknown() {
 		v := float32(plan.MaxIdle.ValueInt64())
 		oneOf.MaxIdle = &v
 	}
