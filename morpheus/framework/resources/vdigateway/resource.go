@@ -59,10 +59,11 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	body := sdk.AddVDIGatewaysRequestVdiGatewayOneOf{
 		Name: plan.Name.ValueString(),
 	}
-	if !plan.GatewayUrl.IsNull() {
+
+	if !plan.GatewayUrl.IsNull() && !plan.GatewayUrl.IsUnknown() {
 		body.GatewayUrl = plan.GatewayUrl.ValueStringPointer()
 	}
-	if !plan.Description.IsNull() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
@@ -163,10 +164,14 @@ func (r *vdiGatewayResource) Update(ctx context.Context, req resource.UpdateRequ
 	id := plan.Id.ValueInt64()
 
 	body := sdk.UpdateVDIGatewaysRequestVdiGatewayOneOf{
-		Name:       plan.Name.ValueStringPointer(),
-		GatewayUrl: plan.GatewayUrl.ValueStringPointer(),
+		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
+
+	if !plan.GatewayUrl.IsNull() && !plan.GatewayUrl.IsUnknown() {
+		body.GatewayUrl = plan.GatewayUrl.ValueStringPointer()
+	}
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
 
