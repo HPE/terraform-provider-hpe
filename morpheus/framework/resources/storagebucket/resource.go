@@ -61,7 +61,7 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		ProviderType: plan.ProviderType.ValueString(),
 	}
 	if !plan.BucketName.IsNull() {
-		body.BucketName = plan.BucketName.ValueString()
+		body.BucketName = plan.BucketName.ValueStringPointer()
 	}
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()

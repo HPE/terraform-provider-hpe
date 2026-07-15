@@ -340,8 +340,11 @@ func resourceIntegrationVRORead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	d.Set("password", integration.PasswordHash)
-	d.Set("tenant", integration.TokenHash)
+	// password and tenant are write-only: the API returns only a salted hash
+	// (PasswordHash/TokenHash) that cannot be reproduced from the configured
+	// plaintext, so reading it back would overwrite the configured value and
+	// cause a permanent diff. Leave those attributes as the value already held
+	// in state (the configured plaintext).
 	// d.Set("auth_type", integration.Config)
 
 	return diags

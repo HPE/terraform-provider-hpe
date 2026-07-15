@@ -367,12 +367,17 @@ func resourceIntegrationChefRead(ctx context.Context, d *schema.ResourceData, me
 
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Config.ChefUser)
-		d.Set("private_key", integration.Config.UserKeyHash)
+		// private_key is write-only: the API returns only a hash (UserKeyHash)
+		// that cannot be reproduced from the configured plaintext, so reading it
+		// back would overwrite the configured value and cause a permanent diff.
+		// Preserve the value already held in state.
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}
 
-	d.Set("organization_validator_key", integration.Config.OrgKeyHash)
+	// organization_validator_key is write-only: the API returns only a hash
+	// (OrgKeyHash). Preserve the configured value already held in state rather
+	// than overwriting it with the hash.
 
 	// databags
 	/* AWAITING API SUPPORT

@@ -118,8 +118,14 @@ func (r *Resource) Update(
 		return
 	}
 
-	// Preserve plan value: API may silently drop tenant IDs that don't exist.
-	state.TenantIds = plan.TenantIds
+	// Preserve the configured plan value when the user set tenant_ids: the API
+	// may silently drop tenant IDs that don't exist, and echoing the plan value
+	// avoids an inconsistent-result diff. When tenant_ids is not configured it is
+	// unknown in the plan (Optional+Computed), so we must keep the API-derived
+	// value instead of persisting the unknown value.
+	if !plan.TenantIds.IsUnknown() {
+		state.TenantIds = plan.TenantIds
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
