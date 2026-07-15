@@ -26,7 +26,7 @@ func VdiGatewayResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"gateway_url": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
 				Description:         "The URL of the VDI gateway.",
 				MarkdownDescription: "The URL of the VDI gateway.",
 			},

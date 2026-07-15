@@ -23,12 +23,12 @@ resource "hpe_morpheus_vdi_gateway" "example" {
 
 ### Required
 
-- `gateway_url` (String) The URL of the VDI gateway.
 - `name` (String) The name of the VDI gateway.
 
 ### Optional
 
 - `description` (String) The description of the VDI gateway.
+- `gateway_url` (String) The URL of the VDI gateway.
 
 ### Read-Only
 

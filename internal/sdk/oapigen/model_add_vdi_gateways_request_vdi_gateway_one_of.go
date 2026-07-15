@@ -25,7 +25,7 @@ type AddVDIGatewaysRequestVdiGatewayOneOf struct {
 	// Description
 	Description *string `json:"description,omitempty"`
 	// Gateway URL
-	GatewayUrl           string                 `json:"gatewayUrl"`
+	GatewayUrl           *string                `json:"gatewayUrl,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -45,7 +45,9 @@ func (o AddVDIGatewaysRequestVdiGatewayOneOf) ToMap() (map[string]interface{}, e
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	toSerialize["gatewayUrl"] = o.GatewayUrl
+	if !IsNil(o.GatewayUrl) {
+		toSerialize["gatewayUrl"] = o.GatewayUrl
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value
