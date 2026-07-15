@@ -12,15 +12,4 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
     https_redirect       = true
     x_forwarded_for      = "INSERT"
   }
-
-  tags = [
-    {
-      name  = "env"
-      value = "test"
-    },
-    {
-      name  = "app"
-      value = "web"
-    },
-  ]
 }
