@@ -135,13 +135,30 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
-	var plan SettingWhitelabelModel
+	var plan, state SettingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	body := buildUpdateRequest(&plan)
+
+	// Reset a logo/favicon only when Terraform previously tracked a path for it
+	// and the plan now clears it, so an image set outside Terraform (e.g. in the
+	// Morpheus UI) is not taken down just because the attribute is absent here.
+	if plan.HeaderLogo.IsNull() && !state.HeaderLogo.IsNull() {
+		body.WhitelabelSettings.ResetHeaderLogo = boolPtr(true)
+	}
+	if plan.FooterLogo.IsNull() && !state.FooterLogo.IsNull() {
+		body.WhitelabelSettings.ResetFooterLogo = boolPtr(true)
+	}
+	if plan.LoginLogo.IsNull() && !state.LoginLogo.IsNull() {
+		body.WhitelabelSettings.ResetLoginLogo = boolPtr(true)
+	}
+	if plan.Favicon.IsNull() && !state.Favicon.IsNull() {
+		body.WhitelabelSettings.ResetFavicon = boolPtr(true)
+	}
 
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
@@ -242,8 +259,9 @@ func (r *settingWhitelabelResource) readIntoModel(
 // local file paths. The API stores the uploaded bytes and, on read, returns a
 // server-generated storage URL that never matches the supplied path, so these
 // values are carried through from the plan and are never reconciled from the
-// read response. Clearing a path resets the corresponding image on the
-// appliance; that reset is requested by buildUpdateRequest, not here.
+// read response. Clearing a path that Terraform previously tracked resets the
+// corresponding image on the appliance; that reset is requested in Update, not
+// here.
 func (r *settingWhitelabelResource) uploadImages(
 	ctx context.Context,
 	client *sdk.APIClient,
@@ -326,24 +344,6 @@ func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettin
 	}
 	if !plan.SecondaryColor.IsNull() {
 		settings.HeaderFgColor = plan.SecondaryColor.ValueStringPointer()
-	}
-
-	// A logo/favicon attribute that is null in the plan means the user removed
-	// it (or never set it). Request a reset for each null attribute so that
-	// clearing a path takes the corresponding image down on the appliance. When
-	// a path is set instead, uploadImages uploads the new bytes and no reset is
-	// requested for that attribute.
-	if plan.HeaderLogo.IsNull() {
-		settings.ResetHeaderLogo = boolPtr(true)
-	}
-	if plan.FooterLogo.IsNull() {
-		settings.ResetFooterLogo = boolPtr(true)
-	}
-	if plan.LoginLogo.IsNull() {
-		settings.ResetLoginLogo = boolPtr(true)
-	}
-	if plan.Favicon.IsNull() {
-		settings.ResetFavicon = boolPtr(true)
 	}
 
 	return sdk.UpdateWhitelabelSettingsRequest{
