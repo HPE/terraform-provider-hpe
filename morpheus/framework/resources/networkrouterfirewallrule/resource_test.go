@@ -38,6 +38,14 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_firewall_rule.example"
 
+	// A firewall rule must reference an existing parent NSX-T firewall rule
+	// group (parent_id). There is no resource to create one, so it must be
+	// pre-provisioned; skip unless its id is provided.
+	parentID := os.Getenv("TF_ACC_FIREWALL_RULE_GROUP_ID")
+	if parentID == "" {
+		t.Skip("TF_ACC_FIREWALL_RULE_GROUP_ID not set; skipping test requiring a known NSX-T firewall rule group")
+	}
+
 	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
 		"Name":                 name + "-router",
 		"TypeId":               "9",
@@ -50,6 +58,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 
 	resourceConfig, err := networkrouterfirewallrule.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",
+		"ParentId": parentID,
 		"Name":     name,
 	})
 	if err != nil {
@@ -108,6 +117,14 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_firewall_rule.example"
 
+	// A firewall rule must reference an existing parent NSX-T firewall rule
+	// group (parent_id). There is no resource to create one, so it must be
+	// pre-provisioned; skip unless its id is provided.
+	parentID := os.Getenv("TF_ACC_FIREWALL_RULE_GROUP_ID")
+	if parentID == "" {
+		t.Skip("TF_ACC_FIREWALL_RULE_GROUP_ID not set; skipping test requiring a known NSX-T firewall rule group")
+	}
+
 	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
 		"Name":                 name + "-router",
 		"TypeId":               "9",
@@ -120,6 +137,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdateOk(t *testing.T) {
 
 	createConfig, err := networkrouterfirewallrule.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",
+		"ParentId": parentID,
 		"Name":     name,
 	})
 	if err != nil {
@@ -129,6 +147,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdateOk(t *testing.T) {
 	updateConfig := `
 resource "hpe_morpheus_network_router_firewall_rule" "example" {
   router_id = hpe_morpheus_network_router.example.id
+  parent_id = "` + parentID + `"
   name      = "` + name + `"
   policy    = "deny"
   enabled   = false

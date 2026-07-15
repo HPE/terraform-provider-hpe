@@ -33,20 +33,22 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupsBasic(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	routerID := os.Getenv("TF_ACC_ROUTER_ID")
+	if routerID == "" {
+		t.Skip("TF_ACC_ROUTER_ID not set; skipping test requiring a known NSX-T router with firewall rule groups")
+	}
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
 
 	dataSourceConfig, err := networkrouterfirewallrulegroups.RenderConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": routerID,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// Use a minimal router fixture. In environments where a suitable NSX-T
-	// router with firewall rule groups is pre-provisioned, override the
-	// RouterId to point to that router directly.
 	config := providerConfig + dataSourceConfig
 
 	checks := []resource.TestCheckFunc{

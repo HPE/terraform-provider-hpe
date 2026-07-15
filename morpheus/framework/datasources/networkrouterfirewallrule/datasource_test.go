@@ -60,6 +60,11 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	parentID := os.Getenv("TF_ACC_FIREWALL_RULE_GROUP_ID")
+	if parentID == "" {
+		t.Skip("TF_ACC_FIREWALL_RULE_GROUP_ID not set; skipping test requiring a known NSX-T firewall rule group")
+	}
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -69,6 +74,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleByName(t *testing.T) {
 
 	resourceConfig, err := firewallruleresource.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",
+		"ParentId": parentID,
 		"Name":     name,
 	})
 	if err != nil {
@@ -105,6 +111,11 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleById(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	parentID := os.Getenv("TF_ACC_FIREWALL_RULE_GROUP_ID")
+	if parentID == "" {
+		t.Skip("TF_ACC_FIREWALL_RULE_GROUP_ID not set; skipping test requiring a known NSX-T firewall rule group")
+	}
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
@@ -114,6 +125,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleById(t *testing.T) {
 
 	resourceConfig, err := firewallruleresource.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.example.id",
+		"ParentId": parentID,
 		"Name":     name,
 	})
 	if err != nil {

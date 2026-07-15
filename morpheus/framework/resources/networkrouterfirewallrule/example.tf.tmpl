@@ -1,5 +1,6 @@
 resource "hpe_morpheus_network_router_firewall_rule" "example" {
   router_id = {{.RouterId}}
+  parent_id = "{{.ParentId}}"
   name      = "{{.Name}}"
   policy    = "{{.Policy}}"
   enabled   = {{.Enabled}}

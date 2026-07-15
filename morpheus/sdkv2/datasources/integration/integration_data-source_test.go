@@ -5,7 +5,6 @@ package integration_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -28,7 +27,9 @@ func TestAccMorpheusDataSourceIntegrationExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
+	// The data source looks up an existing integration by name. The Ansible
+	// capability guarantees a seeded "ansible dev" integration on the appliance.
+	name := "ansible dev"
 
 	var dependenciesConfig string
 

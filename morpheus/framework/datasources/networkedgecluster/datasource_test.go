@@ -32,11 +32,17 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	networkServerID := os.Getenv("TF_ACC_NETWORK_SERVER_ID")
+	edgeClusterID := os.Getenv("TF_ACC_EDGE_CLUSTER_ID")
+	if networkServerID == "" || edgeClusterID == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID and TF_ACC_EDGE_CLUSTER_ID must be set; skipping test requiring a known NSX-T edge cluster")
+	}
+
 	providerConfig := testhelpers.ProviderBlock()
 
 	dsConfig, err := networkedgecluster.RenderNetworkEdgeClusterDataSourceByIDConfig(t, map[string]string{
-		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
-		"Id":              os.Getenv("TF_ACC_EDGE_CLUSTER_ID"),
+		"NetworkServerId": networkServerID,
+		"Id":              edgeClusterID,
 	})
 	if err != nil {
 		t.Fatalf("failed to render data source config: %s", err)
@@ -71,11 +77,17 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	networkServerID := os.Getenv("TF_ACC_NETWORK_SERVER_ID")
+	edgeClusterName := os.Getenv("TF_ACC_EDGE_CLUSTER_NAME")
+	if networkServerID == "" || edgeClusterName == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID and TF_ACC_EDGE_CLUSTER_NAME must be set; skipping test requiring a known NSX-T edge cluster")
+	}
+
 	providerConfig := testhelpers.ProviderBlock()
 
 	dsConfig, err := networkedgecluster.RenderNetworkEdgeClusterDataSourceByNameConfig(t, map[string]string{
-		"NetworkServerId": os.Getenv("TF_ACC_NETWORK_SERVER_ID"),
-		"Name":            os.Getenv("TF_ACC_EDGE_CLUSTER_NAME"),
+		"NetworkServerId": networkServerID,
+		"Name":            edgeClusterName,
 	})
 	if err != nil {
 		t.Fatalf("failed to render data source config: %s", err)
@@ -110,10 +122,19 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	networkServerID := os.Getenv("TF_ACC_NETWORK_SERVER_ID")
+	if networkServerID == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a known NSX-T network server")
+	}
+
 	providerConfig := testhelpers.ProviderBlock()
 	config := providerConfig + `
       data "hpe_morpheus_network_edge_cluster" "test" {
-        network_server_id = ` + os.Getenv("TF_ACC_NETWORK_SERVER_ID") + `
+        network_server_id = ` + networkServerID + `
         name              = "______nonexistent______"
       }`
 

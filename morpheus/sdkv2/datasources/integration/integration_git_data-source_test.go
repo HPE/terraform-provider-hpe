@@ -5,7 +5,6 @@ package integration_test
 import (
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -28,7 +27,10 @@ func TestAccMorpheusDataSourceIntegrationGitExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
+	// The data source looks up an existing git integration by name. The Git
+	// capability guarantees a seeded "MorpheusAutomation" integration on the
+	// appliance.
+	name := "MorpheusAutomation"
 
 	var dependenciesConfig string
 
