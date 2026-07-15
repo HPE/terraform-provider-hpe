@@ -11,15 +11,14 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_firewall_rule_group/example.tf example.tf.tmpl RouterId "1" Name "Example Firewall Rule Group" ExternalType "SecurityPolicy"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_network_router_firewall_rule_group/example.tf example.tf.tmpl RouterId "1" Name "Example Firewall Rule Group"
 
 func RenderNetworkRouterFirewallRuleGroupConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"RouterId":     "1",
-		"Name":         "Example Firewall Rule Group",
-		"ExternalType": "SecurityPolicy",
+		"RouterId": "1",
+		"Name":     "Example Firewall Rule Group",
 	}
 
 	for key, value := range overrides {

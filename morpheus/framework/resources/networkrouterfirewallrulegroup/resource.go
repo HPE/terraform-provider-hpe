@@ -79,7 +79,7 @@ func (r *Resource) Create(
 
 	ruleGroup := sdk.CreateNetworkRouterFirewallRuleGroupRequestRuleGroup{
 		Name:         plan.Name.ValueString(),
-		ExternalType: plan.ExternalType.ValueString(),
+		ExternalType: "GatewayPolicy",
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
@@ -239,7 +239,6 @@ func getRuleGroupAsState(
 	// Write-only fields: the single GET response does not include these.
 	// Preserve the plan/prior-state values so Terraform does not see spurious
 	// diffs. On import these will be null — users must re-apply to set them.
-	state.ExternalType = prior.ExternalType
 	state.Visibility = prior.Visibility
 	state.TenantIds = prior.TenantIds
 
@@ -308,7 +307,7 @@ func (r *Resource) Update(
 	// as map[string]interface{} — build it manually.
 	ruleGroup := map[string]interface{}{
 		"name":         plan.Name.ValueString(),
-		"externalType": plan.ExternalType.ValueString(),
+		"externalType": "GatewayPolicy",
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
@@ -460,9 +459,8 @@ func (r *Resource) ImportState(
 	// Seed a minimal prior state so getRuleGroupAsState can preserve write-only
 	// fields. On import these fields will be null — users must re-apply.
 	prior := NetworkRouterFirewallRuleGroupModel{
-		RouterId:     types.Int64Value(routerID),
-		ExternalType: types.StringNull(),
-		Visibility:   types.StringNull(),
+		RouterId:   types.Int64Value(routerID),
+		Visibility: types.StringNull(),
 	}
 
 	var setDiags diag.Diagnostics

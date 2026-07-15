@@ -36,13 +36,6 @@ network_router_firewall_rule_group:
     description:
       computed_optional_required: computed_optional
       description: Network router firewall rule group description
-    external_type:
-      computed_optional_required: required
-      requires_replace: true
-      description: |-
-        The external type of the firewall rule group (e.g. SecurityPolicy for NSX-T).
-        This field is write-only: the API does not return it after creation so it
-        cannot be used for drift detection.
     group_layer:
       computed_optional_required: computed_optional
       requires_replace: true

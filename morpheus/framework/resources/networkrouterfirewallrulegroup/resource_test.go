@@ -49,9 +49,8 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceExampleOk(t *testing.T
 	}
 
 	resourceConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId":     "hpe_morpheus_network_router.example.id",
-		"Name":         name,
-		"ExternalType": "SecurityPolicy",
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +59,6 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceExampleOk(t *testing.T
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "external_type", "SecurityPolicy"),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttrSet(resourceName, "external_id"),
 	)
@@ -108,9 +106,8 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceUpdateOk(t *testing.T)
 	}
 
 	createConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId":     "hpe_morpheus_network_router.example.id",
-		"Name":         name,
-		"ExternalType": "SecurityPolicy",
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -119,18 +116,16 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceUpdateOk(t *testing.T)
 	updatedName := name + "-updated"
 	updateConfig := fmt.Sprintf(`
 resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
-  router_id     = hpe_morpheus_network_router.example.id
-  name          = %q
-  external_type = "SecurityPolicy"
-  priority      = 10
-  visibility    = "private"
+  router_id  = hpe_morpheus_network_router.example.id
+  name       = %q
+  priority   = 10
+  visibility = "private"
 }
 `, updatedName)
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
-		resource.TestCheckResourceAttr(resourceName, "external_type", "SecurityPolicy"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
@@ -182,9 +177,8 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceImportOk(t *testing.T)
 	}
 
 	resourceConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId":     "hpe_morpheus_network_router.example.id",
-		"Name":         name,
-		"ExternalType": "SecurityPolicy",
+		"RouterId": "hpe_morpheus_network_router.example.id",
+		"Name":     name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -198,7 +192,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceImportOk(t *testing.T)
 			},
 			{
 				ImportState:       true,
-				ImportStateVerify: false, // write-only fields (external_type, visibility, tenant_ids) will be null after import
+				ImportStateVerify: false, // write-only fields (visibility, tenant_ids) will be null after import
 				ResourceName:      resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources[resourceName]

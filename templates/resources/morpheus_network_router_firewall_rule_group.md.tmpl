@@ -18,7 +18,7 @@ description: |-
 
 Import is supported using `router_id.group_id`.
 
-> **Note:** Write-only fields (`external_type`, `visibility`, `tenant_ids`) will be **null**
+> **Note:** Write-only fields (`visibility`, `tenant_ids`) will be **null**
 > after import because the API does not return them on individual GET responses. Run
 > `terraform apply` after import to restore these values from your configuration.
 

@@ -30,14 +30,6 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 				Description:         "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"group-123\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
 				MarkdownDescription: "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"group-123\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
 			},
-			"external_type": schema.StringAttribute{
-				Required:            true,
-				Description:         "The external type of the firewall rule group (e.g. SecurityPolicy for NSX-T).\nThis field is write-only: the API does not return it after creation so it\ncannot be used for drift detection.",
-				MarkdownDescription: "The external type of the firewall rule group (e.g. SecurityPolicy for NSX-T).\nThis field is write-only: the API does not return it after creation so it\ncannot be used for drift detection.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
-			},
 			"group_layer": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -105,7 +97,6 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 type NetworkRouterFirewallRuleGroupModel struct {
 	Description  types.String `tfsdk:"description"`
 	ExternalId   types.String `tfsdk:"external_id"`
-	ExternalType types.String `tfsdk:"external_type"`
 	GroupLayer   types.String `tfsdk:"group_layer"`
 	Id           types.Int64  `tfsdk:"id"`
 	Name         types.String `tfsdk:"name"`
