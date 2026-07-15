@@ -242,8 +242,8 @@ func (r *settingWhitelabelResource) readIntoModel(
 // local file paths. The API stores the uploaded bytes and, on read, returns a
 // server-generated storage URL that never matches the supplied path, so these
 // values are carried through from the plan and are never reconciled from the
-// read response. Clearing a path does not reset the image on the appliance; the
-// resource must be destroyed (which resets all images) to remove one.
+// read response. Clearing a path resets the corresponding image on the
+// appliance; that reset is requested by buildUpdateRequest, not here.
 func (r *settingWhitelabelResource) uploadImages(
 	ctx context.Context,
 	client *sdk.APIClient,
@@ -326,6 +326,24 @@ func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettin
 	}
 	if !plan.SecondaryColor.IsNull() {
 		settings.HeaderFgColor = plan.SecondaryColor.ValueStringPointer()
+	}
+
+	// A logo/favicon attribute that is null in the plan means the user removed
+	// it (or never set it). Request a reset for each null attribute so that
+	// clearing a path takes the corresponding image down on the appliance. When
+	// a path is set instead, uploadImages uploads the new bytes and no reset is
+	// requested for that attribute.
+	if plan.HeaderLogo.IsNull() {
+		settings.ResetHeaderLogo = boolPtr(true)
+	}
+	if plan.FooterLogo.IsNull() {
+		settings.ResetFooterLogo = boolPtr(true)
+	}
+	if plan.LoginLogo.IsNull() {
+		settings.ResetLoginLogo = boolPtr(true)
+	}
+	if plan.Favicon.IsNull() {
+		settings.ResetFavicon = boolPtr(true)
 	}
 
 	return sdk.UpdateWhitelabelSettingsRequest{

@@ -61,10 +61,6 @@ resource "hpe_morpheus_setting_whitelabel" "example" {
   `favicon` must reference image files on the machine running Terraform. Remote
   URLs are not supported because the Morpheus whitelabel images API accepts
   uploaded file content only (there is no server-side URL fetch).
-- **Removing a path does not clear the image.** Clearing or removing one of these
-  attributes leaves the previously uploaded image in place on the appliance.
-  Destroy the resource (which resets all images) or remove the image in the
-  Morpheus UI to take one down.
 - **Uploaded values are not round-tripped.** The value you set is a local path; the
   API stores the file and returns a different server-generated storage URL, which
   is intentionally not surfaced as the attribute value.
