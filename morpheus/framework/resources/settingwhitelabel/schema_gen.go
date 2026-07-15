@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -24,23 +25,27 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"enabled": schema.BoolAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Whether the whitelabel feature is enabled.",
 				MarkdownDescription: "Whether the whitelabel feature is enabled.",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"favicon": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The favicon URL or path.",
-				MarkdownDescription: "The favicon URL or path.",
+				Description:         "Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.",
 			},
 			"footer_logo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The footer logo URL or path.",
-				MarkdownDescription: "The footer logo URL or path.",
+				Description:         "Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 			},
 			"header_logo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The header logo URL or path.",
-				MarkdownDescription: "The header logo URL or path.",
+				Description:         "Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 			},
 			"id": schema.StringAttribute{
 				Computed:            true,
@@ -52,8 +57,8 @@ func SettingWhitelabelResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"login_logo": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The login logo URL or path.",
-				MarkdownDescription: "The login logo URL or path.",
+				Description:         "Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
+				MarkdownDescription: "Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.",
 			},
 			"primary_color": schema.StringAttribute{
 				Optional:            true,

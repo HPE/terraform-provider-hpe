@@ -12,7 +12,34 @@ description: |-
 
 {{ tffile "examples/resources/morpheus_setting_whitelabel/example.tf" }}
 
+### Uploading logos and favicon
+
+The `header_logo`, `footer_logo`, `login_logo` and `favicon` attributes are
+**local paths to image files** that the provider uploads to Morpheus. Logos
+accept `png`, `jpg` or `svg`; the favicon accepts `ico` or `png`. Remote URLs are
+not supported.
+
+```terraform
+resource "hpe_morpheus_setting_whitelabel" "example" {
+  enabled     = true
+  header_logo = "${path.module}/images/header.png"
+  footer_logo = "${path.module}/images/footer.png"
+  login_logo  = "${path.module}/images/login.png"
+  favicon     = "${path.module}/images/favicon.ico"
+}
+```
+
 {{ .SchemaMarkdown | trimspace }}
+
+## Limitations
+
+- **Local file paths only.** `header_logo`, `footer_logo`, `login_logo` and
+  `favicon` must reference image files on the machine running Terraform. Remote
+  URLs are not supported because the Morpheus whitelabel images API accepts
+  uploaded file content only (there is no server-side URL fetch).
+- **Uploaded values are not round-tripped.** The value you set is a local path; the
+  API stores the file and returns a different server-generated storage URL, which
+  is intentionally not surfaced as the attribute value.
 
 ## Import
 

@@ -31,6 +31,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Enhancements to existing resources
 
+- hpe_morpheus_setting_whitelabel — `header_logo`, `footer_logo`, `login_logo` and `favicon` now take a local image file path and are uploaded to Morpheus (png/jpg/svg for logos; ico/png for the favicon). Remote URLs are not supported.
 - hpe_morpheus_instance — Added `subnet_id` to `network_interfaces` (required by some clouds, e.g. Azure); added a computed `status` attribute and out-of-band deletion detection (the instance is removed from state when the underlying VM no longer exists)
 - hpe_morpheus_service_plan (data source) — Added a `cloud_id` filter (region/zone)
 - hpe_morpheus_identity_source_saml — Exposed the SP metadata (`entity_id`, `acs_url`) as computed outputs
@@ -39,6 +40,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Resolved issues
 
+- `hpe_morpheus_setting_whitelabel` accepted `header_logo`, `footer_logo`, `login_logo` and `favicon` on apply but returned them as null on refresh (MORPH-12625); the logos are now uploaded via the whitelabel images endpoint and the configured path is preserved in state
 - `hpe_morpheus_form` dropped attributes on read for the secGroup field
 - `hpe_morpheus_form` cross-field leakage between option_type reads
 - `hpe_morpheus_form` no attribute generated for plain cascade keys

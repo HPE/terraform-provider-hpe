@@ -52,24 +52,25 @@ setting_whitelabel:
       computed_optional_required: optional
       description: The appliance name. Master account only.
     enabled:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: Whether the whitelabel feature is enabled.
+      state_for_unknown: true
     favicon:
       computed_optional_required: optional
-      description: The favicon URL or path.
+      description: Local path to a favicon image file (ico/png) to upload. Remote URLs are not supported.
     footer_logo:
       computed_optional_required: optional
-      description: The footer logo URL or path.
+      description: Local path to a footer logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
     header_logo:
       computed_optional_required: optional
-      description: The header logo URL or path.
+      description: Local path to a header logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
     id:
       computed_optional_required: computed
       description: The fixed identifier for the whitelabel settings singleton.
       state_for_unknown: true
     login_logo:
       computed_optional_required: optional
-      description: The login logo URL or path.
+      description: Local path to a login logo image file (png/jpg/svg) to upload. Remote URLs are not supported.
     primary_color:
       computed_optional_required: optional
       description: The primary button background color.
