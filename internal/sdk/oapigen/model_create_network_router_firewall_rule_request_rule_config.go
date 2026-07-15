@@ -18,9 +18,9 @@ import (
 // checks if the CreateNetworkRouterFirewallRuleRequestRuleConfig type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &CreateNetworkRouterFirewallRuleRequestRuleConfig{}
 
-// CreateNetworkRouterFirewallRuleRequestRuleConfig Configuration options for the firewall rule.
+// CreateNetworkRouterFirewallRuleRequestRuleConfig Network-router-type-specific rule configuration.
 type CreateNetworkRouterFirewallRuleRequestRuleConfig struct {
-	// ID of the parent gateway firewall to attach this rule to.
+	// External id of the parent firewall rule group (required by NSX-T).
 	ParentId             *string                `json:"parentId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

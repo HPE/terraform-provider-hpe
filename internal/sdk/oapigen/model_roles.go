@@ -28,19 +28,19 @@ type Roles struct {
 	Authority   *string        `json:"authority,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
-	LandingUrl           NullableString                              `json:"landingUrl,omitempty"`
-	Scope                *string                                     `json:"scope,omitempty"`
-	RoleType             *string                                     `json:"roleType,omitempty"`
-	Multitenant          *bool                                       `json:"multitenant,omitempty"`
-	MultitenantLocked    *bool                                       `json:"multitenantLocked,omitempty"`
-	ParentRoleId         NullableString                              `json:"parentRoleId,omitempty"`
-	Diverged             *bool                                       `json:"diverged,omitempty"`
-	OwnerId              *int64                                      `json:"ownerId,omitempty"`
-	Owner                *AddRoles200ResponseAllOfRoleOwner          `json:"owner,omitempty"`
-	DefaultPersona       *AddRoles200ResponseAllOfRoleDefaultPersona `json:"defaultPersona,omitempty"`
-	DateCreated          *time.Time                                  `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                  `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                      `json:",remain"`
+	LandingUrl           NullableString         `json:"landingUrl,omitempty"`
+	Scope                *string                `json:"scope,omitempty"`
+	RoleType             *string                `json:"roleType,omitempty"`
+	Multitenant          *bool                  `json:"multitenant,omitempty"`
+	MultitenantLocked    *bool                  `json:"multitenantLocked,omitempty"`
+	ParentRoleId         NullableString         `json:"parentRoleId,omitempty"`
+	Diverged             *bool                  `json:"diverged,omitempty"`
+	OwnerId              *int64                 `json:"ownerId,omitempty"`
+	Owner                *RolesOwner            `json:"owner,omitempty"`
+	DefaultPersona       *RolesDefaultPersona   `json:"defaultPersona,omitempty"`
+	DateCreated          *time.Time             `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _Roles Roles

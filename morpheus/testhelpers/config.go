@@ -1,5 +1,25 @@
 package testhelpers
 
+import "os"
+
+// EnvKubernetesClusterID is the environment variable that supplies the ID of a
+// namespace-capable Kubernetes cluster for tests gated on the
+// kubernetes_cluster capability (cluster namespaces, HKS provisioning).
+const EnvKubernetesClusterID = "TF_VAR_testacc_morpheus_k8s_cluster_id"
+
+// KubernetesClusterID returns the Kubernetes cluster ID to use for
+// namespace/HKS tests, taking TF_VAR_testacc_morpheus_cluster_id when set and
+// otherwise falling back to the supplied value. These tests only execute when
+// the kubernetes_cluster capability is enabled, so whoever enables it is
+// expected to point this at a real cluster on the target appliance.
+func KubernetesClusterID(fallback string) string {
+	if v := os.Getenv(EnvKubernetesClusterID); v != "" {
+		return v
+	}
+
+	return fallback
+}
+
 //nolint:lll
 const providerConfig = `
 variable "testacc_morpheus_url" {

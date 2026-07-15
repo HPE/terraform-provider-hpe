@@ -60,7 +60,7 @@ resource "hpe_morpheus_network_router" "example" {
 
 ### Required
 
-- `group_id` (Number) Group ID
+- `group_id` (Number) Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.
 - `name` (String) Name
 
 ### Optional
@@ -72,7 +72,7 @@ resource "hpe_morpheus_network_router" "example" {
 - `enable_bgp` (Boolean)
 - `enabled` (Boolean) Can be used to enable / disable the network router (true, false). Default is on
 - `network_integration_id` (Number) Required when router type supports a network integration
-- `shared_group_access` (Boolean) Used to enable shared group access. Conflicts with group_id.
+- `shared_group_access` (Boolean) Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.
 - `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
 - `type_id` (Number) The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.
 - `visibility` (String) The visibility of the network router (public or private).

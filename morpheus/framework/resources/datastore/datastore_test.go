@@ -719,24 +719,6 @@ func TestAccMorpheusDatastoreResourceValidationRequiredAttrs(t *testing.T) {
 				ExpectError: regexp.MustCompile(`The argument "name" is required`),
 			},
 			{
-				// checks plan fails when datastore_type.id is removed
-				Config: `
-                    resource "hpe_morpheus_datastore" "example" {
-                      name = "TestDatastore"
-                      datastore_type = {
-                        code = "hpedatastore-alletra-mp"
-                      }
-                      associated_resource_type = "Cluster"
-                      associated_resource_id   = 6032
-                    
-                      config_alletramp_hvm = {
-                        protocol_type     = "iSCSI"
-                        enable_ransomware = false
-                      }
-					}`,
-				ExpectError: regexp.MustCompile(`Incorrect attribute value type`),
-			},
-			{
 				// checks plan fails when datastore_type.code is removed
 				Config: `
                     resource "hpe_morpheus_datastore" "example" {

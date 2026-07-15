@@ -120,15 +120,27 @@ func getRouterAsState(
 		if router.Permissions.Visibility != nil {
 			state.Visibility = types.StringValue(*router.Permissions.Visibility)
 		}
-		if importing {
-			var tenantIDs []int64
-			if router.Permissions.TenantPermissions != nil {
-				tenantIDs = router.Permissions.TenantPermissions.Accounts
-			}
-			setVal, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
-			diags.Append(setDiags...)
-			state.TenantIds = setVal
+	}
+
+	// tenant_ids and visibility are computed and must be known after apply.
+	// On create the plan values are unknown (they conflict with the required
+	// group_id, so a user can never set them), and on import there is no prior
+	// state. In both cases resolve from the API response; a group-scoped router
+	// has no tenant permissions, which yields an empty set.
+	if importing || state.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		if router.Permissions != nil && router.Permissions.TenantPermissions != nil {
+			tenantIDs = router.Permissions.TenantPermissions.Accounts
 		}
+		setVal, setDiags := types.SetValueFrom(ctx, types.Int64Type, tenantIDs)
+		diags.Append(setDiags...)
+		state.TenantIds = setVal
+	}
+
+	// Guard against visibility remaining unknown after apply when the API
+	// response carries no permissions block.
+	if state.Visibility.IsUnknown() {
+		state.Visibility = types.StringNull()
 	}
 
 	return state, diags

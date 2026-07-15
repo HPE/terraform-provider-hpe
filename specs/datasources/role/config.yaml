@@ -496,6 +496,7 @@ role:
     - role.multitenant
     - role.multitenant_locked
     - role.role_type
+    - role.tenant_copies
   moves:
     - role: "" # unnest role wrapper to root
     - template-default_persona: default_persona

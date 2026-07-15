@@ -1357,6 +1357,26 @@ func getRoleAsState(
 		state.RoleType = types.StringValue(RoleTypeTenant)
 	}
 
+	// tenant_copies is a computed output populated from the role show response
+	// on Morpheus 9.0.2 and later. Older appliances omit the field, so
+	// r.Role.TenantCopies is nil; the slice is initialized (not left nil) so an
+	// empty result yields a known empty set rather than a null set.
+	tenantCopies := make([]TenantCopiesValue, 0)
+	for _, v := range r.Role.TenantCopies {
+		tenantCopies = append(tenantCopies, TenantCopiesValue{
+			TenantId: convert.Int64ToType(v.TenantId),
+			RoleId:   convert.Int64ToType(v.RoleId),
+			Diverged: convert.BoolToType(v.Diverged),
+			state:    attr.ValueStateKnown,
+		})
+	}
+	tenantCopiesSet, tcDiags := types.SetValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
+	diags.Append(tcDiags...)
+	if diags.HasError() {
+		return state, diags
+	}
+	state.TenantCopies = tenantCopiesSet
+
 	return state, diags
 }
 

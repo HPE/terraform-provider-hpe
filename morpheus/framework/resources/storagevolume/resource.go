@@ -14,6 +14,7 @@ var (
 	_ resource.Resource                = &storageVolumeResource{}
 	_ resource.ResourceWithConfigure   = &storageVolumeResource{}
 	_ resource.ResourceWithImportState = &storageVolumeResource{}
+	_ resource.ResourceWithModifyPlan  = &storageVolumeResource{}
 )
 
 type storageVolumeResource struct {

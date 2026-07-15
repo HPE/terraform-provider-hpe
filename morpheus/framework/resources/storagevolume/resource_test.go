@@ -185,6 +185,11 @@ func TestAccMorpheusStorageVolumeResourceCompleteOk(t *testing.T) {
 				ImportState:       true,
 				ImportStateVerify: true,
 				ResourceName:      resourceName,
+				// config_alletramp_bmaas is write-only (never in state) and
+				// config_alletramp_bmaas_wo_version is a client-side replace
+				// trigger the API does not return, so it cannot round-trip on
+				// import.
+				ImportStateVerifyIgnore: []string{"config_alletramp_bmaas_wo_version"},
 			},
 		},
 	})

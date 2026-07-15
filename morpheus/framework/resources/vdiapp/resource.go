@@ -55,10 +55,10 @@ func (r *vdiAppResource) Create(ctx context.Context, req resource.CreateRequest,
 	body := sdk.AddVDIAppsRequestVdiAppOneOf{
 		Name: plan.Name.ValueString(),
 	}
-	if !plan.Description.IsNull() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-	if !plan.LaunchPrefix.IsNull() {
+	if !plan.LaunchPrefix.IsNull() && !plan.LaunchPrefix.IsUnknown() {
 		body.LaunchPrefix = plan.LaunchPrefix.ValueStringPointer()
 	}
 
@@ -161,10 +161,10 @@ func (r *vdiAppResource) Update(ctx context.Context, req resource.UpdateRequest,
 	body := sdk.UpdateVDIAppsRequestVdiAppOneOf{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		body.Description = plan.Description.ValueStringPointer()
 	}
-	if !plan.LaunchPrefix.IsNull() {
+	if !plan.LaunchPrefix.IsNull() && !plan.LaunchPrefix.IsUnknown() {
 		body.LaunchPrefix = plan.LaunchPrefix.ValueStringPointer()
 	}
 
