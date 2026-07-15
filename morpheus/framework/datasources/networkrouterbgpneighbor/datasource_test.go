@@ -34,15 +34,35 @@ provider "hpe" {
 `
 
 // existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
-// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
-// BGP neighbors attach to the tier-0's locale-services, which are only populated
-// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
-// races that sync, so we reference this existing gateway.
-const existingTier0RouterID = "28"
+// (BGP enabled, with an associated edge cluster and local AS). BGP neighbors
+// attach to the tier-0's locale-services, which are only populated in Morpheus
+// after a sync of a realized gateway; the provider cannot create such a fixture
+// per test, so these tests require an existing gateway supplied via
+// TF_ACC_BGP_ROUTER_ID and skip when it is unset.
+var existingTier0RouterID = os.Getenv("TF_ACC_BGP_ROUTER_ID")
 
-// bgpNeighborSourceAddress is a valid IP on tier-0 28's interface, required for
-// EBGP multihop neighbors (see resource test for details).
-const bgpNeighborSourceAddress = "10.100.10.1"
+// bgpNeighborSourceAddress is a valid IP on the tier-0's interface, required for
+// EBGP multihop neighbors (see resource test for details). Override with
+// TF_ACC_BGP_SOURCE_ADDRESS.
+var bgpNeighborSourceAddress = bgpSourceAddressOrDefault()
+
+func bgpSourceAddressOrDefault() string {
+	if v := os.Getenv("TF_ACC_BGP_SOURCE_ADDRESS"); v != "" {
+		return v
+	}
+
+	return "10.100.10.1"
+}
+
+// skipUnlessBGPRouter skips the test unless a pre-provisioned BGP-enabled NSX-T
+// tier-0 gateway id is supplied via TF_ACC_BGP_ROUTER_ID.
+func skipUnlessBGPRouter(t *testing.T) {
+	t.Helper()
+
+	if existingTier0RouterID == "" {
+		t.Skip("TF_ACC_BGP_ROUTER_ID not set; skipping test requiring a pre-provisioned BGP-enabled NSX-T tier-0 gateway")
+	}
+}
 
 // neighborFixture renders a BGP neighbor on the existing tier-0 router, labelled
 // hpe_morpheus_network_router_bgp_neighbor.example.
@@ -67,6 +87,8 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -82,7 +104,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "` + ipAddress + `"
-  router_id  = 28
+  router_id  = ` + existingTier0RouterID + `
   depends_on = [hpe_morpheus_network_router_bgp_neighbor.example]
 }
 `
@@ -105,6 +127,8 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -118,7 +142,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 	// id and router_id reference the created resources, deferring the read.
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, map[string]string{
 		"Id":       "hpe_morpheus_network_router_bgp_neighbor.example.id",
-		"RouterId": "28",
+		"RouterId": existingTier0RouterID,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -142,6 +166,8 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -154,7 +180,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "0.0.0.0"
-  router_id  = 28
+  router_id  = ` + existingTier0RouterID + `
 }
 `
 

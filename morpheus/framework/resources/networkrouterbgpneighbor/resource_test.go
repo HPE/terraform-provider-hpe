@@ -26,21 +26,43 @@ func TestMain(m *testing.M) {
 }
 
 // existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
-// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
-// BGP neighbors attach to the tier-0's locale-services, which are only populated
-// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
-// races that sync, so we reference this existing gateway.
-const existingTier0RouterID = "28"
+// (BGP enabled, with an associated edge cluster and local AS). BGP neighbors
+// attach to the tier-0's locale-services, which are only populated in Morpheus
+// after a sync of a realized gateway; the provider cannot create such a fixture
+// per test, so these tests require an existing gateway supplied via
+// TF_ACC_BGP_ROUTER_ID and skip when it is unset.
+var existingTier0RouterID = os.Getenv("TF_ACC_BGP_ROUTER_ID")
 
-// bgpNeighborSourceAddress is a valid IP on tier-0 28's interface. NSX-T requires
+// bgpNeighborSourceAddress is a valid IP on the tier-0's interface. NSX-T requires
 // a source address for EBGP multihop neighbors; without it the create fails with
-// "BGP neighbor source address is mandatory for EBGP Multihop."
-const bgpNeighborSourceAddress = "10.100.10.1"
+// "BGP neighbor source address is mandatory for EBGP Multihop." Override with
+// TF_ACC_BGP_SOURCE_ADDRESS; defaults to a sensible value for the reference env.
+var bgpNeighborSourceAddress = bgpSourceAddressOrDefault()
+
+func bgpSourceAddressOrDefault() string {
+	if v := os.Getenv("TF_ACC_BGP_SOURCE_ADDRESS"); v != "" {
+		return v
+	}
+
+	return "10.100.10.1"
+}
+
+// skipUnlessBGPRouter skips the test unless a pre-provisioned BGP-enabled NSX-T
+// tier-0 gateway id is supplied via TF_ACC_BGP_ROUTER_ID.
+func skipUnlessBGPRouter(t *testing.T) {
+	t.Helper()
+
+	if existingTier0RouterID == "" {
+		t.Skip("TF_ACC_BGP_ROUTER_ID not set; skipping test requiring a pre-provisioned BGP-enabled NSX-T tier-0 gateway")
+	}
+}
 
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
+
+	skipUnlessBGPRouter(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -89,6 +111,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -102,7 +126,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
 
 	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
-  router_id   = 28
+  router_id   = ` + existingTier0RouterID + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -156,6 +180,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -169,7 +195,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T)
 
 	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
-  router_id            = 28
+  router_id            = ` + existingTier0RouterID + `
   ip_address           = "` + ipAddress + `"
   description          = "` + name + `"
   remote_as            = "65002"
@@ -272,6 +298,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -285,7 +313,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
 
 	createConfig := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id   = 28
+  router_id   = ` + existingTier0RouterID + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -301,7 +329,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 
 	updateConfig := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id    = 28
+  router_id    = ` + existingTier0RouterID + `
   ip_address   = "` + ipAddress + `"
   description  = "` + name + ` updated"
   remote_as    = "65002"
@@ -398,6 +426,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -411,7 +441,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
 
 	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
-  router_id   = 28
+  router_id   = ` + existingTier0RouterID + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -456,6 +486,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
+	skipUnlessBGPRouter(t)
+
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -469,7 +501,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T)
 
 	configText := providerConfig + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
-  router_id   = 28
+  router_id   = ` + existingTier0RouterID + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65010"
@@ -517,6 +549,10 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxvConfig(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXV)
+
+	if os.Getenv("TF_VAR_nsxv_router_id") == "" {
+		t.Skip("TF_VAR_nsxv_router_id not set; skipping test requiring a pre-existing NSX-V network router")
+	}
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
