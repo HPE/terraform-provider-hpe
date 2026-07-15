@@ -12,9 +12,8 @@ Manages a network router firewall rule group resource in Morpheus.
 
 ```terraform
 resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
-  router_id     = 1
-  name          = "Example Firewall Rule Group"
-  external_type = "SecurityPolicy"
+  router_id = 1
+  name      = "Example Firewall Rule Group"
 }
 ```
 
@@ -23,9 +22,6 @@ resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
 
 ### Required
 
-- `external_type` (String) The external type of the firewall rule group (e.g. SecurityPolicy for NSX-T).
-This field is write-only: the API does not return it after creation so it
-cannot be used for drift detection.
 - `name` (String) Network router firewall rule group name
 - `router_id` (Number) The ID of the parent network router
 
@@ -54,7 +50,7 @@ creating hpe_morpheus_network_router_firewall_rule resources.
 
 Import is supported using `router_id.group_id`.
 
-> **Note:** Write-only fields (`external_type`, `visibility`, `tenant_ids`) will be **null**
+> **Note:** Write-only fields (`visibility`, `tenant_ids`) will be **null**
 > after import because the API does not return them on individual GET responses. Run
 > `terraform apply` after import to restore these values from your configuration.
 
