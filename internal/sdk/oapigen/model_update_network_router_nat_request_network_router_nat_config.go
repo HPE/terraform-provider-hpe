@@ -20,11 +20,11 @@ var _ MappedNullable = &UpdateNetworkRouterNatRequestNetworkRouterNATConfig{}
 
 // UpdateNetworkRouterNatRequestNetworkRouterNATConfig NAT config-context options (bound to the NAT's config map).
 type UpdateNetworkRouterNatRequestNetworkRouterNATConfig struct {
-	// The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+	// The NAT action (config-context). NSX-T values: SNAT, DNAT, NO_SNAT, NO_DNAT, REFLEXIVE.
 	Action *string `json:"action,omitempty"`
-	// Firewall match type for the NAT rule.
+	// Firewall match mode for the NAT rule (config-context). NSX-T values: MATCH_EXTERNAL_ADDRESS, MATCH_INTERNAL_ADDRESS, BYPASS.
 	Firewall *string `json:"firewall,omitempty"`
-	// Service path for the NAT rule.
+	// Service the NAT rule applies to (config-context). For NSX-T this is a service path, for example /infra/services/HTTP.
 	Service              *string                `json:"service,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
