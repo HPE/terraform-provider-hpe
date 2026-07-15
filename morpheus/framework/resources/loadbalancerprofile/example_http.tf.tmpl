@@ -12,15 +12,4 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
     https_redirect       = {{.HttpsRedirect}}
     x_forwarded_for      = "{{.XForwardedFor}}"
   }
-
-  tags = [
-    {
-      name  = "env"
-      value = "test"
-    },
-    {
-      name  = "app"
-      value = "web"
-    },
-  ]
 }

@@ -266,6 +266,17 @@ func (r *Resource) Create(
 	state.ExtraConfig = plan.ExtraConfig
 	state.MonitorPasswordWoVersion = plan.MonitorPasswordWoVersion
 
+	// receive_data and data_length are Optional+Computed. The API drops empty /
+	// zero values and returns null, but a configured value (including "" or 0)
+	// must round-trip to avoid an inconsistent result after apply. Preserve the
+	// plan value when it is known.
+	if !plan.ReceiveData.IsUnknown() {
+		state.ReceiveData = plan.ReceiveData
+	}
+	if !plan.DataLength.IsUnknown() {
+		state.DataLength = plan.DataLength
+	}
+
 	// Preserve plan config since the API may not return it verbatim.
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		state.Config = plan.Config

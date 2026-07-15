@@ -81,6 +81,17 @@ func (r *Resource) Read(
 	state.ExtraConfig = data.ExtraConfig
 	state.MonitorPasswordWoVersion = data.MonitorPasswordWoVersion
 
+	// receive_data and data_length are Optional+Computed. The API drops empty /
+	// zero values and returns null. When the API omits them but prior state held
+	// a configured value (including "" or 0), preserve it to avoid drift. On
+	// import prior state is null, so the API (null) value is kept.
+	if state.ReceiveData.IsNull() && !data.ReceiveData.IsNull() {
+		state.ReceiveData = data.ReceiveData
+	}
+	if state.DataLength.IsNull() && !data.DataLength.IsNull() {
+		state.DataLength = data.DataLength
+	}
+
 	// Preserve plan config since the API may not return it verbatim.
 	if !data.Config.IsNull() && !data.Config.IsUnknown() {
 		state.Config = data.Config
