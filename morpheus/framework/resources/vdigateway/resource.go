@@ -57,8 +57,10 @@ func (r *vdiGatewayResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 
 	body := sdk.AddVDIGatewaysRequestVdiGatewayOneOf{
-		Name:       plan.Name.ValueString(),
-		GatewayUrl: plan.GatewayUrl.ValueString(),
+		Name: plan.Name.ValueString(),
+	}
+	if !plan.GatewayUrl.IsNull() {
+		body.GatewayUrl = plan.GatewayUrl.ValueStringPointer()
 	}
 	if !plan.Description.IsNull() {
 		body.Description = plan.Description.ValueStringPointer()

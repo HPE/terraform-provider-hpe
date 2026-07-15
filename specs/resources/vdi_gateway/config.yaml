@@ -15,7 +15,7 @@ vdi_gateway:
       description: The description of the VDI gateway.
       string_length_at_most: 255
     gateway_url:
-      computed_optional_required: required
+      computed_optional_required: optional
       description: The URL of the VDI gateway.
     id:
       computed_optional_required: computed
