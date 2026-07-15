@@ -5,8 +5,10 @@ package vdigateway
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -19,6 +21,9 @@ func VdiGatewayResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The description of the VDI gateway.",
 				MarkdownDescription: "The description of the VDI gateway.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 			"gateway_url": schema.StringAttribute{
 				Required:            true,
