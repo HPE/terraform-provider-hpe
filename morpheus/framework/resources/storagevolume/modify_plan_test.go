@@ -4,7 +4,6 @@ package storagevolume
 
 import (
 	"context"
-	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,16 +11,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 )
-
-// number builds a tftypes numeric value for an int64.
-func number(n int64) tftypes.Value {
-	return tftypes.NewValue(tftypes.Number, new(big.Float).SetInt64(n))
-}
 
 // TestUnitStorageVolumeModifyPlanTypeIDSize verifies that ModifyPlan resolves a
 // type_id to its code and enforces the Alletra 1-65536 GiB max_storage bound at
@@ -30,57 +23,60 @@ func number(n int64) tftypes.Value {
 func TestUnitStorageVolumeModifyPlanTypeIDSize(t *testing.T) {
 	ctx := context.Background()
 	sch := StorageVolumeResourceSchema(ctx)
-	objType := sch.Type().TerraformType(ctx).(tftypes.Object)
 
-	plan := func(overrides map[string]tftypes.Value) tfsdk.Plan {
-		vals := map[string]tftypes.Value{}
-		for name, at := range objType.AttributeTypes {
-			vals[name] = tftypes.NewValue(at, nil)
-		}
-		for name, v := range overrides {
-			vals[name] = v
+	// makePlan builds a tfsdk.Plan from a typed model. The write-only config
+	// block and dynamic config are set to explicit nulls so the plan matches the
+	// schema; each case only populates the fields ModifyPlan actually reads.
+	makePlan := func(t *testing.T, m StorageVolumeModel) tfsdk.Plan {
+		t.Helper()
+		m.ConfigAlletrampBmaas = NewConfigAlletrampBmaasValueNull()
+		m.Config = types.DynamicNull()
+
+		p := tfsdk.Plan{Schema: sch}
+		if diags := p.Set(ctx, &m); diags.HasError() {
+			t.Fatalf("build plan: %v", diags)
 		}
 
-		return tfsdk.Plan{Schema: sch, Raw: tftypes.NewValue(objType, vals)}
+		return p
 	}
 
 	cases := []struct {
 		name      string
-		overrides map[string]tftypes.Value
+		model     StorageVolumeModel
 		wantError bool
 		wantCall  bool
 	}{
 		{
 			name: "type_id alletra oversize is rejected at plan",
-			overrides: map[string]tftypes.Value{
-				"type_id":     number(1),
-				"max_storage": number(99999),
+			model: StorageVolumeModel{
+				TypeId:     types.Int64Value(1),
+				MaxStorage: types.Int64Value(99999),
 			},
 			wantError: true,
 			wantCall:  true,
 		},
 		{
 			name: "type_id alletra in range is accepted",
-			overrides: map[string]tftypes.Value{
-				"type_id":     number(1),
-				"max_storage": number(100),
+			model: StorageVolumeModel{
+				TypeId:     types.Int64Value(1),
+				MaxStorage: types.Int64Value(100),
 			},
 			wantError: false,
 			wantCall:  true,
 		},
 		{
 			name: "type_code path skips the api call",
-			overrides: map[string]tftypes.Value{
-				"type_code":   tftypes.NewValue(tftypes.String, "hpealletraMPLUN"),
-				"max_storage": number(99999),
+			model: StorageVolumeModel{
+				TypeCode:   types.StringValue("hpealletraMPLUN"),
+				MaxStorage: types.Int64Value(99999),
 			},
 			wantError: false,
 			wantCall:  false,
 		},
 		{
 			name: "no max_storage skips the api call",
-			overrides: map[string]tftypes.Value{
-				"type_id": number(1),
+			model: StorageVolumeModel{
+				TypeId: types.Int64Value(1),
 			},
 			wantError: false,
 			wantCall:  false,
@@ -111,7 +107,7 @@ func TestUnitStorageVolumeModifyPlanTypeIDSize(t *testing.T) {
 				t.Fatalf("configure: %v", cfgResp.Diagnostics)
 			}
 
-			p := plan(tc.overrides)
+			p := makePlan(t, tc.model)
 			resp := &resource.ModifyPlanResponse{Plan: p}
 			r.ModifyPlan(ctx, resource.ModifyPlanRequest{Plan: p}, resp)
 
