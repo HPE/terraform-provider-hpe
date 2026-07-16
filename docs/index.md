@@ -56,7 +56,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.5.0"
+      version = ">= 1.6.0"
     }
   }
 }
@@ -80,7 +80,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.5.0"
+      version = ">= 1.6.0"
     }
   }
 }
@@ -105,7 +105,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.5.0"
+      version = ">= 1.6.0"
     }
   }
 }
@@ -128,7 +128,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.5.0"
+      version = ">= 1.6.0"
     }
   }
 }
