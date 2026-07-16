@@ -88,7 +88,7 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 - `remote_target_host` (String) The hostname or ip address of the remote target
 - `remote_target_password` (String, Sensitive, Deprecated) The password of the user account used to authenticate to the remote target
 - `remote_target_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the user account used to authenticate to the remote target (write-only, not stored in state).
-- `remote_target_password_wo_version` (Number) Increment to trigger re-sending remote_target_password_wo. Needed because write-only values are not stored in state.
+- `remote_target_password_wo_version` (Number) Increment to re-send remote_target_password_wo; write-only values are not stored in state.
 - `remote_target_port` (String) The port used to connect to the remote target
 - `remote_target_username` (String) The username of the user account used to authenticate to the remote target
 - `repository_id` (Number) The ID of the git repository integration
@@ -105,6 +105,21 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 ### Read-Only
 
 - `id` (String) The ID of the shell script task
+
+## Switching to `remote_target_password_wo`
+
+As of version 1.7, the `remote_target_password` attribute is deprecated. Morpheus
+returns the password as a hash, so this attribute holds the password hash — not the
+original password — in Terraform state. Prefer the write-only
+`remote_target_password_wo` attribute, whose value is never persisted to state
+(requires Terraform 1.11 or later).
+
+To migrate, replace `remote_target_password` with `remote_target_password_wo` using
+the same value, and set `remote_target_password_wo_version` to an integer such as
+`1`. The two password attributes are mutually exclusive, so set only one. Because
+write-only values are not stored in state, rotating the password later requires
+updating `remote_target_password_wo` **and** incrementing
+`remote_target_password_wo_version`.
 
 ## Import
 

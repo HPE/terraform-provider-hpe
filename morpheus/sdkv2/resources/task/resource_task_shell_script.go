@@ -152,7 +152,7 @@ func ResourceTaskShellScript() *schema.Resource {
 				Description:   "The password of the user account used to authenticate to the remote target",
 				Optional:      true,
 				Sensitive:     true,
-				Deprecated:    "Use remote_target_password_wo instead. This attribute stores the password in state and will be removed in a future release.",
+				Deprecated:    "Use remote_target_password_wo instead. This attribute stores the password hash in state.",
 				ConflictsWith: []string{"remote_target_password_wo"},
 			},
 			"remote_target_password_wo": {
@@ -165,7 +165,7 @@ func ResourceTaskShellScript() *schema.Resource {
 			},
 			"remote_target_password_wo_version": {
 				Type:        schema.TypeInt,
-				Description: "Increment to trigger re-sending remote_target_password_wo. Needed because write-only values are not stored in state.",
+				Description: "Increment to re-send remote_target_password_wo; write-only values are not stored in state.",
 				Optional:    true,
 			},
 			"retryable": {
