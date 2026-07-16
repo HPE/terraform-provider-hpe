@@ -77,6 +77,8 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `allow_custom_config` (Boolean) Custom configuration data to pass during the execution of the shell script
 - `code` (String) The code of the shell script task
 - `execute_target` (String) The execute target of the shell script (local, remote, resource)
@@ -84,7 +86,9 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 - `local_repository_id` (String) The ID of the local git repository
 - `local_repository_ref` (String) The git reference of the repository to pull (main, master, etc.)
 - `remote_target_host` (String) The hostname or ip address of the remote target
-- `remote_target_password` (String, Sensitive) The password of the user account used to authenticate to the remote target
+- `remote_target_password` (String, Sensitive, Deprecated) The password of the user account used to authenticate to the remote target
+- `remote_target_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the user account used to authenticate to the remote target (write-only, not stored in state).
+- `remote_target_password_wo_version` (Number) Increment to trigger re-sending remote_target_password_wo. Needed because write-only values are not stored in state.
 - `remote_target_port` (String) The port used to connect to the remote target
 - `remote_target_username` (String) The username of the user account used to authenticate to the remote target
 - `repository_id` (Number) The ID of the git repository integration
