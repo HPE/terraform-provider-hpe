@@ -87,10 +87,6 @@ func getOsTypeImageAsState(
 		state.ProvisionTypeId = types.Int64Value(*provisionType)
 	}
 
-	if img.VirtualImageId == nil {
-		return state, diags
-	}
-
 	// os_type_id is not returned by the GET osTypeImage endpoint. It is a
 	// Required, RequiresReplace attribute, so when the value is already known
 	// (create/read) we preserve it rather than deriving it from the virtual
@@ -99,6 +95,11 @@ func getOsTypeImageAsState(
 	if !knownOsTypeId.IsNull() && !knownOsTypeId.IsUnknown() {
 		state.OsTypeId = knownOsTypeId
 
+		return state, diags
+	}
+
+	// The virtual-image fallback (import only) dereferences VirtualImageId.
+	if img.VirtualImageId == nil {
 		return state, diags
 	}
 
