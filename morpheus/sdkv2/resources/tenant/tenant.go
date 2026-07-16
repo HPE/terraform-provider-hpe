@@ -5,15 +5,27 @@ package tenant
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
 )
+
+// validCurrencyCodes are the ISO 4217 currency codes Morpheus supports for a
+// tenant account. Sourced from Morpheus's CurrencyType seed data.
+var validCurrencyCodes = []string{
+	"USD", "AED", "ARS", "AUD", "AZN", "BGN", "BRL", "BWP", "CAD", "CHF",
+	"CLF", "CLP", "CNY", "COP", "CZK", "DKK", "EUR", "GBP", "HKD", "HRK",
+	"HUF", "IDR", "ILS", "INR", "JOD", "JPY", "KRW", "MNT", "MUR", "MXN",
+	"MYR", "NGN", "NOK", "NZD", "PHP", "PLN", "RON", "RUB", "SAR", "SEK",
+	"SGD", "THB", "TRY", "VND", "ZAR",
+}
 
 func ResourceTenant() *schema.Resource {
 	return &schema.Resource{
@@ -58,10 +70,14 @@ func ResourceTenant() *schema.Resource {
 				Required:    true,
 			},
 			"currency": {
-				Type:        schema.TypeString,
-				Description: "Currency ISO Code to be used for the account",
-				Optional:    true,
-				Default:     "USD",
+				Type:         schema.TypeString,
+				Description:  "Currency ISO 4217 code for the account (e.g. USD, EUR, GBP). Must be a currency code supported by Morpheus.",
+				Optional:     true,
+				Default:      "USD",
+				ValidateFunc: validation.StringInSlice(validCurrencyCodes, true),
+				DiffSuppressFunc: func(_, oldValue, newValue string, _ *schema.ResourceData) bool {
+					return strings.EqualFold(oldValue, newValue)
+				},
 			},
 			"account_number": {
 				Type:        schema.TypeString,
