@@ -151,6 +151,7 @@ func ResourceTaskShellScript() *schema.Resource {
 				Type:          schema.TypeString,
 				Description:   "The password of the user account used to authenticate to the remote target",
 				Optional:      true,
+				Computed:      true,
 				Sensitive:     true,
 				Deprecated:    "Use remote_target_password_wo instead. This attribute stores the password hash in state.",
 				ConflictsWith: []string{"remote_target_password_wo"},
@@ -524,6 +525,7 @@ func resourceTaskShellScriptRead(ctx context.Context, d *schema.ResourceData, me
 	d.Set("remote_target_host", shellScriptTask.TaskOptions.Host)
 	d.Set("remote_target_port", shellScriptTask.TaskOptions.Port)
 	d.Set("remote_target_username", shellScriptTask.TaskOptions.Username)
+	d.Set("remote_target_password", shellScriptTask.TaskOptions.PasswordHash)
 	d.Set("retryable", shellScriptTask.Retryable)
 	d.Set("retry_count", shellScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", shellScriptTask.RetryDelaySeconds)
