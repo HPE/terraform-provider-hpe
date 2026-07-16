@@ -603,22 +603,30 @@ func resourceTaskPowerShellScriptUpdate(ctx context.Context, d *schema.ResourceD
 	if d.HasChange("remote_target_host") {
 		if remoteTargetHost, ok := d.Get("remote_target_host").(string); ok {
 			taskOptions["host"] = remoteTargetHost
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("host", d.Get("host")))
 		}
 	}
 
 	if d.HasChange("remote_target_port") {
 		if remoteTargetPort, ok := d.Get("remote_target_port").(string); ok {
 			taskOptions["port"] = remoteTargetPort
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("port", d.Get("port")))
 		}
 	}
 	if d.HasChange("remote_target_username") {
 		if remoteTargetUsername, ok := d.Get("remote_target_username").(string); ok {
 			taskOptions["username"] = remoteTargetUsername
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("remote_target_username", d.Get("remote_target_username")))
 		}
 	}
 	if d.HasChange("remote_target_password") {
 		if remoteTargetPassword, ok := d.Get("remote_target_password").(string); ok {
 			taskOptions["password"] = remoteTargetPassword
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("remote_target_password", d.Get("remote_target_password")))
 		}
 	}
 	if d.HasChange("remote_target_password_wo_version") {
