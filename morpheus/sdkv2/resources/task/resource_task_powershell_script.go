@@ -2,8 +2,6 @@ package task
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 	"strings"
 	"time"
@@ -138,13 +136,7 @@ func ResourceTaskPowerShellScript() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The password of the user account used to authenticate to the remote target",
 				Optional:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
+				Sensitive:   true,
 			},
 			"retryable": {
 				Type:        schema.TypeBool,
@@ -496,7 +488,6 @@ func resourceTaskPowerShellScriptRead(ctx context.Context, d *schema.ResourceDat
 	d.Set("remote_target_host", powerShellScriptTask.TaskOptions.Host)
 	d.Set("remote_target_port", powerShellScriptTask.TaskOptions.Port)
 	d.Set("remote_target_username", powerShellScriptTask.TaskOptions.Username)
-	d.Set("remote_target_password", powerShellScriptTask.TaskOptions.PasswordHash)
 	d.Set("retryable", powerShellScriptTask.Retryable)
 	d.Set("retry_count", powerShellScriptTask.RetryCount)
 	d.Set("retry_delay_seconds", powerShellScriptTask.RetryDelaySeconds)

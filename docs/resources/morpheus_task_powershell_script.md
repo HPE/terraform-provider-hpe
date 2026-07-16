@@ -83,7 +83,7 @@ resource "hpe_morpheus_task_powershell_script" "tfexample_powershell_git" {
 - `execute_target` (String) The execute target for the powershell script (local, remote or resource)
 - `labels` (Set of String) The organization labels associated with the task (Only supported on Morpheus 5.5.3 or higher)
 - `remote_target_host` (String) The hostname or ip address of the remote target
-- `remote_target_password` (String) The password of the user account used to authenticate to the remote target
+- `remote_target_password` (String, Sensitive) The password of the user account used to authenticate to the remote target
 - `remote_target_port` (String) The port used to connect to the remote target
 - `remote_target_username` (String) The username of the user account used to authenticate to the remote target
 - `repository_id` (Number) The ID of the git repository integration

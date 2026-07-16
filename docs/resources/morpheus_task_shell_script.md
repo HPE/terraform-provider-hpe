@@ -84,7 +84,7 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 - `local_repository_id` (String) The ID of the local git repository
 - `local_repository_ref` (String) The git reference of the repository to pull (main, master, etc.)
 - `remote_target_host` (String) The hostname or ip address of the remote target
-- `remote_target_password` (String) The password of the user account used to authenticate to the remote target
+- `remote_target_password` (String, Sensitive) The password of the user account used to authenticate to the remote target
 - `remote_target_port` (String) The port used to connect to the remote target
 - `remote_target_username` (String) The username of the user account used to authenticate to the remote target
 - `repository_id` (Number) The ID of the git repository integration
