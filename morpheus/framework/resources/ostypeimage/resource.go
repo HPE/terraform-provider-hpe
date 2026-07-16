@@ -47,11 +47,15 @@ func (r *Resource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *r
 }
 
 // getOsTypeImageAsState reads the remote object and maps it to the Terraform model.
-// It fetches the os_type_image record, then looks up the associated virtual image
-// to extract the OsTypeId from virtualImage.osType.id.
+// It fetches the os_type_image record. The os_type_id is not returned by that
+// endpoint, so when its value is already known (create/read) the caller passes it
+// in via knownOsTypeId and it is preserved. Only during import (where it is
+// unknown) is it derived best-effort from the associated virtual image's
+// virtualImage.osType.id.
 func getOsTypeImageAsState(
 	ctx context.Context,
 	id int64,
+	knownOsTypeId types.Int64,
 	client *sdk.APIClient,
 ) (OsTypeImageModel, diag.Diagnostics) {
 	var state OsTypeImageModel
@@ -84,6 +88,17 @@ func getOsTypeImageAsState(
 	}
 
 	if img.VirtualImageId == nil {
+		return state, diags
+	}
+
+	// os_type_id is not returned by the GET osTypeImage endpoint. It is a
+	// Required, RequiresReplace attribute, so when the value is already known
+	// (create/read) we preserve it rather than deriving it from the virtual
+	// image's osType, which is optional (nullable) and independent of the
+	// association. The virtual-image fallback below only runs during import.
+	if !knownOsTypeId.IsNull() && !knownOsTypeId.IsUnknown() {
+		state.OsTypeId = knownOsTypeId
+
 		return state, diags
 	}
 
@@ -182,7 +197,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
-	state, diags := getOsTypeImageAsState(ctx, createResp.ID, client)
+	state, diags := getOsTypeImageAsState(ctx, createResp.ID, plan.OsTypeId, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
@@ -213,7 +228,7 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	}
 
 	id := current.Id.ValueInt64()
-	state, diags := getOsTypeImageAsState(ctx, id, client)
+	state, diags := getOsTypeImageAsState(ctx, id, current.OsTypeId, client)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
