@@ -48,11 +48,11 @@ func (r *Resource) Update(
 		"externalType": "GatewayPolicy",
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+	if !plan.Description.IsUnknown() {
 		ruleGroup["description"] = plan.Description.ValueString()
 	}
 
-	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
+	if !plan.Priority.IsUnknown() {
 		ruleGroup["priority"] = plan.Priority.ValueInt64()
 	}
 
@@ -64,12 +64,13 @@ func (r *Resource) Update(
 		ruleGroup["visibility"] = plan.Visibility.ValueString()
 	}
 
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+	if !plan.TenantIds.IsUnknown() {
 		var ids []int64
-
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
-		if resp.Diagnostics.HasError() {
-			return
+		if !plan.TenantIds.IsNull() {
+			resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+			if resp.Diagnostics.HasError() {
+				return
+			}
 		}
 
 		tenants := make([]map[string]interface{}, 0, len(ids))
