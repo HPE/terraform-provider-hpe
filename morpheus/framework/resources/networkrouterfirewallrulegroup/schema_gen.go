@@ -33,8 +33,11 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			"group_layer": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The group layer of the firewall rule group",
-				MarkdownDescription: "The group layer of the firewall rule group",
+				Description:         "The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API.",
+				MarkdownDescription: "The NSX-T gateway firewall policy category. Valid values: `Emergency`, `SharedPreRules` (Pre Rules), `LocalGatewayRules` (Local Gateway). System-managed categories (`SystemRules`, `AutoServiceRules`, `Default`) cannot be created via the API.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("Emergency", "SharedPreRules", "LocalGatewayRules"),
+				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
