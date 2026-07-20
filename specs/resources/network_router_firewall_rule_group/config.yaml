@@ -48,7 +48,8 @@ network_router_firewall_rule_group:
         cannot be created via the API.
       one_of: [Emergency, SharedPreRules, LocalGatewayRules]
     priority:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
+      state_for_unknown: true
       description: Network router firewall rule group priority
     visibility:
       computed_optional_required: computed_optional

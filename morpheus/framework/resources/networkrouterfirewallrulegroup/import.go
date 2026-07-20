@@ -8,8 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -50,19 +48,12 @@ func (r *Resource) ImportState(
 	}
 
 	// Seed a minimal prior state so getRuleGroupAsState can preserve write-only
-	// fields. On import, visibility is null and tenant_ids is an empty set —
-	// users must re-apply to restore actual values.
+	// fields. On import, visibility and tenant_ids are null — users must
+	// re-apply to restore configured values.
 	prior := NetworkRouterFirewallRuleGroupModel{
 		RouterId:   types.Int64Value(routerID),
 		Visibility: types.StringNull(),
-	}
-
-	var setDiags diag.Diagnostics
-	prior.TenantIds, setDiags = types.SetValue(types.Int64Type, []attr.Value{})
-	resp.Diagnostics.Append(setDiags...)
-
-	if resp.Diagnostics.HasError() {
-		return
+		TenantIds:  types.SetNull(types.Int64Type),
 	}
 
 	client, err := r.NewClient(ctx)

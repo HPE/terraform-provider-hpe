@@ -57,8 +57,12 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			},
 			"priority": schema.Int64Attribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Network router firewall rule group priority",
 				MarkdownDescription: "Network router firewall rule group priority",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,

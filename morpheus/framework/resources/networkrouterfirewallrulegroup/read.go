@@ -7,10 +7,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -69,29 +67,22 @@ func getRuleGroupAsState(
 	state.Status = convert.StrToType(rg.Status)
 	state.Description = convert.StrToType(rg.Description.Get())
 
-	// visibility and tenant_ids are not returned by the single GET endpoint.
-	// Fall back to prior state so Terraform sees no spurious diff. If the API
-	// is ever patched to return these fields, the nil-checks below will pick
-	// them up automatically.
+	// visibility and tenant_ids are not reliably returned by the single GET
+	// endpoint. Fall back to prior state to avoid spurious diffs.
+	//
+	// visibility: nil-check allows the provider to naturally recover if the
+	// API is later patched to return it consistently.
+	//
+	// tenant_ids: the API always returns the root tenant (id=1) regardless of
+	// what was configured, so the returned slice cannot represent the
+	// user-configured restriction. Preserve prior/plan value unconditionally.
 	if rg.Visibility != nil {
 		state.Visibility = convert.StrToType(rg.Visibility)
 	} else {
 		state.Visibility = prior.Visibility
 	}
 
-	if rg.Tenants != nil {
-		ids := make([]attr.Value, 0, len(rg.Tenants))
-		for _, t := range rg.Tenants {
-			if t.Id != nil {
-				ids = append(ids, types.Int64Value(*t.Id))
-			}
-		}
-		var setDiags diag.Diagnostics
-		state.TenantIds, setDiags = types.SetValue(types.Int64Type, ids)
-		diags.Append(setDiags...)
-	} else {
-		state.TenantIds = prior.TenantIds
-	}
+	state.TenantIds = prior.TenantIds
 
 	return state, false, diags
 }
