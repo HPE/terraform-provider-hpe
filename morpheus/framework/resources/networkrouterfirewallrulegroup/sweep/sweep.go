@@ -81,5 +81,8 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
+		testsweep.WithDependencies[ruleGroupSweeperItem](
+			"hpe_morpheus_network_router_firewall_rule",
+		),
 	)
 }

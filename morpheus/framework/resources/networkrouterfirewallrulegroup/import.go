@@ -50,7 +50,8 @@ func (r *Resource) ImportState(
 	}
 
 	// Seed a minimal prior state so getRuleGroupAsState can preserve write-only
-	// fields. On import these fields will be null — users must re-apply.
+	// fields. On import, visibility is null and tenant_ids is an empty set —
+	// users must re-apply to restore actual values.
 	prior := NetworkRouterFirewallRuleGroupModel{
 		RouterId:   types.Int64Value(routerID),
 		Visibility: types.StringNull(),
