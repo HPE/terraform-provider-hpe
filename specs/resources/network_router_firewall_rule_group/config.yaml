@@ -39,6 +39,7 @@ network_router_firewall_rule_group:
     group_layer:
       computed_optional_required: computed_optional
       requires_replace: true
+      state_for_unknown: true
       description: |-
         The NSX-T gateway firewall policy category. Valid values: Emergency,
         SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).
