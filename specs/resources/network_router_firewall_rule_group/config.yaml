@@ -12,15 +12,15 @@ network_router_firewall_rule_group:
         element_type:
           int64: {}
   moves:
-    - rule_group: ""                     # unnest envelope wrapper (networkFirewallRuleGroupCreate)
+    - rule_group: ""                     # unnest envelope wrapper (components/schemas/networkFirewallRuleGroupCreate.yaml)
     - template-tenant_ids: tenant_ids
   removes:
-    - success
-    - iac_id
-    - rules
-    - tenants                            # replaced by tenant_ids template
-    - zone                               # read-only infrastructure metadata (mapped: cloud)
-    - zone_pool                          # read-only infrastructure metadata
+    - success                            # (components/schemas/networkRouterFirewallRuleGroup.yaml)
+    - iac_id                             # (components/schemas/networkRouterFirewallRuleGroup.yaml)
+    - rules                              # (components/schemas/networkRouterFirewallRuleGroup.yaml)
+    - tenants                            # replaced by tenant_ids template (components/schemas/networkRouterFirewallRuleGroup.yaml)
+    - zone                               # read-only infrastructure metadata (components/schemas/networkRouterFirewallRuleGroup.yaml)
+    - zone_pool                          # read-only infrastructure metadata (components/schemas/networkRouterFirewallRuleGroup.yaml)
   overrides:
     id:
       computed_optional_required: computed
