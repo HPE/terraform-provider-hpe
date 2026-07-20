@@ -5,5 +5,6 @@
 package networkrouterfirewallrulegroup
 
 import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrule/sweep"
 	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup/sweep"
 )
