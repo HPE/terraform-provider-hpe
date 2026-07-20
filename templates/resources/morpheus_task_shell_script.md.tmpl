@@ -30,7 +30,7 @@ As of version 1.7, the `remote_target_password` attribute is deprecated. Morpheu
 returns the password as a hash, so this attribute holds the password hash — not the
 original password — in Terraform state. Prefer the write-only
 `remote_target_password_wo` attribute, whose value is never persisted to state
-(requires Terraform 1.11 or later).
+(requires Terraform/OpenTofu 1.11 or later).
 
 To migrate, replace `remote_target_password` with `remote_target_password_wo` using
 the same value, and set `remote_target_password_wo_version` to an integer such as
