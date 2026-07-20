@@ -12,8 +12,9 @@ Manages a network router firewall rule group resource in Morpheus.
 
 ```terraform
 resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
-  router_id = 1
-  name      = "Example Firewall Rule Group"
+  router_id   = 1
+  name        = "Example Firewall Rule Group"
+  group_layer = "LocalGatewayRules"
 }
 ```
 
@@ -28,7 +29,7 @@ resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
 ### Optional
 
 - `description` (String) Network router firewall rule group description
-- `group_layer` (String) The group layer of the firewall rule group
+- `group_layer` (String) The NSX-T gateway firewall policy category. Valid values: `Emergency`, `SharedPreRules` (Pre Rules), `LocalGatewayRules` (Local Gateway). System-managed categories (`SystemRules`, `AutoServiceRules`, `Default`) cannot be created via the API.
 - `priority` (Number) Network router firewall rule group priority
 - `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access to this firewall rule
 group. Only configurable from a master tenant account. Note: the API does
