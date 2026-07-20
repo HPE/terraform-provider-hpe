@@ -15,6 +15,7 @@ network_router_firewall_rule_group:
     - rule_group: ""                     # unnest envelope wrapper (components/schemas/networkFirewallRuleGroupCreate.yaml)
     - template-tenant_ids: tenant_ids
   removes:
+    - external_type                      # hardcoded as "GatewayPolicy" in resource.go (components/schemas/networkFirewallRuleGroupCreate.yaml)
     - success                            # (components/schemas/networkRouterFirewallRuleGroup.yaml)
     - iac_id                             # (components/schemas/networkRouterFirewallRuleGroup.yaml)
     - rules                              # (components/schemas/networkRouterFirewallRuleGroup.yaml)

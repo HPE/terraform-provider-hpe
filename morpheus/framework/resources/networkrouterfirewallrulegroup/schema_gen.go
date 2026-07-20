@@ -33,14 +33,14 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			"group_layer": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API.",
-				MarkdownDescription: "The NSX-T gateway firewall policy category. Valid values: `Emergency`, `SharedPreRules` (Pre Rules), `LocalGatewayRules` (Local Gateway). System-managed categories (`SystemRules`, `AutoServiceRules`, `Default`) cannot be created via the API.",
-				Validators: []validator.String{
-					stringvalidator.OneOf("Emergency", "SharedPreRules", "LocalGatewayRules"),
-				},
+				Description:         "The NSX-T gateway firewall policy category. Valid values: Emergency,\nSharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).\nSystem-managed categories (SystemRules, AutoServiceRules, Default)\ncannot be created via the API.",
+				MarkdownDescription: "The NSX-T gateway firewall policy category. Valid values: Emergency,\nSharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).\nSystem-managed categories (SystemRules, AutoServiceRules, Default)\ncannot be created via the API.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("Emergency", "SharedPreRules", "LocalGatewayRules"),
 				},
 			},
 			"id": schema.Int64Attribute{
@@ -99,14 +99,14 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 }
 
 type NetworkRouterFirewallRuleGroupModel struct {
-	Description  types.String `tfsdk:"description"`
-	ExternalId   types.String `tfsdk:"external_id"`
-	GroupLayer   types.String `tfsdk:"group_layer"`
-	Id           types.Int64  `tfsdk:"id"`
-	Name         types.String `tfsdk:"name"`
-	Priority     types.Int64  `tfsdk:"priority"`
-	RouterId     types.Int64  `tfsdk:"router_id"`
-	Status       types.String `tfsdk:"status"`
-	TenantIds    types.Set    `tfsdk:"tenant_ids"`
-	Visibility   types.String `tfsdk:"visibility"`
+	Description types.String `tfsdk:"description"`
+	ExternalId  types.String `tfsdk:"external_id"`
+	GroupLayer  types.String `tfsdk:"group_layer"`
+	Id          types.Int64  `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Priority    types.Int64  `tfsdk:"priority"`
+	RouterId    types.Int64  `tfsdk:"router_id"`
+	Status      types.String `tfsdk:"status"`
+	TenantIds   types.Set    `tfsdk:"tenant_ids"`
+	Visibility  types.String `tfsdk:"visibility"`
 }
