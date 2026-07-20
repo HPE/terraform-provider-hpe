@@ -77,5 +77,9 @@ func init() {
 
 			return hresp, err
 		},
+		testsweep.WithIgnoreListStatuses[ruleGroupSweeperItem](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 }
