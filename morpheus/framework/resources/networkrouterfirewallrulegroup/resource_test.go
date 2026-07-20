@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -21,6 +20,26 @@ func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
+}
+
+// nsxtTier1RouterConfig renders a per-test NSX-T Tier-1 gateway router labelled
+// hpe_morpheus_network_router.fw_tier1. Gateway firewall rule groups attach to
+// the router's gateway policy, which does not require an edge cluster or tier-0
+// connection — a simple dhcpLocal Tier-1 is sufficient.
+//
+// QA constants: group_id 3, network_integration_id 5.
+func nsxtTier1RouterConfig(name string) string {
+	return `
+resource "hpe_morpheus_network_router" "fw_tier1" {
+  name                   = "` + name + `-tier1"
+  group_id               = 3
+  network_integration_id = 5
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+  }
+}
+`
 }
 
 func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceExampleOk(t *testing.T) {
@@ -38,18 +57,10 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceExampleOk(t *testing.T
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_firewall_rule_group.example"
 
-	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	routerConfig := nsxtTier1RouterConfig(name)
 
 	resourceConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -57,7 +68,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceExampleOk(t *testing.T
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.fw_tier1", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttrSet(resourceName, "external_id"),
@@ -95,18 +106,10 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceUpdateOk(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_firewall_rule_group.example"
 
-	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	routerConfig := nsxtTier1RouterConfig(name)
 
 	createConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -116,7 +119,7 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceUpdateOk(t *testing.T)
 	updatedName := name + "-updated"
 	updateConfig := fmt.Sprintf(`
 resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
-  router_id  = hpe_morpheus_network_router.example.id
+  router_id  = hpe_morpheus_network_router.fw_tier1.id
   name       = %q
   priority   = 10
   visibility = "private"
@@ -124,12 +127,12 @@ resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
 `, updatedName)
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.fw_tier1", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.example", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.fw_tier1", "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", updatedName),
 		resource.TestCheckResourceAttr(resourceName, "priority", "10"),
 		resource.TestCheckResourceAttr(resourceName, "visibility", "private"),
@@ -166,18 +169,10 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceImportOk(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_firewall_rule_group.example"
 
-	routerConfig, err := networkrouter.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	routerConfig := nsxtTier1RouterConfig(name)
 
 	resourceConfig, err := networkrouterfirewallrulegroup.RenderNetworkRouterFirewallRuleGroupConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 		"Name":     name,
 	})
 	if err != nil {
