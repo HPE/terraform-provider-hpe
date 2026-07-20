@@ -21,7 +21,6 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Network router firewall rule group description",
 				MarkdownDescription: "Network router firewall rule group description",
 			},
@@ -58,7 +57,6 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			},
 			"priority": schema.Int64Attribute{
 				Optional:            true,
-				Computed:            true,
 				Description:         "Network router firewall rule group priority",
 				MarkdownDescription: "Network router firewall rule group priority",
 			},
@@ -78,7 +76,6 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
-				Computed:            true,
 				Description:         "List of tenant account IDs that are allowed access to this firewall rule\ngroup. Only configurable from a master tenant account. Note: the API does\nnot return this field on individual GET responses; the configured value is\npreserved in state and will be null after import.",
 				MarkdownDescription: "List of tenant account IDs that are allowed access to this firewall rule\ngroup. Only configurable from a master tenant account. Note: the API does\nnot return this field on individual GET responses; the configured value is\npreserved in state and will be null after import.",
 			},

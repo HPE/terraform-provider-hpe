@@ -69,18 +69,25 @@ func getRuleGroupAsState(
 	state.Status = convert.StrToType(rg.Status)
 	state.Description = convert.StrToType(rg.Description.Get())
 
-	// Write-only fields: the single GET response does not include these.
-	// Preserve the plan/prior-state values so Terraform does not see spurious
-	// diffs. On import these will be null — users must re-apply to set them.
-	//
-	// Guard against unknown: on Create the plan value for an Optional+Computed
-	// attribute with no Default is unknown (no prior state exists). Propagating
-	// unknown into state is rejected by the framework. Resolve to an empty set
-	// in that case — the semantics are identical (no tenant restriction).
-	state.Visibility = prior.Visibility
-	if prior.TenantIds.IsUnknown() {
+	// visibility and tenant_ids are not returned by the single GET endpoint.
+	// Fall back to prior state so Terraform sees no spurious diff. If the API
+	// is ever patched to return these fields, the nil-checks below will pick
+	// them up automatically.
+	if rg.Visibility != nil {
+		state.Visibility = convert.StrToType(rg.Visibility)
+	} else {
+		state.Visibility = prior.Visibility
+	}
+
+	if rg.Tenants != nil {
+		ids := make([]attr.Value, 0, len(rg.Tenants))
+		for _, t := range rg.Tenants {
+			if t.Id != nil {
+				ids = append(ids, types.Int64Value(*t.Id))
+			}
+		}
 		var setDiags diag.Diagnostics
-		state.TenantIds, setDiags = types.SetValue(types.Int64Type, []attr.Value{})
+		state.TenantIds, setDiags = types.SetValue(types.Int64Type, ids)
 		diags.Append(setDiags...)
 	} else {
 		state.TenantIds = prior.TenantIds

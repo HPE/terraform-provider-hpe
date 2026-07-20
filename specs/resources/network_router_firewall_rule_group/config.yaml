@@ -3,7 +3,7 @@ network_router_firewall_rule_group:
   templates:
     tenant_ids:
       set:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: |-
           List of tenant account IDs that are allowed access to this firewall rule
           group. Only configurable from a master tenant account. Note: the API does
@@ -35,7 +35,7 @@ network_router_firewall_rule_group:
       computed_optional_required: required
       description: Network router firewall rule group name
     description:
-      computed_optional_required: computed_optional
+      computed_optional_required: optional
       description: Network router firewall rule group description
     group_layer:
       computed_optional_required: computed_optional
@@ -48,7 +48,7 @@ network_router_firewall_rule_group:
         cannot be created via the API.
       one_of: [Emergency, SharedPreRules, LocalGatewayRules]
     priority:
-      computed_optional_required: computed_optional
+      computed_optional_required: optional
       description: Network router firewall rule group priority
     visibility:
       computed_optional_required: computed_optional
