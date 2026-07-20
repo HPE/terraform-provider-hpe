@@ -186,9 +186,10 @@ func TestAccMorpheusNetworkRouterFirewallRuleGroupResourceImportOk(t *testing.T)
 				Config: providerConfig + routerConfig + resourceConfig,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: false, // write-only fields (visibility, tenant_ids) will be null after import
-				ResourceName:      resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"visibility", "tenant_ids"},
+				ResourceName:            resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources[resourceName]
 					if !ok {

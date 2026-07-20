@@ -239,8 +239,19 @@ func getRuleGroupAsState(
 	// Write-only fields: the single GET response does not include these.
 	// Preserve the plan/prior-state values so Terraform does not see spurious
 	// diffs. On import these will be null — users must re-apply to set them.
+	//
+	// Guard against unknown: on Create the plan value for an Optional+Computed
+	// attribute with no Default is unknown (no prior state exists). Propagating
+	// unknown into state is rejected by the framework. Resolve to an empty set
+	// in that case — the semantics are identical (no tenant restriction).
 	state.Visibility = prior.Visibility
-	state.TenantIds = prior.TenantIds
+	if prior.TenantIds.IsUnknown() {
+		var setDiags diag.Diagnostics
+		state.TenantIds, setDiags = types.SetValue(types.Int64Type, []attr.Value{})
+		diags.Append(setDiags...)
+	} else {
+		state.TenantIds = prior.TenantIds
+	}
 
 	return state, false, diags
 }
