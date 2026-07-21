@@ -1,5 +1,10 @@
 network_router_firewall_rule_group:
-  description: "Manages a network router firewall rule group resource in Morpheus."
+  description: |-
+    Manages an NSX-T gateway firewall policy group in Morpheus. Gateway firewall
+    policies are attached to a specific Tier-0 or Tier-1 router and control
+    north-south traffic traversing that gateway. The external type is fixed as
+    GatewayPolicy; for east-west distributed firewall policies, use
+    hpe_morpheus_network_firewall_rule_group instead.
   templates:
     tenant_ids:
       set:
@@ -35,7 +40,8 @@ network_router_firewall_rule_group:
       computed_optional_required: required
       description: Network router firewall rule group name
     description:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
+      state_for_unknown: true
       description: Network router firewall rule group description
     group_layer:
       computed_optional_required: computed_optional
