@@ -1,0 +1,45 @@
+network_router_firewall_rule_group:
+  description: "Provides a network router firewall rule group data source."
+  moves:
+    - rule_group: ""             # unnest response envelope (components/schemas/networkRouterFirewallRuleGroup.yaml)
+  removes:
+    - rules                      # heavy nested array — details available via hpe_morpheus_network_router_firewall_rule
+    - iac_id                     # internal
+    - zone                       # infrastructure metadata
+    - zone_pool                  # infrastructure metadata
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the firewall rule group.
+      conflicts_with: [name]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the firewall rule group.
+      conflicts_with: [id]
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router.
+    description:
+      description: The description of the firewall rule group.
+    group_layer:
+      description: The group layer / policy category (e.g. LocalGatewayRules, SharedPreRules, Emergency).
+    priority:
+      description: The priority of the firewall rule group.
+    external_id:
+      description: >-
+        The external ID of the firewall rule group as assigned by the
+        network provider (e.g. "group-123" for NSX-T).
+    status:
+      description: The current status of the firewall rule group.
+    visibility:
+      description: >-
+        Visibility of the rule group (public or private). Only returned
+        to master-tenant callers; null otherwise.
+    tenants:
+      description: >-
+        Tenants granted access to the rule group. Only returned to
+        master-tenant callers; empty otherwise.
+    tenants.id:
+      description: The ID of the tenant.
+    tenants.name:
+      description: The name of the tenant.
