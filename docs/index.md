@@ -157,6 +157,8 @@ provider "hpe" {
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_storage_bucket<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_storage_server<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_subnet<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_task_powershell_script<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_task_shell_script<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_user<br><br>
 `WriteOnly` attributes are supported by Terraform versions 1.11 and later.
 
