@@ -37,10 +37,11 @@ func ResourceOptionTypeText() *schema.Resource {
 				Required:    true,
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Description: "The description of the text option type",
-				Optional:    true,
-				Computed:    true,
+				Type:             schema.TypeString,
+				Description:      "The description of the text option type",
+				Optional:         true,
+				Computed:         true,
+				ValidateDiagFunc: validateOptionTypeDescription,
 			},
 			"labels": {
 				Type:        schema.TypeSet,

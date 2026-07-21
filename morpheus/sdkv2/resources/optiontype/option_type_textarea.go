@@ -102,10 +102,11 @@ func ResourceOptionTypeTextarea() *schema.Resource {
 				Required:    true,
 			},
 			"rows": {
-				Type:        schema.TypeString,
-				Description: "The number of rows displayed for the text area",
-				Optional:    true,
-				Computed:    true,
+				Type:             schema.TypeString,
+				Description:      "The number of rows displayed for the text area",
+				Optional:         true,
+				Computed:         true,
+				ValidateDiagFunc: validateOptionTypeRows,
 			},
 			"placeholder": {
 				Type:        schema.TypeString,
