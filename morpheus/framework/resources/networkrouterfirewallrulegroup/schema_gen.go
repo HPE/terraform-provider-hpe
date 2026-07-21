@@ -21,8 +21,12 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 		Attributes: map[string]schema.Attribute{
 			"description": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "Network router firewall rule group description",
 				MarkdownDescription: "Network router firewall rule group description",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
@@ -94,8 +98,8 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 				Default: stringdefault.StaticString("private"),
 			},
 		},
-		Description:         "Manages a network router firewall rule group resource in Morpheus.",
-		MarkdownDescription: "Manages a network router firewall rule group resource in Morpheus.",
+		Description:         "Manages an NSX-T gateway firewall policy group in Morpheus. Gateway firewall\npolicies are attached to a specific Tier-0 or Tier-1 router and control\nnorth-south traffic traversing that gateway. The external type is fixed as\nGatewayPolicy; for east-west distributed firewall policies, use\nhpe_morpheus_network_firewall_rule_group instead.",
+		MarkdownDescription: "Manages an NSX-T gateway firewall policy group in Morpheus. Gateway firewall\npolicies are attached to a specific Tier-0 or Tier-1 router and control\nnorth-south traffic traversing that gateway. The external type is fixed as\nGatewayPolicy; for east-west distributed firewall policies, use\nhpe_morpheus_network_firewall_rule_group instead.",
 	}
 }
 

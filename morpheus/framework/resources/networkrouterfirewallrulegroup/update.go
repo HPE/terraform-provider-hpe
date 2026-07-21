@@ -48,7 +48,7 @@ func (r *Resource) Update(
 		"externalType": "GatewayPolicy",
 	}
 
-	if !plan.Description.IsUnknown() {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
 		ruleGroup["description"] = plan.Description.ValueString()
 	}
 
