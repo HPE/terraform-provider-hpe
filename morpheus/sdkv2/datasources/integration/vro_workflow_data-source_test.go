@@ -3,6 +3,7 @@
 package integration_test
 
 import (
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -55,6 +56,40 @@ func TestAccMorpheusDataSourceVroWorkflowExampleOk(t *testing.T) {
 				Config:             providerConfig + dependenciesConfig + datasourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusDataSourceVroWorkflowNotFound verifies that looking up a
+// non-existent vRO workflow returns a clear "not found" diagnostic instead of
+// the previous nil value type-assertion error.
+func TestAccMorpheusDataSourceVroWorkflowNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.VRO)
+
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	datasourceConfig, err := dsintegration.RenderVroWorkflowConfig(t, map[string]string{
+		"Name": strconv.Quote("______nonexistent vRO workflow______"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + datasourceConfig,
+				ExpectError: regexp.MustCompile(`no vRO workflow found named`),
 			},
 		},
 	})

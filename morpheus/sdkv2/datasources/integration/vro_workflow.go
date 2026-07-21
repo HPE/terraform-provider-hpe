@@ -97,22 +97,35 @@ func dataSourceVROWorkflowRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	var workflow morpheus.OptionSourceOption
+	found := false
 	for i := range allWorkflows {
 		if value == 0 && name != "" {
 			if strings.EqualFold(allWorkflows[i].Name, name) {
 				workflow = allWorkflows[i]
+				found = true
 
 				break
 			}
 		} else if value != 0 {
 			if value == allWorkflows[i].Value {
 				workflow = allWorkflows[i]
+				found = true
 
 				break
 			}
 		} else {
 			return diag.Errorf("vRO workflow cannot be read without name or value")
 		}
+	}
+
+	// Return a clear not-found error instead of failing the value type
+	// assertion below on a zero-valued workflow.
+	if !found {
+		if name != "" {
+			return diag.Errorf("no vRO workflow found named %q", name)
+		}
+
+		return diag.Errorf("no vRO workflow found with value %d", value)
 	}
 
 	// store resource data
