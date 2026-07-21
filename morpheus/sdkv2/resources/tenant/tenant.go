@@ -8,12 +8,76 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/convert"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/helpers"
 )
+
+// Currency ISO 4217 codes Morpheus supports for a tenant account. Sourced from
+// Morpheus's CurrencyType seed data.
+const (
+	currencyUSD = "USD"
+	currencyAED = "AED"
+	currencyARS = "ARS"
+	currencyAUD = "AUD"
+	currencyAZN = "AZN"
+	currencyBGN = "BGN"
+	currencyBRL = "BRL"
+	currencyBWP = "BWP"
+	currencyCAD = "CAD"
+	currencyCHF = "CHF"
+	currencyCLF = "CLF"
+	currencyCLP = "CLP"
+	currencyCNY = "CNY"
+	currencyCOP = "COP"
+	currencyCZK = "CZK"
+	currencyDKK = "DKK"
+	currencyEUR = "EUR"
+	currencyGBP = "GBP"
+	currencyHKD = "HKD"
+	currencyHRK = "HRK"
+	currencyHUF = "HUF"
+	currencyIDR = "IDR"
+	currencyILS = "ILS"
+	currencyINR = "INR"
+	currencyJOD = "JOD"
+	currencyJPY = "JPY"
+	currencyKRW = "KRW"
+	currencyMNT = "MNT"
+	currencyMUR = "MUR"
+	currencyMXN = "MXN"
+	currencyMYR = "MYR"
+	currencyNGN = "NGN"
+	currencyNOK = "NOK"
+	currencyNZD = "NZD"
+	currencyPHP = "PHP"
+	currencyPLN = "PLN"
+	currencyRON = "RON"
+	currencyRUB = "RUB"
+	currencySAR = "SAR"
+	currencySEK = "SEK"
+	currencySGD = "SGD"
+	currencyTHB = "THB"
+	currencyTRY = "TRY"
+	currencyVND = "VND"
+	currencyZAR = "ZAR"
+)
+
+// validCurrencyCodes lists every currency code accepted for a tenant account.
+var validCurrencyCodes = []string{
+	currencyUSD, currencyAED, currencyARS, currencyAUD, currencyAZN,
+	currencyBGN, currencyBRL, currencyBWP, currencyCAD, currencyCHF,
+	currencyCLF, currencyCLP, currencyCNY, currencyCOP, currencyCZK,
+	currencyDKK, currencyEUR, currencyGBP, currencyHKD, currencyHRK,
+	currencyHUF, currencyIDR, currencyILS, currencyINR, currencyJOD,
+	currencyJPY, currencyKRW, currencyMNT, currencyMUR, currencyMXN,
+	currencyMYR, currencyNGN, currencyNOK, currencyNZD, currencyPHP,
+	currencyPLN, currencyRON, currencyRUB, currencySAR, currencySEK,
+	currencySGD, currencyTHB, currencyTRY, currencyVND, currencyZAR,
+}
 
 func ResourceTenant() *schema.Resource {
 	return &schema.Resource{
@@ -58,10 +122,11 @@ func ResourceTenant() *schema.Resource {
 				Required:    true,
 			},
 			"currency": {
-				Type:        schema.TypeString,
-				Description: "Currency ISO Code to be used for the account",
-				Optional:    true,
-				Default:     "USD",
+				Type:         schema.TypeString,
+				Description:  "Currency ISO 4217 code for the account (e.g. USD, EUR, GBP). Must be a currency code supported by Morpheus.",
+				Optional:     true,
+				Default:      currencyUSD,
+				ValidateFunc: validation.StringInSlice(validCurrencyCodes, false),
 			},
 			"account_number": {
 				Type:        schema.TypeString,
