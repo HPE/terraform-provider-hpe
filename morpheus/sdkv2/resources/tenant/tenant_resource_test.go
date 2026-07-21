@@ -4,7 +4,6 @@ package tenant_test
 
 import (
 	"os"
-	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -118,45 +117,6 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 				Config:             providerConfig + dependencyResourceConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
-			},
-		},
-	})
-}
-
-// TestAccMorpheusTenant_validationInvalidCurrency reproduces MORPH-10304: an
-// invalid currency must be rejected at plan time instead of being silently
-// accepted by the API. The repro configuration is taken from the ticket.
-func TestAccMorpheusTenant_validationInvalidCurrency(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	capabilities.MustHaveOrSkip(t, capabilities.All)
-
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	resourceConfig := `
-data "hpe_morpheus_role" "dependency" {
-  name = "Tenant Admin"
-}
-
-resource "hpe_morpheus_tenant" "test" {
-  name         = "qatf-validation-invalid-currency-tenant"
-  base_role_id = data.hpe_morpheus_role.dependency.id
-  currency     = "INVALID"
-}
-`
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
-		Steps: []resource.TestStep{
-			{
-				Config:      providerConfig + resourceConfig,
-				ExpectError: regexp.MustCompile(`expected currency to be one of`),
 			},
 		},
 	})

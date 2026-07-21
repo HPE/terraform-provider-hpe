@@ -41,7 +41,6 @@ In this release (v1.5.0) we have added the following data sources:
 ## Resolved issues
 
 - `hpe_morpheus_setting_whitelabel` accepted `header_logo`, `footer_logo`, `login_logo` and `favicon` on apply but returned them as null on refresh (MORPH-12625); the logos are now uploaded via the whitelabel images endpoint and the configured path is preserved in state
-- `hpe_morpheus_tenant` accepted an invalid `currency` value without error (MORPH-10304); the `currency` attribute is now validated at plan time against the ISO 4217 currency codes Morpheus supports
 - `hpe_morpheus_form` dropped attributes on read for the secGroup field
 - `hpe_morpheus_form` cross-field leakage between option_type reads
 - `hpe_morpheus_form` no attribute generated for plain cascade keys
