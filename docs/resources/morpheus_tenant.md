@@ -36,7 +36,7 @@ resource "hpe_morpheus_tenant" "tf_example_tenant" {
 
 - `account_name` (String) An optional field that can be used for billing and accounting
 - `account_number` (String) An optional field that can be used for billing and accounting
-- `currency` (String) Currency ISO Code to be used for the account
+- `currency` (String) Currency ISO 4217 code for the account (e.g. USD, EUR, GBP). Must be a currency code supported by Morpheus.
 - `customer_number` (String) An optional field that can be used for billing and accounting
 - `description` (String) The description of the tenant
 - `enabled` (Boolean) Whether the tenant is enabled or not
