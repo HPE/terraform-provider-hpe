@@ -2,11 +2,19 @@
 page_title: "hpe_morpheus_network_router_firewall_rule_group Resource - terraform-provider-hpe"
 subcategory: "morpheus"
 description: |-
-  Manages a network router firewall rule group resource in Morpheus.
+  Manages an NSX-T gateway firewall policy group in Morpheus. Gateway firewall
+  policies are attached to a specific Tier-0 or Tier-1 router and control
+  north-south traffic traversing that gateway. The external type is fixed as
+  GatewayPolicy; for east-west distributed firewall policies, use
+  hpe_morpheus_network_firewall_rule_group instead.
 ---
 # hpe_morpheus_network_router_firewall_rule_group (Resource)
 
-Manages a network router firewall rule group resource in Morpheus.
+Manages an NSX-T gateway firewall policy group in Morpheus. Gateway firewall
+policies are attached to a specific Tier-0 or Tier-1 router and control
+north-south traffic traversing that gateway. The external type is fixed as
+GatewayPolicy; for east-west distributed firewall policies, use
+hpe_morpheus_network_firewall_rule_group instead.
 
 ## Example Usage
 
