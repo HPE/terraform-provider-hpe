@@ -32,16 +32,17 @@ func ResourceOptionTypeText() *schema.Resource {
 				Computed:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the text option type",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "The name of the text option type",
+				Required:         true,
+				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
 			},
 			"description": {
 				Type:             schema.TypeString,
 				Description:      "The description of the text option type",
 				Optional:         true,
 				Computed:         true,
-				ValidateDiagFunc: validateOptionTypeDescription,
+				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
 			},
 			"labels": {
 				Type:        schema.TypeSet,
