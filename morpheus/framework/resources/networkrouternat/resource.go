@@ -241,8 +241,10 @@ func getNatAsState(
 	// after apply.
 	if p := nat.Protocol.Get(); p != nil {
 		state.Protocol = types.StringValue(*p)
-	} else {
+	} else if !plan.Protocol.IsUnknown() {
 		state.Protocol = plan.Protocol
+	} else {
+		state.Protocol = types.StringNull()
 	}
 
 	// firewall and service are create-time config options. Read them back from
