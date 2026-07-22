@@ -3,9 +3,9 @@
 package integration_test
 
 import (
+	"strconv"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
@@ -28,12 +28,10 @@ func TestAccMorpheusDataSourceIntegrationExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	name := acctest.RandomWithPrefix(t.Name())
-
 	var dependenciesConfig string
 
 	datasourceConfig, err := dsintegration.RenderIntegrationConfig(t, map[string]string{
-		"Name": name,
+		"Name": strconv.Quote("ansible dev"),
 	})
 	if err != nil {
 		t.Fatal(err)

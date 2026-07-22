@@ -100,7 +100,11 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_network_router_nat.example",
+				// action and firewall are create-only inputs that the NAT read
+				// (GET) API does not return, so they cannot round-trip through
+				// import (verified: only these two differ after import).
+				ImportStateVerifyIgnore: []string{"action", "firewall"},
+				ResourceName:            "hpe_morpheus_network_router_nat.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_nat.example"]
 					if !ok {

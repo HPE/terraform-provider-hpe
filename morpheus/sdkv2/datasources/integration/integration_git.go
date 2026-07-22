@@ -93,6 +93,10 @@ func dataSourceIntegrationGitRead(ctx context.Context, d *schema.ResourceData, m
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+
 	// store resource data
 	var result *morpheus.GetIntegrationResult
 	if v, ok := resp.Result.(*morpheus.GetIntegrationResult); ok {
