@@ -37,24 +37,14 @@ resource "hpe_morpheus_network_router_firewall_rule_group" "example" {
 ### Optional
 
 - `description` (String) Network router firewall rule group description
-- `group_layer` (String) The NSX-T gateway firewall policy category. Valid values: Emergency,
-SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).
-System-managed categories (SystemRules, AutoServiceRules, Default)
-cannot be created via the API.
+- `group_layer` (String) The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API.
 - `priority` (Number) Network router firewall rule group priority
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access to this firewall rule
-group. Only configurable from a master tenant account. Note: the API does
-not return this field on individual GET responses; the configured value is
-preserved in state and will be null after import.
-- `visibility` (String) The visibility of the firewall rule group (public or private). Note: the API
-does not return this field on individual GET responses; the configured value
-is preserved in state and will be null after import.
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access to this firewall rule group. Only configurable from a master tenant account. Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.
+- `visibility` (String) The visibility of the firewall rule group (public or private). Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.
 
 ### Read-Only
 
-- `external_id` (String) The external ID of the firewall rule group as assigned by the network
-provider (e.g. "Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0" for NSX-T). Use this as the parent_id when
-creating hpe_morpheus_network_router_firewall_rule resources.
+- `external_id` (String) The external ID of the firewall rule group as assigned by the network provider (e.g. "Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0" for NSX-T). Use this as the parent_id when creating hpe_morpheus_network_router_firewall_rule resources.
 - `id` (Number) The ID of the firewall rule group
 - `status` (String) The current status of the firewall rule group
 

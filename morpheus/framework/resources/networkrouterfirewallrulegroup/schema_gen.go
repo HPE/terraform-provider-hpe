@@ -30,14 +30,14 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
-				MarkdownDescription: "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
+				Description:         "The external ID of the firewall rule group as assigned by the network provider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when creating hpe_morpheus_network_router_firewall_rule resources.",
+				MarkdownDescription: "The external ID of the firewall rule group as assigned by the network provider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when creating hpe_morpheus_network_router_firewall_rule resources.",
 			},
 			"group_layer": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The NSX-T gateway firewall policy category. Valid values: Emergency,\nSharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).\nSystem-managed categories (SystemRules, AutoServiceRules, Default)\ncannot be created via the API.",
-				MarkdownDescription: "The NSX-T gateway firewall policy category. Valid values: Emergency,\nSharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).\nSystem-managed categories (SystemRules, AutoServiceRules, Default)\ncannot be created via the API.",
+				Description:         "The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API.",
+				MarkdownDescription: "The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
@@ -84,14 +84,14 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
-				Description:         "List of tenant account IDs that are allowed access to this firewall rule\ngroup. Only configurable from a master tenant account. Note: the API does\nnot return this field on individual GET responses; the configured value is\npreserved in state and will be null after import.",
-				MarkdownDescription: "List of tenant account IDs that are allowed access to this firewall rule\ngroup. Only configurable from a master tenant account. Note: the API does\nnot return this field on individual GET responses; the configured value is\npreserved in state and will be null after import.",
+				Description:         "List of tenant account IDs that are allowed access to this firewall rule group. Only configurable from a master tenant account. Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.",
+				MarkdownDescription: "List of tenant account IDs that are allowed access to this firewall rule group. Only configurable from a master tenant account. Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.",
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the firewall rule group (public or private). Note: the API\ndoes not return this field on individual GET responses; the configured value\nis preserved in state and will be null after import.",
-				MarkdownDescription: "The visibility of the firewall rule group (public or private). Note: the API\ndoes not return this field on individual GET responses; the configured value\nis preserved in state and will be null after import.",
+				Description:         "The visibility of the firewall rule group (public or private). Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.",
+				MarkdownDescription: "The visibility of the firewall rule group (public or private). Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("public", "private"),
 				},

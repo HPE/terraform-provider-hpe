@@ -9,11 +9,7 @@ network_router_firewall_rule_group:
     tenant_ids:
       set:
         computed_optional_required: optional
-        description: |-
-          List of tenant account IDs that are allowed access to this firewall rule
-          group. Only configurable from a master tenant account. Note: the API does
-          not return this field on individual GET responses; the configured value is
-          preserved in state and will be null after import.
+        description: "List of tenant account IDs that are allowed access to this firewall rule group. Only configurable from a master tenant account. Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import."
         element_type:
           int64: {}
   moves:
@@ -47,11 +43,7 @@ network_router_firewall_rule_group:
       computed_optional_required: computed_optional
       requires_replace: true
       state_for_unknown: true
-      description: |-
-        The NSX-T gateway firewall policy category. Valid values: Emergency,
-        SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway).
-        System-managed categories (SystemRules, AutoServiceRules, Default)
-        cannot be created via the API.
+      description: "The NSX-T gateway firewall policy category. Valid values: Emergency, SharedPreRules (Pre Rules), LocalGatewayRules (Local Gateway). System-managed categories (SystemRules, AutoServiceRules, Default) cannot be created via the API."
       one_of: [Emergency, SharedPreRules, LocalGatewayRules]
     priority:
       computed_optional_required: computed_optional
@@ -59,18 +51,12 @@ network_router_firewall_rule_group:
       description: Network router firewall rule group priority
     visibility:
       computed_optional_required: computed_optional
-      description: |-
-        The visibility of the firewall rule group (public or private). Note: the API
-        does not return this field on individual GET responses; the configured value
-        is preserved in state and will be null after import.
+      description: "The visibility of the firewall rule group (public or private). Note: the API does not return this field on individual GET responses; the configured value is preserved in state and will be null after import."
       default: "private"
       one_of: [public, private]
     external_id:
       computed_optional_required: computed
-      description: |-
-        The external ID of the firewall rule group as assigned by the network
-        provider (e.g. "Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0" for NSX-T). Use this as the parent_id when
-        creating hpe_morpheus_network_router_firewall_rule resources.
+      description: "The external ID of the firewall rule group as assigned by the network provider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when creating hpe_morpheus_network_router_firewall_rule resources."
     status:
       computed_optional_required: computed
       description: The current status of the firewall rule group
