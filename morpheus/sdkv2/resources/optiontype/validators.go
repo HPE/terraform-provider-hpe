@@ -79,9 +79,7 @@ func validateOptionTypeRows(i any, _ cty.Path) diag.Diagnostics {
 	return nil
 }
 
-// optionTypeMaxStringLength is the maximum UTF-8 byte length the Morpheus API
-// accepts for an option type's name and description: OptionTypesController.save
-// guards on getBytes('UTF-8').length > 255, and the OptionType domain constrains
-// them to maxSize: 255. A longer value is rejected with an opaque HTTP 400, so
-// the provider enforces the same limit at plan time via helpers.StringMaxLength.
-const optionTypeMaxStringLength = 255
+// maxDescriptionLength is the maximum length Morpheus accepts for an option
+// type's name and description fields. A longer value is rejected by the API, so
+// the provider enforces the same limit at plan time.
+const maxDescriptionLength = 255

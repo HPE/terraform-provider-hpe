@@ -35,13 +35,13 @@ func ResourceOptionTypeSelectList() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "The name of the select list option type",
 				Required:         true,
-				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"description": {
 				Type:             schema.TypeString,
 				Description:      "The description of the select list option type",
 				Optional:         true,
-				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"labels": {
 				Type:        schema.TypeSet,

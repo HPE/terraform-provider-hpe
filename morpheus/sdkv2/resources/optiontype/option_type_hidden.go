@@ -35,14 +35,14 @@ func ResourceOptionTypeHidden() *schema.Resource {
 				Type:             schema.TypeString,
 				Description:      "The name of the hidden option type",
 				Required:         true,
-				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"description": {
 				Type:             schema.TypeString,
 				Description:      "The description of the hidden option type",
 				Optional:         true,
 				Computed:         true,
-				ValidateDiagFunc: helpers.StringMaxLength(optionTypeMaxStringLength),
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"labels": {
 				Type:        schema.TypeSet,
