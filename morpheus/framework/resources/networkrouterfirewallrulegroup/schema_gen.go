@@ -30,8 +30,8 @@ func NetworkRouterFirewallRuleGroupResourceSchema(ctx context.Context) schema.Sc
 			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"group-123\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
-				MarkdownDescription: "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"group-123\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
+				Description:         "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
+				MarkdownDescription: "The external ID of the firewall rule group as assigned by the network\nprovider (e.g. \"Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0\" for NSX-T). Use this as the parent_id when\ncreating hpe_morpheus_network_router_firewall_rule resources.",
 			},
 			"group_layer": schema.StringAttribute{
 				Optional:            true,

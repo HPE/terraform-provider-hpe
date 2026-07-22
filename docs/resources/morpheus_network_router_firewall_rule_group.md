@@ -53,7 +53,7 @@ is preserved in state and will be null after import.
 ### Read-Only
 
 - `external_id` (String) The external ID of the firewall rule group as assigned by the network
-provider (e.g. "group-123" for NSX-T). Use this as the parent_id when
+provider (e.g. "Policy_Default_Infra-tier1-a2fd5aac-2370-4607-9894-0b0a18dd94c0" for NSX-T). Use this as the parent_id when
 creating hpe_morpheus_network_router_firewall_rule resources.
 - `id` (Number) The ID of the firewall rule group
 - `status` (String) The current status of the firewall rule group
