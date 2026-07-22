@@ -90,6 +90,12 @@ func (d *DataSource) Read(
 		return
 	}
 
+	if rg == nil {
+		resp.Diagnostics.AddError(summary, ErrorNoNetworkRouterFirewallRuleGroupFound)
+
+		return
+	}
+
 	routerID := config.RouterId.ValueInt64()
 
 	state, diags := ruleGroupAsState(ctx, rg, routerID)
