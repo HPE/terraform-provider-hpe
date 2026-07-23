@@ -71,6 +71,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringgroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkpoolserver"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/provisioninglicense"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygrouprule"
@@ -137,6 +138,7 @@ func (p *MorpheusProvider) DataSources(
 		// missing-data-sources — child resource data sources (Group B)
 		networkrouternat.NewDataSource,
 		networkrouterfirewallrule.NewDataSource,
+		networkrouterfirewallrulegroup.NewDataSource,
 		securitygrouprule.NewDataSource,
 		clusternamespace.NewDataSource,
 		clusteraffinitygroup.NewDataSource,
