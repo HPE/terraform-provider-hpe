@@ -10,8 +10,6 @@ import (
 	"net/http"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
-
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // SearchHit holds the minimal fields the sweepers need from a global Search API
@@ -51,16 +49,16 @@ func SearchHits(
 	for {
 		// The typed result and error are intentionally ignored: the SDK's date
 		// decode fails on this endpoint. A missing response or non-200 status is
-		// still surfaced below, with hresp preserved for list-status handling.
+		// still surfaced below, with hresp preserved so the caller can format
+		// the error once (errfmt.ErrMsg consumes the body, so pre-formatting it
+		// here would leave a caller's second call with an empty body).
 		_, hresp, err := client.SearchAPI.Search(ctx).
 			Phrase(phrase).
 			Max(searchPageSize).
 			Offset(offset).
 			Execute()
 		if hresp == nil || hresp.StatusCode != http.StatusOK {
-			return nil, hresp, fmt.Errorf(
-				"failed to search for %q: %s", phrase, errfmt.ErrMsg(err, hresp),
-			)
+			return nil, hresp, fmt.Errorf("search for %q failed: %w", phrase, err)
 		}
 
 		body, readErr := io.ReadAll(hresp.Body)

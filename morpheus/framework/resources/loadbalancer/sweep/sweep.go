@@ -129,9 +129,11 @@ func findOrphanedInstances(
 	ctx context.Context,
 	client *sdk.APIClient,
 ) ([]testsweep.SearchHit, error) {
-	hits, _, err := testsweep.SearchHits(ctx, client, testsweep.TestResourcePrefix)
+	hits, hresp, err := testsweep.SearchHits(ctx, client, testsweep.TestResourcePrefix)
 	if err != nil {
-		return nil, fmt.Errorf("failed to search for orphaned instances: %w", err)
+		return nil, fmt.Errorf(
+			"failed to search for orphaned instances: %s", errfmt.ErrMsg(err, hresp),
+		)
 	}
 
 	return hits, nil

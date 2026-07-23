@@ -6,6 +6,7 @@ package sweep
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -36,6 +37,8 @@ func init() {
 
 			id, err := strconv.ParseInt(item.ID, 10, 64)
 			if err != nil {
+				log.Printf("[ERROR] Failed to parse storage volume ID %q: %v", item.ID, err)
+
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
