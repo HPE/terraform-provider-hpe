@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package network
 
@@ -290,6 +290,9 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 	if err := d.Set("visibility", networkDomain.Visibility); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := d.Set("domain_username", networkDomain.DomainUsername); err != nil {
+		return diag.FromErr(err)
+	}
 	// auto_join_domain has no Morpheus API counterpart; preserve the prior
 	// state value so imported state matches applied state (MORPH-8836).
 	if err := d.Set("auto_join_domain", d.Get("auto_join_domain")); err != nil {
@@ -378,10 +381,11 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("tenant_id"); ok {
 		domainBody["account"] = map[string]any{"id": v.(int)}
 	}
-	// Send the password only when set so we never clobber a credential
-	// managed outside Terraform (the API also ignores the masked value).
-	if v, ok := d.GetOk("domain_password"); ok {
-		domainBody["domainPassword"] = v.(string)
+	// Send the password only when it changed, so an unrelated update never
+	// clobbers a credential rotated out of band (the API also ignores the
+	// masked value).
+	if d.HasChange("domain_password") {
+		domainBody["domainPassword"] = d.Get("domain_password").(string)
 	}
 	req := &morpheus.Request{
 		Body: map[string]any{
