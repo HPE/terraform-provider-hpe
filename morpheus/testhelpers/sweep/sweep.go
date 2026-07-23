@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"slices"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
@@ -18,8 +20,36 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
+// EnvSweepPrefix optionally overrides the prefix the sweeper uses to identify
+// acceptance-test resources eligible for deletion. When unset or blank, the
+// sweeper falls back to defaultTestResourcePrefix.
+const EnvSweepPrefix = "TF_ACC_SWEEP_PREFIX"
+
+// defaultTestResourcePrefix matches resources created by acceptance tests,
+// which name resources after their Go test function (TestAccMorpheus*).
+const defaultTestResourcePrefix = "TestAccMorpheus"
+
 // TestResourcePrefix identifies acceptance test resources eligible for sweeping.
-const TestResourcePrefix = "TestAccMorpheus"
+// It is overridable via EnvSweepPrefix for targeted cleanup; unset or blank
+// keeps the default so a normal sweep still matches test-created resources.
+var TestResourcePrefix = resolveSweepPrefix(os.Getenv(EnvSweepPrefix))
+
+// resolveSweepPrefix returns the prefix the sweeper matches against. A non-blank
+// override is trimmed and used verbatim; anything else falls back to the
+// default. The empty-string guard is critical: an empty prefix would make
+// strings.HasPrefix match every resource and sweep the whole appliance.
+func resolveSweepPrefix(v string) string {
+	if v = strings.TrimSpace(v); v != "" {
+		log.Printf( //nolint:gosec // G706: operator-set env value, %q-escaped
+			"[INFO] Sweeper resource prefix overridden to %q via %s",
+			v, EnvSweepPrefix,
+		)
+
+		return v
+	}
+
+	return defaultTestResourcePrefix
+}
 
 // TypedSweepList returns all candidate resources that could be swept.
 type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
