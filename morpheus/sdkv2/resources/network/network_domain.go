@@ -51,6 +51,7 @@ func ResourceNetworkDomain() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+				Deprecated:  "Has no effect for network domains. Use domain_controller instead.",
 			},
 			"domain_controller": {
 				Description: "The domain controller used to facilitate an automated domain join operation",
@@ -86,6 +87,7 @@ func ResourceNetworkDomain() *schema.Resource {
 				Description: "The tenant to assign the network domain",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -132,18 +134,48 @@ func resourceNetworkDomainCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	// domainController := d.Get("domain_controller").(bool) // .(bool)
-	// active := d.Get("active").(bool)
+	var active bool
+	if v, ok := d.Get("active").(bool); ok {
+		active = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("active", d.Get("active")))
+	}
+
+	var domainController bool
+	if v, ok := d.Get("domain_controller").(bool); ok {
+		domainController = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_controller", d.Get("domain_controller")))
+	}
+
+	var domainUsername string
+	if v, ok := d.Get("domain_username").(string); ok {
+		domainUsername = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_username", d.Get("domain_username")))
+	}
+
+	domainBody := map[string]any{
+		"name":             name,
+		"description":      description,
+		"publicZone":       publicZone,
+		"visibility":       visibility,
+		"active":           active,
+		"domainController": domainController,
+		"domainUsername":   domainUsername,
+	}
+	// tenant_id maps to the API "account" association (master tenant only).
+	if v, ok := d.GetOk("tenant_id"); ok {
+		domainBody["account"] = map[string]any{"id": v.(int)}
+	}
+	// Send the password only when set so we never clobber a credential
+	// managed outside Terraform (the API also ignores the masked value).
+	if v, ok := d.GetOk("domain_password"); ok {
+		domainBody["domainPassword"] = v.(string)
+	}
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"networkDomain": map[string]any{
-				"name":        name,
-				"description": description,
-				"publicZone":  publicZone,
-				"visibility":  visibility,
-				// "domainController": domainController,
-				// "active":active,
-			},
+			"networkDomain": domainBody,
 		},
 	}
 	resp, err := client.CreateNetworkDomain(req)
@@ -258,6 +290,17 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 	if err := d.Set("visibility", networkDomain.Visibility); err != nil {
 		return diag.FromErr(err)
 	}
+	// auto_join_domain has no Morpheus API counterpart; preserve the prior
+	// state value so imported state matches applied state (MORPH-8836).
+	if err := d.Set("auto_join_domain", d.Get("auto_join_domain")); err != nil {
+		return diag.FromErr(err)
+	}
+	// tenant_id maps to the API "account" association.
+	if networkDomain.Account != nil {
+		if err := d.Set("tenant_id", int(networkDomain.Account.ID)); err != nil {
+			return diag.FromErr(err)
+		}
+	}
 	// d.Set("fqdn", networkDomain.Fqdn)
 
 	return diags
@@ -287,19 +330,62 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
-	// publicZone := d.Get("public_zone").(bool) // .(bool)
-	// domainController := d.Get("domain_controller").(bool) // .(bool)
-	// active := d.Get("active").(bool)
+	var publicZone bool
+	if v, ok := d.Get("public_zone").(bool); ok {
+		publicZone = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("public_zone", d.Get("public_zone")))
+	}
 
+	var visibility string
+	if v, ok := d.Get("visibility").(string); ok {
+		visibility = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
+	var active bool
+	if v, ok := d.Get("active").(bool); ok {
+		active = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("active", d.Get("active")))
+	}
+
+	var domainController bool
+	if v, ok := d.Get("domain_controller").(bool); ok {
+		domainController = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_controller", d.Get("domain_controller")))
+	}
+
+	var domainUsername string
+	if v, ok := d.Get("domain_username").(string); ok {
+		domainUsername = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_username", d.Get("domain_username")))
+	}
+
+	domainBody := map[string]any{
+		"name":             name,
+		"description":      description,
+		"publicZone":       publicZone,
+		"visibility":       visibility,
+		"active":           active,
+		"domainController": domainController,
+		"domainUsername":   domainUsername,
+	}
+	// tenant_id maps to the API "account" association (master tenant only).
+	if v, ok := d.GetOk("tenant_id"); ok {
+		domainBody["account"] = map[string]any{"id": v.(int)}
+	}
+	// Send the password only when set so we never clobber a credential
+	// managed outside Terraform (the API also ignores the masked value).
+	if v, ok := d.GetOk("domain_password"); ok {
+		domainBody["domainPassword"] = v.(string)
+	}
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"networkDomain": map[string]any{
-				"name":        name,
-				"description": description,
-				// "publicZone": publicZone,
-				// "domainController": domainController,
-				//"active":active,
-			},
+			"networkDomain": domainBody,
 		},
 	}
 	resp, err := client.UpdateNetworkDomain(convert.StringToInt64(id), req)

@@ -31,7 +31,7 @@ resource "hpe_morpheus_network_domain" "example" {
 ### Optional
 
 - `active` (Boolean) The state of the network domain
-- `auto_join_domain` (Boolean) Whether to automatically join machines to the domain
+- `auto_join_domain` (Boolean, Deprecated) Whether to automatically join machines to the domain
 - `description` (String) The user friendly description of the network domain
 - `domain_controller` (Boolean) The domain controller used to facilitate an automated domain join operation
 - `domain_password` (String, Sensitive) The password of the account used to facilitate an automated domain join operation
