@@ -37,6 +37,7 @@ func main() {
 		version,
 		adapter.NewMorpheus(),
 		adapter.NewOpsRamp(),
+		adapter.NewGreenLakeCloud(),
 	)
 
 	var opts []tf6server.ServeOpt
