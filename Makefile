@@ -5,9 +5,12 @@
 
 .PHONY: build linter lint test test-json docs sweep build-render-tool
 
-# Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname
+# Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname SWEEP_PREFIX=prefix
+# SWEEP_PREFIX optionally overrides the resource-name prefix the sweeper matches
+# (default: TestAccMorpheus). Leave unset for normal test cleanup.
 SWEEP ?= all
 SWEEP_SYSTEMS ?= all
+SWEEP_PREFIX ?=
 SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 
 # Per-package timeout for the acceptance test targets (`test`, `test-json`).
@@ -63,4 +66,5 @@ docs: build-render-tool
 	cd tools && go generate
 
 sweep:
+	env TF_ACC_SWEEP_PREFIX=$(SWEEP_PREFIX) \
 	go test -v -tags sweep ./morpheus/testhelpers/sweep/... -sweep=$(SWEEP_SYSTEMS) $(SWEEP_RUN_ARGS)

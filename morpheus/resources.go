@@ -43,6 +43,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrule"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterroute"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
@@ -114,6 +115,7 @@ func (p *MorpheusProvider) Resources(
 		networkpoolserver.NewResource,
 		networkrouternat.NewResource,
 		networkrouterfirewallrule.NewResource,
+		networkrouterfirewallrulegroup.NewResource,
 		subnet.NewResource,
 		securitygroup.NewResource,
 		securitygrouprule.NewResource,
