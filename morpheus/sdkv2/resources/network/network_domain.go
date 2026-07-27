@@ -65,9 +65,24 @@ func ResourceNetworkDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"domain_password": {
-				Description: "The password of the account used to facilitate an automated domain join operation",
-				Type:        schema.TypeString,
-				Sensitive:   true,
+				Description:   "The password of the account used to facilitate an automated domain join operation",
+				Type:          schema.TypeString,
+				Sensitive:     true,
+				Optional:      true,
+				Deprecated:    "Use domain_password_wo instead; write-only values are not stored in state.",
+				ConflictsWith: []string{"domain_password_wo"},
+			},
+			"domain_password_wo": {
+				Description:   "The account password for an automated domain join (write-only, not stored in state).",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"domain_password"},
+			},
+			"domain_password_wo_version": {
+				Description: "Increment to re-send domain_password_wo; write-only values are not stored in state.",
+				Type:        schema.TypeInt,
 				Optional:    true,
 			},
 			"active": {
@@ -168,10 +183,16 @@ func resourceNetworkDomainCreate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("tenant_id"); ok {
 		domainBody["account"] = map[string]any{"id": v.(int)}
 	}
-	// Send the password only when set so we never clobber a credential
-	// managed outside Terraform (the API also ignores the masked value).
+	// domain_password is deprecated in favour of the write-only
+	// domain_password_wo; send whichever is set.
 	if v, ok := d.GetOk("domain_password"); ok {
 		domainBody["domainPassword"] = v.(string)
+	}
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+		wo := rawConfig.GetAttr("domain_password_wo")
+		if !wo.IsNull() && wo.IsKnown() && wo.AsString() != "" {
+			domainBody["domainPassword"] = wo.AsString()
+		}
 	}
 	req := &morpheus.Request{
 		Body: map[string]any{
@@ -381,11 +402,17 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 	if v, ok := d.GetOk("tenant_id"); ok {
 		domainBody["account"] = map[string]any{"id": v.(int)}
 	}
-	// Send the password only when it changed, so an unrelated update never
-	// clobbers a credential rotated out of band (the API also ignores the
-	// masked value).
+	// domain_password is deprecated; send it only when it changed. The
+	// write-only domain_password_wo is re-sent whenever its version bumps.
 	if d.HasChange("domain_password") {
 		domainBody["domainPassword"] = d.Get("domain_password").(string)
+	}
+	if d.HasChange("domain_password_wo_version") {
+		wo := d.GetRawConfig().GetAttr("domain_password_wo")
+		if wo.IsNull() || !wo.IsKnown() {
+			return diag.Errorf("domain_password_wo_version changed but domain_password_wo is not set")
+		}
+		domainBody["domainPassword"] = wo.AsString()
 	}
 	req := &morpheus.Request{
 		Body: map[string]any{

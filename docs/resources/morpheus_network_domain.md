@@ -30,11 +30,15 @@ resource "hpe_morpheus_network_domain" "example" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `active` (Boolean) The state of the network domain
 - `auto_join_domain` (Boolean, Deprecated) Whether to automatically join machines to the domain
 - `description` (String) The user friendly description of the network domain
 - `domain_controller` (Boolean) The domain controller used to facilitate an automated domain join operation
-- `domain_password` (String, Sensitive) The password of the account used to facilitate an automated domain join operation
+- `domain_password` (String, Sensitive, Deprecated) The password of the account used to facilitate an automated domain join operation
+- `domain_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The account password for an automated domain join (write-only, not stored in state).
+- `domain_password_wo_version` (Number) Increment to re-send domain_password_wo; write-only values are not stored in state.
 - `domain_username` (String) The username of the account used to facilitate an automated domain join operation
 - `public_zone` (Boolean) Whether the domain will be public or private
 - `tenant_id` (Number) The tenant to assign the network domain
