@@ -1,4 +1,4 @@
-// (C) Copyright 2021 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2021-2026 Hewlett Packard Enterprise Development LP
 
 package client
 
@@ -6,10 +6,8 @@ import (
 	"net/http"
 )
 
-// contextKeys are used to identify the type of value in the context.
-// Since these are string, it is possible to get a short description of the
-// context key for logging and debugging using key.String().
-
+// contextKey identifies the type of value in the context. Since these are
+// strings, a short description is available for logging and debugging.
 type contextKey string
 
 func (c contextKey) String() string {
@@ -17,17 +15,11 @@ func (c contextKey) String() string {
 }
 
 var (
-	// ContextOAuth2 takes a oauth2.TokenSource as authentication for the request.
-	ContextOAuth2 = contextKey("token")
-
 	// ContextBasicAuth takes BasicAuth as authentication for the request.
 	ContextBasicAuth = contextKey("basic")
 
 	// ContextAccessToken takes a string oauth2 access token as authentication for the request.
 	ContextAccessToken = contextKey("accesstoken")
-
-	// ContextAPIKey takes an APIKey as authentication for the request
-	ContextAPIKey = contextKey("apikey")
 )
 
 // BasicAuth provides basic http authentication to a request passed via context using ContextBasicAuth
@@ -36,14 +28,7 @@ type BasicAuth struct {
 	Password string `json:"password,omitempty"`
 }
 
-// APIKey provides API key based authentication to a request passed via context using ContextAPIKey
-type APIKey struct {
-	Key    string
-	Prefix string
-}
-
 type Configuration struct {
-	BasePath           string            `json:"basePath,omitempty"`
 	Host               string            `json:"host,omitempty"`
 	Scheme             string            `json:"scheme,omitempty"`
 	DefaultHeader      map[string]string `json:"defaultHeader,omitempty"`
@@ -54,7 +39,6 @@ type Configuration struct {
 
 func NewConfiguration() *Configuration {
 	cfg := &Configuration{
-		BasePath:           "/",
 		DefaultHeader:      make(map[string]string),
 		DefaultQueryParams: make(map[string]string),
 		UserAgent:          "vmmas/cmp/go-sdk",

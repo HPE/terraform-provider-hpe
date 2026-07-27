@@ -1,18 +1,13 @@
-// (C) Copyright 2024-2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2024-2026 Hewlett Packard Enterprise Development LP
 
 package client
 
 import (
-	"bytes"
 	"context"
-	"errors"
-	"fmt"
-	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
-
-	"github.com/golang/mock/gomock"
 
 	consts "github.com/HPE/terraform-provider-hpe/greenlake/cloud/sdk/vmaascmp/common"
 	"github.com/HPE/terraform-provider-hpe/greenlake/cloud/sdk/vmaascmp/models"
@@ -20,110 +15,135 @@ import (
 
 const (
 	testServiceInstanceID    = "18ba6409-ac59-4eac-9414-0147e72d615e"
-	testAccessToken          = "2b9fba7f-7c14-4773-a970-a9ad393811ac"
-	testRefreshToken         = "7806acfb-f847-48b1-a6d5-6119dccb3ffe"
+	testAccessToken          = "2b9fba7f-7c14-4773-a970-a9ad393811ac" //nolint:gosec // test fixture
+	testRefreshToken         = "7806acfb-f847-48b1-a6d5-6119dccb3ffe" //nolint:gosec // test fixture
 	testMorpheusURL          = "https://1234-mp.private.greenlake.hpe-gl-intg.com"
+	testIAMToken             = "iam-token-fixture" //nolint:gosec // test fixture
 	testAccessTokenExpires   = 1758034360176
 	testAccessTokenExpiresIn = 3600
 )
 
-func TestBrokerAPIService_GetMorpheusDetails(t *testing.T) {
-	ctx := context.Background()
-	testCtrl := gomock.NewController(t)
-	defer testCtrl.Finish()
+const cmpDetailsBody = `{
+	"ServiceInstanceID": "` + testServiceInstanceID + `",
+	"TenantID": "1234",
+	"TenantName": "tenant",
+	"LocationName": "BLR",
+	"URL": "` + testMorpheusURL + `/",
+	"TokenDetails": {
+		"access_token": "` + testAccessToken + `",
+		"expires": 1758034360176,
+		"refresh_token": "` + testRefreshToken + `",
+		"expires_in": 3600
+	}
+}`
 
-	headers := getDefaultHeaders()
+// newTestBrokerClient wires an APIClient at the supplied host with the
+// location/space query params and a bearer token, mirroring how the
+// greenlake_cloud provider configures the broker client.
+func newTestBrokerClient(host string) *APIClient {
+	cfg := NewConfiguration()
+	cfg.Host = host
+	cfg.DefaultQueryParams["location"] = "BLR"
+	cfg.DefaultQueryParams["space"] = "default"
 
-	queryParams := map[string]string{
-		"location":   "BLR",
-		"space_name": "default",
+	c := NewAPIClient(cfg)
+	c.SetMetaFnAndVersion(nil, 0, func(ctx *context.Context, _ interface{}) {
+		*ctx = context.WithValue(*ctx, ContextAccessToken, testIAMToken)
+	})
+
+	return c
+}
+
+func TestGetMorpheusDetails_Success(t *testing.T) {
+	t.Parallel()
+
+	var (
+		gotPath   string
+		gotQuery  url.Values
+		gotAuth   string
+		gotAccept string
+	)
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		gotAuth = r.Header.Get("Authorization")
+		gotAccept = r.Header.Get("Accept")
+
+		w.Header().Set("Content-Type", consts.ContentType)
+		_, _ = w.Write([]byte(cmpDetailsBody))
+	}))
+	defer srv.Close()
+
+	got, err := newTestBrokerClient(srv.URL).GetCMPDetails(context.Background())
+	if err != nil {
+		t.Fatalf("GetCMPDetails() unexpected error: %v", err)
 	}
 
-	clientCfg := Configuration{
-		DefaultHeader:      headers,
-		DefaultQueryParams: queryParams,
+	// The broker path must not carry the vmaas-cmp API base path.
+	if want := "/" + consts.CMPDetails; gotPath != want {
+		t.Errorf("request path = %q, want %q", gotPath, want)
 	}
 
-	tests := []struct {
-		name    string
-		given   func(m *MockAPIClientHandler)
-		want    models.TFMorpheusDetails
-		wantErr bool
-	}{
-		{
-			name: "Test GetMorpheusDetails success",
-			want: models.TFMorpheusDetails{
-				ID:          testServiceInstanceID,
-				AccessToken: testAccessToken,
-				ValidTill:   testAccessTokenExpiresIn,
-				URL:         testMorpheusURL,
-			},
-			wantErr: false,
-			given: func(m *MockAPIClientHandler) {
-				m.EXPECT().getHost().Return(mockHost)
-				pathSubscription := mockHost + "/" + consts.CMPDetails
-				method := "GET"
-				reqSubscription, _ := http.NewRequest(method, pathSubscription, nil)
-				respBodySubscription := io.NopCloser(bytes.NewReader([]byte(`
-					{
-						"ServiceInstanceID": "` + testServiceInstanceID + `",
-						"TenantID": "1234",
-						"TenantName": "tenant",
-						"LocationName": "BLR",	
-						"URL": "` + testMorpheusURL + `",
-						"TokenDetails": {
-							"access_token": "` + testAccessToken + `",
-							"expires": ` + fmt.Sprintf("%d", testAccessTokenExpires) + `,
-							"refresh_token": "` + testRefreshToken + `",
-							"expires_in": ` + fmt.Sprintf("%d", testAccessTokenExpiresIn) + `	
-						}
-					}
-				`)))
-				// mock the context only since it is not validated in this function
-				m.EXPECT().getVersion().Return(999999)
-				m.EXPECT().prepareRequest(gomock.Any(), pathSubscription, method, nil, headers,
-					getURLValues(queryParams), url.Values{}, "", nil).Return(reqSubscription, nil)
-
-				m.EXPECT().callAPI(reqSubscription).Return(&http.Response{
-					StatusCode: 200,
-					Body:       respBodySubscription,
-				}, nil)
-			},
-		},
-
-		{
-			name:    "Test GetMorpheusDetails error in get subscription details prepare request",
-			want:    models.TFMorpheusDetails{},
-			wantErr: true,
-			given: func(m *MockAPIClientHandler) {
-				m.EXPECT().getHost().Return(mockHost)
-				pathSubscription := mockHost + "/" + consts.CMPDetails
-				method := "GET"
-				// mock the context only since it is not validated in this function
-				m.EXPECT().getVersion().Return(999999)
-				m.EXPECT().prepareRequest(gomock.Any(), pathSubscription, method, nil, headers,
-					getURLValues(queryParams), url.Values{}, "", nil).
-					Return(nil, errors.New("error in prepare request"))
-			},
-		},
+	if v := gotQuery.Get("location"); v != "BLR" {
+		t.Errorf("location query = %q, want %q", v, "BLR")
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockClient := NewMockAPIClientHandler(testCtrl)
-			tt.given(mockClient)
-			a := &BrokerAPIService{
-				Cfg:    clientCfg,
-				Client: mockClient,
-			}
-			got, err := a.GetMorpheusDetails(ctx)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("BrokerAPIService.GetMorpheusDetails() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("BrokerAPIService.GetMorpheusDetails() = %v, want %v", got, tt.want)
-			}
-		})
+	if v := gotQuery.Get("space"); v != "default" {
+		t.Errorf("space query = %q, want %q", v, "default")
+	}
+
+	if want := "Bearer " + testIAMToken; gotAuth != want {
+		t.Errorf("Authorization header = %q, want %q", gotAuth, want)
+	}
+
+	if gotAccept != consts.ContentType {
+		t.Errorf("Accept header = %q, want %q", gotAccept, consts.ContentType)
+	}
+
+	// URL is returned with any trailing slash trimmed.
+	want := models.TFMorpheusDetails{
+		ID:          testServiceInstanceID,
+		AccessToken: testAccessToken,
+		ValidTill:   testAccessTokenExpiresIn,
+		URL:         testMorpheusURL,
+	}
+
+	if got != want {
+		t.Errorf("GetCMPDetails() = %+v, want %+v", got, want)
+	}
+}
+
+func TestGetMorpheusDetails_ErrorStatus(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", consts.ContentType)
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"error": "unauthorized"}`))
+	}))
+	defer srv.Close()
+
+	got, err := newTestBrokerClient(srv.URL).GetCMPDetails(context.Background())
+	if err == nil {
+		t.Fatal("GetCMPDetails() expected an error for a 401 response, got nil")
+	}
+
+	if got != (models.TFMorpheusDetails{}) {
+		t.Errorf("GetCMPDetails() = %+v, want zero value on error", got)
+	}
+}
+
+func TestGetMorpheusDetails_MalformedBody(t *testing.T) {
+	t.Parallel()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", consts.ContentType)
+		_, _ = w.Write([]byte(`{not json`))
+	}))
+	defer srv.Close()
+
+	if _, err := newTestBrokerClient(srv.URL).GetCMPDetails(context.Background()); err == nil {
+		t.Fatal("GetCMPDetails() expected an error for a malformed body, got nil")
 	}
 }

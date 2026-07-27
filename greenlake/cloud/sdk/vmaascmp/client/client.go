@@ -1,14 +1,13 @@
-// (C) Copyright 2021-2024 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2021-2026 Hewlett Packard Enterprise Development LP
 
-//go:generate go run github.com/golang/mock/mockgen -source ./client.go -package client -destination ./client_mock.go
-
+// Package client provides a minimal VMaaS-CMP API client. Only the VMaaS
+// broker cmp_details endpoint is implemented; all Morpheus resource
+// management is handled by the separate "morpheus" child provider.
 package client
 
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"encoding/xml"
 	"errors"
 	"fmt"
 	"mime/multipart"
@@ -20,10 +19,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/greenlake/cloud/sdk/vmaascmp/models"
 )
 
+// SetScmClientToken injects an auth token onto the request context.
 type SetScmClientToken func(ctx *context.Context, meta interface{})
 
+// APIClientHandler is the transport contract required by api.do.
 type APIClientHandler interface {
-	ChangeBasePath(path string)
 	prepareRequest(
 		ctx context.Context,
 		path string, method string,
@@ -33,135 +33,63 @@ type APIClientHandler interface {
 		formParams url.Values,
 		fileName string,
 		fileBytes []byte) (localVarRequest *http.Request, err error)
-	decode(v interface{}, b []byte, contentType string) (err error)
 	callAPI(request *http.Request) (*http.Response, error)
-	SetMeta(meta interface{}, fn SetScmClientToken) error
 	getVersion() int
 	getHost() string
-	// The next two methods are for use when creating the Broker API client
-	// SetMetaFnAndVersion is used to set the client token function in meta and the SCM version for the Broker client
-	SetMetaFnAndVersion(meta interface{}, version int, fn SetScmClientToken)
-	// GetSCMVersion returns the SCM version for use when creating the Broker client
-	GetSCMVersion() int
-	SetHost(host string)
-	// GetCMPDetails here the client is the one which has broker host set
-	GetCMPDetails(ctx context.Context) (models.TFMorpheusDetails, error)
-	SetCMPVersion(ctx context.Context) (err error)
 }
 
-// APIClient manages communication with the GreenLake Private Cloud VMaaS CMP API API v1.0.0
-// In most cases there should be only one, shared, APIClient.
+// APIClient manages communication with the GreenLake Private Cloud VMaaS CMP API.
 type APIClient struct {
-	cfg         *Configuration
-	cmpVersion  int
-	meta        interface{}
-	tokenFunc   SetScmClientToken
-	CMPToken    string
-	TokenExpiry int64
+	cfg        *Configuration
+	cmpVersion int
+	meta       interface{}
+	tokenFunc  SetScmClientToken
 }
 
-// defaultTokenFunc will use while defining httpClient. defaultTokenFunc
-// will not fetch any token or update context.
-func defaultTokenFunc(ctx *context.Context, meta interface{}) {}
+// defaultTokenFunc is used until a token function is supplied; it does not
+// fetch any token or update the context.
+func defaultTokenFunc(_ *context.Context, _ interface{}) {}
 
-// NewAPIClient creates a new API Client. Requires a userAgent string describing your application.
-// optionally a custom http.Client to allow for advanced features such as caching.
+// NewAPIClient creates a new API Client, defaulting the HTTP client if unset.
 func NewAPIClient(cfg *Configuration) *APIClient {
 	if cfg.HTTPClient == nil {
 		cfg.HTTPClient = http.DefaultClient
 	}
-	c := &APIClient{
+
+	return &APIClient{
 		cfg:       cfg,
 		tokenFunc: defaultTokenFunc,
 	}
-
-	return c
 }
 
 func (c *APIClient) getHost() string {
 	return c.cfg.Host
 }
-func (c *APIClient) SetHost(host string) {
-	c.cfg.Host = host
-}
-func (c *APIClient) SetMeta(meta interface{}, fn SetScmClientToken) error {
-	c.meta = meta
-	c.tokenFunc = fn
-	// if cmp version already set then skip
-	if c.cmpVersion != 0 {
-		return nil
-	}
-	// initialize cmp status client and get setup/check
-	// and set version
-	cmpClient := CmpStatus{
-		Client: c,
-		Cfg:    *c.cfg,
-	}
-	// Get status of cmp
-	statusResp, err := cmpClient.GetCmpVersion(context.Background())
-	if err != nil {
-		return err
-	}
-	versionInt, err := parseVersion(statusResp.Appliance.BuildVersion)
-	if err != nil {
-		return fmt.Errorf("failed to parse cmp build, error: %w", err)
-	}
-	c.cmpVersion = versionInt
 
-	return nil
-}
-
-// GetCMPDetails here APIClient is the brokerClient
+// GetCMPDetails exchanges the configured credentials for Morpheus connection
+// details. The receiver must be a client whose Host is the VMaaS broker.
 func (c *APIClient) GetCMPDetails(ctx context.Context) (models.TFMorpheusDetails, error) {
 	cmpBroker := BrokerAPIService{
 		Client: c,
 		Cfg:    *c.cfg,
 	}
+
 	return cmpBroker.GetMorpheusDetails(ctx)
-
 }
 
-func (c *APIClient) SetCMPVersion(ctx context.Context) (err error) {
-	if c.cmpVersion != 0 {
-		return nil
-	}
-	cmpClient := CmpStatus{
-		Client: c,
-		Cfg:    *c.cfg,
-	}
-	// Get status of cmp
-	statusResp, err := cmpClient.GetCmpVersion(ctx)
-	if err != nil {
-		return
-	}
-	versionInt, err := parseVersion(statusResp.Appliance.BuildVersion)
-	if err != nil {
-		return fmt.Errorf("failed to parse cmp build, error: %w", err)
-	}
-	c.cmpVersion = versionInt
-	return
-}
+// SetMetaFnAndVersion sets the client token function and the CMP version.
 func (c *APIClient) SetMetaFnAndVersion(meta interface{}, version int, fn SetScmClientToken) {
 	c.meta = meta
 	c.tokenFunc = fn
 	c.cmpVersion = version
 }
 
-// callAPI do the request.
+// callAPI performs the request.
 func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
 	return c.cfg.HTTPClient.Do(request)
 }
 
-// Change base path to allow switching to mocks
-func (c *APIClient) ChangeBasePath(path string) {
-	c.cfg.BasePath = path
-}
-
 func (c *APIClient) getVersion() int {
-	return c.cmpVersion
-}
-
-func (c *APIClient) GetSCMVersion() int {
 	return c.cmpVersion
 }
 
@@ -309,22 +237,4 @@ func (c *APIClient) prepareRequest(
 	}
 
 	return localVarRequest, nil
-}
-
-func (c *APIClient) decode(content interface{}, bytes []byte, contentType string) (err error) {
-	if strings.Contains(contentType, "application/xml") {
-		if err = xml.Unmarshal(bytes, content); err != nil {
-			return err
-		}
-
-		return nil
-	} else if strings.Contains(contentType, "application/json") {
-		if err = json.Unmarshal(bytes, content); err != nil {
-			return err
-		}
-
-		return nil
-	}
-
-	return errors.New("undefined response type")
 }

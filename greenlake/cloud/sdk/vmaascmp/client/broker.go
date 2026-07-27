@@ -21,7 +21,6 @@ type BrokerAPIService struct {
 
 // GetMorpheusDetails returns Morpheus details to terraform
 func (a *BrokerAPIService) GetMorpheusDetails(ctx context.Context) (models.TFMorpheusDetails, error) {
-
 	// Get the Morpheus token
 	CMPDetails := models.CMPDetails{}
 	cmpDetailsAPI := &api{
