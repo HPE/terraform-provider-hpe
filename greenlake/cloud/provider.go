@@ -38,13 +38,13 @@ const defaultBrokerURL = "https://vmaas-broker.us1.greenlake-hpe.com"
 // GreenLakeCloudProviderModel maps the greenlake_cloud provider schema to a Go
 // struct for use in Configure.
 type GreenLakeCloudProviderModel struct {
-	UserID     types.String `tfsdk:"user_id"`
-	UserSecret types.String `tfsdk:"user_secret"`
-	Location   types.String `tfsdk:"location"`
-	Space      types.String `tfsdk:"space"`
-	IssuerURL  types.String `tfsdk:"issuer_url"`
-	IAMToken   types.String `tfsdk:"iam_token"`
-	BrokerURL  types.String `tfsdk:"broker_url"`
+	ClientID     types.String `tfsdk:"client_id"`
+	ClientSecret types.String `tfsdk:"client_secret"`
+	Location     types.String `tfsdk:"location"`
+	Space        types.String `tfsdk:"space"`
+	IssuerURL    types.String `tfsdk:"issuer_url"`
+	IAMToken     types.String `tfsdk:"iam_token"`
+	BrokerURL    types.String `tfsdk:"broker_url"`
 }
 
 // GreenLakeCloudProvider is the GreenLake Cloud Services (GLCS) child provider.
@@ -80,23 +80,23 @@ func (p *GreenLakeCloudProvider) Schema(
 ) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"user_id": schema.StringAttribute{
+			"client_id": schema.StringAttribute{
 				Description: "GreenLake API client ID used for authentication.",
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(
-						path.MatchRelative().AtParent().AtName("user_secret"),
+						path.MatchRelative().AtParent().AtName("client_secret"),
 						path.MatchRelative().AtParent().AtName("issuer_url"),
 					),
 				},
 			},
-			"user_secret": schema.StringAttribute{
+			"client_secret": schema.StringAttribute{
 				Description: "GreenLake API client secret used for authentication.",
 				Optional:    true,
 				Sensitive:   true,
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(
-						path.MatchRelative().AtParent().AtName("user_id"),
+						path.MatchRelative().AtParent().AtName("client_id"),
 						path.MatchRelative().AtParent().AtName("issuer_url"),
 					),
 				},
@@ -114,8 +114,8 @@ func (p *GreenLakeCloudProvider) Schema(
 				Optional:    true,
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(
-						path.MatchRelative().AtParent().AtName("user_id"),
-						path.MatchRelative().AtParent().AtName("user_secret"),
+						path.MatchRelative().AtParent().AtName("client_id"),
+						path.MatchRelative().AtParent().AtName("client_secret"),
 					),
 				},
 			},
@@ -126,8 +126,8 @@ func (p *GreenLakeCloudProvider) Schema(
 				Sensitive: true,
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(
-						path.MatchRelative().AtParent().AtName("user_id"),
-						path.MatchRelative().AtParent().AtName("user_secret"),
+						path.MatchRelative().AtParent().AtName("client_id"),
+						path.MatchRelative().AtParent().AtName("client_secret"),
 						path.MatchRelative().AtParent().AtName("issuer_url"),
 					),
 				},
@@ -167,8 +167,8 @@ func (p *GreenLakeCloudProvider) Configure(
 	} else {
 		handlerOpts = append(handlerOpts,
 			serviceclient.WithIAMServiceURL(m.IssuerURL.ValueString()),
-			serviceclient.WithClientID(m.UserID.ValueString()),
-			serviceclient.WithClientSecret(m.UserSecret.ValueString()),
+			serviceclient.WithClientID(m.ClientID.ValueString()),
+			serviceclient.WithClientSecret(m.ClientSecret.ValueString()),
 		)
 	}
 
