@@ -181,12 +181,20 @@ func resourceNetworkDomainCreate(ctx context.Context, d *schema.ResourceData, me
 	}
 	// tenant_id maps to the API "account" association (master tenant only).
 	if v, ok := d.GetOk("tenant_id"); ok {
-		domainBody["account"] = map[string]any{"id": v.(int)}
+		if tenantID, isInt := v.(int); isInt {
+			domainBody["account"] = map[string]any{"id": tenantID}
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
+		}
 	}
 	// domain_password is deprecated in favour of the write-only
 	// domain_password_wo; send whichever is set.
 	if v, ok := d.GetOk("domain_password"); ok {
-		domainBody["domainPassword"] = v.(string)
+		if domainPassword, isString := v.(string); isString {
+			domainBody["domainPassword"] = domainPassword
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("domain_password", v))
+		}
 	}
 	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
 		wo := rawConfig.GetAttr("domain_password_wo")
@@ -400,12 +408,20 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 	}
 	// tenant_id maps to the API "account" association (master tenant only).
 	if v, ok := d.GetOk("tenant_id"); ok {
-		domainBody["account"] = map[string]any{"id": v.(int)}
+		if tenantID, isInt := v.(int); isInt {
+			domainBody["account"] = map[string]any{"id": tenantID}
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
+		}
 	}
 	// domain_password is deprecated; send it only when it changed. The
 	// write-only domain_password_wo is re-sent whenever its version bumps.
 	if d.HasChange("domain_password") {
-		domainBody["domainPassword"] = d.Get("domain_password").(string)
+		if domainPassword, ok := d.Get("domain_password").(string); ok {
+			domainBody["domainPassword"] = domainPassword
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("domain_password", d.Get("domain_password")))
+		}
 	}
 	if d.HasChange("domain_password_wo_version") {
 		wo := d.GetRawConfig().GetAttr("domain_password_wo")
