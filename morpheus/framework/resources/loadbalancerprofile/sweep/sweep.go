@@ -33,7 +33,8 @@ func init() {
 			*http.Response,
 			error,
 		) {
-			lbResp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
+			lbResp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).
+				Max(testsweep.ListPageSize).Execute()
 			if err != nil {
 				return nil, hresp, err
 			}
@@ -47,7 +48,8 @@ func init() {
 				}
 
 				profileResp, _, err := client.LoadBalancersAPI.
-					ListLoadBalancerProfiles(ctx, *lbID).Execute()
+					ListLoadBalancerProfiles(ctx, *lbID).
+					Max(testsweep.ListPageSize).Execute()
 				if err != nil || profileResp == nil {
 					continue
 				}
