@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer_virtual_server Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
 ---

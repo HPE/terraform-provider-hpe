@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_spec_template_helm Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus helm spec template resource
 ---

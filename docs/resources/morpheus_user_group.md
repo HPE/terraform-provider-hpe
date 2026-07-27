@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_user_group Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus user group resource
 ---

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cluster_affinity_group Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

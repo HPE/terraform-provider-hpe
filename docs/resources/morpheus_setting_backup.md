@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_setting_backup Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus backup setting resource.
 ---

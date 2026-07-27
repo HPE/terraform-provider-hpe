@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_router_bgp_neighbor Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

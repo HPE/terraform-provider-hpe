@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_datastore Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

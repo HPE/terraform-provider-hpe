@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_list_api Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus api option list resource.
 ---

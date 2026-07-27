@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
