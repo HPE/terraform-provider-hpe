@@ -414,21 +414,20 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
 		}
 	}
-	// domain_password is deprecated; send it only when it changed. The
-	// write-only domain_password_wo is re-sent whenever its version bumps.
-	if d.HasChange("domain_password") {
-		if domainPassword, ok := d.Get("domain_password").(string); ok {
-			domainBody["domainPassword"] = domainPassword
-		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("domain_password", d.Get("domain_password")))
-		}
+	// domain_password is deprecated in favour of the write-only
+	// domain_password_wo; send whichever is configured. Omitting the field
+	// clears the stored credential, so a configured value is always sent.
+	if domainPassword, ok := d.Get("domain_password").(string); ok && domainPassword != "" {
+		domainBody["domainPassword"] = domainPassword
 	}
-	if d.HasChange("domain_password_wo_version") {
-		wo := d.GetRawConfig().GetAttr("domain_password_wo")
-		if wo.IsNull() || !wo.IsKnown() {
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+		wo := rawConfig.GetAttr("domain_password_wo")
+		switch {
+		case !wo.IsNull() && wo.IsKnown() && wo.AsString() != "":
+			domainBody["domainPassword"] = wo.AsString()
+		case d.HasChange("domain_password_wo_version"):
 			return diag.Errorf("domain_password_wo_version changed but domain_password_wo is not set")
 		}
-		domainBody["domainPassword"] = wo.AsString()
 	}
 	req := &morpheus.Request{
 		Body: map[string]any{
