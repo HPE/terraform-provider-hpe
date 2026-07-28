@@ -199,6 +199,118 @@ func TestUnitRemoveExternalStorageVolumes(t *testing.T) {
 	}
 }
 
+// TestUnitIsExternallyAttachedVolume verifies which volumes are treated as
+// externally attached to the instance's host.
+//
+// A storageServer reference alone is not sufficient: when a disk is provisioned
+// onto a datastore that is itself backed by a storage server (e.g. an Alletra MP
+// datastore), Morpheus copies the datastore's storage server onto the instance's
+// own disk (assignVolumeDatastore sets volume.datastore and volume.storageServer
+// together). Excluding those disks emptied the volume list and wrote a null
+// `volumes` into state, surfacing as "Provider produced inconsistent result
+// after apply: .volumes ... but now null".
+func TestUnitIsExternallyAttachedVolume(t *testing.T) {
+	t.Parallel()
+
+	storageServer := &sdk.InstanceContainerServerVolumeStorageServer1{}
+
+	tests := []struct {
+		name   string
+		volume sdk.InstanceContainerServerVolume1
+		want   bool
+	}{
+		{
+			name:   "ordinary provisioned disk",
+			volume: sdk.InstanceContainerServerVolume1{Id: sdk.PtrInt64(1), Name: sdk.PtrString("data")},
+			want:   false,
+		},
+		{
+			name: "externally attached array LUN",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:            sdk.PtrInt64(2),
+				Name:          sdk.PtrString("alletra-bmaas-lun"),
+				StorageServer: storageServer,
+			},
+			want: true,
+		},
+		{
+			name: "root volume on a storage-server-backed datastore",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:            sdk.PtrInt64(3),
+				Name:          sdk.PtrString("root"),
+				RootVolume:    sdk.PtrBool(true),
+				DatastoreId:   sdk.PtrInt64(406),
+				StorageServer: storageServer,
+			},
+			want: false,
+		},
+		{
+			name: "data volume on a storage-server-backed datastore",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:            sdk.PtrInt64(4),
+				Name:          sdk.PtrString("data"),
+				DatastoreId:   sdk.PtrInt64(406),
+				StorageServer: storageServer,
+			},
+			want: false,
+		},
+		{
+			name: "root volume from a storage server with no datastore",
+			volume: sdk.InstanceContainerServerVolume1{
+				Id:            sdk.PtrInt64(5),
+				Name:          sdk.PtrString("root"),
+				RootVolume:    sdk.PtrBool(true),
+				StorageServer: storageServer,
+			},
+			want: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := isExternallyAttachedVolume(tt.volume); got != tt.want {
+				t.Errorf("isExternallyAttachedVolume() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitRemoveExternalStorageVolumesKeepsDatastoreBackedDisks verifies the
+// reported failure case: an instance whose disks are provisioned on a
+// storage-server-backed datastore keeps those disks, while an array LUN exported
+// to the same host is still excluded.
+func TestUnitRemoveExternalStorageVolumesKeepsDatastoreBackedDisks(t *testing.T) {
+	t.Parallel()
+
+	storageServer := &sdk.InstanceContainerServerVolumeStorageServer1{}
+
+	volumes := []sdk.InstanceContainerServerVolume1{
+		{
+			Id:            sdk.PtrInt64(1),
+			Name:          sdk.PtrString("root"),
+			RootVolume:    sdk.PtrBool(true),
+			DatastoreId:   sdk.PtrInt64(406),
+			StorageServer: storageServer,
+		},
+		{
+			Id:            sdk.PtrInt64(2),
+			Name:          sdk.PtrString("alletra-bmaas-lun"),
+			StorageServer: storageServer,
+		},
+	}
+
+	got := removeExternalStorageVolumes(volumes)
+
+	if len(got) != 1 {
+		t.Fatalf("expected 1 volume after filtering, got %d", len(got))
+	}
+	if got[0].Id == nil || *got[0].Id != 1 {
+		t.Errorf("expected the instance's root disk (id 1) to be retained, got %v", got[0].Id)
+	}
+}
+
 // TestUnitBoolFromConfig verifies the defensive coercion of untyped instance config
 // values (native bool or the string encodings Morpheus may use) that back the
 // config_bmaas.enforce_raid_boot_volume attribute, including the fallback to the
