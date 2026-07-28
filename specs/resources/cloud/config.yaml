@@ -1,4 +1,25 @@
 cloud:
+  paths:
+    create: POST /api/zones
+    read: GET /api/zones/{id}
+    update: PUT /api/zones/{id}
+    delete: DELETE /api/zones/{id}
+    list: GET /api/zones
+  discriminator:
+    field: cloud_type_code
+    variants:
+      amazon: config_aws
+      standard: config_hvm
+      vmware: config_vmware
+      azure: config_azure
+  preserve_on_read:
+    - config_hvm.certificate_provider
+    - config_hvm.enable_network_type_selection
+    - config_vmware.certificate_provider
+  computed_fields:
+    group_id:
+      from: "zone.groups.0.id"
+      type: int64
   templates:
     config:
       dynamic:
