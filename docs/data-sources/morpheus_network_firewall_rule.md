@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_firewall_rule Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

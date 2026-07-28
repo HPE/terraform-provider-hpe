@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_storage_servers Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Retrieves a list of Morpheus storage servers, optionally filtered using one or more filter blocks.
 ---

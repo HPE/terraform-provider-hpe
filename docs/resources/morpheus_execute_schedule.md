@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_execute_schedule Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides an execution schedule resource
 ---

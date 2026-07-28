@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_storage_volume_type Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus storage volume type data source.
 ---

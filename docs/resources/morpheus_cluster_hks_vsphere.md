@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cluster_hks_vsphere Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a HPE Kubernetes Service (HKS) cluster on VMware vSphere cloud
 ---

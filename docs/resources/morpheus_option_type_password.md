@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_type_password Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus password option type resource
 ---

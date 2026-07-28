@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_datastores Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Retrieves a list of Morpheus datastores, optionally filtered using one or more filter blocks.
 ---

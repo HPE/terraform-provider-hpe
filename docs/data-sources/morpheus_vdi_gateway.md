@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_vdi_gateway Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

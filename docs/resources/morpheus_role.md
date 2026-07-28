@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_role Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
