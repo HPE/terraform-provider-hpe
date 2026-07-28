@@ -876,31 +876,49 @@ func getNoAgent(
 ) (*bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	noAgent := apiConfig.NoAgent
-	if noAgent == nil || noAgent.Bool == nil {
+	if noAgent == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config noAgent", id),
 		)
 
 		return nil, diags
-
 	}
 
-	return noAgent.Bool, nil
+	// Normal path: Morpheus returned noAgent as a JSON boolean.
+	if noAgent.Bool != nil {
+		return noAgent.Bool, diags
+	}
+
+	// Legacy-string path: some providers (e.g. hpegl) send noAgent as the
+	// string "true"/"false" to the Morpheus API, which stores and returns it
+	// as a JSON string rather than a boolean.  Parse it so that instances
+	// created by hpegl can be read without error.
+	if noAgent.String != nil {
+		b, err := strconv.ParseBool(*noAgent.String)
+		if err == nil {
+			return &b, diags
+		}
+	}
+
+	diags.AddError(
+		"populate instance resource",
+		fmt.Sprintf("instance %d GET failed to get config noAgent", id),
+	)
+
+	return nil, diags
 }
 
 func getNestedVirtualization(
 	id int64,
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
+	// nestedVirtualization is optional: hpegl never sets it, so Morpheus omits
+	// it from the GET response entirely (IsSet() == false).  Treat absence as
+	// nil rather than an error — the caller passes nil to convert.StrToType
+	// which produces a null value, valid for this Optional+Computed attribute.
 	if !apiConfig.NestedVirtualization.IsSet() {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config nestedVirtualization", id),
-		)
-
-		return nil, diags
+		return nil, nil
 	}
 
 	return apiConfig.NestedVirtualization.Get(), nil
