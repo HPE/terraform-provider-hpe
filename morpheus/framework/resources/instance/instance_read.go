@@ -913,14 +913,12 @@ func getNestedVirtualization(
 	id int64,
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
+	// nestedVirtualization is optional: hpegl never sets it, so Morpheus omits
+	// it from the GET response entirely (IsSet() == false).  Treat absence as
+	// nil rather than an error — the caller passes nil to convert.StrToType
+	// which produces a null value, valid for this Optional+Computed attribute.
 	if !apiConfig.NestedVirtualization.IsSet() {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config nestedVirtualization", id),
-		)
-
-		return nil, diags
+		return nil, nil
 	}
 
 	return apiConfig.NestedVirtualization.Get(), nil
