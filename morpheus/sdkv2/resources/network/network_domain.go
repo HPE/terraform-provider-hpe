@@ -323,7 +323,7 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	// auto_join_domain has no Morpheus API counterpart; preserve the prior
-	// state value so imported state matches applied state (MORPH-8836).
+	// state value so imported state matches applied state.
 	if err := d.Set("auto_join_domain", d.Get("auto_join_domain")); err != nil {
 		return diag.FromErr(err)
 	}
