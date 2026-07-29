@@ -176,3 +176,123 @@ func TestUnitFillUnknownsFromStateLeavesUnmatchedUnknown(t *testing.T) {
 		t.Error("filled plan equals state, want a difference for the added element")
 	}
 }
+
+// TestUnitMatchesRestoreRule verifies which attribute paths a rule covers.
+//
+// A rule without fields covers only the root attribute. A rule with fields
+// covers those fields within a collection element, and nothing else — in
+// particular it must not match sibling attributes that the post-apply read
+// sources from the API.
+func TestUnitMatchesRestoreRule(t *testing.T) {
+	t.Parallel()
+
+	volumes := restoreRule{attribute: "volumes", fields: []string{"id"}}
+	labels := restoreRule{attribute: "labels"}
+
+	root := func(n string) *tftypes.AttributePath {
+		return tftypes.NewAttributePath().WithAttributeName(n)
+	}
+	elem := func(n string, i int, f string) *tftypes.AttributePath {
+		return tftypes.NewAttributePath().WithAttributeName(n).WithElementKeyInt(i).WithAttributeName(f)
+	}
+
+	tests := []struct {
+		name string
+		path *tftypes.AttributePath
+		rule restoreRule
+		want bool
+	}{
+		{"volume id covered", elem("volumes", 0, "id"), volumes, true},
+		{"volume id at higher index covered", elem("volumes", 3, "id"), volumes, true},
+		{"volume storage_profile NOT covered", elem("volumes", 0, "storage_profile"), volumes, false},
+		{"volume controller_mount_point NOT covered", elem("volumes", 0, "controller_mount_point"), volumes, false},
+		{"volumes root NOT covered when fields set", root("volumes"), volumes, false},
+		{"different collection not covered", elem("network_interfaces", 0, "id"), volumes, false},
+		{"labels root covered", root("labels"), labels, true},
+		{"labels element not covered", elem("labels", 0, "id"), labels, false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			if got := matchesRestoreRule(tt.path, tt.rule); got != tt.want {
+				t.Errorf("matchesRestoreRule() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitRestoreFromStateNeverPinsNull is the regression test for the failure
+// this design exists to avoid.
+//
+// Volume storage_profile is null in prior state on a post-apply read, but the
+// API supplies a value. Pinning the null produced "Provider produced
+// inconsistent result after apply: .volumes[0].storage_profile: was null, but
+// now cty.StringVal(...)". The restore must leave such values unknown: both
+// because storage_profile is not a covered field, and because a null is never
+// pinned even where it is covered.
+func TestUnitRestoreFromStateNeverPinsNull(t *testing.T) {
+	t.Parallel()
+
+	planVolumes := volumes(volume(unknownNum(), unknownString()))
+	stateVolumes := volumes(volume(num(671), tftypes.NewValue(tftypes.String, nil)))
+
+	plan := resourceValue(planVolumes)
+	state := resourceValue(stateVolumes)
+
+	// "name" stands in for a value the read path sources from the API: it is
+	// null in prior state, so it must not be pinned.
+	rules := []restoreRule{{attribute: "volumes", fields: []string{"id", "name"}}}
+
+	got, err := restoreFromState(plan, state, rules)
+	if err != nil {
+		t.Fatalf("restoreFromState() error = %v", err)
+	}
+
+	idPath := tftypes.NewAttributePath().WithAttributeName("volumes").WithElementKeyInt(0).WithAttributeName("id")
+	namePath := tftypes.NewAttributePath().WithAttributeName("volumes").WithElementKeyInt(0).WithAttributeName("name")
+
+	gotID, err := valueAtPath(got, idPath)
+	if err != nil {
+		t.Fatalf("id path: %v", err)
+	}
+	if !gotID.Equal(num(671)) {
+		t.Errorf("id = %v, want it restored to 671", gotID)
+	}
+
+	gotName, err := valueAtPath(got, namePath)
+	if err != nil {
+		t.Fatalf("name path: %v", err)
+	}
+	if gotName.IsKnown() {
+		t.Errorf("name = %v, want it left unknown rather than pinned to null", gotName)
+	}
+}
+
+// TestUnitRestoreFromStateLeavesUncoveredAttributesAlone verifies that an
+// attribute outside the rule's fields is untouched even when prior state holds a
+// perfectly good value for it.
+func TestUnitRestoreFromStateLeavesUncoveredAttributesAlone(t *testing.T) {
+	t.Parallel()
+
+	plan := resourceValue(volumes(volume(unknownNum(), unknownString())))
+	state := resourceValue(volumes(volume(num(671), str("kvm-cache-none"))))
+
+	rules := []restoreRule{{attribute: "volumes", fields: []string{"id"}}}
+
+	got, err := restoreFromState(plan, state, rules)
+	if err != nil {
+		t.Fatalf("restoreFromState() error = %v", err)
+	}
+
+	namePath := tftypes.NewAttributePath().WithAttributeName("volumes").WithElementKeyInt(0).WithAttributeName("name")
+	gotName, err := valueAtPath(got, namePath)
+	if err != nil {
+		t.Fatalf("name path: %v", err)
+	}
+
+	if gotName.IsKnown() {
+		t.Errorf("uncovered attribute = %v, want it left unknown", gotName)
+	}
+}

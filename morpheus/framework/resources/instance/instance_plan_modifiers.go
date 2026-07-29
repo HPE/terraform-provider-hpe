@@ -5,17 +5,11 @@ package instance
 import (
 	"context"
 	"errors"
+	"slices"
 
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
-
-// errUnexpectedPathValue is returned when walking an attribute path yields
-// something other than a value, which should not happen for a well-formed plan
-// or state.
-var errUnexpectedPathValue = errors.New("unexpected type at attribute path")
 
 // The plugin framework marks every computed attribute that is null in the
 // configuration as unknown whenever the planned state differs from the prior
@@ -28,52 +22,78 @@ var errUnexpectedPathValue = errors.New("unexpected type at attribute path")
 // changing service_plan_options.max_memory also churns connection_info, labels,
 // and every computed field of network_interfaces and volumes.
 //
-// A blanket UseStateForUnknown is not safe here. Update re-reads the instance
-// from the API and writes whatever it returns into state, so pinning an
-// attribute the API legitimately changes during the update would produce
-// "Provider produced inconsistent result after apply" — a hard failure, worse
-// than a noisy plan. Two cases matter in practice:
+// Restoring values has to be done narrowly. Update re-reads the instance from
+// the API and writes what it returns into state, so a planned value that the
+// read path then overrides produces "Provider produced inconsistent result
+// after apply" — a hard failure, worse than a noisy plan. Two rules keep this
+// safe:
 //
-//   - connection_info holds the instance's addresses. A resize that cannot be
-//     performed hot stops and restarts the instance, and the address can change
-//     as a direct result.
-//   - Interface and volume identity can change when those collections are
-//     themselves reconfigured.
+//  1. Only attributes whose value is stable and API-assigned are restored:
+//     interface and volume identity. Attributes such as volume storage_profile
+//     are excluded, because the post-apply read prefers the API value whenever
+//     the planned value is null or unknown (see instance_read.go), so pinning
+//     them from prior state can contradict what apply returns.
+//  2. A value is only ever filled in where the plan says unknown, and only from
+//     a prior-state value that is itself known and non-null. A null is never
+//     pinned, so restoring cannot turn "unknown, resolve later" into an
+//     assertion the read path will contradict.
 //
-// So each group is restored from prior state only when nothing that could
-// affect it has changed, and the whole collection is restored at once. Restoring
-// per element would be positional, and would pin values from the wrong element
-// if interfaces or volumes were added, removed or reordered.
+// Each group is additionally gated on its own triggers: if the practitioner
+// changed the collection, nothing in it is restored, because the API may assign
+// new identities and a positional restore could pin the previous element's
+// values onto a different one.
 
-// restoreRule describes one group of computed attributes that can be taken from
-// prior state, and the attributes whose modification would invalidate it.
+// errUnexpectedPathValue is returned when walking an attribute path yields
+// something other than a value, which should not happen for a well-formed plan
+// or state.
+var errUnexpectedPathValue = errors.New("unexpected type at attribute path")
+
+// restoreRule describes attributes that can be taken from prior state, and the
+// attributes whose modification would invalidate them.
 type restoreRule struct {
-	// attribute is the attribute restored from prior state.
+	// attribute is the root attribute this rule applies to.
 	attribute string
 
-	// triggers are the attributes that, if changed by the practitioner, mean
-	// the restored value can no longer be trusted. An attribute is normally
-	// its own trigger.
+	// fields, when non-empty, restricts the rule to those nested attributes of
+	// each element of the collection. When empty the root attribute value itself
+	// is restored.
+	fields []string
+
+	// triggers are the attributes that, if changed by the practitioner, mean the
+	// restored values can no longer be trusted. An attribute is normally its own
+	// trigger.
 	triggers []string
 }
 
-// restoreRules lists the computed attributes that can be recovered from prior
-// state, together with what invalidates them.
+// restoreRules lists what may be recovered from prior state.
+//
+// Only identity attributes are listed for the nested collections. Attributes
+// that the post-apply read sources from the API — volume storage_profile and
+// controller_mount_point, interface ip_address — are deliberately absent.
 var restoreRules = []restoreRule{
-	// Interface identity (id, name, primary_interface, ...) is stable unless the
-	// interfaces themselves are reconfigured. Note that on appliances from 8.1.2
-	// a network change is applied in place rather than forcing replacement, and
-	// the API may recreate interfaces, so network_interfaces must gate itself.
-	{attribute: "network_interfaces", triggers: []string{"network_interfaces"}},
+	// Interface identity is stable unless the interfaces are reconfigured. Note
+	// that from 8.1.2 a network change is applied in place rather than forcing
+	// replacement, and the API may recreate interfaces, so network_interfaces
+	// gates itself.
+	{
+		attribute: "network_interfaces",
+		fields:    []string{"id", "name", "primary_interface"},
+		triggers:  []string{"network_interfaces"},
+	},
 
-	// Volume identity is stable unless the volumes themselves are reconfigured.
-	{attribute: "volumes", triggers: []string{"volumes"}},
+	// Volume identity is stable unless the volumes are reconfigured.
+	{
+		attribute: "volumes",
+		fields:    []string{"id"},
+		triggers:  []string{"volumes"},
+	},
 
-	// Labels only change when the practitioner changes them.
+	// Labels are a flat collection with no nested attributes, and only change
+	// when the practitioner changes them.
 	{attribute: "labels", triggers: []string{"labels"}},
 
 	// Addresses can change whenever the instance is reconfigured or restarted,
-	// so anything that drives an infrastructure operation invalidates them.
+	// so anything driving an infrastructure operation invalidates them.
 	{
 		attribute: "connection_info",
 		triggers: []string{
@@ -101,13 +121,115 @@ func restoreUnchangedComputedAttributes(
 		return
 	}
 
+	applicable := make([]restoreRule, 0, len(restoreRules))
+
 	for _, rule := range restoreRules {
 		if anyAttributeChanged(req.Plan.Raw, req.State.Raw, rule.triggers) {
 			continue
 		}
 
-		restoreAttributeFromState(ctx, req, resp, rule.attribute)
+		applicable = append(applicable, rule)
 	}
+
+	if len(applicable) == 0 {
+		return
+	}
+
+	restored, err := restoreFromState(resp.Plan.Raw, req.State.Raw, applicable)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Error restoring planned values",
+			"An unexpected error occurred while restoring unchanged computed "+
+				"attributes into the plan. This is always a problem with the "+
+				"provider. Please report the following to the provider "+
+				"developer:\n\n"+err.Error(),
+		)
+
+		return
+	}
+
+	resp.Plan.Raw = restored
+}
+
+// restoreFromState fills unknown values in plan from prior state, for the paths
+// covered by the supplied rules.
+//
+// Only unknown planned values are filled, and only from state values that are
+// known, non-null and of the same type. Anything else is left as planned, so a
+// value the read path will supply is never pre-empted.
+func restoreFromState(
+	plan, state tftypes.Value,
+	rules []restoreRule,
+) (tftypes.Value, error) {
+	return tftypes.Transform(
+		plan,
+		func(p *tftypes.AttributePath, v tftypes.Value) (tftypes.Value, error) {
+			if v.IsKnown() || !matchesAnyRestoreRule(p, rules) {
+				return v, nil
+			}
+
+			stateValue, err := valueAtPath(state, p)
+			if err != nil {
+				// No counterpart in prior state — for example a newly added
+				// element. Leave it unknown.
+				return v, nil
+			}
+
+			if !stateValue.IsKnown() || stateValue.IsNull() {
+				return v, nil
+			}
+
+			if !stateValue.Type().Equal(v.Type()) {
+				return v, nil
+			}
+
+			return stateValue, nil
+		},
+	)
+}
+
+// matchesAnyRestoreRule reports whether path is covered by one of the rules.
+func matchesAnyRestoreRule(p *tftypes.AttributePath, rules []restoreRule) bool {
+	return slices.ContainsFunc(rules, func(r restoreRule) bool {
+		return matchesRestoreRule(p, r)
+	})
+}
+
+// matchesRestoreRule reports whether path is covered by a single rule.
+//
+// For a rule without fields the path must be the root attribute itself. For a
+// rule with fields the path must address one of those fields within an element
+// of the collection, e.g. volumes[0].id.
+func matchesRestoreRule(p *tftypes.AttributePath, r restoreRule) bool {
+	steps := p.Steps()
+	if len(steps) == 0 {
+		return false
+	}
+
+	root, ok := steps[0].(tftypes.AttributeName)
+	if !ok || string(root) != r.attribute {
+		return false
+	}
+
+	if len(r.fields) == 0 {
+		return len(steps) == 1
+	}
+
+	// collection[index].field
+	if len(steps) != 3 {
+		return false
+	}
+
+	if _, ok := steps[1].(tftypes.ElementKeyInt); !ok {
+		return false
+	}
+
+	leaf, ok := steps[2].(tftypes.AttributeName)
+	if !ok {
+		return false
+	}
+
+	return slices.Contains(r.fields, string(leaf))
 }
 
 // anyAttributeChanged reports whether the practitioner changed any of the named
@@ -194,33 +316,4 @@ func valueAtPath(val tftypes.Value, p *tftypes.AttributePath) (tftypes.Value, er
 	}
 
 	return value, nil
-}
-
-// restoreAttributeFromState copies one attribute from prior state into the plan.
-func restoreAttributeFromState(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-	attribute string,
-) {
-	p := path.Root(attribute)
-
-	// These attributes are all collections; read them as their concrete types so
-	// the framework performs the conversion.
-	switch attribute {
-	case "labels":
-		var value types.Set
-		if diags := req.State.GetAttribute(ctx, p, &value); diags.HasError() {
-			return
-		}
-
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, p, value)...)
-	default:
-		var value types.List
-		if diags := req.State.GetAttribute(ctx, p, &value); diags.HasError() {
-			return
-		}
-
-		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, p, value)...)
-	}
 }
