@@ -191,7 +191,7 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
   name             = %q
   service_type     = "LBHttpProfile"
-  config_http {
+  config_http = {
     https_redirect = true
   }
 }

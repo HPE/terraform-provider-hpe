@@ -6,6 +6,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
   weight               = {{.Weight}}
   keep_alive           = {{.KeepAlive}}
   hold_down            = {{.HoldDown}}
+  hop_limit            = {{.HopLimit}}
 {{- if .SourceAddresses}}
 
   config_nsxt = {
