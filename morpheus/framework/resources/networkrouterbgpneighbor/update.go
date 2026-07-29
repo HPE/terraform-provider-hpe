@@ -110,13 +110,8 @@ func (r *Resource) Update(
 		neighbor.BfdEnabled = &bfdVal
 	}
 
-	if !plan.BfdInterval.IsNull() && !plan.BfdInterval.IsUnknown() {
-		neighbor.BfdInterval = plan.BfdInterval.ValueInt64Pointer()
-	}
-
-	if !plan.BfdMultiple.IsNull() && !plan.BfdMultiple.IsUnknown() {
-		neighbor.BfdMultiple = plan.BfdMultiple.ValueInt64Pointer()
-	}
+	// Always send the BFD timers, for the same reason as create. See bfd.go.
+	neighbor.BfdInterval, neighbor.BfdMultiple = bfdTimers(plan.BfdInterval, plan.BfdMultiple)
 
 	if !plan.AllowAsIn.IsNull() && !plan.AllowAsIn.IsUnknown() {
 		allowVal := sdk.UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborAllowAsIn{}

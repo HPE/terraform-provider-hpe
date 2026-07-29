@@ -380,7 +380,10 @@ func resourceTaskChefBootstrapRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("chef_server_id", serverId)
 	d.Set("environment", chefBootstrapTask.TaskOptions.ChefEnv)
 	d.Set("run_list", chefBootstrapTask.TaskOptions.ChefRunList)
-	d.Set("data_bag_key", chefBootstrapTask.TaskOptions.ChefDataKeyHash)
+	// data_bag_key is write-only: the API returns only a salted hash
+	// (chefDataKeyHash) that cannot be reproduced from the configured key, so
+	// reading it back left state holding a value the configuration can never
+	// match and every subsequent plan showed a change. Leave it as configured.
 	d.Set("data_bag_key_path", chefBootstrapTask.TaskOptions.ChefDataKeyPath)
 	d.Set("node_name", chefBootstrapTask.TaskOptions.ChefNodeName)
 	d.Set("node_attributes", chefBootstrapTask.TaskOptions.ChefAttributes)

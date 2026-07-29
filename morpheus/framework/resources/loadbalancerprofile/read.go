@@ -170,28 +170,30 @@ func getLoadBalancerProfileAsState(
 
 	state.LoadBalancer = lb
 
-	// Tags: read from config response
-	state.Tags = readTagsFromConfig(ctx, p.Config, prior.Tags)
+	// serviceType selects which config variant and tag list apply. It is read
+	// straight from the API response, so it is available on import too.
+	serviceType := state.ServiceType.ValueString()
 
-	// Config blocks: on a normal refresh, preserve the prior state config block.
-	// The API applies its own config defaults that Terraform did not send (for
-	// example x_forwarded_for defaults to INSERT server-side), so reconstructing
-	// the block on every read would produce a "Provider produced inconsistent
-	// result after apply" error.
-	state.ConfigHttp = prior.ConfigHttp
-	state.ConfigFastTcp = prior.ConfigFastTcp
-	state.ConfigFastUdp = prior.ConfigFastUdp
-	state.ConfigCookiePersistence = prior.ConfigCookiePersistence
-	state.ConfigSourceIpPersistence = prior.ConfigSourceIpPersistence
-	state.ConfigGenericPersistence = prior.ConfigGenericPersistence
-	state.ConfigClientSsl = prior.ConfigClientSsl
-	state.ConfigServerSsl = prior.ConfigServerSsl
+	// Tags: read from config response
+	state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
+
+	// Config blocks: preserve every value the practitioner configured, while
+	// resolving any attribute that arrived unknown from the API response.
+	//
+	// Optional+Computed attributes omitted from the configuration are unknown in
+	// the plan. Copying the prior block verbatim would write those unknowns into
+	// state ("Provider returned invalid result object after apply"), whereas
+	// rebuilding it purely from the response would overwrite configured values
+	// with the API's own defaults (for example x_forwarded_for defaults to
+	// INSERT server-side) and produce "Provider produced inconsistent result
+	// after apply". Merging per attribute avoids both.
+	mergeConfigBlocks(ctx, &state, prior, p.Config)
 
 	// On import the prior state has no typed config block (ImportState only sets
 	// id and load_balancer_id). Reconstruct the active block from the API
 	// response so the imported resource is complete and produces a clean plan.
 	if allConfigBlocksNull(prior) {
-		reconstructConfigBlockFromResponse(ctx, &state, p.Config)
+		reconstructConfigBlockFromResponse(ctx, &state, serviceType, p.Config)
 	}
 
 	return state, diags

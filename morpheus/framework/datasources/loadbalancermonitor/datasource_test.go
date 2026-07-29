@@ -120,9 +120,13 @@ func TestAccMorpheusLoadBalancerMonitorDataSourceByNameOk(t *testing.T) {
 		t.Fatalf("failed to render monitor config: %s", err)
 	}
 
+	// The name is a literal, so nothing links the data source to the monitor
+	// resource. Without an explicit dependency Terraform reads the data source
+	// before the monitor exists and the name lookup returns no results.
 	dataSourceConfig, err := datasourcemonitor.RenderLoadBalancerMonitorDataSourceByNameConfig(t, map[string]string{
 		"LoadBalancerId": "hpe_morpheus_load_balancer.lb.id",
 		"Name":           monitorName,
+		"DependsOn":      "hpe_morpheus_load_balancer_monitor.nsxt",
 	})
 	if err != nil {
 		t.Fatalf("failed to render data source config: %s", err)

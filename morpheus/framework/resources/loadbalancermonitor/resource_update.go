@@ -251,5 +251,8 @@ func (r *Resource) Update(
 		state.Config = plan.Config
 	}
 
+	// Restore fields the API accepts but does not return.
+	preserveUnreturnedFields(&state, plan)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

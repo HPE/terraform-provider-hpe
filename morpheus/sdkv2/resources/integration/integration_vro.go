@@ -138,13 +138,6 @@ func ResourceIntegrationVRO() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The tenant of the account used to connect to vRO (required for non-aria auth types)",
 				Optional:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
 			},
 			"auth_id": {
 				Type:        schema.TypeString,
@@ -340,8 +333,13 @@ func resourceIntegrationVRORead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	d.Set("password", integration.PasswordHash)
-	d.Set("tenant", integration.TokenHash)
+	// password is write-only: the API returns only a salted hash
+	// (passwordHash) that cannot be reproduced from the configured plaintext.
+	//
+	// tenant is sent as the service token, and the API likewise returns only
+	// tokenHash. Reading that back stored a 64-character hash in a
+	// non-sensitive attribute, so a plan showed the tenant changing from e.g.
+	// "vsphere.local" to a hash. Leave both as configured.
 	// d.Set("auth_type", integration.Config)
 
 	return diags
@@ -414,7 +412,7 @@ func resourceIntegrationVROUpdate(ctx context.Context, d *schema.ResourceData, m
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("tenant", d.Get("tenant")))
 	}
-	integration["token"] = tenant
+	integration["serviceToken"] = tenant
 
 	req := &morpheus.Request{
 		Body: map[string]any{
