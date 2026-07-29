@@ -86,6 +86,9 @@ func (r *Resource) Read(
 		state.Config = data.Config
 	}
 
+	// Restore fields the API accepts but does not return.
+	preserveUnreturnedFields(&state, data)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -189,4 +192,32 @@ func getLoadBalancerMonitorAsState(
 	}
 
 	return state, diags
+}
+
+// preserveUnreturnedFields restores values the API accepts on create/update but
+// does not echo back, so the post-apply state matches the plan (or, on refresh,
+// prior state). Without this the provider reports "Provider produced
+// inconsistent result after apply".
+//
+//   - receive_data: stored as an encrypted string, and an empty value comes
+//     back as null rather than "".
+//   - data_length: only round-tripped for ICMP monitors, so any other monitor
+//     type that sets it always reads back null.
+//
+// Both attributes are Optional+Computed. An unknown prior value is deliberately
+// left alone: it has to be resolved from the API response (or null), never
+// copied, or an unknown would leak into state.
+func preserveUnreturnedFields(
+	state *LoadBalancerMonitorModel,
+	prior LoadBalancerMonitorModel,
+) {
+	if state.ReceiveData.IsNull() &&
+		!prior.ReceiveData.IsNull() && !prior.ReceiveData.IsUnknown() {
+		state.ReceiveData = prior.ReceiveData
+	}
+
+	if state.DataLength.IsNull() &&
+		!prior.DataLength.IsNull() && !prior.DataLength.IsUnknown() {
+		state.DataLength = prior.DataLength
+	}
 }
