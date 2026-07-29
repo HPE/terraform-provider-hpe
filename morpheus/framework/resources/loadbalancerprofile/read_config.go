@@ -84,6 +84,343 @@ func nullableInt64ToType(n sdk.NullableInt64) types.Int64 {
 	return types.Int64Null()
 }
 
+// knownOr returns prior when it is known, otherwise the value resolved from the
+// API response.
+//
+// Optional+Computed attributes that the configuration omits arrive as unknown
+// in the plan. They must be resolved before state is written, or Terraform
+// reports "Provider returned invalid result object after apply". Attributes the
+// practitioner did configure are known and are always preserved, so the API's
+// own defaults never overwrite them.
+func knownOr[T attr.Value](prior, fromAPI T) T {
+	if prior.IsUnknown() {
+		return fromAPI
+	}
+
+	return prior
+}
+
+// mergeConfigBlocks writes the typed config_* blocks into state, preserving
+// every value the practitioner configured while resolving any attribute that
+// arrived unknown from the API response.
+//
+// Copying the prior block verbatim would leak the plan's unknown attributes
+// into state; rebuilding it purely from the response would overwrite configured
+// values with the API's own defaults (for example x_forwarded_for defaults to
+// INSERT server-side) and produce "Provider produced inconsistent result after
+// apply". Merging per attribute avoids both failure modes.
+func mergeConfigBlocks(
+	ctx context.Context,
+	state *LoadBalancerProfileModel,
+	prior LoadBalancerProfileModel,
+	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
+) {
+	var (
+		httpCfg      *sdk.HTTPLoadBalancerProfileConfig3
+		fastTCPCfg   *sdk.FastTCPLoadBalancerProfileConfig3
+		fastUDPCfg   *sdk.FastUDPLoadBalancerProfileConfig3
+		cookieCfg    *sdk.CookiePersistenceLoadBalancerProfileConfig3
+		sourceIPCfg  *sdk.SourceIPPersistenceLoadBalancerProfileConfig3
+		genericCfg   *sdk.GenericPersistenceLoadBalancerProfileConfig3
+		clientSSLCfg *sdk.ClientSSLLoadBalancerProfileConfig3
+		serverSSLCfg *sdk.ServerSSLLoadBalancerProfileConfig3
+	)
+
+	if cfg != nil {
+		httpCfg = cfg.HTTPLoadBalancerProfileConfig3
+		fastTCPCfg = cfg.FastTCPLoadBalancerProfileConfig3
+		fastUDPCfg = cfg.FastUDPLoadBalancerProfileConfig3
+		cookieCfg = cfg.CookiePersistenceLoadBalancerProfileConfig3
+		sourceIPCfg = cfg.SourceIPPersistenceLoadBalancerProfileConfig3
+		genericCfg = cfg.GenericPersistenceLoadBalancerProfileConfig3
+		clientSSLCfg = cfg.ClientSSLLoadBalancerProfileConfig3
+		serverSSLCfg = cfg.ServerSSLLoadBalancerProfileConfig3
+	}
+
+	state.ConfigHttp = mergeHTTPConfig(ctx, prior.ConfigHttp, httpCfg)
+	state.ConfigFastTcp = mergeFastTCPConfig(prior.ConfigFastTcp, fastTCPCfg)
+	state.ConfigFastUdp = mergeFastUDPConfig(prior.ConfigFastUdp, fastUDPCfg)
+	state.ConfigCookiePersistence = mergeCookiePersistenceConfig(
+		prior.ConfigCookiePersistence, cookieCfg,
+	)
+	state.ConfigSourceIpPersistence = mergeSourceIPPersistenceConfig(
+		prior.ConfigSourceIpPersistence, sourceIPCfg,
+	)
+	state.ConfigGenericPersistence = mergeGenericPersistenceConfig(
+		prior.ConfigGenericPersistence, genericCfg,
+	)
+	state.ConfigClientSsl = mergeClientSSLConfig(prior.ConfigClientSsl, clientSSLCfg)
+	state.ConfigServerSsl = mergeServerSSLConfig(prior.ConfigServerSsl, serverSSLCfg)
+}
+
+func mergeHTTPConfig(
+	ctx context.Context,
+	prior ConfigHttpValue,
+	cfg *sdk.HTTPLoadBalancerProfileConfig3,
+) ConfigHttpValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigHttpValue
+	if cfg != nil {
+		fromAPI = httpConfigFromResponse(ctx, cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigHttpValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigHttpValue{
+		HttpIdleTimeout:    knownOr(prior.HttpIdleTimeout, fromAPI.HttpIdleTimeout),
+		HttpsRedirect:      knownOr(prior.HttpsRedirect, fromAPI.HttpsRedirect),
+		NtlmAuthentication: knownOr(prior.NtlmAuthentication, fromAPI.NtlmAuthentication),
+		RedirectAddress:    knownOr(prior.RedirectAddress, fromAPI.RedirectAddress),
+		RequestBodySize:    knownOr(prior.RequestBodySize, fromAPI.RequestBodySize),
+		RequestHeaderSize:  knownOr(prior.RequestHeaderSize, fromAPI.RequestHeaderSize),
+		ResponseHeaderSize: knownOr(prior.ResponseHeaderSize, fromAPI.ResponseHeaderSize),
+		ResponseTimeout:    knownOr(prior.ResponseTimeout, fromAPI.ResponseTimeout),
+		XForwardedFor:      knownOr(prior.XForwardedFor, fromAPI.XForwardedFor),
+		state:              attr.ValueStateKnown,
+	}
+}
+
+func mergeFastTCPConfig(
+	prior ConfigFastTcpValue,
+	cfg *sdk.FastTCPLoadBalancerProfileConfig3,
+) ConfigFastTcpValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigFastTcpValue
+	if cfg != nil {
+		fromAPI = fastTCPConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigFastTcpValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigFastTcpValue{
+		ConnectionCloseTimeout: knownOr(
+			prior.ConnectionCloseTimeout, fromAPI.ConnectionCloseTimeout,
+		),
+		FastTcpIdleTimeout: knownOr(prior.FastTcpIdleTimeout, fromAPI.FastTcpIdleTimeout),
+		HaFlowMirroring:    knownOr(prior.HaFlowMirroring, fromAPI.HaFlowMirroring),
+		state:              attr.ValueStateKnown,
+	}
+}
+
+func mergeFastUDPConfig(
+	prior ConfigFastUdpValue,
+	cfg *sdk.FastUDPLoadBalancerProfileConfig3,
+) ConfigFastUdpValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigFastUdpValue
+	if cfg != nil {
+		fromAPI = fastUDPConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigFastUdpValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigFastUdpValue{
+		FastUdpIdleTimeout: knownOr(prior.FastUdpIdleTimeout, fromAPI.FastUdpIdleTimeout),
+		HaFlowMirroring:    knownOr(prior.HaFlowMirroring, fromAPI.HaFlowMirroring),
+		state:              attr.ValueStateKnown,
+	}
+}
+
+func mergeCookiePersistenceConfig(
+	prior ConfigCookiePersistenceValue,
+	cfg *sdk.CookiePersistenceLoadBalancerProfileConfig3,
+) ConfigCookiePersistenceValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigCookiePersistenceValue
+	if cfg != nil {
+		fromAPI = cookiePersistenceConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigCookiePersistenceValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigCookiePersistenceValue{
+		CookieDomain:     knownOr(prior.CookieDomain, fromAPI.CookieDomain),
+		CookieFallback:   knownOr(prior.CookieFallback, fromAPI.CookieFallback),
+		CookieGarbling:   knownOr(prior.CookieGarbling, fromAPI.CookieGarbling),
+		CookieMode:       knownOr(prior.CookieMode, fromAPI.CookieMode),
+		CookieName:       knownOr(prior.CookieName, fromAPI.CookieName),
+		CookiePath:       knownOr(prior.CookiePath, fromAPI.CookiePath),
+		CookieType:       knownOr(prior.CookieType, fromAPI.CookieType),
+		MaxCookieAge:     knownOr(prior.MaxCookieAge, fromAPI.MaxCookieAge),
+		MaxIdleTime:      knownOr(prior.MaxIdleTime, fromAPI.MaxIdleTime),
+		SharePersistence: knownOr(prior.SharePersistence, fromAPI.SharePersistence),
+		state:            attr.ValueStateKnown,
+	}
+}
+
+func mergeSourceIPPersistenceConfig(
+	prior ConfigSourceIpPersistenceValue,
+	cfg *sdk.SourceIPPersistenceLoadBalancerProfileConfig3,
+) ConfigSourceIpPersistenceValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigSourceIpPersistenceValue
+	if cfg != nil {
+		fromAPI = sourceIPPersistenceConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigSourceIpPersistenceValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigSourceIpPersistenceValue{
+		HaPersistenceMirroring: knownOr(
+			prior.HaPersistenceMirroring, fromAPI.HaPersistenceMirroring,
+		),
+		PersistenceEntryTimeout: knownOr(
+			prior.PersistenceEntryTimeout, fromAPI.PersistenceEntryTimeout,
+		),
+		PurgeEntries:     knownOr(prior.PurgeEntries, fromAPI.PurgeEntries),
+		SharePersistence: knownOr(prior.SharePersistence, fromAPI.SharePersistence),
+		state:            attr.ValueStateKnown,
+	}
+}
+
+func mergeGenericPersistenceConfig(
+	prior ConfigGenericPersistenceValue,
+	cfg *sdk.GenericPersistenceLoadBalancerProfileConfig3,
+) ConfigGenericPersistenceValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigGenericPersistenceValue
+	if cfg != nil {
+		fromAPI = genericPersistenceConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigGenericPersistenceValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigGenericPersistenceValue{
+		HaPersistenceMirroring: knownOr(
+			prior.HaPersistenceMirroring, fromAPI.HaPersistenceMirroring,
+		),
+		PersistenceEntryTimeout: knownOr(
+			prior.PersistenceEntryTimeout, fromAPI.PersistenceEntryTimeout,
+		),
+		SharePersistence: knownOr(prior.SharePersistence, fromAPI.SharePersistence),
+		state:            attr.ValueStateKnown,
+	}
+}
+
+func mergeClientSSLConfig(
+	prior ConfigClientSslValue,
+	cfg *sdk.ClientSSLLoadBalancerProfileConfig3,
+) ConfigClientSslValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigClientSslValue
+	if cfg != nil {
+		fromAPI = clientSSLConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigClientSslValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigClientSslValue{
+		PreferServerCipher:  knownOr(prior.PreferServerCipher, fromAPI.PreferServerCipher),
+		SessionCache:        knownOr(prior.SessionCache, fromAPI.SessionCache),
+		SessionCacheTimeout: knownOr(prior.SessionCacheTimeout, fromAPI.SessionCacheTimeout),
+		SslSuite:            knownOr(prior.SslSuite, fromAPI.SslSuite),
+		SupportedSslCiphers: knownOr(
+			prior.SupportedSslCiphers, fromAPI.SupportedSslCiphers,
+		),
+		SupportedSslProtocols: knownOr(
+			prior.SupportedSslProtocols, fromAPI.SupportedSslProtocols,
+		),
+		state: attr.ValueStateKnown,
+	}
+}
+
+func mergeServerSSLConfig(
+	prior ConfigServerSslValue,
+	cfg *sdk.ServerSSLLoadBalancerProfileConfig3,
+) ConfigServerSslValue {
+	if prior.IsNull() {
+		return prior
+	}
+
+	var fromAPI ConfigServerSslValue
+	if cfg != nil {
+		fromAPI = serverSSLConfigFromResponse(cfg)
+	}
+
+	if prior.IsUnknown() {
+		if cfg == nil {
+			return NewConfigServerSslValueNull()
+		}
+
+		return fromAPI
+	}
+
+	return ConfigServerSslValue{
+		SessionCache: knownOr(prior.SessionCache, fromAPI.SessionCache),
+		SslSuite:     knownOr(prior.SslSuite, fromAPI.SslSuite),
+		SupportedSslCiphers: knownOr(
+			prior.SupportedSslCiphers, fromAPI.SupportedSslCiphers,
+		),
+		SupportedSslProtocols: knownOr(
+			prior.SupportedSslProtocols, fromAPI.SupportedSslProtocols,
+		),
+		state: attr.ValueStateKnown,
+	}
+}
+
 func httpConfigFromResponse(
 	ctx context.Context,
 	cfg *sdk.HTTPLoadBalancerProfileConfig3,

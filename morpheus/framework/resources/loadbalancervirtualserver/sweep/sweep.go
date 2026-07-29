@@ -33,7 +33,8 @@ func init() {
 			*http.Response,
 			error,
 		) {
-			lbResp, lbHresp, lbErr := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
+			lbResp, lbHresp, lbErr := client.LoadBalancersAPI.ListLoadBalancers(ctx).
+				Max(testsweep.ListPageSize).Execute()
 			if lbErr != nil || lbResp == nil {
 				return nil, lbHresp, lbErr
 			}
@@ -47,7 +48,8 @@ func init() {
 				}
 
 				vsResp, _, vsErr := client.LoadBalancersAPI.
-					ListLoadBalancerVirtualServers(ctx, *lbID).Execute()
+					ListLoadBalancerVirtualServers(ctx, *lbID).
+					Max(testsweep.ListPageSize).Execute()
 				if vsErr != nil || vsResp == nil {
 					continue
 				}

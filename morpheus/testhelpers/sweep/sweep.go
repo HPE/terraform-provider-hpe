@@ -29,6 +29,16 @@ const EnvSweepPrefix = "TF_ACC_SWEEP_PREFIX"
 // which name resources after their Go test function (TestAccMorpheus*).
 const defaultTestResourcePrefix = "TestAccMorpheus"
 
+// ListPageSize is the page size sweepers should request when listing
+// resources.
+//
+// The Morpheus API applies a default of 25 records when the max query
+// parameter is omitted. A sweeper that lists without it therefore only ever
+// sees the first 25 resources, silently leaving older leaked resources on the
+// appliance and letting the leak grow without bound. Pass this to the list
+// call's Max builder, e.g. ListLoadBalancers(ctx).Max(ListPageSize).
+const ListPageSize int64 = 10000
+
 // TestResourcePrefix identifies acceptance test resources eligible for sweeping.
 // It is overridable via EnvSweepPrefix for targeted cleanup; unset or blank
 // keeps the default so a normal sweep still matches test-created resources.

@@ -36,7 +36,8 @@ func init() {
 			*http.Response,
 			error,
 		) {
-			resp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).Execute()
+			resp, hresp, err := client.LoadBalancersAPI.ListLoadBalancers(ctx).
+				Max(testsweep.ListPageSize).Execute()
 			if resp == nil {
 				return nil, hresp, err
 			}
@@ -67,9 +68,14 @@ func init() {
 
 			return hresp, err
 		},
+		// Children must be removed before the load balancer itself: NSX-T
+		// refuses to delete an lb-service that still has pools or profiles
+		// attached.
 		testsweep.WithDependencies[sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner](
 			"hpe_morpheus_load_balancer_monitor",
 			"hpe_morpheus_load_balancer_virtual_server",
+			"hpe_morpheus_load_balancer_pool",
+			"hpe_morpheus_load_balancer_profile",
 		),
 	)
 
