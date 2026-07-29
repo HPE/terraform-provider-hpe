@@ -19,6 +19,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
   weight      = 100
   keep_alive  = 60
   hold_down   = 180
+  hop_limit   = 2
 }
 ```
 

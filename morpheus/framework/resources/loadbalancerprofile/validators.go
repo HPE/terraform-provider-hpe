@@ -14,21 +14,21 @@ import (
 // a given serviceType, or "" if the serviceType is not recognised.
 func blockForServiceType(serviceType string) string {
 	switch serviceType {
-	case "LBHttpProfile":
+	case serviceTypeHTTP:
 		return "config_http"
-	case "LBFastTcpProfile":
+	case serviceTypeFastTCP:
 		return "config_fast_tcp"
-	case "LBFastUdpProfile":
+	case serviceTypeFastUDP:
 		return "config_fast_udp"
-	case "LBCookiePersistenceProfile":
+	case serviceTypeCookiePersistence:
 		return "config_cookie_persistence"
-	case "LBSourceIpPersistenceProfile":
+	case serviceTypeSourceIPPersistence:
 		return "config_source_ip_persistence"
-	case "LBGenericPersistenceProfile":
+	case serviceTypeGenericPersistence:
 		return "config_generic_persistence"
-	case "LBClientSslProfile":
+	case serviceTypeClientSSL:
 		return "config_client_ssl"
-	case "LBServerSslProfile":
+	case serviceTypeServerSSL:
 		return "config_server_ssl"
 	default:
 		return ""

@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrule"
-	networkrouterresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter"
 	firewallruleresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrule"
+	firewallrulegroupresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -34,21 +34,42 @@ provider "hpe" {
 }
 `
 
-// routerFixture renders a self-contained NSX-T network router.
+// routerFixture renders an NSX-T Tier-1 gateway router labelled
+// hpe_morpheus_network_router.fw_tier1, plus a firewall rule group on it
+// labelled hpe_morpheus_network_router_firewall_rule_group.example.
+//
+// parent_id is Required and RequiresReplace: NSX-T rejects a rule without a
+// parent group. Gateway firewall rule groups attach to the router's gateway
+// policy, which does not require an edge cluster or tier-0 connection -- a
+// simple dhcpLocal Tier-1 is sufficient. This mirrors the fixture used by the
+// firewall rule group resource/data source tests.
+//
+// QA constants: group_id 3, network_integration_id 5.
 func routerFixture(t *testing.T, name string) string {
 	t.Helper()
 
-	cfg, err := networkrouterresource.RenderNetworkRouterGenericConfig(t, map[string]string{
-		"Name":                 name + "-router",
-		"TypeId":               "9",
-		"GroupId":              "3",
-		"NetworkIntegrationId": "5",
-	})
+	routerConfig := `
+resource "hpe_morpheus_network_router" "fw_tier1" {
+  name                   = "` + name + `-tier1"
+  group_id               = 3
+  network_integration_id = 5
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+  }
+}
+`
+
+	groupConfig, err := firewallrulegroupresource.RenderNetworkRouterFirewallRuleGroupConfig(
+		t, map[string]string{
+			"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
+			"Name":     name + "-group",
+		})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	return cfg
+	return routerConfig + groupConfig
 }
 
 func TestAccMorpheusFindNetworkRouterFirewallRuleByName(t *testing.T) {
@@ -68,7 +89,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleByName(t *testing.T) {
 	routerConfig := routerFixture(t, name)
 
 	resourceConfig, err := firewallruleresource.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -78,7 +99,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleByName(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_firewall_rule" "example" {
   name       = "` + name + `"
-  router_id  = hpe_morpheus_network_router.example.id
+  router_id  = hpe_morpheus_network_router.fw_tier1.id
   depends_on = [hpe_morpheus_network_router_firewall_rule.example]
 }
 `
@@ -113,7 +134,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleById(t *testing.T) {
 	routerConfig := routerFixture(t, name)
 
 	resourceConfig, err := firewallruleresource.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 		"Name":     name,
 	})
 	if err != nil {
@@ -122,7 +143,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleById(t *testing.T) {
 
 	dataSourceConfig, err := networkrouterfirewallrule.RenderFirewallRuleByIdConfig(t, map[string]string{
 		"Id":       "hpe_morpheus_network_router_firewall_rule.example.id",
-		"RouterId": "hpe_morpheus_network_router.example.id",
+		"RouterId": "hpe_morpheus_network_router.fw_tier1.id",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -160,7 +181,7 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleNotFound(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_firewall_rule" "example" {
   name      = "nonexistent-firewall-rule-name-that-should-not-exist"
-  router_id = hpe_morpheus_network_router.example.id
+  router_id = hpe_morpheus_network_router.fw_tier1.id
 }
 `
 

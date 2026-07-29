@@ -92,11 +92,19 @@ func TestAccMorpheusLoadBalancerMonitorResourceNsxtExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateIdFunc:       importStateIDFunc(resourceName),
-				ResourceName:            resourceName,
-				ImportStateVerifyIgnore: []string{"monitor_password_wo_version", "config"},
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: importStateIDFunc(resourceName),
+				ResourceName:      resourceName,
+				ImportStateVerifyIgnore: []string{
+					"monitor_password_wo_version",
+					"config",
+					// The API accepts these on create/update but never
+					// returns them, so an imported resource cannot know
+					// them. See preserveUnreturnedFields in resource_read.go.
+					"receive_data",
+					"data_length",
+				},
 			},
 		},
 	})
