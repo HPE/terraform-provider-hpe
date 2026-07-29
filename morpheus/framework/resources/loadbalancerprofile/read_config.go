@@ -39,40 +39,60 @@ func allConfigBlocksNull(m LoadBalancerProfileModel) bool {
 // is no prior config and no plan to be consistent with, so reconstructing the
 // block yields a complete, usable imported resource.
 //
+// Selection is driven by serviceType, never by which union variant the SDK
+// left non-nil. The config schema has no discriminator, so the SDK's
+// UnmarshalMapstructure decodes the same payload into every anyOf variant and
+// keeps each one that is not entirely empty. A single shared field is enough
+// to make a variant survive -- ntlmAuthentication, for example, appears in the
+// generic NSX-T config blob, so the HTTP variant is non-nil for every profile
+// type. Dispatching on variant order would therefore reconstruct config_http
+// for a fast-TCP profile.
+//
 // Tags are not handled here; the caller reconstructs the single top-level tags
 // set from the response separately.
 func reconstructConfigBlockFromResponse(
 	ctx context.Context,
 	state *LoadBalancerProfileModel,
+	serviceType string,
 	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
 ) {
 	if cfg == nil {
 		return
 	}
 
-	switch {
-	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
-		state.ConfigHttp = httpConfigFromResponse(ctx, cfg.HTTPLoadBalancerProfileConfig3)
-	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
-		state.ConfigFastTcp = fastTCPConfigFromResponse(cfg.FastTCPLoadBalancerProfileConfig3)
-	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
-		state.ConfigFastUdp = fastUDPConfigFromResponse(cfg.FastUDPLoadBalancerProfileConfig3)
-	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigCookiePersistence = cookiePersistenceConfigFromResponse(
-			cfg.CookiePersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigSourceIpPersistence = sourceIPPersistenceConfigFromResponse(
-			cfg.SourceIPPersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigGenericPersistence = genericPersistenceConfigFromResponse(
-			cfg.GenericPersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
-		state.ConfigClientSsl = clientSSLConfigFromResponse(cfg.ClientSSLLoadBalancerProfileConfig3)
-	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
-		state.ConfigServerSsl = serverSSLConfigFromResponse(cfg.ServerSSLLoadBalancerProfileConfig3)
+	switch serviceType {
+	case serviceTypeHTTP:
+		if v := cfg.HTTPLoadBalancerProfileConfig3; v != nil {
+			state.ConfigHttp = httpConfigFromResponse(ctx, v)
+		}
+	case serviceTypeFastTCP:
+		if v := cfg.FastTCPLoadBalancerProfileConfig3; v != nil {
+			state.ConfigFastTcp = fastTCPConfigFromResponse(v)
+		}
+	case serviceTypeFastUDP:
+		if v := cfg.FastUDPLoadBalancerProfileConfig3; v != nil {
+			state.ConfigFastUdp = fastUDPConfigFromResponse(v)
+		}
+	case serviceTypeCookiePersistence:
+		if v := cfg.CookiePersistenceLoadBalancerProfileConfig3; v != nil {
+			state.ConfigCookiePersistence = cookiePersistenceConfigFromResponse(v)
+		}
+	case serviceTypeSourceIPPersistence:
+		if v := cfg.SourceIPPersistenceLoadBalancerProfileConfig3; v != nil {
+			state.ConfigSourceIpPersistence = sourceIPPersistenceConfigFromResponse(v)
+		}
+	case serviceTypeGenericPersistence:
+		if v := cfg.GenericPersistenceLoadBalancerProfileConfig3; v != nil {
+			state.ConfigGenericPersistence = genericPersistenceConfigFromResponse(v)
+		}
+	case serviceTypeClientSSL:
+		if v := cfg.ClientSSLLoadBalancerProfileConfig3; v != nil {
+			state.ConfigClientSsl = clientSSLConfigFromResponse(v)
+		}
+	case serviceTypeServerSSL:
+		if v := cfg.ServerSSLLoadBalancerProfileConfig3; v != nil {
+			state.ConfigServerSsl = serverSSLConfigFromResponse(v)
+		}
 	}
 }
 

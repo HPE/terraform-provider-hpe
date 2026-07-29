@@ -14,14 +14,28 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
+// Supported service_type values. These mirror the OneOf validator on the
+// service_type attribute and select which config_* block, SDK config variant
+// and tag list apply to a profile.
+const (
+	serviceTypeHTTP                = "LBHttpProfile"
+	serviceTypeFastTCP             = "LBFastTcpProfile"
+	serviceTypeFastUDP             = "LBFastUdpProfile"
+	serviceTypeCookiePersistence   = "LBCookiePersistenceProfile"
+	serviceTypeSourceIPPersistence = "LBSourceIpPersistenceProfile"
+	serviceTypeGenericPersistence  = "LBGenericPersistenceProfile"
+	serviceTypeClientSSL           = "LBClientSslProfile"
+	serviceTypeServerSSL           = "LBServerSslProfile"
+)
+
 // profileTypeForServiceType returns the profileType API value for a given serviceType.
 func profileTypeForServiceType(serviceType string) string {
 	switch serviceType {
-	case "LBHttpProfile", "LBFastTcpProfile", "LBFastUdpProfile":
+	case serviceTypeHTTP, serviceTypeFastTCP, serviceTypeFastUDP:
 		return "application-profile"
-	case "LBCookiePersistenceProfile", "LBSourceIpPersistenceProfile", "LBGenericPersistenceProfile":
+	case serviceTypeCookiePersistence, serviceTypeSourceIPPersistence, serviceTypeGenericPersistence:
 		return "persistence-profile"
-	case "LBClientSslProfile", "LBServerSslProfile":
+	case serviceTypeClientSSL, serviceTypeServerSSL:
 		return "ssl-profile"
 	default:
 		return ""
@@ -41,7 +55,7 @@ func buildCreateConfig(
 	cfg := &sdk.CreateLoadBalancerProfileRequestLoadBalancerProfileConfig{}
 
 	switch serviceType {
-	case "LBHttpProfile":
+	case serviceTypeHTTP:
 		variant := &sdk.HTTPLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -62,7 +76,7 @@ func buildCreateConfig(
 		}
 		cfg.HTTPLoadBalancerProfileConfig1 = variant
 
-	case "LBFastTcpProfile":
+	case serviceTypeFastTCP:
 		variant := &sdk.FastTCPLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -75,7 +89,7 @@ func buildCreateConfig(
 		}
 		cfg.FastTCPLoadBalancerProfileConfig1 = variant
 
-	case "LBFastUdpProfile":
+	case serviceTypeFastUDP:
 		variant := &sdk.FastUDPLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -87,7 +101,7 @@ func buildCreateConfig(
 		}
 		cfg.FastUDPLoadBalancerProfileConfig1 = variant
 
-	case "LBCookiePersistenceProfile":
+	case serviceTypeCookiePersistence:
 		variant := &sdk.CookiePersistenceLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -109,7 +123,7 @@ func buildCreateConfig(
 		}
 		cfg.CookiePersistenceLoadBalancerProfileConfig1 = variant
 
-	case "LBSourceIpPersistenceProfile":
+	case serviceTypeSourceIPPersistence:
 		variant := &sdk.SourceIPPersistenceLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -123,7 +137,7 @@ func buildCreateConfig(
 		}
 		cfg.SourceIPPersistenceLoadBalancerProfileConfig1 = variant
 
-	case "LBGenericPersistenceProfile":
+	case serviceTypeGenericPersistence:
 		variant := &sdk.GenericPersistenceLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -136,7 +150,7 @@ func buildCreateConfig(
 		}
 		cfg.GenericPersistenceLoadBalancerProfileConfig1 = variant
 
-	case "LBClientSslProfile":
+	case serviceTypeClientSSL:
 		variant := &sdk.ClientSSLLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -162,7 +176,7 @@ func buildCreateConfig(
 		}
 		cfg.ClientSSLLoadBalancerProfileConfig1 = variant
 
-	case "LBServerSslProfile":
+	case serviceTypeServerSSL:
 		variant := &sdk.ServerSSLLoadBalancerProfileConfig1{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -203,7 +217,7 @@ func buildUpdateConfig(
 	cfg := &sdk.UpdateLoadBalancerProfileRequestLoadBalancerProfileConfig{}
 
 	switch serviceType {
-	case "LBHttpProfile":
+	case serviceTypeHTTP:
 		variant := &sdk.HTTPLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -224,7 +238,7 @@ func buildUpdateConfig(
 		}
 		cfg.HTTPLoadBalancerProfileConfig4 = variant
 
-	case "LBFastTcpProfile":
+	case serviceTypeFastTCP:
 		variant := &sdk.FastTCPLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -237,7 +251,7 @@ func buildUpdateConfig(
 		}
 		cfg.FastTCPLoadBalancerProfileConfig4 = variant
 
-	case "LBFastUdpProfile":
+	case serviceTypeFastUDP:
 		variant := &sdk.FastUDPLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -249,7 +263,7 @@ func buildUpdateConfig(
 		}
 		cfg.FastUDPLoadBalancerProfileConfig4 = variant
 
-	case "LBCookiePersistenceProfile":
+	case serviceTypeCookiePersistence:
 		variant := &sdk.CookiePersistenceLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -271,7 +285,7 @@ func buildUpdateConfig(
 		}
 		cfg.CookiePersistenceLoadBalancerProfileConfig4 = variant
 
-	case "LBSourceIpPersistenceProfile":
+	case serviceTypeSourceIPPersistence:
 		variant := &sdk.SourceIPPersistenceLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -285,7 +299,7 @@ func buildUpdateConfig(
 		}
 		cfg.SourceIPPersistenceLoadBalancerProfileConfig4 = variant
 
-	case "LBGenericPersistenceProfile":
+	case serviceTypeGenericPersistence:
 		variant := &sdk.GenericPersistenceLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -298,7 +312,7 @@ func buildUpdateConfig(
 		}
 		cfg.GenericPersistenceLoadBalancerProfileConfig4 = variant
 
-	case "LBClientSslProfile":
+	case serviceTypeClientSSL:
 		variant := &sdk.ClientSSLLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -324,7 +338,7 @@ func buildUpdateConfig(
 		}
 		cfg.ClientSSLLoadBalancerProfileConfig4 = variant
 
-	case "LBServerSslProfile":
+	case serviceTypeServerSSL:
 		variant := &sdk.ServerSSLLoadBalancerProfileConfig4{
 			ProfileType: sdk.PtrString(profileType),
 		}
@@ -354,8 +368,15 @@ func buildUpdateConfig(
 
 // readTagsFromConfig extracts tags from the read response config and returns them
 // as a Terraform Set, preserving user-specified name casing from the plan/state.
+//
+// Like reconstructConfigBlockFromResponse, the variant is selected by
+// serviceType rather than by which union pointer the SDK left non-nil: the
+// config schema has no discriminator, so several anyOf variants are populated
+// from the same payload and dispatching on order would read another variant's
+// tag list.
 func readTagsFromConfig(
 	ctx context.Context,
+	serviceType string,
 	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
 	priorTags types.Set,
 ) types.Set {
@@ -371,62 +392,45 @@ func readTagsFromConfig(
 
 	var apiTags []tagPair
 
-	switch {
-	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.HTTPLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	addTags := func(n int, at func(int) (*string, *string)) {
+		for i := range n {
+			name, value := at(i)
+			apiTags = append(apiTags, tagPair{name: ptrStr(name), value: ptrStr(value)})
 		}
-	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.FastTCPLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	}
+
+	switch serviceType {
+	case serviceTypeHTTP:
+		if v := cfg.HTTPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.FastUDPLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeFastTCP:
+		if v := cfg.FastTCPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.CookiePersistenceLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeFastUDP:
+		if v := cfg.FastUDPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.SourceIPPersistenceLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeCookiePersistence:
+		if v := cfg.CookiePersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.GenericPersistenceLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeSourceIPPersistence:
+		if v := cfg.SourceIPPersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.ClientSSLLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeGenericPersistence:
+		if v := cfg.GenericPersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
-	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
-		for _, t := range cfg.ServerSSLLoadBalancerProfileConfig3.Tags {
-			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
-			})
+	case serviceTypeClientSSL:
+		if v := cfg.ClientSSLLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeServerSSL:
+		if v := cfg.ServerSSLLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
 		}
 	}
 
