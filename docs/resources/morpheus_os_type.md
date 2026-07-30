@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_os_type Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

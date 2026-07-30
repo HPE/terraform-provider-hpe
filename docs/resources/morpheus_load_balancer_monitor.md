@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer_monitor Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus load balancer health check monitor.
 ---

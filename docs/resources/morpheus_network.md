@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

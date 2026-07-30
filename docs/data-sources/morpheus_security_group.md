@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_security_group Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Retrieves information about a single Morpheus security group by id or name.
 ---

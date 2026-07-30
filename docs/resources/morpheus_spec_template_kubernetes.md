@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_spec_template_kubernetes Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus kubernetes spec template resource
 ---

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_edge_cluster Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Reads a Morpheus network edge cluster from a network server that supports them (e.g. NSX-T, VCD).
 ---

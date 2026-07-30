@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_list_rest Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus REST option list resource.
 ---

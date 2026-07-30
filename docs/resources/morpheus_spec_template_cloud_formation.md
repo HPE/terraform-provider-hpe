@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_spec_template_cloud_formation Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus cloud formation spec template resource
 ---

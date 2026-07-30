@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_router_nat Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_scale_threshold Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus scale threshold resource.
 ---

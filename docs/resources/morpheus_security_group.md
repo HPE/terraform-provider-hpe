@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_security_group Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Security Group resource.
 ---

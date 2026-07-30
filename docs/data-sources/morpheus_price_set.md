@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_price_set Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   The Price Set data source allows details of a Price Set to be retrieved by its name.
 ---

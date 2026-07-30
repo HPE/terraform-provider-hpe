@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_environment Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

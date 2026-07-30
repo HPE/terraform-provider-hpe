@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_domain Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Network Domain data source. This can be used to reference an existing Network Domain by name or id.
 ---

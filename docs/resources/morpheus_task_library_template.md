@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_task_library_template Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus library template task resource
 ---

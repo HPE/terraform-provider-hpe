@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_type_radio_list Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus radio list option type resource
 ---

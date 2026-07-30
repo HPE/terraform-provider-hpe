@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_firewall_rule_group Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a network firewall rule group resource in Morpheus.
 ---
