@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_backup_type Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Reads a Morpheus backup type.
 ---

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_setting_monitoring Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus monitoring setting resource.
 ---

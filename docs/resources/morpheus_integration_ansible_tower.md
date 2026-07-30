@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_integration_ansible_tower Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides an Ansible Tower integration resource
 ---

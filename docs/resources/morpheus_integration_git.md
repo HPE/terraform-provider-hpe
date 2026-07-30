@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_integration_git Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a git integration resource
 ---

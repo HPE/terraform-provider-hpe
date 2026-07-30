@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_ip_pool_ipv4 Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus IPv4 ip pool resource
 ---

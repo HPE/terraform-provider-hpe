@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_backup_job Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Backup Job resource.
 ---

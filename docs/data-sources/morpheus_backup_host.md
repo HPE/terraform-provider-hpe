@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_backup_host Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Reads a Morpheus host backup.
 ---

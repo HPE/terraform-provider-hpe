@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_pool_server Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Network Pool Server (IPAM integration) resource.
 ---

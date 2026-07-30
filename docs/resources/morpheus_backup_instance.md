@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_backup_instance Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Backup resource for Instances.
 ---

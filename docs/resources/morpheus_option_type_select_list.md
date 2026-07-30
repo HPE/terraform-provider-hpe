@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_type_select_list Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus select list option type resource
 ---

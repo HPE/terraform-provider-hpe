@@ -4,13 +4,14 @@ subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
+
 # {{.Name}} ({{.Type}})
 
 {{ .Description | trimspace }}
 
 ## Example Usage
 
-{{tffile "examples/resources/morpheus_catalog_item_app_blueprint/resource.tf"}}
+{{tffile "examples/resources/morpheus_cluster_hks_hvm/resource.tf"}}
 
 {{ .SchemaMarkdown | trimspace }}
 
@@ -18,4 +19,4 @@ description: |-
 
 Import is supported using the following syntax:
 
-{{codefile "shell" "examples/resources/morpheus_catalog_item_app_blueprint/import.sh" }}
+{{codefile "shell" "examples/resources/morpheus_cluster_hks_vsphere/import.sh" }}
