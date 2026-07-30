@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_clone Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Clones an instance in HPE Morpheus from a source instance, copying its disk contents.
 ---

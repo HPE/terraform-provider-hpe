@@ -52,7 +52,7 @@ type UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor struct {
 	AllowAsIn   *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborAllowAsIn `json:"allowAsIn,omitempty"`
 	// Maximum hop limit
 	HopLimit *int64 `json:"hopLimit,omitempty"`
-	// Graceful restart mode (e.g. HELPER_ONLY, GRACEFUL_RESTART, DISABLE)
+	// Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)
 	RestartMode          *string                                                              `json:"restartMode,omitempty"`
 	Config               *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborConfig `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                                               `json:",remain"`

@@ -22,14 +22,7 @@ func RenderNetworkEdgeClusterDataSourceByIDConfig(t *testing.T, overrides map[st
 		"Id":              "99",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
+	args := testhelpers.RenderArgs(testhelpers.MergeOverrides(defaults, overrides))
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -54,14 +47,7 @@ func RenderNetworkEdgeClusterDataSourceByNameConfig(t *testing.T, overrides map[
 		"Name":            "edge-cluster-01",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
+	args := testhelpers.RenderArgs(testhelpers.MergeOverrides(defaults, overrides))
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {

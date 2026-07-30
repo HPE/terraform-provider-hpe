@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_os_type_image Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -49,3 +49,10 @@ OS type images can be imported using the `id`, e.g.
 ```bash
 terraform import hpe_morpheus_os_type_image.example 123
 ```
+
+~> On import, `os_type_id` cannot be read back from the Morpheus API — the
+`GET` os type image endpoint does not return the OS type. It is instead
+derived on a best-effort basis from the associated virtual image's own
+`os_type_id`. If that virtual image has no OS type set, or a different one,
+`os_type_id` may be imported as null or an incorrect value. Verify and set
+`os_type_id` explicitly in your configuration after importing.

@@ -6,6 +6,7 @@ package sweep
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,33 +22,23 @@ func init() {
 	testsweep.RegisterTypedAPISweeper(
 		sweeperName,
 		// list
-		func(ctx context.Context, client *sdk.APIClient) ([]sdk.Search200ResponseHitsInner, *http.Response, error) {
-			resp, hresp, err := client.SearchAPI.Search(ctx).
-				Phrase(testsweep.TestResourcePrefix).
-				Max(1000).
-				Execute()
-			if resp == nil {
-				return nil, hresp, err
-			}
-
-			return resp.Hits, hresp, err
+		func(ctx context.Context, client *sdk.APIClient) ([]testsweep.SearchHit, *http.Response, error) {
+			return testsweep.SearchHits(ctx, client, testsweep.TestResourcePrefix)
 		},
 		// is this
-		func(item sdk.Search200ResponseHitsInner) bool {
-			if item.Name == nil {
-				return false
-			}
-
-			return strings.HasPrefix(*item.Name, testsweep.TestResourcePrefix)
+		func(item testsweep.SearchHit) bool {
+			return strings.HasPrefix(item.Name, testsweep.TestResourcePrefix)
 		},
 		// delete
-		func(ctx context.Context, client *sdk.APIClient, item sdk.Search200ResponseHitsInner) (*http.Response, error) {
-			if item.Id == nil {
+		func(ctx context.Context, client *sdk.APIClient, item testsweep.SearchHit) (*http.Response, error) {
+			if item.ID == "" {
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
-			id, err := strconv.ParseInt(*item.Id, 10, 64)
+			id, err := strconv.ParseInt(item.ID, 10, 64)
 			if err != nil {
+				log.Printf("[ERROR] Failed to parse storage volume ID %q: %v", item.ID, err)
+
 				return &http.Response{StatusCode: http.StatusOK}, nil
 			}
 
@@ -60,7 +51,7 @@ func init() {
 
 			return hresp, delErr
 		},
-		testsweep.WithIgnoreListStatuses[sdk.Search200ResponseHitsInner](
+		testsweep.WithIgnoreListStatuses[testsweep.SearchHit](
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cypher_secret Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus cypher secret resource.
 ---

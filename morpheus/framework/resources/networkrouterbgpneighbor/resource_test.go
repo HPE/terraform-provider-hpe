@@ -37,6 +37,18 @@ const existingTier0RouterID = "28"
 // "BGP neighbor source address is mandatory for EBGP Multihop."
 const bgpNeighborSourceAddress = "10.100.10.1"
 
+// bgpNeighborHopLimit is why every fixture below sets hop_limit explicitly.
+//
+// The schema default is 1, which NSX-T treats as single-hop and then requires
+// the neighbor address to share a subnet with the source address:
+//
+//	BGPNeighborConfig with max hop limit of 1, the neighbor address
+//	<ip> must be on the same subnet as the source address 10.100.10.1.
+//
+// The fixtures deliberately use unrelated neighbor subnets, so they must
+// declare themselves multihop.
+const bgpNeighborHopLimit = "2"
+
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -109,6 +121,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
   weight      = 60
   keep_alive  = 60
   hold_down   = 180
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -292,6 +305,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   weight      = 60
   keep_alive  = 60
   hold_down   = 180
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -313,7 +327,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   bfd_multiple = 3
   allow_as_in  = true
   hop_limit    = 3
-  restart_mode = "GRACEFUL_RESTART"
+  restart_mode = "GR_AND_HELPER"
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -385,7 +399,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"restart_mode", "GRACEFUL_RESTART",
+						"restart_mode", "GR_AND_HELPER",
 					),
 				),
 			},
@@ -415,6 +429,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -473,6 +488,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65010"
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -517,6 +533,14 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxvConfig(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXV)
+
+	// The config below declares a required root variable with no default, so
+	// without a value Terraform fails the plan with "No value for required
+	// variable" before the provider is ever exercised.
+	nsxvRouterID := os.Getenv("TF_VAR_nsxv_router_id")
+	if nsxvRouterID == "" {
+		t.Skip("TF_VAR_nsxv_router_id not set; skipping test requiring a pre-existing NSX-V router")
+	}
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

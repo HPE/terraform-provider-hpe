@@ -1,3 +1,95 @@
+# v1.6.0 Release Notes
+
+In this release (v1.6.0) we have added the following resources:
+
+### Networking
+
+- hpe_morpheus_load_balancer_profile
+
+In this release (v1.6.0) we have added the following data sources:
+
+- hpe_morpheus_backup_host
+- hpe_morpheus_backup_instance
+- hpe_morpheus_backup_job
+- hpe_morpheus_certificate
+- hpe_morpheus_cluster_affinity_group
+- hpe_morpheus_cluster_layout
+- hpe_morpheus_cluster_namespace
+- hpe_morpheus_container_script
+- hpe_morpheus_datastore_types
+- hpe_morpheus_datastores
+- hpe_morpheus_deployment
+- hpe_morpheus_load_balancer_profile
+- hpe_morpheus_monitoring_alert
+- hpe_morpheus_monitoring_check
+- hpe_morpheus_monitoring_check_type
+- hpe_morpheus_monitoring_group
+- hpe_morpheus_network_pool_server
+- hpe_morpheus_network_pool_server_type
+- hpe_morpheus_network_router_firewall_rule
+- hpe_morpheus_network_router_firewall_rule_groups
+- hpe_morpheus_network_router_nat
+- hpe_morpheus_network_router_type
+- hpe_morpheus_provisioning_license
+- hpe_morpheus_security_group
+- hpe_morpheus_security_group_rule
+- hpe_morpheus_security_groups
+- hpe_morpheus_storage_server
+- hpe_morpheus_storage_servers
+- hpe_morpheus_storage_volume (reimplemented)
+- hpe_morpheus_storage_volumes
+- hpe_morpheus_subnet_type
+- hpe_morpheus_vdi_app
+- hpe_morpheus_vdi_gateway
+
+## Enhancements to existing resources
+
+- hpe_morpheus_instance — Added `config_bmaas` static config block for HPE bare metal (BMaaS) instances; added `host_name`, `labels` and `server_uuids`; added `user_group` and `storage_profile`
+- hpe_morpheus_datastore — Added `config_alletramp_bmaas` static config block for HPE Alletra MP Bare Metal (BMaaS) datastores; the datastore type `code` is now preferred (`type_id` is optional and resolved from the code)
+- hpe_morpheus_storage_volume — Added a typed write-only `config` block (the resource now uses `WriteOnly` and a `Dynamic` `config` attribute)
+- hpe_morpheus_network_pool_server — Added EfficientIP (SOLIDserver) support
+- hpe_morpheus_role — Added `tenant_copies`
+- hpe_morpheus_cluster_affinity_group and hpe_morpheus_cluster_namespace — `resource_permissions.groups` now supports a per-group `default` flag
+- Added `visibility`, `resource_permissions` and `tenant_ids` support to several resources introduced in v1.4.0 (hpe_morpheus_cluster_affinity_group, hpe_morpheus_cluster_namespace, hpe_morpheus_network_group, hpe_morpheus_network_router, hpe_morpheus_power_schedule, hpe_morpheus_provisioning_license)
+
+## Resolved issues
+
+- `hpe_morpheus_network_router` import and `enable_bgp` handling (MORPH-12175/MORPH-12176); conflicting `group_id` and tenant permissions are now rejected at plan time (MORPH-13984); NAT protocol round-trip and NAT/firewall/BGP handling (MORPH-13145/13146/13147/13209)
+- `hpe_morpheus_vdi_pool` now requires `max_idle` >= `min_idle` (MORPH-12461); fixed `idle_timeout` and `max_session_timeout` handling (MORPH-12421/12420/12566)
+- `hpe_morpheus_vdi_gateway` `gateway_url` is now optional (MORPH-12185); `description` is limited to 255 characters (MORPH-12186)
+- `hpe_morpheus_vdi_app` `launch_prefix` is now required (MORPH-12561)
+- `hpe_morpheus_storage_volume` validates `max_storage` for the selected `type_id` at plan time, and requires a storage server or storage group while rejecting a conflicting export target (MORPH-12939); changing the write-only `config` now correctly recreates the volume
+- `hpe_morpheus_container_script` name/phase validation and CRLF handling (MORPH-12525/12529/12531)
+- `hpe_morpheus_instance` Read panic on a 404 from the environment-variables endpoint (MORPH-13817); volume matching on resize; externally-attached SAN volumes are excluded from volume tracking; `stopped` is accepted as a valid create status
+- `hpe_morpheus_setting_whitelabel` now validates hex color format (MORPH-12346/12347)
+- `hpe_morpheus_subnet` unknown `cidr`, `netmask` and `subnet_address` on create (MORPH-13600)
+- `hpe_morpheus_cloud` write-only secrets dropped on create and update (MORPH-13531)
+- `hpe_morpheus_node_type` template ID list read-back (MORPH-10324/10323)
+- `hpe_morpheus_spec_template_*` `source_type` input validation (MORPH-13329/MORPH-13325)
+- `hpe_morpheus_app_blueprint_kubernetes` Read panic
+- The underlying transport error is now surfaced by the legacy client (MORPH-10324)
+
+## Known issues
+
+- `hpe_morpheus_cluster_namespace`: `active` is not supported on import. `name` update is not supported.
+- `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
+  in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
+- There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
+  If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list
+
 # v1.5.0 Release Notes
 
 In this release (v1.5.0) we have added the following resources:
@@ -31,6 +123,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Enhancements to existing resources
 
+- hpe_morpheus_setting_whitelabel — `header_logo`, `footer_logo`, `login_logo` and `favicon` now take a local image file path and are uploaded to Morpheus (png/jpg/svg for logos; ico/png for the favicon). Remote URLs are not supported.
 - hpe_morpheus_instance — Added `subnet_id` to `network_interfaces` (required by some clouds, e.g. Azure); added a computed `status` attribute and out-of-band deletion detection (the instance is removed from state when the underlying VM no longer exists)
 - hpe_morpheus_service_plan (data source) — Added a `cloud_id` filter (region/zone)
 - hpe_morpheus_identity_source_saml — Exposed the SP metadata (`entity_id`, `acs_url`) as computed outputs
@@ -39,6 +132,7 @@ In this release (v1.5.0) we have added the following data sources:
 
 ## Resolved issues
 
+- `hpe_morpheus_setting_whitelabel` accepted `header_logo`, `footer_logo`, `login_logo` and `favicon` on apply but returned them as null on refresh (MORPH-12625); the logos are now uploaded via the whitelabel images endpoint and the configured path is preserved in state
 - `hpe_morpheus_form` dropped attributes on read for the secGroup field
 - `hpe_morpheus_form` cross-field leakage between option_type reads
 - `hpe_morpheus_form` no attribute generated for plain cascade keys

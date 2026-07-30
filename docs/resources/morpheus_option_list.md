@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_list Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Library Option Type List resource.
 ---

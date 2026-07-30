@@ -876,31 +876,49 @@ func getNoAgent(
 ) (*bool, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	noAgent := apiConfig.NoAgent
-	if noAgent == nil || noAgent.Bool == nil {
+	if noAgent == nil {
 		diags.AddError(
 			"populate instance resource",
 			fmt.Sprintf("instance %d GET failed to get config noAgent", id),
 		)
 
 		return nil, diags
-
 	}
 
-	return noAgent.Bool, nil
+	// Normal path: Morpheus returned noAgent as a JSON boolean.
+	if noAgent.Bool != nil {
+		return noAgent.Bool, diags
+	}
+
+	// Legacy-string path: some providers (e.g. hpegl) send noAgent as the
+	// string "true"/"false" to the Morpheus API, which stores and returns it
+	// as a JSON string rather than a boolean.  Parse it so that instances
+	// created by hpegl can be read without error.
+	if noAgent.String != nil {
+		b, err := strconv.ParseBool(*noAgent.String)
+		if err == nil {
+			return &b, diags
+		}
+	}
+
+	diags.AddError(
+		"populate instance resource",
+		fmt.Sprintf("instance %d GET failed to get config noAgent", id),
+	)
+
+	return nil, diags
 }
 
 func getNestedVirtualization(
 	id int64,
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
-	var diags diag.Diagnostics
+	// nestedVirtualization is optional: hpegl never sets it, so Morpheus omits
+	// it from the GET response entirely (IsSet() == false).  Treat absence as
+	// nil rather than an error — the caller passes nil to convert.StrToType
+	// which produces a null value, valid for this Optional+Computed attribute.
 	if !apiConfig.NestedVirtualization.IsSet() {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config nestedVirtualization", id),
-		)
-
-		return nil, diags
+		return nil, nil
 	}
 
 	return apiConfig.NestedVirtualization.Get(), nil
@@ -1210,6 +1228,28 @@ func getVolumes(
 	// instance's host — which are not part of the instance's provisioned disks.
 	apiVolumes = removeExternalStorageVolumes(apiVolumes)
 
+	// Filtering must never remove every volume while the configuration declares
+	// some. convert.ToListType maps an empty slice to a null list, so silently
+	// continuing would write `volumes = null` into state and surface as an
+	// opaque "Provider produced inconsistent result after apply" rather than a
+	// usable error. Fail loudly instead.
+	if len(apiVolumes) == 0 && len(plan.Volumes.Elements()) > 0 {
+		diags.AddError(
+			"no instance volumes left after filtering",
+			fmt.Sprintf(
+				"instance %d returned %d volume(s), but none were recognised as "+
+					"belonging to the instance, while the configuration declares %d. "+
+					"This is a provider bug: the instance's volumes would be written "+
+					"to state as null.",
+				instanceIDValue(instance),
+				len(serverVolumes),
+				len(plan.Volumes.Elements()),
+			),
+		)
+
+		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
+	}
+
 	// Import
 	if plan.Name.IsNull() || plan.Name.IsUnknown() {
 		nonRaidVolumes := removeRaidDisks(apiVolumes)
@@ -1395,25 +1435,55 @@ func reorderVolumes(
 	return orderedVolumes
 }
 
-// removeExternalStorageVolumes drops storage-server (SAN) volumes from the list.
-// A volume that belongs to a storage server — e.g. an Alletra MP BMaaS LUN
-// created by hpe_morpheus_storage_volume and exported to this instance's host —
-// is added to the compute server's volume collection as a side effect of that
-// export (see updateVolumeAttachment in the Alletra MP plugin). Such volumes are
-// not part of the instance's provisioned disks, so including them here would
-// cause spurious drift on this resource's volumes (and the resize-on-count-change
-// update path could try to detach them). Provisioned VM/metal disks are managed
-// via a datastore/zone and carry no storageServer, so this only excludes
-// externally-managed array LUNs.
+// removeExternalStorageVolumes drops externally-attached storage-server (SAN)
+// volumes from the list. A volume that belongs to a storage server — e.g. an
+// Alletra MP BMaaS LUN created by hpe_morpheus_storage_volume and exported to
+// this instance's host — is added to the compute server's volume collection as a
+// side effect of that export (see updateVolumeAttachment in the Alletra MP
+// plugin). Such volumes are not part of the instance's provisioned disks, so
+// including them here would cause spurious drift on this resource's volumes (and
+// the resize-on-count-change update path could try to detach them).
+//
+// A storageServer reference alone does not make a volume external. When a disk
+// is provisioned onto a datastore that is itself backed by a storage server
+// (e.g. an Alletra MP datastore), Morpheus copies the datastore's storage server
+// onto the instance's own disk — assignVolumeDatastore sets volume.datastore and
+// volume.storageServer together, and the eject path clears both together. Those
+// disks are the instance's own and must be kept; excluding them emptied the
+// volume list and wrote a null `volumes` into state.
+//
+// A volume is therefore only treated as externally attached when it comes from a
+// storage server *and* was not provisioned through a datastore. The root volume
+// is never excluded.
 func removeExternalStorageVolumes(
 	apiVolumes []sdk.InstanceContainerServerVolume1,
 ) []sdk.InstanceContainerServerVolume1 {
-	return slices.DeleteFunc(
-		apiVolumes,
-		func(v sdk.InstanceContainerServerVolume1) bool {
-			return v.StorageServer != nil
-		},
-	)
+	return slices.DeleteFunc(apiVolumes, isExternallyAttachedVolume)
+}
+
+// isExternallyAttachedVolume reports whether a volume was attached to this
+// instance's host by something other than the instance's own provisioning —
+// i.e. an array LUN exported to the host rather than a disk provisioned for
+// this instance.
+func isExternallyAttachedVolume(v sdk.InstanceContainerServerVolume1) bool {
+	// Not from a storage server: an ordinary provisioned disk.
+	if v.StorageServer == nil {
+		return false
+	}
+
+	// The instance's own boot disk is never externally attached, regardless of
+	// the storage backing it.
+	if v.RootVolume != nil && *v.RootVolume {
+		return false
+	}
+
+	// Provisioned through a datastore, so the storageServer was inherited from
+	// that datastore rather than indicating an external export.
+	if v.DatastoreId != nil {
+		return false
+	}
+
+	return true
 }
 
 // removeRaidDisks removes any RAID disks from the list of volumes

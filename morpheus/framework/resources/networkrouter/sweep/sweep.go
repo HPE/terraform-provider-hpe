@@ -27,6 +27,10 @@ func init() {
 			*http.Response,
 			error,
 		) {
+			// NOTE: the generated SDK exposes no max/offset builders for this
+			// endpoint, so the API's default page size applies and only the
+			// first page of routers is swept. Paginating needs the OpenAPI
+			// spec to declare the query parameters first.
 			resp, hresp, err := client.NetworksAPI.GetNetworkRouters(ctx).Execute()
 			if resp == nil {
 				return nil, hresp, err
@@ -61,8 +65,15 @@ func init() {
 		testsweep.WithDependencies[sdk.GetNetworkRouters200ResponseNetworkRoutersInner](
 			"hpe_morpheus_network_router_route",
 			"hpe_morpheus_network_router_firewall_rule",
+			"hpe_morpheus_network_router_firewall_rule_group",
 			"hpe_morpheus_network_router_bgp_neighbor",
 			"hpe_morpheus_network_router_nat",
+			// Load balancer tests attach an NSX-T lb-service to a per-test tier-1
+			// gateway. NSX-T refuses to delete a tier-1 that is still referenced by
+			// an lb-service ("cannot be deleted as either it has children or it is
+			// being referenced by other objects"), so load balancers must go first
+			// or the router sweep leaves both behind.
+			"hpe_morpheus_load_balancer",
 		),
 	)
 }

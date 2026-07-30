@@ -19,7 +19,7 @@ vdi_app:
       description: The ID of the VDI app.
       state_for_unknown: true
     launch_prefix:
-      computed_optional_required: optional
+      computed_optional_required: required
       description: The RDS app name prefix.
     name:
       computed_optional_required: required

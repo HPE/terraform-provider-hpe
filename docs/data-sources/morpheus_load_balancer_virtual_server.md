@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer_virtual_server Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Reads a Morpheus load balancer virtual server.
 ---

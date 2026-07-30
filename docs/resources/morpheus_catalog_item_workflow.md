@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_catalog_item_workflow Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus workflow catalog item resource
 ---

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_security_package Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus security package data source.
 ---

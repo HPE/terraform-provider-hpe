@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -32,7 +32,7 @@ resource "hpe_morpheus_load_balancer" "haproxy" {
 
   config_haproxy = {
     plan_id = 8
-    pool    = "pool-574"
+    pool    = "pool-1"
   }
 
   permissions = {
@@ -65,7 +65,7 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
       id = 8
     }
     pool = {
-      id = "pool-574"
+      id = "pool-1"
     }
   }
 

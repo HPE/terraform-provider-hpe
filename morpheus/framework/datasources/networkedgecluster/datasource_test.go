@@ -26,6 +26,14 @@ func TestAccMorpheusNetworkEdgeClusterByID(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
+	if os.Getenv("TF_ACC_EDGE_CLUSTER_ID") == "" {
+		t.Skip("TF_ACC_EDGE_CLUSTER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -65,6 +73,14 @@ func TestAccMorpheusNetworkEdgeClusterByName(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
+	if os.Getenv("TF_ACC_EDGE_CLUSTER_NAME") == "" {
+		t.Skip("TF_ACC_EDGE_CLUSTER_NAME not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -103,6 +119,10 @@ func TestAccMorpheusNetworkEdgeClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
 
 	t.Parallel()
 

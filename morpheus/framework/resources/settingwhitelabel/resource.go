@@ -2,6 +2,8 @@ package settingwhitelabel
 
 import (
 	"context"
+	"fmt"
+	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -71,6 +73,13 @@ func (r *settingWhitelabelResource) Create(
 		return
 	}
 
+	// Upload any logo/favicon image files via the multipart images endpoint.
+	if err := r.uploadImages(ctx, client, &plan); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "setting_whitelabel", "images", err, nil)
+
+		return
+	}
+
 	plan.Id = types.StringValue("settings")
 
 	// Re-read to capture server state
@@ -126,18 +135,42 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
-	var plan SettingWhitelabelModel
+	var plan, state SettingWhitelabelModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	body := buildUpdateRequest(&plan)
 
+	// Reset a logo/favicon only when Terraform previously tracked a path for it
+	// and the plan now clears it, so an image set outside Terraform (e.g. in the
+	// Morpheus UI) is not taken down just because the attribute is absent here.
+	if plan.HeaderLogo.IsNull() && !state.HeaderLogo.IsNull() {
+		body.WhitelabelSettings.ResetHeaderLogo = boolPtr(true)
+	}
+	if plan.FooterLogo.IsNull() && !state.FooterLogo.IsNull() {
+		body.WhitelabelSettings.ResetFooterLogo = boolPtr(true)
+	}
+	if plan.LoginLogo.IsNull() && !state.LoginLogo.IsNull() {
+		body.WhitelabelSettings.ResetLoginLogo = boolPtr(true)
+	}
+	if plan.Favicon.IsNull() && !state.Favicon.IsNull() {
+		body.WhitelabelSettings.ResetFavicon = boolPtr(true)
+	}
+
 	_, httpResp, err := client.WhitelabelSettingsAPI.UpdateWhitelabelSettings(ctx).
 		UpdateWhitelabelSettingsRequest(body).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "setting_whitelabel", "settings", err, httpResp)
+
+		return
+	}
+
+	// Upload any logo/favicon image files via the multipart images endpoint.
+	if err := r.uploadImages(ctx, client, &plan); err != nil {
+		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "setting_whitelabel", "images", err, nil)
 
 		return
 	}
@@ -219,9 +252,88 @@ func (r *settingWhitelabelResource) readIntoModel(
 	mapResponseToModel(model, settings)
 }
 
+// uploadImages uploads the logo/favicon image files referenced by the plan to
+// the multipart whitelabel images endpoint.
+//
+// The four image attributes (header_logo, footer_logo, login_logo, favicon) are
+// local file paths. The API stores the uploaded bytes and, on read, returns a
+// server-generated storage URL that never matches the supplied path, so these
+// values are carried through from the plan and are never reconciled from the
+// read response. Clearing a path that Terraform previously tracked resets the
+// corresponding image on the appliance; that reset is requested in Update, not
+// here.
+func (r *settingWhitelabelResource) uploadImages(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan *SettingWhitelabelModel,
+) error {
+	// The whitelabel images endpoint returns an error for an empty upload, so
+	// there is nothing to do when no image paths are set.
+	if plan.HeaderLogo.IsNull() && plan.FooterLogo.IsNull() &&
+		plan.LoginLogo.IsNull() && plan.Favicon.IsNull() {
+		return nil
+	}
+
+	imgReq := client.WhitelabelSettingsAPI.UpdateWhitelabelImages(ctx)
+
+	if !plan.HeaderLogo.IsNull() && !plan.HeaderLogo.IsUnknown() {
+		headerLogo, err := openImageFile(plan.HeaderLogo)
+		if err != nil {
+			return err
+		}
+		defer headerLogo.Close()
+		imgReq = imgReq.HeaderLogoFile(headerLogo)
+	}
+
+	if !plan.FooterLogo.IsNull() && !plan.FooterLogo.IsUnknown() {
+		footerLogo, err := openImageFile(plan.FooterLogo)
+		if err != nil {
+			return err
+		}
+		defer footerLogo.Close()
+		imgReq = imgReq.FooterLogoFile(footerLogo)
+	}
+
+	if !plan.LoginLogo.IsNull() && !plan.LoginLogo.IsUnknown() {
+		loginLogo, err := openImageFile(plan.LoginLogo)
+		if err != nil {
+			return err
+		}
+		defer loginLogo.Close()
+		imgReq = imgReq.LoginLogoFile(loginLogo)
+	}
+
+	if !plan.Favicon.IsNull() && !plan.Favicon.IsUnknown() {
+		favicon, err := openImageFile(plan.Favicon)
+		if err != nil {
+			return err
+		}
+		defer favicon.Close()
+		imgReq = imgReq.FaviconFile(favicon)
+	}
+
+	_, httpResp, err := imgReq.Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		return fmt.Errorf("uploading whitelabel images: %w", err)
+	}
+
+	return nil
+}
+
+// openImageFile opens the image file at path for upload. The caller is
+// responsible for closing the returned file.
+func openImageFile(path types.String) (*os.File, error) {
+	f, err := os.Open(path.ValueString())
+	if err != nil {
+		return nil, fmt.Errorf("could not read whitelabel image file: %w", err)
+	}
+
+	return f, nil
+}
+
 func buildUpdateRequest(plan *SettingWhitelabelModel) sdk.UpdateWhitelabelSettingsRequest {
 	settings := sdk.UpdateWhitelabelSettingsRequestWhitelabelSettings{}
-	if !plan.Enabled.IsNull() {
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		settings.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 	if !plan.ApplianceName.IsNull() {
@@ -254,26 +366,12 @@ func mapResponseToModel(
 	} else {
 		model.ApplianceName = types.StringNull()
 	}
-	if settings.HeaderLogo != nil {
-		model.HeaderLogo = types.StringValue(*settings.HeaderLogo)
-	} else {
-		model.HeaderLogo = types.StringNull()
-	}
-	if settings.FooterLogo != nil {
-		model.FooterLogo = types.StringValue(*settings.FooterLogo)
-	} else {
-		model.FooterLogo = types.StringNull()
-	}
-	if settings.LoginLogo != nil {
-		model.LoginLogo = types.StringValue(*settings.LoginLogo)
-	} else {
-		model.LoginLogo = types.StringNull()
-	}
-	if settings.Favicon != nil {
-		model.Favicon = types.StringValue(*settings.Favicon)
-	} else {
-		model.Favicon = types.StringNull()
-	}
+	// header_logo, footer_logo, login_logo and favicon are local file paths
+	// uploaded via the multipart images endpoint. The API returns a
+	// server-generated storage URL for them (never the path the user supplied),
+	// so they are intentionally NOT mapped back from the response; doing so would
+	// clobber the configured path and produce an inconsistent-state error. Their
+	// values are carried through from the plan/prior state instead.
 	if settings.HeaderBgColor != nil {
 		model.PrimaryColor = types.StringValue(*settings.HeaderBgColor)
 	} else {

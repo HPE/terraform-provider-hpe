@@ -1,6 +1,18 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+{{ $s := index (split .Name "_") 1 -}}
+{{ $label := title $s -}}
+{{ $table := `
+morpheus=Morpheus
+opsramp=OpsRamp
+` -}}
+{{ range $e := split $table "\n" -}}
+  {{ $kv := split $e "=" -}}
+  {{ if and (eq (len $kv) 2) (eq (index $kv 0) $s) -}}
+    {{ $label = index $kv 1 -}}
+  {{ end -}}
+{{ end -}}
+subcategory: "{{ $label }}"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---

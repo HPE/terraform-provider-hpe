@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_storage_volume Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Retrieves information about a single Morpheus storage volume by id or name.
 ---

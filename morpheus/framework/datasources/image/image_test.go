@@ -37,139 +37,13 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestAccMorpheusImageDatasourceById(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	capabilities.MustHaveOrSkip(t, capabilities.All)
-
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	name := acctest.RandomWithPrefix(t.Name())
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	imageConfig, err := image.RenderImageConfig(t, map[string]string{
-		"Name":              name,
-		"OsTypeId":          "data.hpe_morpheus_os_type.test.id",
-		"StorageProviderId": "data.hpe_morpheus_storage_bucket.test.id",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dependencyConfig := `
-data "hpe_morpheus_os_type" "test" {
-	name = "linux"
-}
-
-data "hpe_morpheus_storage_bucket" "test" {
-	name = "Local Storage"
-}
-` + imageConfig
-
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-id.tf.tmpl", "Id", "hpe_morpheus_image.example_image.id")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"name",
-			name,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"image_type",
-			"qcow2",
-		),
-	}
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dependencyConfig + dataSourceConfig,
-				Check:  checkFn,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusImageDatasourceByName(t *testing.T) {
-	defer testhelpers.RecordResult(t)
-
-	capabilities.MustHaveOrSkip(t, capabilities.All)
-
-	t.Parallel()
-
-	if testing.Short() {
-		t.Skip("Skipping slow test in short mode")
-	}
-
-	name := acctest.RandomWithPrefix(t.Name())
-
-	providerConfig := testhelpers.ProviderBlock()
-
-	imageConfig, err := image.RenderImageConfig(t, map[string]string{
-		"Name":              name,
-		"OsTypeId":          "data.hpe_morpheus_os_type.test.id",
-		"StorageProviderId": "data.hpe_morpheus_storage_bucket.test.id",
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	dependencyConfig := `
-data "hpe_morpheus_os_type" "test" {
-	name = "linux"
-}
-
-data "hpe_morpheus_storage_bucket" "test" {
-	name = "Local Storage"
-}
-` + imageConfig
-
-	dataSourceConfig, err := testhelpers.RenderExample(t,
-		"example-name.tf.tmpl", "Name", "hpe_morpheus_image.example_image.name")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"name",
-			name,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"image_type",
-			"qcow2",
-		),
-	}
-
-	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
-
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
-		Steps: []resource.TestStep{
-			{
-				Config: providerConfig + dependencyConfig + dataSourceConfig,
-				Check:  checkFn,
-			},
-		},
-	})
-}
-
-func TestAccMorpheusImageDatasourceByNameAndImageType(t *testing.T) {
+// TestAccMorpheusImageDatasource creates a single image and reads it back three
+// ways in one apply: by id, by name, and by name+image_type. Consolidating the
+// three former lookup variants (previously separate parallel tests that each
+// created their own image) onto one created image removes the concurrent
+// image-create contention that produced transient 403s, while keeping identical
+// datasource coverage.
+func TestAccMorpheusImageDatasource(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
@@ -204,25 +78,31 @@ data "hpe_morpheus_storage_bucket" "test" {
 }
 ` + imageConfig
 
-	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name-type.tf.tmpl",
-		"Name", "hpe_morpheus_image.example_image.name",
-		"Type", "\"qcow2\"",
-	)
-	if err != nil {
-		t.Fatal(err)
-	}
+	// The example-*.tf.tmpl templates hardcode the "test" datasource label, so
+	// they cannot be combined in a single config. Inline the three lookups here
+	// so they all reference the one image created above.
+	dataSourceConfig := `
+data "hpe_morpheus_image" "by_id" {
+  id = hpe_morpheus_image.example_image.id
+}
+
+data "hpe_morpheus_image" "by_name" {
+  name = hpe_morpheus_image.example_image.name
+}
+
+data "hpe_morpheus_image" "by_name_type" {
+  name       = hpe_morpheus_image.example_image.name
+  image_type = "qcow2"
+}
+`
 
 	checks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"name",
-			name,
-		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_image.test",
-			"image_type",
-			imageType,
-		),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_id", "name", name),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_id", "image_type", imageType),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_name", "name", name),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_name", "image_type", imageType),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_name_type", "name", name),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_image.by_name_type", "image_type", imageType),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_type_layout Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

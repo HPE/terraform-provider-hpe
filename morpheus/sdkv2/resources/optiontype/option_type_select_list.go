@@ -32,14 +32,16 @@ func ResourceOptionTypeSelectList() *schema.Resource {
 				Computed:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the select list option type",
-				Required:    true,
+				Type:             schema.TypeString,
+				Description:      "The name of the select list option type",
+				Required:         true,
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"description": {
-				Type:        schema.TypeString,
-				Description: "The description of the select list option type",
-				Optional:    true,
+				Type:             schema.TypeString,
+				Description:      "The description of the select list option type",
+				Optional:         true,
+				ValidateDiagFunc: helpers.StringLengthAtMost(maxDescriptionLength),
 			},
 			"labels": {
 				Type:        schema.TypeSet,

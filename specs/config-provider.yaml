@@ -1023,6 +1023,19 @@ resources:
     delete:
       path: /api/networks/routers/{routerId}/firewall-rules/{id}
       method: DELETE
+  network_router_firewall_rule_group:
+    create:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups
+      method: POST
+    read:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups/{id}
+      method: GET
+    update:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups/{id}
+      method: PUT
+    delete:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups/{id}
+      method: DELETE
   network_router_nat:
     create:
       path: /api/networks/routers/{routerId}/nats
@@ -1361,6 +1374,10 @@ data_sources:
   network_router_firewall_rule:
     read:
       path: /api/networks/routers/{routerId}/firewall-rules/{id}
+      method: GET
+  network_router_firewall_rule_group:
+    read:
+      path: /api/networks/routers/{routerId}/firewall-rule-groups/{id}
       method: GET
   network_router_nat:
     read:

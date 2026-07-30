@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_role Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -52,6 +52,7 @@ resource "hpe_morpheus_role" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of the role
+- `tenant_copies` (Attributes Set) The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise. (see [below for nested schema](#nestedatt--tenant_copies))
 
 <a id="nestedatt--permissions"></a>
 ### Nested Schema for `permissions`
@@ -227,6 +228,17 @@ Required:
 Read-Only:
 
 - `name` (String)
+
+
+
+<a id="nestedatt--tenant_copies"></a>
+### Nested Schema for `tenant_copies`
+
+Read-Only:
+
+- `diverged` (Boolean) Whether the subtenant has modified (diverged) its copy, which stops further propagation of changes from the master role.
+- `role_id` (Number) The id of the propagated per-tenant role copy.
+- `tenant_id` (Number) The id of the subtenant (account) the copy belongs to.
 
 ## Roles
 

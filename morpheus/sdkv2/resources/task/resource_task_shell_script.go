@@ -1,9 +1,9 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
 package task
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
 	"strings"
 
@@ -150,17 +150,26 @@ func ResourceTaskShellScript() *schema.Resource {
 				Computed:    true,
 			},
 			"remote_target_password": {
-				Type:        schema.TypeString,
-				Description: "The password of the user account used to authenticate to the remote target",
+				Type:          schema.TypeString,
+				Description:   "The password of the user account used to authenticate to the remote target",
+				Optional:      true,
+				Computed:      true,
+				Sensitive:     true,
+				Deprecated:    "Use remote_target_password_wo instead. This attribute stores the password hash in state.",
+				ConflictsWith: []string{"remote_target_password_wo"},
+			},
+			"remote_target_password_wo": {
+				Type:          schema.TypeString,
+				Description:   "The password of the user account used to authenticate to the remote target (write-only, not stored in state).",
+				Optional:      true,
+				Sensitive:     true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"remote_target_password"},
+			},
+			"remote_target_password_wo_version": {
+				Type:        schema.TypeInt,
+				Description: "Increment to re-send remote_target_password_wo; write-only values are not stored in state.",
 				Optional:    true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				Computed: true,
 			},
 			"retryable": {
 				Type:        schema.TypeBool,
@@ -280,6 +289,12 @@ func resourceTaskShellScriptCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("remote_target_password", d.Get("remote_target_password")))
+	}
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+		wo := rawConfig.GetAttr("remote_target_password_wo")
+		if !wo.IsNull() && wo.IsKnown() && wo.AsString() != "" {
+			taskOptions["password"] = wo.AsString()
+		}
 	}
 	if localRepositoryId, ok := d.Get("local_repository_id").(string); ok {
 		if localRepositoryId != "" {
@@ -608,6 +623,13 @@ func resourceTaskShellScriptUpdate(ctx context.Context, d *schema.ResourceData, 
 		} else {
 			return diag.FromErr(helpers.TypeAssertFailError("remote_target_password", d.Get("remote_target_password")))
 		}
+	}
+	if d.HasChange("remote_target_password_wo_version") {
+		wo := d.GetRawConfig().GetAttr("remote_target_password_wo")
+		if wo.IsNull() || !wo.IsKnown() {
+			return diag.Errorf("remote_target_password_wo_version changed but remote_target_password_wo is not set")
+		}
+		taskOptions["password"] = wo.AsString()
 	}
 	if d.HasChange("local_repository_id") {
 		if localRepositoryId, ok := d.Get("local_repository_id").(string); ok {

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer_monitor Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus load balancer health check monitor.
 ---
@@ -140,3 +140,5 @@ Load balancer monitors can be imported using the composite ID `loadBalancerId.mo
 ```shell
 terraform import hpe_morpheus_load_balancer_monitor.example 42.101
 ```
+
+~> The API accepts `receive_data` and `data_length` on create and update but never returns them (`receive_data` is stored encrypted, and `data_length` is only round-tripped for ICMP monitors). They therefore cannot be populated on import and will be null in the imported state. Set them in your configuration and apply to reconcile.

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_app_blueprint_helm Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus helm app blueprint resource
 ---

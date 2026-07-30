@@ -134,9 +134,13 @@ func TestAccMorpheusLoadBalancerVirtualServerDataSourceByNameOk(t *testing.T) {
 		t.Fatalf("failed to render vs config: %s", err)
 	}
 
+	// vip_name is a literal, so nothing links the data source to the virtual
+	// server resource. Without an explicit dependency Terraform reads the data
+	// source before the virtual server exists and the lookup returns nothing.
 	dsConfig, err := datasourcevs.RenderLoadBalancerVirtualServerDataSourceByNameConfig(t, map[string]string{
 		"LoadBalancerId": "hpe_morpheus_load_balancer.lb.id",
 		"VipName":        vipName,
+		"DependsOn":      "hpe_morpheus_load_balancer_virtual_server.nsxt_minimal",
 	})
 	if err != nil {
 		t.Fatalf("failed to render data source config: %s", err)

@@ -5,7 +5,9 @@ package vdipool
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -86,8 +88,11 @@ func VdiPoolResourceSchema(ctx context.Context) schema.Schema {
 			"max_idle": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Sets the maximum number of idle instances on standby in the pool.",
-				MarkdownDescription: "Sets the maximum number of idle instances on standby in the pool.",
+				Description:         "Sets the maximum number of idle instances on standby in the pool. Must be greater than or equal to min_idle.",
+				MarkdownDescription: "Sets the maximum number of idle instances on standby in the pool. Must be greater than or equal to min_idle.",
+				Validators: []validator.Int64{
+					validators.GreaterThanOrEqual("min_idle"),
+				},
 			},
 			"max_pool_size": schema.Int64Attribute{
 				Required:            true,
@@ -103,8 +108,11 @@ func VdiPoolResourceSchema(ctx context.Context) schema.Schema {
 			"min_idle": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Sets the minimum number of idle instances on standby in the pool.",
-				MarkdownDescription: "Sets the minimum number of idle instances on standby in the pool.",
+				Description:         "Sets the minimum number of idle instances on standby in the pool. When set, max_idle must also be set and be greater than or equal to this value.",
+				MarkdownDescription: "Sets the minimum number of idle instances on standby in the pool. When set, max_idle must also be set and be greater than or equal to this value.",
+				Validators: []validator.Int64{
+					int64validator.AlsoRequires(path.Expressions{path.MatchRoot("max_idle")}...),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
