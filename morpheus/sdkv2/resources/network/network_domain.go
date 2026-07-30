@@ -197,7 +197,7 @@ func resourceNetworkDomainCreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
-		wo := rawConfig.GetAttr("domain_password_wo")
+		wo, _ := rawConfig.GetAttr("domain_password_wo").Unmark()
 		if !wo.IsNull() && wo.IsKnown() && wo.AsString() != "" {
 			domainBody["domainPassword"] = wo.AsString()
 		}
@@ -327,11 +327,14 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 	if err := d.Set("auto_join_domain", d.Get("auto_join_domain")); err != nil {
 		return diag.FromErr(err)
 	}
-	// tenant_id maps to the API "account" association.
+	// tenant_id maps to the API "account" association. Clear it when the
+	// domain has no account so the association drifts instead of going stale.
 	if networkDomain.Account != nil {
 		if err := d.Set("tenant_id", int(networkDomain.Account.ID)); err != nil {
 			return diag.FromErr(err)
 		}
+	} else if err := d.Set("tenant_id", 0); err != nil {
+		return diag.FromErr(err)
 	}
 	// d.Set("fqdn", networkDomain.Fqdn)
 
@@ -421,7 +424,7 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 		domainBody["domainPassword"] = domainPassword
 	}
 	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
-		wo := rawConfig.GetAttr("domain_password_wo")
+		wo, _ := rawConfig.GetAttr("domain_password_wo").Unmark()
 		switch {
 		case !wo.IsNull() && wo.IsKnown() && wo.AsString() != "":
 			domainBody["domainPassword"] = wo.AsString()
@@ -479,10 +482,13 @@ func resourceNetworkDomainDelete(ctx context.Context, d *schema.ResourceData, me
 	req := &morpheus.Request{}
 	resp, err := client.DeleteNetworkDomain(convert.StringToInt64(id), req)
 	if err != nil {
+		// A 404 means the domain is already gone, so the delete has
+		// effectively succeeded and the resource can leave state.
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
+			d.SetId("")
 
-			return diag.FromErr(err)
+			return diags
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
 
