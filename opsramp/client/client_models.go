@@ -23,7 +23,9 @@ type CreateClient struct {
 
 // ClientResponse represents the API response for a client
 type ClientResponse struct {
-	Id                uint     `json:"id"`
+	// Id is int64 rather than uint so it maps directly onto the Terraform
+	// Int64 attribute without a conversion that cannot be proven safe.
+	Id                int64    `json:"id"`
 	UniqueId          string   `json:"uniqueId"`
 	Name              string   `json:"name"`
 	Activated         bool     `json:"activated"`

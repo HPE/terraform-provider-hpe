@@ -20,7 +20,6 @@ type ServiceDeskCategoryDelete struct {
 
 // CreateServiceDeskCategory - Create new ServiceDeskCategory
 func (c *OpsRampClient) CreateServiceDeskCategory(resource ServiceDeskCategory) (*ServiceDeskCategory, error) {
-
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -39,19 +38,17 @@ func (c *OpsRampClient) CreateServiceDeskCategory(resource ServiceDeskCategory) 
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody []ServiceDeskCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return ID of the record created
 	return &responseBody[0], nil
-
 }
 
 // GetServiceDeskCategory - Get the resource with ID of the resource
 func (c *OpsRampClient) GetServiceDeskCategory(id string) (*ServiceDeskCategory, error) {
-
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/category/%s", c.BaseUrl, c.TenantId, id)
 	method := "GET"
@@ -60,7 +57,6 @@ func (c *OpsRampClient) GetServiceDeskCategory(id string) (*ServiceDeskCategory,
 
 	// Create a new Request
 	body, err := c.NewJsonRequest(method, apiUrl, nil)
-
 	if err != nil {
 
 		if !strings.Contains(err.Error(), "No Details Found") {
@@ -84,7 +80,6 @@ func (c *OpsRampClient) GetServiceDeskCategory(id string) (*ServiceDeskCategory,
 
 // UpdateServiceDeskCategory - Update a resource using Az Client
 func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord ServiceDeskCategory) (*ServiceDeskCategory, error) {
-
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -104,7 +99,7 @@ func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord Servic
 	var responseBody ServiceDeskCategory
 
 	// Preparing Response Body to return and convert it to Golang Struct
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +109,6 @@ func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord Servic
 }
 
 func (c *OpsRampClient) DeleteServiceDeskCategory(id string) error {
-
 	// Prepare config for API Request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/categories", c.BaseUrl, c.TenantId)
 	method := "DELETE"
@@ -174,6 +168,7 @@ func (c *OpsRampClient) FindServiceDeskCategoryByName(tenantId string, name stri
 		if normalizedTicketType != "" && normalizeServiceDeskCategoryTicketType(response.Results[i].TicketType) != normalizedTicketType {
 			continue
 		}
+
 		return &response.Results[i], nil
 	}
 

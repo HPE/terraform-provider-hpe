@@ -9,10 +9,10 @@ resource "hpe_opsramp_integration" "custom_bidirectional" {
 
     map_attributes = [
       {
-        entity_type = "INCIDENT"
+        entity_type           = "INCIDENT"
         third_party_attribute = "description"
-        opsramp_attribute = "incident.impact"
-        attribute_values = {"attr1": "value1","attr2": "value2"}
+        opsramp_attribute     = "incident.impact"
+        attribute_values      = { "attr1" : "value1", "attr2" : "value2" }
       }
     ]
 
@@ -20,15 +20,15 @@ resource "hpe_opsramp_integration" "custom_bidirectional" {
   }
 
   outbound = {
-    base_uri  = "https://external-system.example.com/webhook"
-    auth_type = "OAUTH2"
-    username  = "api-user"
-    password  = "secret"
-    api_key   = "my-api-key"
-    api_secret = "my-api-secret"
-    grant_type = "PASSWORD"
+    base_uri         = "https://external-system.example.com/webhook"
+    auth_type        = "OAUTH2"
+    username         = "api-user"
+    password         = "secret"
+    api_key          = "my-api-key"
+    api_secret       = "my-api-secret"
+    grant_type       = "PASSWORD"
     access_token_url = "https://external-system.example.com/oauth/token"
-    scope     = "alerts"
+    scope            = "alerts"
 
     additional_properties = {
       custom_key = "custom_value"
@@ -36,10 +36,10 @@ resource "hpe_opsramp_integration" "custom_bidirectional" {
 
     map_attributes = [
       {
-        entity_type = "INCIDENT"
+        entity_type           = "INCIDENT"
         third_party_attribute = "priority.name"
-        opsramp_attribute = "incident.priority.name"
-        attribute_values = {"Very Low": "vl","Low": "l"}
+        opsramp_attribute     = "incident.priority.name"
+        attribute_values      = { "Very Low" : "vl", "Low" : "l" }
       }
     ]
   }

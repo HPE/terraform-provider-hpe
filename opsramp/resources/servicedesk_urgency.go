@@ -4,13 +4,14 @@ package resources
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 type ServiceDeskUrgencyModel struct {
@@ -27,10 +28,12 @@ type ServiceDeskUrgency struct {
 }
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ServiceDeskUrgency{}
-var _ resource.ResourceWithModifyPlan = &ServiceDeskUrgency{}
+var (
+	_ resource.Resource               = &ServiceDeskUrgency{}
+	_ resource.ResourceWithModifyPlan = &ServiceDeskUrgency{}
+)
 
-//var _ resource.ResourceWithImportState = &ServiceDeskUrgency{}
+// var _ resource.ResourceWithImportState = &ServiceDeskUrgency{}
 
 // New creates a new instance of the resource.
 func NewServiceDeskUrgency() resource.Resource {
@@ -97,6 +100,7 @@ func (r *ServiceDeskUrgency) Create(ctx context.Context, req resource.CreateRequ
 	created, err := r.apiClient.CreateServiceDeskUrgency(urgency)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -120,6 +124,7 @@ func (r *ServiceDeskUrgency) Read(ctx context.Context, req resource.ReadRequest,
 	urgency, err := r.apiClient.GetServiceDeskUrgency(state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -127,6 +132,7 @@ func (r *ServiceDeskUrgency) Read(ctx context.Context, req resource.ReadRequest,
 	// This is a common pattern in Terraform providers to handle resources that may not exist anymore.
 	if urgency == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -156,6 +162,7 @@ func (r *ServiceDeskUrgency) Update(ctx context.Context, req resource.UpdateRequ
 	updated, err := r.apiClient.UpdateServiceDeskUrgency(plan.Id.ValueString(), urgency)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 

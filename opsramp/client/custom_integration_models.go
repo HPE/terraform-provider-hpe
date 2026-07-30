@@ -57,6 +57,7 @@ func (r *CustomIntegrationResponse) GetAPICredentials() (key string, secret stri
 		return r.InboundConfig.Authentication.ApiKeyPairs[0].Key,
 			r.InboundConfig.Authentication.ApiKeyPairs[0].Secret
 	}
+
 	return "", ""
 }
 

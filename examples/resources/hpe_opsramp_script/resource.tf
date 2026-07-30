@@ -7,7 +7,7 @@ resource "hpe_opsramp_script" "restart_service" {
   install_timeout = 120
 
   attachment = {
-    name        = "restart_service_linux.sh"
+    name = "restart_service_linux.sh"
     file = file("restart_service_linux.sh")
   }
 

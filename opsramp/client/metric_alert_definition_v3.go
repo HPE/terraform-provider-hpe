@@ -58,5 +58,6 @@ func (c *OpsRampClient) DeleteMetricAlertDefinition(tenantId string, id string) 
 	apiUrl := fmt.Sprintf("%s/alertdefinitions/api/v3/tenants/%s/metric-alerts/%s", c.BaseUrl, tenantId, id)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

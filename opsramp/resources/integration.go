@@ -23,9 +23,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &IntegrationResource{}
-var _ resource.ResourceWithImportState = &IntegrationResource{}
-var _ resource.ResourceWithModifyPlan = &IntegrationResource{}
+var (
+	_ resource.Resource                = &IntegrationResource{}
+	_ resource.ResourceWithImportState = &IntegrationResource{}
+	_ resource.ResourceWithModifyPlan  = &IntegrationResource{}
+)
 
 // IntegrationResource defines the resource implementation.
 type IntegrationResource struct {
@@ -445,6 +447,7 @@ func (r *IntegrationResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -488,6 +491,7 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 	if err != nil {
 		resp.Diagnostics.AddError("Integration Install Error",
 			fmt.Sprintf("Could not install integration of type '%s': %s", application, err.Error()))
+
 		return
 	}
 
@@ -514,6 +518,7 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 		if err := r.configureInbound(tenantId, installed.ID, application, plan.Inbound, installed); err != nil {
 			resp.Diagnostics.AddError("Inbound Configuration Error", err.Error())
 			resp.State.Set(ctx, &plan)
+
 			return
 		}
 
@@ -534,6 +539,7 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 		if err := r.configureOutbound(tenantId, installed.ID, plan.Outbound); err != nil {
 			resp.Diagnostics.AddError("Outbound Configuration Error", err.Error())
 			resp.State.Set(ctx, &plan)
+
 			return
 		}
 	}
@@ -546,7 +552,6 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 // applicationName is the integration type (e.g. "CUSTOM", "CUSTOM-EVENT", "NEWRELIC").
 // installed may be nil (e.g. during Update) and is only used to seed token/webhook from the install response.
 func (r *IntegrationResource) configureInbound(tenantId, integrationId, applicationName string, inbound *IntegrationInboundModel, installed *client.IntegrationResponse) error {
-
 	if installed != nil && installed.InboundConfig != nil && installed.InboundConfig.Authentication != nil {
 		// Use values from install response (e.g. NEWRELIC auto-provisions auth)
 		auth := installed.InboundConfig.Authentication
@@ -565,7 +570,6 @@ func (r *IntegrationResource) configureInbound(tenantId, integrationId, applicat
 
 			// Retrieve Available Role
 			integrationAvailableRoles, err := r.apiClient.GetIntegrationAvailableRoles(tenantId, integrationId)
-
 			if err != nil {
 				return fmt.Errorf("failed to retrieve available integration roles: %w", err)
 			}
@@ -583,6 +587,7 @@ func (r *IntegrationResource) configureInbound(tenantId, integrationId, applicat
 					if strings.EqualFold(role.UniqueId, inbound.RoleId.ValueString()) {
 						foundRole = true
 						selectedRole = &role
+
 						break
 					}
 				}
@@ -761,6 +766,7 @@ func (r *IntegrationResource) buildMappingAttributes(tenantId, integrationId str
 			names[p.Property] = p.Name
 		}
 		propertyCache[entityType] = names
+
 		return names, nil
 	}
 
@@ -823,6 +829,7 @@ func (r *IntegrationResource) buildMappingAttributes(tenantId, integrationId str
 	if outbound {
 		return client.MappingAttributesRequest{OutboundConfig: mapAttrs}, nil
 	}
+
 	return client.MappingAttributesRequest{InboundConfig: mapAttrs}, nil
 }
 
@@ -894,6 +901,7 @@ func (r *IntegrationResource) installedMappingsToModel(mappings []client.Install
 	for _, k := range order {
 		result = append(result, *groups[k])
 	}
+
 	return result
 }
 
@@ -915,9 +923,11 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 			strings.Contains(errStr, "not found") ||
 			strings.Contains(errStr, "No installed integration found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -959,6 +969,7 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 		mappings, err := r.apiClient.GetInstalledMappingAttributes(tenantId, state.Id.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Read Inbound Mapping Attributes Error", err.Error())
+
 			return
 		}
 		state.Inbound.MapAttributes = r.installedMappingsToModel(mappings)
@@ -969,6 +980,7 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 		outMappings, err := r.apiClient.GetInstalledOutboundMappingAttributes(tenantId, state.Id.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Read Outbound Mapping Attributes Error", err.Error())
+
 			return
 		}
 		state.Outbound.MapAttributes = r.installedMappingsToModel(outMappings)
@@ -1013,6 +1025,7 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 		_, err := r.apiClient.UpdateIntegration(tenantId, integrationId, updateReq)
 		if err != nil {
 			resp.Diagnostics.AddError("Integration Update Error", err.Error())
+
 			return
 		}
 	}
@@ -1029,6 +1042,7 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 	if plan.Inbound != nil {
 		if err := r.configureInbound(tenantId, integrationId, plan.Application.ValueString(), plan.Inbound, nil); err != nil {
 			resp.Diagnostics.AddError("Inbound Configuration Error", err.Error())
+
 			return
 		}
 
@@ -1051,6 +1065,7 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 	if plan.Outbound != nil {
 		if err := r.configureOutbound(tenantId, integrationId, plan.Outbound); err != nil {
 			resp.Diagnostics.AddError("Outbound Configuration Error", err.Error())
+
 			return
 		}
 	}
@@ -1090,6 +1105,7 @@ func (r *IntegrationResource) reconcileProcessDefinitions(tenantId, integrationI
 				if err := r.apiClient.AssignProcessDefinition(tenantId, integrationId, processId, false); err != nil {
 					resp.Diagnostics.AddError("Process Definition Unassign Error",
 						fmt.Sprintf("Failed to unassign process definition '%s': %s", processId, err.Error()))
+
 					return
 				}
 			}
@@ -1107,10 +1123,12 @@ func (r *IntegrationResource) reconcileWebhookHandshake(tenantId, integrationId 
 		var props map[string]any
 		if err := json.Unmarshal([]byte(planInbound.WebhookHandshake.ValueString()), &props); err != nil {
 			resp.Diagnostics.AddError("Invalid Webhook Handshake", "webhook_handshake must be valid JSON: "+err.Error())
+
 			return
 		}
 		if err := r.apiClient.SetWebhookHandshake(tenantId, integrationId, props); err != nil {
 			resp.Diagnostics.AddError("Webhook Handshake Error", err.Error())
+
 			return
 		}
 	} else if stateHasHandshake && !planHasHandshake {
@@ -1122,6 +1140,7 @@ func (r *IntegrationResource) reconcileWebhookHandshake(tenantId, integrationId 
 		}
 		if err := r.apiClient.DeleteWebhookHandshake(tenantId, integrationId, props); err != nil {
 			resp.Diagnostics.AddError("Webhook Handshake Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -1142,6 +1161,7 @@ func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteReq
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -1153,6 +1173,7 @@ func (r *IntegrationResource) ImportState(ctx context.Context, req resource.Impo
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -1186,12 +1207,14 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	// For CUSTOM/CUSTOM-EVENT, display_name must be provided.
 	if contains(applicationWithDisplayName, plan.Application.ValueString()) && plan.DisplayName.ValueString() == "" {
 		resp.Diagnostics.AddError("display_name is required for application types CUSTOM and CUSTOM-EVENT", "Please provide a display_name value.")
+
 		return
 	}
 
 	if plan.Application.ValueString() == "CUSTOM-EVENT" {
 		if plan.AlertSourceID.IsNull() {
 			resp.Diagnostics.AddError("alert_source_id is required for application type CUSTOM-EVENT", "Please provide an alert_source_id value.")
+
 			return
 		}
 
@@ -1205,21 +1228,25 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	} else if plan.Application.ValueString() == "CUSTOM" {
 		if plan.Inbound == nil || plan.Inbound.AuthType.ValueString() != "OAUTH2" {
 			resp.Diagnostics.AddError("For application type CUSTOM, inbound auth_type must be OAUTH2", "Please set inbound auth_type to OAUTH2.")
+
 			return
 		}
 	} else {
 		if plan.Inbound != nil && !plan.Inbound.RoleId.IsNull() && plan.Inbound.RoleId.ValueString() != "" {
 			resp.Diagnostics.AddError("role_id can only be set for application types CUSTOM or CUSTOM-EVENT", "Remove the inbound role_id value or set application to CUSTOM or CUSTOM-EVENT.")
+
 			return
 		}
 		if plan.Inbound != nil && !plan.Inbound.AdditionalProperties.IsNull() && len(plan.Inbound.AdditionalProperties.Elements()) > 0 {
 			resp.Diagnostics.AddError("inbound additional_properties can only be set for application type CUSTOM", "Remove the inbound additional_properties value or set application to CUSTOM.")
+
 			return
 		}
 	}
 	if plan.Application.ValueString() == "CUSTOM-EVENT" && plan.Inbound != nil &&
 		!plan.Inbound.AdditionalProperties.IsNull() && len(plan.Inbound.AdditionalProperties.Elements()) > 0 {
 		resp.Diagnostics.AddError("inbound additional_properties can only be set for application type CUSTOM", "Remove the inbound additional_properties value or set application to CUSTOM.")
+
 		return
 	}
 
@@ -1231,6 +1258,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 					"default_parsing_value is required when parsing_operators is set",
 					fmt.Sprintf("Attribute mapping for '%s' has parsing_operators but no default_parsing_value.", attr.OpsRampAttribute.ValueString()),
 				)
+
 				return
 			}
 
@@ -1243,6 +1271,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 							"end_word is required for BEFORE operator",
 							fmt.Sprintf("Attribute mapping for '%s' uses BEFORE operator but end_word is not set.", attr.OpsRampAttribute.ValueString()),
 						)
+
 						return
 					}
 				case "AFTER":
@@ -1251,6 +1280,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 							"start_word is required for AFTER operator",
 							fmt.Sprintf("Attribute mapping for '%s' uses AFTER operator but start_word is not set.", attr.OpsRampAttribute.ValueString()),
 						)
+
 						return
 					}
 				case "BETWEEN":
@@ -1259,6 +1289,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 							"start_word and end_word are required for BETWEEN operator",
 							fmt.Sprintf("Attribute mapping for '%s' uses BETWEEN operator but start_word and/or end_word is not set.", attr.OpsRampAttribute.ValueString()),
 						)
+
 						return
 					}
 				case "MATCHES":
@@ -1267,6 +1298,7 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 							"regex_str is required for MATCHES operator",
 							fmt.Sprintf("Attribute mapping for '%s' uses MATCHES operator but regex_str is not set.", attr.OpsRampAttribute.ValueString()),
 						)
+
 						return
 					}
 				}

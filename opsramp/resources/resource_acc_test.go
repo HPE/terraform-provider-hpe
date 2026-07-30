@@ -7,16 +7,17 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 )
 
 func TestAccResource(t *testing.T) {
-	//t.Run("happy path", func(t *testing.T) {
+	// t.Run("happy path", func(t *testing.T) {
 	resourceName := acctest.RandomName("resource")
 	hostname := acctest.RandomName("host")
 

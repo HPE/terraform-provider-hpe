@@ -17,8 +17,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ScriptCategoryResource{}
-var _ resource.ResourceWithModifyPlan = &ScriptCategoryResource{}
+var (
+	_ resource.Resource               = &ScriptCategoryResource{}
+	_ resource.ResourceWithModifyPlan = &ScriptCategoryResource{}
+)
 
 // ScriptCategoryResource defines the resource implementation.
 type ScriptCategoryResource struct {
@@ -82,6 +84,7 @@ func (r *ScriptCategoryResource) resolveTenantId(clientAttr types.String) string
 	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
 		return clientAttr.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -94,6 +97,7 @@ func buildCategoryRequest(plan ScriptCategoryModel) client.ScriptCategory {
 	if !plan.ParentId.IsNull() && !plan.ParentId.IsUnknown() && plan.ParentId.ValueString() != "" {
 		cat.Parent = &client.ScriptCategoryParentRef{Uuid: plan.ParentId.ValueString()}
 	}
+
 	return cat
 }
 
@@ -112,6 +116,7 @@ func (r *ScriptCategoryResource) Create(ctx context.Context, req resource.Create
 	created, err := r.apiClient.CreateScriptCategory(tenantId, catReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Creating Script Category", fmt.Sprintf("Could not create script category: %s", err))
+
 		return
 	}
 
@@ -142,9 +147,11 @@ func (r *ScriptCategoryResource) Read(ctx context.Context, req resource.ReadRequ
 	if err != nil {
 		if strings.Contains(err.Error(), "No task category found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Error Reading Script Category", fmt.Sprintf("Could not read script category %s: %s", state.Uuid.ValueString(), err))
+
 		return
 	}
 
@@ -173,6 +180,7 @@ func (r *ScriptCategoryResource) Update(ctx context.Context, req resource.Update
 	updated, err := r.apiClient.UpdateScriptCategory(tenantId, catReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating Script Category", fmt.Sprintf("Could not update script category %s: %s", state.Uuid.ValueString(), err))
+
 		return
 	}
 
@@ -202,6 +210,7 @@ func (r *ScriptCategoryResource) Delete(ctx context.Context, req resource.Delete
 	err := r.apiClient.DeleteScriptCategory(tenantId, state.Uuid.ValueString())
 	if err != nil && !strings.Contains(err.Error(), "status: 204") {
 		resp.Diagnostics.AddError("Error Deleting Script Category", fmt.Sprintf("Could not delete script category %s: %s", state.Uuid.ValueString(), err))
+
 		return
 	}
 

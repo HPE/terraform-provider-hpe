@@ -10,7 +10,7 @@ terraform {
 
 provider "hpe" {
   opsramp {
-    client_id = "abcdefghijklmnopqrstuvwxyz123456"
+    client_id     = "abcdefghijklmnopqrstuvwxyz123456"
     client_secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ab"
     endpoint      = "tenant.api.pov.opsramp.com"
     tenant        = "abcdefgh-1234-5678-90ab-cdefghijklmn"

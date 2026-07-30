@@ -19,9 +19,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &PermissionSetResource{}
-var _ resource.ResourceWithImportState = &PermissionSetResource{}
-var _ resource.ResourceWithModifyPlan = &PermissionSetResource{}
+var (
+	_ resource.Resource                = &PermissionSetResource{}
+	_ resource.ResourceWithImportState = &PermissionSetResource{}
+	_ resource.ResourceWithModifyPlan  = &PermissionSetResource{}
+)
 
 // PermissionSetResource defines the resource implementation.
 type PermissionSetResource struct {
@@ -234,6 +236,7 @@ func (r *PermissionSetResource) Create(ctx context.Context, req resource.CreateR
 	permissions, err := r.getPermissionsFromPlan(ctx, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Error parsing permissions", err.Error())
+
 		return
 	}
 
@@ -256,6 +259,7 @@ func (r *PermissionSetResource) Create(ctx context.Context, req resource.CreateR
 	created, err := r.apiClient.CreatePermissionSet(tenantId, createPermSet)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -314,9 +318,11 @@ func (r *PermissionSetResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -376,6 +382,7 @@ func (r *PermissionSetResource) Update(ctx context.Context, req resource.UpdateR
 	planPermissions, err := r.getPermissionsFromPlan(ctx, plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Error parsing plan permissions", err.Error())
+
 		return
 	}
 
@@ -383,6 +390,7 @@ func (r *PermissionSetResource) Update(ctx context.Context, req resource.UpdateR
 	statePermissions, err := r.getPermissionsFromState(ctx, state)
 	if err != nil {
 		resp.Diagnostics.AddError("Error parsing state permissions", err.Error())
+
 		return
 	}
 
@@ -417,6 +425,7 @@ func (r *PermissionSetResource) Update(ctx context.Context, req resource.UpdateR
 			"Error Updating Permission Set",
 			fmt.Sprintf("Could not update permission set: %s", err),
 		)
+
 		return
 	}
 
@@ -472,6 +481,7 @@ func (r *PermissionSetResource) Delete(ctx context.Context, req resource.DeleteR
 	err := r.apiClient.DeletePermissionSet(tenantId, state.UniqueId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -489,6 +499,7 @@ func (r *PermissionSetResource) ImportState(ctx context.Context, req resource.Im
 			"Error Importing Permission Set",
 			fmt.Sprintf("Could not import permission set: %s", err),
 		)
+
 		return
 	}
 

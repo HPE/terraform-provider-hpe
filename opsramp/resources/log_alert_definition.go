@@ -244,6 +244,7 @@ func (r *LogAlertDefinitionResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -260,6 +261,7 @@ func (r *LogAlertDefinitionResource) Create(ctx context.Context, req resource.Cr
 	alert, err := r.buildAlert(&plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
+
 		return
 	}
 
@@ -270,16 +272,19 @@ func (r *LogAlertDefinitionResource) Create(ctx context.Context, req resource.Cr
 	result, err := r.apiClient.CreateLogAlertDefinition(tenantId, apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
 	if len(result.Errors) > 0 {
 		resp.Diagnostics.AddError("API Errors", fmt.Sprintf("%v", result.Errors))
+
 		return
 	}
 
 	if len(result.Alerts) == 0 {
 		resp.Diagnostics.AddError("Create Error", "No alert definition returned in response")
+
 		return
 	}
 
@@ -304,9 +309,11 @@ func (r *LogAlertDefinitionResource) Read(ctx context.Context, req resource.Read
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -400,6 +407,7 @@ func (r *LogAlertDefinitionResource) Update(ctx context.Context, req resource.Up
 	alert, err := r.buildAlert(&plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
+
 		return
 	}
 
@@ -409,6 +417,7 @@ func (r *LogAlertDefinitionResource) Update(ctx context.Context, req resource.Up
 	_, err = r.apiClient.UpdateLogAlertDefinition(tenantId, state.Id.ValueString(), *alert)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -432,6 +441,7 @@ func (r *LogAlertDefinitionResource) Delete(ctx context.Context, req resource.De
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}

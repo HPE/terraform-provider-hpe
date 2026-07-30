@@ -23,8 +23,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &IntegrationConfigResource{}
-var _ resource.ResourceWithImportState = &IntegrationConfigResource{}
+var (
+	_ resource.Resource                = &IntegrationConfigResource{}
+	_ resource.ResourceWithImportState = &IntegrationConfigResource{}
+)
 
 // IntegrationConfigResource defines the resource implementation.
 type IntegrationConfigResource struct {
@@ -145,6 +147,7 @@ func (r *IntegrationConfigResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -164,6 +167,7 @@ func (r *IntegrationConfigResource) Create(ctx context.Context, req resource.Cre
 	var configMap map[string]any
 	if err := json.Unmarshal([]byte(plan.Config.ValueString()), &configMap); err != nil {
 		resp.Diagnostics.AddError("Invalid Config JSON", fmt.Sprintf("config must be valid JSON: %s", err.Error()))
+
 		return
 	}
 
@@ -195,6 +199,7 @@ func (r *IntegrationConfigResource) Create(ctx context.Context, req resource.Cre
 	if err != nil {
 		resp.Diagnostics.AddError("Integration Config Create Error",
 			fmt.Sprintf("Could not create config for integration '%s': %s", integrationId, err.Error()))
+
 		return
 	}
 
@@ -233,9 +238,11 @@ func (r *IntegrationConfigResource) Read(ctx context.Context, req resource.ReadR
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -285,6 +292,7 @@ func (r *IntegrationConfigResource) Update(ctx context.Context, req resource.Upd
 	var configMap map[string]any
 	if err := json.Unmarshal([]byte(plan.Config.ValueString()), &configMap); err != nil {
 		resp.Diagnostics.AddError("Invalid Config JSON", fmt.Sprintf("config must be valid JSON: %s", err.Error()))
+
 		return
 	}
 
@@ -310,6 +318,7 @@ func (r *IntegrationConfigResource) Update(ctx context.Context, req resource.Upd
 	updated, err := r.apiClient.UpdateIntegrationConfig(tenantId, integrationId, configId, updateReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Integration Config Update Error", err.Error())
+
 		return
 	}
 
@@ -346,6 +355,7 @@ func (r *IntegrationConfigResource) Delete(ctx context.Context, req resource.Del
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -357,6 +367,7 @@ func (r *IntegrationConfigResource) ImportState(ctx context.Context, req resourc
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 

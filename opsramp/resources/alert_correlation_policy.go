@@ -21,9 +21,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &AlertCorrelationPolicyResource{}
-var _ resource.ResourceWithModifyPlan = &AlertCorrelationPolicyResource{}
-var _ resource.ResourceWithImportState = &AlertCorrelationPolicyResource{}
+var (
+	_ resource.Resource                = &AlertCorrelationPolicyResource{}
+	_ resource.ResourceWithModifyPlan  = &AlertCorrelationPolicyResource{}
+	_ resource.ResourceWithImportState = &AlertCorrelationPolicyResource{}
+)
 
 // AlertCorrelationPolicyResource defines the resource implementation.
 type AlertCorrelationPolicyResource struct {
@@ -453,6 +455,7 @@ func (r *AlertCorrelationPolicyResource) Create(ctx context.Context, req resourc
 	created, err := r.apiClient.CreateAlertCorrelationPolicy(tenantId, policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -480,9 +483,11 @@ func (r *AlertCorrelationPolicyResource) Read(ctx context.Context, req resource.
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -513,6 +518,7 @@ func (r *AlertCorrelationPolicyResource) Update(ctx context.Context, req resourc
 	updated, err := r.apiClient.UpdateAlertCorrelationPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -540,6 +546,7 @@ func (r *AlertCorrelationPolicyResource) Delete(ctx context.Context, req resourc
 	err := r.apiClient.DeleteAlertCorrelationPolicy(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -552,6 +559,7 @@ func (r *AlertCorrelationPolicyResource) ImportState(ctx context.Context, req re
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -562,6 +570,7 @@ func (r *AlertCorrelationPolicyResource) ImportState(ctx context.Context, req re
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing Alert Correlation Policy",
 			fmt.Sprintf("Could not import alert correlation policy with ID '%s': %s", policyId, err))
+
 		return
 	}
 

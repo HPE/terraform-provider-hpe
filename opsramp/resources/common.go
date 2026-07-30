@@ -13,6 +13,7 @@ func setToStringSlice(s types.Set) []string {
 			result = append(result, sv.ValueString())
 		}
 	}
+
 	return result
 }
 
@@ -28,5 +29,6 @@ func stringSetDiff(a, b []string) []string {
 			diff = append(diff, v)
 		}
 	}
+
 	return diff
 }

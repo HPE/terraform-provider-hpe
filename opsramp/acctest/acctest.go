@@ -11,11 +11,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/HPE/terraform-provider-hpe/opsramp/utils/clientfactory"
 
-	"github.com/HPE/terraform-provider-hpe/provider"
-	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	tfacctest "github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+
+	"github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
 // ProtoV6ProviderFactories instantiates the provider for acceptance tests.
@@ -33,13 +34,20 @@ var envSuffix = []string{
 }
 
 // PreCheck validates required acceptance-test environment variables.
+//
+// A missing variable skips rather than fails. These are acceptance tests, so
+// running without credentials is the normal case for anyone who is not
+// targeting a live tenant, and failing would break `go test ./...` for them.
 func PreCheck(t *testing.T) func() {
 	return func() {
 		t.Helper()
 
 		for _, suffix := range envSuffix {
 			if _, ok := LookupProviderEnv(suffix); !ok {
-				t.Fatalf("TF_VAR_testacc_opsramp_%s not set for acceptance tests", suffix)
+				t.Skipf(
+					"skipping: TF_VAR_testacc_opsramp_%s not set for acceptance tests",
+					suffix,
+				)
 			}
 		}
 	}
@@ -50,11 +58,11 @@ func APIClient(t *testing.T) (*client.OpsRampClient, error) {
 	t.Helper()
 	PreCheck(t)()
 
-	client_id, ok := LookupProviderEnv("client_id")
+	clientID, ok := LookupProviderEnv("client_id")
 	if !ok {
 		return nil, fmt.Errorf("client_id not set for acceptance tests")
 	}
-	client_secret, ok := LookupProviderEnv("client_secret")
+	clientSecret, ok := LookupProviderEnv("client_secret")
 	if !ok {
 		return nil, fmt.Errorf("client_secret not set for acceptance tests")
 	}
@@ -68,8 +76,8 @@ func APIClient(t *testing.T) (*client.OpsRampClient, error) {
 	}
 
 	clientfactory := clientfactory.NewClientFactory(
-		client_id,
-		client_secret,
+		clientID,
+		clientSecret,
 		endpoint,
 		tenant,
 	)
@@ -188,8 +196,8 @@ variable "testacc_opsramp_tenant" {
 
 provider "hpe" {
   opsramp {
-    client_id = var.testacc_opsramp_client_id
-    client_secret = var.testacc_opsramp_client_secret
+    clientID = var.testacc_opsramp_client_id
+    clientSecret = var.testacc_opsramp_client_secret
     endpoint      = var.testacc_opsramp_endpoint
     tenant        = var.testacc_opsramp_tenant
   }

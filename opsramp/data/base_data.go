@@ -5,9 +5,10 @@ package data
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/HPE/terraform-provider-hpe/opsramp/utils/clientfactory"
-	"github.com/hashicorp/terraform-plugin-framework/datasource"
 )
 
 // Base Data struct
@@ -30,6 +31,7 @@ func (d *BaseData) Configure(ctx context.Context, req datasource.ConfigureReques
 			"Unexpected Resource Configure Type",
 			"Expected *client.ClientFactory",
 		)
+
 		return
 	}
 
@@ -41,6 +43,7 @@ func (d *BaseData) Configure(ctx context.Context, req datasource.ConfigureReques
 			"Unable to Create OpsRamp API Client",
 			err.Error(),
 		)
+
 		return
 	}
 

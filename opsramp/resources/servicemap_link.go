@@ -16,9 +16,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ServicemapResourceLink{}
-var _ resource.ResourceWithImportState = &ServicemapResourceLink{}
-var _ resource.ResourceWithModifyPlan = &ServicemapResourceLink{}
+var (
+	_ resource.Resource                = &ServicemapResourceLink{}
+	_ resource.ResourceWithImportState = &ServicemapResourceLink{}
+	_ resource.ResourceWithModifyPlan  = &ServicemapResourceLink{}
+)
 
 // ServicemapResourceLink defines the resource implementation.
 type ServicemapResourceLink struct {
@@ -98,6 +100,7 @@ func (r *ServicemapResourceLink) Create(ctx context.Context, req resource.Create
 	_, err := r.apiClient.CreateServicemapLink(tenantId, CreateServicemapLink)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -130,11 +133,13 @@ func (r *ServicemapResourceLink) Read(ctx context.Context, req resource.ReadRequ
 	backendServicemapLink, err := r.apiClient.GetServicemapLink(tenantId, serviceMapLink)
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
 	if backendServicemapLink == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -176,6 +181,7 @@ func (r *ServicemapResourceLink) Delete(ctx context.Context, req resource.Delete
 	err := r.apiClient.DeleteServicemapLink(tenantId, servicemapLink)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -188,6 +194,7 @@ func (r *ServicemapResourceLink) ImportState(ctx context.Context, req resource.I
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -226,6 +233,7 @@ func (r *ServicemapResourceLink) ModifyPlan(ctx context.Context, req resource.Mo
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
 		resp.Diagnostics.AddError("ServiceMap Links can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+
 		return
 	}
 }

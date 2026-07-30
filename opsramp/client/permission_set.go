@@ -27,7 +27,7 @@ func (c *OpsRampClient) CreatePermissionSet(tenantId string, permSetData CreateP
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody PermissionSetResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *OpsRampClient) GetPermissionSet(tenantId string, permSetId string) (*Pe
 
 	// Preparing Response Body
 	var responseBody PermissionSetResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *OpsRampClient) UpdatePermissionSet(tenantId string, permSetId string, p
 
 	// Preparing Response Body
 	var responseBody PermissionSetResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +93,7 @@ func (c *OpsRampClient) DeletePermissionSet(tenantId string, permSetId string) e
 
 	// Create a new Request
 	_, err := c.NewJsonRequest(method, apiUrl, nil)
+
 	return err
 }
 
@@ -110,7 +111,7 @@ func (c *OpsRampClient) GetPermissionSets(tenantId string) ([]PermissionSetRespo
 
 	// Preparing Response Body
 	var responseBody []PermissionSetResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -148,7 +149,7 @@ func (c *OpsRampClient) SearchPermissionSets(tenantId string) (*PermissionSetLis
 
 	// Preparing Response Body
 	var responseBody PermissionSetListResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}

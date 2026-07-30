@@ -27,7 +27,7 @@ func (c *OpsRampClient) GetCountries() ([]CountryResponse, error) {
 
 	// Preparing Response Body
 	var responseBody []CountryResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -55,6 +55,7 @@ func (c *OpsRampClient) ValidateCountry(country string) (string, error) {
 	for i, ct := range countries {
 		if i >= 20 {
 			availableList = append(availableList, "... and more")
+
 			break
 		}
 		availableList = append(availableList, ct.Name)

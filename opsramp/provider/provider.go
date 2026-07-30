@@ -20,9 +20,11 @@ import (
 )
 
 // Ensure OpsRampProvider satisfies various provider interfaces.
-var _ provider.Provider = &OpsRampProvider{}
-var _ provider.ProviderWithFunctions = &OpsRampProvider{}
-var _ provider.ProviderWithEphemeralResources = &OpsRampProvider{}
+var (
+	_ provider.Provider                       = &OpsRampProvider{}
+	_ provider.ProviderWithFunctions          = &OpsRampProvider{}
+	_ provider.ProviderWithEphemeralResources = &OpsRampProvider{}
+)
 
 // OpsRampProvider defines the provider implementation.
 type OpsRampProvider struct {
@@ -83,15 +85,15 @@ func (p *OpsRampProvider) Configure(ctx context.Context, req provider.ConfigureR
 
 	endpoint := os.Getenv("OPSRAMP_ENDPOINT")
 	tenant := os.Getenv("OPSRAMP_TENANT")
-	client_id := os.Getenv("OPSRAMP_CLIENT_ID")
-	client_secret := os.Getenv("OPSRAMP_CLIENT_SECRET")
+	clientID := os.Getenv("OPSRAMP_CLIENT_ID")
+	clientSecret := os.Getenv("OPSRAMP_CLIENT_SECRET")
 
 	if config.ClientId.ValueString() != "" && config.ClientId.ValueString() != "*****" {
-		client_id = config.ClientId.ValueString()
+		clientID = config.ClientId.ValueString()
 	}
 
 	if config.ClientSecret.ValueString() != "" && config.ClientSecret.ValueString() != "*****" {
-		client_secret = config.ClientSecret.ValueString()
+		clientSecret = config.ClientSecret.ValueString()
 	}
 
 	if config.Tenant.ValueString() != "" && config.Tenant.ValueString() != "*****" {
@@ -106,7 +108,7 @@ func (p *OpsRampProvider) Configure(ctx context.Context, req provider.ConfigureR
 	// token retrieval) is deferred until a resource or data source needs it.
 	// This prevents a failed initial connection from permanently blocking the
 	// provider in long-lived debug sessions.
-	factory := clientfactory.NewClientFactory(client_id, client_secret, endpoint, tenant)
+	factory := clientfactory.NewClientFactory(clientID, clientSecret, endpoint, tenant)
 
 	resp.DataSourceData = factory
 	resp.ResourceData = factory

@@ -26,7 +26,7 @@ func (c *OpsRampClient) GetResourceTypes(tenantId string) ([]string, error) {
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody []ResourceType
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,6 @@ func (c *OpsRampClient) GetResourceTypes(tenantId string) ([]string, error) {
 
 // CreateResource - Create new Resource
 func (c *OpsRampClient) CreateResource(tenantId string, resource CreateResource) (*ResourceCreated, error) {
-
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -61,19 +60,17 @@ func (c *OpsRampClient) CreateResource(tenantId string, resource CreateResource)
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ResourceCreated
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return ID of the record created
 	return &responseBody, nil
-
 }
 
 // GetResource - Get the resource with ID of the resource
 func (c *OpsRampClient) GetResource(tenantId string, uuid string) (*GetResource, error) {
-
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/resources/%s", c.BaseUrl, tenantId, uuid)
 	method := "GET"
@@ -98,7 +95,6 @@ func (c *OpsRampClient) GetResource(tenantId string, uuid string) (*GetResource,
 
 // UpdateResource - Update a resource using Az Client
 func (c *OpsRampClient) UpdateResource(tenantId string, uuid string, updateRecord UpdateResource) (interface{}, error) {
-
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -120,7 +116,6 @@ func (c *OpsRampClient) UpdateResource(tenantId string, uuid string, updateRecor
 }
 
 func (c *OpsRampClient) DeleteResource(tenantId string, uuid string) (interface{}, error) {
-
 	// Prepare config for API Request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/resources/%s", c.BaseUrl, tenantId, uuid)
 	method := "DELETE"
@@ -136,7 +131,6 @@ func (c *OpsRampClient) DeleteResource(tenantId string, uuid string) (interface{
 }
 
 func (c *OpsRampClient) FindResourceByName(name string) (interface{}, error) {
-
 	// Prepare config for API Request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/resources/search?queryString=resourceName:%s", c.BaseUrl, c.TenantId, name)
 	method := "GET"

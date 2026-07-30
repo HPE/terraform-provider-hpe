@@ -5,18 +5,21 @@ package data
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
-var _ datasource.DataSource = &serviceDeskUrgencyDataSource{}
-var _ datasource.DataSourceWithConfigure = &serviceDeskUrgencyDataSource{}
-var _ datasource.DataSource = &serviceDeskBusinessImpactDataSource{}
-var _ datasource.DataSourceWithConfigure = &serviceDeskBusinessImpactDataSource{}
-var _ datasource.DataSource = &serviceDeskCategoryDataSource{}
-var _ datasource.DataSourceWithConfigure = &serviceDeskCategoryDataSource{}
+var (
+	_ datasource.DataSource              = &serviceDeskUrgencyDataSource{}
+	_ datasource.DataSourceWithConfigure = &serviceDeskUrgencyDataSource{}
+	_ datasource.DataSource              = &serviceDeskBusinessImpactDataSource{}
+	_ datasource.DataSourceWithConfigure = &serviceDeskBusinessImpactDataSource{}
+	_ datasource.DataSource              = &serviceDeskCategoryDataSource{}
+	_ datasource.DataSourceWithConfigure = &serviceDeskCategoryDataSource{}
+)
 
 type serviceDeskLookupModel struct {
 	Client types.String `tfsdk:"client"`
@@ -94,6 +97,7 @@ func (d *serviceDeskUrgencyDataSource) Schema(_ context.Context, _ datasource.Sc
 func (d *serviceDeskUrgencyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -107,6 +111,7 @@ func (d *serviceDeskUrgencyDataSource) Read(ctx context.Context, req datasource.
 	urgency, err := d.apiClient.FindServiceDeskUrgencyByName(tenantID, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Service desk urgency lookup failed", err.Error())
+
 		return
 	}
 
@@ -126,6 +131,7 @@ func (d *serviceDeskBusinessImpactDataSource) Schema(_ context.Context, _ dataso
 func (d *serviceDeskBusinessImpactDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -139,6 +145,7 @@ func (d *serviceDeskBusinessImpactDataSource) Read(ctx context.Context, req data
 	businessImpact, err := d.apiClient.FindServiceDeskBusinessImpactByName(tenantID, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Service desk business impact lookup failed", err.Error())
+
 		return
 	}
 
@@ -179,6 +186,7 @@ func (d *serviceDeskCategoryDataSource) Schema(_ context.Context, _ datasource.S
 func (d *serviceDeskCategoryDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -192,6 +200,7 @@ func (d *serviceDeskCategoryDataSource) Read(ctx context.Context, req datasource
 	category, err := d.apiClient.FindServiceDeskCategoryByName(tenantID, data.Name.ValueString(), data.TicketType.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Service desk category lookup failed", err.Error())
+
 		return
 	}
 

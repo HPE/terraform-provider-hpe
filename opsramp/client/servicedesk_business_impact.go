@@ -25,7 +25,6 @@ type SearchBusinessImpactResponse struct {
 
 // CreateServiceDeskBusinessImpact - Create new ServiceDeskBusinessImpact
 func (c *OpsRampClient) CreateServiceDeskBusinessImpact(resource ServiceDeskBusinessImpact) (*ServiceDeskBusinessImpact, error) {
-
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -44,19 +43,17 @@ func (c *OpsRampClient) CreateServiceDeskBusinessImpact(resource ServiceDeskBusi
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ServiceDeskBusinessImpact
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return ID of the record created
 	return &responseBody, nil
-
 }
 
 // GetServiceDeskBusinessImpact - Get the resource with ID of the resource
 func (c *OpsRampClient) GetServiceDeskBusinessImpact(id string) (*ServiceDeskBusinessImpact, error) {
-
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/businessImpacts?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s", c.BaseUrl, c.TenantId, id)
 	method := "GET"
@@ -85,7 +82,6 @@ func (c *OpsRampClient) GetServiceDeskBusinessImpact(id string) (*ServiceDeskBus
 
 // UpdateServiceDeskBusinessImpact - Update a resource using Az Client
 func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(id string, updateRecord ServiceDeskBusinessImpact) (*ServiceDeskBusinessImpact, error) {
-
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -104,7 +100,7 @@ func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(id string, updateRecord 
 
 	var businessImpact ServiceDeskBusinessImpact
 
-	err = json.Unmarshal([]byte(body), &businessImpact)
+	err = json.Unmarshal(body, &businessImpact)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +110,6 @@ func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(id string, updateRecord 
 }
 
 func (c *OpsRampClient) DeleteServiceDeskBusinessImpact(id string) error {
-
 	// Prepare config for API Request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/businessImpacts", c.BaseUrl, c.TenantId)
 	method := "DELETE"

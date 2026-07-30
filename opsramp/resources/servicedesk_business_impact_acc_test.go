@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 )
 
 func TestAccServicedeskBusinessImpactResource(t *testing.T) {
@@ -33,6 +34,7 @@ func TestAccServicedeskBusinessImpactResource(t *testing.T) {
 		})
 	})
 }
+
 func testAccServicedeskBusinessImpactConfig(name string) string {
 	return fmt.Sprintf(`
 %s

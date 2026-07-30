@@ -23,7 +23,7 @@ func (c *OpsRampClient) CreateScript(tenantId string, categoryId string, scriptD
 	}
 
 	var responseBody ScriptCreationResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -37,6 +37,7 @@ func (c *OpsRampClient) CreateScript(tenantId string, categoryId string, scriptD
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve created script: %w", err)
 	}
+
 	return createdScript, nil
 }
 
@@ -50,7 +51,7 @@ func (c *OpsRampClient) GetScript(tenantId string, categoryId string, scriptId s
 	}
 
 	var responseBody Script
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +81,7 @@ func (c *OpsRampClient) UpdateScript(tenantId string, categoryId string, scriptI
 	}
 
 	var responseBody ScriptCreationResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +95,7 @@ func (c *OpsRampClient) UpdateScript(tenantId string, categoryId string, scriptI
 	if err != nil {
 		return nil, fmt.Errorf("failed to retrieve created script: %w", err)
 	}
+
 	return updatedScript, nil
 }
 
@@ -102,5 +104,6 @@ func (c *OpsRampClient) DeleteScript(tenantId string, categoryId string, scriptI
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/categories/%s/scripts/%s", c.BaseUrl, tenantId, categoryId, scriptId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

@@ -19,7 +19,7 @@ func (c *OpsRampClient) ListKBCategories(tenantId string) ([]KBCategory, error) 
 	}
 
 	var responseBody []KBCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -36,13 +36,12 @@ func (c *OpsRampClient) GetKBCategory(tenantId string, categoryId string) (*KBCa
 	}
 
 	var responseBody KBCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	return &responseBody, nil
-
 }
 
 // CreateKBCategory creates a new KB category.
@@ -59,7 +58,7 @@ func (c *OpsRampClient) CreateKBCategory(tenantId string, categoryData KBCategor
 	}
 
 	var responseBody KBCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +81,7 @@ func (c *OpsRampClient) UpdateKBCategory(tenantId string, categoryId string, cat
 	}
 
 	var responseBody KBCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -95,6 +94,7 @@ func (c *OpsRampClient) DeleteKBCategory(tenantId string, categoryId string) err
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/kb/category/delete/%s", c.BaseUrl, tenantId, categoryId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -115,7 +115,7 @@ func (c *OpsRampClient) CreateKBArticle(tenantId string, articleData KBArticle) 
 	}
 
 	var responseBody KBArticle
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (c *OpsRampClient) GetKBArticle(tenantId string, articleId string) (*KBArti
 	}
 
 	var responseBody KBArticle
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,6 @@ func (c *OpsRampClient) GetKBArticle(tenantId string, articleId string) (*KBArti
 }
 
 func (c *OpsRampClient) ShareKBArticles(tenantId string, kbArticleId string) (*KBArticle, error) {
-
 	articleData := struct {
 		Id string `json:"id"`
 	}{
@@ -162,7 +161,7 @@ func (c *OpsRampClient) ShareKBArticles(tenantId string, kbArticleId string) (*K
 	}
 
 	var responseBody KBArticle
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +184,7 @@ func (c *OpsRampClient) UpdateKBArticle(tenantId string, articleId string, artic
 	}
 
 	var responseBody KBArticle
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -198,5 +197,6 @@ func (c *OpsRampClient) DeleteKBArticle(tenantId string, articleId string) error
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/kb/article/%s/delete", c.BaseUrl, tenantId, articleId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

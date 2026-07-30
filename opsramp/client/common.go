@@ -90,6 +90,7 @@ func NewOpsRampClient(clientID string, clientSecret string, endpoint string, ten
 func (c *OpsRampClient) GetAccessToken() string {
 	c.muAccessToken.RLock()
 	defer c.muAccessToken.RUnlock()
+
 	return c.AccessToken
 }
 
@@ -128,8 +129,10 @@ func (c *OpsRampClient) NewJsonRequest(method string, apiUrl string, payload []b
 			if attempt < maxRetries && shouldRetryNetworkError(err) {
 				delay := time.Duration(attempt+1) * time.Second
 				time.Sleep(delay)
+
 				continue
 			}
+
 			return nil, err
 		}
 
@@ -148,6 +151,7 @@ func (c *OpsRampClient) NewJsonRequest(method string, apiUrl string, payload []b
 		if attempt < maxRetries && shouldRetryStatusCode(res.StatusCode) {
 			delay := time.Duration(attempt+1) * time.Second
 			time.Sleep(delay)
+
 			continue
 		}
 
@@ -163,11 +167,16 @@ func shouldRetryNetworkError(err error) bool {
 	}
 
 	var netErr net.Error
-	if errors.As(err, &netErr) {
-		return netErr.Timeout() || netErr.Temporary()
+	if errors.As(err, &netErr) && netErr.Timeout() {
+		return true
 	}
 
+	// net.Error.Temporary is deprecated and not well defined, so fall through to
+	// the text check below rather than calling it. That also means a net.Error
+	// which is not a timeout is still considered against the same patterns as
+	// any other error, which it previously was not.
 	errText := strings.ToLower(err.Error())
+
 	return strings.Contains(errText, "timeout") || strings.Contains(errText, "tempor")
 }
 

@@ -73,6 +73,7 @@ func (c *OpsRampClient) DeleteScheduledMaintenance(tenantId string, smId string)
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s", c.BaseUrl, tenantId, smId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -86,6 +87,7 @@ func (c *OpsRampClient) AddScheduledMaintenanceResources(tenantId string, smId s
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s/resources", c.BaseUrl, tenantId, smId)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -99,6 +101,7 @@ func (c *OpsRampClient) RemoveScheduledMaintenanceResources(tenantId string, smI
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s/resources", c.BaseUrl, tenantId, smId)
 
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }
 
@@ -125,5 +128,6 @@ func (c *OpsRampClient) ScheduledMaintenanceAction(tenantId string, smId string,
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/scheduleMaintenances/%s/%s", c.BaseUrl, tenantId, smId, action)
 
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)
+
 	return err
 }

@@ -23,7 +23,7 @@ func (c *OpsRampClient) CreateSite(tenantId string, site Site) (*Site, error) {
 	}
 
 	var responseBody Site
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (c *OpsRampClient) GetSite(tenantId string, siteId string) (*Site, error) {
 	}
 
 	var responseBody Site
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +66,7 @@ func (c *OpsRampClient) UpdateSite(tenantId string, siteId string, site Site) (*
 	}
 
 	var responseBody Site
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -80,6 +80,7 @@ func (c *OpsRampClient) DeleteSite(tenantId string, siteId string) error {
 	method := "DELETE"
 
 	_, err := c.NewJsonRequest(method, apiUrl, nil)
+
 	return err
 }
 
@@ -94,7 +95,7 @@ func (c *OpsRampClient) GetSites(tenantId string) ([]SiteMinimal, error) {
 	}
 
 	var responseBody []SiteMinimal
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +114,7 @@ func (c *OpsRampClient) SearchSites(tenantId string, query string) ([]Site, erro
 	}
 
 	var responseBody []Site
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -136,6 +137,7 @@ func (c *OpsRampClient) AddSiteChilds(tenantId string, siteId string, ids []stri
 
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/sites/%s/childs", c.BaseUrl, tenantId, siteId)
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -154,5 +156,6 @@ func (c *OpsRampClient) RemoveSiteChilds(tenantId string, siteId string, ids []s
 
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/sites/%s/childs", c.BaseUrl, tenantId, siteId)
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }

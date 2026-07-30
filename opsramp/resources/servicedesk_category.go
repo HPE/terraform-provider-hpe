@@ -4,7 +4,6 @@ package resources
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -13,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 type ServiceDeskCategoryModel struct {
@@ -29,10 +30,12 @@ type ServiceDeskCategory struct {
 }
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ServiceDeskCategory{}
-var _ resource.ResourceWithModifyPlan = &ServiceDeskCategory{}
+var (
+	_ resource.Resource               = &ServiceDeskCategory{}
+	_ resource.ResourceWithModifyPlan = &ServiceDeskCategory{}
+)
 
-//var _ resource.ResourceWithImportState = &ServiceDeskCategory{}
+// var _ resource.ResourceWithImportState = &ServiceDeskCategory{}
 
 // New creates a new instance of the resource.
 func NewServiceDeskCategory() resource.Resource {
@@ -102,6 +105,7 @@ func (r *ServiceDeskCategory) Create(ctx context.Context, req resource.CreateReq
 	created, err := r.apiClient.CreateServiceDeskCategory(category)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -122,6 +126,7 @@ func (r *ServiceDeskCategory) Read(ctx context.Context, req resource.ReadRequest
 	category, err := r.apiClient.GetServiceDeskCategory(state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -129,6 +134,7 @@ func (r *ServiceDeskCategory) Read(ctx context.Context, req resource.ReadRequest
 	// This is a common pattern in Terraform providers to handle resources that may not exist anymore.
 	if category == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -166,6 +172,7 @@ func (r *ServiceDeskCategory) Update(ctx context.Context, req resource.UpdateReq
 	updated, err := r.apiClient.UpdateServiceDeskCategory(plan.Id.ValueString(), category)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 

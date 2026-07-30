@@ -76,5 +76,6 @@ func contains(list []string, v string) bool {
 			return true
 		}
 	}
+
 	return false
 }

@@ -17,8 +17,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &IntegrationAppResource{}
-var _ resource.ResourceWithImportState = &IntegrationAppResource{}
+var (
+	_ resource.Resource                = &IntegrationAppResource{}
+	_ resource.ResourceWithImportState = &IntegrationAppResource{}
+)
 
 // IntegrationAppResource defines the resource implementation for SDK APP integrations (v3 API).
 type IntegrationAppResource struct {
@@ -105,6 +107,7 @@ func (r *IntegrationAppResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -129,6 +132,7 @@ func (r *IntegrationAppResource) Create(ctx context.Context, req resource.Create
 	if err != nil {
 		resp.Diagnostics.AddError("Integration App Install Error",
 			fmt.Sprintf("Could not install app '%s': %s", plan.Application.ValueString(), err.Error()))
+
 		return
 	}
 
@@ -157,9 +161,11 @@ func (r *IntegrationAppResource) Read(ctx context.Context, req resource.ReadRequ
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -194,6 +200,7 @@ func (r *IntegrationAppResource) Delete(ctx context.Context, req resource.Delete
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -205,6 +212,7 @@ func (r *IntegrationAppResource) ImportState(ctx context.Context, req resource.I
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 

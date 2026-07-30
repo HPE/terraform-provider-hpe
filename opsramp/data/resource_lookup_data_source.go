@@ -55,6 +55,7 @@ func (d *resourceLookupDataSource) Schema(_ context.Context, _ datasource.Schema
 func (d *resourceLookupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -68,6 +69,7 @@ func (d *resourceLookupDataSource) Read(ctx context.Context, req datasource.Read
 	exists, id, _, err := d.apiClient.QueryResources(data.Query.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Query failed", err.Error())
+
 		return
 	}
 

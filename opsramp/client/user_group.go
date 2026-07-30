@@ -27,7 +27,7 @@ func (c *OpsRampClient) CreateUserGroup(tenantId string, groupData CreateUserGro
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody UserGroupResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *OpsRampClient) GetUserGroup(tenantId string, groupId string) (*UserGrou
 
 	// Preparing Response Body
 	var responseBody UserGroupResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *OpsRampClient) UpdateUserGroup(tenantId string, groupId string, groupDa
 
 	// Preparing Response Body
 	var responseBody UserGroupResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +93,7 @@ func (c *OpsRampClient) DeleteUserGroup(tenantId string, groupId string) error {
 
 	// Create a new Request
 	_, err := c.NewJsonRequest(method, apiUrl, nil)
+
 	return err
 }
 
@@ -110,7 +111,7 @@ func (c *OpsRampClient) GetUserGroups(tenantId string) ([]UserGroupResponse, err
 
 	// Preparing Response Body
 	var responseBody []UserGroupResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +169,7 @@ func (c *OpsRampClient) GetUserGroupUsers(tenantId string, groupId string) ([]Us
 
 	// Preparing Response Body
 	var responseBody GetUsersFromUserGroupResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -190,5 +191,6 @@ func (c *OpsRampClient) RemoveUsersFromUserGroup(tenantId string, groupId string
 
 	// Create a new Request
 	_, err = c.NewJsonRequest(method, apiUrl, rb)
+
 	return err
 }

@@ -1,6 +1,6 @@
 resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy" {
-  name         = "Default escalation policy"
-  precedence   = 1
+  name       = "Default escalation policy"
+  precedence = 1
 
   enabled_mode = "OBSERVED"
 
@@ -39,13 +39,13 @@ resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy"
         cc                    = "mail@example.com"
       }
       update_incident = {
-        update_incident_mode = "UpdateWhenAlertStateChange"
+        update_incident_mode         = "UpdateWhenAlertStateChange"
         update_incident_subject_mode = "UpdateIncidentSubject"
-        auto_resolve_incident_mode = "AutoResolveIncident"
-        auto_heal_wait_time                      = 0
+        auto_resolve_incident_mode   = "AutoResolveIncident"
+        auto_heal_wait_time          = 0
 
-        update_priority_by_ml_configuration      = false
-        priority_rules                           = []
+        update_priority_by_ml_configuration = false
+        priority_rules                      = []
       }
     }
   ]

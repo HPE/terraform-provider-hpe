@@ -19,7 +19,6 @@ type ClientContextResponse struct {
 
 // CreateClient creates a new client (sub-tenant)
 func (c *OpsRampClient) TenancyContext() (*ClientMinimal, error) {
-
 	// Prepare the URL, Method and Payload for the Client
 	apiUrl := fmt.Sprintf("%s/itop/tenancyContext", c.BaseUrl)
 	method := "GET"
@@ -32,7 +31,7 @@ func (c *OpsRampClient) TenancyContext() (*ClientMinimal, error) {
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody TenancyContextResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +66,7 @@ func (c *OpsRampClient) GetTenantInfo(tenantId string) (*ClientResponse, error) 
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var context ClientResponse
-	err = json.Unmarshal([]byte(body), &context)
+	err = json.Unmarshal(body, &context)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +86,7 @@ func (c *OpsRampClient) GetClientInfo(clientId string) (*ClientResponse, error) 
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var context ClientResponse
-	err = json.Unmarshal([]byte(body), &context)
+	err = json.Unmarshal(body, &context)
 	if err != nil {
 		return nil, err
 	}

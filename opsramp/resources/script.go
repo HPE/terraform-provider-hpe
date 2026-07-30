@@ -23,8 +23,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ScriptResource{}
-var _ resource.ResourceWithImportState = &ScriptResource{}
+var (
+	_ resource.Resource                = &ScriptResource{}
+	_ resource.ResourceWithImportState = &ScriptResource{}
+)
 
 // ScriptResource defines the resource implementation.
 type ScriptResource struct {
@@ -222,6 +224,7 @@ func (r *ScriptResource) resolveTenantId(clientAttr types.String) string {
 	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
 		return clientAttr.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -316,6 +319,7 @@ func (r *ScriptResource) Create(ctx context.Context, req resource.CreateRequest,
 	created, err := r.apiClient.CreateScript(tenantId, categoryId, scriptReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Creating Script", fmt.Sprintf("Could not create script: %s", err))
+
 		return
 	}
 
@@ -342,9 +346,11 @@ func (r *ScriptResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Error Reading Script", fmt.Sprintf("Could not read script %s: %s", scriptId, err))
+
 		return
 	}
 
@@ -380,6 +386,7 @@ func (r *ScriptResource) Update(ctx context.Context, req resource.UpdateRequest,
 	updated, err := r.apiClient.UpdateScript(tenantId, categoryId, scriptId, scriptReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating Script", fmt.Sprintf("Could not update script %s: %s", scriptId, err))
+
 		return
 	}
 
@@ -405,6 +412,7 @@ func (r *ScriptResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	err := r.apiClient.DeleteScript(tenantId, categoryId, scriptId)
 	if err != nil && !strings.Contains(err.Error(), "status: 204") {
 		resp.Diagnostics.AddError("Error Deleting Script", fmt.Sprintf("Could not delete script %s: %s", scriptId, err))
+
 		return
 	}
 
@@ -417,6 +425,7 @@ func (r *ScriptResource) ImportState(ctx context.Context, req resource.ImportSta
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -430,6 +439,7 @@ func (r *ScriptResource) ImportState(ctx context.Context, req resource.ImportSta
 			"Error Importing Script",
 			fmt.Sprintf("Could not import script: %s", err),
 		)
+
 		return
 	}
 

@@ -11,8 +11,10 @@ import (
 )
 
 // Ensure interface satisfaction
-var _ datasource.DataSource = &dataRoleSource{}
-var _ datasource.DataSourceWithConfigure = &dataRoleSource{}
+var (
+	_ datasource.DataSource              = &dataRoleSource{}
+	_ datasource.DataSourceWithConfigure = &dataRoleSource{}
+)
 
 func NewDataRoleSource() datasource.DataSource {
 	return &dataRoleSource{}
@@ -56,6 +58,7 @@ func (d *dataRoleSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 func (d *dataRoleSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -71,6 +74,7 @@ func (d *dataRoleSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	role, err := d.apiClient.FindRoleByName(tenantId, data.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Role retrieve failed", err.Error())
+
 		return
 	}
 

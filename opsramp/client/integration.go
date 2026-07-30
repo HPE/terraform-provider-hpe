@@ -58,6 +58,7 @@ func (c *OpsRampClient) DeleteIntegration(tenantId string, integrationId string,
 	}
 
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }
 
@@ -110,6 +111,7 @@ func (c *OpsRampClient) SetMappingAttributes(tenantId string, integrationId stri
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/mappingAttr", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -117,6 +119,7 @@ func (c *OpsRampClient) SetMappingAttributes(tenantId string, integrationId stri
 func (c *OpsRampClient) DeleteMappingAttribute(tenantId string, integrationId string, mappingId string) error {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/mappingAttr/%s", c.BaseUrl, tenantId, integrationId, mappingId)
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -124,6 +127,7 @@ func (c *OpsRampClient) DeleteMappingAttribute(tenantId string, integrationId st
 func (c *OpsRampClient) DeleteOutboundMappingAttribute(tenantId string, integrationId string, mappingId string) error {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/outbound/mappingAttr/%s", c.BaseUrl, tenantId, integrationId, mappingId)
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -148,6 +152,7 @@ func (c *OpsRampClient) GetInstalledMappingAttributes(tenantId string, integrati
 		}
 		pageNo++
 	}
+
 	return all, nil
 }
 
@@ -156,6 +161,7 @@ func (c *OpsRampClient) SetEnableDropAlerts(tenantId string, integrationId strin
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/enableDropAlerts?enableDropAlerts=%t", c.BaseUrl, tenantId, integrationId, enable)
 
 	_, err := c.NewJsonRequest("GET", apiUrl, nil)
+
 	return err
 }
 
@@ -165,11 +171,15 @@ func (c *OpsRampClient) AssignProcessDefinition(tenantId string, integrationId s
 		c.BaseUrl, tenantId, integrationId, processId, assign)
 
 	_, err := c.NewJsonRequest("GET", apiUrl, nil)
+
 	return err
 }
 
 // SetNotifier configures the outbound notifier for an integration.
 func (c *OpsRampClient) SetNotifier(tenantId string, integrationId string, request NotifierRequest) error {
+	// The request body necessarily carries the notifier credentials the practitioner supplied;
+	// sending it is the purpose of the call.
+	//nolint:gosec // G117: marshalling this secret is intentional
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -178,6 +188,7 @@ func (c *OpsRampClient) SetNotifier(tenantId string, integrationId string, reque
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/notifier", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -191,6 +202,7 @@ func (c *OpsRampClient) SetAdditionalProperties(tenantId string, integrationId s
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -316,6 +328,7 @@ func (c *OpsRampClient) SetWebhookHandshake(tenantId string, integrationId strin
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -332,6 +345,7 @@ func (c *OpsRampClient) DeleteWebhookHandshake(tenantId string, integrationId st
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }
 
@@ -381,6 +395,7 @@ func (c *OpsRampClient) CreateIntegrationEvent(tenantId string, integrationId st
 	if err := json.Unmarshal(body, &resp); err != nil {
 		return nil, err
 	}
+
 	return &resp, nil
 }
 
@@ -395,6 +410,7 @@ func (c *OpsRampClient) GetIntegrationEvent(tenantId string, integrationId strin
 	if err := json.Unmarshal(body, &resp); err != nil {
 		return nil, err
 	}
+
 	return &resp, nil
 }
 
@@ -413,6 +429,7 @@ func (c *OpsRampClient) UpdateIntegrationEvent(tenantId string, integrationId st
 	if err := json.Unmarshal(body, &resp); err != nil {
 		return nil, err
 	}
+
 	return &resp, nil
 }
 
@@ -425,6 +442,7 @@ func (c *OpsRampClient) SetIntegrationEventActive(tenantId, integrationId, event
 	}
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/event/%s/%s", c.BaseUrl, tenantId, integrationId, eventId, action)
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)
+
 	return err
 }
 
@@ -432,6 +450,7 @@ func (c *OpsRampClient) SetIntegrationEventActive(tenantId, integrationId, event
 func (c *OpsRampClient) DeleteIntegrationEvent(tenantId string, integrationId string, eventId string) error {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/event/%s", c.BaseUrl, tenantId, integrationId, eventId)
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -456,5 +475,6 @@ func (c *OpsRampClient) GetInstalledOutboundMappingAttributes(tenantId string, i
 		}
 		pageNo++
 	}
+
 	return all, nil
 }

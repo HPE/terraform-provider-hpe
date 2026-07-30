@@ -73,5 +73,6 @@ func (c *OpsRampClient) DeleteIntegrationConfig(tenantId string, integrationId s
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/apps/install/%s/config/%s?keepAgentInstalledResources=false", c.BaseUrl, tenantId, integrationId, configId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

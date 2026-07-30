@@ -19,9 +19,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &Resource{}
-var _ resource.ResourceWithImportState = &Resource{}
-var _ resource.ResourceWithModifyPlan = &Resource{}
+var (
+	_ resource.Resource                = &Resource{}
+	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.ResourceWithModifyPlan  = &Resource{}
+)
 
 // Resource defines the resource implementation.
 type Resource struct {
@@ -109,6 +111,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			"Missing required identifier",
 			"Provide either uuid or hostname / resource_name together with resource_type.",
 		)
+
 		return
 	}
 
@@ -126,13 +129,14 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		existing, err := r.apiClient.GetResource(tenantId, uuid)
 		if err != nil {
 			resp.Diagnostics.AddError("Backend query error", err.Error())
+
 			return
 		}
 
 		_, err = r.PerformUpdate(tenantId, plan, uuid)
-
 		if err != nil {
 			resp.Diagnostics.AddError("Update Error", err.Error())
+
 			return
 		}
 
@@ -161,6 +165,7 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		created, err := r.apiClient.CreateResource(tenantId, createResource)
 		if err != nil {
 			resp.Diagnostics.AddError("Creation Error", err.Error())
+
 			return
 		}
 		uuid = created.ResourceUuid
@@ -194,11 +199,13 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 	// TODO: handle http error codes
 	if err != nil && !strings.Contains(err.Error(), "No Resource found") {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
 	if existing == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -226,6 +233,7 @@ func (r *Resource) PerformUpdate(tenantId string, plan ResourceModel, uuid strin
 	}
 
 	result, err := r.apiClient.UpdateResource(tenantId, uuid, updateResource)
+
 	return result, err
 }
 
@@ -243,6 +251,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 	// UUID cannot be changed; ensure UUID stays the same.
 	if plan.Uuid.ValueString() != "" && plan.Uuid.ValueString() != state.Uuid.ValueString() {
 		resp.Diagnostics.AddError("UUID Immutable", "UUID cannot be changed after creation.")
+
 		return
 	}
 
@@ -257,6 +266,7 @@ func (r *Resource) Update(ctx context.Context, req resource.UpdateRequest, resp 
 			"Error Updating Resource",
 			fmt.Sprintf("Could not update resource: %s", err),
 		)
+
 		return
 	}
 
@@ -286,6 +296,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	_, err := r.apiClient.DeleteResource(tenantId, state.Uuid.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -298,6 +309,7 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -310,6 +322,7 @@ func (r *Resource) ImportState(ctx context.Context, req resource.ImportStateRequ
 			"Error Importing Resource",
 			fmt.Sprintf("Could not import resource: %s", err),
 		)
+
 		return
 	}
 
@@ -356,6 +369,7 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
 		resp.Diagnostics.AddError("Resources can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+
 		return
 	}
 
@@ -370,12 +384,14 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 		deviceTypes, err := r.apiClient.GetResourceTypes(tenantId)
 		if err != nil {
 			resp.Diagnostics.AddError("Error fetching GetDeviceTypes", err.Error())
+
 			return
 		}
 
 		deviceType := plan.ResourceType.ValueString()
 		if !slices.Contains(deviceTypes, deviceType) {
 			resp.Diagnostics.AddError("Error Device Type does not macth API device types", fmt.Sprintf("Allowed types: %s", strings.Join(deviceTypes, ",")))
+
 			return
 		}
 	}
@@ -383,7 +399,6 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 	if !hasValidResourceIdentifier(plan, state) {
 		resp.Diagnostics.AddError("Missing required identifier", "Provide either uuid, hostname, or resource_name together with resource_type.")
 	}
-
 }
 
 func hasValidResourceIdentifier(plan ResourceModel, state ResourceModel) bool {

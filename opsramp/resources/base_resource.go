@@ -35,6 +35,7 @@ func (r *BaseResource) Configure(ctx context.Context, req resource.ConfigureRequ
 			"Unexpected Resource Configure Type",
 			"Expected *client.ClientFactory",
 		)
+
 		return
 	}
 
@@ -48,6 +49,7 @@ func (r *BaseResource) Configure(ctx context.Context, req resource.ConfigureRequ
 				"If the error is not clear, please contact the provider developers.\n\n"+
 				"OpsRamp Client Error: "+err.Error(),
 		)
+
 		return
 	}
 
@@ -120,6 +122,7 @@ func (r *BaseResource) ParseImportID(importID string, expectedParts int) (*Impor
 			return nil, importIDError(expectedParts, false)
 		}
 		result.Parts = parts
+
 		return result, nil
 	}
 
@@ -145,6 +148,7 @@ func (r *BaseResource) TenantForImport(parsed *ImportID) string {
 	if !parsed.Client.IsNull() && parsed.Client.ValueString() != "" {
 		return parsed.Client.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -153,6 +157,7 @@ func importIDError(expectedParts int, isMSP bool) error {
 		if isMSP {
 			return fmt.Errorf("expected format: <resource_id> or <client_id>:<resource_id>")
 		}
+
 		return fmt.Errorf("expected format: <resource_id>")
 	}
 	// Build a generic multi-segment description
@@ -164,5 +169,6 @@ func importIDError(expectedParts int, isMSP bool) error {
 	if isMSP {
 		return fmt.Errorf("expected format: %s or <client_id>:%s", base, base)
 	}
+
 	return fmt.Errorf("expected format: %s", base)
 }

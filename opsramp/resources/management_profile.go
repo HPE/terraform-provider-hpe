@@ -18,8 +18,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.Resource = &ManagementProfileResource{}
-var _ resource.ResourceWithModifyPlan = &ManagementProfileResource{}
+var (
+	_ resource.Resource               = &ManagementProfileResource{}
+	_ resource.ResourceWithModifyPlan = &ManagementProfileResource{}
+)
 
 // ManagementProfileResource defines the resource implementation.
 type ManagementProfileResource struct {
@@ -97,6 +99,7 @@ func (r *ManagementProfileResource) resolveTenantId(clientAttr types.String) str
 	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
 		return clientAttr.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -121,6 +124,7 @@ func (r *ManagementProfileResource) Create(ctx context.Context, req resource.Cre
 	if err != nil {
 		resp.Diagnostics.AddError("Management Profile Create Error",
 			fmt.Sprintf("Could not create management profile: %s", err))
+
 		return
 	}
 
@@ -150,10 +154,12 @@ func (r *ManagementProfileResource) Read(ctx context.Context, req resource.ReadR
 		errStr := err.Error()
 		if strings.Contains(errStr, "No collector profile") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Management Profile Read Error",
 			fmt.Sprintf("Could not read management profile %s: %s", state.Uuid.ValueString(), err))
+
 		return
 	}
 
@@ -193,6 +199,7 @@ func (r *ManagementProfileResource) Update(ctx context.Context, req resource.Upd
 	if err != nil {
 		resp.Diagnostics.AddError("Management Profile Update Error",
 			fmt.Sprintf("Could not update management profile %s: %s", state.Uuid.ValueString(), err))
+
 		return
 	}
 
@@ -243,6 +250,7 @@ func (r *ManagementProfileResource) ModifyPlan(ctx context.Context, req resource
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
 		resp.Diagnostics.AddError("Management Profiles can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+
 		return
 	}
 }

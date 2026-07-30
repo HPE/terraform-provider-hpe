@@ -23,9 +23,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ScheduledMaintenanceResource{}
-var _ resource.ResourceWithImportState = &ScheduledMaintenanceResource{}
-var _ resource.ResourceWithModifyPlan = &ScheduledMaintenanceResource{}
+var (
+	_ resource.Resource                = &ScheduledMaintenanceResource{}
+	_ resource.ResourceWithImportState = &ScheduledMaintenanceResource{}
+	_ resource.ResourceWithModifyPlan  = &ScheduledMaintenanceResource{}
+)
 
 // ScheduledMaintenanceResource defines the resource implementation.
 type ScheduledMaintenanceResource struct {
@@ -328,6 +330,7 @@ func (r *ScheduledMaintenanceResource) getTenantId(clientId types.String) string
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -439,6 +442,7 @@ func (r *ScheduledMaintenanceResource) Create(ctx context.Context, req resource.
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error",
 			fmt.Sprintf("Could not create schedule maintenance: %s", err.Error()))
+
 		return
 	}
 
@@ -473,9 +477,11 @@ func (r *ScheduledMaintenanceResource) Read(ctx context.Context, req resource.Re
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -510,6 +516,7 @@ func (r *ScheduledMaintenanceResource) Update(ctx context.Context, req resource.
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error",
 			fmt.Sprintf("Could not update schedule maintenance: %s", err.Error()))
+
 		return
 	}
 
@@ -543,6 +550,7 @@ func (r *ScheduledMaintenanceResource) Delete(ctx context.Context, req resource.
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -554,6 +562,7 @@ func (r *ScheduledMaintenanceResource) ImportState(ctx context.Context, req reso
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 

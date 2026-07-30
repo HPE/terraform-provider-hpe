@@ -23,9 +23,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ClientResource{}
-var _ resource.ResourceWithImportState = &ClientResource{}
-var _ resource.ResourceWithModifyPlan = &ClientResource{}
+var (
+	_ resource.Resource                = &ClientResource{}
+	_ resource.ResourceWithImportState = &ClientResource{}
+	_ resource.ResourceWithModifyPlan  = &ClientResource{}
+)
 
 // ClientResource defines the resource implementation.
 type ClientResource struct {
@@ -77,7 +79,7 @@ func stringSetFromSlice(values []string) (types.Set, error) {
 }
 
 func mapClientResponseToState(state *ClientModel, existing *client.ClientResponse) {
-	state.Id = types.Int64Value(int64(existing.Id))
+	state.Id = types.Int64Value(existing.Id)
 	state.UniqueId = types.StringValue(existing.UniqueId)
 	state.Name = types.StringValue(existing.Name)
 	if existing.Address != "" {
@@ -246,12 +248,14 @@ func (r *ClientResource) Create(ctx context.Context, req resource.CreateRequest,
 	addons, err := stringSliceFromSet(ctx, plan.Addons)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid addons value", err.Error())
+
 		return
 	}
 
 	packages, err := stringSliceFromSet(ctx, plan.Packages)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid packages value", err.Error())
+
 		return
 	}
 
@@ -272,12 +276,14 @@ func (r *ClientResource) Create(ctx context.Context, req resource.CreateRequest,
 	created, err := r.apiClient.CreateClient(createClient)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
 	createdState, err := r.apiClient.GetClient(created.UniqueId)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", fmt.Sprintf("could not refresh created client %s: %s", created.UniqueId, err))
+
 		return
 	}
 
@@ -300,9 +306,11 @@ func (r *ClientResource) Read(ctx context.Context, req resource.ReadRequest, res
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -330,6 +338,7 @@ func (r *ClientResource) Read(ctx context.Context, req resource.ReadRequest, res
 		state.Addons, err = stringSetFromSlice(existing.Addons)
 		if err != nil {
 			resp.Diagnostics.AddError("Read Error", err.Error())
+
 			return
 		}
 	}
@@ -337,6 +346,7 @@ func (r *ClientResource) Read(ctx context.Context, req resource.ReadRequest, res
 		state.Packages, err = stringSetFromSlice(existing.Packages)
 		if err != nil {
 			resp.Diagnostics.AddError("Read Error", err.Error())
+
 			return
 		}
 	}
@@ -359,12 +369,14 @@ func (r *ClientResource) Update(ctx context.Context, req resource.UpdateRequest,
 	addons, err := stringSliceFromSet(ctx, plan.Addons)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid addons value", err.Error())
+
 		return
 	}
 
 	packages, err := stringSliceFromSet(ctx, plan.Packages)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid packages value", err.Error())
+
 		return
 	}
 
@@ -387,12 +399,14 @@ func (r *ClientResource) Update(ctx context.Context, req resource.UpdateRequest,
 			"Error Updating Client",
 			fmt.Sprintf("Could not update client: %s", err),
 		)
+
 		return
 	}
 
 	updatedState, err := r.apiClient.GetClient(updated.UniqueId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating Client", fmt.Sprintf("could not refresh updated client %s: %s", updated.UniqueId, err))
+
 		return
 	}
 
@@ -416,6 +430,7 @@ func (r *ClientResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	err := r.apiClient.DeleteClient(state.UniqueId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -432,6 +447,7 @@ func (r *ClientResource) ImportState(ctx context.Context, req resource.ImportSta
 			"Error Importing Client",
 			fmt.Sprintf("Could not import client with ID '%s': %s", importId, err),
 		)
+
 		return
 	}
 
@@ -458,6 +474,7 @@ func (r *ClientResource) ImportState(ctx context.Context, req resource.ImportSta
 			"Error Importing Client",
 			fmt.Sprintf("Could not map addons for client with ID '%s': %s", importId, err),
 		)
+
 		return
 	}
 
@@ -467,6 +484,7 @@ func (r *ClientResource) ImportState(ctx context.Context, req resource.ImportSta
 			"Error Importing Client",
 			fmt.Sprintf("Could not map packages for client with ID '%s': %s", importId, err),
 		)
+
 		return
 	}
 
@@ -492,6 +510,7 @@ func (r *ClientResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 
 	if strings.ToUpper(r.apiClient.Scope) != "MSP" {
 		resp.Diagnostics.AddError("Clients can only be created at MSP level", "Use an msp-scoped provider configuration.")
+
 		return
 	}
 }

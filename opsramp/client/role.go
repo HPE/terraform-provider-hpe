@@ -28,7 +28,7 @@ func (c *OpsRampClient) CreateRole(tenantId string, roleData Role) (*Role, error
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody Role
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +50,7 @@ func (c *OpsRampClient) GetRole(tenantId string, roleId string) (*Role, error) {
 
 	// Preparing Response Body
 	var responseBody Role
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +78,7 @@ func (c *OpsRampClient) UpdateRole(tenantId string, roleId string, roleData Role
 
 	// Preparing Response Body
 	var responseBody Role
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -94,6 +94,7 @@ func (c *OpsRampClient) DeleteRole(tenantId string, roleId string) error {
 
 	// Create a new Request
 	_, err := c.NewJsonRequest(method, apiUrl, nil)
+
 	return err
 }
 
@@ -114,7 +115,7 @@ func (c *OpsRampClient) SearchRoles(tenantId string, queryString string) (*RoleS
 
 	// Preparing Response Body
 	var responseBody RoleSearchResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}

@@ -20,9 +20,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &RoleResource{}
-var _ resource.ResourceWithImportState = &RoleResource{}
-var _ resource.ResourceWithModifyPlan = &RoleResource{}
+var (
+	_ resource.Resource                = &RoleResource{}
+	_ resource.ResourceWithImportState = &RoleResource{}
+	_ resource.ResourceWithModifyPlan  = &RoleResource{}
+)
 
 // RoleResource defines the resource implementation.
 type RoleResource struct {
@@ -210,6 +212,7 @@ func (r *RoleResource) Create(ctx context.Context, req resource.CreateRequest, r
 				"Error looking up permission set",
 				fmt.Sprintf("Could not find permission set with uniqueId '%s': %s", permUniqueId.ValueString(), err),
 			)
+
 			return
 		}
 		permissions = append(permissions, client.RolePermissionRef{Id: numericId})
@@ -248,6 +251,7 @@ func (r *RoleResource) Create(ctx context.Context, req resource.CreateRequest, r
 	created, err := r.apiClient.CreateRole(tenantId, createRole)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -297,9 +301,11 @@ func (r *RoleResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -424,6 +430,7 @@ func (r *RoleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 				"Error looking up permission set",
 				fmt.Sprintf("Could not find permission set with uniqueId '%s': %s", permUniqueId.ValueString(), err),
 			)
+
 			return
 		}
 		permissions = append(permissions, client.RolePermissionRef{Id: numericId})
@@ -465,6 +472,7 @@ func (r *RoleResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			"Error Updating Role",
 			fmt.Sprintf("Could not update role: %s", err),
 		)
+
 		return
 	}
 
@@ -513,6 +521,7 @@ func (r *RoleResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	err := r.apiClient.DeleteRole(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -530,6 +539,7 @@ func (r *RoleResource) ImportState(ctx context.Context, req resource.ImportState
 			"Error Importing Role",
 			fmt.Sprintf("Could not import role: %s", err),
 		)
+
 		return
 	}
 
@@ -581,6 +591,7 @@ func (r *RoleResource) ImportState(ctx context.Context, req resource.ImportState
 			"Error fetching permission sets",
 			fmt.Sprintf("Could not fetch permission sets for import: %s", err),
 		)
+
 		return
 	}
 	permIdToUniqueId := make(map[int]string)

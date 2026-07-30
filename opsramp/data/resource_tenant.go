@@ -5,10 +5,11 @@ package data
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 // Ensure interface satisfaction
@@ -51,6 +52,7 @@ func (d *resourceTenantDataSource) Schema(_ context.Context, _ datasource.Schema
 func (d *resourceTenantDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -72,6 +74,7 @@ func (d *resourceTenantDataSource) Read(ctx context.Context, req datasource.Read
 
 	if err != nil {
 		resp.Diagnostics.AddError("Tenant information failed to retrieve", err.Error())
+
 		return
 	}
 

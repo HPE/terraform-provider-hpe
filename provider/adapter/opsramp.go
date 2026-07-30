@@ -3,8 +3,9 @@
 package adapter
 
 import (
-	opsramp "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+
+	opsramp "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 )
 
 // Returns an OpsRamp provider via the Adapter Layer
@@ -12,5 +13,6 @@ import (
 // adapted OpsRamp provider is needed, e.g. Acceptance Tests.
 func NewOpsRamp() provider.Provider {
 	opsrampProvider := opsramp.New(opsramp.Version)()
+
 	return NewAdaptedProvider(opsrampProvider)
 }

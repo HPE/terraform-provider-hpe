@@ -18,9 +18,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &UserGroupResource{}
-var _ resource.ResourceWithImportState = &UserGroupResource{}
-var _ resource.ResourceWithModifyPlan = &UserGroupResource{}
+var (
+	_ resource.Resource                = &UserGroupResource{}
+	_ resource.ResourceWithImportState = &UserGroupResource{}
+	_ resource.ResourceWithModifyPlan  = &UserGroupResource{}
+)
 
 // UserGroupResource defines the resource implementation.
 type UserGroupResource struct {
@@ -122,6 +124,7 @@ func (r *UserGroupResource) Create(ctx context.Context, req resource.CreateReque
 	created, err := r.apiClient.CreateUserGroup(tenantId, createGroup)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -138,6 +141,7 @@ func (r *UserGroupResource) Create(ctx context.Context, req resource.CreateReque
 		err = r.apiClient.AddUserToUserGroup(tenantId, created.UniqueId, users)
 		if err != nil {
 			resp.Diagnostics.AddError("Error Adding Users to Group", err.Error())
+
 			return
 		}
 
@@ -175,9 +179,11 @@ func (r *UserGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -190,6 +196,7 @@ func (r *UserGroupResource) Read(ctx context.Context, req resource.ReadRequest, 
 	existingUsers, err := r.apiClient.GetUserGroupUsers(tenantId, state.UniqueId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Error Reading User Group Users", err.Error())
+
 		return
 	}
 
@@ -255,6 +262,7 @@ func (r *UserGroupResource) Update(ctx context.Context, req resource.UpdateReque
 			"Error Updating User Group",
 			fmt.Sprintf("Could not update user group: %s", err),
 		)
+
 		return
 	}
 
@@ -288,6 +296,7 @@ func (r *UserGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		err := r.apiClient.AddUserToUserGroup(tenantId, state.UniqueId.ValueString(), usersToAdd)
 		if err != nil {
 			resp.Diagnostics.AddError("Error Adding Users to Group", err.Error())
+
 			return
 		}
 	}
@@ -296,6 +305,7 @@ func (r *UserGroupResource) Update(ctx context.Context, req resource.UpdateReque
 		err := r.apiClient.RemoveUsersFromUserGroup(tenantId, state.UniqueId.ValueString(), usersToRemove)
 		if err != nil {
 			resp.Diagnostics.AddError("Error Removing Users from Group", err.Error())
+
 			return
 		}
 	}
@@ -325,6 +335,7 @@ func (r *UserGroupResource) Delete(ctx context.Context, req resource.DeleteReque
 	err := r.apiClient.DeleteUserGroup(tenantId, state.UniqueId.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -342,6 +353,7 @@ func (r *UserGroupResource) ImportState(ctx context.Context, req resource.Import
 			"Error Importing User Group",
 			fmt.Sprintf("Could not import user group: %s", err),
 		)
+
 		return
 	}
 
@@ -349,6 +361,7 @@ func (r *UserGroupResource) ImportState(ctx context.Context, req resource.Import
 	existingUsers, err2 := r.apiClient.GetUserGroupUsers(r.apiClient.TenantId, groupId)
 	if err2 != nil {
 		resp.Diagnostics.AddError("Error Fetching User Group Users", err2.Error())
+
 		return
 	}
 

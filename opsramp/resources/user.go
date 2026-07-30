@@ -8,6 +8,9 @@ import (
 	"regexp"
 	"strings"
 
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -25,9 +28,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &UserResource{}
-var _ resource.ResourceWithImportState = &UserResource{}
-var _ resource.ResourceWithModifyPlan = &UserResource{}
+var (
+	_ resource.Resource                = &UserResource{}
+	_ resource.ResourceWithImportState = &UserResource{}
+	_ resource.ResourceWithModifyPlan  = &UserResource{}
+)
 
 // UserResource defines the resource implementation.
 type UserResource struct {
@@ -73,6 +78,7 @@ func optionalStringValue(v string) types.String {
 	if strings.TrimSpace(v) == "" {
 		return types.StringNull()
 	}
+
 	return types.StringValue(v)
 }
 
@@ -271,6 +277,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 				"Invalid Timezone",
 				fmt.Sprintf("The specified timezone '%s' is not valid: %s", plan.TimeZone.ValueString(), err),
 			)
+
 			return
 		}
 		timeZone = tz
@@ -318,6 +325,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 	created, err := r.apiClient.CreateUser(tenantId, createUser)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -358,9 +366,11 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -383,9 +393,13 @@ func (r *UserResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		state.TimeZone = types.StringValue(existing.TimeZone.Name)
 	}
 	state.AuthType = types.StringValue(existing.AuthType)
-	// Normalize status to Title Case to match schema default
+	// Normalize status to Title Case to match schema default.
+	// A Caser is not safe for concurrent use, so build one per call rather than
+	// sharing a package-level instance.
 	if existing.Status != "" {
-		state.Status = types.StringValue(strings.Title(strings.ToLower(existing.Status)))
+		state.Status = types.StringValue(
+			cases.Title(language.Und).String(strings.ToLower(existing.Status)),
+		)
 	}
 
 	// Update roles - initialize to empty slice to avoid null vs empty diff
@@ -439,6 +453,7 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 				"Invalid Timezone",
 				fmt.Sprintf("The specified timezone '%s' is not valid: %s", plan.TimeZone.ValueString(), err),
 			)
+
 			return
 		}
 		timeZone = tz
@@ -486,6 +501,7 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			"Error Updating User",
 			fmt.Sprintf("Could not update user: %s", err),
 		)
+
 		return
 	}
 
@@ -524,6 +540,7 @@ func (r *UserResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	err := r.apiClient.DeleteUser(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -541,6 +558,7 @@ func (r *UserResource) ImportState(ctx context.Context, req resource.ImportState
 			"Error Importing User",
 			fmt.Sprintf("Could not import user: %s", err),
 		)
+
 		return
 	}
 
@@ -600,5 +618,6 @@ func convertUserNotificationsToModel(notifications []client.UserNotification) []
 		}
 		result = append(result, notif)
 	}
+
 	return result
 }

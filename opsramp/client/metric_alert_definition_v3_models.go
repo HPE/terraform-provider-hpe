@@ -47,5 +47,6 @@ func (r *MetricAlertDefinitionResponse) GetID() string {
 	if r.AlertDefinitionUniqueId != "" {
 		return r.AlertDefinitionUniqueId
 	}
+
 	return r.AlertDefinitionUniqueId2
 }

@@ -43,6 +43,7 @@ func (t *RateLimitedTransport) RoundTrip(req *http.Request) (*http.Response, err
 	}
 
 	t.updateFromHeaders(resp.Header)
+
 	return resp, nil
 }
 
@@ -55,6 +56,7 @@ func (t *RateLimitedTransport) waitIfRateLimited() {
 	for bucket, state := range t.buckets {
 		if now >= state.resetUnix {
 			delete(t.buckets, bucket)
+
 			continue
 		}
 		if state.remaining <= 0 {

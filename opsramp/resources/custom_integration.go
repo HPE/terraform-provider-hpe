@@ -17,9 +17,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &CustomIntegrationResource{}
-var _ resource.ResourceWithImportState = &CustomIntegrationResource{}
-var _ resource.ResourceWithModifyPlan = &CustomIntegrationResource{}
+var (
+	_ resource.Resource                = &CustomIntegrationResource{}
+	_ resource.ResourceWithImportState = &CustomIntegrationResource{}
+	_ resource.ResourceWithModifyPlan  = &CustomIntegrationResource{}
+)
 
 // CustomIntegrationResource defines the resource implementation.
 type CustomIntegrationResource struct {
@@ -120,6 +122,7 @@ func (r *CustomIntegrationResource) Create(ctx context.Context, req resource.Cre
 	if err != nil {
 		resp.Diagnostics.AddError("Role Lookup Error",
 			fmt.Sprintf("Could not find role with name '%s': %s", plan.RoleName.ValueString(), err.Error()))
+
 		return
 	}
 
@@ -141,6 +144,7 @@ func (r *CustomIntegrationResource) Create(ctx context.Context, req resource.Cre
 	created, err := r.apiClient.CreateCustomIntegration(tenantId, createIntegration)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -183,9 +187,11 @@ func (r *CustomIntegrationResource) Read(ctx context.Context, req resource.ReadR
 			strings.Contains(errStr, "not found") ||
 			strings.Contains(errStr, "No installed integration found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -220,6 +226,7 @@ func (r *CustomIntegrationResource) Update(ctx context.Context, req resource.Upd
 	if err != nil {
 		resp.Diagnostics.AddError("Role Lookup Error",
 			fmt.Sprintf("Could not find role with name '%s': %s", plan.RoleName.ValueString(), err.Error()))
+
 		return
 	}
 
@@ -241,6 +248,7 @@ func (r *CustomIntegrationResource) Update(ctx context.Context, req resource.Upd
 	updated, err := r.apiClient.UpdateCustomIntegration(tenantId, state.Id.ValueString(), updateIntegration)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -273,6 +281,7 @@ func (r *CustomIntegrationResource) Delete(ctx context.Context, req resource.Del
 		// If already deleted, ignore the error
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -284,6 +293,7 @@ func (r *CustomIntegrationResource) ImportState(ctx context.Context, req resourc
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 

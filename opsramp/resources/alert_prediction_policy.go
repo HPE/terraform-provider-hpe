@@ -18,8 +18,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &AlertPredictionPolicyResource{}
-var _ resource.ResourceWithModifyPlan = &AlertPredictionPolicyResource{}
+var (
+	_ resource.Resource               = &AlertPredictionPolicyResource{}
+	_ resource.ResourceWithModifyPlan = &AlertPredictionPolicyResource{}
+)
 
 // AlertPredictionPolicyResource defines the resource implementation.
 type AlertPredictionPolicyResource struct {
@@ -147,6 +149,7 @@ func (r *AlertPredictionPolicyResource) Create(ctx context.Context, req resource
 	created, err := r.apiClient.CreateAlertPredictionPolicy(tenantId, policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -174,9 +177,11 @@ func (r *AlertPredictionPolicyResource) Read(ctx context.Context, req resource.R
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -207,6 +212,7 @@ func (r *AlertPredictionPolicyResource) Update(ctx context.Context, req resource
 	updated, err := r.apiClient.UpdateAlertPredictionPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -234,6 +240,7 @@ func (r *AlertPredictionPolicyResource) Delete(ctx context.Context, req resource
 	err := r.apiClient.DeleteAlertPredictionPolicy(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 

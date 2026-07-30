@@ -25,7 +25,6 @@ type SearchUrgencyResponse struct {
 
 // CreateServiceDeskUrgency - Create new ServiceDeskUrgency
 func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*ServiceDeskUrgency, error) {
-
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -44,19 +43,17 @@ func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ServiceDeskUrgency
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return ID of the record created
 	return &responseBody, nil
-
 }
 
 // GetServiceDeskUrgency - Get the resource with ID of the resource
 func (c *OpsRampClient) GetServiceDeskUrgency(id string) (*ServiceDeskUrgency, error) {
-
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s", c.BaseUrl, c.TenantId, id)
 	method := "GET"
@@ -84,7 +81,6 @@ func (c *OpsRampClient) GetServiceDeskUrgency(id string) (*ServiceDeskUrgency, e
 
 // UpdateServiceDeskUrgency - Update a resource using Az Client
 func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord ServiceDeskUrgency) (*ServiceDeskUrgency, error) {
-
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -102,7 +98,7 @@ func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord Service
 	}
 	var urgency ServiceDeskUrgency
 
-	err = json.Unmarshal([]byte(body), &urgency)
+	err = json.Unmarshal(body, &urgency)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +108,6 @@ func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord Service
 }
 
 func (c *OpsRampClient) DeleteServiceDeskUrgency(id string) error {
-
 	// Prepare config for API Request
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/urgencies", c.BaseUrl, c.TenantId)
 	method := "DELETE"

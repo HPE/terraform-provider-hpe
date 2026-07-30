@@ -78,6 +78,7 @@ func (c *OpsRampClient) DeleteManagementProfile(tenantId string, profileId int) 
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			return nil
 		}
+
 		return err
 	}
 
@@ -104,6 +105,7 @@ func (c *OpsRampClient) SearchManagementProfiles(tenantId string, queryName stri
 		if err2 := json.Unmarshal(body, &results); err2 != nil {
 			return nil, fmt.Errorf("failed to parse search response: %v", err)
 		}
+
 		return results, nil
 	}
 

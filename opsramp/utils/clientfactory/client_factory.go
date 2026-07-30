@@ -50,5 +50,6 @@ func (f *ClientFactory) Client() (*client.OpsRampClient, error) {
 	}
 
 	f.client = c
+
 	return f.client, nil
 }

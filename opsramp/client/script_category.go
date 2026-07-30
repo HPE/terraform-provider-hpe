@@ -17,7 +17,7 @@ func (c *OpsRampClient) ListScriptCategories(tenantId string) ([]ScriptCategory,
 	}
 
 	var responseBody []ScriptCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func (c *OpsRampClient) GetScriptCategory(tenantId string, categoryId string) (*
 	}
 
 	var responseBody ScriptCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *OpsRampClient) CreateScriptCategory(tenantId string, categoryData Scrip
 	}
 
 	var responseBody ScriptCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func (c *OpsRampClient) UpdateScriptCategory(tenantId string, categoryData Scrip
 	}
 
 	var responseBody ScriptCategory
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -95,5 +95,6 @@ func (c *OpsRampClient) DeleteScriptCategory(tenantId string, categoryId string)
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/scripts-category/%s", c.BaseUrl, tenantId, categoryId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

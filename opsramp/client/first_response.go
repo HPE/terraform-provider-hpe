@@ -22,7 +22,7 @@ func (c *OpsRampClient) CreateFirstResponsePolicy(tenantId string, policy FirstR
 	}
 
 	var responseBody FirstResponsePolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *OpsRampClient) GetFirstResponsePolicy(tenantId string, policyId string)
 	}
 
 	var responseBody FirstResponsePolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *OpsRampClient) UpdateFirstResponsePolicy(tenantId string, policyId stri
 	}
 
 	var responseBody FirstResponsePolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +76,7 @@ func (c *OpsRampClient) DeleteFirstResponsePolicy(tenantId string, policyId stri
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/policies/firstResponse/%s", c.BaseUrl, tenantId, policyId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -84,5 +85,6 @@ func (c *OpsRampClient) SetFirstResponsePolicyStatus(tenantId string, policyId s
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/policies/firstResponse/%s/%s", c.BaseUrl, tenantId, policyId, status)
 
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)
+
 	return err
 }

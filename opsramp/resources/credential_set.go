@@ -19,8 +19,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.Resource = &CredentialSetResource{}
-var _ resource.ResourceWithModifyPlan = &CredentialSetResource{}
+var (
+	_ resource.Resource               = &CredentialSetResource{}
+	_ resource.ResourceWithModifyPlan = &CredentialSetResource{}
+)
 
 type CredentialSetResource struct {
 	BaseResource
@@ -483,6 +485,7 @@ func (r *CredentialSetResource) Create(ctx context.Context, req resource.CreateR
 	created, err := r.apiClient.CreateCredentialSet(tenantId, csReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -510,9 +513,11 @@ func (r *CredentialSetResource) Read(ctx context.Context, req resource.ReadReque
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -541,6 +546,7 @@ func (r *CredentialSetResource) Update(ctx context.Context, req resource.UpdateR
 	_, err := r.apiClient.UpdateCredentialSet(tenantId, state.Id.ValueString(), csReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -567,6 +573,7 @@ func (r *CredentialSetResource) Delete(ctx context.Context, req resource.DeleteR
 	err := r.apiClient.DeleteCredentialSet(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 

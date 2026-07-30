@@ -20,9 +20,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.Resource = &SiteResource{}
-var _ resource.ResourceWithImportState = &SiteResource{}
-var _ resource.ResourceWithModifyPlan = &SiteResource{}
+var (
+	_ resource.Resource                = &SiteResource{}
+	_ resource.ResourceWithImportState = &SiteResource{}
+	_ resource.ResourceWithModifyPlan  = &SiteResource{}
+)
 
 type SiteResource struct {
 	BaseResource
@@ -237,6 +239,7 @@ func (r *SiteResource) Create(ctx context.Context, req resource.CreateRequest, r
 	created, err := r.apiClient.CreateSite(tenantId, site)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -250,6 +253,7 @@ func (r *SiteResource) Create(ctx context.Context, req resource.CreateRequest, r
 		err = r.apiClient.AddSiteChilds(tenantId, created.Uuid, resources)
 		if err != nil {
 			resp.Diagnostics.AddError("Error adding resources to site", err.Error())
+
 			return
 		}
 	}
@@ -282,9 +286,11 @@ func (r *SiteResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "No site found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -335,6 +341,7 @@ func (r *SiteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	updated, err := r.apiClient.UpdateSite(tenantId, state.Uuid.ValueString(), translatePlanToSite(plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -352,12 +359,14 @@ func (r *SiteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if len(toAdd) > 0 {
 		if err := r.apiClient.AddSiteChilds(tenantId, updated.Uuid, toAdd); err != nil {
 			resp.Diagnostics.AddError("Error adding resources to site", err.Error())
+
 			return
 		}
 	}
 	if len(toRemove) > 0 {
 		if err := r.apiClient.RemoveSiteChilds(tenantId, updated.Uuid, toRemove); err != nil {
 			resp.Diagnostics.AddError("Error removing resources from site", err.Error())
+
 			return
 		}
 	}
@@ -391,6 +400,7 @@ func (r *SiteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 	if err := r.apiClient.DeleteSite(tenantId, state.Uuid.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -403,6 +413,7 @@ func (r *SiteResource) ImportState(ctx context.Context, req resource.ImportState
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -413,6 +424,7 @@ func (r *SiteResource) ImportState(ctx context.Context, req resource.ImportState
 	existing, err := r.apiClient.GetSite(tenantId, siteId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing Site", fmt.Sprintf("Could not import site with ID '%s': %s", siteId, err))
+
 		return
 	}
 

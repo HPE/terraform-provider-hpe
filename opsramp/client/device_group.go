@@ -10,7 +10,6 @@ import (
 // CreateDeviceGroup - Create new DeviceGroup (unofficial)
 // api: POST v3 /api/v2/tenants/{clientId}/deviceGroups
 func (c *OpsRampClient) CreateDeviceGroup(tenantId string, deviceGroup DeviceGroupAPI) (*DeviceGroupAPI, error) {
-
 	// Transform object to array
 	data := make([]DeviceGroupAPI, 1)
 	data[0] = deviceGroup
@@ -33,7 +32,7 @@ func (c *OpsRampClient) CreateDeviceGroup(tenantId string, deviceGroup DeviceGro
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var createdDeviceGroups []DeviceGroupAPI
-	err = json.Unmarshal([]byte(body), &createdDeviceGroups)
+	err = json.Unmarshal(body, &createdDeviceGroups)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +48,6 @@ func (c *OpsRampClient) CreateDeviceGroup(tenantId string, deviceGroup DeviceGro
 
 // GetDeviceGroup - Get existing DeviceGroup
 func (c *OpsRampClient) GetDeviceGroup(tenantId string, deviceGroupId string) (*DeviceGroupAPI, error) {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/deviceGroups/%s", c.BaseUrl, tenantId, deviceGroupId)
 	method := "GET"
@@ -62,14 +60,13 @@ func (c *OpsRampClient) GetDeviceGroup(tenantId string, deviceGroupId string) (*
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody DeviceGroupAPI
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
 
 	// Return ID of the record created
 	return &responseBody, nil
-
 }
 
 // GetDeviceGroupChilds - Get child resources assigned to a device group manually.
@@ -84,7 +81,7 @@ func (c *OpsRampClient) GetDeviceGroupChilds(tenantId string, deviceGroupId stri
 	}
 
 	var responseBody SearchResources
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +91,6 @@ func (c *OpsRampClient) GetDeviceGroupChilds(tenantId string, deviceGroupId stri
 
 // DeleteDeviceGroup - DeleteDeviceGroup
 func (c *OpsRampClient) DeleteDeviceGroup(tenantId string, deviceGroupId string) error {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/deviceGroups/%s", c.BaseUrl, tenantId, deviceGroupId)
 	method := "DELETE"
@@ -123,6 +119,7 @@ func (c *OpsRampClient) AddDeviceGroupChilds(tenantId string, deviceGroupId stri
 
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/deviceGroups/%s/childs", c.BaseUrl, tenantId, deviceGroupId)
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
+
 	return err
 }
 
@@ -141,5 +138,6 @@ func (c *OpsRampClient) RemoveDeviceGroupChilds(tenantId string, deviceGroupId s
 
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/deviceGroups/%s/childs", c.BaseUrl, tenantId, deviceGroupId)
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }

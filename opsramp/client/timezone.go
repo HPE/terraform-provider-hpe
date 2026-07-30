@@ -22,7 +22,7 @@ func (c *OpsRampClient) GetTimezones() ([]TimezoneResponse, error) {
 
 	// Preparing Response Body
 	var responseBody []TimezoneResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +85,7 @@ func (c *OpsRampClient) ValidateTimezone(timezone string) (*TimeZone, error) {
 	for i, tz := range timezones {
 		if i >= 20 {
 			availableList = append(availableList, "... and more")
+
 			break
 		}
 		availableList = append(availableList, tz.Name)

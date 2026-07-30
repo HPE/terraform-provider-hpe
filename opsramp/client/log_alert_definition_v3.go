@@ -76,5 +76,6 @@ func (c *OpsRampClient) DeleteLogAlertDefinition(tenantId string, id string) err
 	apiUrl := fmt.Sprintf("%s/alertdefinitions/api/v3/tenants/%s/log-alerts/%s", c.BaseUrl, tenantId, id)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

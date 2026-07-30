@@ -9,6 +9,9 @@ import (
 
 // CreateCredentialSet creates a new credential set
 func (c *OpsRampClient) CreateCredentialSet(tenantId string, data CredentialSet) (*CredentialSet, error) {
+	// The request body necessarily carries the credential set the practitioner supplied;
+	// sending it is the purpose of the call.
+	//nolint:gosec // G117: marshalling this secret is intentional
 	rb, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -22,7 +25,7 @@ func (c *OpsRampClient) CreateCredentialSet(tenantId string, data CredentialSet)
 	}
 
 	var responseBody CredentialSet
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +43,7 @@ func (c *OpsRampClient) GetCredentialSet(tenantId string, credentialSetId string
 	}
 
 	var responseBody CredentialSet
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +53,9 @@ func (c *OpsRampClient) GetCredentialSet(tenantId string, credentialSetId string
 
 // UpdateCredentialSet updates an existing credential set
 func (c *OpsRampClient) UpdateCredentialSet(tenantId string, credentialSetId string, data CredentialSet) (*CredentialSet, error) {
+	// The request body necessarily carries the credential set the practitioner supplied;
+	// sending it is the purpose of the call.
+	//nolint:gosec // G117: marshalling this secret is intentional
 	rb, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -63,7 +69,7 @@ func (c *OpsRampClient) UpdateCredentialSet(tenantId string, credentialSetId str
 	}
 
 	var responseBody CredentialSet
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -76,5 +82,6 @@ func (c *OpsRampClient) DeleteCredentialSet(tenantId string, credentialSetId str
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/credentialSets/%s", c.BaseUrl, tenantId, credentialSetId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

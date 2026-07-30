@@ -102,6 +102,7 @@ func (d *integrationInboundPropertiesDataSource) Schema(_ context.Context, _ dat
 func (d *integrationInboundPropertiesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -124,6 +125,7 @@ func (d *integrationInboundPropertiesDataSource) Read(ctx context.Context, req d
 	if err != nil {
 		resp.Diagnostics.AddError("Properties retrieval failed",
 			fmt.Sprintf("Could not retrieve inbound properties for integration '%s': %s", integrationId, err.Error()))
+
 		return
 	}
 

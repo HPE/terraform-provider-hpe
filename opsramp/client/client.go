@@ -27,7 +27,7 @@ func (c *OpsRampClient) CreateClient(clientData CreateClient) (*ClientMinimal, e
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ClientMinimal
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +49,7 @@ func (c *OpsRampClient) GetClients() ([]ClientMinimal, error) {
 
 	// Preparing Response Body to return and convert it to Golang slice
 	var responseBody []ClientMinimal
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +71,7 @@ func (c *OpsRampClient) GetClient(clientId string) (*ClientResponse, error) {
 
 	// Preparing Response Body
 	var responseBody ClientResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +99,7 @@ func (c *OpsRampClient) UpdateClient(clientId string, clientData CreateClient) (
 
 	// Preparing Response Body
 	var responseBody ClientMinimal
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -115,6 +115,7 @@ func (c *OpsRampClient) DeleteClient(clientId string) error {
 
 	// Create a new Request
 	_, err := c.NewJsonRequest(method, apiUrl, nil)
+
 	return err
 }
 

@@ -23,9 +23,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ServicemapResource{}
-var _ resource.ResourceWithImportState = &ServicemapResource{}
-var _ resource.ResourceWithModifyPlan = &ServicemapResource{}
+var (
+	_ resource.Resource                = &ServicemapResource{}
+	_ resource.ResourceWithImportState = &ServicemapResource{}
+	_ resource.ResourceWithModifyPlan  = &ServicemapResource{}
+)
 
 // ServicemapResource defines the resource implementation.
 type ServicemapResource struct {
@@ -152,7 +154,7 @@ func translatePlanToModel(plan ServicemapModel) client.CreateServicemap {
 		}
 	}
 
-	var availabilityThreshold = client.AvailabilityThreshold{
+	availabilityThreshold := client.AvailabilityThreshold{
 		ThresholdType:  plan.ThresholdType.ValueString(),
 		ThresholdLimit: int(plan.ThresholdLimit.ValueInt64()),
 	}
@@ -188,6 +190,7 @@ func (r *ServicemapResource) Create(ctx context.Context, req resource.CreateRequ
 	newServicemap, err := r.apiClient.CreateServicemap(tenantId, createServicemap)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -217,14 +220,17 @@ func (r *ServicemapResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "No Service group") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
 	if backendServicemap == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -246,6 +252,7 @@ func (r *ServicemapResource) Update(ctx context.Context, req resource.UpdateRequ
 	// Id cannot be changed; ensure Id stays the same.
 	if plan.Id.ValueString() != "" && plan.Id.ValueString() != state.Id.ValueString() {
 		resp.Diagnostics.AddError("Id Immutable", "Id cannot be changed after creation.")
+
 		return
 	}
 
@@ -297,6 +304,7 @@ func (r *ServicemapResource) Update(ctx context.Context, req resource.UpdateRequ
 			"Error Updating Resource",
 			fmt.Sprintf("Could not update resource: %s", err),
 		)
+
 		return
 	}
 
@@ -329,6 +337,7 @@ func (r *ServicemapResource) Delete(ctx context.Context, req resource.DeleteRequ
 	err := r.apiClient.DeleteServicemap(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 
@@ -341,6 +350,7 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -353,6 +363,7 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 			"Error Importing Servicemap",
 			fmt.Sprintf("Could not import servicemap with ID '%s': %s", id, err),
 		)
+
 		return
 	}
 
@@ -361,6 +372,7 @@ func (r *ServicemapResource) ImportState(ctx context.Context, req resource.Impor
 			"Error Importing Servicemap",
 			fmt.Sprintf("Servicemap with ID '%s' not found", id),
 		)
+
 		return
 	}
 
@@ -411,6 +423,7 @@ func (r *ServicemapResource) ModifyPlan(ctx context.Context, req resource.Modify
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
 		resp.Diagnostics.AddError("ServiceMaps can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+
 		return
 	}
 }

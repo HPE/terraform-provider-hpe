@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 )
 
 // TestAccE2ESimpleAlertPolicies exercises the simple-alert-policies e2e scenario:

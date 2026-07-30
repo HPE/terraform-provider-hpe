@@ -25,8 +25,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &AlertEscalationPolicyResource{}
-var _ resource.ResourceWithModifyPlan = &AlertEscalationPolicyResource{}
+var (
+	_ resource.Resource               = &AlertEscalationPolicyResource{}
+	_ resource.ResourceWithModifyPlan = &AlertEscalationPolicyResource{}
+)
 
 // AlertEscalationPolicyResource defines the resource implementation.
 type AlertEscalationPolicyResource struct {
@@ -802,6 +804,7 @@ func (r *AlertEscalationPolicyResource) Create(ctx context.Context, req resource
 	created, err := r.apiClient.CreateAlertEscalationPolicy(tenantId, policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -830,9 +833,11 @@ func (r *AlertEscalationPolicyResource) Read(ctx context.Context, req resource.R
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -863,6 +868,7 @@ func (r *AlertEscalationPolicyResource) Update(ctx context.Context, req resource
 	updated, err := r.apiClient.UpdateAlertEscalationPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -890,6 +896,7 @@ func (r *AlertEscalationPolicyResource) Delete(ctx context.Context, req resource
 	err := r.apiClient.DeleteAlertEscalationPolicy(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 

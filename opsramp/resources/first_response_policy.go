@@ -21,8 +21,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &FirstResponsePolicyResource{}
-var _ resource.ResourceWithModifyPlan = &FirstResponsePolicyResource{}
+var (
+	_ resource.Resource               = &FirstResponsePolicyResource{}
+	_ resource.ResourceWithModifyPlan = &FirstResponsePolicyResource{}
+)
 
 // FirstResponsePolicyResource defines the resource implementation.
 type FirstResponsePolicyResource struct {
@@ -404,6 +406,7 @@ func (r *FirstResponsePolicyResource) Create(ctx context.Context, req resource.C
 	created, err := r.apiClient.CreateFirstResponsePolicy(tenantId, policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Creation Error", err.Error())
+
 		return
 	}
 
@@ -431,9 +434,11 @@ func (r *FirstResponsePolicyResource) Read(ctx context.Context, req resource.Rea
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -464,6 +469,7 @@ func (r *FirstResponsePolicyResource) Update(ctx context.Context, req resource.U
 	updated, err := r.apiClient.UpdateFirstResponsePolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -491,6 +497,7 @@ func (r *FirstResponsePolicyResource) Delete(ctx context.Context, req resource.D
 	err := r.apiClient.DeleteFirstResponsePolicy(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 

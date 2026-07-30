@@ -10,7 +10,7 @@ terraform {
 
 provider "hpe" {
   opsramp {
-    client_id = "abcdefghijklmnopqrstuvwxyz123456"
+    client_id     = "abcdefghijklmnopqrstuvwxyz123456"
     client_secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ab"
     endpoint      = "tenant.api.pov.opsramp.com"
     tenant        = "abcdefgh-1234-5678-90ab-cdefghijklmn"
@@ -35,7 +35,7 @@ resource "hpe_opsramp_script" "restart_service" {
   install_timeout = 120
 
   attachment = {
-    name        = "restart_service_linux.sh"
+    name = "restart_service_linux.sh"
     file = file("./restart_service_linux.sh")
   }
 

@@ -26,6 +26,7 @@ func isRetryableServicemapCreateError(err error) bool {
 	}
 
 	errText := strings.ToLower(err.Error())
+
 	return strings.Contains(errText, `"code":"0005"`)
 }
 
@@ -38,6 +39,7 @@ func (c *OpsRampClient) findServicemapChildByName(tenantId string, parentId stri
 	for _, service := range parentMap.Services {
 		if service.Name == childName && normalizeServicemapType(service.Type) == normalizeServicemapType(nodeType) {
 			serviceCopy := service
+
 			return &serviceCopy, nil
 		}
 	}
@@ -56,10 +58,11 @@ func (c *OpsRampClient) createServicemapNode(tenantId string, servicemap CreateS
 	body, err := c.NewJsonRequest("POST", apiUrl, rb)
 	if err == nil {
 		var createdServicemap CreateServicemap
-		unmarshalErr := json.Unmarshal([]byte(body), &createdServicemap)
+		unmarshalErr := json.Unmarshal(body, &createdServicemap)
 		if unmarshalErr != nil {
 			return nil, unmarshalErr
 		}
+
 		return &createdServicemap, nil
 	}
 
@@ -78,13 +81,13 @@ func (c *OpsRampClient) createServicemapNode(tenantId string, servicemap CreateS
 	}
 
 	time.Sleep(2 * time.Second)
+
 	return c.createServicemapNode(tenantId, servicemap, retries-1)
 }
 
 // CreateServicemap - Create new Servicemap (unofficial)
 // api: POST v3 /api/v3/tenants/{tenantId}/serviceGroup
 func (c *OpsRampClient) CreateServicemap(tenantId string, servicemap CreateServicemap) (*CreateServicemap, error) {
-
 	// Save and remove child services
 	childs := servicemap.Services
 	resources := servicemap.Resources
@@ -175,12 +178,12 @@ func (c *OpsRampClient) CreateServicemapResources(tenantId string, parentId stri
 	}
 
 	time.Sleep(5 * time.Second)
+
 	return nil
 }
 
 // GetServicemap - Get existing Servicemap
 func (c *OpsRampClient) GetServicemap(tenantId string, servicemapId string) (*CreateServicemap, error) {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/service-maps/%s", c.BaseUrl, tenantId, servicemapId)
 	method := "GET"
@@ -193,7 +196,7 @@ func (c *OpsRampClient) GetServicemap(tenantId string, servicemapId string) (*Cr
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ReadServicemap
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -202,12 +205,10 @@ func (c *OpsRampClient) GetServicemap(tenantId string, servicemapId string) (*Cr
 
 	// Return ID of the record created
 	return &translatedResponse, nil
-
 }
 
 // DeleteServicemap - DeleteServicemap
 func (c *OpsRampClient) DeleteServicemap(tenantId string, servicemapId string) error {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceGroups/%s", c.BaseUrl, tenantId, servicemapId)
 	method := "DELETE"

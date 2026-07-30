@@ -22,7 +22,7 @@ func (c *OpsRampClient) CreateAlertCorrelationPolicy(tenantId string, policy Ale
 	}
 
 	var responseBody AlertCorrelationPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *OpsRampClient) GetAlertCorrelationPolicy(tenantId string, policyId stri
 	}
 
 	var responseBody AlertCorrelationPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *OpsRampClient) UpdateAlertCorrelationPolicy(tenantId string, policyId s
 	}
 
 	var responseBody AlertCorrelationPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -76,6 +76,7 @@ func (c *OpsRampClient) DeleteAlertCorrelationPolicy(tenantId string, policyId s
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/policies/alertCorrelation/%s", c.BaseUrl, tenantId, policyId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }
 
@@ -84,5 +85,6 @@ func (c *OpsRampClient) SetAlertCorrelationPolicyMode(tenantId string, policyId 
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/policies/alertCorrelation/%s/%s", c.BaseUrl, tenantId, policyId, mode)
 
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)
+
 	return err
 }

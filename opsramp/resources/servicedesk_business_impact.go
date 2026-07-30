@@ -4,13 +4,14 @@ package resources
 import (
 	"context"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 type ServiceDeskBusinessImpactModel struct {
@@ -27,10 +28,12 @@ type ServiceDeskBusinessImpact struct {
 }
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &ServiceDeskBusinessImpact{}
-var _ resource.ResourceWithModifyPlan = &ServiceDeskBusinessImpact{}
+var (
+	_ resource.Resource               = &ServiceDeskBusinessImpact{}
+	_ resource.ResourceWithModifyPlan = &ServiceDeskBusinessImpact{}
+)
 
-//var _ resource.ResourceWithImportState = &ServiceDeskBusinessImpact{}
+// var _ resource.ResourceWithImportState = &ServiceDeskBusinessImpact{}
 
 // New creates a new instance of the resource.
 func NewServiceDeskBusinessImpact() resource.Resource {
@@ -75,7 +78,8 @@ func (r *ServiceDeskBusinessImpact) Schema(_ context.Context, _ resource.SchemaR
 			"state": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The state of the ServiceDeskBusinessImpact. Defaults to 'enabled'."},
+				Description: "The state of the ServiceDeskBusinessImpact. Defaults to 'enabled'.",
+			},
 		},
 	}
 }
@@ -97,6 +101,7 @@ func (r *ServiceDeskBusinessImpact) Create(ctx context.Context, req resource.Cre
 	created, err := r.apiClient.CreateServiceDeskBusinessImpact(businessImpact)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -119,6 +124,7 @@ func (r *ServiceDeskBusinessImpact) Read(ctx context.Context, req resource.ReadR
 	businessImpact, err := r.apiClient.GetServiceDeskBusinessImpact(state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
@@ -126,6 +132,7 @@ func (r *ServiceDeskBusinessImpact) Read(ctx context.Context, req resource.ReadR
 	// This is a common pattern in Terraform providers to handle resources that may not exist anymore.
 	if businessImpact == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -155,6 +162,7 @@ func (r *ServiceDeskBusinessImpact) Update(ctx context.Context, req resource.Upd
 	updated, err := r.apiClient.UpdateServiceDeskBusinessImpact(plan.Id.ValueString(), businessImpact)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 

@@ -6,8 +6,9 @@ import (
 	"context"
 	"testing"
 
-	providerimpl "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
+
+	providerimpl "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 )
 
 func TestProviderMetadata(t *testing.T) {

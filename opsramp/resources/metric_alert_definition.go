@@ -20,8 +20,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-var _ resource.Resource = &MetricAlertDefinitionResource{}
-var _ resource.ResourceWithModifyPlan = &MetricAlertDefinitionResource{}
+var (
+	_ resource.Resource               = &MetricAlertDefinitionResource{}
+	_ resource.ResourceWithModifyPlan = &MetricAlertDefinitionResource{}
+)
 
 type MetricAlertDefinitionResource struct {
 	BaseResource
@@ -241,6 +243,7 @@ func (r *MetricAlertDefinitionResource) getTenantId(clientId types.String) strin
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -257,12 +260,14 @@ func (r *MetricAlertDefinitionResource) Create(ctx context.Context, req resource
 	apiReq, err := r.buildRequest(ctx, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
+
 		return
 	}
 
 	result, err := r.apiClient.CreateMetricAlertDefinition(tenantId, *apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -306,6 +311,7 @@ func (r *MetricAlertDefinitionResource) Update(ctx context.Context, req resource
 	apiReq, err := r.buildRequest(ctx, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
+
 		return
 	}
 
@@ -318,6 +324,7 @@ func (r *MetricAlertDefinitionResource) Update(ctx context.Context, req resource
 	_, err = r.apiClient.UpdateMetricAlertDefinition(tenantId, state.Id.ValueString(), *apiReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -341,6 +348,7 @@ func (r *MetricAlertDefinitionResource) Delete(ctx context.Context, req resource
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}

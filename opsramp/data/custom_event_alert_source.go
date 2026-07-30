@@ -6,10 +6,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 )
 
 // Ensure interface satisfaction
@@ -61,6 +62,7 @@ func (d *customEventAlertSourceDataSource) Schema(_ context.Context, _ datasourc
 func (d *customEventAlertSourceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
+
 		return
 	}
 
@@ -77,6 +79,7 @@ func (d *customEventAlertSourceDataSource) Read(ctx context.Context, req datasou
 	if err != nil {
 		resp.Diagnostics.AddError("Alert Source retrieval failed",
 			fmt.Sprintf("Could not retrieve alert sources for CUSTOM-EVENT: %s", err.Error()))
+
 		return
 	}
 
@@ -86,6 +89,7 @@ func (d *customEventAlertSourceDataSource) Read(ctx context.Context, req datasou
 	for i := range sources {
 		if sources[i].Name == searchName || sources[i].DisplayName == searchName {
 			found = &sources[i]
+
 			break
 		}
 	}
@@ -93,6 +97,7 @@ func (d *customEventAlertSourceDataSource) Read(ctx context.Context, req datasou
 	if found == nil {
 		resp.Diagnostics.AddError("Alert Source not found",
 			fmt.Sprintf("No alert source named '%s' found for CUSTOM-EVENT", searchName))
+
 		return
 	}
 

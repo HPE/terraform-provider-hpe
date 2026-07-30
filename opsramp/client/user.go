@@ -10,6 +10,9 @@ import (
 // CreateUser creates a new user
 func (c *OpsRampClient) CreateUser(tenantId string, userData CreateUser) (*UserResponse, error) {
 	// Convert Request Data/Body to JSON
+	// The request body necessarily carries the user password the practitioner supplied;
+	// sending it is the purpose of the call.
+	//nolint:gosec // G117: marshalling this secret is intentional
 	rb, err := json.Marshal(userData)
 	if err != nil {
 		return nil, err
@@ -28,7 +31,7 @@ func (c *OpsRampClient) CreateUser(tenantId string, userData CreateUser) (*UserR
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody UserResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -50,7 +53,7 @@ func (c *OpsRampClient) GetUser(tenantId string, userId string) (*UserResponse, 
 
 	// Preparing Response Body
 	var responseBody UserResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +91,7 @@ func (c *OpsRampClient) UpdateUser(tenantId string, userId string, userData Upda
 
 		responseBody = *response
 	} else {
-		err = json.Unmarshal([]byte(body), &responseBody)
+		err = json.Unmarshal(body, &responseBody)
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +102,6 @@ func (c *OpsRampClient) UpdateUser(tenantId string, userId string, userData Upda
 
 // DeleteUser deletes an existing user
 func (c *OpsRampClient) DeleteUser(tenantId string, userId string) error {
-
 	data := DeleteUserRequest{
 		TerminateReason: "Deleted via API",
 		MaskType:        "FULL",
@@ -141,7 +143,7 @@ func (c *OpsRampClient) SearchUsers(tenantId string, queryString string) (*UserS
 
 	// Preparing Response Body
 	var responseBody UserSearchResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +165,7 @@ func (c *OpsRampClient) ChangeUserPassword(tenantId string, userId string, passw
 
 	// Create a new Request
 	_, err = c.NewJsonRequest(method, apiUrl, rb)
+
 	return err
 }
 
@@ -196,7 +199,7 @@ func (c *OpsRampClient) GetUsersMinimal(tenantId string) ([]UserMinimalResponse,
 
 	// Preparing Response Body
 	var responseBody []UserMinimalResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}

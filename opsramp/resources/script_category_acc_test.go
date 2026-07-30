@@ -7,9 +7,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
 )
 
 func TestAccScriptCategoryResource(t *testing.T) {
@@ -95,7 +96,10 @@ func testAccEnsureScriptCategoryExists(t *testing.T, resourceName string) resour
 			return fmt.Errorf("resource uuid is empty in state for %s", resourceName)
 		}
 
-		tenantID, ok := acctest.LookupProviderEnv("tenant")
+		// The tenant lookup result is not checked here: PreCheck already
+		// validates the required environment, and an explicit client attribute
+		// on the resource takes precedence below.
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
 		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
 			tenantID = clientID
 		}

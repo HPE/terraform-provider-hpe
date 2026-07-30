@@ -57,5 +57,6 @@ func (c *OpsRampClient) DeleteIntegrationV3(tenantId string, integrationId strin
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/apps/install/%s", c.BaseUrl, tenantId, integrationId)
 
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
+
 	return err
 }

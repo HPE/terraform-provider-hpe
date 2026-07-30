@@ -29,7 +29,7 @@ func (c *OpsRampClient) CreateCustomIntegration(tenantId string, integrationData
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody CustomIntegrationResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (c *OpsRampClient) GetCustomIntegration(tenantId string, integrationId stri
 
 	// Preparing Response Body
 	var responseBody CustomIntegrationResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (c *OpsRampClient) UpdateCustomIntegration(tenantId string, integrationId s
 
 	// Preparing Response Body
 	var responseBody CustomIntegrationResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -104,6 +104,7 @@ func (c *OpsRampClient) DeleteCustomIntegration(tenantId string, integrationId s
 
 	// Create a new Request
 	_, err = c.NewJsonRequest(method, apiUrl, rb)
+
 	return err
 }
 
@@ -121,7 +122,7 @@ func (c *OpsRampClient) ListCustomIntegrations(tenantId string) (*CustomIntegrat
 
 	// Preparing Response Body
 	var responseBody CustomIntegrationListResponse
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +145,7 @@ func (c *OpsRampClient) RegenerateCustomIntegrationToken(tenantId string, integr
 
 	// Preparing Response Body - returns AuthenticationConfig
 	var responseBody AuthenticationConfig
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}

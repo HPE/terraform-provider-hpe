@@ -18,9 +18,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &KBArticleResource{}
-var _ resource.ResourceWithImportState = &KBArticleResource{}
-var _ resource.ResourceWithModifyPlan = &KBArticleResource{}
+var (
+	_ resource.Resource                = &KBArticleResource{}
+	_ resource.ResourceWithImportState = &KBArticleResource{}
+	_ resource.ResourceWithModifyPlan  = &KBArticleResource{}
+)
 
 // KBArticleResource defines the resource implementation.
 type KBArticleResource struct {
@@ -115,6 +117,7 @@ func (r *KBArticleResource) resolveTenantId(clientAttr types.String) string {
 	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
 		return clientAttr.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -199,6 +202,7 @@ func stringSliceToAttrValues(values []string) []attr.Value {
 	for _, v := range values {
 		result = append(result, types.StringValue(v))
 	}
+
 	return result
 }
 
@@ -217,6 +221,7 @@ func (r *KBArticleResource) Create(ctx context.Context, req resource.CreateReque
 	created, err := r.apiClient.CreateKBArticle(tenantId, articleReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Creating KB Article", fmt.Sprintf("Could not create KB article: %s", err))
+
 		return
 	}
 
@@ -242,9 +247,11 @@ func (r *KBArticleResource) Read(ctx context.Context, req resource.ReadRequest, 
 	if err != nil {
 		if strings.Contains(err.Error(), "404") || strings.Contains(err.Error(), "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Error Reading KB Article", fmt.Sprintf("Could not read KB article %s: %s", articleId, err))
+
 		return
 	}
 
@@ -268,6 +275,7 @@ func (r *KBArticleResource) Update(ctx context.Context, req resource.UpdateReque
 	updated, err := r.apiClient.UpdateKBArticle(tenantId, articleId, articleReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating KB Article", fmt.Sprintf("Could not update KB article %s: %s", articleId, err))
+
 		return
 	}
 
@@ -293,6 +301,7 @@ func (r *KBArticleResource) Delete(ctx context.Context, req resource.DeleteReque
 	err := r.apiClient.DeleteKBArticle(tenantId, articleId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Deleting KB Article", fmt.Sprintf("Could not delete KB article %s: %s", articleId, err))
+
 		return
 	}
 
@@ -305,6 +314,7 @@ func (r *KBArticleResource) ImportState(ctx context.Context, req resource.Import
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -314,6 +324,7 @@ func (r *KBArticleResource) ImportState(ctx context.Context, req resource.Import
 	existing, err := r.apiClient.GetKBArticle(tenantId, articleId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing KB Article", fmt.Sprintf("Could not import KB article: %s", err))
+
 		return
 	}
 

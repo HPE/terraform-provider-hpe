@@ -11,7 +11,6 @@ import (
 // CreateServicemapLink - Create new Servicemap Link
 // api: POST /api/v2/tenants/{clientId}/serviceGroups/link
 func (c *OpsRampClient) CreateServicemapLink(tenantId string, servicemaplink CreateServicemapLink) (*CreateServicemapLink, error) {
-
 	// Convert Request Data/Body to JSON
 	payload, err := json.Marshal([]CreateServicemapLink{servicemaplink})
 	if err != nil {
@@ -36,7 +35,6 @@ func (c *OpsRampClient) CreateServicemapLink(tenantId string, servicemaplink Cre
 
 // GetServicemap - Get existing Servicemap
 func (c *OpsRampClient) GetServicemapLink(tenantId string, serviceMapLink CreateServicemapLink) (*CreateServicemapLink, error) {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceGroups/%s/childs/search", c.BaseUrl, tenantId, serviceMapLink.Parent.Id)
 	method := "GET"
@@ -48,7 +46,7 @@ func (c *OpsRampClient) GetServicemapLink(tenantId string, serviceMapLink Create
 
 	// Preparing Response Body to return and convert it to Golang Map Object
 	var responseBody ReadServicemapLink
-	err = json.Unmarshal([]byte(response), &responseBody)
+	err = json.Unmarshal(response, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -68,12 +66,10 @@ func (c *OpsRampClient) GetServicemapLink(tenantId string, serviceMapLink Create
 
 	// Return ID of the record created
 	return found, nil
-
 }
 
 // DeleteServicemapLink - DeleteServicemapLink
 func (c *OpsRampClient) DeleteServicemapLink(tenantId string, serviceMapLink CreateServicemapLink) error {
-
 	// Prepare the URL, Method and Payload fo the Client
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceGroups/unLink/%s/%s", c.BaseUrl, tenantId, serviceMapLink.Parent.Id, serviceMapLink.Id)
 	method := "DELETE"

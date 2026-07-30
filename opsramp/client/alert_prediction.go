@@ -22,7 +22,7 @@ func (c *OpsRampClient) CreateAlertPredictionPolicy(tenantId string, policy Aler
 	}
 
 	var responseBody AlertPredictionPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func (c *OpsRampClient) GetAlertPredictionPolicy(tenantId string, policyId strin
 	}
 
 	var responseBody AlertPredictionPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (c *OpsRampClient) UpdateAlertPredictionPolicy(tenantId string, policyId st
 	}
 
 	var responseBody AlertPredictionPolicy
-	err = json.Unmarshal([]byte(body), &responseBody)
+	err = json.Unmarshal(body, &responseBody)
 	if err != nil {
 		return nil, err
 	}
@@ -76,5 +76,6 @@ func (c *OpsRampClient) DeleteAlertPredictionPolicy(tenantId string, policyId st
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/policies/alertprediction/%s", c.BaseUrl, tenantId, policyId)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
+
 	return err
 }

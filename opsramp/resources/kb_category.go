@@ -18,9 +18,11 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &KBCategoryResource{}
-var _ resource.ResourceWithImportState = &KBCategoryResource{}
-var _ resource.ResourceWithModifyPlan = &KBCategoryResource{}
+var (
+	_ resource.Resource                = &KBCategoryResource{}
+	_ resource.ResourceWithImportState = &KBCategoryResource{}
+	_ resource.ResourceWithModifyPlan  = &KBCategoryResource{}
+)
 
 // KBCategoryResource defines the resource implementation.
 type KBCategoryResource struct {
@@ -96,11 +98,11 @@ func (r *KBCategoryResource) resolveTenantId(clientAttr types.String) string {
 	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
 		return clientAttr.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
 func buildKBCategoryRequest(plan KBCategoryModel, apiClient *client.OpsRampClient) client.KBCategory {
-
 	scope := "PARTNER"
 	if apiClient.Scope != "MSP" || (!plan.Client.IsNull() && plan.Client.ValueString() != "") {
 		scope = "CLIENT"
@@ -114,6 +116,7 @@ func buildKBCategoryRequest(plan KBCategoryModel, apiClient *client.OpsRampClien
 	if !plan.ParentCategoryId.IsNull() && !plan.ParentCategoryId.IsUnknown() {
 		cat.ParentCategory = &client.KBCategoryRef{Id: plan.ParentCategoryId.ValueString()}
 	}
+
 	return cat
 }
 
@@ -144,6 +147,7 @@ func (r *KBCategoryResource) Create(ctx context.Context, req resource.CreateRequ
 	created, err := r.apiClient.CreateKBCategory(tenantId, catReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Creating KB Category", fmt.Sprintf("Could not create KB category: %s", err))
+
 		return
 	}
 
@@ -169,9 +173,11 @@ func (r *KBCategoryResource) Read(ctx context.Context, req resource.ReadRequest,
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") || strings.Contains(err.Error(), "404") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Error Reading KB Category", fmt.Sprintf("Could not read KB category %s: %s", categoryId, err))
+
 		return
 	}
 
@@ -194,6 +200,7 @@ func (r *KBCategoryResource) Update(ctx context.Context, req resource.UpdateRequ
 	updated, err := r.apiClient.UpdateKBCategory(tenantId, categoryId, catReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Updating KB Category", fmt.Sprintf("Could not update KB category %s: %s", categoryId, err))
+
 		return
 	}
 
@@ -219,6 +226,7 @@ func (r *KBCategoryResource) Delete(ctx context.Context, req resource.DeleteRequ
 	err := r.apiClient.DeleteKBCategory(tenantId, categoryId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Deleting KB Category", fmt.Sprintf("Could not delete KB category %s: %s", categoryId, err))
+
 		return
 	}
 
@@ -231,6 +239,7 @@ func (r *KBCategoryResource) ImportState(ctx context.Context, req resource.Impor
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -240,6 +249,7 @@ func (r *KBCategoryResource) ImportState(ctx context.Context, req resource.Impor
 	existing, err := r.apiClient.GetKBCategory(tenantId, categoryId)
 	if err != nil {
 		resp.Diagnostics.AddError("Error Importing KB Category", fmt.Sprintf("Could not import KB category: %s", err))
+
 		return
 	}
 

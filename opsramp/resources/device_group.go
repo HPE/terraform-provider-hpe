@@ -18,8 +18,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces.
-var _ resource.Resource = &DeviceGroupResource{}
-var _ resource.ResourceWithModifyPlan = &DeviceGroupResource{}
+var (
+	_ resource.Resource               = &DeviceGroupResource{}
+	_ resource.ResourceWithModifyPlan = &DeviceGroupResource{}
+)
 
 // DeviceGroupModel maps Terraform schema attributes to the provider model.
 type DeviceGroupModel struct {
@@ -94,7 +96,6 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 		},
 	}
-
 }
 
 func translatePlanToDeviceGroupModel(plan DeviceGroupModel) client.DeviceGroupAPI {
@@ -153,6 +154,7 @@ func (r *DeviceGroupResource) readDeviceGroupResources(ctx context.Context, tena
 	if err != nil {
 		var diags diag.Diagnostics
 		diags.AddError("Read Error", err.Error())
+
 		return types.SetUnknown(types.StringType), diags
 	}
 
@@ -211,6 +213,7 @@ func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 	newDeviceGroup, err := createDeviceGroupWithRetry(r.apiClient, tenantId, deviceGroup, !plan.ParentId.IsNull() && plan.ParentId.ValueString() != "")
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
+
 		return
 	}
 
@@ -218,12 +221,11 @@ func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Unset resources is equivalent to []: always reconcile.
 
-	resource_ids := []string{}
 	if !plan.Resources.IsNull() && !plan.Resources.IsUnknown() && len(plan.Resources.Elements()) > 0 {
-		resource_ids = setToStringSlice(plan.Resources)
+		resourceIDs := setToStringSlice(plan.Resources)
 
 		// Add child resources if specified - don't fail the entire creation if this part fails, but do report it in diagnostics.
-		if err := r.apiClient.AddDeviceGroupChilds(tenantId, newDeviceGroup.Id, resource_ids); err != nil {
+		if err := r.apiClient.AddDeviceGroupChilds(tenantId, newDeviceGroup.Id, resourceIDs); err != nil {
 			resp.Diagnostics.AddError("Error adding resources to device group", err.Error())
 		}
 	}
@@ -254,11 +256,13 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	backendDeviceGroup, err := r.apiClient.GetDeviceGroup(tenantId, state.Id.ValueString())
 	if err != nil && !strings.Contains(err.Error(), "No Device group exists") {
 		resp.Diagnostics.AddError("Read Error", err.Error())
+
 		return
 	}
 
 	if backendDeviceGroup == nil {
 		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -295,6 +299,7 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	newDeviceGroup, err := r.apiClient.CreateDeviceGroup(tenantId, deviceGroup)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
+
 		return
 	}
 
@@ -310,6 +315,7 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	if len(toAdd) > 0 {
 		if err := r.apiClient.AddDeviceGroupChilds(tenantId, newDeviceGroup.Id, toAdd); err != nil {
 			resp.Diagnostics.AddError("Error adding resources to device group", err.Error())
+
 			return
 		}
 	}
@@ -317,6 +323,7 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	if len(toRemove) > 0 {
 		if err := r.apiClient.RemoveDeviceGroupChilds(tenantId, newDeviceGroup.Id, toRemove); err != nil {
 			resp.Diagnostics.AddError("Error removing resources from device group", err.Error())
+
 			return
 		}
 	}
@@ -350,6 +357,7 @@ func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	err := r.apiClient.DeleteDeviceGroup(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 

@@ -10,7 +10,7 @@ terraform {
 
 provider "hpe" {
   opsramp {
-    client_id = "abcdefghijklmnopqrstuvwxyz123456"
+    client_id     = "abcdefghijklmnopqrstuvwxyz123456"
     client_secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ab"
     endpoint      = "tenant.api.pov.opsramp.com"
     tenant        = "abcdefgh-1234-5678-90ab-cdefghijklmn"
@@ -25,7 +25,7 @@ resource "hpe_opsramp_user_group" "client_user_group" {
 
 resource "hpe_opsramp_alert_correlation_policy" "topology_correlation_policy" {
   name = "Topology-based"
-  
+
   enabled_mode    = "OBSERVED"
   filter_query    = ""
   inference_query = ""
@@ -41,7 +41,7 @@ resource "hpe_opsramp_alert_correlation_policy" "topology_correlation_policy" {
 
 resource "hpe_opsramp_alert_correlation_policy" "similarity_correlation_policy" {
   name = "Similarity-based"
-  
+
   enabled_mode    = "OBSERVED"
   filter_query    = ""
   inference_query = ""
@@ -61,7 +61,7 @@ resource "hpe_opsramp_alert_correlation_policy" "similarity_correlation_policy" 
 }
 
 resource "hpe_opsramp_first_response_policy" "seasonality_first_response_policy" {
-  name   = "Seasonal-based Suppression"
+  name = "Seasonal-based Suppression"
 
   enabled_mode = "OBSERVED"
   filter_query = ""
@@ -121,9 +121,9 @@ resource "hpe_opsramp_servicedesk_urgency" "urgency1" {
 }
 
 resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy" {
-  name         = "Default escalation policy"
-  precedence   = 1
-  enabled_mode = "OBSERVED"
+  name            = "Default escalation policy"
+  precedence      = 1
+  enabled_mode    = "OBSERVED"
   escalation_type = "AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED"
   policy_type     = "ESCALATION_POLICY"
 
@@ -159,17 +159,17 @@ resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy"
         cc                    = "enrique.larriba@hpe.com"
       }
       update_incident = {
-        update_incident_mode = "UpdateWhenAlertStateChange"
-        update_incident_subject_mode =   "UpdateIncidentSubject"
-        auto_resolve_incident_mode = "AutoResolveIncident"
-        auto_heal_wait_time                      = 0
-        update_priority_by_ml_configuration      = false
-        priority_rules                           = [
+        update_incident_mode                = "UpdateWhenAlertStateChange"
+        update_incident_subject_mode        = "UpdateIncidentSubject"
+        auto_resolve_incident_mode          = "AutoResolveIncident"
+        auto_heal_wait_time                 = 0
+        update_priority_by_ml_configuration = false
+        priority_rules = [
           {
-            alert_state = "CRITICAL"
-            business_impact_id     = hpe_opsramp_servicedesk_business_impact.business_impact1.id
-            urgency_id          = hpe_opsramp_servicedesk_urgency.urgency1.id
-            priority       = "Urgent"
+            alert_state        = "CRITICAL"
+            business_impact_id = hpe_opsramp_servicedesk_business_impact.business_impact1.id
+            urgency_id         = hpe_opsramp_servicedesk_urgency.urgency1.id
+            priority           = "Urgent"
           }
         ]
       }

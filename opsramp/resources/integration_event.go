@@ -23,8 +23,10 @@ import (
 )
 
 // Ensure implementation satisfies the expected interfaces
-var _ resource.Resource = &IntegrationEventResource{}
-var _ resource.ResourceWithImportState = &IntegrationEventResource{}
+var (
+	_ resource.Resource                = &IntegrationEventResource{}
+	_ resource.ResourceWithImportState = &IntegrationEventResource{}
+)
 
 // IntegrationEventResource manages outbound events on an installed integration.
 type IntegrationEventResource struct {
@@ -241,6 +243,7 @@ func (r *IntegrationEventResource) getTenantId(clientId types.String) string {
 	if !clientId.IsNull() && clientId.ValueString() != "" {
 		return clientId.ValueString()
 	}
+
 	return r.apiClient.TenantId
 }
 
@@ -255,6 +258,7 @@ func (r *IntegrationEventResource) Create(ctx context.Context, req resource.Crea
 
 	if !plan.UseBaseNotifier.ValueBool() && plan.Notifier == nil {
 		resp.Diagnostics.AddError("Validation Error", "A `notifier` block is required when `use_base_notifier` is false.")
+
 		return
 	}
 
@@ -265,6 +269,7 @@ func (r *IntegrationEventResource) Create(ctx context.Context, req resource.Crea
 	created, err := r.apiClient.CreateIntegrationEvent(tenantId, plan.IntegrationId.ValueString(), eventReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Event Create Error", fmt.Sprintf("Could not create event: %s", err.Error()))
+
 		return
 	}
 
@@ -277,6 +282,7 @@ func (r *IntegrationEventResource) Create(ctx context.Context, req resource.Crea
 	// Set active/inactive state via the dedicated activate/deactivate endpoint.
 	if err := r.apiClient.SetIntegrationEventActive(tenantId, plan.IntegrationId.ValueString(), created.ID, desiredActive); err != nil {
 		resp.Diagnostics.AddError("Event Activate Error", fmt.Sprintf("Could not set active state for event %s: %s", created.ID, err.Error()))
+
 		return
 	}
 	// Restore the value we actually applied – the create response predates the action.
@@ -302,9 +308,11 @@ func (r *IntegrationEventResource) Read(ctx context.Context, req resource.ReadRe
 		errStr := err.Error()
 		if strings.Contains(errStr, "404") || strings.Contains(errStr, "not found") {
 			resp.State.RemoveResource(ctx)
+
 			return
 		}
 		resp.Diagnostics.AddError("Event Read Error", err.Error())
+
 		return
 	}
 
@@ -332,6 +340,7 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 
 	if !plan.UseBaseNotifier.ValueBool() && plan.Notifier == nil {
 		resp.Diagnostics.AddError("Validation Error", "A `notifier` block is required when `use_base_notifier` is false.")
+
 		return
 	}
 
@@ -346,6 +355,7 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 	updated, err := r.apiClient.UpdateIntegrationEvent(tenantId, state.IntegrationId.ValueString(), state.Id.ValueString(), eventReq)
 	if err != nil {
 		resp.Diagnostics.AddError("Event Update Error", err.Error())
+
 		return
 	}
 
@@ -353,6 +363,7 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 	if desiredActive != state.Active.ValueBool() {
 		if err := r.apiClient.SetIntegrationEventActive(tenantId, state.IntegrationId.ValueString(), state.Id.ValueString(), desiredActive); err != nil {
 			resp.Diagnostics.AddError("Event Activate Error", fmt.Sprintf("Could not set active state for event %s: %s", state.Id.ValueString(), err.Error()))
+
 			return
 		}
 	}
@@ -381,6 +392,7 @@ func (r *IntegrationEventResource) Delete(ctx context.Context, req resource.Dele
 	if err != nil {
 		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
 			resp.Diagnostics.AddError("Event Delete Error", err.Error())
+
 			return
 		}
 	}
@@ -392,6 +404,7 @@ func (r *IntegrationEventResource) ImportState(ctx context.Context, req resource
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
 		return
 	}
 
@@ -552,11 +565,13 @@ func (r *IntegrationEventResource) ModifyPlan(ctx context.Context, req resource.
 
 	if plan.UseBaseNotifier.ValueBool() && plan.Notifier != nil {
 		resp.Diagnostics.AddError("Validation Error", "Cannot specify a `notifier` block when `use_base_notifier` is true. Either set `use_base_notifier` to false or remove the `notifier` block.")
+
 		return
 	}
 
 	if !plan.UseBaseNotifier.ValueBool() && plan.Notifier == nil {
 		resp.Diagnostics.AddError("Validation Error", "A `notifier` block is required when `use_base_notifier` is false.")
+
 		return
 	}
 }
