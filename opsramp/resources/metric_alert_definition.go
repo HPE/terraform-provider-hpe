@@ -355,7 +355,10 @@ func (r *MetricAlertDefinitionResource) Delete(ctx context.Context, req resource
 }
 
 // buildRequest converts the Terraform model to the API request
-func (r *MetricAlertDefinitionResource) buildRequest(ctx context.Context, plan *MetricAlertDefinitionModel) (*client.MetricAlertDefinitionRequest, error) {
+func (r *MetricAlertDefinitionResource) buildRequest(
+	ctx context.Context,
+	plan *MetricAlertDefinitionModel,
+) (*client.MetricAlertDefinitionRequest, error) {
 	apiReq := &client.MetricAlertDefinitionRequest{
 		Name:                 plan.Name.ValueString(),
 		Query:                plan.Query.ValueString(),
@@ -435,7 +438,11 @@ func (r *MetricAlertDefinitionResource) buildRequest(ctx context.Context, plan *
 }
 
 // modify plan
-func (r *MetricAlertDefinitionResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *MetricAlertDefinitionResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	// Don't validate during destroy — plan is null.
 	if req.Plan.Raw.IsNull() {
 		return
@@ -450,14 +457,22 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(ctx context.Context, req reso
 	}
 
 	if plan.NoDataCondition.ValueString() == "" {
-		if plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" || plan.AlertThresholdType.ValueString() == "DYNAMIC_THRESHOLD" {
-			diags.AddError("No Data Condition Required", "no_data_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or DYNAMIC_THRESHOLD")
+		if plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" ||
+			plan.AlertThresholdType.ValueString() == "DYNAMIC_THRESHOLD" {
+			diags.AddError(
+				"No Data Condition Required",
+				"no_data_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or DYNAMIC_THRESHOLD",
+			)
 		}
 	}
 
 	if plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" {
-		if plan.AlertThresholdData.WarningCondition.ValueString() == "" && plan.AlertThresholdData.CriticalCondition.ValueString() == "" {
-			diags.AddError("Threshold Condition Required", "At least one of warning_condition or critical_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or FORECAST")
+		if plan.AlertThresholdData.WarningCondition.ValueString() == "" &&
+			plan.AlertThresholdData.CriticalCondition.ValueString() == "" {
+			diags.AddError(
+				"Threshold Condition Required",
+				"At least one of warning_condition or critical_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or FORECAST",
+			)
 		}
 	}
 
@@ -465,11 +480,17 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(ctx context.Context, req reso
 		if plan.AlertThresholdData.Direction.ValueString() == "" ||
 			plan.AlertThresholdData.LearningPeriod.ValueString() == "" ||
 			plan.AlertThresholdData.StandardDeviation.IsNull() {
-			diags.AddError("Direction, Learning Period, and Standard Deviation Required", "direction, learning_period, and standard_deviation must be specified when alert_threshold_type is DYNAMIC_CHANGE_DETECTION")
+			diags.AddError(
+				"Direction, Learning Period, and Standard Deviation Required",
+				"direction, learning_period, and standard_deviation must be specified when alert_threshold_type is DYNAMIC_CHANGE_DETECTION",
+			)
 		}
 
 		if plan.NoDataCondition.ValueString() != "" {
-			diags.AddError("No Data Condition Not Supported", "no_data_condition is not supported when alert_threshold_type is DYNAMIC_CHANGE_DETECTION")
+			diags.AddError(
+				"No Data Condition Not Supported",
+				"no_data_condition is not supported when alert_threshold_type is DYNAMIC_CHANGE_DETECTION",
+			)
 		}
 	}
 
@@ -479,11 +500,17 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(ctx context.Context, req reso
 		}
 
 		if plan.AlertTriggerDuration.ValueString() != "" {
-			diags.AddError("Alert Trigger Duration Not Supported", "alert_trigger_duration is not supported when alert_threshold_type is FORECAST")
+			diags.AddError(
+				"Alert Trigger Duration Not Supported",
+				"alert_trigger_duration is not supported when alert_threshold_type is FORECAST",
+			)
 		}
 
 		if plan.NoDataCondition.ValueString() != "" {
-			diags.AddError("No Data Condition Not Supported", "no_data_condition is not supported when alert_threshold_type is FORECAST")
+			diags.AddError(
+				"No Data Condition Not Supported",
+				"no_data_condition is not supported when alert_threshold_type is FORECAST",
+			)
 		}
 	} else {
 		// opposite side-effect check

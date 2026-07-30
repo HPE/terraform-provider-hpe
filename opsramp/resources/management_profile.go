@@ -230,7 +230,11 @@ func (r *ManagementProfileResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-func (r *ManagementProfileResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *ManagementProfileResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	// Call base implementation
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 
@@ -249,7 +253,10 @@ func (r *ManagementProfileResource) ModifyPlan(ctx context.Context, req resource
 
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
-		resp.Diagnostics.AddError("Management Profiles can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+		resp.Diagnostics.AddError(
+			"Management Profiles can only be created at Client level",
+			"Use a client-scoped provider configuration or specify the client using unique ID.",
+		)
 
 		return
 	}

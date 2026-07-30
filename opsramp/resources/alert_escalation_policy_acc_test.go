@@ -29,7 +29,11 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_escalation_policy.test_policy", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_escalation_policy.test_policy", "enabled_mode", "OBSERVED"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_escalation_policy.test_policy",
+							"enabled_mode",
+							"OBSERVED",
+						),
 					),
 				},
 			},

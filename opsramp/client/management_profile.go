@@ -48,7 +48,11 @@ func (c *OpsRampClient) GetManagementProfile(tenantId string, profileId int) (*M
 }
 
 // UpdateManagementProfile updates an existing management profile.
-func (c *OpsRampClient) UpdateManagementProfile(tenantId string, profileId int, request ManagementProfile) (*ManagementProfile, error) {
+func (c *OpsRampClient) UpdateManagementProfile(
+	tenantId string,
+	profileId int,
+	request ManagementProfile,
+) (*ManagementProfile, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err

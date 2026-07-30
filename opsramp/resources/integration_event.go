@@ -280,8 +280,16 @@ func (r *IntegrationEventResource) Create(ctx context.Context, req resource.Crea
 	r.responseToModel(created, &plan)
 
 	// Set active/inactive state via the dedicated activate/deactivate endpoint.
-	if err := r.apiClient.SetIntegrationEventActive(tenantId, plan.IntegrationId.ValueString(), created.ID, desiredActive); err != nil {
-		resp.Diagnostics.AddError("Event Activate Error", fmt.Sprintf("Could not set active state for event %s: %s", created.ID, err.Error()))
+	if err := r.apiClient.SetIntegrationEventActive(
+		tenantId,
+		plan.IntegrationId.ValueString(),
+		created.ID,
+		desiredActive,
+	); err != nil {
+		resp.Diagnostics.AddError(
+			"Event Activate Error",
+			fmt.Sprintf("Could not set active state for event %s: %s", created.ID, err.Error()),
+		)
 
 		return
 	}
@@ -352,7 +360,12 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 
 	eventReq := r.modelToRequest(plan)
 
-	updated, err := r.apiClient.UpdateIntegrationEvent(tenantId, state.IntegrationId.ValueString(), state.Id.ValueString(), eventReq)
+	updated, err := r.apiClient.UpdateIntegrationEvent(
+		tenantId,
+		state.IntegrationId.ValueString(),
+		state.Id.ValueString(),
+		eventReq,
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Event Update Error", err.Error())
 
@@ -361,8 +374,16 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 
 	// If active state changed, call the dedicated activate/deactivate endpoint.
 	if desiredActive != state.Active.ValueBool() {
-		if err := r.apiClient.SetIntegrationEventActive(tenantId, state.IntegrationId.ValueString(), state.Id.ValueString(), desiredActive); err != nil {
-			resp.Diagnostics.AddError("Event Activate Error", fmt.Sprintf("Could not set active state for event %s: %s", state.Id.ValueString(), err.Error()))
+		if err := r.apiClient.SetIntegrationEventActive(
+			tenantId,
+			state.IntegrationId.ValueString(),
+			state.Id.ValueString(),
+			desiredActive,
+		); err != nil {
+			resp.Diagnostics.AddError(
+				"Event Activate Error",
+				fmt.Sprintf("Could not set active state for event %s: %s", state.Id.ValueString(), err.Error()),
+			)
 
 			return
 		}
@@ -400,7 +421,11 @@ func (r *IntegrationEventResource) Delete(ctx context.Context, req resource.Dele
 
 // ImportState handles import.
 // Import ID format: integration_id:event_id or client_id:integration_id:event_id (MSP only)
-func (r *IntegrationEventResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *IntegrationEventResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
@@ -546,7 +571,11 @@ func (r *IntegrationEventResource) responseToModel(apiResp *client.IntegrationEv
 	}
 }
 
-func (r *IntegrationEventResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *IntegrationEventResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	// Call base implementation
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 
@@ -564,7 +593,10 @@ func (r *IntegrationEventResource) ModifyPlan(ctx context.Context, req resource.
 	}
 
 	if plan.UseBaseNotifier.ValueBool() && plan.Notifier != nil {
-		resp.Diagnostics.AddError("Validation Error", "Cannot specify a `notifier` block when `use_base_notifier` is true. Either set `use_base_notifier` to false or remove the `notifier` block.")
+		resp.Diagnostics.AddError(
+			"Validation Error",
+			"Cannot specify a `notifier` block when `use_base_notifier` is true. Either set `use_base_notifier` to false or remove the `notifier` block.",
+		)
 
 		return
 	}

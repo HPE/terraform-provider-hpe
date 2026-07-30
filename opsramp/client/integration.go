@@ -9,7 +9,11 @@ import (
 
 // InstallIntegration installs a new integration of the given application type.
 // The application parameter is the integration type ID (e.g. "CUSTOM", "CUSTOM-EVENT", "NEWRELIC", "VMWARE").
-func (c *OpsRampClient) InstallIntegration(tenantId string, application string, request InstallIntegrationRequest) (*IntegrationResponse, error) {
+func (c *OpsRampClient) InstallIntegration(
+	tenantId string,
+	application string,
+	request InstallIntegrationRequest,
+) (*IntegrationResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -64,7 +68,12 @@ func (c *OpsRampClient) DeleteIntegration(tenantId string, integrationId string,
 
 // GetInboundAuthentication retrieves the inbound authentication configuration for an integration.
 func (c *OpsRampClient) GetInboundAuthentication(tenantId string, integrationId string) (*InboundAuthResponse, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
 	if err != nil {
@@ -80,13 +89,22 @@ func (c *OpsRampClient) GetInboundAuthentication(tenantId string, integrationId 
 }
 
 // SetInboundAuthentication configures the inbound authentication for an integration.
-func (c *OpsRampClient) SetInboundAuthentication(tenantId string, integrationId string, request SetInboundAuthRequest) (*InboundAuthResponse, error) {
+func (c *OpsRampClient) SetInboundAuthentication(
+	tenantId string,
+	integrationId string,
+	request SetInboundAuthRequest,
+) (*InboundAuthResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
 	}
 
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 
 	body, err := c.NewJsonRequest("POST", apiUrl, rb)
 	if err != nil {
@@ -117,7 +135,13 @@ func (c *OpsRampClient) SetMappingAttributes(tenantId string, integrationId stri
 
 // DeleteMappingAttribute deletes a single installed inbound mapping attribute by its unique ID.
 func (c *OpsRampClient) DeleteMappingAttribute(tenantId string, integrationId string, mappingId string) error {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/mappingAttr/%s", c.BaseUrl, tenantId, integrationId, mappingId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/mappingAttr/%s",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		mappingId,
+	)
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
 
 	return err
@@ -125,7 +149,13 @@ func (c *OpsRampClient) DeleteMappingAttribute(tenantId string, integrationId st
 
 // DeleteOutboundMappingAttribute deletes a single installed outbound mapping attribute by its unique ID.
 func (c *OpsRampClient) DeleteOutboundMappingAttribute(tenantId string, integrationId string, mappingId string) error {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/outbound/mappingAttr/%s", c.BaseUrl, tenantId, integrationId, mappingId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/outbound/mappingAttr/%s",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		mappingId,
+	)
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
 
 	return err
@@ -137,7 +167,14 @@ func (c *OpsRampClient) GetInstalledMappingAttributes(tenantId string, integrati
 	pageNo := 1
 	pageSize := 100
 	for {
-		apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/installedIntgMappings?pageNo=%d&pageSize=%d", c.BaseUrl, tenantId, integrationId, pageNo, pageSize)
+		apiUrl := fmt.Sprintf(
+			"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/installedIntgMappings?pageNo=%d&pageSize=%d",
+			c.BaseUrl,
+			tenantId,
+			integrationId,
+			pageNo,
+			pageSize,
+		)
 		body, err := c.NewJsonRequest("GET", apiUrl, nil)
 		if err != nil {
 			return nil, err
@@ -158,7 +195,13 @@ func (c *OpsRampClient) GetInstalledMappingAttributes(tenantId string, integrati
 
 // SetEnableDropAlerts enables or disables dropping alerts for an integration.
 func (c *OpsRampClient) SetEnableDropAlerts(tenantId string, integrationId string, enable bool) error {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/enableDropAlerts?enableDropAlerts=%t", c.BaseUrl, tenantId, integrationId, enable)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/enableDropAlerts?enableDropAlerts=%t",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		enable,
+	)
 
 	_, err := c.NewJsonRequest("GET", apiUrl, nil)
 
@@ -208,7 +251,12 @@ func (c *OpsRampClient) SetAdditionalProperties(tenantId string, integrationId s
 
 // RegenerateIntegrationToken regenerates the webhook token for an integration.
 func (c *OpsRampClient) RegenerateIntegrationToken(tenantId string, integrationId string) (*InboundAuthResponse, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication/regenerateSecretOrToken", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication/regenerateSecretOrToken",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 
 	body, err := c.NewJsonRequest("POST", apiUrl, nil)
 	if err != nil {
@@ -244,7 +292,13 @@ func (c *OpsRampClient) GetAvailableAlertSources(tenantId string, application st
 // GetInboundEntityProperties retrieves the available properties for mapping on an installed integration.
 // Entity is typically "ALERT".
 func (c *OpsRampClient) GetInboundEntityProperties(tenantId string, integrationId string, entity string) ([]EntityProperty, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/entities/%s/properties", c.BaseUrl, tenantId, integrationId, entity)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/entities/%s/properties",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		entity,
+	)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
 	if err != nil {
@@ -261,8 +315,18 @@ func (c *OpsRampClient) GetInboundEntityProperties(tenantId string, integrationI
 
 // GetOutboundEntityProperties retrieves the available properties for mapping on an installed integration.
 // Entity is typically "ALERT".
-func (c *OpsRampClient) GetOutboundEntityProperties(tenantId string, integrationId string, entity string) ([]EntityProperty, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/outbound/entities/%s/properties", c.BaseUrl, tenantId, integrationId, entity)
+func (c *OpsRampClient) GetOutboundEntityProperties(
+	tenantId string,
+	integrationId string,
+	entity string,
+) ([]EntityProperty, error) {
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/outbound/entities/%s/properties",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		entity,
+	)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
 	if err != nil {
@@ -294,7 +358,11 @@ func (c *OpsRampClient) GetIntegrationAvailableRoles(tenantId string, integratio
 }
 
 // UpdateIntegration updates the base properties (displayName, description) of an installed integration.
-func (c *OpsRampClient) UpdateIntegration(tenantId string, integrationId string, request InstallIntegrationRequest) (*IntegrationResponse, error) {
+func (c *OpsRampClient) UpdateIntegration(
+	tenantId string,
+	integrationId string,
+	request InstallIntegrationRequest,
+) (*IntegrationResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -325,7 +393,12 @@ func (c *OpsRampClient) SetWebhookHandshake(tenantId string, integrationId strin
 		return err
 	}
 
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 
 	_, err = c.NewJsonRequest("POST", apiUrl, rb)
 
@@ -342,7 +415,12 @@ func (c *OpsRampClient) DeleteWebhookHandshake(tenantId string, integrationId st
 		return err
 	}
 
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/additionalProps?webhookHandshake=true",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 
 	_, err = c.NewJsonRequest("DELETE", apiUrl, rb)
 
@@ -351,7 +429,12 @@ func (c *OpsRampClient) DeleteWebhookHandshake(tenantId string, integrationId st
 
 // SearchAvailableIntegrations retrieves the list of available integrations for a tenant.
 func (c *OpsRampClient) SearchAvailableIntegrations(tenantId string, name string) ([]AvailableIntegration, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/available/search?queryString=name:%s&pageSize=500", c.BaseUrl, tenantId, name)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/available/search?queryString=name:%s&pageSize=500",
+		c.BaseUrl,
+		tenantId,
+		name,
+	)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
 	if err != nil {
@@ -381,7 +464,11 @@ func (c *OpsRampClient) GetAvailableIntegration(tenantId string, applicationId s
 }
 
 // CreateIntegrationEvent creates an outbound event on an installed integration.
-func (c *OpsRampClient) CreateIntegrationEvent(tenantId string, integrationId string, req IntegrationEventRequest) (*IntegrationEventResponse, error) {
+func (c *OpsRampClient) CreateIntegrationEvent(
+	tenantId string,
+	integrationId string,
+	req IntegrationEventRequest,
+) (*IntegrationEventResponse, error) {
 	rb, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -400,7 +487,11 @@ func (c *OpsRampClient) CreateIntegrationEvent(tenantId string, integrationId st
 }
 
 // GetIntegrationEvent retrieves an outbound event by its ID.
-func (c *OpsRampClient) GetIntegrationEvent(tenantId string, integrationId string, eventId string) (*IntegrationEventResponse, error) {
+func (c *OpsRampClient) GetIntegrationEvent(
+	tenantId string,
+	integrationId string,
+	eventId string,
+) (*IntegrationEventResponse, error) {
 	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/event/%s", c.BaseUrl, tenantId, integrationId, eventId)
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
 	if err != nil {
@@ -415,7 +506,12 @@ func (c *OpsRampClient) GetIntegrationEvent(tenantId string, integrationId strin
 }
 
 // UpdateIntegrationEvent updates an existing outbound event.
-func (c *OpsRampClient) UpdateIntegrationEvent(tenantId string, integrationId string, eventId string, req IntegrationEventRequest) (*IntegrationEventResponse, error) {
+func (c *OpsRampClient) UpdateIntegrationEvent(
+	tenantId string,
+	integrationId string,
+	eventId string,
+	req IntegrationEventRequest,
+) (*IntegrationEventResponse, error) {
 	rb, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
@@ -440,7 +536,14 @@ func (c *OpsRampClient) SetIntegrationEventActive(tenantId, integrationId, event
 	if !active {
 		action = "deactivate"
 	}
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/event/%s/%s", c.BaseUrl, tenantId, integrationId, eventId, action)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/event/%s/%s",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		eventId,
+		action,
+	)
 	_, err := c.NewJsonRequest("POST", apiUrl, nil)
 
 	return err
@@ -455,12 +558,22 @@ func (c *OpsRampClient) DeleteIntegrationEvent(tenantId string, integrationId st
 }
 
 // GetInstalledOutboundMappingAttributes retrieves outbound mapping attributes for an integration.
-func (c *OpsRampClient) GetInstalledOutboundMappingAttributes(tenantId string, integrationId string) ([]InstalledMappingResult, error) {
+func (c *OpsRampClient) GetInstalledOutboundMappingAttributes(
+	tenantId string,
+	integrationId string,
+) ([]InstalledMappingResult, error) {
 	var all []InstalledMappingResult
 	pageNo := 1
 	pageSize := 100
 	for {
-		apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/outbound/installedIntgMappings?pageNo=%d&pageSize=%d", c.BaseUrl, tenantId, integrationId, pageNo, pageSize)
+		apiUrl := fmt.Sprintf(
+			"%s/api/v2/tenants/%s/integrations/installed/%s/outbound/installedIntgMappings?pageNo=%d&pageSize=%d",
+			c.BaseUrl,
+			tenantId,
+			integrationId,
+			pageNo,
+			pageSize,
+		)
 		body, err := c.NewJsonRequest("GET", apiUrl, nil)
 		if err != nil {
 			return nil, err

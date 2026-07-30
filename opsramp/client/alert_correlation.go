@@ -8,7 +8,10 @@ import (
 )
 
 // CreateAlertCorrelationPolicy creates a new alert correlation policy
-func (c *OpsRampClient) CreateAlertCorrelationPolicy(tenantId string, policy AlertCorrelationPolicy) (*AlertCorrelationPolicy, error) {
+func (c *OpsRampClient) CreateAlertCorrelationPolicy(
+	tenantId string,
+	policy AlertCorrelationPolicy,
+) (*AlertCorrelationPolicy, error) {
 	rb, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err
@@ -49,7 +52,11 @@ func (c *OpsRampClient) GetAlertCorrelationPolicy(tenantId string, policyId stri
 }
 
 // UpdateAlertCorrelationPolicy updates an existing alert correlation policy
-func (c *OpsRampClient) UpdateAlertCorrelationPolicy(tenantId string, policyId string, policy AlertCorrelationPolicy) (*AlertCorrelationPolicy, error) {
+func (c *OpsRampClient) UpdateAlertCorrelationPolicy(
+	tenantId string,
+	policyId string,
+	policy AlertCorrelationPolicy,
+) (*AlertCorrelationPolicy, error) {
 	rb, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err

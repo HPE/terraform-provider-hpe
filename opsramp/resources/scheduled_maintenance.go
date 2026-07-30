@@ -558,7 +558,11 @@ func (r *ScheduledMaintenanceResource) Delete(ctx context.Context, req resource.
 
 // ImportState handles resource import.
 // Import ID format: <sm_id> or <client_id>:<sm_id> (MSP only)
-func (r *ScheduledMaintenanceResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *ScheduledMaintenanceResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
@@ -687,7 +691,11 @@ func (r *ScheduledMaintenanceResource) buildRequest(plan ScheduledMaintenanceMod
 }
 
 // ModifyPlan validates cross-field constraints on the plan.
-func (r *ScheduledMaintenanceResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *ScheduledMaintenanceResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 
 	// Skip on destroy

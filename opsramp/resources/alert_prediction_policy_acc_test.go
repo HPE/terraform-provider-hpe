@@ -28,7 +28,11 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_prediction_policy.test_policy", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_prediction_policy.test_policy", "seasonality_time_frame", "7D"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_alert_prediction_policy.test_policy",
+							"seasonality_time_frame",
+							"7D",
+						),
 					),
 				},
 			},

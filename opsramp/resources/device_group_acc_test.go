@@ -43,7 +43,11 @@ func TestAccDeviceGroupResource(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.test_group"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_device_group.test_group", "id"),
-						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "search_query", "resourceType = \"Server\""),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_device_group.test_group",
+							"search_query",
+							"resourceType = \"Server\"",
+						),
 					),
 				},
 				{
@@ -62,7 +66,11 @@ func TestAccDeviceGroupResource(t *testing.T) {
 					},
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureDeviceGroupExists(t, "hpe_opsramp_device_group.test_group"),
-						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "search_query", "name CONTAINS \"updated\""),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_device_group.test_group",
+							"search_query",
+							"name CONTAINS \"updated\"",
+						),
 						resource.TestCheckResourceAttr("hpe_opsramp_device_group.test_group", "name", groupNameTwo),
 					),
 				},

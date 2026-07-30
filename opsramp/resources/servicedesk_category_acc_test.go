@@ -28,7 +28,11 @@ func TestAccServicedeskCategoryResource(t *testing.T) {
 						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.test_category"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_category.test_category", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_category.test_category", "name", catName),
-						resource.TestCheckResourceAttr("hpe_opsramp_servicedesk_category.test_category", "ticket_type", "serviceRequests"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_servicedesk_category.test_category",
+							"ticket_type",
+							"serviceRequests",
+						),
 					),
 				},
 			},

@@ -208,7 +208,11 @@ func (r *IntegrationAppResource) Delete(ctx context.Context, req resource.Delete
 
 // ImportState handles resource import.
 // Import ID format: <integration_id> or <client_id>:<integration_id> (MSP only)
-func (r *IntegrationAppResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *IntegrationAppResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())

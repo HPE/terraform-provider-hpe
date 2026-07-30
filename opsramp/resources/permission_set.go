@@ -197,7 +197,10 @@ func (r *PermissionSetResource) getPermissionsFromPlan(ctx context.Context, plan
 }
 
 // getPermissionsFromState extracts permissions from current state
-func (r *PermissionSetResource) getPermissionsFromState(ctx context.Context, state PermissionSetModel) ([]client.Permission, error) {
+func (r *PermissionSetResource) getPermissionsFromState(
+	ctx context.Context,
+	state PermissionSetModel,
+) ([]client.Permission, error) {
 	var permissions []client.Permission
 
 	if state.Permissions.IsNull() || state.Permissions.IsUnknown() {
@@ -489,7 +492,11 @@ func (r *PermissionSetResource) Delete(ctx context.Context, req resource.DeleteR
 }
 
 // ImportState handles importing an existing resource.
-func (r *PermissionSetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *PermissionSetResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	// Import format: permSetId (uses provider's tenant)
 	permSetId := req.ID
 

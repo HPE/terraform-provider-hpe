@@ -551,7 +551,11 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 // configureInbound sets up the inbound configuration for an integration.
 // applicationName is the integration type (e.g. "CUSTOM", "CUSTOM-EVENT", "NEWRELIC").
 // installed may be nil (e.g. during Update) and is only used to seed token/webhook from the install response.
-func (r *IntegrationResource) configureInbound(tenantId, integrationId, applicationName string, inbound *IntegrationInboundModel, installed *client.IntegrationResponse) error {
+func (r *IntegrationResource) configureInbound(
+	tenantId, integrationId, applicationName string,
+	inbound *IntegrationInboundModel,
+	installed *client.IntegrationResponse,
+) error {
 	if installed != nil && installed.InboundConfig != nil && installed.InboundConfig.Authentication != nil {
 		// Use values from install response (e.g. NEWRELIC auto-provisions auth)
 		auth := installed.InboundConfig.Authentication
@@ -593,7 +597,11 @@ func (r *IntegrationResource) configureInbound(tenantId, integrationId, applicat
 				}
 
 				if !foundRole {
-					return fmt.Errorf("invalid role_id '%s' specified for inbound authentication. Must be one of the following: %v", inbound.RoleId.ValueString(), integrationAvailableRoles)
+					return fmt.Errorf(
+						"invalid role_id '%s' specified for inbound authentication. Must be one of the following: %v",
+						inbound.RoleId.ValueString(),
+						integrationAvailableRoles,
+					)
 				}
 			}
 		}
@@ -741,7 +749,11 @@ func (r *IntegrationResource) configureOutbound(tenantId, integrationId string, 
 // buildMappingAttributes converts the Terraform model to the API request.
 // It fetches available properties from the API to resolve the display name for each opsramp_attribute.
 // Set outbound=true to wrap the result in OutboundConfig instead of InboundConfig.
-func (r *IntegrationResource) buildMappingAttributes(tenantId, integrationId string, models []IntegrationMapAttributes, outbound bool) (client.MappingAttributesRequest, error) {
+func (r *IntegrationResource) buildMappingAttributes(
+	tenantId, integrationId string,
+	models []IntegrationMapAttributes,
+	outbound bool,
+) (client.MappingAttributesRequest, error) {
 	// Cache of entityType -> (property identifier -> display name), fetched lazily per entity type
 	propertyCache := make(map[string]map[string]string)
 	getPropertyNames := func(entityType string) (map[string]string, error) {
@@ -782,7 +794,11 @@ func (r *IntegrationResource) buildMappingAttributes(tenantId, integrationId str
 
 		displayName := propertyNames[attrName]
 		if displayName == "" {
-			return client.MappingAttributesRequest{}, fmt.Errorf("opsramp_attribute '%s' is not a valid property for entity type '%s' on this integration", attrName, entityType)
+			return client.MappingAttributesRequest{}, fmt.Errorf(
+				"opsramp_attribute '%s' is not a valid property for entity type '%s' on this integration",
+				attrName,
+				entityType,
+			)
 		}
 
 		attr := client.MapAttribute{
@@ -1032,7 +1048,13 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// Handle process definition unassignment (removed IDs)
 	if plan.Inbound != nil && state.Inbound != nil {
-		r.reconcileProcessDefinitions(tenantId, integrationId, state.Inbound.ProcessDefinitionIds, plan.Inbound.ProcessDefinitionIds, resp)
+		r.reconcileProcessDefinitions(
+			tenantId,
+			integrationId,
+			state.Inbound.ProcessDefinitionIds,
+			plan.Inbound.ProcessDefinitionIds,
+			resp,
+		)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -1088,7 +1110,12 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 }
 
 // reconcileProcessDefinitions unassigns process definitions that were removed from the plan.
-func (r *IntegrationResource) reconcileProcessDefinitions(tenantId, integrationId string, oldSet types.Set, newSet types.Set, resp *resource.UpdateResponse) {
+func (r *IntegrationResource) reconcileProcessDefinitions(
+	tenantId, integrationId string,
+	oldSet types.Set,
+	newSet types.Set,
+	resp *resource.UpdateResponse,
+) {
 	// Build set of new IDs
 	newIds := make(map[string]bool)
 	if !newSet.IsNull() && !newSet.IsUnknown() {
@@ -1114,9 +1141,15 @@ func (r *IntegrationResource) reconcileProcessDefinitions(tenantId, integrationI
 }
 
 // reconcileWebhookHandshake manages webhook handshake properties.
-func (r *IntegrationResource) reconcileWebhookHandshake(tenantId, integrationId string, planInbound, stateInbound *IntegrationInboundModel, resp *resource.UpdateResponse) {
-	planHasHandshake := planInbound != nil && !planInbound.WebhookHandshake.IsNull() && planInbound.WebhookHandshake.ValueString() != ""
-	stateHasHandshake := stateInbound != nil && !stateInbound.WebhookHandshake.IsNull() && stateInbound.WebhookHandshake.ValueString() != ""
+func (r *IntegrationResource) reconcileWebhookHandshake(
+	tenantId, integrationId string,
+	planInbound, stateInbound *IntegrationInboundModel,
+	resp *resource.UpdateResponse,
+) {
+	planHasHandshake := planInbound != nil && !planInbound.WebhookHandshake.IsNull() &&
+		planInbound.WebhookHandshake.ValueString() != ""
+	stateHasHandshake := stateInbound != nil && !stateInbound.WebhookHandshake.IsNull() &&
+		stateInbound.WebhookHandshake.ValueString() != ""
 
 	if planHasHandshake {
 		// Set/update webhook handshake
@@ -1169,7 +1202,11 @@ func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 // ImportState handles resource import.
 // Import ID format: <integration_id> or <client_id>:<integration_id> (MSP only)
-func (r *IntegrationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *IntegrationResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
@@ -1206,14 +1243,20 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 
 	// For CUSTOM/CUSTOM-EVENT, display_name must be provided.
 	if contains(applicationWithDisplayName, plan.Application.ValueString()) && plan.DisplayName.ValueString() == "" {
-		resp.Diagnostics.AddError("display_name is required for application types CUSTOM and CUSTOM-EVENT", "Please provide a display_name value.")
+		resp.Diagnostics.AddError(
+			"display_name is required for application types CUSTOM and CUSTOM-EVENT",
+			"Please provide a display_name value.",
+		)
 
 		return
 	}
 
 	if plan.Application.ValueString() == "CUSTOM-EVENT" {
 		if plan.AlertSourceID.IsNull() {
-			resp.Diagnostics.AddError("alert_source_id is required for application type CUSTOM-EVENT", "Please provide an alert_source_id value.")
+			resp.Diagnostics.AddError(
+				"alert_source_id is required for application type CUSTOM-EVENT",
+				"Please provide an alert_source_id value.",
+			)
 
 			return
 		}
@@ -1227,25 +1270,37 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 		}
 	} else if plan.Application.ValueString() == "CUSTOM" {
 		if plan.Inbound == nil || plan.Inbound.AuthType.ValueString() != "OAUTH2" {
-			resp.Diagnostics.AddError("For application type CUSTOM, inbound auth_type must be OAUTH2", "Please set inbound auth_type to OAUTH2.")
+			resp.Diagnostics.AddError(
+				"For application type CUSTOM, inbound auth_type must be OAUTH2",
+				"Please set inbound auth_type to OAUTH2.",
+			)
 
 			return
 		}
 	} else {
 		if plan.Inbound != nil && !plan.Inbound.RoleId.IsNull() && plan.Inbound.RoleId.ValueString() != "" {
-			resp.Diagnostics.AddError("role_id can only be set for application types CUSTOM or CUSTOM-EVENT", "Remove the inbound role_id value or set application to CUSTOM or CUSTOM-EVENT.")
+			resp.Diagnostics.AddError(
+				"role_id can only be set for application types CUSTOM or CUSTOM-EVENT",
+				"Remove the inbound role_id value or set application to CUSTOM or CUSTOM-EVENT.",
+			)
 
 			return
 		}
 		if plan.Inbound != nil && !plan.Inbound.AdditionalProperties.IsNull() && len(plan.Inbound.AdditionalProperties.Elements()) > 0 {
-			resp.Diagnostics.AddError("inbound additional_properties can only be set for application type CUSTOM", "Remove the inbound additional_properties value or set application to CUSTOM.")
+			resp.Diagnostics.AddError(
+				"inbound additional_properties can only be set for application type CUSTOM",
+				"Remove the inbound additional_properties value or set application to CUSTOM.",
+			)
 
 			return
 		}
 	}
 	if plan.Application.ValueString() == "CUSTOM-EVENT" && plan.Inbound != nil &&
 		!plan.Inbound.AdditionalProperties.IsNull() && len(plan.Inbound.AdditionalProperties.Elements()) > 0 {
-		resp.Diagnostics.AddError("inbound additional_properties can only be set for application type CUSTOM", "Remove the inbound additional_properties value or set application to CUSTOM.")
+		resp.Diagnostics.AddError(
+			"inbound additional_properties can only be set for application type CUSTOM",
+			"Remove the inbound additional_properties value or set application to CUSTOM.",
+		)
 
 		return
 	}
@@ -1253,10 +1308,14 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 	// Validate default_parsing_value is set when parsing_operators is provided
 	if plan.Inbound != nil && len(plan.Inbound.MapAttributes) > 0 {
 		for _, attr := range plan.Inbound.MapAttributes {
-			if len(attr.ParsingOperators) > 0 && (attr.DefaultParsingValue.IsNull() || attr.DefaultParsingValue.ValueString() == "") {
+			if len(attr.ParsingOperators) > 0 &&
+				(attr.DefaultParsingValue.IsNull() || attr.DefaultParsingValue.ValueString() == "") {
 				resp.Diagnostics.AddError(
 					"default_parsing_value is required when parsing_operators is set",
-					fmt.Sprintf("Attribute mapping for '%s' has parsing_operators but no default_parsing_value.", attr.OpsRampAttribute.ValueString()),
+					fmt.Sprintf(
+						"Attribute mapping for '%s' has parsing_operators but no default_parsing_value.",
+						attr.OpsRampAttribute.ValueString(),
+					),
 				)
 
 				return
@@ -1269,7 +1328,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 					if op.EndWord == "" {
 						resp.Diagnostics.AddError(
 							"end_word is required for BEFORE operator",
-							fmt.Sprintf("Attribute mapping for '%s' uses BEFORE operator but end_word is not set.", attr.OpsRampAttribute.ValueString()),
+							fmt.Sprintf(
+								"Attribute mapping for '%s' uses BEFORE operator but end_word is not set.",
+								attr.OpsRampAttribute.ValueString(),
+							),
 						)
 
 						return
@@ -1278,7 +1340,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 					if op.StartWord == "" {
 						resp.Diagnostics.AddError(
 							"start_word is required for AFTER operator",
-							fmt.Sprintf("Attribute mapping for '%s' uses AFTER operator but start_word is not set.", attr.OpsRampAttribute.ValueString()),
+							fmt.Sprintf(
+								"Attribute mapping for '%s' uses AFTER operator but start_word is not set.",
+								attr.OpsRampAttribute.ValueString(),
+							),
 						)
 
 						return
@@ -1287,7 +1352,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 					if op.StartWord == "" || op.EndWord == "" {
 						resp.Diagnostics.AddError(
 							"start_word and end_word are required for BETWEEN operator",
-							fmt.Sprintf("Attribute mapping for '%s' uses BETWEEN operator but start_word and/or end_word is not set.", attr.OpsRampAttribute.ValueString()),
+							fmt.Sprintf(
+								"Attribute mapping for '%s' uses BETWEEN operator but start_word and/or end_word is not set.",
+								attr.OpsRampAttribute.ValueString(),
+							),
 						)
 
 						return
@@ -1296,7 +1364,10 @@ func (r *IntegrationResource) ModifyPlan(ctx context.Context, req resource.Modif
 					if op.RegexStr == "" {
 						resp.Diagnostics.AddError(
 							"regex_str is required for MATCHES operator",
-							fmt.Sprintf("Attribute mapping for '%s' uses MATCHES operator but regex_str is not set.", attr.OpsRampAttribute.ValueString()),
+							fmt.Sprintf(
+								"Attribute mapping for '%s' uses MATCHES operator but regex_str is not set.",
+								attr.OpsRampAttribute.ValueString(),
+							),
 						)
 
 						return

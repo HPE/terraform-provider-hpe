@@ -10,7 +10,10 @@ import (
 // --- Log Alert Definition CRUD ---
 
 // CreateLogAlertDefinition creates one or more log alert definitions.
-func (c *OpsRampClient) CreateLogAlertDefinition(tenantId string, request LogAlertDefinitionRequest) (*LogAlertDefinitionResponse, error) {
+func (c *OpsRampClient) CreateLogAlertDefinition(
+	tenantId string,
+	request LogAlertDefinitionRequest,
+) (*LogAlertDefinitionResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -49,7 +52,11 @@ func (c *OpsRampClient) GetLogAlertDefinition(tenantId string, id string) (*LogA
 }
 
 // UpdateLogAlertDefinition updates a log alert definition.
-func (c *OpsRampClient) UpdateLogAlertDefinition(tenantId string, id string, alert LogAlertDefinition) (*LogAlertDefinition, error) {
+func (c *OpsRampClient) UpdateLogAlertDefinition(
+	tenantId string,
+	id string,
+	alert LogAlertDefinition,
+) (*LogAlertDefinition, error) {
 	wrapper := LogAlertWrapper{Alert: alert}
 	rb, err := json.Marshal(wrapper)
 	if err != nil {

@@ -30,7 +30,12 @@ func isRetryableServicemapCreateError(err error) bool {
 	return strings.Contains(errText, `"code":"0005"`)
 }
 
-func (c *OpsRampClient) findServicemapChildByName(tenantId string, parentId string, childName string, nodeType string) (*CreateServicemap, error) {
+func (c *OpsRampClient) findServicemapChildByName(
+	tenantId string,
+	parentId string,
+	childName string,
+	nodeType string,
+) (*CreateServicemap, error) {
 	parentMap, err := c.GetServicemap(tenantId, parentId)
 	if err != nil {
 		return nil, err

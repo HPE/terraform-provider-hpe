@@ -86,7 +86,11 @@ func serviceDeskLookupSchema(description string) schema.Schema {
 	}
 }
 
-func (d *serviceDeskUrgencyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *serviceDeskUrgencyDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_servicedesk_urgency"
 }
 
@@ -120,11 +124,19 @@ func (d *serviceDeskUrgencyDataSource) Read(ctx context.Context, req datasource.
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (d *serviceDeskBusinessImpactDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *serviceDeskBusinessImpactDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_servicedesk_business_impact"
 }
 
-func (d *serviceDeskBusinessImpactDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *serviceDeskBusinessImpactDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = serviceDeskLookupSchema("Looks up an OpsRamp service desk business impact by name and returns its string ID.")
 }
 
@@ -154,7 +166,11 @@ func (d *serviceDeskBusinessImpactDataSource) Read(ctx context.Context, req data
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (d *serviceDeskCategoryDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *serviceDeskCategoryDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_servicedesk_category"
 }
 

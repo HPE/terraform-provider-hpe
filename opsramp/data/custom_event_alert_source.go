@@ -31,7 +31,11 @@ type customEventAlertSourceModel struct {
 	TechUID     types.String `tfsdk:"tech_uid"`
 }
 
-func (d *customEventAlertSourceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *customEventAlertSourceDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_custom_event_alert_source"
 }
 

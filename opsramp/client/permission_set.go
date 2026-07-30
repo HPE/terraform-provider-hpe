@@ -58,7 +58,11 @@ func (c *OpsRampClient) GetPermissionSet(tenantId string, permSetId string) (*Pe
 }
 
 // UpdatePermissionSet updates an existing permission set
-func (c *OpsRampClient) UpdatePermissionSet(tenantId string, permSetId string, permSetData UpdatePermissionSet) (*PermissionSetResponse, error) {
+func (c *OpsRampClient) UpdatePermissionSet(
+	tenantId string,
+	permSetId string,
+	permSetData UpdatePermissionSet,
+) (*PermissionSetResponse, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(permSetData)
 	if err != nil {
@@ -138,7 +142,11 @@ func (c *OpsRampClient) FindPermissionSetByName(tenantId string, name string) (*
 // SearchPermissionSets searches permission sets using the paginated endpoint (returns numeric IDs)
 func (c *OpsRampClient) SearchPermissionSets(tenantId string) (*PermissionSetListResponse, error) {
 	// Prepare the URL with pagination parameters
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/permissionSets?sortName=name&isDescendingOrder=false&pageNo=1&pageSize=100", c.BaseUrl, tenantId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/permissionSets?sortName=name&isDescendingOrder=false&pageNo=1&pageSize=100",
+		c.BaseUrl,
+		tenantId,
+	)
 	method := "GET"
 
 	// Create a new Request

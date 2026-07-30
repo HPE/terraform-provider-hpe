@@ -82,7 +82,18 @@ func TestAccSiteResource(t *testing.T) {
 	})
 }
 
-func testAccSiteConfig(name string, description string, address string, city string, state string, country string, zip string, phoneNumber string, phoneExtension string, searchQuery string) string {
+func testAccSiteConfig(
+	name string,
+	description string,
+	address string,
+	city string,
+	state string,
+	country string,
+	zip string,
+	phoneNumber string,
+	phoneExtension string,
+	searchQuery string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_site" "test_site" {

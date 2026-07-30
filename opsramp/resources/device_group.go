@@ -149,7 +149,11 @@ func deviceGroupResourcesSet(ctx context.Context, ids []string) (types.Set, diag
 	return types.SetValueFrom(ctx, types.StringType, ids)
 }
 
-func (r *DeviceGroupResource) readDeviceGroupResources(ctx context.Context, tenantId string, deviceGroupId string) (types.Set, diag.Diagnostics) {
+func (r *DeviceGroupResource) readDeviceGroupResources(
+	ctx context.Context,
+	tenantId string,
+	deviceGroupId string,
+) (types.Set, diag.Diagnostics) {
 	resources, err := r.apiClient.GetDeviceGroupChilds(tenantId, deviceGroupId)
 	if err != nil {
 		var diags diag.Diagnostics
@@ -169,7 +173,12 @@ func (r *DeviceGroupResource) readDeviceGroupResources(ctx context.Context, tena
 	return deviceGroupResourcesSet(ctx, ids)
 }
 
-func createDeviceGroupWithRetry(apiClient *client.OpsRampClient, tenantId string, req client.DeviceGroupAPI, hasParent bool) (*client.DeviceGroupAPI, error) {
+func createDeviceGroupWithRetry(
+	apiClient *client.OpsRampClient,
+	tenantId string,
+	req client.DeviceGroupAPI,
+	hasParent bool,
+) (*client.DeviceGroupAPI, error) {
 	const maxAttempts = 4
 	const retryDelay = 2 * time.Second
 
@@ -210,7 +219,12 @@ func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Create the device group. Parent-scoped creation may intermittently return 500,
 	// so retry a few times for that specific transient error.
-	newDeviceGroup, err := createDeviceGroupWithRetry(r.apiClient, tenantId, deviceGroup, !plan.ParentId.IsNull() && plan.ParentId.ValueString() != "")
+	newDeviceGroup, err := createDeviceGroupWithRetry(
+		r.apiClient,
+		tenantId,
+		deviceGroup,
+		!plan.ParentId.IsNull() && plan.ParentId.ValueString() != "",
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 

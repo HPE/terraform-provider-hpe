@@ -49,7 +49,11 @@ func (c *OpsRampClient) GetFirstResponsePolicy(tenantId string, policyId string)
 }
 
 // UpdateFirstResponsePolicy updates an existing first response policy
-func (c *OpsRampClient) UpdateFirstResponsePolicy(tenantId string, policyId string, policy FirstResponsePolicy) (*FirstResponsePolicy, error) {
+func (c *OpsRampClient) UpdateFirstResponsePolicy(
+	tenantId string,
+	policyId string,
+	policy FirstResponsePolicy,
+) (*FirstResponsePolicy, error) {
 	rb, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err

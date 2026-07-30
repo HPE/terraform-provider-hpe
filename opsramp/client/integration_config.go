@@ -8,7 +8,11 @@ import (
 )
 
 // CreateIntegrationConfig creates a new config under an installed integration.
-func (c *OpsRampClient) CreateIntegrationConfig(tenantId string, integrationId string, request IntegrationConfigRequest) (*IntegrationConfigResponse, error) {
+func (c *OpsRampClient) CreateIntegrationConfig(
+	tenantId string,
+	integrationId string,
+	request IntegrationConfigRequest,
+) (*IntegrationConfigResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -30,7 +34,11 @@ func (c *OpsRampClient) CreateIntegrationConfig(tenantId string, integrationId s
 }
 
 // GetIntegrationConfig retrieves a specific config by its ID.
-func (c *OpsRampClient) GetIntegrationConfig(tenantId string, integrationId string, configId string) (*IntegrationConfigResponse, error) {
+func (c *OpsRampClient) GetIntegrationConfig(
+	tenantId string,
+	integrationId string,
+	configId string,
+) (*IntegrationConfigResponse, error) {
 	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/apps/install/%s/config/%s", c.BaseUrl, tenantId, integrationId, configId)
 
 	body, err := c.NewJsonRequest("GET", apiUrl, nil)
@@ -47,7 +55,12 @@ func (c *OpsRampClient) GetIntegrationConfig(tenantId string, integrationId stri
 }
 
 // UpdateIntegrationConfig updates an existing config.
-func (c *OpsRampClient) UpdateIntegrationConfig(tenantId string, integrationId string, configId string, request IntegrationConfigRequest) (*IntegrationConfigResponse, error) {
+func (c *OpsRampClient) UpdateIntegrationConfig(
+	tenantId string,
+	integrationId string,
+	configId string,
+	request IntegrationConfigRequest,
+) (*IntegrationConfigResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -70,7 +83,13 @@ func (c *OpsRampClient) UpdateIntegrationConfig(tenantId string, integrationId s
 
 // DeleteIntegrationConfig deletes a config by its ID.
 func (c *OpsRampClient) DeleteIntegrationConfig(tenantId string, integrationId string, configId string) error {
-	apiUrl := fmt.Sprintf("%s/api/v3/tenants/%s/apps/install/%s/config/%s?keepAgentInstalledResources=false", c.BaseUrl, tenantId, integrationId, configId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v3/tenants/%s/apps/install/%s/config/%s?keepAgentInstalledResources=false",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+		configId,
+	)
 
 	_, err := c.NewJsonRequest("DELETE", apiUrl, nil)
 

@@ -72,7 +72,12 @@ func (c *OpsRampClient) GetDeviceGroup(tenantId string, deviceGroupId string) (*
 // GetDeviceGroupChilds - Get child resources assigned to a device group manually.
 // api: GET /api/v2/tenants/{clientId}/deviceGroups/{resourceGroupId}/childs/search
 func (c *OpsRampClient) GetDeviceGroupChilds(tenantId string, deviceGroupId string) ([]SearchResource, error) {
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/deviceGroups/%s/childs/search?assignType=MANUAL&type=RESOURCE", c.BaseUrl, tenantId, deviceGroupId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/deviceGroups/%s/childs/search?assignType=MANUAL&type=RESOURCE",
+		c.BaseUrl,
+		tenantId,
+		deviceGroupId,
+	)
 	method := "GET"
 
 	body, err := c.NewJsonRequest(method, apiUrl, nil)

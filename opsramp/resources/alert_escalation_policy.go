@@ -157,7 +157,12 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 				Required:            true,
 				MarkdownDescription: "Automated notification type. Valid values: `AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED`, `AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED`, `MANUAL`, `AUTOMATIC`.",
 				Validators: []validator.String{
-					stringvalidator.OneOf("AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED", "AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED", "MANUAL", "AUTOMATIC"),
+					stringvalidator.OneOf(
+						"AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED",
+						"AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED",
+						"MANUAL",
+						"AUTOMATIC",
+					),
 				},
 			},
 			"policy_type": schema.StringAttribute{
@@ -323,7 +328,9 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 									MarkdownDescription: "CC email addresses for the incident.",
 									Validators: []validator.String{
 										stringvalidator.RegexMatches(
-											regexp.MustCompile(`^([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})(\s*,\s*[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})*$`),
+											regexp.MustCompile(
+												`^([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})(\s*,\s*[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})*$`,
+											),
 											"must be a valid email address or a comma-separated list of valid email addresses",
 										),
 									},
@@ -339,7 +346,12 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 									Computed:            true,
 									MarkdownDescription: "The mode for updating incidents. Valid values: `UpdateWhenAlertStateChange`, `UpdateWithRuleWhenAlertStateChange`, `UpdateForEveryRepeatAlert`, `UpdateWithRuleForEveryRepeatAlert`.",
 									Validators: []validator.String{
-										stringvalidator.OneOf("UpdateWhenAlertStateChange", "UpdateWithRuleWhenAlertStateChange", "UpdateForEveryRepeatAlert", "UpdateWithRuleForEveryRepeatAlert"),
+										stringvalidator.OneOf(
+											"UpdateWhenAlertStateChange",
+											"UpdateWithRuleWhenAlertStateChange",
+											"UpdateForEveryRepeatAlert",
+											"UpdateWithRuleForEveryRepeatAlert",
+										),
 									},
 								},
 
@@ -429,7 +441,10 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 	}
 }
 
-func buildAlertEscalationPolicyRequest(plan AlertEscalationPolicyModel, apiClient *client.OpsRampClient) client.AlertEscalationPolicy {
+func buildAlertEscalationPolicyRequest(
+	plan AlertEscalationPolicyModel,
+	apiClient *client.OpsRampClient,
+) client.AlertEscalationPolicy {
 	// default values
 	policy := client.AlertEscalationPolicy{
 		Name:           plan.Name.ValueString(),
@@ -841,7 +856,11 @@ func (r *AlertEscalationPolicyResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	mapAlertEscalationPolicyToState(existing, &state, r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""))
+	mapAlertEscalationPolicyToState(
+		existing,
+		&state,
+		r.apiClient.Scope == "MSP" && (state.Client.IsNull() || state.Client.ValueString() == ""),
+	)
 
 	diags = resp.State.Set(ctx, &state)
 	resp.Diagnostics.Append(diags...)

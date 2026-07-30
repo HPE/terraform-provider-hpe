@@ -150,7 +150,10 @@ func (r *ScriptCategoryResource) Read(ctx context.Context, req resource.ReadRequ
 
 			return
 		}
-		resp.Diagnostics.AddError("Error Reading Script Category", fmt.Sprintf("Could not read script category %s: %s", state.Uuid.ValueString(), err))
+		resp.Diagnostics.AddError(
+			"Error Reading Script Category",
+			fmt.Sprintf("Could not read script category %s: %s", state.Uuid.ValueString(), err),
+		)
 
 		return
 	}
@@ -179,7 +182,10 @@ func (r *ScriptCategoryResource) Update(ctx context.Context, req resource.Update
 
 	updated, err := r.apiClient.UpdateScriptCategory(tenantId, catReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Error Updating Script Category", fmt.Sprintf("Could not update script category %s: %s", state.Uuid.ValueString(), err))
+		resp.Diagnostics.AddError(
+			"Error Updating Script Category",
+			fmt.Sprintf("Could not update script category %s: %s", state.Uuid.ValueString(), err),
+		)
 
 		return
 	}
@@ -209,7 +215,10 @@ func (r *ScriptCategoryResource) Delete(ctx context.Context, req resource.Delete
 
 	err := r.apiClient.DeleteScriptCategory(tenantId, state.Uuid.ValueString())
 	if err != nil && !strings.Contains(err.Error(), "status: 204") {
-		resp.Diagnostics.AddError("Error Deleting Script Category", fmt.Sprintf("Could not delete script category %s: %s", state.Uuid.ValueString(), err))
+		resp.Diagnostics.AddError(
+			"Error Deleting Script Category",
+			fmt.Sprintf("Could not delete script category %s: %s", state.Uuid.ValueString(), err),
+		)
 
 		return
 	}

@@ -219,7 +219,15 @@ func (r *LogAlertDefinitionResource) Schema(_ context.Context, _ resource.Schema
 								Optional:            true,
 								MarkdownDescription: "Day of week for monthly pattern with week_index (e.g. `tuesday`). Valid: sunday, monday, tuesday, wednesday, thursday, friday, saturday.",
 								Validators: []validator.String{
-									stringvalidator.OneOf("sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"),
+									stringvalidator.OneOf(
+										"sunday",
+										"monday",
+										"tuesday",
+										"wednesday",
+										"thursday",
+										"friday",
+										"saturday",
+									),
 								},
 							},
 						},

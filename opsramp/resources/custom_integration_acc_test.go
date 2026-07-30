@@ -27,14 +27,20 @@ func TestAccCustomIntegrationResource(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureCustomIntegrationExists(t, "hpe_opsramp_custom_integration.test_integration"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_custom_integration.test_integration", "id"),
-						resource.TestCheckResourceAttr("hpe_opsramp_custom_integration.test_integration", "display_name", displayName),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_custom_integration.test_integration",
+							"display_name",
+							displayName,
+						),
 					),
 				},
 				// ImportState testing
 				{
-					ResourceName:            "hpe_opsramp_custom_integration.test_integration",
-					ImportState:             true,
-					ImportStateIdFunc:       testAccCustomIntegrationImportStateIdFunc("hpe_opsramp_custom_integration.test_integration"),
+					ResourceName: "hpe_opsramp_custom_integration.test_integration",
+					ImportState:  true,
+					ImportStateIdFunc: testAccCustomIntegrationImportStateIdFunc(
+						"hpe_opsramp_custom_integration.test_integration",
+					),
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"api_client_id", "api_client_secret", "role_name"},
 				},

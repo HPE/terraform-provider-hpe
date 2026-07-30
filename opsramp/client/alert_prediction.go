@@ -49,7 +49,11 @@ func (c *OpsRampClient) GetAlertPredictionPolicy(tenantId string, policyId strin
 }
 
 // UpdateAlertPredictionPolicy updates an existing alert prediction policy
-func (c *OpsRampClient) UpdateAlertPredictionPolicy(tenantId string, policyId string, policy AlertPredictionPolicy) (*AlertPredictionPolicy, error) {
+func (c *OpsRampClient) UpdateAlertPredictionPolicy(
+	tenantId string,
+	policyId string,
+	policy AlertPredictionPolicy,
+) (*AlertPredictionPolicy, error) {
 	rb, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err

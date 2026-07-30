@@ -9,7 +9,10 @@ import (
 
 // CreateCustomIntegrationAPI creates a new custom integration to get API OAuth2 credentials
 // tenantId can be either the provider's tenant ID or a client ID for client-level integrations
-func (c *OpsRampClient) CreateCustomIntegration(tenantId string, integrationData CreateCustomIntegration) (*CustomIntegrationResponse, error) {
+func (c *OpsRampClient) CreateCustomIntegration(
+	tenantId string,
+	integrationData CreateCustomIntegration,
+) (*CustomIntegrationResponse, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(integrationData)
 	if err != nil {
@@ -60,7 +63,11 @@ func (c *OpsRampClient) GetCustomIntegration(tenantId string, integrationId stri
 }
 
 // UpdateCustomIntegration updates an existing custom integration
-func (c *OpsRampClient) UpdateCustomIntegration(tenantId string, integrationId string, integrationData CreateCustomIntegration) (*CustomIntegrationResponse, error) {
+func (c *OpsRampClient) UpdateCustomIntegration(
+	tenantId string,
+	integrationId string,
+	integrationData CreateCustomIntegration,
+) (*CustomIntegrationResponse, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(integrationData)
 	if err != nil {
@@ -134,7 +141,12 @@ func (c *OpsRampClient) ListCustomIntegrations(tenantId string) (*CustomIntegrat
 // Returns the new AuthenticationConfig with fresh apiKeyPairs
 func (c *OpsRampClient) RegenerateCustomIntegrationToken(tenantId string, integrationId string) (*AuthenticationConfig, error) {
 	// Prepare the URL, Method for the Client
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication/regenerateSecretOrToken", c.BaseUrl, tenantId, integrationId)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/integrations/installed/%s/inbound/authentication/regenerateSecretOrToken",
+		c.BaseUrl,
+		tenantId,
+		integrationId,
+	)
 	method := "POST"
 
 	// Create a new Request (no body needed)

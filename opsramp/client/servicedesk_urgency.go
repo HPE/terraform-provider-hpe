@@ -55,7 +55,12 @@ func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*
 // GetServiceDeskUrgency - Get the resource with ID of the resource
 func (c *OpsRampClient) GetServiceDeskUrgency(id string) (*ServiceDeskUrgency, error) {
 	// Prepare config for API request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s", c.BaseUrl, c.TenantId, id)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s",
+		c.BaseUrl,
+		c.TenantId,
+		id,
+	)
 	method := "GET"
 
 	// Create a new Request
@@ -131,7 +136,12 @@ func (c *OpsRampClient) DeleteServiceDeskUrgency(id string) error {
 }
 
 func (c *OpsRampClient) FindServiceDeskUrgencyByName(tenantId string, name string) (*ServiceDeskUrgency, error) {
-	apiURL := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=100&isDescendingOrder=false&sortName=name&queryString=name:%s", c.BaseUrl, tenantId, url.QueryEscape(name))
+	apiURL := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=100&isDescendingOrder=false&sortName=name&queryString=name:%s",
+		c.BaseUrl,
+		tenantId,
+		url.QueryEscape(name),
+	)
 	body, err := c.NewJsonRequest("GET", apiURL, nil)
 	if err != nil {
 		return nil, err

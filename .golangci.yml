@@ -46,6 +46,12 @@ linters:
       - linters:
           - lll
         source: '^//go:generate '
+      # A line whose length is driven by a single long string literal cannot be
+      # usefully wrapped: schema descriptions read worse when split, and
+      # splitting a URL or format string risks silently altering it.
+      - linters:
+          - lll
+        source: '"[^"]{80,}"'
       - linters:
           - err113
           - funlen

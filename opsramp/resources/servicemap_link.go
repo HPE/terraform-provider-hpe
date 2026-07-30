@@ -190,7 +190,11 @@ func (r *ServicemapResourceLink) Delete(ctx context.Context, req resource.Delete
 
 // ImportState handles importing an existing servicemap link.
 // Import ID format: <parent_id>:<link_id> or <client_id>:<parent_id>:<link_id> (MSP only)
-func (r *ServicemapResourceLink) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *ServicemapResourceLink) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 2)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
@@ -213,7 +217,11 @@ type ServicemapLinkModel struct {
 	Link   types.String `tfsdk:"link"`
 }
 
-func (r *ServicemapResourceLink) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+func (r *ServicemapResourceLink) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
 	// Call base implementation
 	r.BaseResource.ModifyPlan(ctx, req, resp)
 
@@ -232,7 +240,10 @@ func (r *ServicemapResourceLink) ModifyPlan(ctx context.Context, req resource.Mo
 
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
-		resp.Diagnostics.AddError("ServiceMap Links can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+		resp.Diagnostics.AddError(
+			"ServiceMap Links can only be created at Client level",
+			"Use a client-scoped provider configuration or specify the client using unique ID.",
+		)
 
 		return
 	}

@@ -41,7 +41,11 @@ func TestAccManagementProfile(t *testing.T) {
 					testAccEnsureManagementProfileExists(t, "hpe_opsramp_management_profile.test_management_profile"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "uuid"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "id"),
-					resource.TestCheckResourceAttr("hpe_opsramp_management_profile.test_management_profile", "name", managementProfileName),
+					resource.TestCheckResourceAttr(
+						"hpe_opsramp_management_profile.test_management_profile",
+						"name",
+						managementProfileName,
+					),
 				),
 			},
 			// Update and Read testing
@@ -58,7 +62,11 @@ func TestAccManagementProfile(t *testing.T) {
 					testAccEnsureManagementProfileExists(t, "hpe_opsramp_management_profile.test_management_profile"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "uuid"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_management_profile.test_management_profile", "id"),
-					resource.TestCheckResourceAttr("hpe_opsramp_management_profile.test_management_profile", "name", managementProfileName),
+					resource.TestCheckResourceAttr(
+						"hpe_opsramp_management_profile.test_management_profile",
+						"name",
+						managementProfileName,
+					),
 				),
 			},
 			// Delete testing automatically occurs in TestCase
@@ -104,7 +112,12 @@ func testAccEnsureManagementProfileExists(t *testing.T, managementProfileName st
 
 		_, err = apiClient.GetManagementProfile(tenantID, managementProfileId)
 		if err != nil {
-			return fmt.Errorf("managementProfile %s (%d) was not found in opsramp api: %w", managementProfileName, managementProfileId, err)
+			return fmt.Errorf(
+				"managementProfile %s (%d) was not found in opsramp api: %w",
+				managementProfileName,
+				managementProfileId,
+				err,
+			)
 		}
 
 		return nil

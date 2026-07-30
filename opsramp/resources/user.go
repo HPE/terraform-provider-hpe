@@ -125,9 +125,18 @@ func (r *UserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(7),
 					stringvalidator.RegexMatches(regexp.MustCompile(`[0-9]`), "Password must contain at least one number (0-9)."),
-					stringvalidator.RegexMatches(regexp.MustCompile(`[#!$*]`), "Password must contain at least one special character (#, !, $, *)."),
-					stringvalidator.RegexMatches(regexp.MustCompile(`[a-z]`), "Password must contain at least one lowercase letter (a-z)."),
-					stringvalidator.RegexMatches(regexp.MustCompile(`[A-Z]`), "Password must contain at least one uppercase letter (A-Z)."),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`[#!$*]`),
+						"Password must contain at least one special character (#, !, $, *).",
+					),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`[a-z]`),
+						"Password must contain at least one lowercase letter (a-z).",
+					),
+					stringvalidator.RegexMatches(
+						regexp.MustCompile(`[A-Z]`),
+						"Password must contain at least one uppercase letter (A-Z).",
+					),
 				},
 			},
 			"first_name": schema.StringAttribute{
@@ -219,7 +228,13 @@ func (r *UserResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 							Required:            true,
 							MarkdownDescription: "The notification type (`Account Information`, `Alert Notification`, `Report Notification`, `Export Notification`, `Login Activity Notification`).",
 							Validators: []validator.String{
-								stringvalidator.OneOf("Account Information", "Alert Notification", "Report Notification", "Export Notification", "Login Activity Notification"),
+								stringvalidator.OneOf(
+									"Account Information",
+									"Alert Notification",
+									"Report Notification",
+									"Export Notification",
+									"Login Activity Notification",
+								),
 							},
 						},
 						"notify_method": schema.StringAttribute{

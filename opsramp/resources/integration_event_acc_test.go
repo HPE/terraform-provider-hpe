@@ -76,7 +76,11 @@ func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
 					testAccEnsureIntegrationEventExists(t, "hpe_opsramp_integration_event.test_override"),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "use_base_notifier", "false"),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "notifier.auth_type", "OAUTH2"),
-					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "notifier.grant_type", "PASSWORD"),
+					resource.TestCheckResourceAttr(
+						"hpe_opsramp_integration_event.test_override",
+						"notifier.grant_type",
+						"PASSWORD",
+					),
 				),
 			},
 		},

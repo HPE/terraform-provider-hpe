@@ -71,7 +71,13 @@ func (c *OpsRampClient) GetServicemapLink(tenantId string, serviceMapLink Create
 // DeleteServicemapLink - DeleteServicemapLink
 func (c *OpsRampClient) DeleteServicemapLink(tenantId string, serviceMapLink CreateServicemapLink) error {
 	// Prepare the URL, Method and Payload fo the Client
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceGroups/unLink/%s/%s", c.BaseUrl, tenantId, serviceMapLink.Parent.Id, serviceMapLink.Id)
+	apiUrl := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/serviceGroups/unLink/%s/%s",
+		c.BaseUrl,
+		tenantId,
+		serviceMapLink.Parent.Id,
+		serviceMapLink.Id,
+	)
 	method := "DELETE"
 
 	// Create a new Request

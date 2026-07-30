@@ -422,7 +422,10 @@ func (r *ServicemapResource) ModifyPlan(ctx context.Context, req resource.Modify
 
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
-		resp.Diagnostics.AddError("ServiceMaps can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+		resp.Diagnostics.AddError(
+			"ServiceMaps can only be created at Client level",
+			"Use a client-scoped provider configuration or specify the client using unique ID.",
+		)
 
 		return
 	}

@@ -29,7 +29,11 @@ func TestAccCredentialSetResource(t *testing.T) {
 						testAccEnsureCredentialSetExists(t, "hpe_opsramp_credential_set.test_credential_set"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_credential_set.test_credential_set", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_credential_set.test_credential_set", "name", credentialSetName),
-						resource.TestCheckResourceAttr("hpe_opsramp_credential_set.test_credential_set", "description", description),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_credential_set.test_credential_set",
+							"description",
+							description,
+						),
 					),
 				},
 			},

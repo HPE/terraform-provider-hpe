@@ -148,8 +148,17 @@ type searchServiceDeskCategoryResponse struct {
 	Results []ServiceDeskCategory `json:"results"`
 }
 
-func (c *OpsRampClient) FindServiceDeskCategoryByName(tenantId string, name string, ticketType string) (*ServiceDeskCategory, error) {
-	apiURL := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/categories?pageNo=1&pageSize=100&isDescendingOrder=false&sortName=name&queryString=name:%s", c.BaseUrl, tenantId, url.QueryEscape(name))
+func (c *OpsRampClient) FindServiceDeskCategoryByName(
+	tenantId string,
+	name string,
+	ticketType string,
+) (*ServiceDeskCategory, error) {
+	apiURL := fmt.Sprintf(
+		"%s/api/v2/tenants/%s/serviceDesk/config/categories?pageNo=1&pageSize=100&isDescendingOrder=false&sortName=name&queryString=name:%s",
+		c.BaseUrl,
+		tenantId,
+		url.QueryEscape(name),
+	)
 	body, err := c.NewJsonRequest("GET", apiURL, nil)
 	if err != nil {
 		return nil, err
@@ -165,7 +174,8 @@ func (c *OpsRampClient) FindServiceDeskCategoryByName(tenantId string, name stri
 		if !strings.EqualFold(strings.TrimSpace(response.Results[i].Name), strings.TrimSpace(name)) {
 			continue
 		}
-		if normalizedTicketType != "" && normalizeServiceDeskCategoryTicketType(response.Results[i].TicketType) != normalizedTicketType {
+		if normalizedTicketType != "" &&
+			normalizeServiceDeskCategoryTicketType(response.Results[i].TicketType) != normalizedTicketType {
 			continue
 		}
 

@@ -53,7 +53,9 @@ func TestAccE2ESimpleAlertPolicies(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleAlertPoliciesConfig(corrPolicy, predPolicy, frpPolicy, escPolicy, userGroup, smName, kbCat, kbArticle, sdCat, sdImpact, sdUrgency string) string {
+func testAccE2ESimpleAlertPoliciesConfig(
+	corrPolicy, predPolicy, frpPolicy, escPolicy, userGroup, smName, kbCat, kbArticle, sdCat, sdImpact, sdUrgency string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_user_group" "alert_test_group" {
@@ -185,5 +187,18 @@ resource "hpe_opsramp_alert_escalation_policy" "escalation" {
 	search_query          = "subject CONTAINS \"test\""
 	resource_search_query = "serviceGroups.uniqueId = \"${hpe_opsramp_servicemap.alert_sm.id}\""
 }
-`, acctest.ProviderConfigHCL(), userGroup, corrPolicy, frpPolicy, predPolicy, kbCat, kbArticle, smName, sdCat, sdImpact, sdUrgency, escPolicy)
+`,
+		acctest.ProviderConfigHCL(),
+		userGroup,
+		corrPolicy,
+		frpPolicy,
+		predPolicy,
+		kbCat,
+		kbArticle,
+		smName,
+		sdCat,
+		sdImpact,
+		sdUrgency,
+		escPolicy,
+	)
 }

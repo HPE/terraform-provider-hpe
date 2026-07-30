@@ -39,11 +39,19 @@ type inboundPropertyModel struct {
 	Parsable     types.Bool   `tfsdk:"parsable"`
 }
 
-func (d *integrationInboundPropertiesDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *integrationInboundPropertiesDataSource) Metadata(
+	_ context.Context,
+	req datasource.MetadataRequest,
+	resp *datasource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_integration_inbound_properties"
 }
 
-func (d *integrationInboundPropertiesDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *integrationInboundPropertiesDataSource) Schema(
+	_ context.Context,
+	_ datasource.SchemaRequest,
+	resp *datasource.SchemaResponse,
+) {
 	resp.Schema = schema.Schema{
 		Description: "Retrieves the available inbound entity properties for an installed integration. These properties represent the valid values for opsramp_attribute in map_attributes blocks.",
 		Attributes: map[string]schema.Attribute{
@@ -99,7 +107,11 @@ func (d *integrationInboundPropertiesDataSource) Schema(_ context.Context, _ dat
 	}
 }
 
-func (d *integrationInboundPropertiesDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+func (d *integrationInboundPropertiesDataSource) Read(
+	ctx context.Context,
+	req datasource.ReadRequest,
+	resp *datasource.ReadResponse,
+) {
 	if d.apiClient == nil {
 		resp.Diagnostics.AddError("Unconfigured provider", "Expected an authenticated API client from provider.Configure()")
 

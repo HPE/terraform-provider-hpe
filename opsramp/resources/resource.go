@@ -368,7 +368,10 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 
 	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
 	if strings.ToUpper(r.apiClient.Scope) != "CLIENT" && !hasClientOverride {
-		resp.Diagnostics.AddError("Resources can only be created at Client level", "Use a client-scoped provider configuration or specify the client using unique ID.")
+		resp.Diagnostics.AddError(
+			"Resources can only be created at Client level",
+			"Use a client-scoped provider configuration or specify the client using unique ID.",
+		)
 
 		return
 	}
@@ -390,14 +393,20 @@ func (r *Resource) ModifyPlan(ctx context.Context, req resource.ModifyPlanReques
 
 		deviceType := plan.ResourceType.ValueString()
 		if !slices.Contains(deviceTypes, deviceType) {
-			resp.Diagnostics.AddError("Error Device Type does not macth API device types", fmt.Sprintf("Allowed types: %s", strings.Join(deviceTypes, ",")))
+			resp.Diagnostics.AddError(
+				"Error Device Type does not macth API device types",
+				fmt.Sprintf("Allowed types: %s", strings.Join(deviceTypes, ",")),
+			)
 
 			return
 		}
 	}
 
 	if !hasValidResourceIdentifier(plan, state) {
-		resp.Diagnostics.AddError("Missing required identifier", "Provide either uuid, hostname, or resource_name together with resource_type.")
+		resp.Diagnostics.AddError(
+			"Missing required identifier",
+			"Provide either uuid, hostname, or resource_name together with resource_type.",
+		)
 	}
 }
 

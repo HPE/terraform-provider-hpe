@@ -405,7 +405,10 @@ func (r *ClientResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	updatedState, err := r.apiClient.GetClient(updated.UniqueId)
 	if err != nil {
-		resp.Diagnostics.AddError("Error Updating Client", fmt.Sprintf("could not refresh updated client %s: %s", updated.UniqueId, err))
+		resp.Diagnostics.AddError(
+			"Error Updating Client",
+			fmt.Sprintf("could not refresh updated client %s: %s", updated.UniqueId, err),
+		)
 
 		return
 	}

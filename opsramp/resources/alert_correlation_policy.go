@@ -89,7 +89,11 @@ func NewAlertCorrelationPolicy() resource.Resource {
 }
 
 // Metadata returns the resource type name.
-func (r *AlertCorrelationPolicyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *AlertCorrelationPolicyResource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
 	resp.TypeName = req.ProviderTypeName + "_alert_correlation_policy"
 }
 
@@ -319,7 +323,8 @@ func buildAlertCorrelationPolicyRequest(plan AlertCorrelationPolicyModel) client
 		}
 		if plan.AlgorithmCorrelation.AlertTrigger != nil {
 			at := &client.AlertTrigger{}
-			if !plan.AlgorithmCorrelation.AlertTrigger.Duration.IsNull() && !plan.AlgorithmCorrelation.AlertTrigger.Duration.IsUnknown() {
+			if !plan.AlgorithmCorrelation.AlertTrigger.Duration.IsNull() &&
+				!plan.AlgorithmCorrelation.AlertTrigger.Duration.IsUnknown() {
 				at.Duration = int(plan.AlgorithmCorrelation.AlertTrigger.Duration.ValueInt64())
 			}
 			for _, r := range plan.AlgorithmCorrelation.AlertTrigger.Rules {
@@ -555,7 +560,11 @@ func (r *AlertCorrelationPolicyResource) Delete(ctx context.Context, req resourc
 
 // ImportState handles importing an existing alert correlation policy.
 // Import ID format: <policy_id> or <client_id>:<policy_id> (MSP only)
-func (r *AlertCorrelationPolicyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *AlertCorrelationPolicyResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
 	parsed, err := r.ParseImportID(req.ID, 1)
 	if err != nil {
 		resp.Diagnostics.AddError("Invalid Import ID", err.Error())

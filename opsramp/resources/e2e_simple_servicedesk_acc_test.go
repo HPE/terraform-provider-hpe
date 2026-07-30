@@ -30,7 +30,17 @@ func TestAccE2ESimpleServicedesk(t *testing.T) {
 			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleServicedeskConfig(cat1, cat2, cat3, impact1, impact2, impact3, urgency1, urgency2, urgency3),
+					Config: testAccE2ESimpleServicedeskConfig(
+						cat1,
+						cat2,
+						cat3,
+						impact1,
+						impact2,
+						impact3,
+						urgency1,
+						urgency2,
+						urgency3,
+					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.category1"),
 						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.category2"),

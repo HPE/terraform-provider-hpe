@@ -153,7 +153,8 @@ func (c *OpsRampClient) FindResourceByName(name string) (interface{}, error) {
 }
 
 // OpsQLSearch - Query resources using OpsRamp Query Language (OpsQL)
-// Returns true if at least one resource matches the query, the ID of the first matching resource (if any), the count of matching resources, and an error if the API call fails.
+// Returns true if at least one resource matches the query, the ID of the first matching resource (if any), the count of matching
+// resources, and an error if the API call fails.
 func (c *OpsRampClient) QueryResources(filterCriteria string) (bool, string, int, error) {
 	updateRecord := OpsQLSearchRequest{
 		ObjectType:     "resource",

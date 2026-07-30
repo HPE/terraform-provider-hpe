@@ -49,7 +49,11 @@ func (c *OpsRampClient) GetAlertEscalationPolicy(tenantId string, policyId strin
 }
 
 // UpdateAlertEscalationPolicy updates an existing alert escalation policy
-func (c *OpsRampClient) UpdateAlertEscalationPolicy(tenantId string, policyId string, policy AlertEscalationPolicy) (*AlertEscalationPolicy, error) {
+func (c *OpsRampClient) UpdateAlertEscalationPolicy(
+	tenantId string,
+	policyId string,
+	policy AlertEscalationPolicy,
+) (*AlertEscalationPolicy, error) {
 	rb, err := json.Marshal(policy)
 	if err != nil {
 		return nil, err

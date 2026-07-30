@@ -10,7 +10,10 @@ import (
 // --- Metric Alert Definition CRUD ---
 
 // CreateMetricAlertDefinition creates a new metric alert definition.
-func (c *OpsRampClient) CreateMetricAlertDefinition(tenantId string, request MetricAlertDefinitionRequest) (*MetricAlertDefinitionResponse, error) {
+func (c *OpsRampClient) CreateMetricAlertDefinition(
+	tenantId string,
+	request MetricAlertDefinitionRequest,
+) (*MetricAlertDefinitionResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
@@ -32,7 +35,11 @@ func (c *OpsRampClient) CreateMetricAlertDefinition(tenantId string, request Met
 }
 
 // UpdateMetricAlertDefinition updates an existing metric alert definition.
-func (c *OpsRampClient) UpdateMetricAlertDefinition(tenantId string, id string, request MetricAlertDefinitionRequest) (*MetricAlertDefinitionResponse, error) {
+func (c *OpsRampClient) UpdateMetricAlertDefinition(
+	tenantId string,
+	id string,
+	request MetricAlertDefinitionRequest,
+) (*MetricAlertDefinitionResponse, error) {
 	rb, err := json.Marshal(request)
 	if err != nil {
 		return nil, err
