@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_container_script Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Library Container Script resource.
 ---

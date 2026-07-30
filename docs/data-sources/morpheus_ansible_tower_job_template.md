@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_ansible_tower_job_template Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus ansible tower job template data source.
 ---

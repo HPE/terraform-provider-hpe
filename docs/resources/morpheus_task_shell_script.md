@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_task_shell_script Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus shell script task resource
 ---

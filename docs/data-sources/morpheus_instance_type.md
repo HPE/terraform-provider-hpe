@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_type Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus instance type data source.
 ---

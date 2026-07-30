@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_firewall_rule_group Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a network firewall rule group data source.
 ---

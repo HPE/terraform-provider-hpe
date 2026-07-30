@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_router_firewall_rule_groups Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Retrieves the list of firewall rule groups for a specified network router.
 ---

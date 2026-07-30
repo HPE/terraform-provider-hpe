@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_price Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a price resource
 ---

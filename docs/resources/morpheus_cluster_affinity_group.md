@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cluster_affinity_group Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Cluster Affinity Group resource.
 ---

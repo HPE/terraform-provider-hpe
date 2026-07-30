@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_network_transport_zone Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Reads a Morpheus network transport zone from a network server that supports them (e.g. NSX-T, VCD).
 ---

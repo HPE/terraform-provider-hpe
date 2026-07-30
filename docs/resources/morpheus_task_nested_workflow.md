@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_task_nested_workflow Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus nested workflow task resource
 ---

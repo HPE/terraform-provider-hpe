@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_groups Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus groups data source.
 ---
