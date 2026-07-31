@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_script_template Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus script template resource
 ---

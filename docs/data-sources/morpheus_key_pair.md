@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_key_pair Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus key pair data source.
 ---

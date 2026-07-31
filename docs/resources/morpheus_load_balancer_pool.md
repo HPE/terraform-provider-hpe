@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_load_balancer_pool Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus load balancer pool.
 ---

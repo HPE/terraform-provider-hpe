@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_setting_whitelabel Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages Morpheus Whitelabel Settings. This is a singleton resource — only one instance should exist. On destroy, all whitelabel settings will be reset to their zero values.
 ---

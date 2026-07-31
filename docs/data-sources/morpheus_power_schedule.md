@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_power_schedule Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus power schedule data source.
 ---

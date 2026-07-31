@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_contact Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus contact data source.
 ---

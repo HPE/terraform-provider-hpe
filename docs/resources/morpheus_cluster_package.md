@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cluster_package Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus cluster package resource.
 ---

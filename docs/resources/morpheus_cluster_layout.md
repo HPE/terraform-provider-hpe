@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cluster_layout Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus cluster layout resource
 ---

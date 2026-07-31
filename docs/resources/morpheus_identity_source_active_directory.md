@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_identity_source_active_directory Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides an active directory identity source resource
 ---

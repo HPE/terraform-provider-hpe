@@ -500,6 +500,7 @@ Morpheus resources and data sources are covered by a single HPE resource or data
 ### Optional
 
 - `morpheus` (Block List, Max: 1) (see [below for nested schema](#nestedblock--morpheus))
+- `opsramp` (Block List, Max: 1) (see [below for nested schema](#nestedblock--opsramp))
 
 <a id="nestedblock--morpheus"></a>
 ### Nested Schema for `morpheus`
@@ -515,3 +516,14 @@ Optional:
 - `password` (String, Sensitive) Morpheus password for authentication, required if username is set
 - `tenant_subdomain` (String) Morpheus tenant subdomain used for authentication
 - `username` (String) Morpheus username for authentication, required if password is set
+
+
+<a id="nestedblock--opsramp"></a>
+### Nested Schema for `opsramp`
+
+Optional:
+
+- `client_id` (String) OAuth client ID for OpsRamp API
+- `client_secret` (String, Sensitive) OAuth client secret for OpsRamp API
+- `endpoint` (String) OpsRamp Endpoint
+- `tenant` (String) OpsRamp Tenant ID

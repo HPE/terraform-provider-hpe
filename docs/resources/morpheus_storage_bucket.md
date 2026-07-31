@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_storage_bucket Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Storage Bucket resource.
 ---
