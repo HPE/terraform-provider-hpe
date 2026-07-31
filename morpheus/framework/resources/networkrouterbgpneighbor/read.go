@@ -145,7 +145,27 @@ func getNetworkRouterBgpNeighborAsState(
 	state.PasswordWo = types.StringNull()
 	state.PasswordWoVersion = plan.PasswordWoVersion
 
-	// Handle config
+	// Handle config.
+	//
+	// Which typed config block to populate is driven by the content of the API
+	// response first, and only then by the plan. Read has to be self-sufficient:
+	// on import the plan is empty (ImportState seeds only router_id and id), so
+	// a plan-gated branch silently drops the block and ImportStateVerify fails.
+	//
+	// Content-based discrimination is also required because the config schema is
+	// an anyOf and every variant carries a `,remain` catch-all for additional
+	// properties. An NSX-T payload such as {"sourceAddresses":[...]} therefore
+	// decodes into a non-nil NSXVBGPNeighborConfig2 as well (the unknown key
+	// lands in AdditionalProperties, so the struct is non-zero and survives the
+	// SDK's IsEmpty check). Testing for the variant's own fields is the only
+	// reliable way to tell the two apart.
+	//
+	// The plan is still consulted as a secondary trigger so that a configured
+	// but empty block (both attributes are Optional+Computed) resolves to a
+	// non-null object rather than null, which would fail the "inconsistent
+	// result after apply" check. Note this must test IsNull *and* IsUnknown: an
+	// unset Optional+Computed block arrives unknown, not null, so an IsNull-only
+	// guard treats "user did not set it" as "user set it".
 	state.Config = types.DynamicNull()
 	state.ConfigNsxt = NewConfigNsxtValueNull()
 	state.ConfigNsxv = NewConfigNsxvValueNull()
@@ -153,12 +173,13 @@ func getNetworkRouterBgpNeighborAsState(
 	if neighbor.Config != nil {
 		cfg := neighbor.Config
 
-		if cfg.NSXTBGPNeighborConfig2 != nil && !plan.ConfigNsxt.IsNull() {
-			nsxt := cfg.NSXTBGPNeighborConfig2
-			sourceAddrs := nsxt.SourceAddresses
+		nsxtInPlan := !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown()
+		nsxvInPlan := !plan.ConfigNsxv.IsNull() && !plan.ConfigNsxv.IsUnknown()
 
+		if nsxt := cfg.NSXTBGPNeighborConfig2; nsxt != nil &&
+			(len(nsxt.SourceAddresses) > 0 || nsxtInPlan) {
 			var addrValues []attr.Value
-			for _, addr := range sourceAddrs {
+			for _, addr := range nsxt.SourceAddresses {
 				addrValues = append(addrValues, types.StringValue(addr))
 			}
 
@@ -180,9 +201,8 @@ func getNetworkRouterBgpNeighborAsState(
 			}
 		}
 
-		if cfg.NSXVBGPNeighborConfig2 != nil && !plan.ConfigNsxv.IsNull() {
-			nsxv := cfg.NSXVBGPNeighborConfig2
-
+		if nsxv := cfg.NSXVBGPNeighborConfig2; nsxv != nil &&
+			(nsxv.RouterId != nil || nsxv.Interface != nil || nsxvInPlan) {
 			configNsxv, d := NewConfigNsxvValue(
 				ConfigNsxvValue{}.AttributeTypes(ctx),
 				map[string]attr.Value{

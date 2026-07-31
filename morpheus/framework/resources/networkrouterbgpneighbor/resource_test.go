@@ -449,10 +449,21 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 				),
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password_wo", "password_wo_version"},
-				ResourceName:            "hpe_morpheus_network_router_bgp_neighbor.import_test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// password_wo is write-only and never read back.
+				//
+				// description is accepted on create/update but the API never
+				// returns it (see read.go), so it cannot survive an import: the
+				// applied state keeps the configured value via the plan
+				// fallback, while the imported state has nothing to fall back
+				// to. Ignore it here rather than pretend the round trip works.
+				ImportStateVerifyIgnore: []string{
+					"password_wo",
+					"password_wo_version",
+					"description",
+				},
+				ResourceName: "hpe_morpheus_network_router_bgp_neighbor.import_test",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_bgp_neighbor.import_test"]
 					if !ok {
