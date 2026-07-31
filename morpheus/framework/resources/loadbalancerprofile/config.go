@@ -352,8 +352,32 @@ func buildUpdateConfig(
 	return cfg, diags
 }
 
+// tagFieldStr returns the non-empty string from s (the SDK struct field) or,
+// if s is nil/empty, falls back to extra[fallbackKey]. This is required because
+// the Morpheus API stores and returns LB profile tags in NSX-T native format
+// {"tag": "x", "scope": "y"} while the OpenAPI spec (and generated SDK) models
+// them as {"name": "x", "value": "y"}. The unrecognised keys land in the struct's
+// AdditionalProperties map via the `json:",remain"` tag on each LoadBalancerProfileTag*
+// type.
+func tagFieldStr(s *string, extra map[string]interface{}, fallbackKey string) string {
+	if s != nil && *s != "" {
+		return *s
+	}
+
+	if v, ok := extra[fallbackKey].(string); ok {
+		return v
+	}
+
+	return ""
+}
+
 // readTagsFromConfig extracts tags from the read response config and returns them
 // as a Terraform Set, preserving user-specified name casing from the plan/state.
+//
+// The SDK's anyOf "first-match-wins" UnmarshalJSON means the populated variant
+// may not match the profile's serviceType (see reconstructConfigBlockFromResponse).
+// For tag extraction this does not matter: all 8 Config3 variants share the same
+// Tags field structure, so whichever variant is non-nil holds the correct tags.
 func readTagsFromConfig(
 	ctx context.Context,
 	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
@@ -375,57 +399,57 @@ func readTagsFromConfig(
 	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.HTTPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.FastTCPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.FastUDPLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.CookiePersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.SourceIPPersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.GenericPersistenceLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.ClientSSLLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
 		for _, t := range cfg.ServerSSLLoadBalancerProfileConfig3.Tags {
 			apiTags = append(apiTags, tagPair{
-				name:  ptrStr(t.Name),
-				value: ptrStr(t.Value),
+				name:  tagFieldStr(t.Name, t.AdditionalProperties, "tag"),
+				value: tagFieldStr(t.Value, t.AdditionalProperties, "scope"),
 			})
 		}
 	}

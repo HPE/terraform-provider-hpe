@@ -4,6 +4,7 @@ package loadbalancerprofile
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,6 +29,55 @@ func allConfigBlocksNull(m LoadBalancerProfileModel) bool {
 		m.ConfigServerSsl.IsNull()
 }
 
+// anyOfRawJSON marshals whichever anyOf variant the SDK populated to raw JSON and
+// returns it. This is necessary because the SDK's UnmarshalJSON uses a
+// "first-match-wins" strategy for anyOf: it tries each variant in alphabetical
+// order and stops at the first one that produces a non-empty JSON object. Since
+// all 8 profile Config3 variants share a tags field, any profile that has tags
+// causes ClientSSLLoadBalancerProfileConfig3 (first alphabetically) to "win",
+// leaving the semantically correct variant nil.
+//
+// The round-trip is safe because all SDK profile config structs carry an
+// AdditionalProperties field tagged `json:",remain"`, which captures every key
+// that did not match a declared struct field. When the wrong variant is selected,
+// the type-specific fields (e.g. httpIdleTimeout for an HTTP profile) land in
+// AdditionalProperties and are re-emitted verbatim on Marshal, so the raw JSON
+// faithfully represents all original fields regardless of which variant was used.
+func anyOfRawJSON(cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig) []byte {
+	if cfg == nil {
+		return nil
+	}
+
+	switch {
+	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.ClientSSLLoadBalancerProfileConfig3)
+		return b
+	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.CookiePersistenceLoadBalancerProfileConfig3)
+		return b
+	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.FastTCPLoadBalancerProfileConfig3)
+		return b
+	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.FastUDPLoadBalancerProfileConfig3)
+		return b
+	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.GenericPersistenceLoadBalancerProfileConfig3)
+		return b
+	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.HTTPLoadBalancerProfileConfig3)
+		return b
+	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.ServerSSLLoadBalancerProfileConfig3)
+		return b
+	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
+		b, _ := json.Marshal(cfg.SourceIPPersistenceLoadBalancerProfileConfig3)
+		return b
+	}
+
+	return nil
+}
+
 // reconstructConfigBlockFromResponse populates the single typed config block
 // matching the profile's serviceType from the API response.
 //
@@ -39,40 +89,69 @@ func allConfigBlocksNull(m LoadBalancerProfileModel) bool {
 // is no prior config and no plan to be consistent with, so reconstructing the
 // block yields a complete, usable imported resource.
 //
+// The serviceType parameter is the profile's top-level serviceType string
+// (e.g. "LBHttpProfile"). It is used as the discriminator instead of checking
+// which anyOf variant is non-nil, because the SDK's UnmarshalJSON may have
+// populated the wrong variant (see anyOfRawJSON for details).
+//
 // Tags are not handled here; the caller reconstructs the single top-level tags
 // set from the response separately.
 func reconstructConfigBlockFromResponse(
 	ctx context.Context,
 	state *LoadBalancerProfileModel,
 	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
+	serviceType string,
 ) {
-	if cfg == nil {
+	rawJSON := anyOfRawJSON(cfg)
+	if rawJSON == nil {
 		return
 	}
 
-	switch {
-	case cfg.HTTPLoadBalancerProfileConfig3 != nil:
-		state.ConfigHttp = httpConfigFromResponse(ctx, cfg.HTTPLoadBalancerProfileConfig3)
-	case cfg.FastTCPLoadBalancerProfileConfig3 != nil:
-		state.ConfigFastTcp = fastTCPConfigFromResponse(cfg.FastTCPLoadBalancerProfileConfig3)
-	case cfg.FastUDPLoadBalancerProfileConfig3 != nil:
-		state.ConfigFastUdp = fastUDPConfigFromResponse(cfg.FastUDPLoadBalancerProfileConfig3)
-	case cfg.CookiePersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigCookiePersistence = cookiePersistenceConfigFromResponse(
-			cfg.CookiePersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.SourceIPPersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigSourceIpPersistence = sourceIPPersistenceConfigFromResponse(
-			cfg.SourceIPPersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.GenericPersistenceLoadBalancerProfileConfig3 != nil:
-		state.ConfigGenericPersistence = genericPersistenceConfigFromResponse(
-			cfg.GenericPersistenceLoadBalancerProfileConfig3,
-		)
-	case cfg.ClientSSLLoadBalancerProfileConfig3 != nil:
-		state.ConfigClientSsl = clientSSLConfigFromResponse(cfg.ClientSSLLoadBalancerProfileConfig3)
-	case cfg.ServerSSLLoadBalancerProfileConfig3 != nil:
-		state.ConfigServerSsl = serverSSLConfigFromResponse(cfg.ServerSSLLoadBalancerProfileConfig3)
+	// Decode the raw JSON into the correct typed struct for this serviceType.
+	// Because anyOfRawJSON preserves all fields via AdditionalProperties, the
+	// round-trip unmarshal into the specific struct type yields fully populated
+	// fields regardless of which variant the SDK originally selected.
+	switch serviceType {
+	case "LBHttpProfile":
+		var c sdk.HTTPLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigHttp = httpConfigFromResponse(ctx, &c)
+		}
+	case "LBFastTcpProfile":
+		var c sdk.FastTCPLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigFastTcp = fastTCPConfigFromResponse(&c)
+		}
+	case "LBFastUdpProfile":
+		var c sdk.FastUDPLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigFastUdp = fastUDPConfigFromResponse(&c)
+		}
+	case "LBCookiePersistenceProfile":
+		var c sdk.CookiePersistenceLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigCookiePersistence = cookiePersistenceConfigFromResponse(&c)
+		}
+	case "LBSourceIpPersistenceProfile":
+		var c sdk.SourceIPPersistenceLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigSourceIpPersistence = sourceIPPersistenceConfigFromResponse(&c)
+		}
+	case "LBGenericPersistenceProfile":
+		var c sdk.GenericPersistenceLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigGenericPersistence = genericPersistenceConfigFromResponse(&c)
+		}
+	case "LBClientSslProfile":
+		var c sdk.ClientSSLLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigClientSsl = clientSSLConfigFromResponse(&c)
+		}
+	case "LBServerSslProfile":
+		var c sdk.ServerSSLLoadBalancerProfileConfig3
+		if json.Unmarshal(rawJSON, &c) == nil {
+			state.ConfigServerSsl = serverSSLConfigFromResponse(&c)
+		}
 	}
 }
 
