@@ -45,14 +45,23 @@ func configInt64(m map[string]interface{}, key string) types.Int64 {
 	return types.Int64Null()
 }
 
-// configBoolOnOff reads an NSX-T checkbox config value using convert.StringToBool
-// ("on"/"off" -> true/false). The typed schema fields are computed with a false
-// default, so an absent/null/unrecognized value maps to false (not null) to keep
-// import equivalent to a freshly-applied resource.
+// configBoolOnOff reads an NSX-T checkbox config value. The Morpheus API stores
+// and returns route-advertisement flags as native JSON booleans (true/false) —
+// not "on"/"off" strings — because setConfigProperty encodes Groovy Boolean
+// values directly via encodeAsJSON(). String "on"/"off" is retained as a fallback
+// for any legacy values that may have been stored differently.
+// The typed schema fields are computed with a false default, so an absent/null/
+// unrecognized value maps to false (not null) to keep import equivalent to a
+// freshly-applied resource.
 func configBoolOnOff(ctx context.Context, m map[string]interface{}, key string) types.Bool {
 	if v, ok := m[key]; ok && v != nil {
-		if s, ok := v.(string); ok {
-			if b := convert.StringToBool(ctx, s); !b.IsNull() {
+		switch val := v.(type) {
+		case bool:
+			// Native JSON boolean — what the Morpheus API returns for TIER1_* flags.
+			return types.BoolValue(val)
+		case string:
+			// Legacy "on"/"off" string fallback.
+			if b := convert.StringToBool(ctx, val); !b.IsNull() {
 				return b
 			}
 		}
