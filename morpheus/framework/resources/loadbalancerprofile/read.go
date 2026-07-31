@@ -191,7 +191,12 @@ func getLoadBalancerProfileAsState(
 	// id and load_balancer_id). Reconstruct the active block from the API
 	// response so the imported resource is complete and produces a clean plan.
 	if allConfigBlocksNull(prior) {
-		reconstructConfigBlockFromResponse(ctx, &state, p.Config)
+		serviceType := ""
+		if p.ServiceType != nil {
+			serviceType = *p.ServiceType
+		}
+
+		reconstructConfigBlockFromResponse(ctx, &state, p.Config, serviceType)
 	}
 
 	return state, diags
