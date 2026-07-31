@@ -36,6 +36,7 @@ func main() {
 	p := provider.New(
 		version,
 		adapter.NewMorpheus(),
+		adapter.NewOpsRamp(),
 	)
 
 	var opts []tf6server.ServeOpt
