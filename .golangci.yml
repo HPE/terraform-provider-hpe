@@ -30,8 +30,11 @@ linters:
     revive:
       rules:
         - name: var-naming
-          # Suppress warnings about Id "initialism" - i.e. make Id and ID valid
-          arguments: [ [ "ID", "URL", "API", "IDS", "IP" ] ]
+          # Suppress warnings about "initialisms" - i.e. make both Id and ID
+          # valid, and likewise for the others. These names mirror the JSON of
+          # the APIs the clients wrap, so the lower-case forms are often the
+          # more faithful spelling.
+          arguments: [ [ "ID", "URL", "API", "IDS", "IP", "UUID", "UID", "JSON", "SSH" ] ]
   exclusions:
     generated: lax
     presets:
@@ -43,6 +46,12 @@ linters:
       - linters:
           - lll
         source: '^//go:generate '
+      # A line whose length is driven by a single long string literal cannot be
+      # usefully wrapped: schema descriptions read worse when split, and
+      # splitting a URL or format string risks silently altering it.
+      - linters:
+          - lll
+        source: '"[^"]{80,}"'
       - linters:
           - err113
           - funlen

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_storage_server Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Storage Server resource.
 ---

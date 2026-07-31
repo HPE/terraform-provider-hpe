@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_snapshot Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages an instance snapshot in HPE Morpheus.
 ---

@@ -367,12 +367,15 @@ func resourceIntegrationChefRead(ctx context.Context, d *schema.ResourceData, me
 
 	if integration.Credential.ID == 0 {
 		d.Set("username", integration.Config.ChefUser)
-		d.Set("private_key", integration.Config.UserKeyHash)
 	} else {
 		d.Set("credential_id", integration.Credential.ID)
 	}
 
-	d.Set("organization_validator_key", integration.Config.OrgKeyHash)
+	// private_key and organization_validator_key are write-only: the API
+	// returns only a salted hash (userKeyHash / orgKeyHash) that cannot be
+	// reproduced from the configured PEM, so reading it back would overwrite
+	// state with a value that never matches the configuration. Leave the
+	// values already held in state.
 
 	// databags
 	/* AWAITING API SUPPORT

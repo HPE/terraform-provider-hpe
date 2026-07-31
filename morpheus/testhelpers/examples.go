@@ -39,6 +39,43 @@ func RenderExample(t *testing.T, name string, args ...string) (string, error) {
 	return example, nil
 }
 
+// MergeOverrides applies overrides on top of defaults, ignoring any override
+// whose value is empty.
+//
+// Test fixtures routinely build overrides straight from os.Getenv. Assigning
+// unconditionally lets an unset variable replace a working default with "",
+// which the template then renders as nothing -- turning `network_server_id = 1`
+// into `network_server_id = `, an HCL parse error that reads as a provider bug.
+// Skipping empty overrides keeps the default in play; a test that genuinely
+// requires the variable should check it and t.Skip explicitly.
+func MergeOverrides(defaults, overrides map[string]string) map[string]string {
+	merged := make(map[string]string, len(defaults))
+	for key, value := range defaults {
+		merged[key] = value
+	}
+
+	for key, value := range overrides {
+		if value == "" {
+			continue
+		}
+
+		merged[key] = value
+	}
+
+	return merged
+}
+
+// RenderArgs flattens a map into the "Key" "value" argument pairs that
+// RenderExample and WriteExample expect.
+func RenderArgs(values map[string]string) []string {
+	args := make([]string, 0, len(values)*2)
+	for key, value := range values {
+		args = append(args, key, value)
+	}
+
+	return args
+}
+
 func WriteExample(name string, args ...string) {
 	text, err := renderExample(name, args...)
 	if err != nil {

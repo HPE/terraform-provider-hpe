@@ -5,6 +5,7 @@
 package networkrouter
 
 import (
+	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer/sweep"
 	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouter/sweep"
 	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor/sweep"
 	_ "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterfirewallrule/sweep"

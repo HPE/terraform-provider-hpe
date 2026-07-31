@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_workflow_operational Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus operational workflow resource.
 ---

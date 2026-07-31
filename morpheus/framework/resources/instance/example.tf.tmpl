@@ -20,6 +20,12 @@ resource "hpe_morpheus_instance" "example" {
 {{- if .UserGroup}}
   user_group = {{.UserGroup}}
 {{- end}}
+{{- if .MaxMemory}}
+
+  service_plan_options = {
+    max_memory = {{.MaxMemory}}
+  }
+{{- end}}
   network_interfaces = [
     {
       network_id = {{.NetworkId}}
@@ -37,6 +43,7 @@ resource "hpe_morpheus_instance" "example" {
       storage_profile = "{{.StorageProfile}}"
 {{- end}}
     },
+{{- if not .SingleVolume}}
     {
       root_volume     = false
       name            = "data"
@@ -44,6 +51,7 @@ resource "hpe_morpheus_instance" "example" {
       storage_type_id = 1
       datastore_id    = {{.DatastoreId}}
     }
+{{- end}}
   ]
 
   tags = [{{if .MultipleTags}}

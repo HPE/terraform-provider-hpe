@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_option_type Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus option type data source.
 ---

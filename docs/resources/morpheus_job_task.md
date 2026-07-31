@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_job_task Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a task job resource
 ---

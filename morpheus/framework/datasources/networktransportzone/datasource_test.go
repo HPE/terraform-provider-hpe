@@ -26,6 +26,14 @@ func TestAccMorpheusNetworkTransportZoneByID(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
+	if os.Getenv("TF_ACC_TRANSPORT_ZONE_ID") == "" {
+		t.Skip("TF_ACC_TRANSPORT_ZONE_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -65,6 +73,14 @@ func TestAccMorpheusNetworkTransportZoneByName(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
 
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
+	if os.Getenv("TF_ACC_TRANSPORT_ZONE_NAME") == "" {
+		t.Skip("TF_ACC_TRANSPORT_ZONE_NAME not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
+
 	t.Parallel()
 
 	if testing.Short() {
@@ -103,6 +119,10 @@ func TestAccMorpheusNetworkTransportZoneNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXT)
+
+	if os.Getenv("TF_ACC_NETWORK_SERVER_ID") == "" {
+		t.Skip("TF_ACC_NETWORK_SERVER_ID not set; skipping test requiring a pre-provisioned NSX-T fixture")
+	}
 
 	t.Parallel()
 

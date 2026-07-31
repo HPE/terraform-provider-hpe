@@ -58,6 +58,14 @@ func getNetworkRouterBgpNeighborAsState(
 
 	if neighbor.Description.IsSet() {
 		state.Description = convert.StrToType(neighbor.Description.Get())
+	} else if !plan.Description.IsUnknown() {
+		// The API accepts description on create/update but never returns it, so
+		// preserve the configured (or prior) value. Without this a configured
+		// description is nulled out and the apply fails with "Provider produced
+		// inconsistent result after apply". The IsUnknown guard matters because
+		// description is Optional+Computed: an unset value arrives unknown in
+		// the plan and must never be copied into state.
+		state.Description = plan.Description
 	} else {
 		state.Description = types.StringNull()
 	}

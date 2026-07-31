@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_app_blueprint_cloud_formation Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus cloud formation app blueprint resource
 ---
