@@ -6,6 +6,13 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
   layout_id         = 2
   cluster_type_code = "mvm-cluster"
 
+  # Cluster provisioning builds every worker node, so it can comfortably run
+  # past the 45m default on a busy or lower-spec appliance. Raise this if
+  # creation is timing out while the cluster is still reported "provisioning".
+  timeouts = {
+    create = "55m"
+  }
+
   labels = [
     "terraform",
     "example",

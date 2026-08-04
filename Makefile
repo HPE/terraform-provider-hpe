@@ -19,7 +19,13 @@ SWEEP_RUN_ARGS = $(if $(filter all,$(SWEEP)),,-sweep-run=$(SWEEP))
 # resource run several such tests in parallel (with multi-step update tests
 # provisioning twice), so the default needs generous headroom. Override per run,
 # e.g. `make test TEST_TIMEOUT=180m`.
-TEST_TIMEOUT ?= 120m
+#
+# The cluster package is the binding constraint: it runs four tests
+# sequentially, each provisioning a three-worker cluster with an explicit 55m
+# create timeout, so its worst case is 4 x 55m = 220m. At the previous 120m the
+# package was killed before its own tests could time out, which replaced the
+# per-test diagnostics with a bare `panic: test timed out`.
+TEST_TIMEOUT ?= 240m
 
 build:
 	go build

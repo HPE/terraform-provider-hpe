@@ -463,6 +463,15 @@ data "hpe_morpheus_service_plan" "test" {
 	}
 `
 
+	// Cluster provisioning builds every worker node and can outrun the 45m
+	// default on a busy appliance. Shared by the create and update configs so
+	// the final PlanOnly step does not see a diff on this attribute.
+	timeoutsConfig := `
+	timeouts = {
+		create = "55m"
+	}
+`
+
 	createConfig := providerConfig + dataSourcesConfig + `
 resource "hpe_morpheus_cluster" "test" {
 	name        = "` + name + `"
@@ -481,7 +490,7 @@ resource "hpe_morpheus_cluster" "test" {
 		power_policy      = "balanced"
 	}
 
-` + serverConfig + `
+` + serverConfig + timeoutsConfig + `
 }
 `
 
@@ -507,7 +516,7 @@ resource "hpe_morpheus_cluster" "test" {
 		vcpu_placement_mode = "auto"
 	}
 
-` + serverConfig + `
+` + serverConfig + timeoutsConfig + `
 }
 `
 
@@ -650,6 +659,15 @@ data "hpe_morpheus_service_plan" "test" {
 	}
 `
 
+	// Cluster provisioning builds every worker node and can outrun the 45m
+	// default on a busy appliance. Shared by the create and update configs so
+	// the final PlanOnly step does not see a diff on this attribute.
+	timeoutsConfig := `
+	timeouts = {
+		create = "55m"
+	}
+`
+
 	createConfig := providerConfig + dataSourcesConfig + `
 resource "hpe_morpheus_cluster" "test" {
 	name              = "` + name + `"
@@ -668,7 +686,7 @@ resource "hpe_morpheus_cluster" "test" {
 		powerPolicy          = "balanced"
 	}
 
-` + serverConfig + `
+` + serverConfig + timeoutsConfig + `
 }
 `
 
@@ -691,7 +709,7 @@ resource "hpe_morpheus_cluster" "test" {
 		vcpuPlacementMode    = "auto"
 	}
 
-` + serverConfig + `
+` + serverConfig + timeoutsConfig + `
 }
 `
 
