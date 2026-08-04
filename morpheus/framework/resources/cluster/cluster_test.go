@@ -27,15 +27,13 @@ func TestMain(m *testing.M) {
 
 // Tests that our HVM example file template used for docs is a valid config
 func TestAccMorpheusClusterResourceHVMExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
-		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
-
-		return
+		t.Skip("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
 	}
-
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -213,15 +211,13 @@ data "hpe_morpheus_service_plan" "test" {
 
 // Tests that our generic example file template used for docs is a valid config
 func TestAccMorpheusClusterResourceGenericExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
-		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
-
-		return
+		t.Skip("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
 	}
-
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -386,15 +382,13 @@ data "hpe_morpheus_service_plan" "test" {
 }
 
 func TestAccMorpheusClusterResourceHVMUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
-		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
-
-		return
+		t.Skip("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
 	}
-
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -573,15 +567,13 @@ resource "hpe_morpheus_cluster" "test" {
 }
 
 func TestAccMorpheusClusterResourceGenericUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	if skip.SkipByDefault(t) {
-		t.Log("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
-
-		return
+		t.Skip("Skipping test not opted in via RUN_SKIPPED_BY_DEFAULT")
 	}
-
-	defer testhelpers.RecordResult(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
