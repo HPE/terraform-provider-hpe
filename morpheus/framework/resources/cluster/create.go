@@ -11,7 +11,9 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -163,8 +165,23 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
 
-	// write the ID now
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	// Persist the ID only, not the whole plan.
+	//
+	// The plan still holds unknown values for computed-only attributes (uuid,
+	// service_url, cpu_placement_mode, and cluster_type_code when it is not
+	// configured). Writing it here would put those unknowns into state, and
+	// neither of the two error exits below clears them: taintResourceState
+	// sets only "id", and the getClusterAsState failure path writes no state
+	// at all. Terraform then rejects the result with "Provider returned
+	// invalid result object after apply ... was null, but now
+	// cty.UnknownVal", which also masks the real diagnostic.
+	//
+	// Writing just the ID marks the resource as created so it can be tainted
+	// and cleaned up. The full state is written once provisioning has
+	// succeeded and the cluster has been read back.
+	resp.Diagnostics.Append(
+		resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(clusterId))...,
+	)
 	if resp.Diagnostics.HasError() {
 		return
 	}
