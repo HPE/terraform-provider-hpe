@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package instancenode
+package containerip
 
 import (
 	"context"
@@ -15,25 +15,30 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-// IPReady reports whether an IP address represents a ready container.
+// Ready reports whether an IP address represents a ready container.
 // Ready iff trim(ip) is not empty and not "0.0.0.0".
 //
-// This mirrors Container.getContainerExternalIp() in core, which returns
-// the raw address string. No IPv4 validation is performed so that IPv6
-// addresses pass correctly.
-func IPReady(ip string) bool {
+// The sentinel values mirror Container.getContainerExternalIp() in core,
+// which resolves container.externalIp → server.externalIp/internalIp →
+// primaryInterface.publicIpAddress/ipAddress. The "0.0.0.0" sentinel is
+// the default when the platform has not yet assigned an address. No IPv4
+// validation is performed so that IPv6 addresses pass correctly.
+func Ready(ip string) bool {
 	trimmed := strings.TrimSpace(ip)
 
 	return trimmed != "" && trimmed != "0.0.0.0"
 }
 
-// WaitForContainerIP polls GET /api/instances/{id} until the container
-// identified by containerID has an IP that satisfies IPReady, or until the
-// timeout expires. Returns the IP on success.
+// Wait polls GET /api/instances/{id} until the container identified by
+// containerID has an IP that satisfies Ready, or until the timeout expires.
+// Returns the IP on success.
 //
-// On timeout the function returns a warning-level message rather than an error,
-// because the node was provisioned successfully — only the address is missing.
-func WaitForContainerIP(
+// On timeout the function returns a warning-level message rather than an
+// error, because the node was provisioned successfully — only the address
+// is missing. The real reasons an address never arrives are provisioning
+// failure, a network with neither DHCP nor static assignment, or the
+// accessor throwing and yielding an empty string.
+func Wait(
 	ctx context.Context,
 	client *sdk.APIClient,
 	instanceID int64,
@@ -58,7 +63,7 @@ func WaitForContainerIP(
 		for i := range getResp.Instance.ContainerDetails {
 			cd := &getResp.Instance.ContainerDetails[i]
 			if cd.Id != nil && *cd.Id == containerID {
-				if cd.Ip != nil && IPReady(*cd.Ip) {
+				if cd.Ip != nil && Ready(*cd.Ip) {
 					return *cd.Ip, nil
 				}
 

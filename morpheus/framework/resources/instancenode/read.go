@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -98,7 +99,7 @@ func refreshNodeState(
 				state.ServerID = types.Int64Null()
 			}
 
-			if cd.Ip != nil && IPReady(*cd.Ip) {
+			if cd.Ip != nil && containerip.Ready(*cd.Ip) {
 				state.IPAddress = types.StringValue(*cd.Ip)
 			} else {
 				state.IPAddress = types.StringNull()

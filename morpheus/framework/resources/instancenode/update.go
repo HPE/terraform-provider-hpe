@@ -9,6 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 )
 
 const defaultUpdateTimeout = 45 * time.Minute
@@ -47,7 +49,7 @@ func (r *Resource) Update(
 	plan.IPAddress = state.IPAddress
 
 	if plan.WaitForIPAddress.ValueBool() &&
-		(!state.IPAddress.IsNull() && IPReady(state.IPAddress.ValueString())) {
+		(!state.IPAddress.IsNull() && containerip.Ready(state.IPAddress.ValueString())) {
 		// Already have a valid IP — no wait needed.
 		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 
@@ -62,7 +64,7 @@ func (r *Resource) Update(
 			return
 		}
 
-		ip, warned, waitErr := WaitForContainerIP(
+		ip, warned, waitErr := containerip.Wait(
 			ctx, client,
 			plan.InstanceID.ValueInt64(),
 			plan.ContainerID.ValueInt64(),

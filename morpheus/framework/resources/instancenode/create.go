@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -170,7 +171,7 @@ func (r *Resource) Create(
 
 	// Step 6: Optionally wait for IP address.
 	if plan.WaitForIPAddress.ValueBool() {
-		ip, warned, waitErr := WaitForContainerIP(
+		ip, warned, waitErr := containerip.Wait(
 			ctx, client, instanceID, containerID, createTimeout,
 		)
 		if waitErr != nil {
