@@ -233,9 +233,10 @@ func providerSchemaMorpheus() *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"url": {
-					Type:        schema.TypeString,
-					Required:    true,
-					Description: "Morpheus instance URL",
+					Type:     schema.TypeString,
+					Optional: true,
+					Description: "Morpheus instance URL. May be omitted when it is " +
+						"supplied by a greenlake_connected block.",
 				},
 
 				"access_token": {
@@ -280,25 +281,120 @@ func providerSchemaMorpheus() *schema.Schema {
 						"default value is `false`",
 					Default: false,
 				},
+
+				// Mirrors the greenlake_connected block on the framework
+				// Morpheus provider. Both providers are muxed together and
+				// Terraform requires their schemas to be identical, so this
+				// must match what utils/convert produces from the framework
+				// schema, including descriptions.
+				"greenlake_connected": {
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Description: "Configuration block for using Morpheus with GreenLake Connected",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"client_id": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "GreenLake API client ID used for authentication.",
+							},
+
+							"client_secret": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Sensitive:   true,
+								Description: "GreenLake API client secret used for authentication.",
+							},
+
+							"location": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "Location of the GreenLake VMaaS service.",
+							},
+
+							"space": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "GreenLake VMaaS space name (IAM Space) used for the broker exchange.",
+							},
+
+							"issuer_url": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
+									`This should be set to the "Issuer" URL of the API client.`,
+							},
+
+							"iam_token": {
+								Type:      schema.TypeString,
+								Optional:  true,
+								Sensitive: true,
+								Description: "Pre-generated GreenLake IAM token. If set, token " +
+									"generation from credentials is skipped.",
+							},
+
+							"broker_url": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Description: "URL of the VMaaS broker used for the CMP details exchange. " +
+									"Defaults to the US1 production broker if not set.",
+							},
+						},
+					},
+				},
 			},
 		},
 	}
 }
 
-func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	morph, ok := d.GetOk("morpheus")
-	if !ok {
-		return `Morpheus resource or data source present, but possible missing morpheus provider block.
+// missingMorpheusBlock is returned as the provider meta value when no morpheus
+// provider block is configured. Legacy resources surface it as a type
+// assertion failure, which reports this text back to the user.
+const missingMorpheusBlock = `Morpheus resource or data source present, but possible missing morpheus provider block.
  
  provider "hpe" {
    morpheus { <- missing or duplicate?
      url = "https://example.com"
    }
  }
-`, nil
+`
+
+// incompleteMorpheusBlock is returned when a morpheus block is present but does
+// not carry a url. Legacy (SDKv2) resources build their client directly from
+// this block and cannot use connection details obtained by the framework
+// provider from a greenlake_connected block.
+const incompleteMorpheusBlock = `Morpheus resource or data source present, but the morpheus provider block does not set "url".
+
+Legacy Morpheus resources and data sources require the connection details to be
+set explicitly, and cannot use details obtained from a greenlake_connected
+block:
+ 
+ provider "hpe" {
+   morpheus {
+     url          = "https://example.com"
+     access_token = "..."
+   }
+ }
+`
+
+func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+	morph, ok := d.GetOk("morpheus")
+	if !ok {
+		return missingMorpheusBlock, nil
 	}
 
-	morpheusConfig := morph.([]interface{})[0].(map[string]interface{})
+	blocks, ok := morph.([]interface{})
+	if !ok || len(blocks) == 0 {
+		return missingMorpheusBlock, nil
+	}
+
+	// A morpheus block with no attributes set, such as one that only carries a
+	// greenlake_connected block, is represented as a nil element.
+	morpheusConfig, ok := blocks[0].(map[string]interface{})
+	if !ok {
+		return incompleteMorpheusBlock, nil
+	}
 
 	config := Config{
 		Url:             morpheusConfig["url"].(string),
@@ -307,6 +403,12 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Password:        morpheusConfig["password"].(string),
 		TenantSubdomain: morpheusConfig["tenant_subdomain"].(string),
 		Insecure:        morpheusConfig["insecure"].(bool), //.(bool),
+	}
+
+	// Without a url the legacy client cannot reach Morpheus at all, so report
+	// it here rather than failing later with a less obvious error.
+	if config.Url == "" {
+		return incompleteMorpheusBlock, nil
 	}
 
 	return config.Client()

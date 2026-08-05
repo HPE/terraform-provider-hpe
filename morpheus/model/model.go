@@ -14,4 +14,19 @@ type MorpheusProviderModel struct {
 	AccessToken     types.String `tfsdk:"access_token"`
 	TenantSubdomain types.String `tfsdk:"tenant_subdomain"`
 	Insecure        types.Bool   `tfsdk:"insecure"`
+	// GreenLakeConnected is a list to stay compatible with the SDKv2 provider
+	// that the "hpe" provider is muxed with: SDKv2 can only express nested
+	// blocks as list, set or map nesting, never single nesting. The schema
+	// limits it to at most one element.
+	GreenLakeConnected []GreenLakeConnectedModel `tfsdk:"greenlake_connected"`
+}
+
+type GreenLakeConnectedModel struct {
+	ClientID     types.String `tfsdk:"client_id"`
+	ClientSecret types.String `tfsdk:"client_secret"`
+	Location     types.String `tfsdk:"location"`
+	Space        types.String `tfsdk:"space"`
+	IssuerURL    types.String `tfsdk:"issuer_url"`
+	IAMToken     types.String `tfsdk:"iam_token"`
+	BrokerURL    types.String `tfsdk:"broker_url"`
 }

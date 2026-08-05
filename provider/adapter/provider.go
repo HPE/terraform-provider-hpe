@@ -129,6 +129,7 @@ func (p *ProviderAdapter) Schema(
 			inMetaResp.TypeName: schema.ListNestedBlock{
 				NestedObject: schema.NestedBlockObject{
 					Attributes: inSchemaResp.Schema.Attributes,
+					Blocks:     inSchemaResp.Schema.Blocks,
 				},
 				Validators: []validator.List{
 					listvalidator.SizeBetween(0, 1),
