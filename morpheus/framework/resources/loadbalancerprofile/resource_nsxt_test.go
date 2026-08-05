@@ -102,6 +102,19 @@ func TestAccMorpheusLoadBalancerProfileResourceHttpExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	resourceName := "hpe_morpheus_load_balancer_profile.http"
 
+	// NOTE: `tags` is deliberately not exercised here.
+	//
+	// Morpheus persists config.tags in its own {name, value} shape (which is
+	// what this provider and the OpenAPI spec model) but passes the list
+	// straight through to NSX-T on create without translating it. NSX-T tags
+	// are {scope, tag}, so it rejects the payload with:
+	//
+	//   400 {"msg":"Json de-serialization error: property name is unrecognized."}
+	//
+	// The reverse direction is translated correctly on sync, and the
+	// load balancer *pool* path translates on the way out too, so this is an
+	// upstream gap on the profile create path only. Restore the tags block and
+	// the tags.# assertion once that is fixed.
 	config := providerConfig + lbConfig + fmt.Sprintf(`
 resource "hpe_morpheus_load_balancer_profile" "http" {
   load_balancer_id = hpe_morpheus_load_balancer.lb.id
@@ -117,17 +130,6 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
     https_redirect       = true
     x_forwarded_for      = "INSERT"
   }
-
-  tags = [
-    {
-      name  = "env"
-      value = "test"
-    },
-    {
-      name  = "app"
-      value = "web"
-    },
-  ]
 }
 `, profileName)
 
@@ -138,7 +140,6 @@ resource "hpe_morpheus_load_balancer_profile" "http" {
 		resource.TestCheckResourceAttr(resourceName, "config_http.https_redirect", "true"),
 		resource.TestCheckResourceAttr(resourceName, "config_http.x_forwarded_for", "INSERT"),
 		resource.TestCheckResourceAttr(resourceName, "config_http.request_header_size", "2048"),
-		resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 	)
 
 	resource.Test(t, resource.TestCase{

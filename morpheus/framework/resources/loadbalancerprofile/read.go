@@ -170,8 +170,12 @@ func getLoadBalancerProfileAsState(
 
 	state.LoadBalancer = lb
 
+	// serviceType selects which config variant and tag list apply. It is read
+	// straight from the API response, so it is available on import too.
+	serviceType := state.ServiceType.ValueString()
+
 	// Tags: read from config response
-	state.Tags = readTagsFromConfig(ctx, p.Config, prior.Tags)
+	state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
 
 	// Config blocks: preserve every value the practitioner configured, while
 	// resolving any attribute that arrived unknown from the API response.
@@ -189,7 +193,7 @@ func getLoadBalancerProfileAsState(
 	// id and load_balancer_id). Reconstruct the active block from the API
 	// response so the imported resource is complete and produces a clean plan.
 	if allConfigBlocksNull(prior) {
-		reconstructConfigBlockFromResponse(ctx, &state, p.Config)
+		reconstructConfigBlockFromResponse(ctx, &state, serviceType, p.Config)
 	}
 
 	return state, diags

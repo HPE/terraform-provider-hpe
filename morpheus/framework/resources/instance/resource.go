@@ -74,6 +74,15 @@ func (g *Resource) ModifyPlan(
 		return
 	}
 
+	// Put prior state back into the plan for computed attributes whose
+	// triggering configuration has not changed, so that an unrelated edit does
+	// not show them as "(known after apply)". Done before the checks below,
+	// which return early when the appliance version cannot be determined.
+	restoreUnchangedComputedAttributes(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var plan, state InstanceModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)

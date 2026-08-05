@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_cloud Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---

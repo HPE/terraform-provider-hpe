@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_monitoring_alert Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Monitoring Alert resource.
 ---

@@ -22,14 +22,7 @@ func RenderNetworkTransportZoneDataSourceByIDConfig(t *testing.T, overrides map[
 		"Id":              "99",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
+	args := testhelpers.RenderArgs(testhelpers.MergeOverrides(defaults, overrides))
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -54,14 +47,7 @@ func RenderNetworkTransportZoneDataSourceByNameConfig(t *testing.T, overrides ma
 		"Name":            "overlay-tz-01",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
+	args := testhelpers.RenderArgs(testhelpers.MergeOverrides(defaults, overrides))
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {

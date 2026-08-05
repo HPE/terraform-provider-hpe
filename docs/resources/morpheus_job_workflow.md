@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_job_workflow Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a workflow job resource
 ---

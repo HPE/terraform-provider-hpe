@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_vdi_app Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus VDI App resource.
 ---

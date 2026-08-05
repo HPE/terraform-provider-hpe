@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_provisioning_license Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages a Morpheus Provisioning License resource.
 ---

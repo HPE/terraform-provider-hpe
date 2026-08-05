@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_preseed_script Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus preseed script resource
 ---

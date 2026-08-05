@@ -240,3 +240,189 @@ func TestMergeConfigBlocksLeavesNoUnknowns(t *testing.T) {
 		t.Error("unset config blocks should remain null")
 	}
 }
+
+// allVariantsPopulated mirrors what the SDK actually hands the provider.
+//
+// The load balancer profile config schema has no discriminator, so
+// UnmarshalMapstructure decodes the same JSON blob into every anyOf variant and
+// keeps each one that is not entirely empty. A single shared field is enough to
+// make a variant survive, so in practice several variants -- always including
+// HTTP, because the generic NSX-T config blob carries ntlmAuthentication -- are
+// non-nil regardless of the profile's actual service type.
+func allVariantsPopulated() *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig {
+	return &sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig{
+		HTTPLoadBalancerProfileConfig3: &sdk.HTTPLoadBalancerProfileConfig3{
+			NtlmAuthentication: sdk.PtrBool(false),
+			RedirectAddress:    sdk.PtrString("http-variant"),
+			Tags:               []sdk.LoadBalancerProfileTag24{{Name: sdk.PtrString("from"), Value: sdk.PtrString("http")}},
+		},
+		FastTCPLoadBalancerProfileConfig3: &sdk.FastTCPLoadBalancerProfileConfig3{
+			HaFlowMirroring: sdk.PtrBool(true),
+			Tags:            []sdk.LoadBalancerProfileTag25{{Name: sdk.PtrString("from"), Value: sdk.PtrString("fast_tcp")}},
+		},
+		FastUDPLoadBalancerProfileConfig3: &sdk.FastUDPLoadBalancerProfileConfig3{
+			HaFlowMirroring: sdk.PtrBool(true),
+			Tags:            []sdk.LoadBalancerProfileTag26{{Name: sdk.PtrString("from"), Value: sdk.PtrString("fast_udp")}},
+		},
+		CookiePersistenceLoadBalancerProfileConfig3: &sdk.CookiePersistenceLoadBalancerProfileConfig3{
+			CookieName: sdk.PtrString("cookie-variant"),
+			Tags:       []sdk.LoadBalancerProfileTag27{{Name: sdk.PtrString("from"), Value: sdk.PtrString("cookie_persistence")}},
+		},
+		SourceIPPersistenceLoadBalancerProfileConfig3: &sdk.SourceIPPersistenceLoadBalancerProfileConfig3{
+			PurgeEntries: sdk.PtrBool(true),
+			Tags:         []sdk.LoadBalancerProfileTag28{{Name: sdk.PtrString("from"), Value: sdk.PtrString("source_ip_persistence")}},
+		},
+		GenericPersistenceLoadBalancerProfileConfig3: &sdk.GenericPersistenceLoadBalancerProfileConfig3{
+			SharePersistence: sdk.PtrBool(true),
+			Tags:             []sdk.LoadBalancerProfileTag29{{Name: sdk.PtrString("from"), Value: sdk.PtrString("generic_persistence")}},
+		},
+		ClientSSLLoadBalancerProfileConfig3: &sdk.ClientSSLLoadBalancerProfileConfig3{
+			SslSuite: sdk.PtrString("client-ssl-variant"),
+			Tags:     []sdk.LoadBalancerProfileTag30{{Name: sdk.PtrString("from"), Value: sdk.PtrString("client_ssl")}},
+		},
+		ServerSSLLoadBalancerProfileConfig3: &sdk.ServerSSLLoadBalancerProfileConfig3{
+			SslSuite: sdk.PtrString("server-ssl-variant"),
+			Tags:     []sdk.LoadBalancerProfileTag31{{Name: sdk.PtrString("from"), Value: sdk.PtrString("server_ssl")}},
+		},
+	}
+}
+
+// configBlockIsNull reports whether the named config_* block is null.
+func configBlockIsNull(m LoadBalancerProfileModel, block string) bool {
+	switch block {
+	case "config_http":
+		return m.ConfigHttp.IsNull()
+	case "config_fast_tcp":
+		return m.ConfigFastTcp.IsNull()
+	case "config_fast_udp":
+		return m.ConfigFastUdp.IsNull()
+	case "config_cookie_persistence":
+		return m.ConfigCookiePersistence.IsNull()
+	case "config_source_ip_persistence":
+		return m.ConfigSourceIpPersistence.IsNull()
+	case "config_generic_persistence":
+		return m.ConfigGenericPersistence.IsNull()
+	case "config_client_ssl":
+		return m.ConfigClientSsl.IsNull()
+	case "config_server_ssl":
+		return m.ConfigServerSsl.IsNull()
+	default:
+		return true
+	}
+}
+
+var allConfigBlockNames = []string{
+	"config_http",
+	"config_fast_tcp",
+	"config_fast_udp",
+	"config_cookie_persistence",
+	"config_source_ip_persistence",
+	"config_generic_persistence",
+	"config_client_ssl",
+	"config_server_ssl",
+}
+
+// TestReconstructConfigBlockFromResponseSelectsByServiceType is the regression
+// guard for the import bug: reconstruction dispatched on which SDK union
+// pointer happened to be non-nil, and HTTP was checked first, so importing any
+// non-HTTP profile also materialised config_http. ImportStateVerify then failed
+// with extra attributes ("config_http.%": "9").
+func TestReconstructConfigBlockFromResponseSelectsByServiceType(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	for serviceType, want := range map[string]string{
+		serviceTypeHTTP:                "config_http",
+		serviceTypeFastTCP:             "config_fast_tcp",
+		serviceTypeFastUDP:             "config_fast_udp",
+		serviceTypeCookiePersistence:   "config_cookie_persistence",
+		serviceTypeSourceIPPersistence: "config_source_ip_persistence",
+		serviceTypeGenericPersistence:  "config_generic_persistence",
+		serviceTypeClientSSL:           "config_client_ssl",
+		serviceTypeServerSSL:           "config_server_ssl",
+	} {
+		t.Run(serviceType, func(t *testing.T) {
+			t.Parallel()
+
+			// A freshly imported model: every config block is null.
+			var state LoadBalancerProfileModel
+			if !allConfigBlocksNull(state) {
+				t.Fatal("precondition: a zero-value model must have no config block set")
+			}
+
+			reconstructConfigBlockFromResponse(ctx, &state, serviceType, allVariantsPopulated())
+
+			if configBlockIsNull(state, want) {
+				t.Errorf("%s was not reconstructed for service_type %q", want, serviceType)
+			}
+
+			for _, name := range allConfigBlockNames {
+				if name == want {
+					continue
+				}
+
+				if !configBlockIsNull(state, name) {
+					t.Errorf("%s was populated for service_type %q; only %s may be set",
+						name, serviceType, want)
+				}
+			}
+		})
+	}
+}
+
+// TestReadTagsFromConfigSelectsByServiceType guards the same dispatch bug in
+// the tag reader, which would otherwise return another variant's tag list.
+func TestReadTagsFromConfigSelectsByServiceType(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	for serviceType, want := range map[string]string{
+		serviceTypeHTTP:                "http",
+		serviceTypeFastTCP:             "fast_tcp",
+		serviceTypeFastUDP:             "fast_udp",
+		serviceTypeCookiePersistence:   "cookie_persistence",
+		serviceTypeSourceIPPersistence: "source_ip_persistence",
+		serviceTypeGenericPersistence:  "generic_persistence",
+		serviceTypeClientSSL:           "client_ssl",
+		serviceTypeServerSSL:           "server_ssl",
+	} {
+		t.Run(serviceType, func(t *testing.T) {
+			t.Parallel()
+
+			got := readTagsFromConfig(
+				ctx, serviceType, allVariantsPopulated(), types.SetNull(TagsValue{}.Type(ctx)),
+			)
+
+			var tags []TagsValue
+			if diags := got.ElementsAs(ctx, &tags, false); diags.HasError() {
+				t.Fatalf("ElementsAs: %v", diags)
+			}
+
+			if len(tags) != 1 {
+				t.Fatalf("got %d tags, want 1", len(tags))
+			}
+
+			if v := tags[0].Value.ValueString(); v != want {
+				t.Errorf("read tags from the %q variant, want %q", v, want)
+			}
+		})
+	}
+}
+
+// TestReconstructConfigBlockFromResponseUnknownServiceType ensures an
+// unrecognised service_type is inert rather than defaulting to a variant.
+func TestReconstructConfigBlockFromResponseUnknownServiceType(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	var state LoadBalancerProfileModel
+
+	reconstructConfigBlockFromResponse(ctx, &state, "LBSomethingElseProfile", allVariantsPopulated())
+
+	if !allConfigBlocksNull(state) {
+		t.Error("an unrecognised service_type must not populate any config block")
+	}
+}

@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package storagebucket_test
 
 import (
@@ -23,7 +25,11 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+	// AWS, not Alletra: Alletra is block storage and has no bearing on this
+	// resource. The example provisions an s3 bucket, and the API validates it
+	// by writing, reading back and deleting a test object before saving, so
+	// the test needs real AWS credentials on the appliance to pass.
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -69,7 +75,8 @@ func TestAccMorpheusStorageBucketResourceExampleOk(t *testing.T) {
 func TestAccMorpheusStorageBucketResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.Alletra)
+	// See TestAccMorpheusStorageBucketResourceExampleOk for why this is AWS.
+	capabilities.MustHaveOrSkip(t, capabilities.AWS)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

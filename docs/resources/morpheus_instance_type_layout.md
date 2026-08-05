@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_type_layout Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus instance layout resource
 ---

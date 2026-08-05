@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_catalog_item_type Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus user group data source.
 ---

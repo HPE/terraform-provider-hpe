@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_power_state Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Manages the power state of an existing Morpheus instance. This resource does not create or destroy instances — it only transitions them between running, stopped, and suspended states.
 ---

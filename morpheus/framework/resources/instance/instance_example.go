@@ -36,6 +36,10 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		"MultipleTags":    "",
 		"UserGroup":       "",
 		"StorageProfile":  "",
+		// MaxMemory renders a service_plan_options block, for resize coverage.
+		"MaxMemory": "",
+		// SingleVolume omits the non-root volume, for volume add/remove coverage.
+		"SingleVolume": "",
 	}
 
 	for key, value := range overrides {

@@ -37,6 +37,18 @@ const existingTier0RouterID = "28"
 // "BGP neighbor source address is mandatory for EBGP Multihop."
 const bgpNeighborSourceAddress = "10.100.10.1"
 
+// bgpNeighborHopLimit is why every fixture below sets hop_limit explicitly.
+//
+// The schema default is 1, which NSX-T treats as single-hop and then requires
+// the neighbor address to share a subnet with the source address:
+//
+//	BGPNeighborConfig with max hop limit of 1, the neighbor address
+//	<ip> must be on the same subnet as the source address 10.100.10.1.
+//
+// The fixtures deliberately use unrelated neighbor subnets, so they must
+// declare themselves multihop.
+const bgpNeighborHopLimit = "2"
+
 func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -109,6 +121,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
   weight      = 60
   keep_alive  = 60
   hold_down   = 180
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -292,6 +305,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   weight      = 60
   keep_alive  = 60
   hold_down   = 180
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -313,7 +327,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   bfd_multiple = 3
   allow_as_in  = true
   hop_limit    = 3
-  restart_mode = "GRACEFUL_RESTART"
+  restart_mode = "GR_AND_HELPER"
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -385,7 +399,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network_router_bgp_neighbor.update_test",
-						"restart_mode", "GRACEFUL_RESTART",
+						"restart_mode", "GR_AND_HELPER",
 					),
 				),
 			},
@@ -415,6 +429,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -434,10 +449,21 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 				),
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"password_wo", "password_wo_version"},
-				ResourceName:            "hpe_morpheus_network_router_bgp_neighbor.import_test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// password_wo is write-only and never read back.
+				//
+				// description is accepted on create/update but the API never
+				// returns it (see read.go), so it cannot survive an import: the
+				// applied state keeps the configured value via the plan
+				// fallback, while the imported state has nothing to fall back
+				// to. Ignore it here rather than pretend the round trip works.
+				ImportStateVerifyIgnore: []string{
+					"password_wo",
+					"password_wo_version",
+					"description",
+				},
+				ResourceName: "hpe_morpheus_network_router_bgp_neighbor.import_test",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_bgp_neighbor.import_test"]
 					if !ok {
@@ -473,6 +499,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65010"
+  hop_limit   = ` + bgpNeighborHopLimit + `
 
   config_nsxt = {
     source_addresses = ["` + bgpNeighborSourceAddress + `"]
@@ -517,6 +544,14 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxvConfig(t *testing.T)
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.NSXV)
+
+	// The config below declares a required root variable with no default, so
+	// without a value Terraform fails the plan with "No value for required
+	// variable" before the provider is ever exercised.
+	nsxvRouterID := os.Getenv("TF_VAR_nsxv_router_id")
+	if nsxvRouterID == "" {
+		t.Skip("TF_VAR_nsxv_router_id not set; skipping test requiring a pre-existing NSX-V router")
+	}
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")

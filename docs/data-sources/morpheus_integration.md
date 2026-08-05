@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_integration Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   Provides a Morpheus integration data source.
 ---

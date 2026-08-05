@@ -42,6 +42,45 @@ func (r *storageBucketResource) Schema(ctx context.Context, _ resource.SchemaReq
 	resp.Schema = StorageBucketResourceSchema(ctx)
 }
 
+// bucketConfigFields resolves the credential/endpoint values that belong under
+// the request's nested config object.
+//
+// The API reads these only from the nested config object; values sent at the
+// top level of the request body are silently discarded.
+func bucketConfigFields(endpoint, accessKey, secretKey types.String) (ak, sk, ep *string) {
+	if !accessKey.IsNull() && !accessKey.IsUnknown() {
+		ak = accessKey.ValueStringPointer()
+	}
+
+	if !secretKey.IsNull() && !secretKey.IsUnknown() {
+		sk = secretKey.ValueStringPointer()
+	}
+
+	if !endpoint.IsNull() && !endpoint.IsUnknown() {
+		ep = endpoint.ValueStringPointer()
+	}
+
+	return ak, sk, ep
+}
+
+// addBucketConfig builds the create request's config object.
+//
+// The oneOf wrapper is a non-pointer field that is always serialised, and its
+// generated MarshalJSON returns (nil, nil) when no variant is set -- which
+// encoding/json rejects with "unexpected end of JSON input". A variant must
+// therefore always be selected, even when every field inside it is empty.
+func addBucketConfig(endpoint, accessKey, secretKey types.String) sdk.AddStorageBucketsRequestStorageBucketConfig {
+	ak, sk, ep := bucketConfigFields(endpoint, accessKey, secretKey)
+
+	return sdk.AddStorageBucketsRequestStorageBucketConfig{
+		AddStorageBucketsRequestStorageBucketConfigOneOf: &sdk.AddStorageBucketsRequestStorageBucketConfigOneOf{
+			AccessKey: ak,
+			SecretKey: sk,
+			Endpoint:  ep,
+		},
+	}
+}
+
 func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	client, err := r.NewClient(ctx)
 	if err != nil {
@@ -56,9 +95,18 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// access_key and secret_key are write-only, so their values are only
+	// available from config -- they are always null in the plan.
+	var config StorageBucketModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.AddStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueString(),
 		ProviderType: plan.ProviderType.ValueString(),
+		Config:       addBucketConfig(plan.Endpoint, config.AccessKey, config.SecretKey),
 	}
 	if !plan.BucketName.IsNull() {
 		body.BucketName = plan.BucketName.ValueString()
@@ -70,19 +118,6 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		body.RetentionPolicyDays = plan.RetentionDays.ValueInt64Pointer()
 		retType := "delete"
 		body.RetentionPolicyType = &retType
-	}
-	if !plan.Endpoint.IsNull() || !plan.AccessKey.IsNull() || !plan.SecretKey.IsNull() {
-		// These are typically passed via config; set as additional properties
-		body.AdditionalProperties = map[string]interface{}{}
-		if !plan.Endpoint.IsNull() {
-			body.AdditionalProperties["endpoint"] = plan.Endpoint.ValueString()
-		}
-		if !plan.AccessKey.IsNull() {
-			body.AdditionalProperties["accessKey"] = plan.AccessKey.ValueString()
-		}
-		if !plan.SecretKey.IsNull() {
-			body.AdditionalProperties["secretKey"] = plan.SecretKey.ValueString()
-		}
 	}
 
 	result, httpResp, err := client.StorageAPI.AddStorageBuckets(ctx).
@@ -179,11 +214,28 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	// access_key and secret_key are write-only, so their values are only
+	// available from config -- they are always null in the plan.
+	var config StorageBucketModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	id := plan.Id.ValueInt64()
+
+	accessKey, secretKey, endpoint := bucketConfigFields(plan.Endpoint, config.AccessKey, config.SecretKey)
 
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueStringPointer(),
 		ProviderType: plan.ProviderType.ValueStringPointer(),
+		Config: &sdk.UpdateStorageBucketsRequestStorageBucketConfig{
+			UpdateStorageBucketsRequestStorageBucketConfigOneOf: &sdk.UpdateStorageBucketsRequestStorageBucketConfigOneOf{
+				AccessKey: accessKey,
+				SecretKey: secretKey,
+				Endpoint:  endpoint,
+			},
+		},
 	}
 	if !plan.BucketName.IsNull() {
 		body.BucketName = plan.BucketName.ValueStringPointer()
@@ -195,18 +247,6 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		body.RetentionPolicyDays = plan.RetentionDays.ValueInt64Pointer()
 		retType := "delete"
 		body.RetentionPolicyType = &retType
-	}
-	if !plan.Endpoint.IsNull() || !plan.AccessKey.IsNull() || !plan.SecretKey.IsNull() {
-		body.AdditionalProperties = map[string]interface{}{}
-		if !plan.Endpoint.IsNull() {
-			body.AdditionalProperties["endpoint"] = plan.Endpoint.ValueString()
-		}
-		if !plan.AccessKey.IsNull() {
-			body.AdditionalProperties["accessKey"] = plan.AccessKey.ValueString()
-		}
-		if !plan.SecretKey.IsNull() {
-			body.AdditionalProperties["secretKey"] = plan.SecretKey.ValueString()
-		}
 	}
 
 	_, httpResp, err := client.StorageAPI.UpdateStorageBuckets(ctx, id).

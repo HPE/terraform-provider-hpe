@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_monitoring_alert Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
