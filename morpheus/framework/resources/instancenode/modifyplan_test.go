@@ -23,7 +23,7 @@ func makePlan(t *testing.T, m instanceNodeModel) tfsdk.Plan {
 	r.Schema(ctx, resource.SchemaRequest{}, &schemaResp)
 
 	// Build a null timeouts object with the correct attribute types.
-	if m.Timeouts.Object.IsNull() || m.Timeouts.Object.IsUnknown() {
+	if m.Timeouts.IsNull() || m.Timeouts.IsUnknown() {
 		m.Timeouts = timeouts.Value{
 			Object: types.ObjectNull(map[string]attr.Type{
 				"create": types.StringType,
