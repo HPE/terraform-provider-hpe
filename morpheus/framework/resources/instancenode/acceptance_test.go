@@ -28,16 +28,21 @@ func TestAccMorpheusInstanceNodeVirtual(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	instanceID := os.Getenv("TF_VAR_virtual_instance_id")
-	if instanceID == "" {
-		t.Skip("TF_VAR_virtual_instance_id not set")
+	instanceID, err := testhelpers.CreateInstance(t)
+	if err != nil {
+		t.Fatalf("failed to create parent instance: %v", err)
 	}
+	t.Cleanup(func() {
+		if err := testhelpers.DeleteInstance(t, instanceID); err != nil {
+			t.Logf("WARNING: failed to delete instance %d: %v", instanceID, err)
+		}
+	})
 
 	providerConfig := testhelpers.ProviderBlock()
 
 	config := fmt.Sprintf(`
 resource "hpe_morpheus_instance_node" "test_virtual" {
-  instance_id = %s
+  instance_id = %d
 }
 `, instanceID)
 
@@ -123,17 +128,22 @@ func TestAccMorpheusInstanceNodePoolOnVirtualError(t *testing.T) {
 		t.Skip("Skipping slow test in short mode")
 	}
 
-	instanceID := os.Getenv("TF_VAR_virtual_instance_id")
-	if instanceID == "" {
-		t.Skip("TF_VAR_virtual_instance_id not set")
+	instanceID, err := testhelpers.CreateInstance(t)
+	if err != nil {
+		t.Fatalf("failed to create parent instance: %v", err)
 	}
+	t.Cleanup(func() {
+		if err := testhelpers.DeleteInstance(t, instanceID); err != nil {
+			t.Logf("WARNING: failed to delete instance %d: %v", instanceID, err)
+		}
+	})
 
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Setting resource_pool_id on a virtual instance must fail.
 	config := fmt.Sprintf(`
 resource "hpe_morpheus_instance_node" "test_guard" {
-  instance_id      = %s
+  instance_id      = %d
   resource_pool_id = 999
 }
 `, instanceID)
