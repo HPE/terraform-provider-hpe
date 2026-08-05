@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/greenlake/connected"
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
@@ -65,11 +65,11 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
-	// A greenlake_connected block supplies the Morpheus url and access token
+	// A pce_identity block supplies the Morpheus url and access token
 	// by exchanging GreenLake credentials, rather than having them configured
 	// directly. The schema limits the block to at most one element.
-	if len(m.GreenLakeConnected) > 0 {
-		url, token, err := greenlakeConnectedTokenExchange(ctx, &m.GreenLakeConnected[0])
+	if len(m.PCEIdentity) > 0 {
+		url, token, err := pceIdentityTokenExchange(ctx, &m.PCEIdentity[0])
 		if err != nil {
 			resp.Diagnostics.AddError(
 				"Failed to obtain Morpheus connection details from GreenLake",
@@ -93,7 +93,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
 				Description: "Morpheus instance URL. May be omitted when it is " +
-					"supplied by a greenlake_connected block.",
+					"supplied by a pce_identity block.",
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.Any(
@@ -139,7 +139,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 			},
 		},
 		Blocks: map[string]schema.Block{
-			"greenlake_connected": schema.ListNestedBlock{
+			"pce_identity": schema.ListNestedBlock{
 				NestedObject: schema.NestedBlockObject{
 					Attributes: map[string]schema.Attribute{
 						"client_id": schema.StringAttribute{
@@ -208,21 +208,21 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 				// Only Description is set, never MarkdownDescription: the
 				// SDKv2 provider this is muxed with can only report plain text
 				// descriptions, and the schemas must match exactly.
-				Description: "Configuration block for using Morpheus with GreenLake Connected",
+				Description: "Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity",
 			},
 		},
 	}
 }
 
-// greenlakeConnectedTokenExchange resolves the Morpheus url and access token
-// for a greenlake_connected block.
+// pceIdentityTokenExchange resolves the Morpheus url and access token
+// for a pce_identity block.
 //
 // The SDKv2 Morpheus provider performs the same exchange from the same
 // configuration; connected.TokenExchange memoises its result, so the two
 // providers share a single exchange per graph walk.
-func greenlakeConnectedTokenExchange(
+func pceIdentityTokenExchange(
 	ctx context.Context,
-	m *model.GreenLakeConnectedModel,
+	m *model.PCEIdentityModel,
 ) (string, string, error) {
 	// ValueString returns "" for null values, which matches how the SDKv2
 	// provider reads the same block. The two must agree, as the configuration

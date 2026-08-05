@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/greenlake/connected"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/catalogitem"
@@ -237,7 +237,7 @@ func providerSchemaMorpheus() *schema.Schema {
 					Type:     schema.TypeString,
 					Optional: true,
 					Description: "Morpheus instance URL. May be omitted when it is " +
-						"supplied by a greenlake_connected block.",
+						"supplied by a pce_identity block.",
 				},
 
 				"access_token": {
@@ -283,16 +283,16 @@ func providerSchemaMorpheus() *schema.Schema {
 					Default: false,
 				},
 
-				// Mirrors the greenlake_connected block on the framework
+				// Mirrors the pce_identity block on the framework
 				// Morpheus provider. Both providers are muxed together and
 				// Terraform requires their schemas to be identical, so this
 				// must match what utils/convert produces from the framework
 				// schema, including descriptions.
-				"greenlake_connected": {
+				"pce_identity": {
 					Type:        schema.TypeList,
 					Optional:    true,
 					MaxItems:    1,
-					Description: "Configuration block for using Morpheus with GreenLake Connected",
+					Description: "Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity",
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"client_id": {
@@ -363,11 +363,11 @@ const missingMorpheusBlock = `Morpheus resource or data source present, but poss
 
 // incompleteMorpheusBlock is returned when a morpheus block is present but no
 // connection details could be determined from it, either directly or by way of
-// a greenlake_connected block.
+// a pce_identity block.
 const incompleteMorpheusBlock = `Morpheus resource or data source present, but the morpheus provider block
-does not set "url", and no usable greenlake_connected block was found.
+does not set "url", and no usable pce_identity block was found.
 
-Set the connection details explicitly, or configure a greenlake_connected block
+Set the connection details explicitly, or configure a pce_identity block
 so that they can be obtained from GreenLake:
  
  provider "hpe" {
@@ -390,7 +390,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	// A morpheus block with no attributes set, such as one that only carries a
-	// greenlake_connected block, is represented as a nil element.
+	// pce_identity block, is represented as a nil element.
 	morpheusConfig, ok := blocks[0].(map[string]interface{})
 	if !ok {
 		return incompleteMorpheusBlock, nil
@@ -405,12 +405,12 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Insecure:        morpheusConfig["insecure"].(bool), //.(bool),
 	}
 
-	// A greenlake_connected block supplies the url and access token by
+	// A pce_identity block supplies the url and access token by
 	// exchanging GreenLake credentials. The framework Morpheus provider
 	// performs the same exchange from the same configuration and the result is
 	// memoised, so this does not repeat the network calls.
 	if config.Url == "" {
-		if glc, ok := greenlakeConnectedConfig(morpheusConfig); ok {
+		if glc, ok := pceIdentityConfig(morpheusConfig); ok {
 			url, token, err := connected.TokenExchange(ctx, glc)
 			if err != nil {
 				return nil, diag.FromErr(err)
@@ -430,10 +430,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	return config.Client()
 }
 
-// greenlakeConnectedConfig reads a greenlake_connected block from a morpheus
+// pceIdentityConfig reads a pce_identity block from a morpheus
 // provider block. It reports false when the block is absent or empty.
-func greenlakeConnectedConfig(morpheusConfig map[string]interface{}) (connected.Config, bool) {
-	blocks, ok := morpheusConfig["greenlake_connected"].([]interface{})
+func pceIdentityConfig(morpheusConfig map[string]interface{}) (connected.Config, bool) {
+	blocks, ok := morpheusConfig["pce_identity"].([]interface{})
 	if !ok || len(blocks) == 0 {
 		return connected.Config{}, false
 	}

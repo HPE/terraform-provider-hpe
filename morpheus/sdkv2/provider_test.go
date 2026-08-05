@@ -12,7 +12,7 @@ import (
 
 // A morpheus block that carries no url became valid config once url was made
 // optional, so that the framework provider can obtain the connection details
-// from a greenlake_connected block instead. The legacy provider is configured
+// from a pce_identity block instead. The legacy provider is configured
 // with the same config and must not panic on it.
 func TestProviderConfigureWithoutURL(t *testing.T) {
 	t.Parallel()
@@ -74,7 +74,7 @@ func TestProviderConfigureWithoutURL(t *testing.T) {
 	}
 }
 
-// When a greenlake_connected block is present but no url is set, the legacy
+// When a pce_identity block is present but no url is set, the legacy
 // provider performs the GreenLake token exchange rather than reporting that the
 // block is incomplete. The exchange shares its result with the framework
 // provider, which is configured from the same block.
@@ -87,7 +87,7 @@ func TestProviderConfigureAttemptsGreenLakeExchange(t *testing.T) {
 	// contacting a real GreenLake endpoint.
 	err := d.Set("morpheus", []interface{}{
 		map[string]interface{}{
-			"greenlake_connected": []interface{}{
+			"pce_identity": []interface{}{
 				map[string]interface{}{
 					"client_id":     "id",
 					"client_secret": "secret",
