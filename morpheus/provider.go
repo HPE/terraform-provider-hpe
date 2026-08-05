@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/greenlake/connected"
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
@@ -211,4 +212,28 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 			},
 		},
 	}
+}
+
+// greenlakeConnectedTokenExchange resolves the Morpheus url and access token
+// for a greenlake_connected block.
+//
+// The SDKv2 Morpheus provider performs the same exchange from the same
+// configuration; connected.TokenExchange memoises its result, so the two
+// providers share a single exchange per graph walk.
+func greenlakeConnectedTokenExchange(
+	ctx context.Context,
+	m *model.GreenLakeConnectedModel,
+) (string, string, error) {
+	// ValueString returns "" for null values, which matches how the SDKv2
+	// provider reads the same block. The two must agree, as the configuration
+	// is the cache key.
+	return connected.TokenExchange(ctx, connected.Config{
+		ClientID:     m.ClientID.ValueString(),
+		ClientSecret: m.ClientSecret.ValueString(),
+		Location:     m.Location.ValueString(),
+		Space:        m.Space.ValueString(),
+		IssuerURL:    m.IssuerURL.ValueString(),
+		IAMToken:     m.IAMToken.ValueString(),
+		BrokerURL:    m.BrokerURL.ValueString(),
+	})
 }

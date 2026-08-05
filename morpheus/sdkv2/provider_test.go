@@ -28,17 +28,6 @@ func TestProviderConfigureWithoutURL(t *testing.T) {
 			wantMeta: incompleteMorpheusBlock,
 		},
 		{
-			name: "greenlake_connected only",
-			morpheus: []interface{}{
-				map[string]interface{}{
-					"greenlake_connected": []interface{}{
-						map[string]interface{}{"client_id": "id"},
-					},
-				},
-			},
-			wantMeta: incompleteMorpheusBlock,
-		},
-		{
 			name:     "no block",
 			morpheus: nil,
 			wantMeta: missingMorpheusBlock,
@@ -82,6 +71,43 @@ func TestProviderConfigureWithoutURL(t *testing.T) {
 				t.Errorf("unexpected guidance message:\ngot:\n%s\nwant:\n%s", msg, tc.wantMeta)
 			}
 		})
+	}
+}
+
+// When a greenlake_connected block is present but no url is set, the legacy
+// provider performs the GreenLake token exchange rather than reporting that the
+// block is incomplete. The exchange shares its result with the framework
+// provider, which is configured from the same block.
+func TestProviderConfigureAttemptsGreenLakeExchange(t *testing.T) {
+	t.Parallel()
+
+	d := schema.TestResourceDataRaw(t, Provider().Schema, map[string]interface{}{})
+
+	// An unreachable issuer, so the exchange fails locally rather than
+	// contacting a real GreenLake endpoint.
+	err := d.Set("morpheus", []interface{}{
+		map[string]interface{}{
+			"greenlake_connected": []interface{}{
+				map[string]interface{}{
+					"client_id":     "id",
+					"client_secret": "secret",
+					"issuer_url":    "",
+				},
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("failed to set morpheus block: %v", err)
+	}
+
+	meta, diags := providerConfigure(context.Background(), d)
+
+	if !diags.HasError() {
+		t.Fatalf("expected the exchange to be attempted and to fail, got meta %v", meta)
+	}
+
+	if !strings.Contains(diags[0].Summary, "GreenLake") {
+		t.Errorf("expected a GreenLake exchange error, got: %s", diags[0].Summary)
 	}
 }
 

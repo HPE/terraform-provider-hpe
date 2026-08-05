@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/greenlake/connected"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/catalogitem"
@@ -360,15 +361,14 @@ const missingMorpheusBlock = `Morpheus resource or data source present, but poss
  }
 `
 
-// incompleteMorpheusBlock is returned when a morpheus block is present but does
-// not carry a url. Legacy (SDKv2) resources build their client directly from
-// this block and cannot use connection details obtained by the framework
-// provider from a greenlake_connected block.
-const incompleteMorpheusBlock = `Morpheus resource or data source present, but the morpheus provider block does not set "url".
+// incompleteMorpheusBlock is returned when a morpheus block is present but no
+// connection details could be determined from it, either directly or by way of
+// a greenlake_connected block.
+const incompleteMorpheusBlock = `Morpheus resource or data source present, but the morpheus provider block
+does not set "url", and no usable greenlake_connected block was found.
 
-Legacy Morpheus resources and data sources require the connection details to be
-set explicitly, and cannot use details obtained from a greenlake_connected
-block:
+Set the connection details explicitly, or configure a greenlake_connected block
+so that they can be obtained from GreenLake:
  
  provider "hpe" {
    morpheus {
@@ -405,6 +405,22 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Insecure:        morpheusConfig["insecure"].(bool), //.(bool),
 	}
 
+	// A greenlake_connected block supplies the url and access token by
+	// exchanging GreenLake credentials. The framework Morpheus provider
+	// performs the same exchange from the same configuration and the result is
+	// memoised, so this does not repeat the network calls.
+	if config.Url == "" {
+		if glc, ok := greenlakeConnectedConfig(morpheusConfig); ok {
+			url, token, err := connected.TokenExchange(ctx, glc)
+			if err != nil {
+				return nil, diag.FromErr(err)
+			}
+
+			config.Url = url
+			config.AccessToken = token
+		}
+	}
+
 	// Without a url the legacy client cannot reach Morpheus at all, so report
 	// it here rather than failing later with a less obvious error.
 	if config.Url == "" {
@@ -412,4 +428,38 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	}
 
 	return config.Client()
+}
+
+// greenlakeConnectedConfig reads a greenlake_connected block from a morpheus
+// provider block. It reports false when the block is absent or empty.
+func greenlakeConnectedConfig(morpheusConfig map[string]interface{}) (connected.Config, bool) {
+	blocks, ok := morpheusConfig["greenlake_connected"].([]interface{})
+	if !ok || len(blocks) == 0 {
+		return connected.Config{}, false
+	}
+
+	// A block with no attributes set is represented as a nil element.
+	block, ok := blocks[0].(map[string]interface{})
+	if !ok {
+		return connected.Config{}, false
+	}
+
+	return connected.Config{
+		ClientID:     stringAttr(block, "client_id"),
+		ClientSecret: stringAttr(block, "client_secret"),
+		Location:     stringAttr(block, "location"),
+		Space:        stringAttr(block, "space"),
+		IssuerURL:    stringAttr(block, "issuer_url"),
+		IAMToken:     stringAttr(block, "iam_token"),
+		BrokerURL:    stringAttr(block, "broker_url"),
+	}, true
+}
+
+// stringAttr reads a string attribute, returning "" when it is absent or of an
+// unexpected type. This matches how the framework provider reads null values,
+// which matters because the configuration is used as a cache key.
+func stringAttr(m map[string]interface{}, key string) string {
+	v, _ := m[key].(string)
+
+	return v
 }
