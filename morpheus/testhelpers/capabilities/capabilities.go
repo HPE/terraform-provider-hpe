@@ -108,6 +108,9 @@ const (
 
 	// Licensing
 	License Capability = "license"
+
+	// Bare Metal
+	Metal Capability = "metal"
 )
 
 // String returns the string representation of the capability.
