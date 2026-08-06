@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestReady_EmptyString(t *testing.T) {
+func TestUnitReady_EmptyString(t *testing.T) {
 	t.Parallel()
 
 	if Ready("") {
@@ -14,7 +14,7 @@ func TestReady_EmptyString(t *testing.T) {
 	}
 }
 
-func TestReady_ZeroAddress(t *testing.T) {
+func TestUnitReady_ZeroAddress(t *testing.T) {
 	t.Parallel()
 
 	if Ready("0.0.0.0") {
@@ -22,7 +22,7 @@ func TestReady_ZeroAddress(t *testing.T) {
 	}
 }
 
-func TestReady_ValidIPv4(t *testing.T) {
+func TestUnitReady_ValidIPv4(t *testing.T) {
 	t.Parallel()
 
 	if !Ready("10.0.1.5") {
@@ -30,7 +30,7 @@ func TestReady_ValidIPv4(t *testing.T) {
 	}
 }
 
-func TestReady_ValidIPv6(t *testing.T) {
+func TestUnitReady_ValidIPv6(t *testing.T) {
 	t.Parallel()
 
 	if !Ready("fe80::1") {
@@ -38,7 +38,7 @@ func TestReady_ValidIPv6(t *testing.T) {
 	}
 }
 
-func TestReady_WhitespaceTrimmed(t *testing.T) {
+func TestUnitReady_WhitespaceTrimmed(t *testing.T) {
 	t.Parallel()
 
 	if Ready("  ") {
@@ -46,7 +46,7 @@ func TestReady_WhitespaceTrimmed(t *testing.T) {
 	}
 }
 
-func TestReady_WhitespaceAroundValid(t *testing.T) {
+func TestUnitReady_WhitespaceAroundValid(t *testing.T) {
 	t.Parallel()
 
 	if !Ready("  10.0.1.5  ") {
@@ -54,7 +54,7 @@ func TestReady_WhitespaceAroundValid(t *testing.T) {
 	}
 }
 
-func TestReady_WhitespaceAroundZero(t *testing.T) {
+func TestUnitReady_WhitespaceAroundZero(t *testing.T) {
 	t.Parallel()
 
 	if Ready("  0.0.0.0  ") {

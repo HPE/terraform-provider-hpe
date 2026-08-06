@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 // Read implements resource.Resource.
@@ -93,8 +94,8 @@ func refreshNodeState(
 		if cd.Id != nil && *cd.Id == containerID {
 			state.ContainerID = types.Int64Value(containerID)
 
-			if cd.Server != nil && cd.Server.Id != nil {
-				state.ServerID = types.Int64Value(*cd.Server.Id)
+			if cd.Server != nil {
+				state.ServerID = convert.Int64ToType(cd.Server.Id)
 			} else {
 				state.ServerID = types.Int64Null()
 			}

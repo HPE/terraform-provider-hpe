@@ -43,7 +43,7 @@ func makePlan(t *testing.T, m instanceNodeModel) tfsdk.Plan {
 
 // TestModifyPlan_NoPoolOnNonMetal_NoDiagnostics verifies that ModifyPlan
 // produces no diagnostics when resource_pool_id is null (virtual path).
-func TestModifyPlan_NoPoolOnNonMetal_NoDiagnostics(t *testing.T) {
+func TestUnitModifyPlan_NoPoolOnNonMetal_NoDiagnostics(t *testing.T) {
 	t.Parallel()
 
 	model := instanceNodeModel{
@@ -77,7 +77,7 @@ func TestModifyPlan_NoPoolOnNonMetal_NoDiagnostics(t *testing.T) {
 
 // TestModifyPlan_PoolUnknown_NoDiagnostics verifies that ModifyPlan produces
 // no diagnostics when resource_pool_id is unknown (e.g. from a data source).
-func TestModifyPlan_PoolUnknown_NoDiagnostics(t *testing.T) {
+func TestUnitModifyPlan_PoolUnknown_NoDiagnostics(t *testing.T) {
 	t.Parallel()
 
 	model := instanceNodeModel{

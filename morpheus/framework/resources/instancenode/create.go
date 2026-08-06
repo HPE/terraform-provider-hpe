@@ -16,6 +16,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 const defaultCreateTimeout = 90 * time.Minute
@@ -154,17 +155,22 @@ func (r *Resource) Create(
 	// Step 5: Resolve server_id and ip_address from the instance.
 	readErr := refreshNodeState(ctx, client, instanceID, containerID, &plan)
 	if readErr != nil {
-		// The node was created but we cannot read its state fully.
-		// Set partial state so Terraform knows about the container and
-		// can destroy it on next apply.
-		resp.Diagnostics.AddWarning(
-			"node partially created",
-			fmt.Sprintf("instance %d container %d was added but state "+
-				"read failed: %s. On next apply, Terraform will attempt "+
-				"to reconcile.", instanceID, containerID, readErr.Error()),
+		// The node exists on the appliance but its state could not be read.
+		// Taint rather than drop it: dropping would leak a real node, and
+		// leaving it untainted would keep a resource whose state we could
+		// not confirm.
+		resp.Diagnostics.AddError(
+			"node created but state read failed",
+			fmt.Sprintf("instance %d container %d was added but the state "+
+				"read failed: %s", instanceID, containerID, readErr.Error()),
 		)
-		// Still set state so the container_id is tracked.
-		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "instance_node",
+			ResourceID:   containerID,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}
@@ -175,11 +181,20 @@ func (r *Resource) Create(
 			ctx, client, instanceID, containerID, createTimeout,
 		)
 		if waitErr != nil {
+			// The node exists on the appliance, so returning without
+			// recording it would leak it.
 			resp.Diagnostics.AddError(
 				"IP address wait failed",
 				fmt.Sprintf("instance %d container %d: %s",
 					instanceID, containerID, waitErr.Error()),
 			)
+
+			cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+				ResourceType: "instance_node",
+				ResourceID:   containerID,
+				StateWriter:  &resp.State,
+				Diagnostics:  &resp.Diagnostics,
+			})
 
 			return
 		}

@@ -6,7 +6,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/resourcevalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -202,9 +201,57 @@ func (r *Resource) ConfigValidators(
 	_ context.Context,
 ) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
-		resourcevalidator.RequiredTogether(
-			path.MatchRoot("pre_provisioned"),
-			path.MatchRoot("selected_server_id"),
-		),
+		preProvisionedRequiresServerID{},
+	}
+}
+
+// preProvisionedRequiresServerID is a config validator that requires
+// selected_server_id only when pre_provisioned is explicitly true.
+// Unlike RequiredTogether, it does not fire when pre_provisioned is
+// false or absent.
+type preProvisionedRequiresServerID struct{}
+
+func (v preProvisionedRequiresServerID) Description(_ context.Context) string {
+	return "selected_server_id is required when pre_provisioned is true"
+}
+
+func (v preProvisionedRequiresServerID) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v preProvisionedRequiresServerID) ValidateResource(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var preProvisioned types.Bool
+
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("pre_provisioned"), &preProvisioned)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// If pre_provisioned is null, unknown, or false, no constraint applies.
+	if preProvisioned.IsNull() || preProvisioned.IsUnknown() || !preProvisioned.ValueBool() {
+		return
+	}
+
+	// pre_provisioned is true — selected_server_id must be set.
+	var selectedServerID types.Int64
+
+	resp.Diagnostics.Append(
+		req.Config.GetAttribute(ctx, path.Root("selected_server_id"), &selectedServerID)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if selectedServerID.IsNull() || selectedServerID.IsUnknown() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("selected_server_id"),
+			"selected_server_id is required when pre_provisioned is true",
+			"When pre_provisioned is set to true, selected_server_id must "+
+				"also be configured to identify the server to attach.",
+		)
 	}
 }

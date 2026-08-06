@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TestBuildAddNodeEnvelope_PreProvisionedFalse(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_PreProvisionedFalse(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -24,7 +24,7 @@ func TestBuildAddNodeEnvelope_PreProvisionedFalse(t *testing.T) {
 	}
 }
 
-func TestBuildAddNodeEnvelope_PreProvisionedNull(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_PreProvisionedNull(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -39,7 +39,7 @@ func TestBuildAddNodeEnvelope_PreProvisionedNull(t *testing.T) {
 	}
 }
 
-func TestBuildAddNodeEnvelope_PreProvisionedTrue(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_PreProvisionedTrue(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -67,7 +67,7 @@ func TestBuildAddNodeEnvelope_PreProvisionedTrue(t *testing.T) {
 	}
 }
 
-func TestBuildAddNodeEnvelope_AlwaysSendsCount1(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_AlwaysSendsCount1(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -82,7 +82,7 @@ func TestBuildAddNodeEnvelope_AlwaysSendsCount1(t *testing.T) {
 	}
 }
 
-func TestBuildAddNodeEnvelope_PoolFormat(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_PoolFormat(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -98,7 +98,7 @@ func TestBuildAddNodeEnvelope_PoolFormat(t *testing.T) {
 	}
 }
 
-func TestBuildAddNodeEnvelope_NoPoolOmitsKey(t *testing.T) {
+func TestUnitBuildAddNodeEnvelope_NoPoolOmitsKey(t *testing.T) {
 	t.Parallel()
 
 	plan := &instanceNodeModel{
@@ -122,7 +122,7 @@ func TestBuildAddNodeEnvelope_NoPoolOmitsKey(t *testing.T) {
 	}
 }
 
-func TestExtractContainerIDFromResults_Valid(t *testing.T) {
+func TestUnitExtractContainerIDFromResults_Valid(t *testing.T) {
 	t.Parallel()
 
 	results := map[string]any{
@@ -143,7 +143,7 @@ func TestExtractContainerIDFromResults_Valid(t *testing.T) {
 	}
 }
 
-func TestExtractContainerIDFromResults_NoContainers(t *testing.T) {
+func TestUnitExtractContainerIDFromResults_NoContainers(t *testing.T) {
 	t.Parallel()
 
 	results := map[string]any{
@@ -158,7 +158,7 @@ func TestExtractContainerIDFromResults_NoContainers(t *testing.T) {
 	}
 }
 
-func TestExtractContainerIDFromResults_WrongInstance(t *testing.T) {
+func TestUnitExtractContainerIDFromResults_WrongInstance(t *testing.T) {
 	t.Parallel()
 
 	results := map[string]any{

@@ -8,7 +8,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
-func TestIsMetal_CorrectCode(t *testing.T) {
+func TestUnitIsMetal_CorrectCode(t *testing.T) {
 	t.Parallel()
 
 	code := metalProvisionTypeCode
@@ -23,7 +23,7 @@ func TestIsMetal_CorrectCode(t *testing.T) {
 	}
 }
 
-func TestIsMetal_NonMetal(t *testing.T) {
+func TestUnitIsMetal_NonMetal(t *testing.T) {
 	t.Parallel()
 
 	code := "vmware"
@@ -38,7 +38,7 @@ func TestIsMetal_NonMetal(t *testing.T) {
 	}
 }
 
-func TestIsMetal_NilLayout(t *testing.T) {
+func TestUnitIsMetal_NilLayout(t *testing.T) {
 	t.Parallel()
 
 	inst := &sdk.GetInstance200ResponseInstance{
@@ -50,7 +50,7 @@ func TestIsMetal_NilLayout(t *testing.T) {
 	}
 }
 
-func TestIsMetal_NilProvisionTypeCode(t *testing.T) {
+func TestUnitIsMetal_NilProvisionTypeCode(t *testing.T) {
 	t.Parallel()
 
 	inst := &sdk.GetInstance200ResponseInstance{
@@ -64,7 +64,7 @@ func TestIsMetal_NilProvisionTypeCode(t *testing.T) {
 	}
 }
 
-func TestIsMetal_NilInstance(t *testing.T) {
+func TestUnitIsMetal_NilInstance(t *testing.T) {
 	t.Parallel()
 
 	if IsMetal(nil) {
@@ -75,7 +75,7 @@ func TestIsMetal_NilInstance(t *testing.T) {
 // format=="bareMetal" with a non-HPE provision type must be REJECTED.
 // This tests that keying on format would be wrong — we key on
 // provisionTypeCode, not format.
-func TestIsMetal_BareMetalFormatNonHPE(t *testing.T) {
+func TestUnitIsMetal_BareMetalFormatNonHPE(t *testing.T) {
 	t.Parallel()
 
 	// An instance with format=bareMetal but a non-HPE provision type
@@ -93,7 +93,7 @@ func TestIsMetal_BareMetalFormatNonHPE(t *testing.T) {
 	}
 }
 
-func TestProvisionTypeCode_Absent(t *testing.T) {
+func TestUnitProvisionTypeCode_Absent(t *testing.T) {
 	t.Parallel()
 
 	inst := &sdk.GetInstance200ResponseInstance{
@@ -106,7 +106,7 @@ func TestProvisionTypeCode_Absent(t *testing.T) {
 	}
 }
 
-func TestNotMetalDetail_ContainsBothCodes(t *testing.T) {
+func TestUnitNotMetalDetail_ContainsBothCodes(t *testing.T) {
 	t.Parallel()
 
 	detail := notMetalDetail(42, "vmware")
