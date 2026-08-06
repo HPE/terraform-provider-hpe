@@ -11,14 +11,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_bucket/example.tf example.tf.tmpl Name "Example Storage Bucket" ProviderType "s3"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_storage_bucket/example.tf example.tf.tmpl Name "Example Storage Bucket" ProviderType "s3" BucketName "example-bucket"
 
 func RenderStorageBucketConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
+	// bucket_name is optional in the schema (it only applies to Amazon, Azure,
+	// CIFS, NFSv3, Openstack Swift and Rackspace CDN) but the API rejects an
+	// s3 bucket without one:
+	//
+	//   400 {"errors":{"bucketName":"bucketName is required"}}
+	//
+	// so the example has to supply it.
 	defaults := map[string]string{
 		"Name":         "Example Storage Bucket",
 		"ProviderType": "s3",
+		"BucketName":   "example-bucket",
 	}
 
 	for key, value := range overrides {
