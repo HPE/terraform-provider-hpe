@@ -376,7 +376,7 @@ func mapAlertCorrelationPolicyToState(resp *client.AlertCorrelationPolicy, state
 
 	if resp.OrganizationMatchingType != "" {
 		state.OrganizationMatchingType = types.StringValue(resp.OrganizationMatchingType)
-	} else {
+	} else if state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
 		state.OrganizationMatchingType = types.StringNull()
 	}
 

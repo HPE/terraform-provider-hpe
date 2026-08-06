@@ -275,7 +275,8 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 							Attributes: map[string]schema.Attribute{
 								"priority": schema.StringAttribute{
 									Optional:            true,
-									MarkdownDescription: "Incident priority (e.g. `Normal`, `Low`, `High`, `Urgent`).",
+									Computed:            true,
+									MarkdownDescription: "Incident priority (e.g. `Normal`, `Low`, `High`, `Urgent`). Computed automatically when business impact and urgency are set.",
 									Validators: []validator.String{
 										stringvalidator.OneOf("Normal", "Low", "High", "Urgent"),
 									},
@@ -444,6 +445,7 @@ func (r *AlertEscalationPolicyResource) Schema(_ context.Context, _ resource.Sch
 func buildAlertEscalationPolicyRequest(
 	plan AlertEscalationPolicyModel,
 	apiClient *client.OpsRampClient,
+	scope string,
 ) client.AlertEscalationPolicy {
 	// default values
 	policy := client.AlertEscalationPolicy{
@@ -452,7 +454,7 @@ func buildAlertEscalationPolicyRequest(
 		EscalationType: plan.EscalationType.ValueString(),
 		PolicyType:     plan.PolicyType.ValueString(),
 		EnabledMode:    plan.EnabledMode.ValueString(),
-		Scope:          &client.EscalationScope{Uuid: apiClient.TenantId},
+		Scope:          &client.EscalationScope{Uuid: scope},
 		Precedence:     nil,                           // unless determined by logic below
 		AllClients:     false,                         // unless determined by logic below
 		Resources:      []client.EscalationResource{}, // unless determined by logic below
@@ -631,6 +633,8 @@ func buildAlertEscalationPolicyRequest(
 }
 
 func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *AlertEscalationPolicyModel, isMSP bool) {
+	oldEscalations := state.Escalations
+
 	state.Id = types.StringValue(resp.Id)
 	state.Name = types.StringValue(resp.Name)
 	state.Description = types.StringValue(resp.Description)
@@ -697,6 +701,20 @@ func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *
 			}
 
 			if e.Incident != nil {
+				// Preserve plan/state values for ID fields the API may not echo back.
+				var oldInc *EscalationIncidentModel
+				if i < len(oldEscalations) {
+					oldInc = oldEscalations[i].Incident
+				}
+
+				prevString := func(old *types.String) types.String {
+					if old != nil && !old.IsNull() {
+						return *old
+					}
+
+					return types.StringValue("")
+				}
+
 				inc := &EscalationIncidentModel{
 					Priority:            types.StringValue(e.Incident.Priority),
 					Subject:             types.StringValue(e.Incident.Subject),
@@ -709,7 +727,19 @@ func mapAlertEscalationPolicyToState(resp *client.AlertEscalationPolicy, state *
 					UrgencyId:           types.StringValue(""),
 					RosterId:            types.StringNull(),
 					KnowledgeArticleIds: []types.String{},
-					Cc:                  types.StringValue(e.Incident.Cc),
+					Cc:                  types.StringNull(),
+				}
+
+				if oldInc != nil {
+					inc.AssigneeGroupId = prevString(&oldInc.AssigneeGroupId)
+					inc.CategoryId = prevString(&oldInc.CategoryId)
+					inc.SubCategoryId = prevString(&oldInc.SubCategoryId)
+					inc.BusinessImpactId = prevString(&oldInc.BusinessImpactId)
+					inc.UrgencyId = prevString(&oldInc.UrgencyId)
+				}
+
+				if e.Incident.Cc != "" {
+					inc.Cc = types.StringValue(e.Incident.Cc)
 				}
 				if e.Incident.AssigneeGroup != nil {
 					inc.AssigneeGroupId = types.StringValue(e.Incident.AssigneeGroup.UniqueId)
@@ -814,7 +844,7 @@ func (r *AlertEscalationPolicyResource) Create(ctx context.Context, req resource
 		tenantId = plan.Client.ValueString()
 	}
 
-	policy := buildAlertEscalationPolicyRequest(plan, r.apiClient)
+	policy := buildAlertEscalationPolicyRequest(plan, r.apiClient, tenantId)
 
 	created, err := r.apiClient.CreateAlertEscalationPolicy(tenantId, policy)
 	if err != nil {
@@ -882,7 +912,7 @@ func (r *AlertEscalationPolicyResource) Update(ctx context.Context, req resource
 		tenantId = state.Client.ValueString()
 	}
 
-	policy := buildAlertEscalationPolicyRequest(plan, r.apiClient)
+	policy := buildAlertEscalationPolicyRequest(plan, r.apiClient, tenantId)
 
 	updated, err := r.apiClient.UpdateAlertEscalationPolicy(tenantId, state.Id.ValueString(), policy)
 	if err != nil {
