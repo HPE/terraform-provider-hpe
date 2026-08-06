@@ -79,6 +79,7 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 	switch {
 	case len(m.PCEIdentity) > 0:
 		url, token, err = pceIdentityTokenExchange(ctx, &m.PCEIdentity[0])
+		println("Minted morpheus token (framework): " + token)
 	case len(m.PCEDisconnectedIdentity) > 0:
 		url, token, err = pceDisconnectedIdentityTokenExchange(ctx, &m.PCEDisconnectedIdentity[0])
 	}
@@ -337,15 +338,15 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 // for a pce_identity block.
 //
 // The SDKv2 Morpheus provider performs the same exchange from the same
-// configuration; pce.TokenExchange memoises its result, so the two
-// providers share a single exchange per graph walk.
+// configuration, so a configuration using this block exchanges once per muxed
+// provider.
 func pceIdentityTokenExchange(
 	ctx context.Context,
 	m *model.PCEIdentityModel,
 ) (string, string, error) {
 	// ValueString returns "" for null values, which matches how the SDKv2
-	// provider reads the same block. The two must agree, as the configuration
-	// is the cache key.
+	// provider reads the same block. The two must agree so that both resolve
+	// the same Morpheus instance.
 	return pce.TokenExchange(ctx, pce.Config{
 		ClientID:     m.ClientID.ValueString(),
 		ClientSecret: m.ClientSecret.ValueString(),

@@ -476,22 +476,21 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 
 	// An identity block supplies the url and access token by exchanging
 	// GreenLake credentials. The framework Morpheus provider performs the same
-	// exchange from the same configuration and the result is memoised, so this
-	// does not repeat the network calls.
+	// exchange from the same configuration, so this repeats it rather than
+	// sharing a result with it.
 	//
 	// The framework provider rejects configurations that set both an identity
-	// block and the connection details directly, so by the time this runs at
-	// most one source is present.
-	if config.Url == "" {
-		if glc, ok := identityConfig(morpheusConfig); ok {
-			url, token, err := pce.TokenExchange(ctx, glc)
-			if err != nil {
-				return nil, diag.FromErr(err)
-			}
-
-			config.Url = url
-			config.AccessToken = token
+	// block and the connection details directly, so at most one source of
+	// connection details is present here.
+	if glc, ok := identityConfig(morpheusConfig); ok {
+		url, token, err := pce.TokenExchange(ctx, glc)
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
+
+		println("Minted morpheus token (sdkv2): " + token)
+		config.Url = url
+		config.AccessToken = token
 	}
 
 	// Without a url the legacy client cannot reach Morpheus at all, so report
@@ -579,7 +578,8 @@ func pceDisconnectedIdentityConfig(morpheusConfig map[string]interface{}) (pce.C
 
 // stringAttr reads a string attribute, returning "" when it is absent or of an
 // unexpected type. This matches how the framework provider reads null values,
-// which matters because the configuration is used as a cache key.
+// which matters because both providers must resolve the same Morpheus instance
+// from the same block.
 func stringAttr(m map[string]interface{}, key string) string {
 	v, _ := m[key].(string)
 

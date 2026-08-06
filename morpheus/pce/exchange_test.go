@@ -187,46 +187,18 @@ func TestTokenExchangeScopesDisconnectedByWorkspace(t *testing.T) {
 	}
 }
 
-// The IAM version changes which Morpheus instance is resolved, so it must take
-// part in the cache key.
-func TestTokenExchangeIsolatesIAMVersions(t *testing.T) {
+// Nothing is cached between calls, so a repeated exchange has to reach the
+// broker again. This is the counterpart of the removed memoisation: the two
+// muxed providers each perform their own exchange.
+func TestTokenExchangeIsNotCached(t *testing.T) {
 	srv, calls := newTestBroker(t)
 
-	glcs := Config{
-		IAMToken:  testIAMToken(t),
-		BrokerURL: srv.URL,
-		Space:     "isolates-versions",
-		Version:   iamversion.GLCS,
-	}
-
-	glp := glcs
-	glp.Version = iamversion.GLP
-
-	if _, _, err := TokenExchange(context.Background(), glcs); err != nil {
-		t.Fatalf("GLCS TokenExchange() unexpected error: %v", err)
-	}
-
-	if _, _, err := TokenExchange(context.Background(), glp); err != nil {
-		t.Fatalf("GLP TokenExchange() unexpected error: %v", err)
-	}
-
-	if got, want := calls.Load(), int64(2); got != want {
-		t.Errorf("broker exchanges = %d, want %d: the IAM version must not share a cache entry", got, want)
-	}
-}
-
-// The framework and SDKv2 providers both exchange from the same configuration,
-// so the second call must be served from the cache.
-func TestTokenExchangeIsMemoised(t *testing.T) {
-	srv, calls := newTestBroker(t)
-
-	// IAMToken short circuits the IAM leg, so only the broker is exercised.
-	// The values are unique to this test because the cache is package level.
 	cfg := Config{
 		IAMToken:  testIAMToken(t),
 		BrokerURL: srv.URL,
+		Version:   iamversion.GLCS,
 		Location:  "BLR",
-		Space:     "memoised",
+		Space:     "not-cached",
 	}
 
 	url, token, err := TokenExchange(context.Background(), cfg)
@@ -238,74 +210,11 @@ func TestTokenExchangeIsMemoised(t *testing.T) {
 		t.Fatalf("unexpected details: url=%q token=%q", url, token)
 	}
 
-	cachedURL, cachedToken, err := TokenExchange(context.Background(), cfg)
-	if err != nil {
+	if _, _, err := TokenExchange(context.Background(), cfg); err != nil {
 		t.Fatalf("second TokenExchange() unexpected error: %v", err)
 	}
 
-	if cachedURL != url || cachedToken != token {
-		t.Errorf("cached details differ: url=%q token=%q", cachedURL, cachedToken)
-	}
-
-	if got := calls.Load(); got != 1 {
-		t.Errorf("broker was called %d times, want 1", got)
-	}
-}
-
-// Configurations that target different places must not share a cached result.
-func TestTokenExchangeIsolatesConfigurations(t *testing.T) {
-	srv, calls := newTestBroker(t)
-
-	first := Config{
-		IAMToken:  testIAMToken(t),
-		BrokerURL: srv.URL,
-		Location:  "BLR",
-		Space:     "isolated-one",
-	}
-
-	second := first
-	second.Space = "isolated-two"
-
-	if _, _, err := TokenExchange(context.Background(), first); err != nil {
-		t.Fatalf("TokenExchange(first) unexpected error: %v", err)
-	}
-
-	if _, _, err := TokenExchange(context.Background(), second); err != nil {
-		t.Fatalf("TokenExchange(second) unexpected error: %v", err)
-	}
-
-	if got := calls.Load(); got != 2 {
-		t.Errorf("broker was called %d times, want 2", got)
-	}
-}
-
-// A failed exchange must not be cached, so that a later attempt can retry.
-func TestTokenExchangeDoesNotCacheFailures(t *testing.T) {
-	var calls atomic.Int64
-
-	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
-		calls.Add(1)
-
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_, _ = w.Write([]byte(`{"error": "unauthorized"}`))
-	}))
-	t.Cleanup(srv.Close)
-
-	cfg := Config{
-		IAMToken:  testIAMToken(t),
-		BrokerURL: srv.URL,
-		Location:  "BLR",
-		Space:     "failure",
-	}
-
-	for i := range 2 {
-		if _, _, err := TokenExchange(context.Background(), cfg); err == nil {
-			t.Fatalf("attempt %d: expected an error, got nil", i+1)
-		}
-	}
-
-	if got := calls.Load(); got != 2 {
-		t.Errorf("broker was called %d times, want 2", got)
+	if got, want := calls.Load(), int64(2); got != want {
+		t.Errorf("broker exchanges = %d, want %d: the exchange must not be cached", got, want)
 	}
 }

@@ -12,7 +12,6 @@ package pce
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	brokerclient "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/client"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
@@ -26,11 +25,6 @@ const DefaultBrokerURL = "https://vmaas-broker.us1.greenlake-hpe.com"
 // Config is the PCE Identity configuration needed to resolve Morpheus
 // connection details. It deliberately holds plain strings rather than Terraform
 // types so that both the framework and the SDKv2 Morpheus provider can use it.
-//
-// Config is also used as the key of the result cache, so any field that changes
-// which Morpheus instance is resolved must be represented here. Adding a
-// targeting field without adding it to this struct would let two different
-// configurations share a cached result.
 type Config struct {
 	ClientID     string
 	ClientSecret string
@@ -52,55 +46,24 @@ type Config struct {
 	WorkspaceID string
 }
 
-type result struct {
-	url   string
-	token string
-}
-
-// The cache holds credentials for the lifetime of the process. Terraform runs a
-// provider process per provider configuration and destroys it at the end of
-// each graph walk, so entries are short lived.
-var (
-	cacheMu sync.Mutex
-	cache   = map[Config]result{}
-)
-
-// TokenExchange returns the Morpheus URL and access token for cfg.
+// TokenExchange obtains a GreenLake IAM token and trades it with the VMaaS
+// broker for the Morpheus URL and access token.
 //
-// Results are memoised per configuration. The "hpe" provider muxes a framework
-// provider and an SDKv2 provider, and Terraform configures both from the same
-// configuration, so without memoisation the exchange would run twice per graph
-// walk. Keying on the configuration also keeps provider blocks that share a
-// process, which happens under TF_REATTACH_PROVIDERS, independent of each
-// other.
+// Every call performs the exchange. The "hpe" provider muxes a framework
+// provider and an SDKv2 provider and Terraform configures both, so a
+// configuration using an identity block exchanges once per provider rather than
+// once per graph walk.
+//
+// Whether that yields the same Morpheus token twice is the broker's decision,
+// not something this package arranges: at the time of writing the broker
+// returns a briefly cached token for Connected PCE and mints one per request
+// for Disconnected PCE. Both are safe, because issuing a token does not
+// invalidate one already issued, so the two providers cannot disturb each
+// other's credentials.
 //
 // The returned access token is used as-is and is not refreshed, so callers are
 // expected to finish their work within its validity period.
-func TokenExchange(ctx context.Context, cfg Config) (string, string, error) {
-	// Held across the exchange so that concurrent callers for the same
-	// configuration do not each perform it. Terraform normally runs a single
-	// provider configuration per process, so contention is not expected.
-	cacheMu.Lock()
-	defer cacheMu.Unlock()
-
-	if r, ok := cache[cfg]; ok {
-		return r.url, r.token, nil
-	}
-
-	url, token, err := cfg.exchange(ctx)
-	if err != nil {
-		// Deliberately not cached, so that a later attempt can retry.
-		return "", "", err
-	}
-
-	cache[cfg] = result{url: url, token: token}
-
-	return url, token, nil
-}
-
-// exchange obtains a GreenLake IAM token and trades it with the VMaaS broker
-// for Morpheus connection details.
-func (c Config) exchange(ctx context.Context) (string, string, error) {
+func TokenExchange(ctx context.Context, c Config) (string, string, error) {
 	iamToken, err := c.iamToken(ctx)
 	if err != nil {
 		return "", "", err

@@ -67,3 +67,13 @@ block is needed and both exchanges are skipped.
 Wired into `morpheus.Configure` via `pceIdentityTokenExchange`. The access token
 returned by the broker is used as-is and is not refreshed, so work must complete
 within the token's validity period.
+
+The exchange is not cached. The `hpe` provider muxes a framework provider and an
+SDKv2 provider and Terraform configures both, so a configuration using an
+identity block exchanges once per provider.
+
+Whether that returns the same Morpheus token twice is up to the broker: it
+currently serves a briefly cached token for Connected PCE and mints one per
+request for Disconnected PCE. Neither is relied on here, and both are safe —
+issuing a token does not invalidate one already issued, so the two providers
+cannot disturb each other's credentials.
