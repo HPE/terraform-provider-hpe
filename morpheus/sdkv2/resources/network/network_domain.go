@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package network
 
@@ -51,6 +51,7 @@ func ResourceNetworkDomain() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+				Deprecated:  "Has no effect for network domains. Use domain_controller instead.",
 			},
 			"domain_controller": {
 				Description: "The domain controller used to facilitate an automated domain join operation",
@@ -64,9 +65,24 @@ func ResourceNetworkDomain() *schema.Resource {
 				Optional:    true,
 			},
 			"domain_password": {
-				Description: "The password of the account used to facilitate an automated domain join operation",
-				Type:        schema.TypeString,
-				Sensitive:   true,
+				Description:   "The password of the account used to facilitate an automated domain join operation",
+				Type:          schema.TypeString,
+				Sensitive:     true,
+				Optional:      true,
+				Deprecated:    "Use domain_password_wo instead; write-only values are not stored in state.",
+				ConflictsWith: []string{"domain_password_wo"},
+			},
+			"domain_password_wo": {
+				Description:   "The account password for an automated domain join (write-only, not stored in state).",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"domain_password"},
+			},
+			"domain_password_wo_version": {
+				Description: "Increment to re-send domain_password_wo; write-only values are not stored in state.",
+				Type:        schema.TypeInt,
 				Optional:    true,
 			},
 			"active": {
@@ -86,6 +102,7 @@ func ResourceNetworkDomain() *schema.Resource {
 				Description: "The tenant to assign the network domain",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				Computed:    true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -132,18 +149,62 @@ func resourceNetworkDomainCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
 	}
 
-	// domainController := d.Get("domain_controller").(bool) // .(bool)
-	// active := d.Get("active").(bool)
+	var active bool
+	if v, ok := d.Get("active").(bool); ok {
+		active = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("active", d.Get("active")))
+	}
+
+	var domainController bool
+	if v, ok := d.Get("domain_controller").(bool); ok {
+		domainController = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_controller", d.Get("domain_controller")))
+	}
+
+	var domainUsername string
+	if v, ok := d.Get("domain_username").(string); ok {
+		domainUsername = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_username", d.Get("domain_username")))
+	}
+
+	domainBody := map[string]any{
+		"name":             name,
+		"description":      description,
+		"publicZone":       publicZone,
+		"visibility":       visibility,
+		"active":           active,
+		"domainController": domainController,
+		"domainUsername":   domainUsername,
+	}
+	// tenant_id maps to the API "account" association (master tenant only).
+	if v, ok := d.GetOk("tenant_id"); ok {
+		if tenantID, isInt := v.(int); isInt {
+			domainBody["account"] = map[string]any{"id": tenantID}
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
+		}
+	}
+	// domain_password is deprecated in favour of the write-only
+	// domain_password_wo; send whichever is set.
+	if v, ok := d.GetOk("domain_password"); ok {
+		if domainPassword, isString := v.(string); isString {
+			domainBody["domainPassword"] = domainPassword
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("domain_password", v))
+		}
+	}
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+		wo, _ := rawConfig.GetAttr("domain_password_wo").Unmark()
+		if !wo.IsNull() && wo.IsKnown() && wo.AsString() != "" {
+			domainBody["domainPassword"] = wo.AsString()
+		}
+	}
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"networkDomain": map[string]any{
-				"name":        name,
-				"description": description,
-				"publicZone":  publicZone,
-				"visibility":  visibility,
-				// "domainController": domainController,
-				// "active":active,
-			},
+			"networkDomain": domainBody,
 		},
 	}
 	resp, err := client.CreateNetworkDomain(req)
@@ -258,6 +319,23 @@ func resourceNetworkDomainRead(ctx context.Context, d *schema.ResourceData, meta
 	if err := d.Set("visibility", networkDomain.Visibility); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := d.Set("domain_username", networkDomain.DomainUsername); err != nil {
+		return diag.FromErr(err)
+	}
+	// auto_join_domain has no Morpheus API counterpart; preserve the prior
+	// state value so imported state matches applied state.
+	if err := d.Set("auto_join_domain", d.Get("auto_join_domain")); err != nil {
+		return diag.FromErr(err)
+	}
+	// tenant_id maps to the API "account" association. Clear it when the
+	// domain has no account so the association drifts instead of going stale.
+	if networkDomain.Account != nil {
+		if err := d.Set("tenant_id", int(networkDomain.Account.ID)); err != nil {
+			return diag.FromErr(err)
+		}
+	} else if err := d.Set("tenant_id", 0); err != nil {
+		return diag.FromErr(err)
+	}
 	// d.Set("fqdn", networkDomain.Fqdn)
 
 	return diags
@@ -287,19 +365,76 @@ func resourceNetworkDomainUpdate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(helpers.TypeAssertFailError("description", d.Get("description")))
 	}
 
-	// publicZone := d.Get("public_zone").(bool) // .(bool)
-	// domainController := d.Get("domain_controller").(bool) // .(bool)
-	// active := d.Get("active").(bool)
+	var publicZone bool
+	if v, ok := d.Get("public_zone").(bool); ok {
+		publicZone = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("public_zone", d.Get("public_zone")))
+	}
 
+	var visibility string
+	if v, ok := d.Get("visibility").(string); ok {
+		visibility = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("visibility", d.Get("visibility")))
+	}
+
+	var active bool
+	if v, ok := d.Get("active").(bool); ok {
+		active = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("active", d.Get("active")))
+	}
+
+	var domainController bool
+	if v, ok := d.Get("domain_controller").(bool); ok {
+		domainController = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_controller", d.Get("domain_controller")))
+	}
+
+	var domainUsername string
+	if v, ok := d.Get("domain_username").(string); ok {
+		domainUsername = v
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("domain_username", d.Get("domain_username")))
+	}
+
+	domainBody := map[string]any{
+		"name":             name,
+		"description":      description,
+		"publicZone":       publicZone,
+		"visibility":       visibility,
+		"active":           active,
+		"domainController": domainController,
+		"domainUsername":   domainUsername,
+	}
+	// tenant_id maps to the API "account" association (master tenant only).
+	if v, ok := d.GetOk("tenant_id"); ok {
+		if tenantID, isInt := v.(int); isInt {
+			domainBody["account"] = map[string]any{"id": tenantID}
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
+		}
+	}
+	// domain_password is deprecated in favour of the write-only
+	// domain_password_wo; send whichever is configured. Omitting the field
+	// clears the stored credential, so a configured value is always sent.
+	if domainPassword, ok := d.Get("domain_password").(string); ok && domainPassword != "" {
+		domainBody["domainPassword"] = domainPassword
+	}
+	if rawConfig := d.GetRawConfig(); !rawConfig.IsNull() && rawConfig.IsKnown() {
+		wo, _ := rawConfig.GetAttr("domain_password_wo").Unmark()
+		switch {
+		case !wo.IsNull() && wo.IsKnown() && wo.AsString() != "":
+			domainBody["domainPassword"] = wo.AsString()
+		case d.HasChange("domain_password_wo_version"):
+			return diag.Errorf("domain_password_wo_version changed but domain_password_wo is not set")
+		}
+	}
 	req := &morpheus.Request{
 		Body: map[string]any{
-			"networkDomain": map[string]any{
-				"name":        name,
-				"description": description,
-				// "publicZone": publicZone,
-				// "domainController": domainController,
-				//"active":active,
-			},
+			"networkDomain": domainBody,
 		},
 	}
 	resp, err := client.UpdateNetworkDomain(convert.StringToInt64(id), req)
@@ -347,10 +482,13 @@ func resourceNetworkDomainDelete(ctx context.Context, d *schema.ResourceData, me
 	req := &morpheus.Request{}
 	resp, err := client.DeleteNetworkDomain(convert.StringToInt64(id), req)
 	if err != nil {
+		// A 404 means the domain is already gone, so the delete has
+		// effectively succeeded and the resource can leave state.
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %s", resp, err)
+			d.SetId("")
 
-			return diag.FromErr(err)
+			return diags
 		} else {
 			log.Printf("API FAILURE: %s - %s", resp, err)
 

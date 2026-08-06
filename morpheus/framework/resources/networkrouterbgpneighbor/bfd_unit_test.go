@@ -56,6 +56,8 @@ func TestBfdTimers(t *testing.T) {
 
 			if interval == nil || multiple == nil {
 				t.Fatal("BFD timers must always be sent, never nil")
+
+				return
 			}
 
 			if *interval != tc.wantInterval {
