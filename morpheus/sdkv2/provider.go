@@ -8,7 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/automation"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/blueprint"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/catalogitem"
@@ -237,7 +238,7 @@ func providerSchemaMorpheus() *schema.Schema {
 					Type:     schema.TypeString,
 					Optional: true,
 					Description: "Morpheus instance URL. May be omitted when it is " +
-						"supplied by a pce_identity block.",
+						"supplied by a pce_identity or pce_disconnected_identity block.",
 				},
 
 				"access_token": {
@@ -309,9 +310,11 @@ func providerSchemaMorpheus() *schema.Schema {
 							},
 
 							"location": {
-								Type:        schema.TypeString,
-								Optional:    true,
-								Description: "Location of the GreenLake VMaaS service.",
+								Type:     schema.TypeString,
+								Required: true,
+								Description: "Name of the site whose Morpheus instance to use, as shown " +
+									"in the PCE UI. It selects the service instance within the " +
+									"space and scopes the roles granted to the returned token.",
 							},
 
 							"space": {
@@ -344,6 +347,72 @@ func providerSchemaMorpheus() *schema.Schema {
 						},
 					},
 				},
+
+				// Mirrors the pce_disconnected_identity block on the framework
+				// Morpheus provider. As above, this must match what
+				// utils/convert produces from the framework schema, including
+				// descriptions and which attributes are required.
+				"pce_disconnected_identity": {
+					Type:     schema.TypeList,
+					Optional: true,
+					MaxItems: 1,
+					Description: "Configuration block for using Morpheus with Disconnected PCE " +
+						"(Private Cloud Enterprise) Identity",
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"client_id": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Description: "GreenLake API client ID used for authentication.",
+							},
+
+							"client_secret": {
+								Type:        schema.TypeString,
+								Optional:    true,
+								Sensitive:   true,
+								Description: "GreenLake API client secret used for authentication.",
+							},
+
+							"issuer_url": {
+								Type:     schema.TypeString,
+								Optional: true,
+								Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
+									`This should be set to the "Issuer" URL of the API client.`,
+							},
+
+							"iam_token": {
+								Type:      schema.TypeString,
+								Optional:  true,
+								Sensitive: true,
+								Description: "Pre-generated GreenLake IAM token. If set, token " +
+									"generation from credentials is skipped. The token is " +
+									"decoded to check its expiry, so it must be a JWT.",
+							},
+
+							"location": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: "Name of the site whose Morpheus instance to use, as shown " +
+									"in the PCE UI. It selects the service instance within the " +
+									"workspace and scopes the roles granted to the returned token.",
+							},
+
+							"workspace_id": {
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "GreenLake Platform workspace ID used to scope the broker exchange.",
+							},
+
+							"broker_url": {
+								Type:     schema.TypeString,
+								Required: true,
+								Description: "URL of the on-premise VMaaS broker used for the CMP " +
+									"details exchange. There is no default: a Disconnected " +
+									"deployment has no HPE hosted broker to fall back to.",
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -363,12 +432,12 @@ const missingMorpheusBlock = `Morpheus resource or data source present, but poss
 
 // incompleteMorpheusBlock is returned when a morpheus block is present but no
 // connection details could be determined from it, either directly or by way of
-// a pce_identity block.
+// an identity block.
 const incompleteMorpheusBlock = `Morpheus resource or data source present, but the morpheus provider block
-does not set "url", and no usable pce_identity block was found.
+does not set "url", and no usable identity block was found.
 
-Set the connection details explicitly, or configure a pce_identity block
-so that they can be obtained from GreenLake:
+Set the connection details explicitly, or configure a pce_identity or
+pce_disconnected_identity block so that they can be obtained from GreenLake:
  
  provider "hpe" {
    morpheus {
@@ -405,13 +474,17 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Insecure:        morpheusConfig["insecure"].(bool), //.(bool),
 	}
 
-	// A pce_identity block supplies the url and access token by
-	// exchanging GreenLake credentials. The framework Morpheus provider
-	// performs the same exchange from the same configuration and the result is
-	// memoised, so this does not repeat the network calls.
+	// An identity block supplies the url and access token by exchanging
+	// GreenLake credentials. The framework Morpheus provider performs the same
+	// exchange from the same configuration and the result is memoised, so this
+	// does not repeat the network calls.
+	//
+	// The framework provider rejects configurations that set both an identity
+	// block and the connection details directly, so by the time this runs at
+	// most one source is present.
 	if config.Url == "" {
-		if glc, ok := pceIdentityConfig(morpheusConfig); ok {
-			url, token, err := connected.TokenExchange(ctx, glc)
+		if glc, ok := identityConfig(morpheusConfig); ok {
+			url, token, err := pce.TokenExchange(ctx, glc)
 			if err != nil {
 				return nil, diag.FromErr(err)
 			}
@@ -430,21 +503,49 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 	return config.Client()
 }
 
-// pceIdentityConfig reads a pce_identity block from a morpheus
-// provider block. It reports false when the block is absent or empty.
-func pceIdentityConfig(morpheusConfig map[string]interface{}) (connected.Config, bool) {
-	blocks, ok := morpheusConfig["pce_identity"].([]interface{})
+// identityConfig reads whichever identity block is present from a morpheus
+// provider block. It reports false when neither is configured.
+//
+// The framework provider rejects configurations that set both, so the order
+// here only decides which one wins in a configuration that would already have
+// been rejected.
+func identityConfig(morpheusConfig map[string]interface{}) (pce.Config, bool) {
+	if cfg, ok := pceIdentityConfig(morpheusConfig); ok {
+		return cfg, true
+	}
+
+	return pceDisconnectedIdentityConfig(morpheusConfig)
+}
+
+// identityBlock returns the single element of a named identity block. It
+// reports false when the block is absent or empty.
+func identityBlock(
+	morpheusConfig map[string]interface{},
+	name string,
+) (map[string]interface{}, bool) {
+	blocks, ok := morpheusConfig[name].([]interface{})
 	if !ok || len(blocks) == 0 {
-		return connected.Config{}, false
+		return nil, false
 	}
 
 	// A block with no attributes set is represented as a nil element.
 	block, ok := blocks[0].(map[string]interface{})
 	if !ok {
-		return connected.Config{}, false
+		return nil, false
 	}
 
-	return connected.Config{
+	return block, true
+}
+
+// pceIdentityConfig reads a pce_identity block from a morpheus
+// provider block. It reports false when the block is absent or empty.
+func pceIdentityConfig(morpheusConfig map[string]interface{}) (pce.Config, bool) {
+	block, ok := identityBlock(morpheusConfig, "pce_identity")
+	if !ok {
+		return pce.Config{}, false
+	}
+
+	return pce.Config{
 		ClientID:     stringAttr(block, "client_id"),
 		ClientSecret: stringAttr(block, "client_secret"),
 		Location:     stringAttr(block, "location"),
@@ -452,6 +553,27 @@ func pceIdentityConfig(morpheusConfig map[string]interface{}) (connected.Config,
 		IssuerURL:    stringAttr(block, "issuer_url"),
 		IAMToken:     stringAttr(block, "iam_token"),
 		BrokerURL:    stringAttr(block, "broker_url"),
+		Version:      iamversion.GLCS,
+	}, true
+}
+
+// pceDisconnectedIdentityConfig reads a pce_disconnected_identity block from a
+// morpheus provider block. It reports false when the block is absent or empty.
+func pceDisconnectedIdentityConfig(morpheusConfig map[string]interface{}) (pce.Config, bool) {
+	block, ok := identityBlock(morpheusConfig, "pce_disconnected_identity")
+	if !ok {
+		return pce.Config{}, false
+	}
+
+	return pce.Config{
+		ClientID:     stringAttr(block, "client_id"),
+		ClientSecret: stringAttr(block, "client_secret"),
+		IssuerURL:    stringAttr(block, "issuer_url"),
+		IAMToken:     stringAttr(block, "iam_token"),
+		Location:     stringAttr(block, "location"),
+		WorkspaceID:  stringAttr(block, "workspace_id"),
+		BrokerURL:    stringAttr(block, "broker_url"),
+		Version:      iamversion.GLP,
 	}, true
 }
 

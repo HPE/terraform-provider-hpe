@@ -14,7 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/model"
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 )
@@ -65,20 +66,33 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 		return
 	}
 
-	// A pce_identity block supplies the Morpheus url and access token
-	// by exchanging GreenLake credentials, rather than having them configured
-	// directly. The schema limits the block to at most one element.
-	if len(m.PCEIdentity) > 0 {
-		url, token, err := pceIdentityTokenExchange(ctx, &m.PCEIdentity[0])
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"Failed to obtain Morpheus connection details from GreenLake",
-				err.Error(),
-			)
+	// An identity block supplies the Morpheus url and access token by
+	// exchanging GreenLake credentials, rather than having them configured
+	// directly. The schema limits each block to at most one element and
+	// rejects combining them with each other or with direct connection
+	// details, so at most one of these cases can apply.
+	var (
+		url, token string
+		err        error
+	)
 
-			return
-		}
+	switch {
+	case len(m.PCEIdentity) > 0:
+		url, token, err = pceIdentityTokenExchange(ctx, &m.PCEIdentity[0])
+	case len(m.PCEDisconnectedIdentity) > 0:
+		url, token, err = pceDisconnectedIdentityTokenExchange(ctx, &m.PCEDisconnectedIdentity[0])
+	}
 
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Failed to obtain Morpheus connection details from GreenLake",
+			err.Error(),
+		)
+
+		return
+	}
+
+	if url != "" {
 		m.URL = types.StringValue(url)
 		m.AccessToken = types.StringValue(token)
 	}
@@ -88,12 +102,35 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 	resp.DataSourceData = cf
 }
 
+// identityBlockValidators returns the validators for an identity block, which
+// may not be combined with the named sibling paths. Both identity blocks use
+// it so that they cannot drift apart.
+//
+// The raw listvalidator.SizeAtMost value has to appear in the returned slice:
+// utils/convert derives the SDKv2 MaxItems by reflecting on the validator's
+// concrete type name, so wrapping or replacing it would silently drop the
+// constraint and leave the muxed providers disagreeing.
+//
+// "insecure" is deliberately not conflicted with: it is a transport setting
+// that applies however the Morpheus URL was obtained.
+func identityBlockValidators(conflictsWith ...string) []validator.List {
+	expressions := make([]path.Expression, 0, len(conflictsWith))
+	for _, name := range conflictsWith {
+		expressions = append(expressions, path.MatchRelative().AtParent().AtName(name))
+	}
+
+	return []validator.List{
+		listvalidator.SizeAtMost(1),
+		listvalidator.ConflictsWith(expressions...),
+	}
+}
+
 func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"url": schema.StringAttribute{
 				Description: "Morpheus instance URL. May be omitted when it is " +
-					"supplied by a pce_identity block.",
+					"supplied by a pce_identity or pce_disconnected_identity block.",
 				Optional: true,
 				Validators: []validator.String{
 					stringvalidator.Any(
@@ -164,8 +201,10 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"location": schema.StringAttribute{
-							Description: "Location of the GreenLake VMaaS service.",
-							Optional:    true,
+							Description: "Name of the site whose Morpheus instance to use, as shown " +
+								"in the PCE UI. It selects the service instance within the " +
+								"space and scopes the roles granted to the returned token.",
+							Required: true,
 						},
 						"space": schema.StringAttribute{
 							Description: "GreenLake VMaaS space name (IAM Space) used for the broker exchange.",
@@ -202,13 +241,93 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 						},
 					},
 				},
-				Validators: []validator.List{
-					listvalidator.SizeAtMost(1),
-				},
+				Validators: identityBlockValidators(
+					// The mutual conflict is declared here only, and not on
+					// the other block as well, so that configuring both blocks
+					// is reported once rather than once per block.
+					"pce_disconnected_identity",
+					"url", "username", "password", "access_token", "tenant_subdomain",
+				),
 				// Only Description is set, never MarkdownDescription: the
 				// SDKv2 provider this is muxed with can only report plain text
 				// descriptions, and the schemas must match exactly.
 				Description: "Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity",
+			},
+			"pce_disconnected_identity": schema.ListNestedBlock{
+				NestedObject: schema.NestedBlockObject{
+					Attributes: map[string]schema.Attribute{
+						"client_id": schema.StringAttribute{
+							Description: "GreenLake API client ID used for authentication.",
+							Optional:    true,
+							Validators: []validator.String{
+								stringvalidator.AlsoRequires(
+									path.MatchRelative().AtParent().AtName("client_secret"),
+									path.MatchRelative().AtParent().AtName("issuer_url"),
+								),
+							},
+						},
+						"client_secret": schema.StringAttribute{
+							Description: "GreenLake API client secret used for authentication.",
+							Optional:    true,
+							Sensitive:   true,
+							Validators: []validator.String{
+								stringvalidator.AlsoRequires(
+									path.MatchRelative().AtParent().AtName("client_id"),
+									path.MatchRelative().AtParent().AtName("issuer_url"),
+								),
+							},
+						},
+						"issuer_url": schema.StringAttribute{
+							Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
+								`This should be set to the "Issuer" URL of the API client.`,
+							Optional: true,
+							Validators: []validator.String{
+								stringvalidator.AlsoRequires(
+									path.MatchRelative().AtParent().AtName("client_id"),
+									path.MatchRelative().AtParent().AtName("client_secret"),
+								),
+							},
+						},
+						"iam_token": schema.StringAttribute{
+							Description: "Pre-generated GreenLake IAM token. If set, token " +
+								"generation from credentials is skipped. The token is " +
+								"decoded to check its expiry, so it must be a JWT.",
+							Optional:  true,
+							Sensitive: true,
+							Validators: []validator.String{
+								stringvalidator.ConflictsWith(
+									path.MatchRelative().AtParent().AtName("client_id"),
+									path.MatchRelative().AtParent().AtName("client_secret"),
+									path.MatchRelative().AtParent().AtName("issuer_url"),
+								),
+							},
+						},
+						"location": schema.StringAttribute{
+							Description: "Name of the site whose Morpheus instance to use, as shown " +
+								"in the PCE UI. It selects the service instance within the " +
+								"workspace and scopes the roles granted to the returned token.",
+							Required: true,
+						},
+						"workspace_id": schema.StringAttribute{
+							Description: "GreenLake Platform workspace ID used to scope the broker exchange.",
+							Required:    true,
+						},
+						"broker_url": schema.StringAttribute{
+							Description: "URL of the on-premise VMaaS broker used for the CMP " +
+								"details exchange. There is no default: a Disconnected " +
+								"deployment has no HPE hosted broker to fall back to.",
+							Required: true,
+						},
+					},
+				},
+				Validators: identityBlockValidators(
+					"url", "username", "password", "access_token", "tenant_subdomain",
+				),
+				// Only Description is set, never MarkdownDescription: the
+				// SDKv2 provider this is muxed with can only report plain text
+				// descriptions, and the schemas must match exactly.
+				Description: "Configuration block for using Morpheus with Disconnected PCE " +
+					"(Private Cloud Enterprise) Identity",
 			},
 		},
 	}
@@ -218,7 +337,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 // for a pce_identity block.
 //
 // The SDKv2 Morpheus provider performs the same exchange from the same
-// configuration; connected.TokenExchange memoises its result, so the two
+// configuration; pce.TokenExchange memoises its result, so the two
 // providers share a single exchange per graph walk.
 func pceIdentityTokenExchange(
 	ctx context.Context,
@@ -227,7 +346,7 @@ func pceIdentityTokenExchange(
 	// ValueString returns "" for null values, which matches how the SDKv2
 	// provider reads the same block. The two must agree, as the configuration
 	// is the cache key.
-	return connected.TokenExchange(ctx, connected.Config{
+	return pce.TokenExchange(ctx, pce.Config{
 		ClientID:     m.ClientID.ValueString(),
 		ClientSecret: m.ClientSecret.ValueString(),
 		Location:     m.Location.ValueString(),
@@ -235,5 +354,27 @@ func pceIdentityTokenExchange(
 		IssuerURL:    m.IssuerURL.ValueString(),
 		IAMToken:     m.IAMToken.ValueString(),
 		BrokerURL:    m.BrokerURL.ValueString(),
+		Version:      iamversion.GLCS,
+	})
+}
+
+// pceDisconnectedIdentityTokenExchange resolves the Morpheus url and access
+// token for a pce_disconnected_identity block.
+//
+// It differs from the Connected exchange only in the IAM version and in how the
+// broker request is scoped; see pce.Config.
+func pceDisconnectedIdentityTokenExchange(
+	ctx context.Context,
+	m *model.PCEDisconnectedIdentityModel,
+) (string, string, error) {
+	return pce.TokenExchange(ctx, pce.Config{
+		ClientID:     m.ClientID.ValueString(),
+		ClientSecret: m.ClientSecret.ValueString(),
+		IssuerURL:    m.IssuerURL.ValueString(),
+		IAMToken:     m.IAMToken.ValueString(),
+		Location:     m.Location.ValueString(),
+		WorkspaceID:  m.WorkspaceID.ValueString(),
+		BrokerURL:    m.BrokerURL.ValueString(),
+		Version:      iamversion.GLP,
 	})
 }

@@ -19,6 +19,10 @@ type MorpheusProviderModel struct {
 	// blocks as list, set or map nesting, never single nesting. The schema
 	// limits it to at most one element.
 	PCEIdentity []PCEIdentityModel `tfsdk:"pce_identity"`
+	// PCEDisconnectedIdentity is the Disconnected PCE counterpart of
+	// PCEIdentity, and is a list for the same reason. The two blocks are
+	// mutually exclusive.
+	PCEDisconnectedIdentity []PCEDisconnectedIdentityModel `tfsdk:"pce_disconnected_identity"`
 }
 
 type PCEIdentityModel struct {
@@ -28,5 +32,22 @@ type PCEIdentityModel struct {
 	Space        types.String `tfsdk:"space"`
 	IssuerURL    types.String `tfsdk:"issuer_url"`
 	IAMToken     types.String `tfsdk:"iam_token"`
+	BrokerURL    types.String `tfsdk:"broker_url"`
+}
+
+// PCEDisconnectedIdentityModel is the Disconnected PCE identity block.
+//
+// It scopes by workspace_id where the Connected block uses space, as GLP
+// identifies a workspace where GLCS identifies an IAM space. Location is
+// required for both: the broker resolves it to a service instance within the
+// workspace, and derives from it the zone that the returned token's roles are
+// granted against.
+type PCEDisconnectedIdentityModel struct {
+	ClientID     types.String `tfsdk:"client_id"`
+	ClientSecret types.String `tfsdk:"client_secret"`
+	IssuerURL    types.String `tfsdk:"issuer_url"`
+	IAMToken     types.String `tfsdk:"iam_token"`
+	Location     types.String `tfsdk:"location"`
+	WorkspaceID  types.String `tfsdk:"workspace_id"`
 	BrokerURL    types.String `tfsdk:"broker_url"`
 }

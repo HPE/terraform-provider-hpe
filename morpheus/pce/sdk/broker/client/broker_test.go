@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"testing"
 
-	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/common"
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/models"
+	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/common"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/models"
 )
 
 const (

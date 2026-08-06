@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/models"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/models"
 )
 
 // SetScmClientToken injects an auth token onto the request context.

@@ -510,9 +510,10 @@ Optional:
 - `access_token` (String, Sensitive) Morpheus access token for authentication
 - `insecure` (Boolean) Explicitly allow the provider to perform "insecure" SSL requests. If omitted, default value is `false`
 - `password` (String, Sensitive) Morpheus password for authentication, required if username is set
+- `pce_disconnected_identity` (Block List, Max: 1) Configuration block for using Morpheus with Disconnected PCE (Private Cloud Enterprise) Identity (see [below for nested schema](#nestedblock--morpheus--pce_disconnected_identity))
 - `pce_identity` (Block List, Max: 1) Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity (see [below for nested schema](#nestedblock--morpheus--pce_identity))
 - `tenant_subdomain` (String) Morpheus tenant subdomain used for authentication
-- `url` (String) Morpheus instance URL. May be omitted when it is supplied by a pce_identity block.
+- `url` (String) Morpheus instance URL. May be omitted when it is supplied by a pce_identity or pce_disconnected_identity block.
 - `username` (String) Morpheus username for authentication, required if password is set
 
 
@@ -525,8 +526,30 @@ Optional:
 - `client_secret` (String, Sensitive) OAuth client secret for OpsRamp API
 - `endpoint` (String) OpsRamp Endpoint
 - `tenant` (String) OpsRamp Tenant ID
+=======
+<a id="nestedblock--morpheus--pce_disconnected_identity"></a>
+### Nested Schema for `morpheus.pce_disconnected_identity`
+
+Required:
+
+- `broker_url` (String) URL of the on-premise VMaaS broker used for the CMP details exchange. There is no default: a Disconnected deployment has no HPE hosted broker to fall back to.
+- `location` (String) Name of the site whose Morpheus instance to use, as shown in the PCE UI. It selects the service instance within the workspace and scopes the roles granted to the returned token.
+- `workspace_id` (String) GreenLake Platform workspace ID used to scope the broker exchange.
+
+Optional:
+
+- `client_id` (String) GreenLake API client ID used for authentication.
+- `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
+- `iam_token` (String, Sensitive) Pre-generated GreenLake IAM token. If set, token generation from credentials is skipped. The token is decoded to check its expiry, so it must be a JWT.
+- `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
+
+
 <a id="nestedblock--morpheus--pce_identity"></a>
 ### Nested Schema for `morpheus.pce_identity`
+
+Required:
+
+- `location` (String) Name of the site whose Morpheus instance to use, as shown in the PCE UI. It selects the service instance within the space and scopes the roles granted to the returned token.
 
 Optional:
 
@@ -535,5 +558,4 @@ Optional:
 - `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
 - `iam_token` (String, Sensitive) Pre-generated GreenLake IAM token. If set, token generation from credentials is skipped.
 - `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
-- `location` (String) Location of the GreenLake VMaaS service.
 - `space` (String) GreenLake VMaaS space name (IAM Space) used for the broker exchange.

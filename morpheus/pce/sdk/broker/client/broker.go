@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"strings"
 
-	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/common"
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/models"
+	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/common"
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/models"
 )
 
 // BrokerAPIService is a service that provides methods to interact with the broker API

@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"strings"
 
-	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/common"
+	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/common"
 )
 
 // all the required validation should be provided as validationFunc

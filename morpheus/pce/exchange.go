@@ -1,16 +1,20 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-// Package connected implements the PCE Identity token exchange for Connected
-// PCE deployments. It trades GreenLake API client credentials for the URL and
-// access token of the Morpheus instance sitting behind the VMaaS broker.
-package connected
+// Package pce implements the PCE Identity token exchange. It trades GreenLake
+// API client credentials for the URL and access token of the Morpheus instance
+// sitting behind the VMaaS broker.
+//
+// The same exchange serves both PCE deployment types. They differ only in the
+// IAM dialect used to mint the token (GLCS for Connected, GLP for Disconnected)
+// and in how the broker request is scoped; see Config.Version.
+package pce
 
 import (
 	"context"
 	"fmt"
 	"sync"
 
-	vmaascmpclient "github.com/HPE/terraform-provider-hpe/morpheus/pce/connected/sdk/vmaascmp/client"
+	brokerclient "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/client"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/retrieve"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/serviceclient"
@@ -35,6 +39,17 @@ type Config struct {
 	IssuerURL    string
 	IAMToken     string
 	BrokerURL    string
+
+	// Version selects the IAM dialect and how the broker request is scoped.
+	// Connected PCE uses iamversion.GLCS and scopes by Space; Disconnected PCE
+	// uses iamversion.GLP and scopes by WorkspaceID. There is deliberately no
+	// default: an unset Version would silently pick a dialect for the caller.
+	Version iamversion.Version
+
+	// WorkspaceID is the GreenLake Platform workspace ID. It scopes the broker
+	// request for Disconnected PCE and is unused for Connected PCE, which
+	// scopes by Space instead.
+	WorkspaceID string
 }
 
 type result struct {
@@ -96,27 +111,39 @@ func (c Config) exchange(ctx context.Context) (string, string, error) {
 		brokerURL = DefaultBrokerURL
 	}
 
-	brokerCfg := vmaascmpclient.NewConfiguration()
+	brokerCfg := brokerclient.NewConfiguration()
 	brokerCfg.Host = brokerURL
 
 	if c.Location != "" {
 		brokerCfg.DefaultQueryParams["location"] = c.Location
 	}
 
-	if c.Space != "" {
-		brokerCfg.DefaultQueryParams["space"] = c.Space
+	// The two deployment types scope the broker request differently: Connected
+	// PCE by GLCS space, Disconnected PCE by GLP workspace. The workspace is
+	// sent both as a query parameter and as a header, which is what the broker
+	// expects for GLP.
+	switch c.Version {
+	case iamversion.GLP:
+		if c.WorkspaceID != "" {
+			brokerCfg.DefaultQueryParams["tenantID"] = c.WorkspaceID
+			brokerCfg.AddDefaultHeader("X-Tenant-ID", c.WorkspaceID)
+		}
+	default:
+		if c.Space != "" {
+			brokerCfg.DefaultQueryParams["space"] = c.Space
+		}
 	}
 
 	// Note: this client is deliberately not wrapped with utils/httptrace. That
 	// tracer dumps full request and response bodies, which here would write the
 	// GreenLake client secret and the Morpheus access token to the Terraform
 	// log. Do not add tracing to this path without redacting them.
-	brokerClient := vmaascmpclient.NewAPIClient(brokerCfg)
+	brokerClient := brokerclient.NewAPIClient(brokerCfg)
 
 	// Inject the GreenLake IAM token on every request's context, which
 	// prepareRequest reads for Bearer auth.
 	brokerClient.SetMetaFnAndVersion(nil, 0, func(ctx *context.Context, _ interface{}) {
-		*ctx = context.WithValue(*ctx, vmaascmpclient.ContextAccessToken, iamToken)
+		*ctx = context.WithValue(*ctx, brokerclient.ContextAccessToken, iamToken)
 	})
 
 	details, err := brokerClient.GetCMPDetails(ctx)
@@ -131,7 +158,7 @@ func (c Config) exchange(ctx context.Context) (string, string, error) {
 // configured, and otherwise exchanges the API client credentials for one.
 func (c Config) iamToken(ctx context.Context) (string, error) {
 	opts := []serviceclient.CreateOpt{
-		serviceclient.WithIAMVersion(iamversion.GLCS),
+		serviceclient.WithIAMVersion(c.Version),
 	}
 
 	if c.IAMToken != "" {
