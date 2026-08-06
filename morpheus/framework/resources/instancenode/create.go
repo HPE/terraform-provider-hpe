@@ -174,10 +174,11 @@ func (r *Resource) Create(
 		return
 	}
 
+	plan.ID = types.Int64Value(containerID)
 	plan.ContainerID = types.Int64Value(containerID)
 
 	// Step 5: Resolve server_id and ip_address from the instance.
-	readErr := refreshNodeState(ctx, client, instanceID, containerID, &plan)
+	readErr := getInstanceNodeAsState(ctx, client, instanceID, containerID, &plan)
 	if readErr != nil {
 		// The node exists on the appliance but its state could not be read.
 		// Taint rather than drop it: dropping would leak a real node, and

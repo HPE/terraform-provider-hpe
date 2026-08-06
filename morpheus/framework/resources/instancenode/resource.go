@@ -28,23 +28,27 @@ var (
 
 // instanceNodeModel is the Terraform state model.
 type instanceNodeModel struct {
-	InstanceID       types.Int64    `tfsdk:"instance_id"`
-	ResourcePoolID   types.Int64    `tfsdk:"resource_pool_id"`
-	PreProvisioned   types.Bool     `tfsdk:"pre_provisioned"`
-	SelectedServerID types.Int64    `tfsdk:"selected_server_id"`
-	SshHost          types.String   `tfsdk:"ssh_host"`
-	SshUsername      types.String   `tfsdk:"ssh_username"`
-	SshPassword      types.String   `tfsdk:"ssh_password"`
-	SshKeyPairID     types.Int64    `tfsdk:"ssh_key_pair_id"`
-	WaitForIPAddress types.Bool     `tfsdk:"wait_for_ip_address"`
-	ContainerID      types.Int64    `tfsdk:"container_id"`
-	ServerID         types.Int64    `tfsdk:"server_id"`
-	IPAddress        types.String   `tfsdk:"ip_address"`
-	Hostname         types.String   `tfsdk:"hostname"`
-	InternalIP       types.String   `tfsdk:"internal_ip"`
-	ExternalFQDN     types.String   `tfsdk:"external_fqdn"`
-	MacAddress       types.String   `tfsdk:"mac_address"`
-	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+	ID                   types.Int64    `tfsdk:"id"`
+	InstanceID           types.Int64    `tfsdk:"instance_id"`
+	ResourcePoolID       types.Int64    `tfsdk:"resource_pool_id"`
+	ServerResourcePoolID types.Int64    `tfsdk:"server_resource_pool_id"`
+	PreProvisioned       types.Bool     `tfsdk:"pre_provisioned"`
+	SelectedServerID     types.Int64    `tfsdk:"selected_server_id"`
+	SshHost              types.String   `tfsdk:"ssh_host"`
+	SshUsername          types.String   `tfsdk:"ssh_username"`
+	SshPassword          types.String   `tfsdk:"ssh_password"`
+	SshKeyPairID         types.Int64    `tfsdk:"ssh_key_pair_id"`
+	WaitForIPAddress     types.Bool     `tfsdk:"wait_for_ip_address"`
+	ContainerID          types.Int64    `tfsdk:"container_id"`
+	ServerID             types.Int64    `tfsdk:"server_id"`
+	Name                 types.String   `tfsdk:"name"`
+	UUID                 types.String   `tfsdk:"uuid"`
+	IPAddress            types.String   `tfsdk:"ip_address"`
+	Hostname             types.String   `tfsdk:"hostname"`
+	InternalIP           types.String   `tfsdk:"internal_ip"`
+	ExternalFQDN         types.String   `tfsdk:"external_fqdn"`
+	MacAddress           types.String   `tfsdk:"mac_address"`
+	Timeouts             timeouts.Value `tfsdk:"timeouts"`
 }
 
 // Resource implements the hpe_morpheus_instance_node resource.
@@ -83,6 +87,18 @@ func (r *Resource) Schema(
 			"node in a specific resource pool. For bare-metal instances, destroying " +
 			"this resource returns the server to its pool rather than destroying it.",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				Computed: true,
+				Description: "The container ID of the added node. " +
+					"Holds the same value as container_id; exists " +
+					"to satisfy the framework's taint-on-error path.",
+				MarkdownDescription: "The container ID of the added node. " +
+					"Holds the same value as `container_id`; exists " +
+					"to satisfy the framework's taint-on-error path.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"instance_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the instance to add the node to.",
@@ -171,9 +187,11 @@ func (r *Resource) Schema(
 					"during create.",
 			},
 			"container_id": schema.Int64Attribute{
-				Computed:            true,
-				Description:         "The container ID of the added node.",
-				MarkdownDescription: "The container ID of the added node.",
+				Computed: true,
+				Description: "The container ID of the added node. " +
+					"Same value as id.",
+				MarkdownDescription: "The container ID of the added node. " +
+					"Same value as `id`.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
@@ -185,6 +203,20 @@ func (r *Resource) Schema(
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.UseStateForUnknown(),
 				},
+			},
+			"name": schema.StringAttribute{
+				Computed: true,
+				Description: "The name of the node container, " +
+					"assigned by the appliance.",
+				MarkdownDescription: "The name of the node container, " +
+					"assigned by the appliance.",
+			},
+			"uuid": schema.StringAttribute{
+				Computed: true,
+				Description: "The UUID of the node container, " +
+					"assigned by the appliance.",
+				MarkdownDescription: "The UUID of the node container, " +
+					"assigned by the appliance.",
 			},
 			"ip_address": schema.StringAttribute{
 				Computed:            true,
@@ -214,6 +246,19 @@ func (r *Resource) Schema(
 				MarkdownDescription: "The MAC address of the node server's primary network " +
 					"interface. Only the primary interface address is surfaced; nodes " +
 					"with bonded or multiple interfaces expose only this one.",
+			},
+			"server_resource_pool_id": schema.Int64Attribute{
+				Computed: true,
+				Description: "The resource pool the node's server currently belongs to. " +
+					"For bare-metal instances this is the pool the server was drawn " +
+					"from. For virtual instances it reflects the hypervisor pool. " +
+					"Compare with resource_pool_id (the placement requested at " +
+					"create time, bare-metal only) to detect drift.",
+				MarkdownDescription: "The resource pool the node's server currently belongs to. " +
+					"For bare-metal instances this is the pool the server was drawn " +
+					"from. For virtual instances it reflects the hypervisor pool. " +
+					"Compare with `resource_pool_id` (the placement requested at " +
+					"create time, bare-metal only) to detect drift.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

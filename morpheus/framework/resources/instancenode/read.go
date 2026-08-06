@@ -40,7 +40,7 @@ func (r *Resource) Read(
 	instanceID := state.InstanceID.ValueInt64()
 	containerID := state.ContainerID.ValueInt64()
 
-	err = refreshNodeState(ctx, client, instanceID, containerID, &state)
+	err = getInstanceNodeAsState(ctx, client, instanceID, containerID, &state)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"failed to read instance node",
@@ -64,10 +64,10 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-// refreshNodeState reads the instance and populates state fields for the
+// getInstanceNodeAsState reads the instance and populates state fields for the
 // given container. If the container is not found, state.ContainerID is set
 // to null to signal removal.
-func refreshNodeState(
+func getInstanceNodeAsState(
 	ctx context.Context,
 	client *sdk.APIClient,
 	instanceID int64,
@@ -92,7 +92,7 @@ func refreshNodeState(
 	for i := range getResp.Instance.ContainerDetails {
 		cd := &getResp.Instance.ContainerDetails[i]
 		if cd.Id != nil && *cd.Id == containerID {
-			populateNodeMetadata(state, cd)
+			populateInstanceNodeMetadata(state, cd)
 
 			return nil
 		}
@@ -104,14 +104,19 @@ func refreshNodeState(
 	return nil
 }
 
-// populateNodeMetadata sets state fields from the container detail.
-func populateNodeMetadata(state *instanceNodeModel, cd *sdk.InstanceContainer2) {
+// populateInstanceNodeMetadata sets state fields from the container detail.
+func populateInstanceNodeMetadata(state *instanceNodeModel, cd *sdk.InstanceContainer2) {
+	state.ID = convert.Int64ToType(cd.Id)
 	state.ContainerID = convert.Int64ToType(cd.Id)
+	state.Name = convert.StrToType(cd.Name)
+	state.UUID = convert.StrToType(cd.Uuid)
 
 	if cd.Server != nil {
 		state.ServerID = convert.Int64ToType(cd.Server.Id)
+		state.ServerResourcePoolID = convert.Int64ToType(cd.Server.ResourcePoolId)
 	} else {
 		state.ServerID = types.Int64Null()
+		state.ServerResourcePoolID = types.Int64Null()
 	}
 
 	if cd.Ip != nil && containerip.Ready(*cd.Ip) {

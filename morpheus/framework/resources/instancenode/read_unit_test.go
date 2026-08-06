@@ -78,7 +78,7 @@ func TestUnitRefreshNodeState_AllMetadataPopulated(t *testing.T) {
 		},
 	}
 
-	populateNodeMetadata(state, cd)
+	populateInstanceNodeMetadata(state, cd)
 
 	assert.Equal(t, types.Int64Value(100), state.ContainerID)
 	assert.Equal(t, types.Int64Value(200), state.ServerID)
@@ -100,7 +100,7 @@ func TestUnitRefreshNodeState_HostnameAbsent(t *testing.T) {
 		Server:       &sdk.InstanceContainerServer2{Id: ptr(int64(200))},
 	}
 
-	populateNodeMetadata(state, cd)
+	populateInstanceNodeMetadata(state, cd)
 
 	assert.True(t, state.Hostname.IsNull())
 	assert.Equal(t, types.StringValue("10.0.0.5"), state.InternalIP)
@@ -118,7 +118,7 @@ func TestUnitRefreshNodeState_InternalIPAbsent(t *testing.T) {
 		Server:   &sdk.InstanceContainerServer2{Id: ptr(int64(200))},
 	}
 
-	populateNodeMetadata(state, cd)
+	populateInstanceNodeMetadata(state, cd)
 
 	assert.Equal(t, types.StringValue("node-1"), state.Hostname)
 	assert.True(t, state.InternalIP.IsNull())
@@ -136,7 +136,7 @@ func TestUnitRefreshNodeState_ExternalFQDNAbsent(t *testing.T) {
 		Server:     &sdk.InstanceContainerServer2{Id: ptr(int64(200))},
 	}
 
-	populateNodeMetadata(state, cd)
+	populateInstanceNodeMetadata(state, cd)
 
 	assert.True(t, state.ExternalFQDN.IsNull())
 }
@@ -150,7 +150,84 @@ func TestUnitRefreshNodeState_MacAddressAbsent(t *testing.T) {
 		Server: &sdk.InstanceContainerServer2{Id: ptr(int64(200))},
 	}
 
-	populateNodeMetadata(state, cd)
+	populateInstanceNodeMetadata(state, cd)
 
 	assert.True(t, state.MacAddress.IsNull())
+}
+
+// TestUnitServerResourcePoolID_PopulatedFromServer verifies that
+// server_resource_pool_id is populated from the server's pool.
+func TestUnitServerResourcePoolID_PopulatedFromServer(t *testing.T) {
+	t.Parallel()
+
+	state := &instanceNodeModel{}
+	cd := &sdk.InstanceContainer2{
+		Id: ptr(int64(100)),
+		Server: &sdk.InstanceContainerServer2{
+			Id:             ptr(int64(200)),
+			ResourcePoolId: ptr(int64(42)),
+		},
+	}
+
+	populateInstanceNodeMetadata(state, cd)
+
+	assert.Equal(t, types.Int64Value(42), state.ServerResourcePoolID)
+}
+
+// TestUnitServerResourcePoolID_NullWhenAbsent verifies that
+// server_resource_pool_id is null when the server has no pool.
+func TestUnitServerResourcePoolID_NullWhenAbsent(t *testing.T) {
+	t.Parallel()
+
+	state := &instanceNodeModel{}
+	cd := &sdk.InstanceContainer2{
+		Id:     ptr(int64(100)),
+		Server: &sdk.InstanceContainerServer2{Id: ptr(int64(200))},
+	}
+
+	populateInstanceNodeMetadata(state, cd)
+
+	assert.True(t, state.ServerResourcePoolID.IsNull())
+}
+
+// TestUnitServerResourcePoolID_NullWhenNoServer verifies that
+// server_resource_pool_id is null when the server is nil.
+func TestUnitServerResourcePoolID_NullWhenNoServer(t *testing.T) {
+	t.Parallel()
+
+	state := &instanceNodeModel{}
+	cd := &sdk.InstanceContainer2{
+		Id: ptr(int64(100)),
+	}
+
+	populateInstanceNodeMetadata(state, cd)
+
+	assert.True(t, state.ServerResourcePoolID.IsNull())
+}
+
+// TestUnitResourcePoolID_NotReadBack verifies that resource_pool_id is
+// never written by populateInstanceNodeMetadata — it remains whatever
+// the caller set it to (the regression was that a read-back caused
+// ModifyPlan to fire against virtual instances).
+func TestUnitResourcePoolID_NotReadBack(t *testing.T) {
+	t.Parallel()
+
+	state := &instanceNodeModel{
+		ResourcePoolID: types.Int64Null(),
+	}
+	cd := &sdk.InstanceContainer2{
+		Id: ptr(int64(100)),
+		Server: &sdk.InstanceContainerServer2{
+			Id:             ptr(int64(200)),
+			ResourcePoolId: ptr(int64(99)),
+		},
+	}
+
+	populateInstanceNodeMetadata(state, cd)
+
+	// resource_pool_id must remain null — never populated from API.
+	assert.True(t, state.ResourcePoolID.IsNull(),
+		"resource_pool_id must not be read back from the API")
+	// But server_resource_pool_id must reflect the server's pool.
+	assert.Equal(t, types.Int64Value(99), state.ServerResourcePoolID)
 }

@@ -44,9 +44,12 @@ func (r *Resource) Update(
 	}
 
 	// Carry forward computed values.
+	plan.ID = state.ID
 	plan.ContainerID = state.ContainerID
 	plan.ServerID = state.ServerID
 	plan.IPAddress = state.IPAddress
+	plan.Name = state.Name
+	plan.UUID = state.UUID
 
 	if plan.WaitForIPAddress.ValueBool() &&
 		(!state.IPAddress.IsNull() && containerip.Ready(state.IPAddress.ValueString())) {

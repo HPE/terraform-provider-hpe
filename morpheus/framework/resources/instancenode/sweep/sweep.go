@@ -47,7 +47,7 @@ func init() {
 				return false
 			}
 
-			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+			return strings.HasPrefix(*name, TestResourcePrefix)
 		},
 		// Delete the test instance (which removes its nodes).
 		func(
