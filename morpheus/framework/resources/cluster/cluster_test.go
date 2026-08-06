@@ -96,6 +96,16 @@ data "hpe_morpheus_service_plan" "test" {
 		t.Fatal(err)
 	}
 
+	// Test-only provisioning budget. The published example template is left
+	// untouched; the timeouts attribute must sit inside the resource block, so
+	// it is injected into the rendered config rather than concatenated.
+	resourceConfig = testhelpers.InjectResourceAttrs(t, resourceConfig,
+		"hpe_morpheus_cluster", "example_hvm",
+		`  timeouts = {
+    create = "70m"
+    delete = "30m"
+  }`)
+
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cluster.example_hvm",
@@ -279,6 +289,14 @@ data "hpe_morpheus_service_plan" "test" {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Test-only provisioning budget. See the note on the HVM example above.
+	resourceConfig = testhelpers.InjectResourceAttrs(t, resourceConfig,
+		"hpe_morpheus_cluster", "example_generic_hvm",
+		`  timeouts = {
+    create = "70m"
+    delete = "30m"
+  }`)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(

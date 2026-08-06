@@ -39,6 +39,20 @@ func RenderExample(t *testing.T, name string, args ...string) (string, error) {
 	return example, nil
 }
 
+// InjectResourceAttrs inserts raw HCL immediately after the opening brace of the
+// named resource block. It fails the test if the block is absent, so a template
+// rename can never silently drop the injected attributes.
+func InjectResourceAttrs(t *testing.T, config, resourceType, resourceName, hcl string) string {
+	t.Helper()
+
+	anchor := fmt.Sprintf("resource %q %q {", resourceType, resourceName)
+	if !strings.Contains(config, anchor) {
+		t.Fatalf("resource block %s.%s not found in rendered config", resourceType, resourceName)
+	}
+
+	return strings.Replace(config, anchor, anchor+"\n"+hcl, 1)
+}
+
 // MergeOverrides applies overrides on top of defaults, ignoring any override
 // whose value is empty.
 //
