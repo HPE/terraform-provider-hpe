@@ -40,6 +40,10 @@ type instanceNodeModel struct {
 	ContainerID      types.Int64    `tfsdk:"container_id"`
 	ServerID         types.Int64    `tfsdk:"server_id"`
 	IPAddress        types.String   `tfsdk:"ip_address"`
+	Hostname         types.String   `tfsdk:"hostname"`
+	InternalIP       types.String   `tfsdk:"internal_ip"`
+	ExternalFQDN     types.String   `tfsdk:"external_fqdn"`
+	MacAddress       types.String   `tfsdk:"mac_address"`
 	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -186,6 +190,30 @@ func (r *Resource) Schema(
 				Computed:            true,
 				Description:         "The IP address of the node.",
 				MarkdownDescription: "The IP address of the node.",
+			},
+			"hostname": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The hostname of the node container.",
+				MarkdownDescription: "The hostname of the node container.",
+			},
+			"internal_ip": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The internal IP address of the node.",
+				MarkdownDescription: "The internal IP address of the node.",
+			},
+			"external_fqdn": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external fully-qualified domain name of the node.",
+				MarkdownDescription: "The external fully-qualified domain name of the node.",
+			},
+			"mac_address": schema.StringAttribute{
+				Computed: true,
+				Description: "The MAC address of the node server's primary network " +
+					"interface. Only the primary interface address is surfaced; nodes " +
+					"with bonded or multiple interfaces expose only this one.",
+				MarkdownDescription: "The MAC address of the node server's primary network " +
+					"interface. Only the primary interface address is surfaced; nodes " +
+					"with bonded or multiple interfaces expose only this one.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

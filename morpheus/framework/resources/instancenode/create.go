@@ -21,6 +21,20 @@ import (
 
 const defaultCreateTimeout = 90 * time.Minute
 
+// pollForNewContainerTimeout is the maximum time to poll for a new container
+// after the add-node action returns. This is intentionally short (60s) because
+// addInstanceContainers creates container records synchronously inside the HTTP
+// request — only the subsequent provisioning is queued asynchronously. If a new
+// container has not appeared within this window, it will never appear; the most
+// likely causes are an appliance licence limit, capacity constraint, or
+// provisioning policy denial (the endpoint returns HTTP 200 with success:true
+// even when the action was silently refused). Do not raise this value.
+const pollForNewContainerTimeout = 60 * time.Second
+
+// pollForNewContainerInterval is the retry interval within the bounded poll
+// window. Kept short because we are only absorbing read-after-write lag.
+const pollForNewContainerInterval = 5 * time.Second
+
 // Create implements resource.Resource.
 func (r *Resource) Create(
 	ctx context.Context,
@@ -92,7 +106,9 @@ func (r *Resource) Create(
 		return
 	}
 
-	// Snapshot existing container IDs for the pre-provisioned diff path.
+	// Snapshot existing container IDs before adding a node. This snapshot
+	// is used by both the provisioning and pre-provisioned paths as the
+	// baseline for diff-based container identification.
 	existingContainerIDs := make(map[int64]bool)
 	for i := range getResp.Instance.ContainerDetails {
 		cd := &getResp.Instance.ContainerDetails[i]
@@ -137,9 +153,17 @@ func (r *Resource) Create(
 	}
 
 	// Step 4: Extract the new container ID.
+	// The response may carry the ID in results[<instanceId>].containers[0].id
+	// (fast path), but this is not guaranteed: capacity/policy denials cause
+	// scaleInstanceWithProvisioning to return early with no containers, and
+	// the pre-provisioned branch (scaleInstanceWithConvertToManaged) never
+	// returns container IDs at all. When the fast path fails, we poll the
+	// instance for a short bounded window (pollForNewContainerTimeout) to
+	// absorb read-after-write lag only — container records are created
+	// synchronously, so a longer wait would be pointless.
 	containerID, err := extractContainerID(
 		actionResp, instanceID, existingContainerIDs,
-		plan.PreProvisioned.ValueBool(), ctx, client,
+		ctx, client, pollForNewContainerTimeout,
 	)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -297,46 +321,148 @@ func buildAddNodeEnvelope(plan *instanceNodeModel, actionCode string) map[string
 }
 
 // extractContainerID retrieves the new container ID from the action response.
-// For the provisioning branch, it comes from results[<instanceId>].containers[0].id.
-// For the pre-provisioned branch, it diffs containerDetails before/after.
+// It first tries the fast path: extracting from results[<instanceId>].containers[0].id.
+// If that fails for any reason (capacity denial, pre-provisioned path, missing
+// data), it falls back to polling the instance until a new container appears
+// that was not in the pre-add snapshot.
+//
+// When multiple new containers appear, the lowest ID is chosen deterministically
+// to avoid depending on map or slice iteration order.
 func extractContainerID(
 	actionResp *sdk.ExecuteInstanceAction200Response,
 	instanceID int64,
 	existingIDs map[int64]bool,
-	preProvisioned bool,
 	ctx context.Context,
 	client *sdk.APIClient,
+	pollTimeout time.Duration,
 ) (int64, error) {
-	if !preProvisioned && actionResp != nil {
-		// Try to extract from the response's AdditionalProperties.
+	// Fast path: try to extract from the response regardless of preProvisioned.
+	if actionResp != nil {
 		if results, ok := actionResp.AdditionalProperties["results"]; ok {
-			return extractContainerIDFromResults(results, instanceID)
+			id, err := extractContainerIDFromResults(results, instanceID)
+			if err == nil {
+				tflog.Debug(ctx, "container ID from response fast path",
+					map[string]any{"instance_id": instanceID, "container_id": id})
+
+				return id, nil
+			}
+
+			tflog.Debug(ctx, "fast path failed, falling back to poll",
+				map[string]any{"instance_id": instanceID, "reason": err.Error()})
 		}
 	}
 
-	// Pre-provisioned path or response didn't carry container IDs:
-	// diff containerDetails.
-	tflog.Debug(ctx, "extracting container ID via diff",
-		map[string]any{"instance_id": instanceID})
+	// Poll path: repeatedly read the instance until a new container appears.
+	return pollForNewContainer(ctx, client, instanceID, existingIDs, pollTimeout)
+}
 
+// pollForNewContainer polls the instance until a container ID appears that is
+// not in existingIDs, or until the timeout expires. The timeout should be short
+// (pollForNewContainerTimeout) because container records are created
+// synchronously — this poll exists only to absorb read-after-write lag.
+func pollForNewContainer(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+	existingIDs map[int64]bool,
+	timeout time.Duration,
+) (int64, error) {
+	tflog.Debug(ctx, "polling for new container via diff",
+		map[string]any{"instance_id": instanceID, "timeout": timeout.String()})
+
+	deadline := time.Now().Add(timeout)
+
+	for {
+		id, found, err := diffContainers(ctx, client, instanceID, existingIDs)
+		if err != nil {
+			return 0, err
+		}
+
+		if found {
+			tflog.Debug(ctx, "new container found via polling",
+				map[string]any{"instance_id": instanceID, "container_id": id})
+
+			return id, nil
+		}
+
+		if time.Now().Add(pollForNewContainerInterval).After(deadline) {
+			return 0, fmt.Errorf(
+				"the add-node action returned success but no new container was created on "+
+					"instance %d after polling for %s. The Morpheus add-node endpoint returns "+
+					"HTTP 200 with success:true even when the action is silently refused. "+
+					"The most likely causes are: (1) an appliance licence or capacity limit "+
+					"has been reached, (2) a provisioning policy is denying the request, or "+
+					"(3) the instance's layout does not support scaling. Check the Morpheus "+
+					"appliance activity log for details",
+				instanceID, timeout,
+			)
+		}
+
+		tflog.Debug(ctx, "no new container yet, retrying",
+			map[string]any{
+				"instance_id": instanceID,
+				"interval":    pollForNewContainerInterval.String(),
+			})
+
+		select {
+		case <-ctx.Done():
+			return 0, fmt.Errorf(
+				"context cancelled while polling for new container: %w", ctx.Err(),
+			)
+		case <-time.After(pollForNewContainerInterval):
+		}
+	}
+}
+
+// diffContainers reads the instance and returns the lowest new container ID
+// not present in existingIDs. Returns (0, false, nil) if no new container is
+// found yet.
+func diffContainers(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+	existingIDs map[int64]bool,
+) (int64, bool, error) {
 	getResp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
 	if err != nil {
-		return 0, fmt.Errorf("failed to re-read instance: %s",
+		return 0, false, fmt.Errorf("failed to re-read instance: %s",
 			errfmt.ErrMsg(err, hresp))
 	}
 
 	if getResp == nil || getResp.Instance == nil {
-		return 0, fmt.Errorf("instance %d: response is nil after add-node", instanceID)
+		return 0, false, fmt.Errorf(
+			"instance %d: response is nil after add-node", instanceID,
+		)
 	}
 
-	for i := range getResp.Instance.ContainerDetails {
-		cd := &getResp.Instance.ContainerDetails[i]
+	id, found := findNewContainerInDetails(getResp.Instance.ContainerDetails, existingIDs)
+
+	return id, found, nil
+}
+
+// findNewContainerInDetails returns the lowest container ID from details that
+// is not present in existingIDs. When multiple new containers appear (e.g. a
+// race with another caller), the lowest ID is chosen deterministically rather
+// than depending on slice iteration order.
+func findNewContainerInDetails(
+	details []sdk.InstanceContainer2,
+	existingIDs map[int64]bool,
+) (int64, bool) {
+	var lowestNew int64
+
+	found := false
+
+	for i := range details {
+		cd := &details[i]
 		if cd.Id != nil && !existingIDs[*cd.Id] {
-			return *cd.Id, nil
+			if !found || *cd.Id < lowestNew {
+				lowestNew = *cd.Id
+				found = true
+			}
 		}
 	}
 
-	return 0, fmt.Errorf("no new container found after add-node")
+	return lowestNew, found
 }
 
 // extractContainerIDFromResults parses the results map from the action response.

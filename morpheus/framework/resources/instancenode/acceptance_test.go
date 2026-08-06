@@ -18,8 +18,12 @@ import (
 // TestAccMorpheusInstanceNodeVirtual tests adding a node to a virtual
 // (non-metal) instance without resource_pool_id. This is the primary
 // use case: scale-out on any instance type.
+//
+// Not parallel: this test provisions a real instance and scales it.
+// Running it concurrently with TestAccMorpheusInstanceNodePoolOnVirtualError
+// has been observed to exceed appliance capacity, causing intermittent
+// failures where the add-node action is silently refused.
 func TestAccMorpheusInstanceNodeVirtual(t *testing.T) {
-	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM)
@@ -118,8 +122,12 @@ resource "hpe_morpheus_instance_node" "test_metal" {
 
 // TestAccMorpheusInstanceNodePoolOnVirtualError tests that setting
 // resource_pool_id on a non-metal instance produces an error.
+//
+// Not parallel: this test provisions a real instance and scales it.
+// Running it concurrently with TestAccMorpheusInstanceNodeVirtual
+// has been observed to exceed appliance capacity, causing intermittent
+// failures where the add-node action is silently refused.
 func TestAccMorpheusInstanceNodePoolOnVirtualError(t *testing.T) {
-	t.Parallel()
 	defer testhelpers.RecordResult(t)
 
 	capabilities.MustHaveOrSkip(t, capabilities.HVM)

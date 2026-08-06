@@ -92,19 +92,7 @@ func refreshNodeState(
 	for i := range getResp.Instance.ContainerDetails {
 		cd := &getResp.Instance.ContainerDetails[i]
 		if cd.Id != nil && *cd.Id == containerID {
-			state.ContainerID = types.Int64Value(containerID)
-
-			if cd.Server != nil {
-				state.ServerID = convert.Int64ToType(cd.Server.Id)
-			} else {
-				state.ServerID = types.Int64Null()
-			}
-
-			if cd.Ip != nil && containerip.Ready(*cd.Ip) {
-				state.IPAddress = types.StringValue(*cd.Ip)
-			} else {
-				state.IPAddress = types.StringNull()
-			}
+			populateNodeMetadata(state, cd)
 
 			return nil
 		}
@@ -114,4 +102,47 @@ func refreshNodeState(
 	state.ContainerID = types.Int64Null()
 
 	return nil
+}
+
+// populateNodeMetadata sets state fields from the container detail.
+func populateNodeMetadata(state *instanceNodeModel, cd *sdk.InstanceContainer2) {
+	state.ContainerID = convert.Int64ToType(cd.Id)
+
+	if cd.Server != nil {
+		state.ServerID = convert.Int64ToType(cd.Server.Id)
+	} else {
+		state.ServerID = types.Int64Null()
+	}
+
+	if cd.Ip != nil && containerip.Ready(*cd.Ip) {
+		state.IPAddress = types.StringValue(*cd.Ip)
+	} else {
+		state.IPAddress = types.StringNull()
+	}
+
+	state.Hostname = convert.StrToType(cd.Hostname)
+	state.InternalIP = convert.StrToType(cd.InternalIp)
+	state.ExternalFQDN = convert.StrToType(cd.ExternalFqdn)
+	state.MacAddress = resolvePrimaryMacAddress(cd.Server)
+}
+
+// resolvePrimaryMacAddress returns the MAC address of the server's primary
+// network interface. It prefers the interface flagged as primary; if none is
+// flagged, it falls back to the first interface. Returns null if the server
+// has no interfaces or is nil.
+func resolvePrimaryMacAddress(server *sdk.InstanceContainerServer2) types.String {
+	if server == nil || len(server.Interfaces) == 0 {
+		return types.StringNull()
+	}
+
+	// Prefer the interface flagged as primary.
+	for i := range server.Interfaces {
+		iface := &server.Interfaces[i]
+		if iface.PrimaryInterface != nil && *iface.PrimaryInterface {
+			return convert.StrToType(iface.MacAddress)
+		}
+	}
+
+	// Fallback: first interface.
+	return convert.StrToType(server.Interfaces[0].MacAddress)
 }

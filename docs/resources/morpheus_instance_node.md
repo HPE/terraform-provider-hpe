@@ -69,7 +69,11 @@ resource "hpe_morpheus_instance_node" "ha" {
 ### Read-Only
 
 - `container_id` (Number) The container ID of the added node.
+- `external_fqdn` (String) The external fully-qualified domain name of the node.
+- `hostname` (String) The hostname of the node container.
+- `internal_ip` (String) The internal IP address of the node.
 - `ip_address` (String) The IP address of the node.
+- `mac_address` (String) The MAC address of the node server's primary network interface. Only the primary interface address is surfaced; nodes with bonded or multiple interfaces expose only this one.
 - `server_id` (Number) The compute server ID of the added node.
 
 <a id="nestedatt--timeouts"></a>
