@@ -14,7 +14,10 @@ import (
 )
 
 func TestAccSiteResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("create_update_import", func(t *testing.T) {
 		siteNameOne := acctest.RandomName("site")
 		siteNameTwo := acctest.RandomName("site")
 
@@ -35,6 +38,7 @@ func TestAccSiteResource(t *testing.T) {
 						"902027020",
 						"34",
 						"name CONTAINS \"init\"",
+						clientOverride,
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureSiteExists(t, "hpe_opsramp_site.test_site"),
@@ -55,6 +59,7 @@ func TestAccSiteResource(t *testing.T) {
 						"911237104",
 						"34",
 						"name CONTAINS \"updated\"",
+						clientOverride,
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureSiteExists(t, "hpe_opsramp_site.test_site"),
@@ -74,7 +79,7 @@ func TestAccSiteResource(t *testing.T) {
 				{
 					ResourceName:      "hpe_opsramp_site.test_site",
 					ImportState:       true,
-					ImportStateIdFunc: testAccSiteImportStateIdFunc("hpe_opsramp_site.test_site"),
+					ImportStateIdFunc: testAccSiteImportStateIdFunc("hpe_opsramp_site.test_site", clientOverride),
 					ImportStateVerify: true,
 				},
 			},
@@ -93,6 +98,7 @@ func testAccSiteConfig(
 	phoneNumber string,
 	phoneExtension string,
 	searchQuery string,
+	clientOverride string,
 ) string {
 	return fmt.Sprintf(`
 %s
@@ -107,8 +113,10 @@ resource "hpe_opsramp_site" "test_site" {
 	phone_number    = "%s"
 	phone_extension = "%s"
 	search_query    = %q
+	%s
 }
-`, acctest.ProviderConfigHCL(), name, description, address, city, state, country, zip, phoneNumber, phoneExtension, searchQuery)
+`, acctest.ProviderConfigHCL(), name, description, address, city, state, country, zip,
+		phoneNumber, phoneExtension, searchQuery, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureSiteExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -180,13 +188,18 @@ func testAccCheckSiteDestroy(t *testing.T) resource.TestCheckFunc {
 	}
 }
 
-func testAccSiteImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccSiteImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.ID, nil
+		id := rs.Primary.ID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

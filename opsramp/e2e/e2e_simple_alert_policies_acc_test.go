@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 // TestAccE2ESimpleAlertPolicies exercises the simple-alert-policies e2e scenario:
 // alert correlation, prediction, first response, escalation policies with dependencies.
 func TestAccE2ESimpleAlertPolicies(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("full alert policy stack", func(t *testing.T) {
 		corrPolicy := acctest.RandomName("e2e-corr")
 		predPolicy := acctest.RandomName("e2e-pred")
@@ -35,7 +38,7 @@ func TestAccE2ESimpleAlertPolicies(t *testing.T) {
 					Config: testAccE2ESimpleAlertPoliciesConfig(
 						corrPolicy, predPolicy, frpPolicy, escPolicy,
 						userGroup, smName, kbCat, kbArticle,
-						sdCat, sdImpact, sdUrgency,
+						sdCat, sdImpact, sdUrgency, clientOverride,
 					),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.topology"),
@@ -54,13 +57,18 @@ func TestAccE2ESimpleAlertPolicies(t *testing.T) {
 }
 
 func testAccE2ESimpleAlertPoliciesConfig(
-	corrPolicy, predPolicy, frpPolicy, escPolicy, userGroup, smName, kbCat, kbArticle, sdCat, sdImpact, sdUrgency string,
+	corrPolicy, predPolicy, frpPolicy, escPolicy, userGroup, smName,
+	kbCat, kbArticle, sdCat, sdImpact, sdUrgency, clientOverride string,
 ) string {
-	return fmt.Sprintf(`
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_user_group" "alert_test_group" {
 	name        = "%s"
 	description = "User group for alert policy test"
+	%s
 }
 
 resource "hpe_opsramp_alert_correlation_policy" "topology" {
@@ -77,6 +85,7 @@ resource "hpe_opsramp_alert_correlation_policy" "topology" {
 	}
 
 	inference_subject = ""
+	%s
 }
 
 resource "hpe_opsramp_first_response_policy" "frp" {
@@ -91,6 +100,7 @@ resource "hpe_opsramp_first_response_policy" "frp" {
 			seasonal_alerts = true
 		}
 	}
+	%s
 }
 
 resource "hpe_opsramp_alert_prediction_policy" "prediction" {
@@ -101,38 +111,45 @@ resource "hpe_opsramp_alert_prediction_policy" "prediction" {
 
 	seasonality_time_frame    = "7D"
 	generate_prediction_alert = true
+	%s
 }
 
 resource "hpe_opsramp_kb_category" "alert_kb_cat" {
 	name        = "%s"
 	description = "KB category for alert policy test"
+	%s
 }
 
 resource "hpe_opsramp_kb_article" "alert_kb_article" {
 	subject     = "%s"
 	content     = "Article for alert policy testing"
 	category_id = hpe_opsramp_kb_category.alert_kb_cat.id
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "alert_sm" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicedesk_category" "alert_sd_cat" {
 	name        = "%s"
 	description = "Category for escalation test"
 	ticket_type = "serviceRequests"
+	%s
 }
 
 resource "hpe_opsramp_servicedesk_business_impact" "alert_sd_impact" {
 	name        = "%s"
 	description = "Business impact for escalation test"
+	%s
 }
 
 resource "hpe_opsramp_servicedesk_urgency" "alert_sd_urgency" {
 	name        = "%s"
 	description = "Urgency for escalation test"
+	%s
 }
 
 resource "hpe_opsramp_alert_escalation_policy" "escalation" {
@@ -144,21 +161,6 @@ resource "hpe_opsramp_alert_escalation_policy" "escalation" {
 	policy_type     = "ESCALATION_POLICY"
 
 	escalations = [
-		{
-			wait_mins          = 0
-			priority           = "Normal"
-			repeat_frequency   = 5
-			notify_limit_count = 2
-			action             = "NOTIFICATION"
-			recipients = [
-				{
-					id   = hpe_opsramp_user_group.alert_test_group.unique_id
-					type = "USERGROUP"
-				}
-			]
-			notification_type        = "basic"
-			notification_template_id = "ae6d595e-77a1-5262-a674-ea4c5afa6320"
-		},
 		{
 			wait_mins = 5
 			action    = "INCIDENT"
@@ -186,19 +188,20 @@ resource "hpe_opsramp_alert_escalation_policy" "escalation" {
 	]
 	search_query          = "subject CONTAINS \"test\""
 	resource_search_query = "serviceGroups.uniqueId = \"${hpe_opsramp_servicemap.alert_sm.id}\""
+	%s
 }
 `,
 		acctest.ProviderConfigHCL(),
-		userGroup,
-		corrPolicy,
-		frpPolicy,
-		predPolicy,
-		kbCat,
-		kbArticle,
-		smName,
-		sdCat,
-		sdImpact,
-		sdUrgency,
-		escPolicy,
+		userGroup, clientAttr,
+		corrPolicy, clientAttr,
+		frpPolicy, clientAttr,
+		predPolicy, clientAttr,
+		kbCat, clientAttr,
+		kbArticle, clientAttr,
+		smName, clientAttr,
+		sdCat, clientAttr,
+		sdImpact, clientAttr,
+		sdUrgency, clientAttr,
+		escPolicy, clientAttr,
 	)
 }

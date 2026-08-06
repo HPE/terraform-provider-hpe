@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 // TestAccE2ESimpleServicemap exercises the simple-servicemap e2e scenario:
 // root servicemap, child services, resource-based children, and links.
 func TestAccE2ESimpleServicemap(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("full hierarchy with links", func(t *testing.T) {
 		res1 := acctest.RandomName("sm-res1")
 		res2 := acctest.RandomName("sm-res2")
@@ -30,7 +33,7 @@ func TestAccE2ESimpleServicemap(t *testing.T) {
 			CheckDestroy:             testAccCheckServicemapDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1, child2, child21, child22, linkedRoot),
+					Config: testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1, child2, child21, child22, linkedRoot, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_root"),
 						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.servicemap_child1"),
@@ -55,34 +58,44 @@ func TestAccE2ESimpleServicemap(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1, child2, child21, child22, linkedRoot string) string {
-	return fmt.Sprintf(`
+func testAccE2ESimpleServicemapConfig(res1, res2, rootName, child1,
+	child2, child21, child22, linkedRoot, clientOverride string,
+) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_resource" "resource1" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource2" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_root" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_child1" {
 	name   = "%s"
 	type   = "Service"
 	parent = hpe_opsramp_servicemap.servicemap_root.id
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_child2" {
 	name   = "%s"
 	type   = "Service"
 	parent = hpe_opsramp_servicemap.servicemap_root.id
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_child21" {
@@ -90,6 +103,7 @@ resource "hpe_opsramp_servicemap" "servicemap_child21" {
 	type      = "Resource"
 	parent    = hpe_opsramp_servicemap.servicemap_child2.id
 	resources = [hpe_opsramp_resource.resource1.uuid]
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_child22" {
@@ -97,16 +111,29 @@ resource "hpe_opsramp_servicemap" "servicemap_child22" {
 	type         = "Resource"
 	parent       = hpe_opsramp_servicemap.servicemap_child2.id
 	search_query = "resourceType = \"Server\" AND name CONTAINS \"Test\""
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "servicemap_linked_root" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicemap_link" "servicemap_link" {
 	parent = hpe_opsramp_servicemap.servicemap_root.id
 	link   = hpe_opsramp_servicemap.servicemap_linked_root.id
+	%s
 }
-`, acctest.ProviderConfigHCL(), res1, res2, rootName, child1, child2, child21, child22, linkedRoot)
+`, acctest.ProviderConfigHCL(),
+		res1, clientAttr,
+		res2, clientAttr,
+		rootName, clientAttr,
+		child1, clientAttr,
+		child2, clientAttr,
+		child21, clientAttr,
+		child22, clientAttr,
+		linkedRoot, clientAttr,
+		clientAttr,
+	)
 }

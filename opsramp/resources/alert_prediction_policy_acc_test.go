@@ -14,7 +14,10 @@ import (
 )
 
 func TestAccAlertPredictionPolicyResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+	isMSPCreds := acctest.EffectiveScope(t) == "MSP"
+
+	t.Run("create", func(t *testing.T) {
 		policyName := acctest.RandomName("pred-policy")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +26,7 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertPredictionPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertPredictionPolicyConfig(policyName),
+					Config: testAccAlertPredictionPolicyConfig(policyName, clientOverride, isMSPCreds),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertPredictionPolicyExists(t, "hpe_opsramp_alert_prediction_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_prediction_policy.test_policy", "id"),
@@ -40,11 +43,19 @@ func TestAccAlertPredictionPolicyResource(t *testing.T) {
 	})
 }
 
-func testAccAlertPredictionPolicyConfig(name string) string {
+func testAccAlertPredictionPolicyConfig(name string, clientOverride string, isMSPCreds bool) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+	orgMatchingType := ""
+	if isMSPCreds {
+		orgMatchingType = `  organization_matching_type = "ALL"`
+	}
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_alert_prediction_policy" "test_policy" {
 	name = "%s"
+	%s
+	%s
 
 	enabled_mode = "OFF"
 	filter_query = ""
@@ -52,7 +63,7 @@ resource "hpe_opsramp_alert_prediction_policy" "test_policy" {
 	seasonality_time_frame    = "7D"
 	generate_prediction_alert = true
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, clientAttr, orgMatchingType)
 }
 
 func testAccEnsureAlertPredictionPolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

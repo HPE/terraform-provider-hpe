@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccScriptResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create_and_import", func(t *testing.T) {
 		catName := acctest.RandomName("script-cat")
 		scriptName := acctest.RandomName("script")
 
@@ -24,7 +26,7 @@ func TestAccScriptResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScriptDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScriptConfig(catName, scriptName),
+					Config: testAccScriptConfig(catName, scriptName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScriptExists(t, "hpe_opsramp_script.test_script"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_script.test_script", "uuid"),
@@ -36,7 +38,7 @@ func TestAccScriptResource(t *testing.T) {
 				{
 					ResourceName:                         "hpe_opsramp_script.test_script",
 					ImportState:                          true,
-					ImportStateIdFunc:                    testAccScriptImportStateIdFunc("hpe_opsramp_script.test_script"),
+					ImportStateIdFunc:                    testAccScriptImportStateIdFunc("hpe_opsramp_script.test_script", clientOverride),
 					ImportStateVerify:                    true,
 					ImportStateVerifyIdentifierAttribute: "uuid",
 					ImportStateVerifyIgnore:              []string{"attachment"},
@@ -46,11 +48,14 @@ func TestAccScriptResource(t *testing.T) {
 	})
 }
 
-func testAccScriptConfig(catName string, scriptName string) string {
+func testAccScriptConfig(catName string, scriptName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_script_category" "script_test_cat" {
 	name = "%s"
+	%s
 }
 
 resource "hpe_opsramp_script" "test_script" {
@@ -60,6 +65,7 @@ resource "hpe_opsramp_script" "test_script" {
 	platforms       = ["LINUX"]
 	execution_type  = "SHELL"
 	install_timeout = 120
+	%s
 
 	attachment = {
 		name = "test_script.sh"
@@ -76,7 +82,7 @@ resource "hpe_opsramp_script" "test_script" {
 		}
 	]
 }
-`, acctest.ProviderConfigHCL(), catName, scriptName)
+`, acctest.ProviderConfigHCL(), catName, clientAttr, scriptName, clientAttr)
 }
 
 func testAccEnsureScriptExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -158,7 +164,7 @@ func testAccCheckScriptDestroy(t *testing.T) resource.TestCheckFunc {
 }
 
 // testAccScriptImportStateIdFunc builds the composite import ID: <category_id>:<script_uuid>
-func testAccScriptImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccScriptImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -168,6 +174,11 @@ func testAccScriptImportStateIdFunc(resourceName string) resource.ImportStateIdF
 		categoryID := rs.Primary.Attributes["category_id"]
 		scriptUUID := rs.Primary.Attributes["uuid"]
 
-		return categoryID + ":" + scriptUUID, nil
+		id := categoryID + ":" + scriptUUID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

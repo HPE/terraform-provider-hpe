@@ -17,6 +17,9 @@ import (
 )
 
 func TestAccResource(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
 	// t.Run("happy path", func(t *testing.T) {
 	resourceName := acctest.RandomName("resource")
 	hostname := acctest.RandomName("host")
@@ -27,7 +30,7 @@ func TestAccResource(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccResourceConfig(resourceName, "one", hostname),
+				Config: testAccResourceConfig(resourceName, "one", hostname, clientOverride),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"hpe_opsramp_resource.test_resource",
@@ -46,13 +49,13 @@ func TestAccResource(t *testing.T) {
 			{
 				ResourceName:                         "hpe_opsramp_resource.test_resource",
 				ImportState:                          true,
-				ImportStateIdFunc:                    testAccResourceImportStateIdFunc("hpe_opsramp_resource.test_resource"),
+				ImportStateIdFunc:                    testAccResourceImportStateIdFunc("hpe_opsramp_resource.test_resource", clientOverride),
 				ImportStateVerify:                    true,
 				ImportStateVerifyIdentifierAttribute: "uuid",
 			},
 			// Update and Read testing
 			{
-				Config: testAccResourceConfig(resourceName, "onetwo", hostname),
+				Config: testAccResourceConfig(resourceName, "onetwo", hostname, clientOverride),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"hpe_opsramp_resource.test_resource",
@@ -73,7 +76,7 @@ func TestAccResource(t *testing.T) {
 	//})
 }
 
-func testAccResourceConfig(name string, alias string, hostname string) string {
+func testAccResourceConfig(name string, alias string, hostname string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_resource" "test_resource" {
@@ -81,7 +84,8 @@ resource "hpe_opsramp_resource" "test_resource" {
 	alias_name = "%s"
 	hostname = "%s"
 	resource_type = "Linux"
-}`, acctest.ProviderConfigHCL(), name, alias, hostname)
+	%s
+}`, acctest.ProviderConfigHCL(), name, alias, hostname, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureResourceExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -118,13 +122,18 @@ func testAccEnsureResourceExists(t *testing.T, resourceName string) resource.Tes
 	}
 }
 
-func testAccResourceImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccResourceImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.Attributes["uuid"], nil
+		id := rs.Primary.Attributes["uuid"]
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

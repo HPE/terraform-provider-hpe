@@ -18,6 +18,9 @@ import (
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+
+	clientOverride := acctest.OptionalClientOverride(t)
 	configName := acctest.RandomName("intg-cfg")
 	configNameUpdated := configName + "-upd"
 
@@ -28,7 +31,7 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccIntegrationConfigWithScheduleConfig(configName, "DAILY", 1, "01"),
+				Config: testAccIntegrationConfigWithScheduleConfig(configName, "DAILY", 1, "01", clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_config.test", "id"),
@@ -39,7 +42,7 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 			},
 			// Update – rename and change schedule
 			{
-				Config: testAccIntegrationConfigWithScheduleConfig(configNameUpdated, "HOURLY", 2, "3"),
+				Config: testAccIntegrationConfigWithScheduleConfig(configNameUpdated, "HOURLY", 2, "3", clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "name", configNameUpdated),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern_type", "HOURLY"),
@@ -55,6 +58,9 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+
+	clientOverride := acctest.OptionalClientOverride(t)
 	configName := acctest.RandomName("intg-cfg-nosched")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -63,7 +69,7 @@ func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
 		CheckDestroy:             testAccCheckIntegrationConfigDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIntegrationConfigNoScheduleConfig(configName),
+				Config: testAccIntegrationConfigNoScheduleConfig(configName, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test_nosched"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_config.test_nosched", "id"),
@@ -79,21 +85,32 @@ func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {
 // Config helpers
 // ---------------------------------------------------------------------------
 
-func testAccIntegrationConfigWithScheduleConfig(name string, patternType string, pattern int, startTime string) string {
+func testAccIntegrationConfigWithScheduleConfig(
+	name string,
+	patternType string,
+	pattern int,
+	startTime string,
+	clientOverride string,
+) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_management_profile" "test_management_profile" {
   name = "Test Management Profile - 1"
   description = "Management profile for integration config acceptance tests"
+  %s
 }
 resource "hpe_opsramp_integration" "config_parent" {
   application  = "SNMP"
   display_name = "tf-acc-snmp-config-parent - 1"
   profile_id = hpe_opsramp_management_profile.test_management_profile.uuid
+  %s
 }
 resource "hpe_opsramp_credential_set" "snmp_credential_set" {
   name        = "SNMP Credential Set - 1"
   description = "Credential set for SNMP tests"
+  %s
 
   credential_type = "SNMP"
   password        = "**********"
@@ -112,6 +129,7 @@ resource "hpe_opsramp_credential_set" "snmp_credential_set" {
 resource "hpe_opsramp_integration_config" "test" {
   integration_id = hpe_opsramp_integration.config_parent.id
   name           = %q
+  %s
   config         = jsonencode({
     nmapResult      = true
     deviceType      = "SNMP Network Device"
@@ -130,24 +148,29 @@ resource "hpe_opsramp_integration_config" "test" {
 	start_time  = %q
   }
 }
-`, acctest.ProviderConfigHCL(), name, patternType, pattern, startTime)
+`, acctest.ProviderConfigHCL(), clientAttr, clientAttr, clientAttr, name, clientAttr, patternType, pattern, startTime)
 }
 
-func testAccIntegrationConfigNoScheduleConfig(name string) string {
+func testAccIntegrationConfigNoScheduleConfig(name string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_management_profile" "test_management_profile" {
   name = "Test Management Profile - 2"
   description = "Management profile for integration config acceptance tests"
+  %s
 }
 resource "hpe_opsramp_integration" "config_parent" {
   application  = "SNMP"
   display_name = "tf-acc-snmp-config-parent 2"
   profile_id = hpe_opsramp_management_profile.test_management_profile.uuid
+  %s
 }
 resource "hpe_opsramp_credential_set" "snmp_credential_set" {
   name        = "SNMP Credential Set - 2"
   description = "Credential set for SNMP tests"
+  %s
 
   credential_type = "SNMP"
   password        = "**********"
@@ -165,6 +188,7 @@ resource "hpe_opsramp_credential_set" "snmp_credential_set" {
 resource "hpe_opsramp_integration_config" "test_nosched" {
   integration_id = hpe_opsramp_integration.config_parent.id
   name           = %q
+  %s
   config         = jsonencode({
     nmapResult      = true
     deviceType      = "SNMP Network Device"
@@ -176,7 +200,7 @@ resource "hpe_opsramp_integration_config" "test_nosched" {
   })
   all_resources = true
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), clientAttr, clientAttr, clientAttr, name, clientAttr)
 }
 
 // ---------------------------------------------------------------------------

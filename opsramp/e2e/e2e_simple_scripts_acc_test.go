@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,8 @@ import (
 // TestAccE2ESimpleScripts exercises the simple-scripts e2e scenario:
 // script categories with hierarchy and a script with attachment and parameters.
 func TestAccE2ESimpleScripts(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("category hierarchy and script", func(t *testing.T) {
 		parentCat := acctest.RandomName("e2e-script-parent")
 		childCat := acctest.RandomName("e2e-script-child")
@@ -25,7 +27,7 @@ func TestAccE2ESimpleScripts(t *testing.T) {
 			CheckDestroy:             testAccCheckScriptCategoryDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName),
+					Config: testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.automation"),
 						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.linux"),
@@ -41,16 +43,21 @@ func TestAccE2ESimpleScripts(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName string) string {
-	return fmt.Sprintf(`
+func testAccE2ESimpleScriptsConfig(parentCat, childCat, scriptName, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_script_category" "automation" {
 	name = "%s"
+	%s
 }
 
 resource "hpe_opsramp_script_category" "linux" {
 	name      = "%s"
 	parent_id = hpe_opsramp_script_category.automation.uuid
+	%s
 }
 
 resource "hpe_opsramp_script" "restart_service" {
@@ -60,6 +67,7 @@ resource "hpe_opsramp_script" "restart_service" {
 	platforms       = ["LINUX"]
 	execution_type  = "SHELL"
 	install_timeout = 120
+	%s
 
 	attachment = {
 		name = "restart_service_linux.sh"
@@ -76,5 +84,10 @@ resource "hpe_opsramp_script" "restart_service" {
 		}
 	]
 }
-`, acctest.ProviderConfigHCL(), parentCat, childCat, scriptName)
+`,
+		acctest.ProviderConfigHCL(),
+		parentCat, clientAttr,
+		childCat, clientAttr,
+		scriptName, clientAttr,
+	)
 }

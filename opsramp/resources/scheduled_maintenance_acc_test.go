@@ -15,6 +15,9 @@ import (
 )
 
 func TestAccScheduledMaintenanceResource(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("one-time schedule", func(t *testing.T) {
 		nameOne := acctest.RandomName("sm")
 		nameTwo := acctest.RandomName("sm")
@@ -29,7 +32,7 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScheduledMaintenanceDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScheduledMaintenanceOneTimeConfig(nameOne, "Initial maintenance window", startTime, endTime),
+					Config: testAccScheduledMaintenanceOneTimeConfig(nameOne, "Initial maintenance window", startTime, endTime, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScheduledMaintenanceExists(t, "hpe_opsramp_scheduled_maintenance.test"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_scheduled_maintenance.test", "id"),
@@ -51,7 +54,7 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 					),
 				},
 				{
-					Config: testAccScheduledMaintenanceOneTimeConfig(nameTwo, "Updated maintenance window", startTime, endTime),
+					Config: testAccScheduledMaintenanceOneTimeConfig(nameTwo, "Updated maintenance window", startTime, endTime, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScheduledMaintenanceExists(t, "hpe_opsramp_scheduled_maintenance.test"),
 						resource.TestCheckResourceAttr("hpe_opsramp_scheduled_maintenance.test", "name", nameTwo),
@@ -64,9 +67,11 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 				},
 				// ImportState testing
 				{
-					ResourceName:            "hpe_opsramp_scheduled_maintenance.test",
-					ImportState:             true,
-					ImportStateIdFunc:       testAccScheduledMaintenanceImportStateIdFunc("hpe_opsramp_scheduled_maintenance.test"),
+					ResourceName: "hpe_opsramp_scheduled_maintenance.test",
+					ImportState:  true,
+					ImportStateIdFunc: testAccScheduledMaintenanceImportStateIdFunc(
+						"hpe_opsramp_scheduled_maintenance.test", clientOverride,
+					),
 					ImportStateVerify:       true,
 					ImportStateVerifyIgnore: []string{"schedule.start_time", "schedule.end_time"},
 				},
@@ -86,7 +91,7 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScheduledMaintenanceDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScheduledMaintenanceRecurringWeeklyConfig(name, startTime, endTime),
+					Config: testAccScheduledMaintenanceRecurringWeeklyConfig(name, startTime, endTime, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScheduledMaintenanceExists(t, "hpe_opsramp_scheduled_maintenance.test_recurring"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_scheduled_maintenance.test_recurring", "id"),
@@ -134,7 +139,7 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScheduledMaintenanceDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScheduledMaintenanceWithAlertConditionsConfig(name, startTime, endTime),
+					Config: testAccScheduledMaintenanceWithAlertConditionsConfig(name, startTime, endTime, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScheduledMaintenanceExists(t, "hpe_opsramp_scheduled_maintenance.test_alerts"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_scheduled_maintenance.test_alerts", "id"),
@@ -178,7 +183,7 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScheduledMaintenanceDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScheduledMaintenanceWithDeviceGroupConfig(name, groupName, startTime, endTime),
+					Config: testAccScheduledMaintenanceWithDeviceGroupConfig(name, groupName, startTime, endTime, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScheduledMaintenanceExists(t, "hpe_opsramp_scheduled_maintenance.test_dg"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_scheduled_maintenance.test_dg", "id"),
@@ -190,13 +195,16 @@ func TestAccScheduledMaintenanceResource(t *testing.T) {
 	})
 }
 
-func testAccScheduledMaintenanceOneTimeConfig(name string, description string, startTime string, endTime string) string {
+func testAccScheduledMaintenanceOneTimeConfig(name string, description string,
+	startTime string, endTime string, clientOverride string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_scheduled_maintenance" "test" {
 	name            = "%s"
 	description     = "%s"
 	correlate_alerts = true
+	%s
 
 	run_escalate_action = true
 
@@ -207,16 +215,17 @@ resource "hpe_opsramp_scheduled_maintenance" "test" {
 		timezone   = "Europe/Paris"
 	}
 }
-`, acctest.ProviderConfigHCL(), name, description, startTime, endTime)
+`, acctest.ProviderConfigHCL(), name, description, acctest.ClientAttrHCL(clientOverride), startTime, endTime)
 }
 
-func testAccScheduledMaintenanceRecurringWeeklyConfig(name string, startTime string, endTime string) string {
+func testAccScheduledMaintenanceRecurringWeeklyConfig(name string, startTime string, endTime string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_scheduled_maintenance" "test_recurring" {
 	name            = "%s"
 	description     = "Recurring weekly maintenance"
 	correlate_alerts = true
+	%s
 
 	run_escalate_action = true
 	schedule = {
@@ -232,16 +241,22 @@ resource "hpe_opsramp_scheduled_maintenance" "test_recurring" {
 		}
 	}
 }
-`, acctest.ProviderConfigHCL(), name, startTime, endTime)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride), startTime, endTime)
 }
 
-func testAccScheduledMaintenanceWithAlertConditionsConfig(name string, startTime string, endTime string) string {
+func testAccScheduledMaintenanceWithAlertConditionsConfig(
+	name string,
+	startTime string,
+	endTime string,
+	clientOverride string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_scheduled_maintenance" "test_alerts" {
 	name            = "%s"
 	description     = "Maintenance with alert conditions"
 	correlate_alerts = true
+	%s
 
 	run_escalate_action = true
 	schedule = {
@@ -260,15 +275,20 @@ resource "hpe_opsramp_scheduled_maintenance" "test_alerts" {
 		}]
 	}
 }
-`, acctest.ProviderConfigHCL(), name, startTime, endTime)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride), startTime, endTime)
 }
 
-func testAccScheduledMaintenanceWithDeviceGroupConfig(name string, groupName string, startTime string, endTime string) string {
+func testAccScheduledMaintenanceWithDeviceGroupConfig(name string,
+	groupName string, startTime string, endTime string, clientOverride string,
+) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_device_group" "sm_test_group" {
 	name         = "%s"
 	search_query = "resourceType = \"Server\""
+	%s
 }
 
 resource "hpe_opsramp_scheduled_maintenance" "test_dg" {
@@ -276,6 +296,7 @@ resource "hpe_opsramp_scheduled_maintenance" "test_dg" {
 	description     = "Maintenance with device group"
 	correlate_alerts = true
 	run_escalate_action = true
+	%s
 
 	schedule = {
 		type       = "one-time"
@@ -286,7 +307,7 @@ resource "hpe_opsramp_scheduled_maintenance" "test_dg" {
 
 	device_group_ids = [hpe_opsramp_device_group.sm_test_group.id]
 }
-`, acctest.ProviderConfigHCL(), groupName, name, startTime, endTime)
+`, acctest.ProviderConfigHCL(), groupName, clientAttr, name, clientAttr, startTime, endTime)
 }
 
 func testAccEnsureScheduledMaintenanceExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -358,13 +379,18 @@ func testAccCheckScheduledMaintenanceDestroy(t *testing.T) resource.TestCheckFun
 	}
 }
 
-func testAccScheduledMaintenanceImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccScheduledMaintenanceImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.ID, nil
+		id := rs.Primary.ID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

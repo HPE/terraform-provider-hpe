@@ -14,7 +14,13 @@ import (
 )
 
 func TestAccPermissionSetResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	// Any-level resource: runs in all three runs.
+	//   Run 1 (MSP, no target_client): created at MSP level, no client attr.
+	//   Run 2 (MSP + target_client):   created under target client, client attr set.
+	//   Run 3 (CLIENT creds):          created directly, no client attr.
+
+	t.Run("create", func(t *testing.T) {
+		clientOverride := acctest.OptionalClientOverride(t)
 		permName := acctest.RandomName("permset")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +29,7 @@ func TestAccPermissionSetResource(t *testing.T) {
 			CheckDestroy:             testAccCheckPermissionSetDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccPermissionSetConfig(permName),
+					Config: testAccPermissionSetConfig(permName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.test_perms"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_permission_set.test_perms", "unique_id"),
@@ -35,12 +41,18 @@ func TestAccPermissionSetResource(t *testing.T) {
 	})
 }
 
-func testAccPermissionSetConfig(name string) string {
+func testAccPermissionSetConfig(name string, clientOverride string) string {
+	clientAttr := ""
+	if clientOverride != "" {
+		clientAttr = fmt.Sprintf(`client = "%s"`, clientOverride)
+	}
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_permission_set" "test_perms" {
 	name        = "%s"
 	description = "Acceptance test permission set"
+	%s
 
 	permissions = [
 		{
@@ -53,7 +65,7 @@ resource "hpe_opsramp_permission_set" "test_perms" {
 		}
 	]
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, clientAttr)
 }
 
 func testAccEnsurePermissionSetExists(t *testing.T, resourceName string) resource.TestCheckFunc {

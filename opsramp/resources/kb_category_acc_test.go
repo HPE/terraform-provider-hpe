@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccKBCategoryResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create_and_import", func(t *testing.T) {
 		catName := acctest.RandomName("kb-cat")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccKBCategoryResource(t *testing.T) {
 			CheckDestroy:             testAccCheckKBCategoryDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccKBCategoryConfig(catName),
+					Config: testAccKBCategoryConfig(catName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureKBCategoryExists(t, "hpe_opsramp_kb_category.test_category"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_kb_category.test_category", "id"),
@@ -34,7 +36,7 @@ func TestAccKBCategoryResource(t *testing.T) {
 				{
 					ResourceName:      "hpe_opsramp_kb_category.test_category",
 					ImportState:       true,
-					ImportStateIdFunc: testAccKBCategoryImportStateIdFunc("hpe_opsramp_kb_category.test_category"),
+					ImportStateIdFunc: testAccKBCategoryImportStateIdFunc("hpe_opsramp_kb_category.test_category", clientOverride),
 					ImportStateVerify: true,
 				},
 			},
@@ -42,14 +44,15 @@ func TestAccKBCategoryResource(t *testing.T) {
 	})
 }
 
-func testAccKBCategoryConfig(name string) string {
+func testAccKBCategoryConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_kb_category" "test_category" {
 	name        = "%s"
 	description = "Acceptance test KB category"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureKBCategoryExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -128,13 +131,18 @@ func testAccCheckKBCategoryDestroy(t *testing.T) resource.TestCheckFunc {
 	}
 }
 
-func testAccKBCategoryImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccKBCategoryImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.ID, nil
+		id := rs.Primary.ID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

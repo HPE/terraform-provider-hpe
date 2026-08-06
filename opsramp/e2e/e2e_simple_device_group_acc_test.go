@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 // TestAccE2ESimpleDeviceGroup exercises the simple-device-group e2e scenario:
 // resources + root device group + child groups with resources, queries, and mixed.
 func TestAccE2ESimpleDeviceGroup(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("full hierarchy", func(t *testing.T) {
 		res1 := acctest.RandomName("dg-res1")
 		res2 := acctest.RandomName("dg-res2")
@@ -29,7 +32,7 @@ func TestAccE2ESimpleDeviceGroup(t *testing.T) {
 			CheckDestroy:             testAccCheckDeviceGroupDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleDeviceGroupConfig(res1, res2, res3, rootGroup, childRes, childQuery, childMixed),
+					Config: testAccE2ESimpleDeviceGroupConfig(res1, res2, res3, rootGroup, childRes, childQuery, childMixed, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource1"),
 						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource2"),
@@ -49,39 +52,51 @@ func TestAccE2ESimpleDeviceGroup(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleDeviceGroupConfig(res1, res2, res3, rootGroup, childRes, childQuery, childMixed string) string {
-	return fmt.Sprintf(`
+func testAccE2ESimpleDeviceGroupConfig(
+	res1, res2, res3, rootGroup, childRes, childQuery,
+	childMixed, clientOverride string,
+) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_resource" "resource1" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource2" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource3" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_device_group" "device_group_root" {
 	name      = "%s"
 	resources = []
+	%s
 }
 
 resource "hpe_opsramp_device_group" "device_group_resources" {
 	parent_id = hpe_opsramp_device_group.device_group_root.id
 	name      = "%s"
 	resources = [hpe_opsramp_resource.resource1.uuid]
+	%s
 }
 
 resource "hpe_opsramp_device_group" "device_group_query" {
 	parent_id    = hpe_opsramp_device_group.device_group_root.id
 	name         = "%s"
 	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
+	%s
 }
 
 resource "hpe_opsramp_device_group" "device_group_mixed" {
@@ -89,6 +104,16 @@ resource "hpe_opsramp_device_group" "device_group_mixed" {
 	name         = "%s"
 	search_query = format("resourceType = \"Linux\" AND uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
 	resources    = [hpe_opsramp_resource.resource3.uuid]
+	%s
 }
-`, acctest.ProviderConfigHCL(), res1, res2, res3, rootGroup, childRes, childQuery, childMixed)
+`,
+		acctest.ProviderConfigHCL(),
+		res1, clientAttr,
+		res2, clientAttr,
+		res3, clientAttr,
+		rootGroup, clientAttr,
+		childRes, clientAttr,
+		childQuery, clientAttr,
+		childMixed, clientAttr,
+	)
 }

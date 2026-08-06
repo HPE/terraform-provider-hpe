@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccServicedeskBusinessImpactResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		impactName := acctest.RandomName("sd-impact")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccServicedeskBusinessImpactResource(t *testing.T) {
 			CheckDestroy:             testAccCheckServicedeskBusinessImpactDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicedeskBusinessImpactConfig(impactName),
+					Config: testAccServicedeskBusinessImpactConfig(impactName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicedeskBusinessImpactExists(t, "hpe_opsramp_servicedesk_business_impact.test_impact"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_business_impact.test_impact", "id"),
@@ -35,14 +37,15 @@ func TestAccServicedeskBusinessImpactResource(t *testing.T) {
 	})
 }
 
-func testAccServicedeskBusinessImpactConfig(name string) string {
+func testAccServicedeskBusinessImpactConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicedesk_business_impact" "test_impact" {
 	name        = "%s"
 	description = "Acceptance test business impact"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureServicedeskBusinessImpactExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -64,7 +67,12 @@ func testAccEnsureServicedeskBusinessImpactExists(t *testing.T, resourceName str
 			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
 		}
 
-		_, err = apiClient.GetServiceDeskBusinessImpact(id)
+		tenantId := rs.Primary.Attributes["client"]
+		if tenantId == "" {
+			tenantId = apiClient.TenantId
+		}
+
+		_, err = apiClient.GetServiceDeskBusinessImpact(tenantId, id)
 		if err != nil {
 			return fmt.Errorf("servicedesk business impact %s (%s) was not found in opsramp api: %w", resourceName, id, err)
 		}
@@ -87,7 +95,12 @@ func testAccCheckServicedeskBusinessImpactDestroy(t *testing.T) resource.TestChe
 				continue
 			}
 
-			businessImpact, err := apiClient.GetServiceDeskBusinessImpact(rs.Primary.ID)
+			tenantId := rs.Primary.Attributes["client"]
+			if tenantId == "" {
+				tenantId = apiClient.TenantId
+			}
+
+			businessImpact, err := apiClient.GetServiceDeskBusinessImpact(tenantId, rs.Primary.ID)
 			if businessImpact != nil {
 				return fmt.Errorf("servicedesk business impact still exists: %s, object: %+v", rs.Primary.ID, businessImpact)
 			}

@@ -18,6 +18,7 @@ import (
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_CustomEvent(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
 	displayName := acctest.RandomName("intg-custom-event")
 	displayNameUpdated := displayName + "-updated"
 
@@ -28,7 +29,7 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccIntegrationCustomEventConfig(displayName),
+				Config: testAccIntegrationCustomEventConfig(displayName, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test", "id"),
@@ -40,7 +41,7 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 			},
 			// Update – change display_name and toggle enable_drop_alerts
 			{
-				Config: testAccIntegrationCustomEventConfigUpdated(displayNameUpdated),
+				Config: testAccIntegrationCustomEventConfigUpdated(displayNameUpdated, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "display_name", displayNameUpdated),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "inbound.enable_drop_alerts", "false"),
@@ -50,7 +51,7 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 			{
 				ResourceName:            "hpe_opsramp_integration.test",
 				ImportState:             true,
-				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test"),
+				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test", clientOverride),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"application", "inbound"},
 			},
@@ -63,6 +64,7 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_Custom(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
 	displayName := acctest.RandomName("intg-custom")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -71,7 +73,7 @@ func TestAccIntegrationResource_Custom(t *testing.T) {
 		CheckDestroy:             testAccCheckIntegrationDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIntegrationCustomConfig(displayName),
+				Config: testAccIntegrationCustomConfig(displayName, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test_custom"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_custom", "id"),
@@ -84,7 +86,7 @@ func TestAccIntegrationResource_Custom(t *testing.T) {
 			{
 				ResourceName:            "hpe_opsramp_integration.test_custom",
 				ImportState:             true,
-				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test_custom"),
+				ImportStateIdFunc:       testAccIntegrationImportStateIdFunc("hpe_opsramp_integration.test_custom", clientOverride),
 				ImportStateVerify:       true,
 				ImportStateVerifyIgnore: []string{"application", "inbound", "outbound"},
 			},
@@ -97,13 +99,15 @@ func TestAccIntegrationResource_Custom(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_NewRelic(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	resource.ParallelTest(t, resource.TestCase{
 		PreCheck:                 acctest.PreCheck(t),
 		ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
 		CheckDestroy:             testAccCheckIntegrationDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIntegrationNewRelicConfig(),
+				Config: testAccIntegrationNewRelicConfig(clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationExists(t, "hpe_opsramp_integration.test_newrelic"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration.test_newrelic", "id"),
@@ -120,7 +124,7 @@ func TestAccIntegrationResource_NewRelic(t *testing.T) {
 // Config helpers
 // ---------------------------------------------------------------------------
 
-func testAccIntegrationCustomEventConfig(displayName string) string {
+func testAccIntegrationCustomEventConfig(displayName string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -132,6 +136,7 @@ resource "hpe_opsramp_integration" "test" {
   display_name    = %q
   application     = "CUSTOM-EVENT"
   alert_source_id = data.hpe_opsramp_custom_event_alert_source.custom_source.id
+  %s
 
   inbound = {
     auth_type          = "WEBHOOK"
@@ -145,10 +150,10 @@ resource "hpe_opsramp_integration" "test" {
     ]
   }
 }
-`, acctest.ProviderConfigHCL(), displayName)
+`, acctest.ProviderConfigHCL(), displayName, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccIntegrationCustomEventConfigUpdated(displayName string) string {
+func testAccIntegrationCustomEventConfigUpdated(displayName string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 data "hpe_opsramp_custom_event_alert_source" "custom_source" {
@@ -159,6 +164,7 @@ resource "hpe_opsramp_integration" "test" {
   display_name    = %q
   application     = "CUSTOM-EVENT"
   alert_source_id = data.hpe_opsramp_custom_event_alert_source.custom_source.id
+  %s
 
   inbound = {
     auth_type          = "WEBHOOK"
@@ -172,10 +178,10 @@ resource "hpe_opsramp_integration" "test" {
     ]
   }
 }
-`, acctest.ProviderConfigHCL(), displayName)
+`, acctest.ProviderConfigHCL(), displayName, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccIntegrationCustomConfig(displayName string) string {
+func testAccIntegrationCustomConfig(displayName string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -183,6 +189,7 @@ resource "hpe_opsramp_integration" "test_custom" {
   display_name = %q
   application  = "CUSTOM"
   category     = "Custom"
+  %s
 
   inbound = {
     auth_type = "OAUTH2"
@@ -195,22 +202,23 @@ resource "hpe_opsramp_integration" "test_custom" {
     password  = "secret"
   }
 }
-`, acctest.ProviderConfigHCL(), displayName)
+`, acctest.ProviderConfigHCL(), displayName, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccIntegrationNewRelicConfig() string {
+func testAccIntegrationNewRelicConfig(clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
 resource "hpe_opsramp_integration" "test_newrelic" {
   application = "NEWRELIC"
+  %s
 
   inbound = {
     auth_type          = "WEBHOOK"
     enable_drop_alerts = false
   }
 }
-`, acctest.ProviderConfigHCL())
+`, acctest.ProviderConfigHCL(), acctest.ClientAttrHCL(clientOverride))
 }
 
 // ---------------------------------------------------------------------------
@@ -286,13 +294,18 @@ func testAccCheckIntegrationDestroy(t *testing.T) resource.TestCheckFunc {
 	}
 }
 
-func testAccIntegrationImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccIntegrationImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.ID, nil
+		id := rs.Primary.ID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }
