@@ -11,7 +11,9 @@ import (
 
 	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -163,8 +165,21 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	clusterId := *clusterResp.Cluster.Id
 	plan.Id = convert.Int64ToType(&clusterId)
 
-	// write the ID now
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	// Write the ID now, and *only* the ID.
+	//
+	// The cluster exists on the appliance from this point on, so state must
+	// record its ID even if the create later fails - otherwise the cluster is
+	// orphaned. It must not, however, be written from the plan: every
+	// computed-only attribute (uuid, service_url, cpu_placement_mode,
+	// cluster_type_code, ...) is still unknown at this point, and
+	// terraform-plugin-framework rejects a state that contains unknown values
+	// when the response also carries an error - reporting "Provider returned
+	// invalid result object after apply" and masking the real diagnostic.
+	//
+	// Setting a single attribute against the (null) create state leaves every
+	// other attribute null, which is valid. The full state is written from the
+	// API read-back once provisioning has actually succeeded.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.Int64Value(clusterId))...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
