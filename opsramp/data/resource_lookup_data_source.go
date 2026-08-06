@@ -23,6 +23,7 @@ type resourceLookupDataSource struct {
 
 // DS config model
 type resourceLookupModel struct {
+	Client types.String `tfsdk:"client"`
 	Query  types.String `tfsdk:"query"`
 	Exists types.Bool   `tfsdk:"exists"`
 	ID     types.String `tfsdk:"id"`
@@ -36,6 +37,10 @@ func (d *resourceLookupDataSource) Schema(_ context.Context, _ datasource.Schema
 	resp.Schema = schema.Schema{
 		Description: "Checks if a resource exists given a query string. Returns `exists` and the first match `id`.",
 		Attributes: map[string]schema.Attribute{
+			"client": schema.StringAttribute{
+				Optional:    true,
+				Description: "Optional client (tenant) UUID to query against. Defaults to the provider tenant.",
+			},
 			"query": schema.StringAttribute{
 				Required:    true,
 				Description: "Opaque query string appended to the API (e.g., `name=my-name&type=app`).",
@@ -66,7 +71,9 @@ func (d *resourceLookupDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	exists, id, _, err := d.apiClient.QueryResources(data.Query.ValueString())
+	tenantID := resolveLookupTenantID(d.apiClient, data.Client)
+
+	exists, id, _, err := d.apiClient.QueryResourcesForClient(tenantID, data.Query.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Query failed", err.Error())
 

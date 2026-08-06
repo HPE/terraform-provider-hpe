@@ -24,7 +24,7 @@ type SearchUrgencyResponse struct {
 }
 
 // CreateServiceDeskUrgency - Create new ServiceDeskUrgency
-func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*ServiceDeskUrgency, error) {
+func (c *OpsRampClient) CreateServiceDeskUrgency(tenantId string, resource ServiceDeskUrgency) (*ServiceDeskUrgency, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -32,7 +32,7 @@ func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*
 	}
 
 	// Prepare the URL, Method and Payload fo the Client
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/urgencies", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/urgencies", c.BaseUrl, tenantId)
 	method := "POST"
 
 	// Create a new Request
@@ -53,12 +53,12 @@ func (c *OpsRampClient) CreateServiceDeskUrgency(resource ServiceDeskUrgency) (*
 }
 
 // GetServiceDeskUrgency - Get the resource with ID of the resource
-func (c *OpsRampClient) GetServiceDeskUrgency(id string) (*ServiceDeskUrgency, error) {
+func (c *OpsRampClient) GetServiceDeskUrgency(tenantId string, id string) (*ServiceDeskUrgency, error) {
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf(
 		"%s/api/v2/tenants/%s/serviceDesk/config/urgencies?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s",
 		c.BaseUrl,
-		c.TenantId,
+		tenantId,
 		id,
 	)
 	method := "GET"
@@ -85,7 +85,11 @@ func (c *OpsRampClient) GetServiceDeskUrgency(id string) (*ServiceDeskUrgency, e
 }
 
 // UpdateServiceDeskUrgency - Update a resource using Az Client
-func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord ServiceDeskUrgency) (*ServiceDeskUrgency, error) {
+func (c *OpsRampClient) UpdateServiceDeskUrgency(
+	tenantId string,
+	id string,
+	updateRecord ServiceDeskUrgency,
+) (*ServiceDeskUrgency, error) {
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -93,7 +97,7 @@ func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord Service
 	}
 
 	// Prepare config for API request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/urgencies/%s", c.BaseUrl, c.TenantId, id)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/urgencies/%s", c.BaseUrl, tenantId, id)
 	method := "POST"
 
 	// Create a new Request
@@ -112,9 +116,9 @@ func (c *OpsRampClient) UpdateServiceDeskUrgency(id string, updateRecord Service
 	return &urgency, err
 }
 
-func (c *OpsRampClient) DeleteServiceDeskUrgency(id string) error {
+func (c *OpsRampClient) DeleteServiceDeskUrgency(tenantId string, id string) error {
 	// Prepare config for API Request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/urgencies", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/urgencies", c.BaseUrl, tenantId)
 	method := "DELETE"
 
 	ids := ServiceDeskUrgencyDelete{Ids: []string{id}}

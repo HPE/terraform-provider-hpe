@@ -152,33 +152,25 @@ func (c *OpsRampClient) FindResourceByName(name string) (interface{}, error) {
 	return resources.Results[0].Uuid, nil
 }
 
-// OpsQLSearch - Query resources using OpsRamp Query Language (OpsQL)
-// Returns true if at least one resource matches the query, the ID of the first matching resource (if any), the count of matching
-// resources, and an error if the API call fails.
-func (c *OpsRampClient) QueryResources(filterCriteria string) (bool, string, int, error) {
+func (c *OpsRampClient) QueryResourcesForClient(tenantID string, filterCriteria string) (bool, string, int, error) {
 	updateRecord := OpsQLSearchRequest{
 		ObjectType:     "resource",
 		Fields:         []string{"id", "name", "resourceType"},
 		FilterCriteria: filterCriteria,
 	}
 
-	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
 		return false, "", -1, err
 	}
 
-	// Prepare config for API Request
-	apiUrl := fmt.Sprintf("%s/opsql/api/v3/tenants/%s/queries", c.BaseUrl, c.TenantId)
-	method := "POST"
+	apiUrl := fmt.Sprintf("%s/opsql/api/v3/tenants/%s/queries", c.BaseUrl, tenantID)
 
-	// Create a new Request
-	body, err := c.NewJsonRequest(method, apiUrl, rb)
+	body, err := c.NewJsonRequest("POST", apiUrl, rb)
 	if err != nil {
 		return false, "", 0, err
 	}
 
-	// Parse response
 	var resources SearchResources
 	err = json.Unmarshal(body, &resources)
 	if err != nil {

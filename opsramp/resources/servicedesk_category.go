@@ -88,6 +88,14 @@ func (r *ServiceDeskCategory) Schema(_ context.Context, _ resource.SchemaRequest
 	}
 }
 
+func (r *ServiceDeskCategory) resolveTenantId(clientAttr types.String) string {
+	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
+		return clientAttr.ValueString()
+	}
+
+	return r.apiClient.TenantId
+}
+
 func (r *ServiceDeskCategory) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan ServiceDeskCategoryModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -96,13 +104,15 @@ func (r *ServiceDeskCategory) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	tenantId := r.resolveTenantId(plan.Client)
+
 	category := client.ServiceDeskCategory{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		TicketType:  plan.TicketType.ValueString(),
 	}
 
-	created, err := r.apiClient.CreateServiceDeskCategory(category)
+	created, err := r.apiClient.CreateServiceDeskCategory(tenantId, category)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 
@@ -122,8 +132,9 @@ func (r *ServiceDeskCategory) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	// Use ticket type from state (required for API)
-	category, err := r.apiClient.GetServiceDeskCategory(state.Id.ValueString())
+	tenantId := r.resolveTenantId(state.Client)
+
+	category, err := r.apiClient.GetServiceDeskCategory(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
 
@@ -169,7 +180,7 @@ func (r *ServiceDeskCategory) Update(ctx context.Context, req resource.UpdateReq
 
 	// The API may not support update directly; if not, implement as needed.
 	// For now, try create (upsert) pattern:
-	updated, err := r.apiClient.UpdateServiceDeskCategory(plan.Id.ValueString(), category)
+	updated, err := r.apiClient.UpdateServiceDeskCategory(r.resolveTenantId(plan.Client), plan.Id.ValueString(), category)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
 
@@ -189,7 +200,7 @@ func (r *ServiceDeskCategory) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	err := r.apiClient.DeleteServiceDeskCategory(state.Id.ValueString())
+	err := r.apiClient.DeleteServiceDeskCategory(r.resolveTenantId(state.Client), state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
 	}

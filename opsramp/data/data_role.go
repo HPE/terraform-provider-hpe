@@ -30,15 +30,20 @@ func (d *dataRoleSource) Metadata(_ context.Context, req datasource.MetadataRequ
 
 // DS config model
 type dataRoleModel struct {
-	ID   types.Int64  `tfsdk:"id"`
-	Name types.String `tfsdk:"name"`
-	UUID types.String `tfsdk:"uuid"`
+	Client types.String `tfsdk:"client"`
+	ID     types.Int64  `tfsdk:"id"`
+	Name   types.String `tfsdk:"name"`
+	UUID   types.String `tfsdk:"uuid"`
 }
 
 func (d *dataRoleSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Description: "Looks up an OpsRamp Role by name. Returns its numeric ID and unique UUID.",
 		Attributes: map[string]schema.Attribute{
+			"client": schema.StringAttribute{
+				Optional:    true,
+				Description: "Optional client (tenant) UUID to query against. Defaults to the provider tenant.",
+			},
 			"id": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The numeric ID of the role.",
@@ -69,7 +74,7 @@ func (d *dataRoleSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	tenantId := d.apiClient.TenantId
+	tenantId := resolveLookupTenantID(d.apiClient, data.Client)
 
 	role, err := d.apiClient.FindRoleByName(tenantId, data.Name.ValueString())
 	if err != nil {

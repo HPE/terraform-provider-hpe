@@ -83,6 +83,14 @@ func (r *ServiceDeskUrgency) Schema(_ context.Context, _ resource.SchemaRequest,
 	}
 }
 
+func (r *ServiceDeskUrgency) resolveTenantId(clientAttr types.String) string {
+	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
+		return clientAttr.ValueString()
+	}
+
+	return r.apiClient.TenantId
+}
+
 func (r *ServiceDeskUrgency) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan ServiceDeskUrgencyModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -91,13 +99,15 @@ func (r *ServiceDeskUrgency) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	tenantId := r.resolveTenantId(plan.Client)
+
 	urgency := client.ServiceDeskUrgency{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		State:       plan.State.ValueBool(),
 	}
 
-	created, err := r.apiClient.CreateServiceDeskUrgency(urgency)
+	created, err := r.apiClient.CreateServiceDeskUrgency(tenantId, urgency)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 
@@ -120,8 +130,9 @@ func (r *ServiceDeskUrgency) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	// Use ticket type from state (required for API)
-	urgency, err := r.apiClient.GetServiceDeskUrgency(state.Id.ValueString())
+	tenantId := r.resolveTenantId(state.Client)
+
+	urgency, err := r.apiClient.GetServiceDeskUrgency(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
 
@@ -159,7 +170,7 @@ func (r *ServiceDeskUrgency) Update(ctx context.Context, req resource.UpdateRequ
 
 	// The API may not support update directly; if not, implement as needed.
 	// For now, try create (upsert) pattern:
-	updated, err := r.apiClient.UpdateServiceDeskUrgency(plan.Id.ValueString(), urgency)
+	updated, err := r.apiClient.UpdateServiceDeskUrgency(r.resolveTenantId(plan.Client), plan.Id.ValueString(), urgency)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
 
@@ -182,7 +193,7 @@ func (r *ServiceDeskUrgency) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
-	err := r.apiClient.DeleteServiceDeskUrgency(state.Id.ValueString())
+	err := r.apiClient.DeleteServiceDeskUrgency(r.resolveTenantId(state.Client), state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
 	}

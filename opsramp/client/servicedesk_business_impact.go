@@ -24,7 +24,10 @@ type SearchBusinessImpactResponse struct {
 }
 
 // CreateServiceDeskBusinessImpact - Create new ServiceDeskBusinessImpact
-func (c *OpsRampClient) CreateServiceDeskBusinessImpact(resource ServiceDeskBusinessImpact) (*ServiceDeskBusinessImpact, error) {
+func (c *OpsRampClient) CreateServiceDeskBusinessImpact(
+	tenantId string,
+	resource ServiceDeskBusinessImpact,
+) (*ServiceDeskBusinessImpact, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -32,7 +35,7 @@ func (c *OpsRampClient) CreateServiceDeskBusinessImpact(resource ServiceDeskBusi
 	}
 
 	// Prepare the URL, Method and Payload fo the Client
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/businessImpacts", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/businessImpacts", c.BaseUrl, tenantId)
 	method := "POST"
 
 	// Create a new Request
@@ -53,12 +56,12 @@ func (c *OpsRampClient) CreateServiceDeskBusinessImpact(resource ServiceDeskBusi
 }
 
 // GetServiceDeskBusinessImpact - Get the resource with ID of the resource
-func (c *OpsRampClient) GetServiceDeskBusinessImpact(id string) (*ServiceDeskBusinessImpact, error) {
+func (c *OpsRampClient) GetServiceDeskBusinessImpact(tenantId string, id string) (*ServiceDeskBusinessImpact, error) {
 	// Prepare config for API request
 	apiUrl := fmt.Sprintf(
 		"%s/api/v2/tenants/%s/serviceDesk/config/businessImpacts?pageNo=1&pageSize=1&isDescendingOrder=false&sortName=name&queryString=id:%s",
 		c.BaseUrl,
-		c.TenantId,
+		tenantId,
 		id,
 	)
 	method := "GET"
@@ -87,6 +90,7 @@ func (c *OpsRampClient) GetServiceDeskBusinessImpact(id string) (*ServiceDeskBus
 
 // UpdateServiceDeskBusinessImpact - Update a resource using Az Client
 func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(
+	tenantId string,
 	id string,
 	updateRecord ServiceDeskBusinessImpact,
 ) (*ServiceDeskBusinessImpact, error) {
@@ -97,7 +101,7 @@ func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(
 	}
 
 	// Prepare config for API request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/businessImpacts/%s", c.BaseUrl, c.TenantId, id)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/incidents/businessImpacts/%s", c.BaseUrl, tenantId, id)
 	method := "POST"
 
 	// Create a new Request
@@ -117,9 +121,9 @@ func (c *OpsRampClient) UpdateServiceDeskBusinessImpact(
 	return &businessImpact, err
 }
 
-func (c *OpsRampClient) DeleteServiceDeskBusinessImpact(id string) error {
+func (c *OpsRampClient) DeleteServiceDeskBusinessImpact(tenantId string, id string) error {
 	// Prepare config for API Request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/businessImpacts", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/businessImpacts", c.BaseUrl, tenantId)
 	method := "DELETE"
 
 	ids := ServiceDeskBusinessImpactDelete{Ids: []string{id}}

@@ -59,11 +59,13 @@ func NewServiceDeskCategoryDataSource() datasource.DataSource {
 }
 
 func resolveLookupTenantID(apiClient *client.OpsRampClient, configuredClient types.String) string {
+	// Use client parameter if set, otherwise provider's tenant ID
+	tenantId := apiClient.TenantId
 	if !configuredClient.IsNull() && configuredClient.ValueString() != "" {
-		return configuredClient.ValueString()
+		tenantId = configuredClient.ValueString()
 	}
 
-	return apiClient.TenantId
+	return tenantId
 }
 
 func serviceDeskLookupSchema(description string) schema.Schema {
