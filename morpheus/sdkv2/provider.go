@@ -488,7 +488,6 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 			return nil, diag.FromErr(err)
 		}
 
-		println("Minted morpheus token (sdkv2): " + token)
 		config.Url = url
 		config.AccessToken = token
 	}

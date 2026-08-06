@@ -79,7 +79,6 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 	switch {
 	case len(m.PCEIdentity) > 0:
 		url, token, err = pceIdentityTokenExchange(ctx, &m.PCEIdentity[0])
-		println("Minted morpheus token (framework): " + token)
 	case len(m.PCEDisconnectedIdentity) > 0:
 		url, token, err = pceDisconnectedIdentityTokenExchange(ctx, &m.PCEDisconnectedIdentity[0])
 	}
