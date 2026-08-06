@@ -4,6 +4,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
@@ -465,6 +466,31 @@ func mapCredentialSetToState(resp *client.CredentialSet, state *CredentialSetMod
 	}
 	if resp.CollectorType != "" {
 		state.CollectorType = types.StringValue(resp.CollectorType)
+	}
+}
+
+func (r *CredentialSetResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	r.BaseResource.ModifyPlan(ctx, req, resp)
+
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan CredentialSetModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	hasClientOverride := !plan.Client.IsNull() && (plan.Client.IsUnknown() || strings.TrimSpace(plan.Client.ValueString()) != "")
+	isMSPLevel := strings.ToUpper(r.apiClient.Scope) == "MSP" && !hasClientOverride
+
+	if isMSPLevel && !plan.CredentialType.IsUnknown() && plan.CredentialType.ValueString() != "LLM" {
+		resp.Diagnostics.AddError(
+			"Only LLM credential type is supported at partner level",
+			fmt.Sprintf("Credential type %q requires a client-scoped provider configuration or specify the client attribute.", plan.CredentialType.ValueString()),
+		)
 	}
 }
 
