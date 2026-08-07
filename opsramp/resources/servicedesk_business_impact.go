@@ -200,6 +200,8 @@ func (r *ServiceDeskBusinessImpact) Delete(ctx context.Context, req resource.Del
 	err := r.apiClient.DeleteServiceDeskBusinessImpact(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
+		return
 	}
 
 	resp.State.RemoveResource(ctx)

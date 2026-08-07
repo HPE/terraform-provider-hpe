@@ -196,6 +196,8 @@ func (r *ServiceDeskUrgency) Delete(ctx context.Context, req resource.DeleteRequ
 	err := r.apiClient.DeleteServiceDeskUrgency(r.resolveTenantId(state.Client), state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
+		return
 	}
 
 	resp.State.RemoveResource(ctx)

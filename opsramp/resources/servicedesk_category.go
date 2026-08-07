@@ -203,6 +203,8 @@ func (r *ServiceDeskCategory) Delete(ctx context.Context, req resource.DeleteReq
 	err := r.apiClient.DeleteServiceDeskCategory(r.resolveTenantId(state.Client), state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
+		return
 	}
 
 	resp.State.RemoveResource(ctx)
