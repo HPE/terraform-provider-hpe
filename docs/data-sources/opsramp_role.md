@@ -23,6 +23,10 @@ data "hpe_opsramp_role" "administrator" {
 
 - `name` (String) The name of the role to look up.
 
+### Optional
+
+- `client` (String) Optional client (tenant) UUID to query against. Defaults to the provider tenant.
+
 ### Read-Only
 
 - `id` (Number) The numeric ID of the role.

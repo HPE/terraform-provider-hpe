@@ -23,6 +23,10 @@ data "hpe_opsramp_resource_lookup" "on_prem" {
 
 - `query` (String) Opaque query string appended to the API (e.g., `name=my-name&type=app`).
 
+### Optional
+
+- `client` (String) Optional client (tenant) UUID to query against. Defaults to the provider tenant.
+
 ### Read-Only
 
 - `exists` (Boolean) True if at least one resource matches.
