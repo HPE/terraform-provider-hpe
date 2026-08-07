@@ -516,17 +516,6 @@ Optional:
 - `url` (String) Morpheus instance URL. May be omitted when it is supplied by a pce_identity or pce_disconnected_identity block.
 - `username` (String) Morpheus username for authentication, required if password is set
 
-
-<a id="nestedblock--opsramp"></a>
-### Nested Schema for `opsramp`
-
-Optional:
-
-- `client_id` (String) OAuth client ID for OpsRamp API
-- `client_secret` (String, Sensitive) OAuth client secret for OpsRamp API
-- `endpoint` (String) OpsRamp Endpoint
-- `tenant` (String) OpsRamp Tenant ID
-=======
 <a id="nestedblock--morpheus--pce_disconnected_identity"></a>
 ### Nested Schema for `morpheus.pce_disconnected_identity`
 
@@ -559,3 +548,15 @@ Optional:
 - `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
 - `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
 - `space` (String) The name of the GreenLake Space that the PCE instance is in.
+
+
+
+<a id="nestedblock--opsramp"></a>
+### Nested Schema for `opsramp`
+
+Optional:
+
+- `client_id` (String) OAuth client ID for OpsRamp API
+- `client_secret` (String, Sensitive) OAuth client secret for OpsRamp API
+- `endpoint` (String) OpsRamp Endpoint
+- `tenant` (String) OpsRamp Tenant ID
