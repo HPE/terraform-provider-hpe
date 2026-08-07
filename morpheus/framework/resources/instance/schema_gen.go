@@ -868,6 +868,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
 			},
+			"wait_for_ip_address": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "When true, the provider waits after create or update until at least one\ncontainer on the instance reports an IP address that is not a placeholder.\nOn timeout, a warning is emitted and the apply continues — the instance\nprovisioned successfully but the address is not yet available. The wait\nconsumes the remaining budget of the create or update timeout.",
+				MarkdownDescription: "When true, the provider waits after create or update until at least one\ncontainer on the instance reports an IP address that is not a placeholder.\nOn timeout, a warning is emitted and the apply continues — the instance\nprovisioned successfully but the address is not yet available. The wait\nconsumes the remaining budget of the create or update timeout.",
+				Default:             booldefault.StaticBool(false),
+			},
 		},
 	}
 }
@@ -904,6 +911,7 @@ type InstanceModel struct {
 	Timeouts           timeouts.Value          `tfsdk:"timeouts"`
 	UserGroup          types.Int64             `tfsdk:"user_group"`
 	Volumes            types.List              `tfsdk:"volumes"`
+	WaitForIpAddress   types.Bool              `tfsdk:"wait_for_ip_address"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

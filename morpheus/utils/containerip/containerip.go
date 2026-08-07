@@ -29,6 +29,70 @@ func Ready(ip string) bool {
 	return trimmed != "" && trimmed != "0.0.0.0"
 }
 
+// WaitAny polls GET /api/instances/{id} until at least one container on the
+// instance reports an IP that satisfies Ready, or until the timeout expires.
+//
+// The instance resource owns the container it provisions; containers added
+// later by hpe_morpheus_instance_node belong to that resource and are waited
+// on there. Requiring all containers would make an instance apply block on
+// nodes it does not own.
+//
+// On timeout the function returns warned=true rather than an error, because
+// the instance provisioned successfully — only the address is not yet
+// available. The real reasons an address never arrives are provisioning
+// failure, a network with neither DHCP nor static assignment, or the
+// accessor throwing and yielding an empty string.
+func WaitAny(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+	timeout time.Duration,
+) (warned bool, err error) {
+	poll := func() (struct{}, error) {
+		getResp, hresp, getErr := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
+		if getErr != nil {
+			return struct{}{}, backoff.Permanent(
+				fmt.Errorf("failed to read instance %d: %s",
+					instanceID, errfmt.ErrMsg(getErr, hresp)),
+			)
+		}
+
+		if getResp.Instance == nil {
+			return struct{}{}, backoff.Permanent(
+				fmt.Errorf("instance %d: response is nil", instanceID),
+			)
+		}
+
+		for i := range getResp.Instance.ContainerDetails {
+			cd := &getResp.Instance.ContainerDetails[i]
+			if cd.Ip != nil && Ready(*cd.Ip) {
+				return struct{}{}, nil
+			}
+		}
+
+		return struct{}{}, fmt.Errorf("instance %d: no container has a ready IP", instanceID)
+	}
+
+	_, err = backoff.Retry(
+		ctx,
+		poll,
+		backoff.WithBackOff(backoff.NewConstantBackOff(10*time.Second)),
+		backoff.WithMaxElapsedTime(timeout),
+	)
+	if err != nil {
+		tflog.Warn(ctx, "IP address wait timed out; instance provisioned but address not yet available",
+			map[string]any{
+				"instance_id": instanceID,
+				"error":       err.Error(),
+			},
+		)
+
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // Wait polls GET /api/instances/{id} until the container identified by
 // containerID has an IP that satisfies Ready, or until the timeout expires.
 // Returns the IP on success.

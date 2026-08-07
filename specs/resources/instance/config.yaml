@@ -64,6 +64,17 @@ instance:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
             schema_definition: setplanmodifier.RequiresReplace()
+    wait_for_ip_address:
+      bool:
+        computed_optional_required: computed_optional
+        default:
+          static: false
+        description: |-
+          When true, the provider waits after create or update until at least one
+          container on the instance reports an IP address that is not a placeholder.
+          On timeout, a warning is emitted and the apply continues — the instance
+          provisioned successfully but the address is not yet available. The wait
+          consumes the remaining budget of the create or update timeout.
     instance_type_id:
       int64:
         computed_optional_required: required
@@ -471,6 +482,7 @@ instance:
     - template-host_name: host_name
     - template-labels: labels
     - template-server_uuids: server_uuids
+    - template-wait_for_ip_address: wait_for_ip_address
     - template-instance_type_id: instance_type_id
     - template-layout_id: layout_id
     - template-plan_id: plan_id

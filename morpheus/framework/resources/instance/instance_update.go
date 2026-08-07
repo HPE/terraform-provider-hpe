@@ -15,6 +15,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/compare"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -80,6 +81,28 @@ func (g *Resource) Update(
 
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
 	tflog.Info(ctx, fmt.Sprintf("Instance update plan: %v", plan.Volumes.Elements()))
+
+	// Wait for at least one container to have a ready IP address, if requested.
+	if plan.WaitForIpAddress.ValueBool() {
+		warned, waitErr := containerip.WaitAny(ctx, client, state.Id.ValueInt64(), updateTimeout)
+		if waitErr != nil {
+			resp.Diagnostics.AddError("wait for IP address", waitErr.Error())
+
+			return
+		}
+
+		if warned {
+			resp.Diagnostics.AddWarning(
+				"IP address not yet available",
+				fmt.Sprintf(
+					"Instance %d updated successfully but no container reported "+
+						"a usable IP address within the timeout. The address may appear "+
+						"on a subsequent refresh.",
+					state.Id.ValueInt64(),
+				),
+			)
+		}
+	}
 
 	newState, found, diag := getInstanceAsState(ctx, state.Id.ValueInt64(), client, plan, false)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
@@ -825,6 +848,11 @@ func isAPIUpdateNeeded(plan, state InstanceModel) bool {
 	// service_plan_options
 	if !plan.ServicePlanOptions.Equal(state.ServicePlanOptions) {
 		return true
+	}
+
+	// wait_for_ip_address — provider-only, no API call needed
+	if !plan.WaitForIpAddress.Equal(state.WaitForIpAddress) {
+		return false
 	}
 
 	// timeouts - this should be the last comparison

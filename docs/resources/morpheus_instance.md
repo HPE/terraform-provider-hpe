@@ -933,6 +933,11 @@ the relevant config_* block, the user group's members can be created as users on
 provisioned instance. The user group can only be set at provision time; changing it forces
 replacement of the instance.
 - `volumes` (Attributes List) Logical Volume configuration to create additional LVs at provision time (see [below for nested schema](#nestedatt--volumes))
+- `wait_for_ip_address` (Boolean) When true, the provider waits after create or update until at least one
+container on the instance reports an IP address that is not a placeholder.
+On timeout, a warning is emitted and the apply continues — the instance
+provisioned successfully but the address is not yet available. The wait
+consumes the remaining budget of the create or update timeout.
 
 ### Read-Only
 

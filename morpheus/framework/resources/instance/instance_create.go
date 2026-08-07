@@ -17,6 +17,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -620,6 +621,33 @@ func (g *Resource) Create(
 		taintResourceState(instanceId)
 
 		return
+	}
+
+	// Wait for at least one container to have a ready IP address, if requested.
+	// The instance resource owns the container it provisions; containers added
+	// later by hpe_morpheus_instance_node belong to that resource and are waited
+	// on there. Requiring all containers would make an instance apply block on
+	// nodes it does not own.
+	if plan.WaitForIpAddress.ValueBool() {
+		warned, waitErr := containerip.WaitAny(ctx, client, instanceId, createTimeout)
+		if waitErr != nil {
+			resp.Diagnostics.AddError("wait for IP address", waitErr.Error())
+			taintResourceState(instanceId)
+
+			return
+		}
+
+		if warned {
+			resp.Diagnostics.AddWarning(
+				"IP address not yet available",
+				fmt.Sprintf(
+					"Instance %d provisioned successfully but no container reported "+
+						"a usable IP address within the timeout. The address may appear "+
+						"on a subsequent refresh.",
+					instanceId,
+				),
+			)
+		}
 	}
 
 	// Read the instance state
