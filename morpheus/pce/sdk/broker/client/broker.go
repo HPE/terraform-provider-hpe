@@ -33,7 +33,7 @@ func (a *BrokerAPIService) GetMorpheusDetails(ctx context.Context) (models.TFMor
 		},
 	}
 	if err := cmpDetailsAPI.do(ctx, nil, a.Cfg.DefaultQueryParams); err != nil {
-		return models.TFMorpheusDetails{}, fmt.Errorf("error getting CMP details: %v", err)
+		return models.TFMorpheusDetails{}, fmt.Errorf("error getting Morpheus connection details: %v", err)
 	}
 	// build response
 	ret := models.TFMorpheusDetails{

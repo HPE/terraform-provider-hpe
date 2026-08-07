@@ -532,15 +532,15 @@ Optional:
 
 Required:
 
-- `broker_url` (String) URL of the on-premise VMaaS broker used for the CMP details exchange. There is no default: a Disconnected deployment has no HPE hosted broker to fall back to.
-- `location` (String) Name of the site whose Morpheus instance to use, as shown in the PCE UI. It selects the service instance within the workspace and scopes the roles granted to the returned token.
-- `workspace_id` (String) GreenLake Platform workspace ID used to scope the broker exchange.
+- `broker_url` (String) URL of the PCE broker for this deployment. There is no default: a Disconnected deployment has no hosted broker to fall back to.
+- `location` (String) The PCE instance's Location.
+- `workspace_id` (String) The GreenLake Workspace ID that the PCE instance is in.
 
 Optional:
 
 - `client_id` (String) GreenLake API client ID used for authentication.
 - `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
-- `iam_token` (String, Sensitive) Pre-generated GreenLake IAM token. If set, token generation from credentials is skipped. The token is decoded to check its expiry, so it must be a JWT.
+- `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
 - `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
 
 
@@ -549,13 +549,13 @@ Optional:
 
 Required:
 
-- `location` (String) Name of the site whose Morpheus instance to use, as shown in the PCE UI. It selects the service instance within the space and scopes the roles granted to the returned token.
+- `location` (String) The PCE instance's Location.
 
 Optional:
 
-- `broker_url` (String) URL of the VMaaS broker used for the CMP details exchange. Defaults to the US1 production broker if not set.
+- `broker_url` (String) URL of the PCE broker. Defaults to the HPE-hosted broker if not set.
 - `client_id` (String) GreenLake API client ID used for authentication.
 - `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
-- `iam_token` (String, Sensitive) Pre-generated GreenLake IAM token. If set, token generation from credentials is skipped.
+- `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
 - `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
-- `space` (String) GreenLake VMaaS space name (IAM Space) used for the broker exchange.
+- `space` (String) The name of the GreenLake Space that the PCE instance is in.

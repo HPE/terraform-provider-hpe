@@ -175,8 +175,7 @@ func TestTokenExchangeScopesDisconnectedByWorkspace(t *testing.T) {
 		t.Errorf("X-Tenant-ID header = %q, want %q", got, want)
 	}
 
-	// The broker resolves location to a service instance and to the zone that
-	// the returned token's roles are granted against, so it is not optional.
+	// The broker requires a location, so it is always sent.
 	if got, want := query.Get("location"), "site-a"; got != want {
 		t.Errorf("location query parameter = %q, want %q", got, want)
 	}

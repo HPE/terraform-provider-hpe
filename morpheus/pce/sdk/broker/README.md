@@ -1,22 +1,25 @@
 # broker
 
-Go SDK for the **VMaaS broker** — the GreenLake Private Cloud VMaaS credential
-and discovery broker (historically "VMaaS-CMP", where `CMP` was the term
-previously used for Morpheus).
+Go SDK for the **PCE broker**, the service that hands out Morpheus connection
+details for a PCE deployment.
 
-The broker trades an IAM token for Morpheus connection details (`cmp_details` →
-Morpheus URL + access token). It is a credential broker, not a data-path proxy:
-once the URL and token are returned, the provider talks to Morpheus directly.
+The broker trades a GreenLake IAM token for a Morpheus URL and access token. It
+is a credential and discovery broker, not a data-path proxy: once the URL and
+token are returned, the provider talks to Morpheus directly.
 
 The same client serves both PCE deployment types. Connected PCE uses the
 HPE-hosted broker with a GLCS IAM token scoped by `?space=`; Disconnected PCE
-uses the same software running on-premise with a GLP IAM token scoped by
-`?tenantID=` and an `X-Tenant-ID` header.
+uses an operator-supplied broker URL with a GLP IAM token scoped by `?tenantID=`
+and an `X-Tenant-ID` header.
 
 Adapted from `github.com/HewlettPackard/hpegl-vmaas-cmp-go-sdk`.
 
 ## Layout
 
-- `client/` — API client and the broker `cmp_details` exchange (`broker.go`).
+- `client/` — API client and the broker exchange (`broker.go`).
 - `models/` — request/response types for the broker API.
-- `common/` — shared constants (API base path, the broker `cmp_details` path).
+- `common/` — shared constants (API base path, the broker exchange path).
+
+Identifiers such as `GetCMPDetails` and `CMPDetails` keep their upstream names,
+and the exchange path is the one the broker serves; `CMP` was the term
+previously used for Morpheus.

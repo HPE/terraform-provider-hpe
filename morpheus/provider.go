@@ -201,13 +201,11 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"location": schema.StringAttribute{
-							Description: "Name of the site whose Morpheus instance to use, as shown " +
-								"in the PCE UI. It selects the service instance within the " +
-								"space and scopes the roles granted to the returned token.",
-							Required: true,
+							Description: "The PCE instance's Location.",
+							Required:    true,
 						},
 						"space": schema.StringAttribute{
-							Description: "GreenLake VMaaS space name (IAM Space) used for the broker exchange.",
+							Description: "The name of the GreenLake Space that the PCE instance is in.",
 							Optional:    true,
 						},
 						"issuer_url": schema.StringAttribute{
@@ -222,7 +220,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"iam_token": schema.StringAttribute{
-							Description: "Pre-generated GreenLake IAM token. If set, token " +
+							Description: "GreenLake IAM access token. If set, token " +
 								"generation from credentials is skipped.",
 							Optional:  true,
 							Sensitive: true,
@@ -235,8 +233,8 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"broker_url": schema.StringAttribute{
-							Description: "URL of the VMaaS broker used for the CMP details exchange. " +
-								"Defaults to the US1 production broker if not set.",
+							Description: "URL of the PCE broker. Defaults to the " +
+								"HPE-hosted broker if not set.",
 							Optional: true,
 						},
 					},
@@ -289,9 +287,8 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"iam_token": schema.StringAttribute{
-							Description: "Pre-generated GreenLake IAM token. If set, token " +
-								"generation from credentials is skipped. The token is " +
-								"decoded to check its expiry, so it must be a JWT.",
+							Description: "GreenLake IAM access token. If set, token " +
+								"generation from credentials is skipped.",
 							Optional:  true,
 							Sensitive: true,
 							Validators: []validator.String{
@@ -303,19 +300,17 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							},
 						},
 						"location": schema.StringAttribute{
-							Description: "Name of the site whose Morpheus instance to use, as shown " +
-								"in the PCE UI. It selects the service instance within the " +
-								"workspace and scopes the roles granted to the returned token.",
-							Required: true,
+							Description: "The PCE instance's Location.",
+							Required:    true,
 						},
 						"workspace_id": schema.StringAttribute{
-							Description: "GreenLake Platform workspace ID used to scope the broker exchange.",
+							Description: "The GreenLake Workspace ID that the PCE instance is in.",
 							Required:    true,
 						},
 						"broker_url": schema.StringAttribute{
-							Description: "URL of the on-premise VMaaS broker used for the CMP " +
-								"details exchange. There is no default: a Disconnected " +
-								"deployment has no HPE hosted broker to fall back to.",
+							Description: "URL of the PCE broker for this deployment. There is " +
+								"no default: a Disconnected deployment has no hosted " +
+								"broker to fall back to.",
 							Required: true,
 						},
 					},

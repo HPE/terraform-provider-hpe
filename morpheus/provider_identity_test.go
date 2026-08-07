@@ -4,6 +4,7 @@ package morpheus_test
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -323,6 +324,84 @@ func TestValidateProviderConfigIgnoresUnknownConnectionDetails(t *testing.T) {
 			t.Errorf("ValidateProviderConfig() diagnostics = %v, want none for an unknown url", diags)
 		}
 	})
+}
+
+// identityBlockAttrs returns the attributes that make a named identity block
+// valid on its own, so that a test can add to them to isolate one rule.
+func identityBlockAttrs(block string) map[string]string {
+	attrs := map[string]string{
+		"location": "site-a",
+	}
+
+	if block == "pce_disconnected_identity" {
+		attrs["workspace_id"] = "workspace"
+		attrs["broker_url"] = "https://broker.example.invalid"
+	}
+
+	return attrs
+}
+
+// A pre-generated token and the credentials it would be generated from are two
+// ways of obtaining the same thing, so configuring both is rejected. Each
+// conflicting attribute is reported, rather than only the first.
+func TestValidateProviderConfigRejectsIamTokenWithCredentials(t *testing.T) {
+	for _, block := range []string{"pce_identity", "pce_disconnected_identity"} {
+		t.Run(block, func(t *testing.T) {
+			eachBlockRepresentation(t, func(t *testing.T, absent absentBlocks) {
+				attrs := identityBlockAttrs(block)
+				attrs["iam_token"] = "token"
+				attrs["client_id"] = "client-id"
+				attrs["client_secret"] = "client-secret"
+				attrs["issuer_url"] = "https://issuer.example.invalid"
+
+				diags := validateProviderConfig(t, absent,
+					func(t *testing.T, obj tftypes.Object, absent absentBlocks) map[string]tftypes.Value {
+						return map[string]tftypes.Value{
+							block: identityBlockValue(t, obj, absent, block, attrs),
+						}
+					})
+
+				for _, conflicting := range []string{"client_id", "client_secret", "issuer_url"} {
+					want := fmt.Sprintf(
+						`Attribute "morpheus[0].%s[0].%s" cannot be specified when `+
+							`"morpheus[0].%s[0].iam_token" is specified`,
+						block, conflicting, block,
+					)
+
+					if !containsDiag(diags, want) {
+						t.Errorf("ValidateProviderConfig() diagnostics = %v, want one containing %q",
+							diags, want)
+					}
+				}
+			})
+		})
+	}
+}
+
+// The credentials are the ordinary way of obtaining a token, so using them
+// without iam_token must not trip the conflict.
+func TestValidateProviderConfigAcceptsCredentialsWithoutIamToken(t *testing.T) {
+	for _, block := range []string{"pce_identity", "pce_disconnected_identity"} {
+		t.Run(block, func(t *testing.T) {
+			eachBlockRepresentation(t, func(t *testing.T, absent absentBlocks) {
+				attrs := identityBlockAttrs(block)
+				attrs["client_id"] = "client-id"
+				attrs["client_secret"] = "client-secret"
+				attrs["issuer_url"] = "https://issuer.example.invalid"
+
+				diags := validateProviderConfig(t, absent,
+					func(t *testing.T, obj tftypes.Object, absent absentBlocks) map[string]tftypes.Value {
+						return map[string]tftypes.Value{
+							block: identityBlockValue(t, obj, absent, block, attrs),
+						}
+					})
+
+				if len(diags) != 0 {
+					t.Errorf("ValidateProviderConfig() diagnostics = %v, want none", diags)
+				}
+			})
+		})
+	}
 }
 
 func containsDiag(diags []string, want string) bool {

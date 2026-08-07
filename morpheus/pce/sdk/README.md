@@ -13,10 +13,9 @@ than one deployment type may need. Deployment-specific wiring (schema handling,
 - `token/` — GreenLake IAM token generation and automatic refresh. The
   client is IAM-version-agnostic (callers pass the version at call time), so it
   serves both GLCS and GLP token exchanges.
-- `broker/` — VMaaS broker client. Trades an IAM token for Morpheus connection
-  details (`cmp_details`). The same client serves both deployment types: the
-  Connected broker is HPE-hosted, the Disconnected broker is the same software
-  running on-premise at an operator-supplied URL.
+- `broker/` — PCE broker client. Trades an IAM token for Morpheus connection
+  details. The same client serves both deployment types: Connected PCE uses the
+  HPE-hosted broker, Disconnected PCE an operator-supplied broker URL.
 
 ## Auth flow
 
@@ -28,7 +27,7 @@ token** via a two-legged exchange:
 flowchart TD
     creds["GreenLake API client credentials"]
     iam["IAM token exchange<br/>(client_credentials grant)"]
-    broker["VMaaS broker exchange<br/>(cmp_details)"]
+    broker["PCE broker exchange"]
     morpheus["Morpheus API client<br/>(bearer token)"]
 
     creds -->|"① authenticate"| iam
@@ -39,7 +38,7 @@ flowchart TD
 1. **IAM token exchange** — handled by `token/`, which serves both GLCS
    (Connected) and GLP (Disconnected).
 2. **Broker exchange** — `broker/` trades the IAM token for Morpheus connection
-   details (`cmp_details`).
+   details.
 3. **Morpheus client** — the URL and token populate the Morpheus provider
    configuration, and the usual client factory takes over from there.
 
@@ -72,8 +71,7 @@ The exchange is not cached. The `hpe` provider muxes a framework provider and an
 SDKv2 provider and Terraform configures both, so a configuration using an
 identity block exchanges once per provider.
 
-Whether that returns the same Morpheus token twice is up to the broker: it
-currently serves a briefly cached token for Connected PCE and mints one per
-request for Disconnected PCE. Neither is relied on here, and both are safe —
-issuing a token does not invalidate one already issued, so the two providers
-cannot disturb each other's credentials.
+Whether a repeated exchange returns the same Morpheus token or a new one is up
+to the broker, and is not relied on here. Either is safe: issuing a token does
+not invalidate one already issued, so the two providers cannot disturb each
+other's credentials.

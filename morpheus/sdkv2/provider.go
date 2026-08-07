@@ -310,17 +310,15 @@ func providerSchemaMorpheus() *schema.Schema {
 							},
 
 							"location": {
-								Type:     schema.TypeString,
-								Required: true,
-								Description: "Name of the site whose Morpheus instance to use, as shown " +
-									"in the PCE UI. It selects the service instance within the " +
-									"space and scopes the roles granted to the returned token.",
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "The PCE instance's Location.",
 							},
 
 							"space": {
 								Type:        schema.TypeString,
 								Optional:    true,
-								Description: "GreenLake VMaaS space name (IAM Space) used for the broker exchange.",
+								Description: "The name of the GreenLake Space that the PCE instance is in.",
 							},
 
 							"issuer_url": {
@@ -334,15 +332,15 @@ func providerSchemaMorpheus() *schema.Schema {
 								Type:      schema.TypeString,
 								Optional:  true,
 								Sensitive: true,
-								Description: "Pre-generated GreenLake IAM token. If set, token " +
+								Description: "GreenLake IAM access token. If set, token " +
 									"generation from credentials is skipped.",
 							},
 
 							"broker_url": {
 								Type:     schema.TypeString,
 								Optional: true,
-								Description: "URL of the VMaaS broker used for the CMP details exchange. " +
-									"Defaults to the US1 production broker if not set.",
+								Description: "URL of the PCE broker. Defaults to the " +
+									"HPE-hosted broker if not set.",
 							},
 						},
 					},
@@ -384,31 +382,28 @@ func providerSchemaMorpheus() *schema.Schema {
 								Type:      schema.TypeString,
 								Optional:  true,
 								Sensitive: true,
-								Description: "Pre-generated GreenLake IAM token. If set, token " +
-									"generation from credentials is skipped. The token is " +
-									"decoded to check its expiry, so it must be a JWT.",
+								Description: "GreenLake IAM access token. If set, token " +
+									"generation from credentials is skipped.",
 							},
 
 							"location": {
-								Type:     schema.TypeString,
-								Required: true,
-								Description: "Name of the site whose Morpheus instance to use, as shown " +
-									"in the PCE UI. It selects the service instance within the " +
-									"workspace and scopes the roles granted to the returned token.",
+								Type:        schema.TypeString,
+								Required:    true,
+								Description: "The PCE instance's Location.",
 							},
 
 							"workspace_id": {
 								Type:        schema.TypeString,
 								Required:    true,
-								Description: "GreenLake Platform workspace ID used to scope the broker exchange.",
+								Description: "The GreenLake Workspace ID that the PCE instance is in.",
 							},
 
 							"broker_url": {
 								Type:     schema.TypeString,
 								Required: true,
-								Description: "URL of the on-premise VMaaS broker used for the CMP " +
-									"details exchange. There is no default: a Disconnected " +
-									"deployment has no HPE hosted broker to fall back to.",
+								Description: "URL of the PCE broker for this deployment. There is " +
+									"no default: a Disconnected deployment has no hosted " +
+									"broker to fall back to.",
 							},
 						},
 					},

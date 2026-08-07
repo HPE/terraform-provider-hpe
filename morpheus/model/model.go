@@ -39,9 +39,8 @@ type PCEIdentityModel struct {
 //
 // It scopes by workspace_id where the Connected block uses space, as GLP
 // identifies a workspace where GLCS identifies an IAM space. Location is
-// required for both: the broker resolves it to a service instance within the
-// workspace, and derives from it the zone that the returned token's roles are
-// granted against.
+// required for both: the broker uses it to identify which deployment's Morpheus
+// instance to return.
 type PCEDisconnectedIdentityModel struct {
 	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`

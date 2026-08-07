@@ -2,7 +2,7 @@
 
 // Package pce implements the PCE Identity token exchange. It trades GreenLake
 // API client credentials for the URL and access token of the Morpheus instance
-// sitting behind the VMaaS broker.
+// sitting behind the PCE broker.
 //
 // The same exchange serves both PCE deployment types. They differ only in the
 // IAM dialect used to mint the token (GLCS for Connected, GLP for Disconnected)
@@ -19,7 +19,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/serviceclient"
 )
 
-// DefaultBrokerURL is the VMaaS broker used when a Config does not name one.
+// DefaultBrokerURL is the HPE-hosted PCE broker, used when a Config does not
+// name one.
 const DefaultBrokerURL = "https://vmaas-broker.us1.greenlake-hpe.com"
 
 // Config is the PCE Identity configuration needed to resolve Morpheus
@@ -46,20 +47,18 @@ type Config struct {
 	WorkspaceID string
 }
 
-// TokenExchange obtains a GreenLake IAM token and trades it with the VMaaS
-// broker for the Morpheus URL and access token.
+// TokenExchange obtains a GreenLake IAM token and trades it with the PCE broker
+// for the Morpheus URL and access token.
 //
 // Every call performs the exchange. The "hpe" provider muxes a framework
 // provider and an SDKv2 provider and Terraform configures both, so a
 // configuration using an identity block exchanges once per provider rather than
 // once per graph walk.
 //
-// Whether that yields the same Morpheus token twice is the broker's decision,
-// not something this package arranges: at the time of writing the broker
-// returns a briefly cached token for Connected PCE and mints one per request
-// for Disconnected PCE. Both are safe, because issuing a token does not
-// invalidate one already issued, so the two providers cannot disturb each
-// other's credentials.
+// Whether a repeated exchange returns the same Morpheus token or a new one is
+// the broker's decision, not something this package arranges. Either is safe:
+// issuing a token does not invalidate one already issued, so the two providers
+// cannot disturb each other's credentials.
 //
 // The returned access token is used as-is and is not refreshed, so callers are
 // expected to finish their work within its validity period.
@@ -111,7 +110,7 @@ func TokenExchange(ctx context.Context, c Config) (string, string, error) {
 
 	details, err := brokerClient.GetCMPDetails(ctx)
 	if err != nil {
-		return "", "", fmt.Errorf("VMaaS broker exchange failed: %w", err)
+		return "", "", fmt.Errorf("PCE broker exchange failed: %w", err)
 	}
 
 	return details.URL, details.AccessToken, nil

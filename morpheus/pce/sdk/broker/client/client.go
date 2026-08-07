@@ -1,8 +1,8 @@
 // (C) Copyright 2021-2026 Hewlett Packard Enterprise Development LP
 
-// Package client provides a minimal VMaaS-CMP API client. Only the VMaaS
-// broker cmp_details endpoint is implemented; all Morpheus resource
-// management is handled by the separate "morpheus" child provider.
+// Package client provides a minimal PCE broker API client. Only the exchange
+// that returns Morpheus connection details is implemented; all Morpheus
+// resource management is handled by the separate "morpheus" child provider.
 package client
 
 import (
@@ -38,7 +38,7 @@ type APIClientHandler interface {
 	getHost() string
 }
 
-// APIClient manages communication with the GreenLake Private Cloud VMaaS CMP API.
+// APIClient manages communication with the PCE broker API.
 type APIClient struct {
 	cfg        *Configuration
 	cmpVersion int
@@ -67,7 +67,7 @@ func (c *APIClient) getHost() string {
 }
 
 // GetCMPDetails exchanges the configured credentials for Morpheus connection
-// details. The receiver must be a client whose Host is the VMaaS broker.
+// details. The receiver must be a client whose Host is the PCE broker.
 func (c *APIClient) GetCMPDetails(ctx context.Context) (models.TFMorpheusDetails, error) {
 	cmpBroker := BrokerAPIService{
 		Client: c,
