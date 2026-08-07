@@ -25,9 +25,7 @@ func TestAccClientResource(t *testing.T) {
 		resource.ParallelTest(t, resource.TestCase{
 			PreCheck:                 acctest.PreCheck(t),
 			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
-			// TODO: find a way to check destroy for clients, as they are deleted asynch-
-			// ronously and may take a long time to be fully removed from the system.
-			// CheckDestroy:             testAccCheckClientDestroy(t),
+			CheckDestroy:             testAccCheckClientDestroy(t),
 			Steps: []resource.TestStep{
 				{
 					Config: testAccClientConfig(clientName),
@@ -67,7 +65,7 @@ func testAccEnsureClientExists(t *testing.T, resourceName string) resource.TestC
 
 	return func(s *terraform.State) error {
 		// Allow time for the client to be fully provisioned.
-		time.Sleep(10 * time.Second)
+		time.Sleep(60 * time.Second)
 
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -84,9 +82,48 @@ func testAccEnsureClientExists(t *testing.T, resourceName string) resource.TestC
 			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
 		}
 
-		_, err = apiClient.GetClient(id)
+		client, err := apiClient.GetClient(id)
 		if err != nil {
 			return fmt.Errorf("client %s (%s) was not found in opsramp api: %w", resourceName, id, err)
+		}
+
+		if client != nil && !client.Activated {
+			return fmt.Errorf("client %s (%s) found but not activated", resourceName, id)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckClientDestroy(t *testing.T) resource.TestCheckFunc {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		// Allow time for the client to be fully deleted.
+		time.Sleep(60 * time.Second)
+
+		apiClient, err := acctest.APIClient(t)
+		if err != nil {
+			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
+		}
+
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hpe_opsramp_client" {
+				continue
+			}
+
+			client, err := apiClient.GetClient(rs.Primary.ID)
+
+			if client != nil && client.Activated {
+				return fmt.Errorf("Client %s (%s) still exists and in activated state", rs.Primary.ID, client.Name)
+			}
+
+			if err != nil {
+				errText := strings.ToLower(err.Error())
+				if !strings.Contains(errText, "no client found with client id") {
+					return fmt.Errorf("unexpected error checking deleted Client %s: %w", rs.Primary.ID, err)
+				}
+			}
 		}
 
 		return nil
