@@ -6,7 +6,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/defaults"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
@@ -181,15 +183,41 @@ func TestUnitGetStateInterfacesDiagnosticsAccumulated(t *testing.T) {
 	}
 }
 
-// TestUnitWaitForIpAddressDefaultFalse verifies that the schema default
-// for wait_for_ip_address is false.
-func TestUnitWaitForIpAddressDefaultFalse(t *testing.T) {
+// TestUnitWaitForIpAddressSchemaDefault verifies that the generated schema
+// declares wait_for_ip_address as optional+computed with a default of false.
+func TestUnitWaitForIpAddressSchemaDefault(t *testing.T) {
 	t.Parallel()
 
-	// A zero-value types.Bool is null, but when the schema default applies,
-	// it should be false. We verify by checking the default value directly.
-	defaultVal := types.BoolValue(false)
-	if defaultVal.ValueBool() != false {
+	ctx := context.Background()
+	schemaResp := &resource.SchemaResponse{}
+	r := &Resource{}
+	r.Schema(ctx, resource.SchemaRequest{}, schemaResp)
+
+	attr, ok := schemaResp.Schema.Attributes["wait_for_ip_address"]
+	if !ok {
+		t.Fatal("wait_for_ip_address attribute not found in schema")
+	}
+
+	if !attr.IsOptional() {
+		t.Error("wait_for_ip_address should be optional")
+	}
+
+	if !attr.IsComputed() {
+		t.Error("wait_for_ip_address should be computed")
+	}
+
+	boolAttr, ok := attr.(schema.BoolAttribute)
+	if !ok {
+		t.Fatal("wait_for_ip_address is not a BoolAttribute")
+	}
+
+	if boolAttr.Default == nil {
+		t.Fatal("wait_for_ip_address should have a default")
+	}
+
+	defResp := defaults.BoolResponse{}
+	boolAttr.Default.DefaultBool(ctx, defaults.BoolRequest{}, &defResp)
+	if defResp.PlanValue.ValueBool() != false {
 		t.Error("wait_for_ip_address default should be false")
 	}
 }

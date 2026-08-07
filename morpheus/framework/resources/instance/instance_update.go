@@ -802,64 +802,53 @@ func makeResizeRequestAndWaitForComplete(
 	return d
 }
 
-// isAPIUpdateNeeded is a function that will compare the plan and state of attributes
-// that can be updated, and if the only attribute is Timeouts then it returns false
+// isAPIUpdateNeeded compares plan and state for attributes that require an API
+// call and returns true when at least one differs. Provider-only fields
+// (wait_for_ip_address, timeouts) are excluded — they never trigger API calls.
+//
+// The function checks every API-affecting field first. If none differ, it
+// returns false. This structure ensures that adding a new API-affecting field
+// above the return cannot be short-circuited by a provider-only check.
 func isAPIUpdateNeeded(plan, state InstanceModel) bool {
-	// name
+	// API-affecting fields — any difference triggers an update call.
 	if plan.Name != state.Name {
 		return true
 	}
 
-	// description
 	if plan.Description != state.Description {
 		return true
 	}
 
-	// instance_context
 	if !plan.InstanceContext.Equal(state.InstanceContext) {
 		return true
 	}
 
-	// group_id
 	if !plan.GroupId.Equal(state.GroupId) {
 		return true
 	}
 
-	// config_azure
 	if !plan.ConfigAzure.Equal(state.ConfigAzure) {
 		return true
 	}
 
-	// tags
 	if !plan.Tags.Equal(state.Tags) {
 		return true
 	}
 
-	// volumes
 	if !plan.Volumes.Equal(state.Volumes) {
 		return true
 	}
 
-	// network-interfaces
 	if !plan.NetworkInterfaces.Equal(state.NetworkInterfaces) {
 		return true
 	}
 
-	// service_plan_options
 	if !plan.ServicePlanOptions.Equal(state.ServicePlanOptions) {
 		return true
 	}
 
-	// wait_for_ip_address — provider-only, no API call needed
-	if !plan.WaitForIpAddress.Equal(state.WaitForIpAddress) {
-		return false
-	}
-
-	// timeouts - this should be the last comparison
-	if !plan.Timeouts.Equal(state.Timeouts) {
-		return false
-	}
-
-	// For safety's sake we will return true by default
-	return true
+	// No API-affecting field changed. Provider-only fields (wait_for_ip_address,
+	// timeouts) are intentionally not checked — they never require an API call,
+	// and the default here is false, so they are safe to ignore.
+	return false
 }

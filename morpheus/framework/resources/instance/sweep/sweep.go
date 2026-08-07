@@ -78,6 +78,10 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
+		testsweep.WithIgnoreListStatuses[sdk.ListInstances200ResponseAllOfInstancesInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 
 	testsweep.RegisterTypedAPISweeper(
@@ -135,6 +139,10 @@ func init() {
 
 			return &http.Response{StatusCode: http.StatusOK}, nil
 		},
+		testsweep.WithIgnoreListStatuses[sdk.ListHosts200ResponseAllOfServersInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 }
 
