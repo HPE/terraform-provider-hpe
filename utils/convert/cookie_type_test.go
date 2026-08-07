@@ -59,6 +59,8 @@ func TestCookieTypeToAPI(t *testing.T) {
 
 			if result == nil {
 				t.Fatalf("expected %q, got nil", *tt.expected)
+
+				return
 			}
 
 			if *result != *tt.expected {
