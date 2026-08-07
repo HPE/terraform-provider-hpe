@@ -1,0 +1,24 @@
+# Simple virtual scale-out: add a node to any instance.
+resource "hpe_morpheus_instance_node" "scale_out" {
+  instance_id = {{.InstanceId}}
+
+  timeouts {
+    create = "30m"
+    delete = "30m"
+  }
+}
+
+# Multi-pool HA (bare-metal only): one node per failure-domain pool via for_each.
+resource "hpe_morpheus_instance_node" "ha" {
+  for_each = toset(["{{.PoolB}}", "{{.PoolC}}"])
+
+  instance_id      = {{.InstanceId}}
+  resource_pool_id = each.value
+
+  wait_for_ip_address = true
+
+  timeouts {
+    create = "90m"
+    delete = "60m"
+  }
+}
