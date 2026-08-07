@@ -919,11 +919,14 @@ hostname, so changing it forces replacement.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
 - `server_uuids` (Set of String) Optional UUIDs to assign to the servers provisioned for this instance.
-Each UUID must be unique - Morpheus rejects a value already in use by
-another server. Set at provision time only; changing it forces
+Values are applied by position: the first UUID is assigned to the
+first server, and so on. Since layout_size is one in practice, only
+the first value is normally consumed. A UUID that is already in use
+by another server is silently ignored by the API (Morpheus assigns a
+generated UUID instead); the provider detects this after create and
+fails the apply. Set at provision time only; changing it forces
 replacement. When not set, Morpheus generates the UUIDs and they are
-read back here. This is an unordered set: Morpheus does not guarantee
-servers are returned in the order the UUIDs were supplied.
+read back here.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.

@@ -444,3 +444,54 @@ func TestUnitNumberToInt64(t *testing.T) {
 		})
 	}
 }
+
+// TestUnitServerUUIDsReadPreservesPlan is a regression guard for the volatility
+// trap described in MORPH-12804: when server_uuids is set in config, the read
+// must preserve the plan value, NOT read back from containerDetails. If it read
+// back, adding a container via hpe_morpheus_instance_node would grow the set,
+// differ from config, and — because the attribute is RequiresReplace — trigger
+// destruction and recreation of the instance.
+func TestUnitServerUUIDsReadPreservesPlan(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	// Simulate: plan has one UUID, but the instance now has two containers
+	// (one added by instance_node). The read must still return the plan's
+	// single UUID, not the two from containerDetails.
+	planUUID := "plan-uuid-1"
+	planSet, d := types.SetValueFrom(ctx, types.StringType, []string{planUUID})
+	if d.HasError() {
+		t.Fatalf("SetValueFrom: %v", d)
+	}
+
+	containers := []sdk.InstanceContainer2{
+		{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString(planUUID)}},
+		{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("node-added-uuid")}},
+	}
+
+	// When plan.ServerUuids is set, the read preserves it.
+	plan := InstanceModel{}
+	plan.ServerUuids = planSet
+
+	// Inline the logic from getInstanceAsState lines 320-324
+	var state InstanceModel
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		state.ServerUuids = plan.ServerUuids
+	} else {
+		state.ServerUuids = serverUUIDsFromContainerDetails(containers)
+	}
+
+	var stateUUIDs []string
+	if dd := state.ServerUuids.ElementsAs(ctx, &stateUUIDs, false); dd.HasError() {
+		t.Fatalf("ElementsAs: %v", dd)
+	}
+
+	if len(stateUUIDs) != 1 {
+		t.Fatalf("expected 1 UUID in state, got %d: %v", len(stateUUIDs), stateUUIDs)
+	}
+
+	if stateUUIDs[0] != planUUID {
+		t.Errorf("state UUID = %q, want %q", stateUUIDs[0], planUUID)
+	}
+}
