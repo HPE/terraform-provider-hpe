@@ -459,3 +459,140 @@ func TestUnitResolveNodeServerUUID_Found(t *testing.T) {
 		t.Errorf("expected serverUUIDs=[my-uuid], got %v", uuids)
 	}
 }
+
+// TestUnitValidateNodeServerUUID_APIReadFailure verifies that an API error
+// produces a diagnostic naming the error, distinct from a UUID mismatch.
+func TestUnitValidateNodeServerUUID_APIReadFailure(t *testing.T) {
+	t.Parallel()
+
+	// validateNodeServerUUID calls the live API, so we test the logic by
+	// inspecting diagnostic summaries. For a unit test without a live
+	// client, we test the pure-logic helper resolveNodeServerUUIDFromDetails
+	// and the diagnostic construction separately.
+
+	// Simulate: API returned an error — we check diagnostic summary wording.
+	// Since validateNodeServerUUID calls the real API, we instead verify the
+	// function signature contract by calling it with a nil-context client
+	// that will fail immediately.
+	ctx := context.Background()
+
+	// Create a client with an invalid base URL to force an API error.
+	cfg := sdk.NewConfiguration()
+	cfg.Servers = sdk.ServerConfigurations{{URL: "http://127.0.0.1:1"}}
+	client := sdk.NewAPIClient(cfg)
+
+	diags := validateNodeServerUUID(ctx, client, 999, 100, "requested-uuid")
+
+	if !diags.HasError() {
+		t.Fatal("expected an error diagnostic for API read failure")
+	}
+
+	found := false
+	for _, d := range diags.Errors() {
+		if strings.Contains(d.Summary(), "failed to read instance for server UUID validation") {
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("expected diagnostic summary to mention read failure, got: %v", diags)
+	}
+
+	// Must NOT contain the "silently ignored" message — that's a mismatch, not a read failure.
+	for _, d := range diags.Errors() {
+		if strings.Contains(d.Detail(), "silently ignored") {
+			t.Error("API read failure must not be reported as a UUID mismatch")
+		}
+	}
+}
+
+// TestUnitValidateNodeServerUUID_ContainerNotFound verifies that a missing
+// container produces its own distinct diagnostic.
+func TestUnitValidateNodeServerUUID_ContainerNotFound(t *testing.T) {
+	t.Parallel()
+
+	diags := resolveAndValidateNodeUUID(
+		[]sdk.InstanceContainer2{
+			{Id: ptr(int64(200)), Server: &sdk.InstanceContainerServer2{
+				Uuid: ptr("other-uuid"),
+			}},
+		},
+		42,  // instanceID
+		100, // containerID not in the list
+		"requested-uuid",
+	)
+
+	if !diags.HasError() {
+		t.Fatal("expected error when container not found")
+	}
+
+	found := false
+	for _, d := range diags.Errors() {
+		if strings.Contains(d.Summary(), "container not found") {
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("expected 'container not found' summary, got: %v", diags)
+	}
+}
+
+// TestUnitValidateNodeServerUUID_UUIDMismatch verifies the "silently ignored"
+// message when the UUID genuinely differs.
+func TestUnitValidateNodeServerUUID_UUIDMismatch(t *testing.T) {
+	t.Parallel()
+
+	diags := resolveAndValidateNodeUUID(
+		[]sdk.InstanceContainer2{
+			{Id: ptr(int64(100)), Server: &sdk.InstanceContainerServer2{
+				Uuid: ptr("actual-uuid"),
+			}},
+		},
+		42, // instanceID
+		100,
+		"requested-uuid",
+	)
+
+	if !diags.HasError() {
+		t.Fatal("expected error for UUID mismatch")
+	}
+
+	found := false
+	for _, d := range diags.Errors() {
+		if strings.Contains(d.Detail(), "silently ignored") {
+			found = true
+
+			break
+		}
+	}
+
+	if !found {
+		t.Errorf("expected 'silently ignored' in detail, got: %v", diags)
+	}
+}
+
+// TestUnitValidateNodeServerUUID_UUIDMatches verifies no diagnostics when
+// the UUID matches.
+func TestUnitValidateNodeServerUUID_UUIDMatches(t *testing.T) {
+	t.Parallel()
+
+	diags := resolveAndValidateNodeUUID(
+		[]sdk.InstanceContainer2{
+			{Id: ptr(int64(100)), Server: &sdk.InstanceContainerServer2{
+				Uuid: ptr("requested-uuid"),
+			}},
+		},
+		42, // instanceID
+		100,
+		"requested-uuid",
+	)
+
+	if diags.HasError() {
+		t.Errorf("expected no errors when UUID matches, got: %v", diags)
+	}
+}

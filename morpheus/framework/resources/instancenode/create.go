@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -202,20 +203,10 @@ func (r *Resource) Create(
 
 	// Step 5b: Validate that the requested server UUID was applied.
 	if !plan.ServerUUID.IsNull() && !plan.ServerUUID.IsUnknown() {
-		actualUUID := resolveNodeServerUUID(ctx, client, instanceID, containerID)
-		requestedUUID := plan.ServerUUID.ValueString()
-		if actualUUID != requestedUUID {
-			resp.Diagnostics.AddError(
-				"server_uuid not applied",
-				fmt.Sprintf(
-					"Instance %d node (container %d) was added but Morpheus silently "+
-						"ignored the requested server UUID %q. The server was assigned "+
-						"UUID %q instead. This happens when the UUID is already in use "+
-						"by another server.",
-					instanceID, containerID, requestedUUID, actualUUID,
-				),
-			)
-
+		uuidDiags := validateNodeServerUUID(ctx, client, instanceID, containerID,
+			plan.ServerUUID.ValueString())
+		resp.Diagnostics.Append(uuidDiags...)
+		if resp.Diagnostics.HasError() {
 			cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 				ResourceType: "instance_node",
 				ResourceID:   containerID,
@@ -555,29 +546,93 @@ func extractContainerIDFromResults(results any, instanceID int64) (int64, error)
 	}
 }
 
-// resolveNodeServerUUID reads the instance and returns the server UUID for
-// the container matching containerID. Returns empty string if not found.
-func resolveNodeServerUUID(
+// validateNodeServerUUID reads the instance and checks whether the requested
+// UUID was actually applied to the node's server. Returns diagnostics that
+// distinguish three failure modes: API read failure, container not found in
+// the response, and UUID mismatch (silently ignored by Morpheus).
+func validateNodeServerUUID(
 	ctx context.Context,
 	client *sdk.APIClient,
 	instanceID int64,
 	containerID int64,
-) string {
-	getResp, _, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
-	if err != nil || getResp == nil || getResp.Instance == nil {
-		return ""
+	requestedUUID string,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	getResp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
+	if err != nil {
+		diags.AddError(
+			"failed to read instance for server UUID validation",
+			fmt.Sprintf("instance %d container %d: could not confirm whether the "+
+				"requested server UUID %q was applied: %s",
+				instanceID, containerID, requestedUUID, errfmt.ErrMsg(err, hresp)),
+		)
+
+		return diags
 	}
 
-	for i := range getResp.Instance.ContainerDetails {
-		cd := &getResp.Instance.ContainerDetails[i]
-		if cd.Id != nil && *cd.Id == containerID {
-			if cd.Server != nil && cd.Server.Uuid != nil {
-				return *cd.Server.Uuid
-			}
+	if getResp == nil || getResp.Instance == nil {
+		diags.AddError(
+			"failed to read instance for server UUID validation",
+			fmt.Sprintf("instance %d: GET returned nil instance", instanceID),
+		)
 
-			return ""
+		return diags
+	}
+
+	return resolveAndValidateNodeUUID(
+		getResp.Instance.ContainerDetails, instanceID, containerID, requestedUUID,
+	)
+}
+
+// resolveAndValidateNodeUUID decides whether the requested server UUID was
+// applied, given the containers already read from the instance.
+//
+// It is separated from the API call so the decision can be tested directly.
+// validateNodeServerUUID must delegate to it rather than repeating the checks:
+// a second copy would let the tested logic and the executed logic drift apart,
+// and the tests would keep passing while the real path was wrong.
+func resolveAndValidateNodeUUID(
+	details []sdk.InstanceContainer2,
+	instanceID int64,
+	containerID int64,
+	requestedUUID string,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	for i := range details {
+		cd := &details[i]
+		if cd.Id == nil || *cd.Id != containerID {
+			continue
 		}
+
+		var actualUUID string
+		if cd.Server != nil && cd.Server.Uuid != nil {
+			actualUUID = *cd.Server.Uuid
+		}
+
+		if actualUUID != requestedUUID {
+			diags.AddError(
+				"server_uuid not applied",
+				fmt.Sprintf(
+					"Instance %d node (container %d) was added but Morpheus "+
+						"silently ignored the requested server UUID %q. The "+
+						"server was assigned UUID %q instead. This happens "+
+						"when the UUID is already in use by another server.",
+					instanceID, containerID, requestedUUID, actualUUID,
+				),
+			)
+		}
+
+		return diags
 	}
 
-	return ""
+	diags.AddError(
+		"container not found during server UUID validation",
+		fmt.Sprintf("instance %d container %d: the container was not found in the "+
+			"instance response; the server UUID could not be validated",
+			instanceID, containerID),
+	)
+
+	return diags
 }

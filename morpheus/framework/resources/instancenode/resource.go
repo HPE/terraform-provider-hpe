@@ -263,6 +263,7 @@ func (r *Resource) Schema(
 			},
 			"server_uuid": schema.StringAttribute{
 				Optional: true,
+				Computed: true,
 				Description: "UUID to assign to the node's underlying compute server, " +
 					"distinct from container_uuid which is the container's own " +
 					"identifier. Sent as a single-element " +
@@ -278,6 +279,7 @@ func (r *Resource) Schema(
 					"provider detects this after create and fails the apply. Changing " +
 					"it forces replacement.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
