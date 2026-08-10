@@ -39,8 +39,8 @@ type GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInner struct {
 	PoolAssigned         *bool                                                                      `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                                                      `json:"primaryInterface,omitempty"`
 	Network              *GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInnerNetwork       `json:"network,omitempty"`
-	Subnet               NullableString                                                             `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                                                             `json:"networkGroup,omitempty"`
+	Subnet               *GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInnerSubnet        `json:"subnet,omitempty"`
+	NetworkGroup         *GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInnerNetworkGroup  `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                                                             `json:"networkPosition,omitempty"`
 	NetworkPool          *GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInnerNetworkPool   `json:"networkPool,omitempty"`
 	NetworkDomain        *GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInnerNetworkDomain `json:"networkDomain,omitempty"`
@@ -119,11 +119,11 @@ func (o GetGuidances200ResponseDiscoveryAnyOfResourceInterfacesInner) ToMap() (m
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()

@@ -1,0 +1,102 @@
+cloud_affinity_group:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed_optional
+        description: Set of compute server IDs to include in the affinity group.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed_optional
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+    resourcePermissions:
+      single_nested:
+        computed_optional_required: computed_optional
+        description: Resource permissions for group access.
+        attributes:
+        - name: all
+          bool:
+            computed_optional_required: computed_optional
+            description: Pass true to allow access to all groups.
+        - name: groups
+          set_nested:
+            computed_optional_required: computed_optional
+            description: Set of groups allowed access.
+            nested_object:
+              attributes:
+              - name: id
+                int64:
+                  computed_optional_required: required
+                  description: Group ID.
+              - name: default
+                bool:
+                  computed_optional_required: computed_optional
+                  description: Whether this is the default group.
+    pool:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the resource pool to scope the affinity group to.
+
+  moves:
+    - affinity_group: ""                               # unnest wrapper (components/schemas/zoneAffinityGroupCreate.yaml)
+    - zone_id: cloud_id                                # path param rename (zones -> clouds)
+    - template-servers: servers                        # replace spec servers (array of objects in response) with set of int64
+    - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id}) with set of int64
+    - template-resourcePermissions: resource_permissions  # replace spec resourcePermissions (sites has no inner props)
+    - template-pool: pool_id                           # replace spec pool (nested {id}) with scalar int64
+
+  removes:
+    - ref_type                                         # (components/schemas/zoneAffinityGroup.yaml) read-only
+    - ref_id                                           # (components/schemas/zoneAffinityGroup.yaml) read-only
+    - external_id                                      # (components/schemas/zoneAffinityGroup.yaml) read-only
+    - tenants                                          # (components/schemas/zoneAffinityGroup.yaml) replaced by tenant_ids
+    - pool                                             # (components/schemas/zoneAffinityGroup.yaml) replaced by pool_id
+    - success                                          # (response envelope) success flag
+
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the cloud affinity group.
+      state_for_unknown: true
+    cloud_id:
+      computed_optional_required: required
+      description: The ID of the cloud.
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: The name of the affinity group.
+    affinity_type:
+      computed_optional_required: computed_optional
+      description: >-
+        The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
+      requires_replace: true
+      state_for_unknown: true
+      # TODO: KEEP_TOGETHER_MUST and KEEP_SEPARATE_MUST exist upstream but are unreleased.
+      one_of: [KEEP_TOGETHER, KEEP_SEPARATE]
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the affinity group is active.
+      state_for_unknown: true
+    pool_id:
+      requires_replace: true
+      state_for_unknown: true
+    source:
+      computed_optional_required: computed
+      description: The source of the affinity group (e.g. user, sync).
+      state_for_unknown: true
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the affinity group (public or private).
+      state_for_unknown: true
+      one_of: [public, private]
+    tenant_ids:
+      state_for_unknown: true
+    resource_permissions:
+      state_for_unknown: true
+    # NOTE: servers deliberately does NOT get state_for_unknown.
+    # Affinity group membership mutates out-of-band (DRS sync, instance provisioning,
+    # ComputeServer deletion). Pinning a stale set causes "Provider produced
+    # inconsistent result after apply". A noisy plan is better than a broken apply.

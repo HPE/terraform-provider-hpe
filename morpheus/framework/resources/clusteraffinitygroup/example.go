@@ -21,14 +21,7 @@ func RenderClusterAffinityGroupConfig(t *testing.T, overrides map[string]string)
 		"Name":      "Example Affinity Group",
 	}
 
-	for key, value := range overrides {
-		defaults[key] = value
-	}
-
-	var args []string
-	for key, value := range defaults {
-		args = append(args, key, value)
-	}
+	merged := testhelpers.MergeOverrides(defaults, overrides)
 
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -40,6 +33,6 @@ func RenderClusterAffinityGroupConfig(t *testing.T, overrides map[string]string)
 	return testhelpers.RenderExample(
 		t,
 		templatePath,
-		args...,
+		testhelpers.RenderArgs(merged)...,
 	)
 }

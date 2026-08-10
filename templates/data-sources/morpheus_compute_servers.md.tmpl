@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> The `cloud_id` and `bare_metal` filters are applied server-side. The `instance_id` filter is applied client-side because the ListHosts API does not support an instance query parameter. Use `instance_id` to resolve the compute servers backing a specific instance — this is the primary way to obtain server IDs for affinity group membership.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_compute_servers/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

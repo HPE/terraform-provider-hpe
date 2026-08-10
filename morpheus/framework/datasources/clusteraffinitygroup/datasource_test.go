@@ -33,12 +33,12 @@ provider "hpe" {
 }
 `
 
-const clusterID = "1"
-
 func TestAccMorpheusFindClusterAffinityGroupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -81,7 +81,9 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 func TestAccMorpheusFindClusterAffinityGroupById(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -124,7 +126,9 @@ func TestAccMorpheusFindClusterAffinityGroupById(t *testing.T) {
 func TestAccMorpheusFindClusterAffinityGroupNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -157,10 +161,14 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 func TestAccMorpheusFindClusterAffinityGroupNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
 
 	t.Parallel()
 
+	// cluster_id is required by the schema but never used: the data source
+	// rejects the config for having no id or name before it looks a cluster up,
+	// so this test needs no real affinity-group-capable cluster and
+	// deliberately does not consult TF_VAR_testacc_morpheus_affinity_cluster_id.
 	config := providerConfigOffline + `
       data "hpe_morpheus_cluster_affinity_group" "test" {
         cluster_id = 1

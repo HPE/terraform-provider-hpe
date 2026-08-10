@@ -18,7 +18,7 @@ go test ./morpheus/...
 To run all tests, explicitly enable all capabilities:
 
 ```bash
-export TF_ACC_CAPABILITIES="all,vmware,alletra,nsxt,nsxv,aws,azure,gcp,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="all,vmware,alletra,nsxt,nsxv,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible"
 go test ./morpheus/...
 ```
 
@@ -58,6 +58,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `AWS` | `aws` | Amazon Web Services |
 | `Azure` | `azure` | Microsoft Azure |
 | `GCP` | `gcp` | Google Cloud Platform |
+| `HVM` | `hvm` | HPE VM (`mvm-cluster`) clusters/hosts |
 | `OpenStack` | `openstack` | OpenStack cloud |
 | `Hyperv` | `hyperv` | Microsoft Hyper-V |
 
@@ -82,6 +83,12 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `NetworkLoadBalancer` | `network_loadbalancer` | Load balancers (general API: NSX-T, config validation, data sources) |
 | `NetworkLoadBalancerHAProxy` | `network_loadbalancer_haproxy` | HAProxy container LB provisioning (needs the `load-balancer-haproxy-1.7` layout + a cloud that can provision the container) |
 | `Subnet` | `subnet` | Subnets |
+
+### Compute Features
+
+| Capability | Env Value | Description |
+|------------|-----------|-------------|
+| `AffinityGroup` | `affinity_group` | Cloud/cluster affinity groups. Needs Morpheus >= 8.0.10 **and** a supporting type: a `vmware`, `vmwareCloudAws` or `macstadium` cloud, or an `mvm-cluster` (HVM) cluster. Always paired with `vmware` or `hvm`; the ID of the cloud/cluster to use comes from `TF_VAR_testacc_morpheus_affinity_cloud_id` / `TF_VAR_testacc_morpheus_affinity_cluster_id`. Cloud affinity groups additionally need `TF_VAR_testacc_morpheus_affinity_pool_id` — a resource pool of type Cluster on that cloud — because Morpheus rejects a create without a pool |
 
 ### Automation Integrations
 
@@ -122,6 +129,7 @@ Tests are marked as "all" if they don't target VMware, Alletra, NSXT, or NSXV. T
 - Alletra storage tests
 - NSX-T network tests
 - NSX-V network tests
+- Cloud/cluster affinity group tests -- additionally gated on `affinity_group`, so the shared-hardware example below does **not** run them
 
 **All tests** (have `All` capability):
 - AWS, Azure, GCP tests
@@ -141,7 +149,7 @@ go test ./morpheus/...
 
 ```bash
 # Include all tests
-export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,aws,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,kubernetes,ansible"
 go test ./morpheus/...
 ```
 
@@ -237,6 +245,9 @@ Exit codes:
 |----------|-------------|
 | `TF_ACC_CAPABILITIES` | Comma-separated list of available capabilities |
 | `TF_ACC_CAPABILITIES_VERBOSE` | Set to `1` to log when tests don't run |
+| `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
+| `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the `affinity_group` + `hvm` tests, which skip without it |
+| `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
 
 ### Examples
 
@@ -245,7 +256,7 @@ Exit codes:
 export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv"
 
 # Full test suite
-export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,aws,azure,gcp,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible"
 
 # Debug: see which tests are being skipped
 export TF_ACC_CAPABILITIES_VERBOSE=1

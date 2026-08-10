@@ -39,8 +39,8 @@ type ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInner s
 	PoolAssigned         *bool                                                                                        `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                                                                        `json:"primaryInterface,omitempty"`
 	Network              NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInnerNetwork     `json:"network,omitempty"`
-	Subnet               NullableString                                                                               `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                                                                               `json:"networkGroup,omitempty"`
+	Subnet               *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInnerSubnet             `json:"subnet,omitempty"`
+	NetworkGroup         *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInnerNetworkGroup       `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                                                                               `json:"networkPosition,omitempty"`
 	NetworkPool          NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInnerNetworkPool `json:"networkPool,omitempty"`
 	NetworkDomain        *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInnerNetworkDomain      `json:"networkDomain,omitempty"`
@@ -119,11 +119,11 @@ func (o ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceInterfacesInne
 	if o.Network.IsSet() {
 		toSerialize["network"] = o.Network.Get()
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()
