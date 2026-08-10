@@ -10,6 +10,8 @@ description: |-
 
 -> This resource creates a cluster-scoped affinity group, which is supported on HPE Virtual Machines (HVM) clusters. To place an affinity group on a VMware, VMware Cloud on AWS or MacStadium cloud, use [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group) instead.
 
+-> HVM is the only cluster type on which Morpheus enables affinity groups today, but that is not a limit of this resource: the capability is enabled per cluster type, and a cluster type contributed by a plugin can advertise it too, in which case this resource works against it unchanged.
+
 !> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — for example by provisioning an instance into the group — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
 
 ~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. Creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.

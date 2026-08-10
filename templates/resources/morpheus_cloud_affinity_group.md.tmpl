@@ -8,7 +8,17 @@ description: |-
 
 {{ .Description | trimspace }}
 
--> This resource creates a cloud-scoped affinity group, which is supported on VMware, VMware Cloud on AWS and MacStadium clouds, and is realised as a DRS rule on the cluster backing `pool`. To place an affinity group on an HPE Virtual Machines (HVM) cluster, use [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group) instead.
+-> This resource creates a cloud-scoped affinity group, which is realised as a DRS rule on the cluster backing `pool`. To place an affinity group on an HPE Virtual Machines (HVM) cluster, use [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group) instead.
+
+Morpheus enables affinity groups on the following cloud types:
+
+| Cloud | Type code |
+|---|---|
+| VMware vCenter | `vmware` |
+| VMware Cloud on AWS | `vmwareCloudAws` |
+| MacStadium | `macstadium` |
+
+-> The table records which cloud types enable affinity groups today; it is not a limit of this resource. The capability is enabled per cloud type, and a cloud contributed by a plugin can advertise it too — this resource drives the standard affinity group API rather than anything VMware-specific, so it works against such a cloud unchanged. A cloud type absent from the table may therefore still support affinity groups on a given appliance.
 
 !> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — by provisioning an instance into the group, or, on VMware clouds, by vCenter DRS rule sync — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
 
