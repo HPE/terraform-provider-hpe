@@ -48,6 +48,7 @@ type instanceNodeModel struct {
 	InternalIP           types.String   `tfsdk:"internal_ip"`
 	ExternalFQDN         types.String   `tfsdk:"external_fqdn"`
 	MacAddress           types.String   `tfsdk:"mac_address"`
+	ServerUUID           types.String   `tfsdk:"server_uuid"`
 	Timeouts             timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -259,6 +260,22 @@ func (r *Resource) Schema(
 					"from. For virtual instances it reflects the hypervisor pool. " +
 					"Compare with `resource_pool_id` (the placement requested at " +
 					"create time, bare-metal only) to detect drift.",
+			},
+			"server_uuid": schema.StringAttribute{
+				Optional: true,
+				Description: "UUID to assign to the node's server. Sent as a single-element " +
+					"serverUUIDs list in the add-node action envelope. A UUID already " +
+					"in use by another server is silently ignored by the API; the " +
+					"provider detects this after create and fails the apply. Changing " +
+					"it forces replacement.",
+				MarkdownDescription: "UUID to assign to the node's server. Sent as a single-element " +
+					"`serverUUIDs` list in the add-node action envelope. A UUID already " +
+					"in use by another server is silently ignored by the API; the " +
+					"provider detects this after create and fails the apply. Changing " +
+					"it forces replacement.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true,

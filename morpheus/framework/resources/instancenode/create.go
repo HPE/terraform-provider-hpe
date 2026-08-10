@@ -200,6 +200,33 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Step 5b: Validate that the requested server UUID was applied.
+	if !plan.ServerUUID.IsNull() && !plan.ServerUUID.IsUnknown() {
+		actualUUID := resolveNodeServerUUID(ctx, client, instanceID, containerID)
+		requestedUUID := plan.ServerUUID.ValueString()
+		if actualUUID != requestedUUID {
+			resp.Diagnostics.AddError(
+				"server_uuid not applied",
+				fmt.Sprintf(
+					"Instance %d node (container %d) was added but Morpheus silently "+
+						"ignored the requested server UUID %q. The server was assigned "+
+						"UUID %q instead. This happens when the UUID is already in use "+
+						"by another server.",
+					instanceID, containerID, requestedUUID, actualUUID,
+				),
+			)
+
+			cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+				ResourceType: "instance_node",
+				ResourceID:   containerID,
+				StateWriter:  &resp.State,
+				Diagnostics:  &resp.Diagnostics,
+			})
+
+			return
+		}
+	}
+
 	// Step 6: Optionally wait for IP address.
 	if plan.WaitForIPAddress.ValueBool() {
 		ip, warned, waitErr := containerip.Wait(
@@ -316,6 +343,12 @@ func buildAddNodeEnvelope(plan *instanceNodeModel, actionCode string) map[string
 				"id": plan.SshKeyPairID.ValueInt64(),
 			}
 		}
+	}
+
+	// server_uuid: include as a single-element serverUUIDs list when set.
+	// When unset, omit the key entirely - never send null or empty list.
+	if !plan.ServerUUID.IsNull() && !plan.ServerUUID.IsUnknown() {
+		env["serverUUIDs"] = []string{plan.ServerUUID.ValueString()}
 	}
 
 	return env
@@ -520,4 +553,31 @@ func extractContainerIDFromResults(results any, instanceID int64) (int64, error)
 	default:
 		return 0, fmt.Errorf("container id has unexpected type: %T", idVal)
 	}
+}
+
+// resolveNodeServerUUID reads the instance and returns the server UUID for
+// the container matching containerID. Returns empty string if not found.
+func resolveNodeServerUUID(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+	containerID int64,
+) string {
+	getResp, _, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
+	if err != nil || getResp == nil || getResp.Instance == nil {
+		return ""
+	}
+
+	for i := range getResp.Instance.ContainerDetails {
+		cd := &getResp.Instance.ContainerDetails[i]
+		if cd.Id != nil && *cd.Id == containerID {
+			if cd.Server != nil && cd.Server.Uuid != nil {
+				return *cd.Server.Uuid
+			}
+
+			return ""
+		}
+	}
+
+	return ""
 }

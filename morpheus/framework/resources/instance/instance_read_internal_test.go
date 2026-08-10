@@ -4,12 +4,12 @@ package instance
 
 import (
 	"context"
-	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 // TestUnitGetChildNetworksReadsSubnetID verifies that getChildNetworks reads subnet_id
@@ -94,73 +94,75 @@ func TestUnitGetChildNetworksNoSubnet(t *testing.T) {
 	}
 }
 
-// TestUnitServerUUIDsFromContainerDetails verifies server_uuids is read back
-// from containerDetails[].server.uuid (MORPH-12963), skipping containers with no
-// server or no uuid, and yielding a null set when none are present. server_uuids
-// is an unordered set, so values are compared order-insensitively.
-func TestUnitServerUUIDsFromContainerDetails(t *testing.T) {
+// TestUnitReadServerUUIDFromOwnedContainer verifies that server_uuid is read
+// back only from the container matching container_id, and that extra containers
+// (added by hpe_morpheus_instance_node) do not change the value.
+func TestUnitReadServerUUIDFromOwnedContainer(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
 	tests := []struct {
-		name       string
-		containers []sdk.InstanceContainer2
-		wantNull   bool
-		want       []string
+		name        string
+		containers  []sdk.InstanceContainer2
+		containerID types.Int64
+		want        string
+		wantNull    bool
 	}{
 		{
-			name: "collects server uuids",
+			name: "reads from owned container",
 			containers: []sdk.InstanceContainer2{
-				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-1")}},
-				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+				{Id: sdk.PtrInt64(100), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("owned-uuid")}},
+				{Id: sdk.PtrInt64(200), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("node-uuid")}},
 			},
-			want: []string{"uuid-1", "uuid-2"},
+			containerID: types.Int64Value(100),
+			want:        "owned-uuid",
 		},
 		{
-			name: "nil server skipped",
+			name: "ignores other containers - scaling regression guard",
 			containers: []sdk.InstanceContainer2{
-				{Server: nil},
-				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
+				{Id: sdk.PtrInt64(100), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("owned-uuid")}},
+				{Id: sdk.PtrInt64(200), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("different-uuid")}},
+				{Id: sdk.PtrInt64(300), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("third-uuid")}},
 			},
-			want: []string{"uuid-2"},
+			containerID: types.Int64Value(100),
+			want:        "owned-uuid",
 		},
 		{
-			name: "nil uuid skipped -> null",
+			name: "container not found returns null",
 			containers: []sdk.InstanceContainer2{
-				{Server: &sdk.InstanceContainerServer2{Uuid: nil}},
+				{Id: sdk.PtrInt64(200), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-2")}},
 			},
-			wantNull: true,
+			containerID: types.Int64Value(999),
+			wantNull:    true,
 		},
-		{name: "empty containers -> null", containers: nil, wantNull: true},
+		{
+			name:        "null container_id returns null",
+			containers:  []sdk.InstanceContainer2{{Id: sdk.PtrInt64(1), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("x")}}},
+			containerID: types.Int64Null(),
+			wantNull:    true,
+		},
+		{
+			name: "server with no uuid returns null",
+			containers: []sdk.InstanceContainer2{
+				{Id: sdk.PtrInt64(100), Server: &sdk.InstanceContainerServer2{Uuid: nil}},
+			},
+			containerID: types.Int64Value(100),
+			wantNull:    true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			got := serverUUIDsFromContainerDetails(tt.containers)
+			got := readServerUUIDFromOwnedContainer(tt.containers, tt.containerID)
 			if tt.wantNull {
 				if !got.IsNull() {
-					t.Errorf("expected null set, got %v", got)
+					t.Errorf("expected null, got %v", got)
 				}
 
 				return
 			}
-			var uuids []string
-			if d := got.ElementsAs(ctx, &uuids, false); d.HasError() {
-				t.Fatalf("ElementsAs returned diagnostics: %v", d)
-			}
-			// server_uuids is an unordered set: compare order-insensitively.
-			sort.Strings(uuids)
-			want := append([]string(nil), tt.want...)
-			sort.Strings(want)
-			if len(uuids) != len(want) {
-				t.Fatalf("got %d uuids %v, want %d %v", len(uuids), uuids, len(want), want)
-			}
-			for i := range uuids {
-				if uuids[i] != want[i] {
-					t.Errorf("uuid[%d] = %q, want %q", i, uuids[i], want[i])
-				}
+			if got.ValueString() != tt.want {
+				t.Errorf("got %q, want %q", got.ValueString(), tt.want)
 			}
 		})
 	}
@@ -445,53 +447,77 @@ func TestUnitNumberToInt64(t *testing.T) {
 	}
 }
 
-// TestUnitServerUUIDsReadPreservesPlan is a regression guard for the volatility
-// trap described in MORPH-12804: when server_uuids is set in config, the read
-// must preserve the plan value, NOT read back from containerDetails. If it read
-// back, adding a container via hpe_morpheus_instance_node would grow the set,
-// differ from config, and — because the attribute is RequiresReplace — trigger
-// destruction and recreation of the instance.
-func TestUnitServerUUIDsReadPreservesPlan(t *testing.T) {
+// TestUnitContainerIdPreservedAcrossReads verifies that container_id is
+// preserved from the plan when already set (UseStateForUnknown), and populated
+// from the first container when null (import/create).
+func TestUnitContainerIdPreservedAcrossReads(t *testing.T) {
 	t.Parallel()
 
-	ctx := context.Background()
-
-	// Simulate: plan has one UUID, but the instance now has two containers
-	// (one added by instance_node). The read must still return the plan's
-	// single UUID, not the two from containerDetails.
-	planUUID := "plan-uuid-1"
-	planSet, d := types.SetValueFrom(ctx, types.StringType, []string{planUUID})
-	if d.HasError() {
-		t.Fatalf("SetValueFrom: %v", d)
-	}
-
 	containers := []sdk.InstanceContainer2{
-		{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString(planUUID)}},
-		{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("node-added-uuid")}},
+		{Id: sdk.PtrInt64(100), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-a")}},
+		{Id: sdk.PtrInt64(200), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-b")}},
 	}
 
-	// When plan.ServerUuids is set, the read preserves it.
+	// Case 1: plan has container_id set => preserved
 	plan := InstanceModel{}
-	plan.ServerUuids = planSet
+	plan.ContainerId = types.Int64Value(100)
 
-	// Inline the logic from getInstanceAsState lines 320-324
 	var state InstanceModel
-	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
-		state.ServerUuids = plan.ServerUuids
-	} else {
-		state.ServerUuids = serverUUIDsFromContainerDetails(containers)
+	if !plan.ContainerId.IsNull() && !plan.ContainerId.IsUnknown() {
+		state.ContainerId = plan.ContainerId
+	} else if len(containers) > 0 && containers[0].Id != nil {
+		state.ContainerId = convert.Int64ToType(containers[0].Id)
 	}
 
-	var stateUUIDs []string
-	if dd := state.ServerUuids.ElementsAs(ctx, &stateUUIDs, false); dd.HasError() {
-		t.Fatalf("ElementsAs: %v", dd)
+	if state.ContainerId.ValueInt64() != 100 {
+		t.Errorf("expected container_id=100, got %d", state.ContainerId.ValueInt64())
 	}
 
-	if len(stateUUIDs) != 1 {
-		t.Fatalf("expected 1 UUID in state, got %d: %v", len(stateUUIDs), stateUUIDs)
+	// Case 2: plan container_id is null => populated from first container
+	plan2 := InstanceModel{}
+	plan2.ContainerId = types.Int64Null()
+
+	var state2 InstanceModel
+	if !plan2.ContainerId.IsNull() && !plan2.ContainerId.IsUnknown() {
+		state2.ContainerId = plan2.ContainerId
+	} else if len(containers) > 0 && containers[0].Id != nil {
+		state2.ContainerId = convert.Int64ToType(containers[0].Id)
 	}
 
-	if stateUUIDs[0] != planUUID {
-		t.Errorf("state UUID = %q, want %q", stateUUIDs[0], planUUID)
+	if state2.ContainerId.ValueInt64() != 100 {
+		t.Errorf("expected container_id=100 from first container, got %d", state2.ContainerId.ValueInt64())
+	}
+}
+
+// TestUnitContainerIdPreservedWhenAbsent verifies that when the recorded
+// container is no longer present in the instance, the stored container_id is
+// kept rather than being nulled or erroring.
+func TestUnitContainerIdPreservedWhenAbsent(t *testing.T) {
+	t.Parallel()
+
+	// The recorded container (100) is gone; only 200 exists.
+	containers := []sdk.InstanceContainer2{
+		{Id: sdk.PtrInt64(200), Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-b")}},
+	}
+
+	plan := InstanceModel{}
+	plan.ContainerId = types.Int64Value(100)
+
+	// The logic preserves plan when non-null (UseStateForUnknown behaviour)
+	var state InstanceModel
+	if !plan.ContainerId.IsNull() && !plan.ContainerId.IsUnknown() {
+		state.ContainerId = plan.ContainerId
+	} else if len(containers) > 0 && containers[0].Id != nil {
+		state.ContainerId = convert.Int64ToType(containers[0].Id)
+	}
+
+	if state.ContainerId.ValueInt64() != 100 {
+		t.Errorf("expected container_id=100 preserved, got %d", state.ContainerId.ValueInt64())
+	}
+
+	// server_uuid should be null since container 100 is not found
+	uuid := readServerUUIDFromOwnedContainer(containers, state.ContainerId)
+	if !uuid.IsNull() {
+		t.Errorf("expected null server_uuid when container absent, got %q", uuid.ValueString())
 	}
 }

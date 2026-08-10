@@ -20,10 +20,9 @@ resource "hpe_morpheus_instance" "example" {
   host_name        = "webserver01"
   # labels are organization keywords assigned to the instance.
   labels = ["terraform", "webserver"]
-  # server_uuids optionally assigns specific UUIDs to the servers provisioned for
-  # this instance (bring-your-own-UUID). Set at provision time only; changing it
-  # forces replacement. When omitted, Morpheus generates the UUIDs.
-  # server_uuids = ["550e8400-e29b-41d4-a716-446655440000"]
+  # server_uuid optionally assigns a UUID to the single server provisioned for
+  # this instance. Use hpe_morpheus_instance_node for scaled nodes.
+  # server_uuid = "550e8400-e29b-41d4-a716-446655440000"
   cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
   layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
   instance_type_id = {{.InstanceType}}

@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -367,15 +366,10 @@ func (g *Resource) Create(
 		reqInstance.Labels = labels
 	}
 
-	// server_uuids - optional bring-your-own UUIDs for the provisioned servers.
+	// server_uuid - optional bring-your-own UUID for the single provisioned server.
 	// Create-time only (RequiresReplace); read back from containerDetails.server.uuid.
-	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
-		var serverUUIDs []string
-		resp.Diagnostics.Append(plan.ServerUuids.ElementsAs(ctx, &serverUUIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		reqInstance.ServerUUIDs = serverUUIDs
+	if !plan.ServerUuid.IsNull() && !plan.ServerUuid.IsUnknown() {
+		reqInstance.ServerUUIDs = []string{plan.ServerUuid.ValueString()}
 	}
 
 	// group_id
@@ -651,13 +645,12 @@ func (g *Resource) Create(
 		}
 	}
 
-	// Validate that requested server UUIDs were actually applied. Morpheus
-	// silently drops a UUID that is already in use by another server and
-	// silently discards excess UUIDs beyond the number of servers provisioned.
-	// Both cases leave the instance in a state that does not match the config,
+	// Validate that the requested server UUID was actually applied. Morpheus
+	// silently drops a UUID that is already in use by another server.
+	// This leaves the instance in a state that does not match the config,
 	// so we fail the apply and taint the resource for replacement.
-	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
-		if d := validateServerUUIDs(ctx, client, instanceId, plan); d.HasError() {
+	if !plan.ServerUuid.IsNull() && !plan.ServerUuid.IsUnknown() {
+		if d := validateServerUUID(ctx, client, instanceId, plan.ServerUuid.ValueString()); d.HasError() {
 			resp.Diagnostics.Append(d...)
 			taintResourceState(instanceId)
 
@@ -731,29 +724,16 @@ func getInstanceTypeCode(
 	return instanceType.InstanceType.Code, diags
 }
 
-// validateServerUUIDs compares the UUIDs the user requested in server_uuids
-// against the UUIDs actually assigned to the instance's servers (read from
-// containerDetails[].server.uuid). Any requested UUID not present among the
-// assigned ones indicates a silent failure: Morpheus either dropped a duplicate
-// UUID that was already in use by another server, or ignored an excess UUID
-// beyond the number of servers provisioned by the instance.
-func validateServerUUIDs(
+// validateServerUUID checks whether the requested UUID was actually applied to
+// the instance's server. Morpheus silently drops a UUID that is already in use
+// by another server, assigning a generated one instead.
+func validateServerUUID(
 	ctx context.Context,
 	client *sdk.APIClient,
 	instanceID int64,
-	plan InstanceModel,
+	requestedUUID string,
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
-
-	var requestedUUIDs []string
-	diags.Append(plan.ServerUuids.ElementsAs(ctx, &requestedUUIDs, false)...)
-	if diags.HasError() {
-		return diags
-	}
-
-	if len(requestedUUIDs) == 0 {
-		return diags
-	}
 
 	assigned, d := assignedServerUUIDs(ctx, client, instanceID)
 	diags.Append(d...)
@@ -761,7 +741,33 @@ func validateServerUUIDs(
 		return diags
 	}
 
-	diags.Append(checkServerUUIDs(requestedUUIDs, assigned, instanceID)...)
+	diags.Append(validateServerUUIDLogic(requestedUUID, assigned, instanceID)...)
+
+	return diags
+}
+
+// validateServerUUIDLogic is the pure-logic core: checks whether requestedUUID
+// is present in assigned. Returns an error diagnostic if not.
+func validateServerUUIDLogic(
+	requestedUUID string,
+	assigned map[string]struct{},
+	instanceID int64,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if _, ok := assigned[requestedUUID]; !ok {
+		diags.AddError(
+			"server_uuid not applied",
+			fmt.Sprintf(
+				"Instance %d was created successfully but Morpheus silently ignored "+
+					"the requested server UUID %q. This happens when the UUID is already "+
+					"in use by another server. The instance has been created and marked "+
+					"for replacement.",
+				instanceID,
+				requestedUUID,
+			),
+		)
+	}
 
 	return diags
 }
@@ -803,39 +809,4 @@ func assignedServerUUIDs(
 	}
 
 	return assigned, diags
-}
-
-// checkServerUUIDs is the pure-logic core of the server UUID post-create
-// validation. It compares requested UUIDs against assigned ones and returns an
-// error diagnostic naming every UUID that was not applied.
-func checkServerUUIDs(
-	requested []string,
-	assigned map[string]struct{},
-	instanceID int64,
-) diag.Diagnostics {
-	var diags diag.Diagnostics
-
-	var missing []string
-	for _, uuid := range requested {
-		if _, ok := assigned[uuid]; !ok {
-			missing = append(missing, uuid)
-		}
-	}
-
-	if len(missing) > 0 {
-		diags.AddError(
-			"server_uuids not applied",
-			fmt.Sprintf(
-				"Instance %d was created successfully but Morpheus silently ignored "+
-					"the following requested server UUID(s): [%s]. This happens when a "+
-					"UUID is already in use by another server, or when more UUIDs are "+
-					"supplied than servers provisioned by the instance. The instance has "+
-					"been created and marked for replacement.",
-				instanceID,
-				strings.Join(missing, ", "),
-			),
-		)
-	}
-
-	return diags
 }

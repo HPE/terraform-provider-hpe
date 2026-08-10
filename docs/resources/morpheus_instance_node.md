@@ -59,6 +59,7 @@ resource "hpe_morpheus_instance_node" "ha" {
 - `pre_provisioned` (Boolean) Attach an existing server instead of provisioning a new one.
 - `resource_pool_id` (Number) The resource pool where the node will be placed. Only honoured for HPE bare-metal instances; omit for all other instance types.
 - `selected_server_id` (Number) The ID of the pre-provisioned server. Required when `pre_provisioned` is set.
+- `server_uuid` (String) UUID to assign to the node's server. Sent as a single-element `serverUUIDs` list in the add-node action envelope. A UUID already in use by another server is silently ignored by the API; the provider detects this after create and fails the apply. Changing it forces replacement.
 - `ssh_host` (String) SSH host for the pre-provisioned server.
 - `ssh_key_pair_id` (Number) The ID of the SSH key pair for the pre-provisioned server.
 - `ssh_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password for the pre-provisioned server. Write-only.

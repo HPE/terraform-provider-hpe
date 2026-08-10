@@ -43,32 +43,39 @@ instance:
         element_type:
           string: {}
         description: Organization labels (keywords) assigned to the instance.
-    server_uuids:
-      set:
+    server_uuid:
+      string:
         computed_optional_required: computed_optional
-        element_type:
-          string: {}
         description: |-
-          Optional UUIDs to assign to the servers provisioned for this instance.
-          Supply at most one value. The API assigns UUIDs by position, but this
-          attribute is a set and Terraform sets are unordered, so with more than
-          one value it is not defined which UUID reaches which server. An
-          instance provisions a single server in practice (layout_size is one),
-          so one value is all that is used; scaling is done with
-          hpe_morpheus_instance_node. A UUID already in use by another server is
-          silently ignored by the API, which assigns a generated one instead;
-          the provider detects that after create and fails the apply. Set at
-          provision time only; changing it forces replacement. When not set,
-          Morpheus generates the UUIDs and they are read back here.
+          UUID to assign to the single server provisioned for this instance.
+          Morpheus assigns UUIDs strictly by position; an instance provisions
+          exactly one server (layout_size is always 1), so this is the only UUID
+          that takes effect. Use hpe_morpheus_instance_node to set UUIDs on
+          scaled nodes. A UUID already in use by another server is silently
+          ignored by the API, which assigns a generated one instead; the provider
+          detects that after create and fails the apply. Set at provision time
+          only; changing it forces replacement.
         plan_modifiers:
         - custom:
             imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
-            schema_definition: setplanmodifier.UseStateForUnknown()
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplace()
         - custom:
             imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
-            schema_definition: setplanmodifier.RequiresReplace()
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.UseStateForUnknown()
+    container_id:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The container ID of the single container provisioned by this instance.
+          Populated at create time and preserved across reads. Used internally to
+          scope the server_uuid read-back to the owned container only.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
     wait_for_ip_address:
       bool:
         computed_optional_required: computed_optional
@@ -486,7 +493,8 @@ instance:
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
-    - template-server_uuids: server_uuids
+    - template-server_uuid: server_uuid
+    - template-container_id: container_id
     - template-wait_for_ip_address: wait_for_ip_address
     - template-instance_type_id: instance_type_id
     - template-layout_id: layout_id

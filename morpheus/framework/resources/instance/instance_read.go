@@ -311,17 +311,23 @@ func getInstanceAsState(
 	// response (empty -> null).
 	state.Labels = convert.StrSliceToSet(instance.Labels)
 
-	// server_uuids - RequiresReplace, create-only input. Preserve the incoming
-	// value when the user set it (the API assigns exactly those UUIDs to the
-	// servers, so preserving avoids any read-back mismatch). Otherwise read the
-	// auto-generated UUIDs back from containerDetails[].server.uuid so the
-	// Computed value is known after apply. It is an unordered set because Morpheus
-	// does not guarantee containerDetails ordering matches the supplied order.
-	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
-		state.ServerUuids = plan.ServerUuids
+	// container_id - Computed, UseStateForUnknown. Populated at create from the
+	// single container the instance provisions. Preserved across reads; if the
+	// recorded container is no longer present the stored value is kept (the
+	// instance still exists; a missing container is a different condition).
+	if !plan.ContainerId.IsNull() && !plan.ContainerId.IsUnknown() {
+		state.ContainerId = plan.ContainerId
+	} else if len(instance.ContainerDetails) > 0 && instance.ContainerDetails[0].Id != nil {
+		state.ContainerId = convert.Int64ToType(instance.ContainerDetails[0].Id)
 	} else {
-		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
+		state.ContainerId = types.Int64Null()
 	}
+
+	// server_uuid - read back ONLY from the container matching container_id.
+	// Never reconcile from all containers: hpe_morpheus_instance_node adds
+	// containers outside this resource's lifecycle, and reading their UUIDs
+	// would change the value after scaling and force replacement.
+	state.ServerUuid = readServerUUIDFromOwnedContainer(instance.ContainerDetails, state.ContainerId)
 	// wait_for_ip_address is provider-only; preserve from plan.
 	//
 	// Fall back to the schema default when the incoming value is null rather
@@ -1164,19 +1170,31 @@ func getInstanceEnvVars(
 	return resp.Envs, diags
 }
 
-// serverUUIDsFromContainerDetails builds the server_uuids set from
-// instance.containerDetails[].server.uuid, skipping containers with no server or
-// no uuid. Returns a null set when no UUIDs are present. server_uuids is an
-// unordered set because Morpheus does not guarantee containerDetails ordering.
-func serverUUIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
-	uuids := make([]string, 0, len(containers))
+// readServerUUIDFromOwnedContainer reads the server UUID only from the container
+// matching containerID. Returns null if the container is not found or has no
+// server UUID. This scoping prevents scaling (adding containers via
+// hpe_morpheus_instance_node) from changing the value and triggering replacement.
+func readServerUUIDFromOwnedContainer(
+	containers []sdk.InstanceContainer2,
+	containerID types.Int64,
+) types.String {
+	if containerID.IsNull() || containerID.IsUnknown() {
+		return types.StringNull()
+	}
+
+	target := containerID.ValueInt64()
 	for _, cont := range containers {
-		if cont.Server != nil && cont.Server.Uuid != nil {
-			uuids = append(uuids, *cont.Server.Uuid)
+		if cont.Id != nil && *cont.Id == target {
+			if cont.Server != nil && cont.Server.Uuid != nil {
+				return types.StringValue(*cont.Server.Uuid)
+			}
+
+			return types.StringNull()
 		}
 	}
 
-	return convert.StrSliceToSet(uuids)
+	// Container not present — return null rather than erroring.
+	return types.StringNull()
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes

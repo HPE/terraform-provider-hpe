@@ -371,6 +371,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "List of IP addresses to use when connecting to instance",
 				MarkdownDescription: "List of IP addresses to use when connecting to instance",
 			},
+			"container_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The container ID of the single container provisioned by this instance.\nPopulated at create time and preserved across reads. Used internally to\nscope the server_uuid read-back to the owned container only.",
+				MarkdownDescription: "The container ID of the single container provisioned by this instance.\nPopulated at create time and preserved across reads. Used internally to\nscope the server_uuid read-back to the owned container only.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Description:         "A description of the instance.",
@@ -701,15 +709,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
 			},
-			"server_uuids": schema.SetAttribute{
-				ElementType:         types.StringType,
+			"server_uuid": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
-				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-					setplanmodifier.RequiresReplace(),
+				Description:         "UUID to assign to the single server provisioned for this instance.\nMorpheus assigns UUIDs strictly by position; an instance provisions\nexactly one server (layout_size is always 1), so this is the only UUID\nthat takes effect. Use hpe_morpheus_instance_node to set UUIDs on\nscaled nodes. A UUID already in use by another server is silently\nignored by the API, which assigns a generated one instead; the provider\ndetects that after create and fails the apply. Set at provision time\nonly; changing it forces replacement.",
+				MarkdownDescription: "UUID to assign to the single server provisioned for this instance.\nMorpheus assigns UUIDs strictly by position; an instance provisions\nexactly one server (layout_size is always 1), so this is the only UUID\nthat takes effect. Use hpe_morpheus_instance_node to set UUIDs on\nscaled nodes. A UUID already in use by another server is silently\nignored by the API, which assigns a generated one instead; the provider\ndetects that after create and fails the apply. Set at provision time\nonly; changing it forces replacement.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"service_plan_options": schema.SingleNestedAttribute{
@@ -888,6 +895,7 @@ type InstanceModel struct {
 	ConfigHvm          ConfigHvmValue          `tfsdk:"config_hvm"`
 	ConfigVmware       ConfigVmwareValue       `tfsdk:"config_vmware"`
 	ConnectionInfo     types.List              `tfsdk:"connection_info"`
+	ContainerId        types.Int64             `tfsdk:"container_id"`
 	Description        types.String            `tfsdk:"description"`
 	Evars              types.Set               `tfsdk:"evars"`
 	GroupId            types.Int64             `tfsdk:"group_id"`
@@ -903,7 +911,7 @@ type InstanceModel struct {
 	NetworkInterfaces  types.List              `tfsdk:"network_interfaces"`
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
-	ServerUuids        types.Set               `tfsdk:"server_uuids"`
+	ServerUuid         types.String            `tfsdk:"server_uuid"`
 	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
 	Status             types.String            `tfsdk:"status"`
 	Tags               types.Set               `tfsdk:"tags"`

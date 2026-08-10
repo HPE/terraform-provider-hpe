@@ -355,10 +355,9 @@ resource "hpe_morpheus_instance" "example" {
   host_name        = "webserver01"
   # labels are organization keywords assigned to the instance.
   labels = ["terraform", "webserver"]
-  # server_uuids optionally assigns specific UUIDs to the servers provisioned for
-  # this instance (bring-your-own-UUID). Set at provision time only; changing it
-  # forces replacement. When omitted, Morpheus generates the UUIDs.
-  # server_uuids = ["550e8400-e29b-41d4-a716-446655440000"]
+  # server_uuid optionally assigns a UUID to the single server provisioned for
+  # this instance. Use hpe_morpheus_instance_node for scaled nodes.
+  # server_uuid = "550e8400-e29b-41d4-a716-446655440000"
   cloud_id         = data.hpe_morpheus_cloud.vmware_cloud.id
   layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
   instance_type_id = 9
@@ -918,17 +917,14 @@ hostname, so changing it forces replacement.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
 The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
-- `server_uuids` (Set of String) Optional UUIDs to assign to the servers provisioned for this instance.
-Supply at most one value. The API assigns UUIDs by position, but this
-attribute is a set and Terraform sets are unordered, so with more than
-one value it is not defined which UUID reaches which server. An
-instance provisions a single server in practice (layout_size is one),
-so one value is all that is used; scaling is done with
-hpe_morpheus_instance_node. A UUID already in use by another server is
-silently ignored by the API, which assigns a generated one instead;
-the provider detects that after create and fails the apply. Set at
-provision time only; changing it forces replacement. When not set,
-Morpheus generates the UUIDs and they are read back here.
+- `server_uuid` (String) UUID to assign to the single server provisioned for this instance.
+Morpheus assigns UUIDs strictly by position; an instance provisions
+exactly one server (layout_size is always 1), so this is the only UUID
+that takes effect. Use hpe_morpheus_instance_node to set UUIDs on
+scaled nodes. A UUID already in use by another server is silently
+ignored by the API, which assigns a generated one instead; the provider
+detects that after create and fails the apply. Set at provision time
+only; changing it forces replacement.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.
@@ -947,6 +943,9 @@ consumes the remaining budget of the create or update timeout.
 ### Read-Only
 
 - `connection_info` (List of String) List of IP addresses to use when connecting to instance
+- `container_id` (Number) The container ID of the single container provisioned by this instance.
+Populated at create time and preserved across reads. Used internally to
+scope the server_uuid read-back to the owned container only.
 - `id` (Number) The ID of this resource.
 - `status` (String) The status of the instance (e.g. running, stopped, failed, unknown). The provider
 refreshes this on read, so an out-of-band deletion of the underlying VM - which Morpheus

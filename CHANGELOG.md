@@ -1,3 +1,14 @@
+# v2.0.0 Release Notes (Unreleased)
+
+## Breaking Changes
+
+- `hpe_morpheus_instance` — The `server_uuids` attribute (Set of String) has been removed and replaced by `server_uuid` (String). Configurations that set `server_uuids` must change to the singular form with a single value. The new attribute assigns a UUID to the single server the instance provisions; use `hpe_morpheus_instance_node` for scaled nodes.
+
+## Enhancements
+
+- `hpe_morpheus_instance` — Added computed `container_id` attribute identifying the container provisioned by the instance.
+- `hpe_morpheus_instance_node` — Added optional `server_uuid` attribute to assign a UUID to the node's server at create time.
+
 # v1.6.0 Release Notes
 
 In this release (v1.6.0) we have added the following resources:
