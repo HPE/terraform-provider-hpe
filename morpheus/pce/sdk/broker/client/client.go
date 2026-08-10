@@ -85,8 +85,13 @@ func (c *APIClient) SetMetaFnAndVersion(meta interface{}, version int, fn SetScm
 }
 
 // callAPI performs the request.
+//
+// The request URL is built from the configured broker host, which is provider
+// configuration rather than untrusted input: a Disconnected deployment has to
+// be able to point the client at its own on-premise broker, so the host is
+// necessarily operator-supplied. gosec reports this as SSRF via taint analysis.
 func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
-	return c.cfg.HTTPClient.Do(request)
+	return c.cfg.HTTPClient.Do(request) //nolint:gosec // G704: operator-configured broker host
 }
 
 func (c *APIClient) getVersion() int {
