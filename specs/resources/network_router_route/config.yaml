@@ -20,7 +20,6 @@ network_router_route:
     - external_interface
     - external_type
     - internal_id
-    - priority
     - success
     - unique_id
     - visible
@@ -56,3 +55,7 @@ network_router_route:
       computed_optional_required: computed_optional
       description: Whether the route is enabled
       default: true
+    priority:
+      computed_optional_required: computed_optional
+      description: Priority of the route rule
+      requires_replace: true

@@ -588,6 +588,18 @@ func getInstanceVMwareConfig(
 	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
+
+	// TemplateId — API returns "template" key as a float64 via AdditionalProperties
+	if v, ok := apiConfig.AdditionalProperties["template"]; ok && v != nil {
+		if f, ok := v.(float64); ok {
+			configVmware.TemplateId = types.Int64Value(int64(f))
+		} else {
+			configVmware.TemplateId = types.Int64Null()
+		}
+	} else {
+		configVmware.TemplateId = types.Int64Null()
+	}
+
 	configVmware.state = attr.ValueStateKnown
 
 	return configVmware, diag.Diagnostics{}

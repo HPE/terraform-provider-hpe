@@ -105,10 +105,11 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	bucketConfig := addBucketConfig(plan.Endpoint, config.AccessKey, config.SecretKey)
 	body := sdk.AddStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueString(),
 		ProviderType: plan.ProviderType.ValueString(),
-		Config:       addBucketConfig(plan.Endpoint, config.AccessKey, config.SecretKey),
+		Config:       &bucketConfig,
 	}
 	if !plan.BucketName.IsNull() {
 		body.BucketName = plan.BucketName.ValueStringPointer()

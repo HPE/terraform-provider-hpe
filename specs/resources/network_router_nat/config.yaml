@@ -27,7 +27,6 @@ network_router_nat:
     - config                          # request config wrapper; firewall/service pinned top-level via templates
     - source_ports                    # (networkRouterNat.yaml) not exposed
     - destination_ports               # (networkRouterNat.yaml) not exposed
-    - translated_ports                # (networkRouterNat.yaml) not exposed
     - match_ipv6destination_prefix    # (networkRouterNat.yaml) not exposed
     - translated_ipv4source_prefix    # (networkRouterNat.yaml) not exposed
     - ref_type                        # (networkRouterNat.yaml) internal
@@ -76,6 +75,9 @@ network_router_nat:
     translated_network:
       computed_optional_required: computed_optional
       description: Translated network
+    translated_ports:
+      computed_optional_required: computed_optional
+      description: Translated ports for the NAT rule
     firewall:
       computed_optional_required: computed_optional
       description: The firewall match applied to the NAT rule (nested under config).

@@ -109,6 +109,9 @@ func (r *Resource) Create(
 	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
 		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
 	}
+	if !plan.TranslatedPorts.IsNull() && !plan.TranslatedPorts.IsUnknown() {
+		nat.TranslatedPorts = plan.TranslatedPorts.ValueStringPointer()
+	}
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
@@ -228,6 +231,8 @@ func getNatAsState(
 
 	state.TranslatedNetwork = convert.StrToType(nat.TranslatedNetwork)
 
+	state.TranslatedPorts = convert.StrToType(nat.TranslatedPorts.Get())
+
 	if nat.Priority != nil {
 		state.Priority = types.Int64Value(int64(*nat.Priority))
 	} else {
@@ -343,6 +348,9 @@ func (r *Resource) Update(
 	}
 	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
 		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
+	}
+	if !plan.TranslatedPorts.IsNull() && !plan.TranslatedPorts.IsUnknown() {
+		nat.TranslatedPorts = plan.TranslatedPorts.ValueStringPointer()
 	}
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()

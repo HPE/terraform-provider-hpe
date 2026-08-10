@@ -61,10 +61,11 @@ func TestAddBucketConfigAlwaysMarshals(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
+			bucketConfig := addBucketConfig(tc.endpoint, tc.accessKey, tc.secretKey)
 			body := sdk.AddStorageBucketsRequestStorageBucket{
 				Name:         "example",
 				ProviderType: "s3",
-				Config:       addBucketConfig(tc.endpoint, tc.accessKey, tc.secretKey),
+				Config:       &bucketConfig,
 			}
 
 			raw, err := json.Marshal(sdk.AddStorageBucketsRequest{StorageBucket: body})

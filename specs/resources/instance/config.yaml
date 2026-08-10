@@ -523,6 +523,10 @@ instance:
       string:
         computed_optional_required: optional
         description: VMware folder external ID.
+    templateId:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the VMware template to use for cloning/provisioning.
     interfaceName:
       string:
         computed_optional_required: computed
@@ -558,6 +562,7 @@ instance:
     - template-nestedVirtualization: config_vmware.nested_virtualization
     - template-resourcePoolId: config_vmware.resource_pool_id
     - template-vmwareFolderID: config_vmware.vmware_folder_id
+    - template-templateId: config_vmware.template_id
     - template-configAWS: config_aws
     - template-availabilityId: config_aws.availability_zone_id
     - template-instanceProfile: config_aws.instance_profile

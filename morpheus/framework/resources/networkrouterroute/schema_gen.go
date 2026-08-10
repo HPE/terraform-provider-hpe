@@ -70,6 +70,15 @@ func NetworkRouterRouteResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network MTU",
 				MarkdownDescription: "Network MTU",
 			},
+			"priority": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Priority of the route rule",
+				MarkdownDescription: "Priority of the route rule",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the parent network router",
@@ -98,6 +107,7 @@ type NetworkRouterRouteModel struct {
 	Id           types.Int64   `tfsdk:"id"`
 	Name         types.String  `tfsdk:"name"`
 	NetworkMtu   types.Float64 `tfsdk:"network_mtu"`
+	Priority     types.String  `tfsdk:"priority"`
 	RouterId     types.Int64   `tfsdk:"router_id"`
 	Source       types.String  `tfsdk:"source"`
 }

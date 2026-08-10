@@ -145,8 +145,15 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Description",
 				MarkdownDescription: "Description",
 			},
+			"enabled": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Whether the load balancer is enabled",
+				MarkdownDescription: "Whether the load balancer is enabled",
+			},
 			"group_id": schema.Int64Attribute{
 				Optional:            true,
+				WriteOnly:           true,
 				Description:         "The ID of the group associated with the load balancer",
 				MarkdownDescription: "The ID of the group associated with the load balancer",
 				PlanModifiers: []planmodifier.Int64{
@@ -169,6 +176,7 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_server_id": schema.Int64Attribute{
 				Optional:            true,
+				WriteOnly:           true,
 				Description:         "Network Server ID",
 				MarkdownDescription: "Network Server ID",
 				PlanModifiers: []planmodifier.Int64{
@@ -256,6 +264,7 @@ type LoadBalancerModel struct {
 	ConfigHaproxy   ConfigHaproxyValue `tfsdk:"config_haproxy"`
 	ConfigNsxt      ConfigNsxtValue    `tfsdk:"config_nsxt"`
 	Description     types.String       `tfsdk:"description"`
+	Enabled         types.Bool         `tfsdk:"enabled"`
 	GroupId         types.Int64        `tfsdk:"group_id"`
 	Id              types.Int64        `tfsdk:"id"`
 	Name            types.String       `tfsdk:"name"`

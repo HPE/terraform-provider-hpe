@@ -32,6 +32,10 @@ network:
         plan_modifiers:
         - custom:
             schema_definition: stringplanmodifier.RequiresReplace(), // force new
+    connected_gateway:
+      string:
+        computed_optional_required: computed_optional
+        description: Provider ID of the connected NSX-T Tier-1 gateway.
     id:
       int64:
         computed_optional_required: computed
@@ -142,3 +146,4 @@ network:
     - template-cloud_id: cloud_id
     - template-tenant_ids: tenant_ids
     - template-resource_permissions: resource_permissions
+    - template-connected_gateway: connected_gateway

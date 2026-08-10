@@ -195,6 +195,10 @@ func (g *Resource) Create(
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
+		if !plan.ConfigVmware.TemplateId.IsNull() && !plan.ConfigVmware.TemplateId.IsUnknown() {
+			configVMware.Template = plan.ConfigVmware.TemplateId.ValueInt64Pointer()
+		}
+
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
 			VMWareInstanceConfiguration2: configVMware,
 		}

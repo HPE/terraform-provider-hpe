@@ -229,6 +229,9 @@ func (r *Resource) Create(
 
 		configDataMap, ok := configMap.(map[string]any)
 		if ok {
+			if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() {
+				configDataMap["connectedGateway"] = plan.ConnectedGateway.ValueString()
+			}
 			networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
 			networkConfig.MapmapOfStringAny = &configDataMap
 			createNetwork.Config = &networkConfig
@@ -240,6 +243,17 @@ func (r *Resource) Create(
 
 			return
 		}
+	}
+
+	// connectedGateway is sent inside the config map even when no explicit config
+	// block is configured (NSX-T segments require it at the top-level config).
+	if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() && createNetwork.Config == nil {
+		configDataMap := map[string]any{
+			"connectedGateway": plan.ConnectedGateway.ValueString(),
+		}
+		networkConfig := sdk.CreateNetworksRequestNetworkConfig{}
+		networkConfig.MapmapOfStringAny = &configDataMap
+		createNetwork.Config = &networkConfig
 	}
 
 	var tenants []sdk.CreateNetworksRequestNetworkTenantsInner
