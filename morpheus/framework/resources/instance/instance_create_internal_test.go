@@ -103,6 +103,42 @@ func TestUnitCreateStatusSetsDisjoint(t *testing.T) {
 	}
 }
 
+// TestUnitServerUUIDApplied verifies no diagnostic when the requested UUID
+// is found among the assigned ones.
+func TestUnitServerUUIDApplied(t *testing.T) {
+	t.Parallel()
+
+	assigned := map[string]struct{}{
+		"uuid-a":     {},
+		"uuid-extra": {},
+	}
+
+	diags := validateServerUUIDLogic("uuid-a", assigned, 42)
+	if diags.HasError() {
+		t.Fatalf("expected no diagnostics, got: %v", diags)
+	}
+}
+
+// TestUnitServerUUIDNotApplied verifies that a requested UUID not found
+// produces an error diagnostic naming that UUID.
+func TestUnitServerUUIDNotApplied(t *testing.T) {
+	t.Parallel()
+
+	assigned := map[string]struct{}{
+		"uuid-other": {},
+	}
+
+	diags := validateServerUUIDLogic("uuid-missing", assigned, 99)
+	if !diags.HasError() {
+		t.Fatal("expected an error diagnostic when a UUID is missing")
+	}
+
+	detail := diags.Errors()[0].Detail()
+	if !strings.Contains(detail, "uuid-missing") {
+		t.Errorf("expected error to name 'uuid-missing', got: %s", detail)
+	}
+}
+
 // TestUnitCheckServerUUIDsAllPresent verifies that when all requested UUIDs
 // are found among the assigned ones, no diagnostic is emitted.
 func TestUnitCheckServerUUIDsAllPresent(t *testing.T) {
