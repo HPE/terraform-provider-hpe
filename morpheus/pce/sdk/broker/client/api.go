@@ -87,12 +87,17 @@ func (a *api) do(ctx context.Context, request interface{}, queryParams map[strin
 	if err != nil || localVarHTTPResponse == nil {
 		return err
 	}
+
+	// Registered before the status check below: that path returns early, and
+	// ParseError reads the body without closing it, so deferring any later
+	// would leak the body on every error response.
+	defer localVarHTTPResponse.Body.Close()
+
 	if localVarHTTPResponse.StatusCode >= 300 {
 		return ParseError(localVarHTTPResponse)
 	}
 
 	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
-	defer localVarHTTPResponse.Body.Close()
 	if err != nil {
 		return err
 	}

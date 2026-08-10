@@ -4,9 +4,11 @@ package client
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"strings"
 	"testing"
 
 	consts "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/common"
@@ -145,5 +147,85 @@ func TestGetMorpheusDetails_MalformedBody(t *testing.T) {
 
 	if _, err := newTestBrokerClient(srv.URL).GetCMPDetails(context.Background()); err == nil {
 		t.Fatal("GetCMPDetails() expected an error for a malformed body, got nil")
+	}
+}
+
+// trackingBody records whether it was closed, so a test can prove the client
+// releases the response body.
+type trackingBody struct {
+	io.Reader
+	closed bool
+}
+
+func (b *trackingBody) Close() error {
+	b.closed = true
+
+	return nil
+}
+
+// roundTripperFunc adapts a function to http.RoundTripper.
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (f roundTripperFunc) RoundTrip(r *http.Request) (*http.Response, error) {
+	return f(r)
+}
+
+// newBodyTrackingClient returns a broker client whose transport serves the
+// given status and body, along with the body it will serve so that the test can
+// check whether it was closed.
+func newBodyTrackingClient(status int, payload string) (*APIClient, *trackingBody) {
+	body := &trackingBody{Reader: strings.NewReader(payload)}
+
+	cfg := NewConfiguration()
+	cfg.Host = "https://broker.example.invalid"
+	cfg.HTTPClient = &http.Client{
+		Transport: roundTripperFunc(func(_ *http.Request) (*http.Response, error) {
+			return &http.Response{
+				StatusCode: status,
+				Body:       body,
+				Header:     make(http.Header),
+			}, nil
+		}),
+	}
+
+	c := NewAPIClient(cfg)
+	c.SetMetaFnAndVersion(nil, 0, func(ctx *context.Context, _ interface{}) {
+		*ctx = context.WithValue(*ctx, ContextAccessToken, testIAMToken)
+	})
+
+	return c, body
+}
+
+// An error response must not leak its body. ParseError reads the body without
+// closing it, so the close has to be deferred before the status is checked.
+func TestGetCMPDetailsClosesBodyOnErrorResponse(t *testing.T) {
+	t.Parallel()
+
+	client, body := newBodyTrackingClient(
+		http.StatusUnauthorized,
+		`{"message":"unauthorized"}`,
+	)
+
+	if _, err := client.GetCMPDetails(context.Background()); err == nil {
+		t.Fatal("GetCMPDetails() expected an error for a 401 response, got nil")
+	}
+
+	if !body.closed {
+		t.Error("response body was not closed on an error response")
+	}
+}
+
+// The success path must release the body too.
+func TestGetCMPDetailsClosesBodyOnSuccess(t *testing.T) {
+	t.Parallel()
+
+	client, body := newBodyTrackingClient(http.StatusOK, cmpDetailsBody)
+
+	if _, err := client.GetCMPDetails(context.Background()); err != nil {
+		t.Fatalf("GetCMPDetails() unexpected error: %v", err)
+	}
+
+	if !body.closed {
+		t.Error("response body was not closed on a successful response")
 	}
 }
