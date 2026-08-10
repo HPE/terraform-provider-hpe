@@ -323,7 +323,17 @@ func getInstanceAsState(
 		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
 	}
 	// wait_for_ip_address is provider-only; preserve from plan.
-	state.WaitForIpAddress = plan.WaitForIpAddress
+	//
+	// Fall back to the schema default when the incoming value is null rather
+	// than copying the null through. State written before this attribute
+	// existed carries no value for it, so a provider upgrade would otherwise
+	// leave it null while the default supplies false at plan time, showing a
+	// spurious null -> false diff on the next plan.
+	if plan.WaitForIpAddress.IsNull() {
+		state.WaitForIpAddress = types.BoolValue(false)
+	} else {
+		state.WaitForIpAddress = plan.WaitForIpAddress
+	}
 
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
