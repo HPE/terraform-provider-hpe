@@ -16,9 +16,6 @@ import (
 
 const retryLimit = 3
 
-// Assert that Handler implements common.TokenChannelInterface
-var _ common.TokenChannelInterface = (*Handler)(nil)
-
 //go:generate go run github.com/golang/mock/mockgen -build_flags=-mod=mod -destination=../mocks/IdentityAPI_mocks.go -package=mocks github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/serviceclient IdentityAPI
 type IdentityAPI interface {
 	GenerateToken(context.Context, string, string, string, string) (string, error)
@@ -36,8 +33,6 @@ type Handler struct {
 	vendedServiceClient bool
 	numRetries          int
 	client              IdentityAPI
-	resultCh            chan common.Result
-	exitCh              chan int
 }
 
 // CreateOpt - function option definition
@@ -104,10 +99,10 @@ func WithAPIVendedServiceClient(vended bool) CreateOpt {
 	}
 }
 
-// NewHandler creates a new handler and returns the common.TokenChannelInterface
-// interface. All configuration is supplied via CreateOpt options, keeping the
-// handler decoupled from any provider/config framework.
-func NewHandler(opts ...CreateOpt) (common.TokenChannelInterface, error) {
+// NewHandler creates a new token handler. All configuration is supplied via
+// CreateOpt options, keeping the handler decoupled from any provider/config
+// framework.
+func NewHandler(opts ...CreateOpt) (*Handler, error) {
 	h := new(Handler)
 
 	// Defaults; may be overridden via opts (retained for legacy code support).
@@ -128,36 +123,19 @@ func NewHandler(opts ...CreateOpt) (common.TokenChannelInterface, error) {
 		h.client = httpc.New(h.iamServiceURL, h.vendedServiceClient, h.passedInToken)
 	}
 
-	// make channels
-	h.resultCh = make(chan common.Result)
-	h.exitCh = make(chan int)
-
-	// set-up retrieve thread on channel
-	h.startRetrieveThread()
-
 	return h, nil
 }
 
-// TokenChannels return channels for token retrieve function
-func (h *Handler) TokenChannels() (chan common.Result, chan int) { // nolint golint
-	return h.resultCh, h.exitCh
-}
+// Token returns an IAM token for the handler's configuration, generating one if
+// the handler does not already hold a usable one.
+//
+// The work is done synchronously on the calling goroutine, so a caller needing
+// a single token pays for exactly one exchange and leaves nothing running
+// behind it. The handler is not safe for concurrent use.
+func (h *Handler) Token(ctx context.Context) (string, error) {
+	res := h.retrieveToken(ctx)
 
-// startRetrieveThread start the token retrieve thread
-// function in an infinite loop, it puts the return value of retrieveToken into h.resultCh by default
-// if a signal on exitCh is received the thread exits
-func (h *Handler) startRetrieveThread() {
-	go func() {
-		for {
-			select {
-			case <-h.exitCh:
-				// TODO we need to set-up a context here and cancel it so that the TokenGenerate call is killed
-				return
-			default:
-				h.resultCh <- h.retrieveToken()
-			}
-		}
-	}()
+	return res.Token, res.Err
 }
 
 // retrieveToken function to get a token
@@ -165,17 +143,25 @@ func (h *Handler) startRetrieveThread() {
 // regenerated.
 // If we have to regenerate a token we will retry in the case where the error is retryable up to retryLimit times
 // Currently the only error that is retryable is a net Timeout error
-func (h *Handler) retrieveToken() common.Result {
+func (h *Handler) retrieveToken(ctx context.Context) common.Result {
 	// We use a loop since we may need to retry depending on the error that we get from IAM
 	// Reset numRetries
 	h.numRetries = 0
 	for {
+		// Stop before spending a retry on a call that has been cancelled.
+		if err := ctx.Err(); err != nil {
+			return common.Result{
+				Token: "",
+				Err:   err,
+			}
+		}
+
 		// Get current time in Unix "epoch" seconds
 		now := time.Now().Unix()
 
 		// Generate token if there isn't any
 		if h.token == "" {
-			token, retry, err := h.generateToken()
+			token, retry, err := h.generateToken(ctx)
 			if retry {
 				continue
 			}
@@ -201,7 +187,7 @@ func (h *Handler) retrieveToken() common.Result {
 
 		// If token is about to expire in TimeToTokenExpiry seconds or less generate a new one
 		if tokenDetails.Expiry-now <= common.TimeToTokenExpiry {
-			token, retry, err := h.generateToken()
+			token, retry, err := h.generateToken(ctx)
 			if retry {
 				continue
 			}
@@ -224,12 +210,11 @@ func (h *Handler) retrieveToken() common.Result {
 }
 
 // generateToken simple function to call the API client's GenerateToken
-func (h *Handler) generateToken() (string, bool, error) {
+func (h *Handler) generateToken(ctx context.Context) (string, bool, error) {
 	var token string
 	var err error
 
-	// TODO pass a context down to here
-	token, err = h.client.GenerateToken(context.Background(), h.tenantID, h.clientID, h.clientSecret, h.iamVersion)
+	token, err = h.client.GenerateToken(ctx, h.tenantID, h.clientID, h.clientSecret, h.iamVersion)
 
 	// If this is a retryable error check to see if we've reached our retryLimit or not, if we can retry again
 	// return true

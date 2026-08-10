@@ -8,11 +8,11 @@ import (
 	"log"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/mocks"
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/retrieve"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/serviceclient"
 
 	tokenutil "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/token-util"
@@ -49,6 +49,7 @@ func TestHandler(t *testing.T) {
 	t.Parallel()
 	ctrl := gomock.NewController(t)
 	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 	testcases := []struct {
 		name              string
 		token             string
@@ -56,6 +57,7 @@ func TestHandler(t *testing.T) {
 		err               error
 		ctx               context.Context
 		cancelFunc        context.CancelFunc
+		wantErr           error
 	}{
 		{
 			name:              "success api vended",
@@ -85,9 +87,13 @@ func TestHandler(t *testing.T) {
 			err:  errors.New(""),
 		},
 		{
+			// A cancelled context now fails the call outright: the context is
+			// threaded into the token generation, so cancelling it stops the
+			// work rather than only abandoning a wait for it.
 			name:       "cancelled context",
 			ctx:        ctx,
 			cancelFunc: cancel,
+			wantErr:    context.Canceled,
 		},
 	}
 	for _, testcase := range testcases {
@@ -110,18 +116,18 @@ func TestHandler(t *testing.T) {
 			)
 			assert.NoError(t, err)
 			if handler != nil {
-				getToken := retrieve.NewTokenRetrieveFunc(handler)
-				var token string
-				var err error
+				callCtx := context.Background()
 				if !isNil(tc.ctx) {
 					tc.cancelFunc()
 
-					token, err = getToken(tc.ctx)
-				} else {
-					token, err = getToken(context.Background())
+					callCtx = tc.ctx
 				}
 
-				if tc.err != nil {
+				token, err := handler.Token(callCtx)
+
+				if tc.wantErr != nil {
+					assert.ErrorIs(t, err, tc.wantErr)
+				} else if tc.err != nil {
 					assert.EqualError(t, err, tc.err.Error())
 				}
 
@@ -150,4 +156,41 @@ func (e testNetError) Temporary() bool {
 
 func (e testNetError) Error() string {
 	return ""
+}
+
+// Cancelling while a token is being generated has to abort the call. This can
+// only work if the caller's context reaches the identity client, so it also
+// pins the context being threaded through rather than replaced on the way.
+func TestHandlerTokenCancelDuringGeneration(t *testing.T) {
+	t.Parallel()
+
+	ctrl := gomock.NewController(t)
+	mock := mocks.NewMockIdentityAPI(ctrl)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	mock.EXPECT().
+		GenerateToken(
+			gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+		).
+		DoAndReturn(func(callCtx context.Context, _, _, _, _ string) (string, error) {
+			// Cancel once the call is under way, then wait to be told about it.
+			cancel()
+
+			select {
+			case <-callCtx.Done():
+				return "", callCtx.Err()
+			case <-time.After(2 * time.Second):
+				return "", errors.New("context did not reach the identity client")
+			}
+		}).
+		Times(1)
+
+	handler, err := serviceclient.NewHandler(serviceclient.WithIdentityAPI(mock))
+	assert.NoError(t, err)
+
+	token, err := handler.Token(ctx)
+	assert.ErrorIs(t, err, context.Canceled)
+	assert.Empty(t, token)
 }

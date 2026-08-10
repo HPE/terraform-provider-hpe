@@ -15,7 +15,6 @@ import (
 
 	brokerclient "github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/broker/client"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/retrieve"
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/serviceclient"
 )
 
@@ -138,7 +137,7 @@ func (c Config) iamToken(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("could not create GreenLake IAM token handler: %w", err)
 	}
 
-	token, err := retrieve.NewTokenRetrieveFunc(handler)(ctx)
+	token, err := handler.Token(ctx)
 	if err != nil {
 		return "", fmt.Errorf("could not obtain GreenLake IAM token: %w", err)
 	}
