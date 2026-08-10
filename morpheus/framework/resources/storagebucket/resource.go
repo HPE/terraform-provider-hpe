@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package storagebucket
 
 import (
@@ -65,14 +67,14 @@ func bucketConfigFields(endpoint, accessKey, secretKey types.String) (ak, sk, ep
 
 // addBucketConfig builds the create request's config object.
 //
-// The oneOf wrapper is a non-pointer field that is always serialised, and its
-// generated MarshalJSON returns (nil, nil) when no variant is set -- which
-// encoding/json rejects with "unexpected end of JSON input". A variant must
-// therefore always be selected, even when every field inside it is empty.
-func addBucketConfig(endpoint, accessKey, secretKey types.String) sdk.AddStorageBucketsRequestStorageBucketConfig {
+// The oneOf wrapper's generated MarshalJSON returns (nil, nil) when no variant
+// is set -- which encoding/json rejects with "unexpected end of JSON input". A
+// variant must therefore always be selected, even when every field inside it is
+// empty, so that config is always sent as an object.
+func addBucketConfig(endpoint, accessKey, secretKey types.String) *sdk.AddStorageBucketsRequestStorageBucketConfig {
 	ak, sk, ep := bucketConfigFields(endpoint, accessKey, secretKey)
 
-	return sdk.AddStorageBucketsRequestStorageBucketConfig{
+	return &sdk.AddStorageBucketsRequestStorageBucketConfig{
 		AddStorageBucketsRequestStorageBucketConfigOneOf: &sdk.AddStorageBucketsRequestStorageBucketConfigOneOf{
 			AccessKey: ak,
 			SecretKey: sk,
@@ -109,7 +111,7 @@ func (r *storageBucketResource) Create(ctx context.Context, req resource.CreateR
 		Config:       addBucketConfig(plan.Endpoint, config.AccessKey, config.SecretKey),
 	}
 	if !plan.BucketName.IsNull() {
-		body.BucketName = plan.BucketName.ValueString()
+		body.BucketName = plan.BucketName.ValueStringPointer()
 	}
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()

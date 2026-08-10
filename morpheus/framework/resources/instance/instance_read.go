@@ -353,6 +353,9 @@ func getInstanceAsState(
 		state.WaitForIpAddress = plan.WaitForIpAddress
 	}
 
+	// compute_servers — always read from the API response (computed-only).
+	state.ComputeServers = computeServerIDsFromContainerDetails(instance.ContainerDetails)
+
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
 	// which Morpheus reports as "unknown" while retaining the instance record,
@@ -1222,6 +1225,20 @@ func readServerUUIDFromOwnedContainer(
 
 	// Container not present — return null rather than erroring.
 	return types.StringNull()
+}
+
+// computeServerIDsFromContainerDetails builds the compute_servers set from
+// instance.containerDetails[].server.id, skipping containers with no server or
+// no id. Returns a null set when no IDs are present.
+func computeServerIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
+	ids := make([]int64, 0, len(containers))
+	for _, cont := range containers {
+		if cont.Server != nil && cont.Server.Id != nil {
+			ids = append(ids, *cont.Server.Id)
+		}
+	}
+
+	return convert.Int64SliceToSet(ids)
 }
 
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes

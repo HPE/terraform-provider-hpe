@@ -4,6 +4,7 @@ package instance
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -599,6 +600,77 @@ func TestUnitServerUUIDsFromContainerDetails(t *testing.T) {
 			for _, want := range tt.wantUUIDs {
 				if _, ok := uuidSet[want]; !ok {
 					t.Errorf("expected UUID %q not found in result %v", want, uuids)
+				}
+			}
+		})
+	}
+}
+
+// TestUnitComputeServerIDsFromContainerDetails verifies that compute server IDs
+// are collected from containerDetails[].server.id, that containers with nil
+// server or nil id are skipped, and that an empty result returns a null set.
+func TestUnitComputeServerIDsFromContainerDetails(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	tests := []struct {
+		name       string
+		containers []sdk.InstanceContainer2
+		wantNull   bool
+		want       []int64
+	}{
+		{
+			name: "collects server ids",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Id: sdk.PtrInt64(100)}},
+				{Server: &sdk.InstanceContainerServer2{Id: sdk.PtrInt64(200)}},
+			},
+			want: []int64{100, 200},
+		},
+		{
+			name: "nil server skipped",
+			containers: []sdk.InstanceContainer2{
+				{Server: nil},
+				{Server: &sdk.InstanceContainerServer2{Id: sdk.PtrInt64(200)}},
+			},
+			want: []int64{200},
+		},
+		{
+			name: "nil id skipped -> null",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Id: nil}},
+			},
+			wantNull: true,
+		},
+		{name: "empty containers -> null", containers: nil, wantNull: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := computeServerIDsFromContainerDetails(tt.containers)
+			if tt.wantNull {
+				if !got.IsNull() {
+					t.Errorf("expected null set, got %v", got)
+				}
+
+				return
+			}
+			var ids []int64
+			if d := got.ElementsAs(ctx, &ids, false); d.HasError() {
+				t.Fatalf("ElementsAs returned diagnostics: %v", d)
+			}
+			// compute_servers is an unordered set: compare order-insensitively.
+			sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+			want := append([]int64(nil), tt.want...)
+			sort.Slice(want, func(i, j int) bool { return want[i] < want[j] })
+			if len(ids) != len(want) {
+				t.Fatalf("got %d ids %v, want %d %v", len(ids), ids, len(want), want)
+			}
+			for i := range ids {
+				if ids[i] != want[i] {
+					t.Errorf("id[%d] = %d, want %d", i, ids[i], want[i])
 				}
 			}
 		})

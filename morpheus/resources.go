@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/budget"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/certificate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloud"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cloudaffinitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/clusteraffinitygroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/clusternamespace"
@@ -128,6 +129,7 @@ func (p *MorpheusProvider) Resources(
 		// Sprint 4: Infrastructure & Compute
 		clusternamespace.NewResource,
 		clusteraffinitygroup.NewResource,
+		cloudaffinitygroup.NewResource,
 		storageserver.NewResource,
 		storagevolume.NewResource,
 		storagebucket.NewResource,

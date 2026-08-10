@@ -41,6 +41,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Cloud ID to provision the instance onto.",
 				MarkdownDescription: "The Cloud ID to provision the instance onto.",
 			},
+			"compute_servers": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Computed:            true,
+				Description:         "The IDs of the compute servers backing this instance. An instance has\none compute server initially and gains more when scaled with\nhpe_morpheus_instance_node. These are the values to use with the\naffinity group resources' servers attribute.",
+				MarkdownDescription: "The IDs of the compute servers backing this instance. An instance has\none compute server initially and gains more when scaled with\nhpe_morpheus_instance_node. These are the values to use with the\naffinity group resources' servers attribute.",
+			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -900,6 +906,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 
 type InstanceModel struct {
 	CloudId            types.Int64             `tfsdk:"cloud_id"`
+	ComputeServers     types.Set               `tfsdk:"compute_servers"`
 	Config             types.Dynamic           `tfsdk:"config"`
 	ConfigAws          ConfigAwsValue          `tfsdk:"config_aws"`
 	ConfigAzure        ConfigAzureValue        `tfsdk:"config_azure"`
