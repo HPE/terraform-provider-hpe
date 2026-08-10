@@ -705,8 +705,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				ElementType:         types.StringType,
 				Optional:            true,
 				Computed:            true,
-				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
-				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nEach UUID must be unique - Morpheus rejects a value already in use by\nanother server. Set at provision time only; changing it forces\nreplacement. When not set, Morpheus generates the UUIDs and they are\nread back here. This is an unordered set: Morpheus does not guarantee\nservers are returned in the order the UUIDs were supplied.",
+				Description:         "Optional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
+				MarkdownDescription: "Optional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 					setplanmodifier.RequiresReplace(),
@@ -868,6 +868,13 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Logical Volume configuration to create additional LVs at provision time",
 				MarkdownDescription: "Logical Volume configuration to create additional LVs at provision time",
 			},
+			"wait_for_ip_address": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "When true, the provider waits after create or update until at least one\ncontainer on the instance reports an IP address that is not a placeholder.\nOn timeout, a warning is emitted and the apply continues — the instance\nprovisioned successfully but the address is not yet available. The wait\nconsumes the remaining budget of the create or update timeout.",
+				MarkdownDescription: "When true, the provider waits after create or update until at least one\ncontainer on the instance reports an IP address that is not a placeholder.\nOn timeout, a warning is emitted and the apply continues — the instance\nprovisioned successfully but the address is not yet available. The wait\nconsumes the remaining budget of the create or update timeout.",
+				Default:             booldefault.StaticBool(false),
+			},
 		},
 	}
 }
@@ -904,6 +911,7 @@ type InstanceModel struct {
 	Timeouts           timeouts.Value          `tfsdk:"timeouts"`
 	UserGroup          types.Int64             `tfsdk:"user_group"`
 	Volumes            types.List              `tfsdk:"volumes"`
+	WaitForIpAddress   types.Bool              `tfsdk:"wait_for_ip_address"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

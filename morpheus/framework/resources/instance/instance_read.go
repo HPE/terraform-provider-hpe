@@ -322,6 +322,18 @@ func getInstanceAsState(
 	} else {
 		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
 	}
+	// wait_for_ip_address is provider-only; preserve from plan.
+	//
+	// Fall back to the schema default when the incoming value is null rather
+	// than copying the null through. State written before this attribute
+	// existed carries no value for it, so a provider upgrade would otherwise
+	// leave it null while the default supplies false at plan time, showing a
+	// spurious null -> false diff on the next plan.
+	if plan.WaitForIpAddress.IsNull() {
+		state.WaitForIpAddress = types.BoolValue(false)
+	} else {
+		state.WaitForIpAddress = plan.WaitForIpAddress
+	}
 
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
@@ -1808,10 +1820,12 @@ func getStateInterfacesFromInstanceServer(
 	procIntfs := getAllServerInterfaces(instance)
 
 	var ifaces []NetworkInterfacesValue
-	var childInterfaces basetypes.ListValue
 	var diags diag.Diagnostics
 
 	for _, iface := range procIntfs.serverIntfsList {
+		if iface.Id == nil {
+			continue
+		}
 		// Skip sub-interfaces
 		if _, ok := procIntfs.isSubIntf[*iface.Id]; ok {
 			continue
@@ -1840,7 +1854,8 @@ func getStateInterfacesFromInstanceServer(
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 
-		childInterfaces, diags = getChildNetworks(ctx, iface.Id, procIntfs.subIntfsMap, procIntfs.serverIntfsMap)
+		childInterfaces, d := getChildNetworks(ctx, iface.Id, procIntfs.subIntfsMap, procIntfs.serverIntfsMap)
+		diags.Append(d...)
 
 		ifaceVal.ChildVirtualNetworks = childInterfaces
 
@@ -1935,6 +1950,13 @@ func getAllServerInterfaces(
 				}
 			}
 
+			// No row in this duplicate-name group carried network information, so
+			// there is no interface to represent. Skip rather than storing a
+			// zero-value entry.
+			if cumulativeIntf.Id == nil {
+				continue
+			}
+
 			cumulativeIntf.IpAddress = ipAddress
 			serverIntfsMergedNameMap[intfName] = cumulativeIntf
 		}
@@ -1994,7 +2016,12 @@ func getChildNetworks(
 	children := make([]ChildVirtualNetworksValue, 0)
 	for _, subIntf := range subIntfMap[*id] {
 		ifaceVal := ChildVirtualNetworksValue{}
-		iface := serverIntfsMap[subIntf]
+		iface, ok := serverIntfsMap[subIntf]
+		if !ok {
+			// A sub-interface id with no corresponding top-level interface. Skip it
+			// rather than emitting a zero-value child.
+			continue
+		}
 		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
@@ -2005,7 +2032,10 @@ func getChildNetworks(
 		if iface.NetworkPool != nil {
 			ifaceVal.IpPool = convert.Int64ToType(iface.NetworkPool.Id)
 		}
-		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		ifaceVal.NetworkId = types.Int64Null()
+		if iface.Network != nil {
+			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		}
 		// subnet_id round-trips from the interface's subnet association (see
 		// getStateInterfacesFromInstanceServer).
 		ifaceVal.SubnetId = types.Int64Null()
