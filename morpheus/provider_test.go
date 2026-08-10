@@ -145,7 +145,11 @@ resource "hpe_morpheus_fake" "foo" {
 	name = "bar"
 }
 `
-	expected := `The argument "url" is required, but no definition was found`
+	// "url" is optional in the schema, because a pce_identity or
+	// pce_disconnected_identity block can supply it. Configuring neither is
+	// reported by the provider rather than by Terraform's own required
+	// argument check.
+	expected := `does not set "url", and no usable identity block\s+was found`
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []testresource.TestStep{

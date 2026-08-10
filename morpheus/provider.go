@@ -97,10 +97,39 @@ func (p *MorpheusProvider) Configure(ctx context.Context, req provider.Configure
 		m.AccessToken = types.StringValue(token)
 	}
 
+	// "url" is optional in the schema because an identity block can supply it,
+	// so nothing has rejected a configuration that sets neither. Report it here
+	// rather than building a client that cannot reach anything and failing
+	// later with a less obvious error.
+	if m.URL.ValueString() == "" {
+		resp.Diagnostics.AddError(
+			"Missing Morpheus connection details",
+			missingConnectionDetails,
+		)
+
+		return
+	}
+
 	cf := p.NewClientFactory(m)
 	resp.ResourceData = cf
 	resp.DataSourceData = cf
 }
+
+// missingConnectionDetails is reported when neither the connection details nor
+// a usable identity block were configured. It mirrors the equivalent message in
+// the SDKv2 provider so that the two do not tell users different things.
+const missingConnectionDetails = `The morpheus provider block does not set "url", and no usable identity block
+was found.
+
+Set the connection details explicitly, or configure a pce_identity or
+pce_disconnected_identity block so that they can be obtained from GreenLake:
+
+ provider "hpe" {
+   morpheus {
+     url          = "https://example.com"
+     access_token = "..."
+   }
+ }`
 
 // identityBlockValidators returns the validators for an identity block, which
 // may not be combined with the named sibling paths. Both identity blocks use

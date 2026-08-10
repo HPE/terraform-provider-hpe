@@ -453,8 +453,10 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		return missingMorpheusBlock, nil
 	}
 
-	// A morpheus block with no attributes set, such as one that only carries a
-	// pce_identity block, is represented as a nil element.
+	// A morpheus block with nothing set at all, as in "morpheus {}", is
+	// represented as a nil element rather than an empty map. A block that
+	// carries only a nested block, such as pce_identity, is a map, so this
+	// guard is for the wholly empty case.
 	morpheusConfig, ok := blocks[0].(map[string]interface{})
 	if !ok {
 		return incompleteMorpheusBlock, nil
