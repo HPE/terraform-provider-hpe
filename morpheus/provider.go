@@ -18,6 +18,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/iamversion"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/validators"
 )
 
 var _ provider.Provider = &MorpheusProvider{}
@@ -207,6 +208,9 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 		Blocks: map[string]schema.Block{
 			"pce_identity": schema.ListNestedBlock{
 				NestedObject: schema.NestedBlockObject{
+					Validators: []validator.Object{
+						validators.IdentityCredentialsOrTokenValidator(),
+					},
 					Attributes: map[string]schema.Attribute{
 						"client_id": schema.StringAttribute{
 							Description: "GreenLake API client ID used for authentication.",
@@ -282,6 +286,9 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 			},
 			"pce_disconnected_identity": schema.ListNestedBlock{
 				NestedObject: schema.NestedBlockObject{
+					Validators: []validator.Object{
+						validators.IdentityCredentialsOrTokenValidator(),
+					},
 					Attributes: map[string]schema.Attribute{
 						"client_id": schema.StringAttribute{
 							Description: "GreenLake API client ID used for authentication.",

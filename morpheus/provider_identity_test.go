@@ -404,6 +404,44 @@ func TestValidateProviderConfigAcceptsCredentialsWithoutIamToken(t *testing.T) {
 	}
 }
 
+// Every field that supplies credentials is optional, so a block can satisfy the
+// schema with only its required fields and no way to authenticate at all. That
+// has to be caught during validation rather than surfacing later as an opaque
+// token exchange failure.
+func TestValidateProviderConfigRejectsIdentityBlockWithoutCredentials(t *testing.T) {
+	for _, block := range []string{"pce_identity", "pce_disconnected_identity"} {
+		t.Run(block, func(t *testing.T) {
+			eachBlockRepresentation(t, func(t *testing.T, absent absentBlocks) {
+				// Only the required fields: no credentials and no token.
+				attrs := identityBlockAttrs(block)
+
+				diags := validateProviderConfig(t, absent,
+					func(t *testing.T, obj tftypes.Object, absent absentBlocks) map[string]tftypes.Value {
+						return map[string]tftypes.Value{
+							block: identityBlockValue(t, obj, absent, block, attrs),
+						}
+					})
+
+				want := "Configure either the GreenLake API client credentials " +
+					"(client_id, client_secret and issuer_url) or a pre-generated " +
+					"iam_token."
+
+				if !containsDiag(diags, want) {
+					t.Errorf("ValidateProviderConfig() diagnostics = %v, want one containing %q",
+						diags, want)
+				}
+
+				// The rule is declared once, on iam_token, so that it cannot
+				// fire alongside the conflict rule on the same attribute.
+				if len(diags) != 1 {
+					t.Errorf("ValidateProviderConfig() reported %d diagnostics, want 1: %v",
+						len(diags), diags)
+				}
+			})
+		})
+	}
+}
+
 func containsDiag(diags []string, want string) bool {
 	for _, d := range diags {
 		if strings.Contains(d, want) {
