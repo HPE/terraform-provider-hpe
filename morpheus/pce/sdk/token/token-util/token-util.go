@@ -7,14 +7,15 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/errors"
 	jose "github.com/go-jose/go-jose/v3"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/errors"
 )
 
 // Token a jwt token format
@@ -91,7 +92,8 @@ func DoRetries(
 		if retries == 0 {
 			return resp, errors.MakeErrInternalError(errors.ErrorResponse{
 				ErrorCode: "ErrGenerateTokenRetryLimitExceeded",
-				Message:   "Retry limit exceeded"})
+				Message:   "Retry limit exceeded",
+			})
 		}
 
 		// Create a new context with a timeout
@@ -146,7 +148,7 @@ func ManageHTTPErrorCodes(resp *http.Response, clientID string) error {
 	case http.StatusOK:
 		return nil
 	case http.StatusBadRequest:
-		body, err := ioutil.ReadAll(resp.Body)
+		body, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return err
 		}

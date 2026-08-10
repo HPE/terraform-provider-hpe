@@ -17,7 +17,8 @@ import (
 
 var errLimitExceeded = hpeglErrors.MakeErrInternalError(hpeglErrors.ErrorResponse{
 	ErrorCode: "ErrGenerateTokenRetryLimitExceeded",
-	Message:   "Retry limit exceeded"})
+	Message:   "Retry limit exceeded",
+})
 
 //nolint:scopelint
 func TestDecodeAccessToken(t *testing.T) {
@@ -118,7 +119,9 @@ func TestDecodeAccessToken(t *testing.T) {
 		},
 		{
 			name: "Decode access token wrong token format",
-			args: args{
+			// The raw token is a truncated JWT header used to exercise the
+			// malformed token path. It is not a credential and grants nothing.
+			args: args{ //nolint:gosec // G101: test fixture, not a real credential
 				rawToken: "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGd1BrQlJUbWY2Rm54R045SFp2VVhmOGhGa0xiOVI",
 			},
 			wantErr: true,

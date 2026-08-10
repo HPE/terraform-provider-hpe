@@ -52,7 +52,10 @@ func GenerateToken(
 
 	url := fmt.Sprintf("%s/v1/token", identityServiceURL)
 
-	b, err := json.Marshal(params)
+	// The client secret is a required field of the client_credentials grant, so
+	// marshalling it into the request body is the point of this function rather
+	// than a leak. The result is sent to the IAM service and never logged.
+	b, err := json.Marshal(params) //nolint:gosec // G117: client_secret is intentional here
 	if err != nil {
 		return "", err
 	}

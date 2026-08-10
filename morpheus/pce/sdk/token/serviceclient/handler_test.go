@@ -97,7 +97,12 @@ func TestHandler(t *testing.T) {
 			mock := mocks.NewMockIdentityAPI(ctrl)
 
 			testToken := generateTestToken(600)
-			mock.EXPECT().GenerateToken(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(testToken, tc.err).MaxTimes(8)
+			mock.EXPECT().
+				GenerateToken(
+					gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(),
+				).
+				Return(testToken, tc.err).
+				MaxTimes(8)
 
 			handler, err := serviceclient.NewHandler(
 				serviceclient.WithIdentityAPI(mock),
@@ -133,8 +138,7 @@ func isNil(i interface{}) bool {
 	return i == nil || reflect.ValueOf(i).IsNil()
 }
 
-type testNetError struct {
-}
+type testNetError struct{}
 
 func (e testNetError) Timeout() bool {
 	return true

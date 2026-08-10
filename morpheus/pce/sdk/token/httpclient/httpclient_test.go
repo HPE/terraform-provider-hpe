@@ -18,6 +18,12 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/pce/sdk/token/issuertoken"
 )
 
+// badRequestTokenBody is the zero-valued token response that the issuer returns
+// with a 400, and which the resulting error message embeds verbatim. A raw
+// string literal keeps it readable, as the JSON is quote-heavy.
+const badRequestTokenBody = `{"token_type":"","access_token":"","refresh_token":"",` +
+	`"expiry":"0001-01-01T00:00:00Z","expires_in":0,"scope":"","accessTokenOnly":false}`
+
 type testCaseIssuer struct {
 	name       string
 	ctx        context.Context
@@ -165,7 +171,7 @@ func setTestCase() ([]testCaseIssuer, []testCaseIdentity) {
 				url:        "https://client.greenlake.hpe.com/api/iam/identity",
 				ctx:        context.Background(),
 				statusCode: http.StatusBadRequest,
-				err:        errors.New("Bad request: {\"token_type\":\"\",\"access_token\":\"\",\"refresh_token\":\"\",\"expiry\":\"0001-01-01T00:00:00Z\",\"expires_in\":0,\"scope\":\"\",\"accessTokenOnly\":false}"),
+				err:        errors.New("Bad request: " + badRequestTokenBody),
 			},
 			{
 				name:       "status code 401",
