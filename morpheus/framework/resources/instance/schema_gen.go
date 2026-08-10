@@ -719,6 +719,18 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"server_uuids": schema.SetAttribute{
+				ElementType:         types.StringType,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Deprecated: use server_uuid instead. This attribute will be removed in\na future major version.\nOptional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
+				MarkdownDescription: "Deprecated: use server_uuid instead. This attribute will be removed in\na future major version.\nOptional UUIDs to assign to the servers provisioned for this instance.\nSupply at most one value. The API assigns UUIDs by position, but this\nattribute is a set and Terraform sets are unordered, so with more than\none value it is not defined which UUID reaches which server. An\ninstance provisions a single server in practice (layout_size is one),\nso one value is all that is used; scaling is done with\nhpe_morpheus_instance_node. A UUID already in use by another server is\nsilently ignored by the API, which assigns a generated one instead;\nthe provider detects that after create and fails the apply. Set at\nprovision time only; changing it forces replacement. When not set,\nMorpheus generates the UUIDs and they are read back here.",
+				DeprecationMessage:  "Deprecated: use server_uuid instead. server_uuids is retained for backward compatibility and will be removed in a future major version.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+					setplanmodifier.RequiresReplace(),
+				},
+			},
 			"service_plan_options": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"cores_per_socket": schema.Int64Attribute{
@@ -912,6 +924,7 @@ type InstanceModel struct {
 	PlanId             types.Int64             `tfsdk:"plan_id"`
 	Ports              types.Set               `tfsdk:"ports"`
 	ServerUuid         types.String            `tfsdk:"server_uuid"`
+	ServerUuids        types.Set               `tfsdk:"server_uuids"`
 	ServicePlanOptions ServicePlanOptionsValue `tfsdk:"service_plan_options"`
 	Status             types.String            `tfsdk:"status"`
 	Tags               types.Set               `tfsdk:"tags"`

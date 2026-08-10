@@ -64,6 +64,35 @@ instance:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
             schema_definition: stringplanmodifier.UseStateForUnknown()
+    server_uuids:
+      set:
+        computed_optional_required: computed_optional
+        element_type:
+          string: {}
+        deprecation_message: "Deprecated: use server_uuid instead. server_uuids is retained for backward compatibility and will be removed in a future major version."
+        description: |-
+          Deprecated: use server_uuid instead. This attribute will be removed in
+          a future major version.
+          Optional UUIDs to assign to the servers provisioned for this instance.
+          Supply at most one value. The API assigns UUIDs by position, but this
+          attribute is a set and Terraform sets are unordered, so with more than
+          one value it is not defined which UUID reaches which server. An
+          instance provisions a single server in practice (layout_size is one),
+          so one value is all that is used; scaling is done with
+          hpe_morpheus_instance_node. A UUID already in use by another server is
+          silently ignored by the API, which assigns a generated one instead;
+          the provider detects that after create and fails the apply. Set at
+          provision time only; changing it forces replacement. When not set,
+          Morpheus generates the UUIDs and they are read back here.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.UseStateForUnknown()
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.RequiresReplace()
     container_id:
       int64:
         computed_optional_required: computed
@@ -494,6 +523,7 @@ instance:
     - template-host_name: host_name
     - template-labels: labels
     - template-server_uuid: server_uuid
+    - template-server_uuids: server_uuids
     - template-container_id: container_id
     - template-wait_for_ip_address: wait_for_ip_address
     - template-instance_type_id: instance_type_id

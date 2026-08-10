@@ -328,6 +328,18 @@ func getInstanceAsState(
 	// containers outside this resource's lifecycle, and reading their UUIDs
 	// would change the value after scaling and force replacement.
 	state.ServerUuid = readServerUUIDFromOwnedContainer(instance.ContainerDetails, state.ContainerId)
+
+	// server_uuids (deprecated) - RequiresReplace, create-only input. Preserve the incoming
+	// value when the user set it (the API assigns exactly those UUIDs to the
+	// servers, so preserving avoids any read-back mismatch). Otherwise read the
+	// auto-generated UUIDs back from containerDetails[].server.uuid so the
+	// Computed value is known after apply. It is an unordered set because Morpheus
+	// does not guarantee containerDetails ordering matches the supplied order.
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		state.ServerUuids = plan.ServerUuids
+	} else {
+		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
+	}
 	// wait_for_ip_address is provider-only; preserve from plan.
 	//
 	// Fall back to the schema default when the incoming value is null rather
@@ -1168,6 +1180,21 @@ func getInstanceEnvVars(
 	}
 
 	return resp.Envs, diags
+}
+
+// serverUUIDsFromContainerDetails builds the server_uuids set from
+// instance.containerDetails[].server.uuid, skipping containers with no server or
+// no uuid. Returns a null set when no UUIDs are present. server_uuids is an
+// unordered set because Morpheus does not guarantee containerDetails ordering.
+func serverUUIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
+	uuids := make([]string, 0, len(containers))
+	for _, cont := range containers {
+		if cont.Server != nil && cont.Server.Uuid != nil {
+			uuids = append(uuids, *cont.Server.Uuid)
+		}
+	}
+
+	return convert.StrSliceToSet(uuids)
 }
 
 // readServerUUIDFromOwnedContainer reads the server UUID only from the container

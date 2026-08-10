@@ -925,6 +925,19 @@ scaled nodes. A UUID already in use by another server is silently
 ignored by the API, which assigns a generated one instead; the provider
 detects that after create and fails the apply. Set at provision time
 only; changing it forces replacement.
+- `server_uuids` (Set of String, Deprecated) Deprecated: use server_uuid instead. This attribute will be removed in
+a future major version.
+Optional UUIDs to assign to the servers provisioned for this instance.
+Supply at most one value. The API assigns UUIDs by position, but this
+attribute is a set and Terraform sets are unordered, so with more than
+one value it is not defined which UUID reaches which server. An
+instance provisions a single server in practice (layout_size is one),
+so one value is all that is used; scaling is done with
+hpe_morpheus_instance_node. A UUID already in use by another server is
+silently ignored by the API, which assigns a generated one instead;
+the provider detects that after create and fails the apply. Set at
+provision time only; changing it forces replacement. When not set,
+Morpheus generates the UUIDs and they are read back here.
 - `service_plan_options` (Attributes) Custom options for selected service plan - the supported options depend on the service plan selected (see [below for nested schema](#nestedatt--service_plan_options))
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--tags))
 - `task_set_id` (Number) The Workflow ID to execute.

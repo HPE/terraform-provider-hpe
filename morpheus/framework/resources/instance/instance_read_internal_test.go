@@ -521,3 +521,86 @@ func TestUnitContainerIdPreservedWhenAbsent(t *testing.T) {
 		t.Errorf("expected null server_uuid when container absent, got %q", uuid.ValueString())
 	}
 }
+
+// TestUnitServerUUIDsFromContainerDetails verifies that serverUUIDsFromContainerDetails
+// builds the correct set from containerDetails[].server.uuid.
+func TestUnitServerUUIDsFromContainerDetails(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name       string
+		containers []sdk.InstanceContainer2
+		wantNull   bool
+		wantUUIDs  []string
+	}{
+		{
+			name: "single container with UUID",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-a")}},
+			},
+			wantUUIDs: []string{"uuid-a"},
+		},
+		{
+			name: "multiple containers with UUIDs",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-a")}},
+				{Server: &sdk.InstanceContainerServer2{Uuid: sdk.PtrString("uuid-b")}},
+			},
+			wantUUIDs: []string{"uuid-a", "uuid-b"},
+		},
+		{
+			name: "container with no server",
+			containers: []sdk.InstanceContainer2{
+				{Server: nil},
+			},
+			wantNull: true,
+		},
+		{
+			name: "container with server but no UUID",
+			containers: []sdk.InstanceContainer2{
+				{Server: &sdk.InstanceContainerServer2{Uuid: nil}},
+			},
+			wantNull: true,
+		},
+		{
+			name:       "empty containers",
+			containers: nil,
+			wantNull:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := serverUUIDsFromContainerDetails(tt.containers)
+			if tt.wantNull {
+				if !got.IsNull() {
+					t.Errorf("expected null set, got %v", got)
+				}
+
+				return
+			}
+
+			ctx := context.Background()
+			var uuids []string
+			if d := got.ElementsAs(ctx, &uuids, false); d.HasError() {
+				t.Fatalf("ElementsAs failed: %v", d)
+			}
+
+			if len(uuids) != len(tt.wantUUIDs) {
+				t.Fatalf("got %d UUIDs, want %d", len(uuids), len(tt.wantUUIDs))
+			}
+
+			// Sets are unordered, so check that all expected UUIDs are present.
+			uuidSet := make(map[string]struct{}, len(uuids))
+			for _, u := range uuids {
+				uuidSet[u] = struct{}{}
+			}
+			for _, want := range tt.wantUUIDs {
+				if _, ok := uuidSet[want]; !ok {
+					t.Errorf("expected UUID %q not found in result %v", want, uuids)
+				}
+			}
+		})
+	}
+}

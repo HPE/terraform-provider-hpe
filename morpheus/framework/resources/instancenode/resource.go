@@ -42,7 +42,7 @@ type instanceNodeModel struct {
 	ContainerID          types.Int64    `tfsdk:"container_id"`
 	ServerID             types.Int64    `tfsdk:"server_id"`
 	Name                 types.String   `tfsdk:"name"`
-	UUID                 types.String   `tfsdk:"uuid"`
+	ContainerUUID        types.String   `tfsdk:"container_uuid"`
 	IPAddress            types.String   `tfsdk:"ip_address"`
 	Hostname             types.String   `tfsdk:"hostname"`
 	InternalIP           types.String   `tfsdk:"internal_ip"`
@@ -212,7 +212,7 @@ func (r *Resource) Schema(
 				MarkdownDescription: "The name of the node container, " +
 					"assigned by the appliance.",
 			},
-			"uuid": schema.StringAttribute{
+			"container_uuid": schema.StringAttribute{
 				Computed: true,
 				Description: "The UUID of the node container, " +
 					"assigned by the appliance.",
@@ -263,12 +263,16 @@ func (r *Resource) Schema(
 			},
 			"server_uuid": schema.StringAttribute{
 				Optional: true,
-				Description: "UUID to assign to the node's server. Sent as a single-element " +
+				Description: "UUID to assign to the node's underlying compute server, " +
+					"distinct from container_uuid which is the container's own " +
+					"identifier. Sent as a single-element " +
 					"serverUUIDs list in the add-node action envelope. A UUID already " +
 					"in use by another server is silently ignored by the API; the " +
 					"provider detects this after create and fails the apply. Changing " +
 					"it forces replacement.",
-				MarkdownDescription: "UUID to assign to the node's server. Sent as a single-element " +
+				MarkdownDescription: "UUID to assign to the node's underlying compute server, " +
+					"distinct from `container_uuid` which is the container's own " +
+					"identifier. Sent as a single-element " +
 					"`serverUUIDs` list in the add-node action envelope. A UUID already " +
 					"in use by another server is silently ignored by the API; the " +
 					"provider detects this after create and fails the apply. Changing " +

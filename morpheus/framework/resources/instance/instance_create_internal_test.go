@@ -138,3 +138,79 @@ func TestUnitServerUUIDNotApplied(t *testing.T) {
 		t.Errorf("expected error to name 'uuid-missing', got: %s", detail)
 	}
 }
+
+// TestUnitCheckServerUUIDsAllPresent verifies that when all requested UUIDs
+// are found among the assigned ones, no diagnostic is emitted.
+func TestUnitCheckServerUUIDsAllPresent(t *testing.T) {
+	t.Parallel()
+
+	requested := []string{"uuid-a", "uuid-b"}
+	assigned := map[string]struct{}{
+		"uuid-a": {},
+		"uuid-b": {},
+		"uuid-c": {}, // extra assigned UUID (from another container) is fine
+	}
+
+	diags := checkServerUUIDs(requested, assigned, 42)
+	if diags.HasError() {
+		t.Fatalf("expected no diagnostics, got: %v", diags)
+	}
+}
+
+// TestUnitCheckServerUUIDsOneMissing verifies that a requested UUID not found
+// among the assigned ones produces an error diagnostic naming that UUID.
+func TestUnitCheckServerUUIDsOneMissing(t *testing.T) {
+	t.Parallel()
+
+	requested := []string{"uuid-a", "uuid-missing"}
+	assigned := map[string]struct{}{
+		"uuid-a":     {},
+		"uuid-other": {},
+	}
+
+	diags := checkServerUUIDs(requested, assigned, 99)
+	if !diags.HasError() {
+		t.Fatal("expected an error diagnostic when a UUID is missing")
+	}
+
+	detail := diags.Errors()[0].Detail()
+	if !strings.Contains(detail, "uuid-missing") {
+		t.Errorf("expected error to name 'uuid-missing', got: %s", detail)
+	}
+	if strings.Contains(detail, "uuid-a") {
+		t.Errorf("error should not name 'uuid-a' which was applied, got: %s", detail)
+	}
+}
+
+// TestUnitCheckServerUUIDsExcessRequested verifies that requesting more UUIDs
+// than servers provisioned produces an error for the excess UUIDs.
+func TestUnitCheckServerUUIDsExcessRequested(t *testing.T) {
+	t.Parallel()
+
+	// Only one server was provisioned (layout_size=1), but two UUIDs requested.
+	requested := []string{"uuid-a", "uuid-excess"}
+	assigned := map[string]struct{}{
+		"uuid-a": {},
+	}
+
+	diags := checkServerUUIDs(requested, assigned, 10)
+	if !diags.HasError() {
+		t.Fatal("expected an error diagnostic for excess UUIDs")
+	}
+
+	detail := diags.Errors()[0].Detail()
+	if !strings.Contains(detail, "uuid-excess") {
+		t.Errorf("expected error to name 'uuid-excess', got: %s", detail)
+	}
+}
+
+// TestUnitCheckServerUUIDsEmptyRequested verifies that an empty requested list
+// produces no diagnostics (edge case: set is non-null but empty).
+func TestUnitCheckServerUUIDsEmptyRequested(t *testing.T) {
+	t.Parallel()
+
+	diags := checkServerUUIDs(nil, map[string]struct{}{"uuid-a": {}}, 1)
+	if diags.HasError() {
+		t.Fatalf("expected no diagnostics for empty requested list, got: %v", diags)
+	}
+}

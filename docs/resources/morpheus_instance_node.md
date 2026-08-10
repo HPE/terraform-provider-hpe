@@ -59,7 +59,7 @@ resource "hpe_morpheus_instance_node" "ha" {
 - `pre_provisioned` (Boolean) Attach an existing server instead of provisioning a new one.
 - `resource_pool_id` (Number) The resource pool where the node will be placed. Only honoured for HPE bare-metal instances; omit for all other instance types.
 - `selected_server_id` (Number) The ID of the pre-provisioned server. Required when `pre_provisioned` is set.
-- `server_uuid` (String) UUID to assign to the node's server. Sent as a single-element `serverUUIDs` list in the add-node action envelope. A UUID already in use by another server is silently ignored by the API; the provider detects this after create and fails the apply. Changing it forces replacement.
+- `server_uuid` (String) UUID to assign to the node's underlying compute server, distinct from `container_uuid` which is the container's own identifier. Sent as a single-element `serverUUIDs` list in the add-node action envelope. A UUID already in use by another server is silently ignored by the API; the provider detects this after create and fails the apply. Changing it forces replacement.
 - `ssh_host` (String) SSH host for the pre-provisioned server.
 - `ssh_key_pair_id` (Number) The ID of the SSH key pair for the pre-provisioned server.
 - `ssh_password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password for the pre-provisioned server. Write-only.
@@ -70,6 +70,7 @@ resource "hpe_morpheus_instance_node" "ha" {
 ### Read-Only
 
 - `container_id` (Number) The container ID of the added node. Same value as `id`.
+- `container_uuid` (String) The UUID of the node container, assigned by the appliance.
 - `external_fqdn` (String) The external fully-qualified domain name of the node.
 - `hostname` (String) The hostname of the node container.
 - `id` (Number) The container ID of the added node. Holds the same value as `container_id`; exists to satisfy the framework's taint-on-error path.
@@ -79,7 +80,6 @@ resource "hpe_morpheus_instance_node" "ha" {
 - `name` (String) The name of the node container, assigned by the appliance.
 - `server_id` (Number) The compute server ID of the added node.
 - `server_resource_pool_id` (Number) The resource pool the node's server currently belongs to. For bare-metal instances this is the pool the server was drawn from. For virtual instances it reflects the hypervisor pool. Compare with `resource_pool_id` (the placement requested at create time, bare-metal only) to detect drift.
-- `uuid` (String) The UUID of the node container, assigned by the appliance.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

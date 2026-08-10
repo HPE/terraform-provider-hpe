@@ -21,9 +21,10 @@ import (
 )
 
 var (
-	_ resource.Resource                = &Resource{}
-	_ resource.ResourceWithImportState = &Resource{}
-	_ resource.ResourceWithModifyPlan  = &Resource{}
+	_ resource.Resource                     = &Resource{}
+	_ resource.ResourceWithImportState      = &Resource{}
+	_ resource.ResourceWithModifyPlan       = &Resource{}
+	_ resource.ResourceWithConfigValidators = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -167,4 +168,50 @@ func (m *morpheusConstraint) checkForAttributeUpdate(
 		fmt.Sprintf("Morpheus version must be %s to allow %s updates without instance replacement",
 			m.constraint, m.mnemonic),
 	)
+}
+
+// ConfigValidators implements resource.ResourceWithConfigValidators.
+// server_uuid and server_uuids are mutually exclusive.
+func (g *Resource) ConfigValidators(
+	_ context.Context,
+) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		serverUUIDConflictValidator{},
+	}
+}
+
+// serverUUIDConflictValidator rejects configs that set both server_uuid and
+// server_uuids. Only one may be used at a time.
+type serverUUIDConflictValidator struct{}
+
+func (v serverUUIDConflictValidator) Description(_ context.Context) string {
+	return "server_uuid and server_uuids are mutually exclusive"
+}
+
+func (v serverUUIDConflictValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v serverUUIDConflictValidator) ValidateResource(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config InstanceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	uuidSet := !config.ServerUuid.IsNull() && !config.ServerUuid.IsUnknown()
+	uuidsSet := !config.ServerUuids.IsNull() && !config.ServerUuids.IsUnknown()
+
+	if uuidSet && uuidsSet {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("server_uuid"),
+			"Conflicting attributes",
+			"server_uuid and server_uuids are mutually exclusive. "+
+				"Use server_uuid (server_uuids is deprecated and will be removed in a future major version).",
+		)
+	}
 }

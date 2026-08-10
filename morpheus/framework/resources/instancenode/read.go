@@ -109,7 +109,7 @@ func populateInstanceNodeMetadata(state *instanceNodeModel, cd *sdk.InstanceCont
 	state.ID = convert.Int64ToType(cd.Id)
 	state.ContainerID = convert.Int64ToType(cd.Id)
 	state.Name = convert.StrToType(cd.Name)
-	state.UUID = convert.StrToType(cd.Uuid)
+	state.ContainerUUID = convert.StrToType(cd.Uuid)
 
 	if cd.Server != nil {
 		state.ServerID = convert.Int64ToType(cd.Server.Id)

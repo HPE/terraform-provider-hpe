@@ -1,13 +1,14 @@
 # v2.0.0 Release Notes (Unreleased)
 
-## Breaking Changes
+## Deprecations
 
-- `hpe_morpheus_instance` — The `server_uuids` attribute (Set of String) has been removed and replaced by `server_uuid` (String). Configurations that set `server_uuids` must change to the singular form with a single value. The new attribute assigns a UUID to the single server the instance provisions; use `hpe_morpheus_instance_node` for scaled nodes.
+- `hpe_morpheus_instance` — The `server_uuids` attribute is deprecated in favour of `server_uuid` (String). Both remain functional; `server_uuids` will be removed in a future major version. Existing configurations using `server_uuids` continue to work but should migrate to `server_uuid`. Use `hpe_morpheus_instance_node` for scaled nodes.
 
 ## Enhancements
 
 - `hpe_morpheus_instance` — Added computed `container_id` attribute identifying the container provisioned by the instance.
-- `hpe_morpheus_instance_node` — Added optional `server_uuid` attribute to assign a UUID to the node's server at create time.
+- `hpe_morpheus_instance_node` — Added optional `server_uuid` attribute to assign a UUID to the node's underlying compute server at create time.
+- `hpe_morpheus_instance_node` — The computed `uuid` attribute is renamed `container_uuid`, so that it is distinguishable from `server_uuid`. This attribute has not appeared in a release, so no published configuration is affected.
 
 # v1.6.0 Release Notes
 
