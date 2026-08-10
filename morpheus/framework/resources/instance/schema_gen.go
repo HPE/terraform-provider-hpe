@@ -44,8 +44,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"compute_servers": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Computed:            true,
-				Description:         "The IDs of the compute servers backing this instance. An instance may\nhave several compute servers for multi-node layouts. These are the\nvalues to use with the affinity group resources' servers attribute.",
-				MarkdownDescription: "The IDs of the compute servers backing this instance. An instance may\nhave several compute servers for multi-node layouts. These are the\nvalues to use with the affinity group resources' servers attribute.",
+				Description:         "The IDs of the compute servers backing this instance. An instance has\none compute server initially and gains more when scaled with\nhpe_morpheus_instance_node. These are the values to use with the\naffinity group resources' servers attribute.",
+				MarkdownDescription: "The IDs of the compute servers backing this instance. An instance has\none compute server initially and gains more when scaled with\nhpe_morpheus_instance_node. These are the values to use with the\naffinity group resources' servers attribute.",
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
