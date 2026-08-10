@@ -229,3 +229,77 @@ func TestGetCMPDetailsClosesBodyOnSuccess(t *testing.T) {
 		t.Error("response body was not closed on a successful response")
 	}
 }
+
+// An unconfigured api must report an error rather than panicking: a panic in a
+// provider SDK takes down the whole plugin process.
+func TestAPIDoRejectsUnconfiguredAPI(t *testing.T) {
+	t.Parallel()
+
+	client, _ := newBodyTrackingClient(http.StatusOK, cmpDetailsBody)
+
+	testcases := map[string]*api{
+		"no path": {
+			method:     http.MethodGet,
+			client:     client,
+			jsonParser: func([]byte) error { return nil },
+		},
+		"no method": {
+			path:       consts.CMPDetails,
+			client:     client,
+			jsonParser: func([]byte) error { return nil },
+		},
+		"no client": {
+			path:       consts.CMPDetails,
+			method:     http.MethodGet,
+			jsonParser: func([]byte) error { return nil },
+		},
+		"no json parser": {
+			path:   consts.CMPDetails,
+			method: http.MethodGet,
+			client: client,
+		},
+	}
+
+	for name, testcase := range testcases {
+		a := testcase
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			// The nil client case would panic on a nil dereference if the
+			// configuration were not checked before the version lookup.
+			err := a.do(context.Background(), nil, nil)
+			if err == nil {
+				t.Fatal("do() returned no error for an unconfigured api")
+			}
+
+			if got, want := err.Error(), "api not properly configured"; got != want {
+				t.Errorf("do() error = %q, want %q", got, want)
+			}
+		})
+	}
+}
+
+// A version that cannot be parsed must also be reported rather than panicking.
+func TestAPIDoRejectsUnparseableVersion(t *testing.T) {
+	t.Parallel()
+
+	client, _ := newBodyTrackingClient(http.StatusOK, cmpDetailsBody)
+
+	a := &api{
+		path:              consts.CMPDetails,
+		method:            http.MethodGet,
+		client:            client,
+		compatibleVersion: "not-a-version",
+		jsonParser:        func([]byte) error { return nil },
+	}
+
+	err := a.do(context.Background(), nil, nil)
+	if err == nil {
+		t.Fatal("do() returned no error for an unparseable compatible version")
+	}
+
+	if !strings.Contains(err.Error(), "failed to parse the compatible version") {
+		t.Errorf("do() error = %q, want it to mention the compatible version", err.Error())
+	}
+}

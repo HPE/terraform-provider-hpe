@@ -4,6 +4,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/url"
@@ -32,10 +33,19 @@ type api struct {
 // do will call the API provided. this function will not return any response, but
 // response should be catched from jsonParser function itself
 func (a *api) do(ctx context.Context, request interface{}, queryParams map[string]string) error {
+	// Checked before anything else uses them: a.client is dereferenced below,
+	// so an unconfigured api has to be rejected first. These are programmer
+	// errors rather than runtime conditions, but a provider SDK must not panic
+	// on them: a panic takes down the whole plugin process.
+	if a.path == "" || a.method == "" || a.client == nil || a.jsonParser == nil {
+		return errors.New("api not properly configured")
+	}
+
 	currentVersion, err := parseVersion(a.compatibleVersion)
 	if err != nil {
-		panic(fmt.Sprintf("failed to parse the current version, error: %v", err))
+		return fmt.Errorf("failed to parse the compatible version %q: %w", a.compatibleVersion, err)
 	}
+
 	if a.client.getVersion() < currentVersion {
 		if a.client.getVersion() == 0 {
 			return fmt.Errorf("failed to get meta data for cmp-sdk")
@@ -48,9 +58,6 @@ func (a *api) do(ctx context.Context, request interface{}, queryParams map[strin
 		localVarFileName   string
 		localVarFileBytes  []byte
 	)
-	if a.path == "" || a.method == "" || a.client == nil || a.jsonParser == nil {
-		panic("api not properly configured")
-	}
 
 	// Set the path
 	if !a.removeVmaasCMPBasePath {
