@@ -16,6 +16,12 @@ cluster_affinity_group:
       int64:
         computed_optional_required: computed
         description: The ID of the resource pool associated with the affinity group.
+    description:
+      string:
+        computed_optional_required: optional
+        description: "Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
+        deprecation_message: "description is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release."
+
 
   moves:
     - affinity_group: ""                               # unnest wrapper (components/schemas/clusterAffinityGroupCreate.yaml)
@@ -23,6 +29,7 @@ cluster_affinity_group:
     - template-servers: servers                        # replace spec servers (array of objects in response) with set of int64
     - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id}) with set of int64
     - template-pool: pool_id                           # replace spec pool (nested {id}) with scalar int64
+    - template-description: description                # deprecated: not backed by API, state-only (v2.0.0)
 
   removes:
     - ref_type                                         # (components/schemas/clusterAffinityGroup.yaml) read-only
@@ -30,7 +37,6 @@ cluster_affinity_group:
     - external_id                                      # (components/schemas/clusterAffinityGroup.yaml) read-only
     - tenants                                          # (components/schemas/clusterAffinityGroup.yaml) replaced by tenant_ids
     - pool                                             # (components/schemas/clusterAffinityGroup.yaml) replaced by pool_id
-    - description                                      # EXPLICIT REMOVAL: does not exist on the domain class (v2.0.0 breaking change)
     - success                                          # (response envelope) success flag
     - tenant_permissions                               # (components/schemas) envelope field, not part of domain
 

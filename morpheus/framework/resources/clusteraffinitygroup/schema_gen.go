@@ -58,6 +58,12 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"description": schema.StringAttribute{
+				Optional:            true,
+				Description:         "Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.",
+				MarkdownDescription: "Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.",
+				DeprecationMessage:  "description is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release.",
+			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
 				Description:         "The ID of the cluster affinity group.",
@@ -174,6 +180,7 @@ type ClusterAffinityGroupModel struct {
 	Active              types.Bool               `tfsdk:"active"`
 	AffinityType        types.String             `tfsdk:"affinity_type"`
 	ClusterId           types.Int64              `tfsdk:"cluster_id"`
+	Description         types.String             `tfsdk:"description"`
 	Id                  types.Int64              `tfsdk:"id"`
 	Name                types.String             `tfsdk:"name"`
 	PoolId              types.Int64              `tfsdk:"pool_id"`

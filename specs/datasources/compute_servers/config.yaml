@@ -207,6 +207,8 @@ compute_servers:
       description: The ID of the cloud this compute server belongs to.
     servers.cloud_name:
       description: The name of the cloud this compute server belongs to.
+    servers.compute_server_type_managed:
+      description: Whether the compute server type is managed.
     servers.description:
       description: The description of the compute server.
     servers.external_id:
@@ -225,8 +227,6 @@ compute_servers:
       description: The internal IP address of the compute server.
     servers.labels:
       description: The labels associated with the compute server.
-    servers.managed:
-      description: Whether this compute server is managed.
     servers.max_memory:
       description: The maximum memory allocated to the compute server in bytes.
     servers.max_storage:

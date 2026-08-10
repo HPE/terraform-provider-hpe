@@ -129,6 +129,8 @@ compute_server:
       description: The ID of the cloud this compute server belongs to.
     cloud_name:
       description: The name of the cloud this compute server belongs to.
+    compute_server_type_managed:
+      description: Whether the compute server type is managed.
     description:
       description: The description of the compute server.
     external_id:
@@ -161,5 +163,3 @@ compute_server:
       description: The visibility of the compute server (public or private).
     agent_installed:
       description: Whether the Morpheus agent is installed on this compute server.
-    managed:
-      description: Whether this compute server is managed.

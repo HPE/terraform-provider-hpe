@@ -43,18 +43,18 @@ func TestResolveUpdateServers(t *testing.T) {
 	tests := map[string]struct {
 		plan  types.Set
 		state types.Set
-		want  []int32
+		want  []int64
 	}{
 		// Known, non-empty plan: the practitioner's set is the desired membership.
 		"known non-empty plan replaces state": {
 			plan:  int64Set(10, 11),
 			state: int64Set(20, 21, 22),
-			want:  []int32{10, 11},
+			want:  []int64{10, 11},
 		},
 		"known non-empty plan with empty state": {
 			plan:  int64Set(10),
 			state: int64Set(),
-			want:  []int32{10},
+			want:  []int64{10},
 		},
 
 		// Known, EMPTY plan: `servers = []` is an explicit "remove all members".
@@ -62,36 +62,36 @@ func TestResolveUpdateServers(t *testing.T) {
 		"known empty plan clears populated state": {
 			plan:  int64Set(),
 			state: int64Set(20, 21),
-			want:  []int32{},
+			want:  []int64{},
 		},
 		"known empty plan with null state": {
 			plan:  int64Set(),
 			state: types.SetNull(types.Int64Type),
-			want:  []int32{},
+			want:  []int64{},
 		},
 
 		// UNKNOWN plan: fall back to state so membership survives.
 		"unknown plan preserves state membership": {
 			plan:  types.SetUnknown(types.Int64Type),
 			state: int64Set(20, 21, 22),
-			want:  []int32{20, 21, 22},
+			want:  []int64{20, 21, 22},
 		},
 		"unknown plan with empty state stays empty": {
 			plan:  types.SetUnknown(types.Int64Type),
 			state: int64Set(),
-			want:  []int32{},
+			want:  []int64{},
 		},
 
 		// NULL plan: fall back to state so membership survives.
 		"null plan preserves state membership": {
 			plan:  types.SetNull(types.Int64Type),
 			state: int64Set(30, 31),
-			want:  []int32{30, 31},
+			want:  []int64{30, 31},
 		},
 		"null plan with empty state stays empty": {
 			plan:  types.SetNull(types.Int64Type),
 			state: int64Set(),
-			want:  []int32{},
+			want:  []int64{},
 		},
 
 		// Membership unknowable from either source: omit the key rather than

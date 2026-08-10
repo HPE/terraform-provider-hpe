@@ -28,7 +28,7 @@ type SaveClusterAffinityGroupRequestAffinityGroup struct {
 	Active *bool                                             `json:"active,omitempty"`
 	Pool   *SaveClusterAffinityGroupRequestAffinityGroupPool `json:"pool,omitempty"`
 	// List of Server IDs to include in the Affinity Group
-	Servers []int32 `json:"servers,omitempty"`
+	Servers []int64 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
 	Visibility *string `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access

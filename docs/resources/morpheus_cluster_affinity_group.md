@@ -48,6 +48,7 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 
 - `active` (Boolean) Whether the affinity group is active.
 - `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
+- `description` (String, Deprecated) Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
 - `servers` (Set of Number) Set of compute server IDs to include in the affinity group.
 - `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
