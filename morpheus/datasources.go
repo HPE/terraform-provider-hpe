@@ -62,8 +62,13 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuphost"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backupinstance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/certificate"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloudaffinitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloudaffinitygroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusteraffinitygroup"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusteraffinitygroups"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusternamespace"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/computeserver"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/computeservers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/containerscript"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/deployment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/monitoringalert"
@@ -142,6 +147,11 @@ func (p *MorpheusProvider) DataSources(
 		securitygrouprule.NewDataSource,
 		clusternamespace.NewDataSource,
 		clusteraffinitygroup.NewDataSource,
+		clusteraffinitygroups.NewDataSource,
+		cloudaffinitygroup.NewDataSource,
+		cloudaffinitygroups.NewDataSource,
+		computeserver.NewDataSource,
+		computeservers.NewDataSource,
 		// missing-data-sources — standalone data sources (Group A)
 		certificate.NewDataSource,
 		vdiapp.NewDataSource,

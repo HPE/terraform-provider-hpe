@@ -1,0 +1,39 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> This resource creates a cloud-scoped affinity group, which is supported on VMware, VMware Cloud on AWS and MacStadium clouds, and is realised as a DRS rule on the cluster backing `pool`. To place an affinity group on an HPE Virtual Machines (HVM) cluster, use [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group) instead.
+
+!> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — by provisioning an instance into the group, or, on VMware clouds, by vCenter DRS rule sync — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
+
+!> **Warning** On VMware clouds, Morpheus imports the vCenter DRS rules it finds on the cloud referenced by `cloud_id` as affinity groups of their own (`source = "sync"`). Those imported groups cannot be managed by this resource: every cloud sync rewrites their affinity type, active flag and membership from vCenter, so Terraform would fight the sync loop indefinitely. Use the [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group) data source to reference such a group instead.
+
+-> `servers` always shows as "known after apply" in a plan, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
+
+~> **Note** `pool_id` is effectively required. Morpheus rejects the creation of a cloud affinity group that has no pool, so although the schema marks `pool_id` optional, omitting it fails at apply time with `No pool specified for affinity group`. The pool must be a resource pool of type Cluster on the cloud referenced by `cloud_id`, because the group is realised as a DRS rule on that cluster.
+
+-> Morpheus ignores `affinity_type` and `pool_id` on update, so a change to either replaces the affinity group.
+
+-> Note that Morpheus version `8.0.10` or later is required for affinity group support.
+
+-> When an instance is provisioned with an affinity group selected, that membership is reflected here in `servers`. It is not exposed on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance), because the Morpheus instance API only echoes back the value requested at creation rather than the instance's actual group membership.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_cloud_affinity_group/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using `cloud_id.affinity_group_id`.
+
+```bash
+terraform import hpe_morpheus_cloud_affinity_group.example 42.123
+```

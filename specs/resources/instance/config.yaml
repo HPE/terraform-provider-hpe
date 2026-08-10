@@ -43,6 +43,16 @@ instance:
         element_type:
           string: {}
         description: Organization labels (keywords) assigned to the instance.
+    compute_servers:
+      set:
+        computed_optional_required: computed
+        element_type:
+          int64: {}
+        description: |-
+          The IDs of the compute servers backing this instance. An instance has
+          one compute server initially and gains more when scaled with
+          hpe_morpheus_instance_node. These are the values to use with the
+          affinity group resources' servers attribute.
     server_uuid:
       string:
         computed_optional_required: computed_optional
@@ -522,6 +532,7 @@ instance:
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
+    - template-compute_servers: compute_servers
     - template-server_uuid: server_uuid
     - template-server_uuids: server_uuids
     - template-container_id: container_id

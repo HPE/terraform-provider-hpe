@@ -41,6 +41,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Cloud ID to provision the instance onto.",
 				MarkdownDescription: "The Cloud ID to provision the instance onto.",
 			},
+			"compute_servers": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Computed:            true,
+				Description:         "The IDs of the compute servers backing this instance. An instance may\nhave several compute servers for multi-node layouts. These are the\nvalues to use with the affinity group resources' servers attribute.",
+				MarkdownDescription: "The IDs of the compute servers backing this instance. An instance may\nhave several compute servers for multi-node layouts. These are the\nvalues to use with the affinity group resources' servers attribute.",
+			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -900,6 +906,7 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 
 type InstanceModel struct {
 	CloudId            types.Int64             `tfsdk:"cloud_id"`
+	ComputeServers     types.Set               `tfsdk:"compute_servers"`
 	Config             types.Dynamic           `tfsdk:"config"`
 	ConfigAws          ConfigAwsValue          `tfsdk:"config_aws"`
 	ConfigAzure        ConfigAzureValue        `tfsdk:"config_azure"`

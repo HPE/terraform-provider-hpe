@@ -10,9 +10,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -31,7 +33,22 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Whether the affinity group is active.",
 				MarkdownDescription: "Whether the affinity group is active.",
-				Default:             booldefault.StaticBool(true),
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"affinity_type": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.",
+				MarkdownDescription: "The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.OneOf("KEEP_TOGETHER", "KEEP_SEPARATE"),
+				},
 			},
 			"cluster_id": schema.Int64Attribute{
 				Required:            true,
@@ -40,11 +57,6 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
-			},
-			"description": schema.StringAttribute{
-				Optional:            true,
-				Description:         "The description of the affinity group.",
-				MarkdownDescription: "The description of the affinity group.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -59,10 +71,19 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The name of the affinity group.",
 				MarkdownDescription: "The name of the affinity group.",
 			},
+			"pool_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the resource pool associated with the affinity group.",
+				MarkdownDescription: "The ID of the resource pool associated with the affinity group.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"resource_permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
 					"all": schema.BoolAttribute{
 						Optional:            true,
+						Computed:            true,
 						Description:         "Pass true to allow access to all groups.",
 						MarkdownDescription: "Pass true to allow access to all groups.",
 					},
@@ -71,11 +92,13 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 							Attributes: map[string]schema.Attribute{
 								"default": schema.BoolAttribute{
 									Optional:            true,
+									Computed:            true,
 									Description:         "Whether this is the default group.",
 									MarkdownDescription: "Whether this is the default group.",
 								},
 								"id": schema.Int64Attribute{
-									Required:            true,
+									Optional:            true,
+									Computed:            true,
 									Description:         "Group ID.",
 									MarkdownDescription: "Group ID.",
 								},
@@ -87,6 +110,7 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 							},
 						},
 						Optional:            true,
+						Computed:            true,
 						Description:         "Set of groups allowed access.",
 						MarkdownDescription: "Set of groups allowed access.",
 					},
@@ -97,20 +121,43 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "Resource permissions for group and service plan access.",
-				MarkdownDescription: "Resource permissions for group and service plan access.",
+				Computed:            true,
+				Description:         "Resource permissions for group access.",
+				MarkdownDescription: "Resource permissions for group access.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"servers": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "Set of compute server IDs to include in the affinity group.",
+				MarkdownDescription: "Set of compute server IDs to include in the affinity group.",
+			},
+			"source": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The source of the affinity group (e.g. user, sync).",
+				MarkdownDescription: "The source of the affinity group (e.g. user, sync).",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"tenant_ids": schema.SetAttribute{
 				ElementType:         types.Int64Type,
 				Optional:            true,
+				Computed:            true,
 				Description:         "List of tenant account IDs that are allowed access.",
 				MarkdownDescription: "List of tenant account IDs that are allowed access.",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the cluster affinity group (public or private).",
-				MarkdownDescription: "The visibility of the cluster affinity group (public or private).",
+				Description:         "The visibility of the affinity group (public or private).",
+				MarkdownDescription: "The visibility of the affinity group (public or private).",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -120,18 +167,19 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Default: stringdefault.StaticString("private"),
 			},
 		},
-		Description:         "Manages a Morpheus Cluster Affinity Group resource.",
-		MarkdownDescription: "Manages a Morpheus Cluster Affinity Group resource.",
 	}
 }
 
 type ClusterAffinityGroupModel struct {
 	Active              types.Bool               `tfsdk:"active"`
+	AffinityType        types.String             `tfsdk:"affinity_type"`
 	ClusterId           types.Int64              `tfsdk:"cluster_id"`
-	Description         types.String             `tfsdk:"description"`
 	Id                  types.Int64              `tfsdk:"id"`
 	Name                types.String             `tfsdk:"name"`
+	PoolId              types.Int64              `tfsdk:"pool_id"`
 	ResourcePermissions ResourcePermissionsValue `tfsdk:"resource_permissions"`
+	Servers             types.Set                `tfsdk:"servers"`
+	Source              types.String             `tfsdk:"source"`
 	TenantIds           types.Set                `tfsdk:"tenant_ids"`
 	Visibility          types.String             `tfsdk:"visibility"`
 }

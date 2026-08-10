@@ -1,11 +1,54 @@
 package testhelpers
 
-import "os"
+import (
+	"os"
+	"testing"
+)
 
 // EnvKubernetesClusterID is the environment variable that supplies the ID of a
 // namespace-capable Kubernetes cluster for tests gated on the
 // kubernetes_cluster capability (cluster namespaces, HKS provisioning).
 const EnvKubernetesClusterID = "TF_VAR_testacc_morpheus_k8s_cluster_id"
+
+// EnvAffinityCloudID is the environment variable that supplies the ID of a
+// cloud that supports affinity groups, for tests gated on the affinity_group
+// capability. Morpheus only seeds hasAffinityGroups for the vmware,
+// vmwareCloudAws and macstadium cloud types, so most clouds on an appliance
+// cannot serve these tests.
+const EnvAffinityCloudID = "TF_VAR_testacc_morpheus_affinity_cloud_id"
+
+// EnvAffinityClusterID is the environment variable that supplies the ID of a
+// cluster that supports affinity groups, for tests gated on the affinity_group
+// capability. Only the mvm-cluster (HVM) cluster type supports them.
+const EnvAffinityClusterID = "TF_VAR_testacc_morpheus_affinity_cluster_id"
+
+// EnvAffinityPoolID is the environment variable that supplies the ID of the
+// resource pool to scope cloud affinity groups to. Morpheus requires a pool
+// when creating a cloud affinity group, and it must be a resource pool of type
+// Cluster because the underlying DRS rule is created on a cluster.
+const EnvAffinityPoolID = "TF_VAR_testacc_morpheus_affinity_pool_id"
+
+// EnvComputeServerID is the environment variable that supplies the ID of an
+// existing compute server (host) for the compute server data source tests.
+const EnvComputeServerID = "TF_VAR_testacc_morpheus_compute_server_id"
+
+// EnvComputeServerName is the environment variable that supplies the name of an
+// existing compute server (host) for the compute server data source tests. The
+// name has to be unique on the appliance, because the data source refuses to
+// resolve an ambiguous name.
+const EnvComputeServerName = "TF_VAR_testacc_morpheus_compute_server_name"
+
+// EnvComputeServerCloudID is the environment variable that supplies the ID of a
+// cloud with compute servers on it, for the cloud_id filter of the compute
+// servers data source.
+const EnvComputeServerCloudID = "TF_VAR_testacc_morpheus_compute_server_cloud_id"
+
+// EnvComputeServerInstanceID is the environment variable that supplies the ID
+// of an instance that owns at least one compute server, for the instance_id
+// filter of the compute servers data source. Most hosts on an appliance are
+// not owned by an instance, so this is a separate variable from
+// EnvComputeServerID rather than something derivable from it.
+const EnvComputeServerInstanceID = "TF_VAR_testacc_morpheus_compute_server_instance_id"
 
 // KubernetesClusterID returns the Kubernetes cluster ID to use for
 // namespace/HKS tests, taking TF_VAR_testacc_morpheus_cluster_id when set and
@@ -18,6 +61,99 @@ func KubernetesClusterID(fallback string) string {
 	}
 
 	return fallback
+}
+
+// AffinityCloudID returns the cloud ID to run cloud affinity group tests
+// against, skipping the test when EnvAffinityCloudID is unset.
+//
+// There is deliberately no fallback. Affinity groups only exist on a handful of
+// cloud types, so a guessed ID such as "1" turns a test that should skip into a
+// test that fails against the API on every appliance whose first cloud happens
+// to be some other type.
+func AffinityCloudID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvAffinityCloudID,
+		"a VMware cloud that supports affinity groups")
+}
+
+// AffinityClusterID returns the cluster ID to run cluster affinity group tests
+// against, skipping the test when EnvAffinityClusterID is unset. As with
+// AffinityCloudID there is no fallback: only HVM clusters support affinity
+// groups, so guessing an ID produces a failure rather than a skip.
+func AffinityClusterID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvAffinityClusterID,
+		"an HVM cluster that supports affinity groups")
+}
+
+// AffinityPoolID returns the resource pool ID to scope cloud affinity group
+// tests to, skipping the test when EnvAffinityPoolID is unset. Morpheus
+// rejects a cloud affinity group created without a pool, and the pool has to
+// be a resource pool of type Cluster on the cloud named by EnvAffinityCloudID,
+// so there is no sensible fallback here either.
+func AffinityPoolID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvAffinityPoolID,
+		"a resource pool of type Cluster on the affinity group cloud")
+}
+
+// ComputeServerID returns the ID of the compute server to look up, skipping the
+// test when EnvComputeServerID is unset.
+//
+// As with the affinity group helpers there is no fallback. Host IDs are not
+// predictable — they are allocated per appliance and low IDs are frequently
+// absent — so a guessed ID such as "1" turns a test that should skip into a
+// test that fails with a 404.
+func ComputeServerID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvComputeServerID, "an existing compute server")
+}
+
+// ComputeServerName returns the name of the compute server to look up, skipping
+// the test when EnvComputeServerName is unset. There is no fallback for the
+// same reason as ComputeServerID: no host name is guaranteed to exist.
+func ComputeServerName(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvComputeServerName,
+		"an existing compute server with a unique name")
+}
+
+// ComputeServerCloudID returns the cloud ID to filter compute servers by,
+// skipping the test when EnvComputeServerCloudID is unset.
+func ComputeServerCloudID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvComputeServerCloudID, "a cloud with compute servers")
+}
+
+// ComputeServerInstanceID returns the instance ID to filter compute servers by,
+// skipping the test when EnvComputeServerInstanceID is unset. It must name an
+// instance that owns at least one compute server, otherwise the filter matches
+// nothing and the test asserts against an empty result.
+func ComputeServerInstanceID(t *testing.T) string {
+	t.Helper()
+
+	return envOrSkip(t, EnvComputeServerInstanceID,
+		"an instance that owns at least one compute server")
+}
+
+// envOrSkip returns the value of the named environment variable, or skips the
+// test with a message naming both the variable and the infrastructure it is
+// expected to point at.
+func envOrSkip(t *testing.T, name, requirement string) string {
+	t.Helper()
+
+	value := os.Getenv(name)
+	if value == "" {
+		t.Skip(name + " not set; skipping test requiring " + requirement)
+	}
+
+	return value
 }
 
 //nolint:lll

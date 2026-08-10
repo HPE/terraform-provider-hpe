@@ -22,11 +22,8 @@ var _ MappedNullable = &UpdateCloudAffinityGroupRequestAffinityGroup{}
 type UpdateCloudAffinityGroupRequestAffinityGroup struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
-	AffinityType *string `json:"affinityType,omitempty"`
 	// Active
-	Active *bool                                             `json:"active,omitempty"`
-	Pool   *UpdateCloudAffinityGroupRequestAffinityGroupPool `json:"pool,omitempty"`
+	Active *bool `json:"active,omitempty"`
 	// List of Server IDs to include in the Affinity Group
 	Servers []int32 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
@@ -52,14 +49,8 @@ func (o UpdateCloudAffinityGroupRequestAffinityGroup) ToMap() (map[string]interf
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.AffinityType) {
-		toSerialize["affinityType"] = o.AffinityType
-	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
-	}
-	if !IsNil(o.Pool) {
-		toSerialize["pool"] = o.Pool
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers

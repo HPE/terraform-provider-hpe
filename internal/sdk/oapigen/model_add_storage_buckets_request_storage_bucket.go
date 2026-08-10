@@ -41,11 +41,11 @@ type AddStorageBucketsRequestStorageBucket struct {
 	// The backup Storage Bucket where old files are moved to.
 	RetentionProvider *string `json:"retentionProvider,omitempty"`
 	// The name of the bucket. Only applies to `Amazon`, `Azure`, `CIFS`, `NFSv3`, `Openstack Swift`, and `Rackspace CDN`.
-	BucketName string `json:"bucketName"`
+	BucketName *string `json:"bucketName,omitempty"`
 	// Create the bucket if it does not exist. Only applies to `Amazon`, `Azure`, `Openstack Swift`, and `Rackspace CDN`.
-	CreateBucket         *bool                                       `json:"createBucket,omitempty"`
-	Config               AddStorageBucketsRequestStorageBucketConfig `json:"config"`
-	AdditionalProperties map[string]interface{}                      `json:",remain"`
+	CreateBucket         *bool                                        `json:"createBucket,omitempty"`
+	Config               *AddStorageBucketsRequestStorageBucketConfig `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}                       `json:",remain"`
 }
 
 type _AddStorageBucketsRequestStorageBucket AddStorageBucketsRequestStorageBucket
@@ -86,11 +86,15 @@ func (o AddStorageBucketsRequestStorageBucket) ToMap() (map[string]interface{}, 
 	if !IsNil(o.RetentionProvider) {
 		toSerialize["retentionProvider"] = o.RetentionProvider
 	}
-	toSerialize["bucketName"] = o.BucketName
+	if !IsNil(o.BucketName) {
+		toSerialize["bucketName"] = o.BucketName
+	}
 	if !IsNil(o.CreateBucket) {
 		toSerialize["createBucket"] = o.CreateBucket
 	}
-	toSerialize["config"] = o.Config
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value

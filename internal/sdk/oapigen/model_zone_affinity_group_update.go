@@ -22,18 +22,15 @@ var _ MappedNullable = &ZoneAffinityGroupUpdate{}
 type ZoneAffinityGroupUpdate struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
-	AffinityType *string `json:"affinityType,omitempty"`
 	// Active
-	Active *bool                        `json:"active,omitempty"`
-	Pool   *ZoneAffinityGroupCreatePool `json:"pool,omitempty"`
+	Active *bool `json:"active,omitempty"`
 	// List of Server IDs to include in the Affinity Group
 	Servers []int32 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
 	Visibility *string `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
-	Tenants              []ZoneAffinityGroupCreateTenantsInner       `json:"tenants,omitempty"`
-	ResourcePermissions  *ZoneAffinityGroupCreateResourcePermissions `json:"resourcePermissions,omitempty"`
+	Tenants              []ZoneAffinityGroupUpdateTenantsInner       `json:"tenants,omitempty"`
+	ResourcePermissions  *ZoneAffinityGroupUpdateResourcePermissions `json:"resourcePermissions,omitempty"`
 	AdditionalProperties map[string]interface{}                      `json:",remain"`
 }
 
@@ -52,14 +49,8 @@ func (o ZoneAffinityGroupUpdate) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.AffinityType) {
-		toSerialize["affinityType"] = o.AffinityType
-	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
-	}
-	if !IsNil(o.Pool) {
-		toSerialize["pool"] = o.Pool
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers

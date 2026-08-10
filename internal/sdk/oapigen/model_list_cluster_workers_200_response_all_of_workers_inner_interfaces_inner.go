@@ -39,10 +39,10 @@ type ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInner struct {
 	PoolAssigned         *bool                                                                       `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                                                       `json:"primaryInterface,omitempty"`
 	Network              *ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInnerNetwork       `json:"network,omitempty"`
-	Subnet               NullableString                                                              `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                                                              `json:"networkGroup,omitempty"`
+	Subnet               *ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInnerSubnet        `json:"subnet,omitempty"`
+	NetworkGroup         *ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInnerNetworkGroup  `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                                                              `json:"networkPosition,omitempty"`
-	NetworkPool          NullableString                                                              `json:"networkPool,omitempty"`
+	NetworkPool          *ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInnerNetworkPool   `json:"networkPool,omitempty"`
 	NetworkDomain        *ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInnerNetworkDomain `json:"networkDomain,omitempty"`
 	Type                 NullableString                                                              `json:"type,omitempty"`
 	IpMode               NullableString                                                              `json:"ipMode,omitempty"`
@@ -119,17 +119,17 @@ func (o ListClusterWorkers200ResponseAllOfWorkersInnerInterfacesInner) ToMap() (
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()
 	}
-	if o.NetworkPool.IsSet() {
-		toSerialize["networkPool"] = o.NetworkPool.Get()
+	if !IsNil(o.NetworkPool) {
+		toSerialize["networkPool"] = o.NetworkPool
 	}
 	if !IsNil(o.NetworkDomain) {
 		toSerialize["networkDomain"] = o.NetworkDomain

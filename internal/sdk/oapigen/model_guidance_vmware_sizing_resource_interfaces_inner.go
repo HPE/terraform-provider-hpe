@@ -39,8 +39,8 @@ type GuidanceVmwareSizingResourceInterfacesInner struct {
 	PoolAssigned         *bool                                                     `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                                     `json:"primaryInterface,omitempty"`
 	Network              *GuidanceVmwareSizingResourceInterfacesInnerNetwork       `json:"network,omitempty"`
-	Subnet               NullableString                                            `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                                            `json:"networkGroup,omitempty"`
+	Subnet               *GuidanceVmwareSizingResourceInterfacesInnerSubnet        `json:"subnet,omitempty"`
+	NetworkGroup         *GuidanceVmwareSizingResourceInterfacesInnerNetworkGroup  `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                                            `json:"networkPosition,omitempty"`
 	NetworkPool          *GuidanceVmwareSizingResourceInterfacesInnerNetworkPool   `json:"networkPool,omitempty"`
 	NetworkDomain        *GuidanceVmwareSizingResourceInterfacesInnerNetworkDomain `json:"networkDomain,omitempty"`
@@ -119,11 +119,11 @@ func (o GuidanceVmwareSizingResourceInterfacesInner) ToMap() (map[string]interfa
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()

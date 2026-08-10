@@ -1,0 +1,245 @@
+compute_servers:
+  templates:
+    cloud_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Filter by cloud ID. Only servers in this cloud are returned.
+    bare_metal:
+      bool:
+        computed_optional_required: computed_optional
+        description: Filter by bare metal hosts. When true, only bare metal servers are returned.
+    instance_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Filter by instance ID (client-side). Only servers associated with this instance are returned.
+    servers_instance_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the instance associated with this compute server, if any.
+    servers_cloud_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the cloud this compute server belongs to.
+    servers_compute_server_type_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the compute server type.
+    servers_compute_server_type_code:
+      string:
+        computed_optional_required: computed
+        description: The code of the compute server type.
+    servers_compute_server_type_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the compute server type.
+    servers_compute_server_type_managed:
+      bool:
+        computed_optional_required: computed
+        description: Whether the compute server type is managed.
+    servers_plan_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the service plan.
+    servers_plan_code:
+      string:
+        computed_optional_required: computed
+        description: The code of the service plan.
+    servers_plan_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the service plan.
+
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, status,
+                  power_state, platform, hostname, uuid, external_id,
+                  internal_id, cloud_id, cloud_name, group_id, compute_server_type_code,
+                  compute_server_type_name, plan_code, plan_name, visibility.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "status", "power_state", "platform", "hostname", "uuid", "external_id", "internal_id", "cloud_id", "cloud_name", "group_id", "compute_server_type_code", "compute_server_type_name", "plan_code", "plan_name", "visibility")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A server matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+
+  moves:
+    - servers.zone_id: servers.cloud_id                                        # (components/schemas/server.yaml) rename zone→cloud
+    - servers.site_id: servers.group_id                                        # (components/schemas/server.yaml) rename site→group
+    - template-cloud_id: cloud_id                                              # (template) top-level filter
+    - template-bare_metal: bare_metal                                          # (template) top-level filter
+    - template-instance_id: instance_id                                        # (template) top-level filter (client-side)
+    - template-servers_instance_id: servers.instance_id                        # (template) flatten instance.id
+    - template-servers_cloud_name: servers.cloud_name                          # (template) flatten zone.name
+    - template-servers_compute_server_type_id: servers.compute_server_type_id          # (template) flatten computeServerType.id
+    - template-servers_compute_server_type_code: servers.compute_server_type_code      # (template) flatten computeServerType.code
+    - template-servers_compute_server_type_name: servers.compute_server_type_name      # (template) flatten computeServerType.name
+    - template-servers_compute_server_type_managed: servers.compute_server_type_managed # (template) flatten computeServerType.managed
+    - template-servers_plan_id: servers.plan_id                                # (template) flatten plan.id
+    - template-servers_plan_code: servers.plan_code                            # (template) flatten plan.code
+    - template-servers_plan_name: servers.plan_name                            # (template) flatten plan.name
+
+  removes:
+    - max                                              # (query parameter) pagination
+    - offset                                           # (query parameter) pagination
+    - name                                             # (query parameter) search - use filter block instead
+    - phrase                                           # (query parameter) search
+    - zone_id                                          # (query parameter) replaced by top-level cloud_id
+    - site_id                                          # (query parameter) replaced by group_id filter
+    - cluster_id                                       # (query parameter) low-value
+    - parent_server_id                                 # (query parameter) low-value
+    - managed                                          # (query parameter) low-value
+    - server_type                                      # (query parameter) low-value
+    - power_state                                      # (query parameter) use filter block
+    - ip                                               # (query parameter) low-value
+    - vm                                               # (query parameter) low-value
+    - vm_hypervisor                                    # (query parameter) low-value
+    - bare_metal_host                                  # (query parameter) replaced by top-level bare_metal
+    - status                                           # (query parameter) use filter block
+    - agent_installed                                  # (query parameter) low-value
+    - guest_agent_status                               # (query parameter) internal
+    - last_updated                                     # (query parameter) low-value
+    - created_by                                       # (query parameter) low-value
+    - tagsname                                         # (query parameter) tags filter
+    - metadata                                         # (query parameter) alias for tags
+    - uuid                                             # (query parameter) use filter block
+    - external_id                                      # (query parameter) use filter block
+    - internal_id                                      # (query parameter) use filter block
+    - external_uniquel_id                              # (query parameter) typo in spec
+    - stats                                      # (query parameter) low-value
+    - include_tenants                                  # (query parameter) internal
+    - tenant_id                                        # (query parameter) internal
+    - meta                                             # (response envelope) pagination metadata
+    - multitenant                                      # (response) internal
+    - servers.account                                  # (components/schemas/server.yaml) nested object
+    - servers.account_id                               # (components/schemas/server.yaml) internal tenant ref
+    - servers.agent_version                            # (components/schemas/server.yaml) internal
+    - servers.api_key                                  # (components/schemas/server.yaml) sensitive internal
+    - servers.compute_server_type                      # (components/schemas/server.yaml) replaced by flattened fields
+    - servers.config                                   # (components/schemas/server.yaml) dynamic/unstructured
+    - servers.containers                               # (components/schemas/server.yaml) nested collection
+    - servers.controllers                              # (components/schemas/server.yaml) nested collection
+    - servers.cores_per_socket                         # (components/schemas/server.yaml) low-value detail
+    - servers.data_device                              # (components/schemas/server.yaml) internal
+    - servers.date_created                             # (components/schemas/server.yaml) read-only timestamp
+    - servers.enable_logs                              # (components/schemas/server.yaml) internal
+    - servers.enabled                                  # (components/schemas/server.yaml) internal
+    - servers.error_message                            # (components/schemas/server.yaml) transient
+    - servers.external_name                            # (components/schemas/server.yaml) internal
+    - servers.external_unique_id                       # (components/schemas/server.yaml) internal
+    - servers.folder_id                                # (components/schemas/server.yaml) low-value
+    - servers.guest_console_password                   # (components/schemas/server.yaml) sensitive
+    - servers.guest_console_password_hash              # (components/schemas/server.yaml) sensitive
+    - servers.guest_console_port                       # (components/schemas/server.yaml) internal
+    - servers.guest_console_preferred                  # (components/schemas/server.yaml) internal
+    - servers.guest_console_type                       # (components/schemas/server.yaml) internal
+    - servers.guest_console_username                   # (components/schemas/server.yaml) internal
+    - servers.hourly_cost                              # (components/schemas/server.yaml) billing
+    - servers.hourly_price                             # (components/schemas/server.yaml) billing
+    - servers.instance                                 # (components/schemas/server.yaml) replaced by instance_id
+    - servers.interfaces                               # (components/schemas/server.yaml) nested collection
+    - servers.last_agent_update                        # (components/schemas/server.yaml) internal timestamp
+    - servers.last_updated                             # (components/schemas/server.yaml) read-only timestamp
+    - servers.lvm_enabled                              # (components/schemas/server.yaml) low-value
+    - servers.manage_internal_firewall                 # (components/schemas/server.yaml) internal
+    - servers.max_cores                                # (components/schemas/server.yaml) low-value detail
+    - servers.max_cpu                                  # (components/schemas/server.yaml) low-value detail
+    - servers.max_gpus                                 # (components/schemas/server.yaml) low-value detail
+    - servers.os_device                                # (components/schemas/server.yaml) internal
+    - servers.os_type                                  # (components/schemas/server.yaml) low-value
+    - servers.owner                                    # (components/schemas/server.yaml) nested object
+    - servers.parent_server                            # (components/schemas/server.yaml) nested object
+    - servers.plan                                     # (components/schemas/server.yaml) replaced by flattened fields
+    - servers.platform_version                         # (components/schemas/server.yaml) low-value
+    - servers.resource_pool_id                         # (components/schemas/server.yaml) low-value
+    - servers.secure_metadata_datastore                # (components/schemas/server.yaml) nested object
+    - servers.server_os                                # (components/schemas/server.yaml) nested object
+    - servers.software_raid                            # (components/schemas/server.yaml) low-value
+    - servers.source_image                             # (components/schemas/server.yaml) nested object
+    - servers.ssh_host                                 # (components/schemas/server.yaml) sensitive
+    - servers.ssh_key_pair                             # (components/schemas/server.yaml) sensitive nested
+    - servers.ssh_password                             # (components/schemas/server.yaml) sensitive
+    - servers.ssh_password_hash                        # (components/schemas/server.yaml) sensitive
+    - servers.ssh_port                                 # (components/schemas/server.yaml) sensitive
+    - servers.ssh_username                             # (components/schemas/server.yaml) sensitive
+    - servers.stats                                    # (components/schemas/server.yaml) dynamic object
+    - servers.status_date                              # (components/schemas/server.yaml) read-only timestamp
+    - servers.status_eta                               # (components/schemas/server.yaml) transient
+    - servers.status_message                           # (components/schemas/server.yaml) transient
+    - servers.status_percent                           # (components/schemas/server.yaml) transient
+    - servers.tag_compliant                            # (components/schemas/server.yaml) internal
+    - servers.tags                                     # (components/schemas/server.yaml) nested collection
+    - servers.volume_id                                # (components/schemas/server.yaml) internal
+    - servers.volumes                                  # (components/schemas/server.yaml) nested collection
+    - servers.zone                                     # (components/schemas/server.yaml) replaced by cloud_id/cloud_name
+
+  overrides:
+    servers:
+      computed_optional_required: computed
+      description: The list of compute servers matching the supplied filters.
+    servers.id:
+      description: The ID of the compute server.
+    servers.name:
+      description: The name of the compute server.
+    servers.cloud_id:
+      description: The ID of the cloud this compute server belongs to.
+    servers.cloud_name:
+      description: The name of the cloud this compute server belongs to.
+    servers.description:
+      description: The description of the compute server.
+    servers.external_id:
+      description: The external ID of the compute server.
+    servers.external_ip:
+      description: The external IP address of the compute server.
+    servers.group_id:
+      description: The ID of the group this compute server belongs to.
+    servers.hostname:
+      description: The hostname of the compute server.
+    servers.instance_id:
+      description: The ID of the instance associated with this compute server, if any.
+    servers.internal_id:
+      description: The internal ID of the compute server.
+    servers.internal_ip:
+      description: The internal IP address of the compute server.
+    servers.labels:
+      description: The labels associated with the compute server.
+    servers.managed:
+      description: Whether this compute server is managed.
+    servers.max_memory:
+      description: The maximum memory allocated to the compute server in bytes.
+    servers.max_storage:
+      description: The maximum storage allocated to the compute server in bytes.
+    servers.platform:
+      description: The platform of the compute server (e.g. linux, windows).
+    servers.power_state:
+      description: The power state of the compute server (e.g. on, off).
+    servers.status:
+      description: The status of the compute server (e.g. provisioned, running).
+    servers.uuid:
+      description: The UUID of the compute server.
+    servers.visibility:
+      description: The visibility of the compute server (public or private).
+    servers.agent_installed:
+      description: Whether the Morpheus agent is installed on this compute server.

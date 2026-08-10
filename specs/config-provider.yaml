@@ -229,6 +229,19 @@ resources:
     delete:
       path: /api/library/cluster-layouts/{id}
       method: DELETE
+  cloud_affinity_group:
+    create:
+      path: /api/zones/{zoneId}/affinity-groups
+      method: POST
+    read:
+      path: /api/zones/{zoneId}/affinity-groups/{id}
+      method: GET
+    update:
+      path: /api/zones/{zoneId}/affinity-groups/{id}
+      method: PUT
+    delete:
+      path: /api/zones/{zoneId}/affinity-groups/{id}
+      method: DELETE
   cluster_affinity_group:
     create:
       path: /api/clusters/{clusterId}/affinity-groups
@@ -1266,6 +1279,26 @@ data_sources:
   cluster_affinity_group:
     read:
       path: /api/clusters/{clusterId}/affinity-groups/{id}
+      method: GET
+  cloud_affinity_group:
+    read:
+      path: /api/zones/{zoneId}/affinity-groups/{id}
+      method: GET
+  cloud_affinity_groups:
+    read:
+      path: /api/zones/{zoneId}/affinity-groups
+      method: GET
+  cluster_affinity_groups:
+    read:
+      path: /api/clusters/{clusterId}/affinity-groups
+      method: GET
+  compute_server:
+    read:
+      path: /api/servers/{id}
+      method: GET
+  compute_servers:
+    read:
+      path: /api/servers
       method: GET
   cluster_layout:
     read:

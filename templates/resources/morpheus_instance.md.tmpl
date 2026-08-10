@@ -136,4 +136,10 @@ Put that `id` in the `storage_type_id` field for the `root` volume below.  Leave
 
 {{ tffile "morpheus/framework/resources/instance/example_metal.tf" }}
 
+
+-> The `compute_servers` attribute holds the IDs of the compute servers backing the instance.
+An instance has one compute server initially and gains more when it is scaled with
+`hpe_morpheus_instance_node`. These are the values to pass to the `servers` attribute on
+`hpe_morpheus_cloud_affinity_group` or `hpe_morpheus_cluster_affinity_group` resources.
+
 {{ .SchemaMarkdown | trimspace }}
