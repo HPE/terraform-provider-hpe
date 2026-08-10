@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -17,6 +18,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -622,6 +624,47 @@ func (g *Resource) Create(
 		return
 	}
 
+	// Wait for at least one container to have a ready IP address, if requested.
+	// The instance resource owns the container it provisions; containers added
+	// later by hpe_morpheus_instance_node belong to that resource and are waited
+	// on there. Requiring all containers would make an instance apply block on
+	// nodes it does not own.
+	if plan.WaitForIpAddress.ValueBool() {
+		warned, waitErr := containerip.WaitAny(ctx, client, instanceId, createTimeout)
+		if waitErr != nil {
+			resp.Diagnostics.AddError("wait for IP address", waitErr.Error())
+			taintResourceState(instanceId)
+
+			return
+		}
+
+		if warned {
+			resp.Diagnostics.AddWarning(
+				"IP address not yet available",
+				fmt.Sprintf(
+					"Instance %d provisioned successfully but no container reported "+
+						"a usable IP address within the timeout. The address may appear "+
+						"on a subsequent refresh.",
+					instanceId,
+				),
+			)
+		}
+	}
+
+	// Validate that requested server UUIDs were actually applied. Morpheus
+	// silently drops a UUID that is already in use by another server and
+	// silently discards excess UUIDs beyond the number of servers provisioned.
+	// Both cases leave the instance in a state that does not match the config,
+	// so we fail the apply and taint the resource for replacement.
+	if !plan.ServerUuids.IsNull() && !plan.ServerUuids.IsUnknown() {
+		if d := validateServerUUIDs(ctx, client, instanceId, plan); d.HasError() {
+			resp.Diagnostics.Append(d...)
+			taintResourceState(instanceId)
+
+			return
+		}
+	}
+
 	// Read the instance state
 	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
 	if d.HasError() || !found {
@@ -686,4 +729,113 @@ func getInstanceTypeCode(
 	}
 
 	return instanceType.InstanceType.Code, diags
+}
+
+// validateServerUUIDs compares the UUIDs the user requested in server_uuids
+// against the UUIDs actually assigned to the instance's servers (read from
+// containerDetails[].server.uuid). Any requested UUID not present among the
+// assigned ones indicates a silent failure: Morpheus either dropped a duplicate
+// UUID that was already in use by another server, or ignored an excess UUID
+// beyond the number of servers provisioned by the instance.
+func validateServerUUIDs(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+	plan InstanceModel,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	var requestedUUIDs []string
+	diags.Append(plan.ServerUuids.ElementsAs(ctx, &requestedUUIDs, false)...)
+	if diags.HasError() {
+		return diags
+	}
+
+	if len(requestedUUIDs) == 0 {
+		return diags
+	}
+
+	assigned, d := assignedServerUUIDs(ctx, client, instanceID)
+	diags.Append(d...)
+	if diags.HasError() {
+		return diags
+	}
+
+	diags.Append(checkServerUUIDs(requestedUUIDs, assigned, instanceID)...)
+
+	return diags
+}
+
+// assignedServerUUIDs fetches the instance and returns the set of UUIDs
+// actually assigned to its servers via containerDetails[].server.uuid.
+func assignedServerUUIDs(
+	ctx context.Context,
+	client *sdk.APIClient,
+	instanceID int64,
+) (map[string]struct{}, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	resp, hresp, err := client.InstancesAPI.GetInstance(ctx, instanceID).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		diags.AddError(
+			"validate server UUIDs",
+			fmt.Sprintf("instance %d: failed to read back for UUID validation: %s",
+				instanceID, errfmt.ErrMsg(err, hresp)),
+		)
+
+		return nil, diags
+	}
+
+	if resp.Instance == nil {
+		diags.AddError(
+			"validate server UUIDs",
+			fmt.Sprintf("instance %d: GET returned nil instance", instanceID),
+		)
+
+		return nil, diags
+	}
+
+	assigned := make(map[string]struct{})
+	for _, cont := range resp.Instance.ContainerDetails {
+		if cont.Server != nil && cont.Server.Uuid != nil {
+			assigned[*cont.Server.Uuid] = struct{}{}
+		}
+	}
+
+	return assigned, diags
+}
+
+// checkServerUUIDs is the pure-logic core of the server UUID post-create
+// validation. It compares requested UUIDs against assigned ones and returns an
+// error diagnostic naming every UUID that was not applied.
+func checkServerUUIDs(
+	requested []string,
+	assigned map[string]struct{},
+	instanceID int64,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	var missing []string
+	for _, uuid := range requested {
+		if _, ok := assigned[uuid]; !ok {
+			missing = append(missing, uuid)
+		}
+	}
+
+	if len(missing) > 0 {
+		diags.AddError(
+			"server_uuids not applied",
+			fmt.Sprintf(
+				"Instance %d was created successfully but Morpheus silently ignored "+
+					"the following requested server UUID(s): [%s]. This happens when a "+
+					"UUID is already in use by another server, or when more UUIDs are "+
+					"supplied than servers provisioned by the instance. The instance has "+
+					"been created and marked for replacement.",
+				instanceID,
+				strings.Join(missing, ", "),
+			),
+		)
+	}
+
+	return diags
 }
