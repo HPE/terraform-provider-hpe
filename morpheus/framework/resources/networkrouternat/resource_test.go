@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/nsxt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -22,35 +23,10 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// nsxtTier1RouterConfig renders a per-test NSX-T tier-1 gateway connected to an
-// existing tier-0 (router id 28), labelled hpe_morpheus_network_router.nat_tier1.
-// NSX-T NAT rules attach to the gateway's policy path, so they require a realized
-// tier-1 that is connected to a tier-0 and has an edge cluster. The tier-0's
-// provider_id/path is read via a data source.
-//
-// QA verify: tier-0 router id 28 is a realized NSX-T tier-0 on integration 5;
-// edge_cluster is the NSX-T edge cluster external id (display name
-// "qa-edge-cluster-01").
-func nsxtTier1RouterConfig(name string) string {
-	return `
-data "hpe_morpheus_network_router" "nat_tier0" {
-  id = 28
-}
-
-resource "hpe_morpheus_network_router" "nat_tier1" {
-  name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
-
-  config_nsxt_gateway_tier1 = {
-    ip_management_type = "dhcpLocal"
-    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
-    fail_over          = "NON_PREEMPTIVE"
-    tier0_gateway      = data.hpe_morpheus_network_router.nat_tier0.provider_id
-  }
-}
-`
-}
+// NSX-T NAT rules attach to a gateway's policy path, so they require a realized
+// tier-1 that is connected to a tier-0 and has an edge cluster. nsxt.Tier1Config
+// renders that tier-1 by resolving the pre-provisioned tier-0 (and its group,
+// network integration and edge cluster) by name.
 
 func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
@@ -67,10 +43,10 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxt.Tier1Config(name)
 
 	resourceConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"RouterId": nsxt.Tier1RouterIDRef,
 		"Name":     name,
 	})
 	if err != nil {
@@ -78,7 +54,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	}
 
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", nsxt.Tier1Resource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
@@ -133,10 +109,10 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxt.Tier1Config(name)
 
 	createConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"RouterId": nsxt.Tier1RouterIDRef,
 		"Name":     name,
 	})
 	if err != nil {
@@ -145,7 +121,7 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 
 	updateConfig := `
 resource "hpe_morpheus_network_router_nat" "example" {
-  router_id          = hpe_morpheus_network_router.nat_tier1.id
+  router_id          = ` + nsxt.Tier1RouterIDRef + `
   name               = "` + name + `"
   action             = "SNAT"
   source_network     = "10.1.0.0/24"
@@ -156,14 +132,14 @@ resource "hpe_morpheus_network_router_nat" "example" {
 `
 
 	createChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", nsxt.Tier1Resource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
 	)
 
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", nsxt.Tier1Resource, "id"),
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.1.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated SNAT rule"),

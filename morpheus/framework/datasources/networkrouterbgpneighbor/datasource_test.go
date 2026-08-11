@@ -14,6 +14,7 @@ import (
 	bgpresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/nsxt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -33,27 +34,19 @@ provider "hpe" {
 }
 `
 
-// existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
-// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
-// BGP neighbors attach to the tier-0's locale-services, which are only populated
-// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
-// races that sync, so we reference this existing gateway.
-const existingTier0RouterID = "28"
-
-// bgpNeighborSourceAddress is a valid IP on tier-0 28's interface, required for
-// EBGP multihop neighbors (see resource test for details).
-const bgpNeighborSourceAddress = "10.100.10.1"
-
-// neighborFixture renders a BGP neighbor on the existing tier-0 router, labelled
+// neighborFixture renders a BGP neighbor on the pre-provisioned tier-0 gateway
+// (resolved by name via nsxt.Tier0Config), labelled
 // hpe_morpheus_network_router_bgp_neighbor.example.
+//
+// The returned config does not include nsxt.Tier0Config; callers emit it.
 func neighborFixture(t *testing.T, name, ipAddress string) string {
 	t.Helper()
 
 	cfg, err := bgpresource.RenderBgpNeighborConfig(t, map[string]string{
-		"RouterId":        existingTier0RouterID,
+		"RouterId":        nsxt.Tier0RouterIDRef,
 		"IpAddress":       ipAddress,
 		"Description":     name,
-		"SourceAddresses": bgpNeighborSourceAddress,
+		"SourceAddresses": nsxt.BgpSourceAddressValue(),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -82,7 +75,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborByIpAddress(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "` + ipAddress + `"
-  router_id  = 28
+  router_id  = ` + nsxt.Tier0RouterIDRef + `
   depends_on = [hpe_morpheus_network_router_bgp_neighbor.example]
 }
 `
@@ -93,8 +86,9 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
-				Check:  checkFn,
+				Config: providerConfig + nsxt.Tier0Config() +
+					neighborFixture(t, name, ipAddress) + dataSourceConfig,
+				Check: checkFn,
 			},
 		},
 	})
@@ -118,7 +112,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 	// id and router_id reference the created resources, deferring the read.
 	dataSourceConfig, err := networkrouterbgpneighbor.RenderBgpNeighborByIdConfig(t, map[string]string{
 		"Id":       "hpe_morpheus_network_router_bgp_neighbor.example.id",
-		"RouterId": "28",
+		"RouterId": nsxt.Tier0RouterIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -130,8 +124,9 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborById(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + neighborFixture(t, name, ipAddress) + dataSourceConfig,
-				Check:  checkFn,
+				Config: providerConfig + nsxt.Tier0Config() +
+					neighborFixture(t, name, ipAddress) + dataSourceConfig,
+				Check: checkFn,
 			},
 		},
 	})
@@ -154,7 +149,7 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNotFound(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_bgp_neighbor" "example" {
   ip_address = "0.0.0.0"
-  router_id  = 28
+  router_id  = ` + nsxt.Tier0RouterIDRef + `
 }
 `
 
@@ -164,7 +159,7 @@ data "hpe_morpheus_network_router_bgp_neighbor" "example" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + dataSourceConfig,
+				Config:      providerConfig + nsxt.Tier0Config() + dataSourceConfig,
 				ExpectError: expected,
 			},
 		},

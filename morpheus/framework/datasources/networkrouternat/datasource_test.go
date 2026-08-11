@@ -14,6 +14,7 @@ import (
 	natresource "github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/nsxt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -33,27 +34,9 @@ provider "hpe" {
 }
 `
 
-// nsxtTier1RouterConfig renders an NSX-T tier-1 gateway required for NAT rules.
-func nsxtTier1RouterConfig(name string) string {
-	return `
-data "hpe_morpheus_network_router" "nat_tier0" {
-  id = 28
-}
-
-resource "hpe_morpheus_network_router" "nat_tier1" {
-  name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
-
-  config_nsxt_gateway_tier1 = {
-    ip_management_type = "dhcpLocal"
-    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
-    fail_over          = "NON_PREEMPTIVE"
-    tier0_gateway      = data.hpe_morpheus_network_router.nat_tier0.provider_id
-  }
-}
-`
-}
+// NSX-T NAT rules require a realized tier-1 gateway; nsxt.Tier1Config renders
+// one by resolving the pre-provisioned tier-0 (and its group, network
+// integration and edge cluster) by name.
 
 func TestAccMorpheusFindNetworkRouterNatByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
@@ -69,10 +52,10 @@ func TestAccMorpheusFindNetworkRouterNatByName(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxt.Tier1Config(name)
 
 	resourceConfig, err := natresource.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"RouterId": nsxt.Tier1RouterIDRef,
 		"Name":     name,
 	})
 	if err != nil {
@@ -82,7 +65,7 @@ func TestAccMorpheusFindNetworkRouterNatByName(t *testing.T) {
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_nat" "example" {
   name       = "` + name + `"
-  router_id  = hpe_morpheus_network_router.nat_tier1.id
+  router_id  = ` + nsxt.Tier1RouterIDRef + `
   depends_on = [hpe_morpheus_network_router_nat.example]
 }
 `
@@ -114,10 +97,10 @@ func TestAccMorpheusFindNetworkRouterNatById(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxt.Tier1Config(name)
 
 	resourceConfig, err := natresource.RenderNetworkRouterNatConfig(t, map[string]string{
-		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"RouterId": nsxt.Tier1RouterIDRef,
 		"Name":     name,
 	})
 	if err != nil {
@@ -126,7 +109,7 @@ func TestAccMorpheusFindNetworkRouterNatById(t *testing.T) {
 
 	dataSourceConfig, err := networkrouternat.RenderNatByIdConfig(t, map[string]string{
 		"Id":       "hpe_morpheus_network_router_nat.example.id",
-		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"RouterId": nsxt.Tier1RouterIDRef,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -159,12 +142,12 @@ func TestAccMorpheusFindNetworkRouterNatNotFound(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxt.Tier1Config(name)
 
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_nat" "example" {
   name      = "nonexistent-nat-name-that-should-not-exist"
-  router_id = hpe_morpheus_network_router.nat_tier1.id
+  router_id = ` + nsxt.Tier1RouterIDRef + `
 }
 `
 

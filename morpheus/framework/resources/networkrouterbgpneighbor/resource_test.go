@@ -14,6 +14,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouterbgpneighbor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/nsxt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -25,17 +26,10 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-// existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
-// (BGP enabled, with an associated edge cluster and local AS) on integration 5.
-// BGP neighbors attach to the tier-0's locale-services, which are only populated
-// in Morpheus after a sync of a realized gateway; creating a tier-0 per test
-// races that sync, so we reference this existing gateway.
-const existingTier0RouterID = "28"
-
-// bgpNeighborSourceAddress is a valid IP on tier-0 28's interface. NSX-T requires
-// a source address for EBGP multihop neighbors; without it the create fails with
-// "BGP neighbor source address is mandatory for EBGP Multihop."
-const bgpNeighborSourceAddress = "10.100.10.1"
+// BGP neighbors attach to a tier-0's locale-services, which Morpheus only
+// populates after syncing a realized gateway; creating a tier-0 per test races
+// that sync, so these tests resolve the pre-provisioned tier-0 by name via
+// nsxt.Tier0Config and reference it through nsxt.Tier0RouterIDRef.
 
 // bgpNeighborHopLimit is why every fixture below sets hop_limit explicitly.
 //
@@ -68,8 +62,8 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 	config, err := networkrouterbgpneighbor.RenderBgpNeighborConfig(t, map[string]string{
 		"Description":     name,
 		"IpAddress":       ipAddress,
-		"RouterId":        existingTier0RouterID,
-		"SourceAddresses": bgpNeighborSourceAddress,
+		"RouterId":        nsxt.Tier0RouterIDRef,
+		"SourceAddresses": nsxt.BgpSourceAddressValue(),
 	})
 	if err != nil {
 		t.Fatalf("failed to render config: %s", err)
@@ -81,7 +75,7 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + config,
+				Config: providerConfig + nsxt.Tier0Config() + config,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttr(resourceName, "ip_address", ipAddress),
@@ -112,9 +106,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreate(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "192.168.1." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + `
+	configText := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
-  router_id   = 28
+  router_id   = ` + nsxt.Tier0RouterIDRef + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -122,11 +116,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "test" {
   keep_alive  = 60
   hold_down   = 180
   hop_limit   = ` + bgpNeighborHopLimit + `
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
 	resource.Test(t, resource.TestCase{
@@ -180,9 +170,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceCreateAllAttrs(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.0.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + `
+	configText := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
-  router_id            = 28
+  router_id            = ` + nsxt.Tier0RouterIDRef + `
   ip_address           = "` + ipAddress + `"
   description          = "` + name + `"
   remote_as            = "65002"
@@ -198,11 +188,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "all_attrs" {
   route_filtering_type = "IPV4"
   route_filtering_in   = "filter-in"
   route_filtering_out  = "filter-out"
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
 	resource.Test(t, resource.TestCase{
@@ -296,9 +282,9 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceUpdate(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "172.16.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	createConfig := providerConfig + `
+	createConfig := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id   = 28
+  router_id   = ` + nsxt.Tier0RouterIDRef + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
@@ -306,16 +292,12 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   keep_alive  = 60
   hold_down   = 180
   hop_limit   = ` + bgpNeighborHopLimit + `
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
-	updateConfig := providerConfig + `
+	updateConfig := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
-  router_id    = 28
+  router_id    = ` + nsxt.Tier0RouterIDRef + `
   ip_address   = "` + ipAddress + `"
   description  = "` + name + ` updated"
   remote_as    = "65002"
@@ -328,11 +310,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "update_test" {
   allow_as_in  = true
   hop_limit    = 3
   restart_mode = "GR_AND_HELPER"
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
 	resource.Test(t, resource.TestCase{
@@ -423,18 +401,14 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceImport(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.1.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + `
+	configText := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
-  router_id   = 28
+  router_id   = ` + nsxt.Tier0RouterIDRef + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65001"
   hop_limit   = ` + bgpNeighborHopLimit + `
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
 	resource.Test(t, resource.TestCase{
@@ -493,18 +467,14 @@ func TestAccMorpheusNetworkRouterBgpNeighborResourceWithNsxtConfig(t *testing.T)
 	name := acctest.RandomWithPrefix(t.Name())
 	ipAddress := "10.2.0." + acctest.RandStringFromCharSet(2, "123456789")
 
-	configText := providerConfig + `
+	configText := providerConfig + nsxt.Tier0Config() + `
 resource "hpe_morpheus_network_router_bgp_neighbor" "nsxt_test" {
-  router_id   = 28
+  router_id   = ` + nsxt.Tier0RouterIDRef + `
   ip_address  = "` + ipAddress + `"
   description = "` + name + `"
   remote_as   = "65010"
   hop_limit   = ` + bgpNeighborHopLimit + `
-
-  config_nsxt = {
-    source_addresses = ["` + bgpNeighborSourceAddress + `"]
-  }
-}
+` + nsxt.BgpSourceAddressBlock() + `}
 `
 
 	resource.Test(t, resource.TestCase{
