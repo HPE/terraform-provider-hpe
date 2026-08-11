@@ -294,6 +294,17 @@ func providerSchemaMorpheus() *schema.Schema {
 					Optional:    true,
 					MaxItems:    1,
 					Description: "Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity",
+					// The mutual conflict with the other identity block is
+					// declared here only, so that configuring both is reported
+					// once rather than once per block.
+					ConflictsWith: []string{
+						"morpheus.0.pce_disconnected_identity",
+						"morpheus.0.url",
+						"morpheus.0.username",
+						"morpheus.0.password",
+						"morpheus.0.access_token",
+						"morpheus.0.tenant_subdomain",
+					},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"client_id": {
@@ -334,6 +345,11 @@ func providerSchemaMorpheus() *schema.Schema {
 								Sensitive: true,
 								Description: "GreenLake IAM access token. If set, token " +
 									"generation from credentials is skipped.",
+								ConflictsWith: []string{
+									"morpheus.0.pce_identity.0.client_id",
+									"morpheus.0.pce_identity.0.client_secret",
+									"morpheus.0.pce_identity.0.issuer_url",
+								},
 							},
 
 							"broker_url": {
@@ -356,6 +372,13 @@ func providerSchemaMorpheus() *schema.Schema {
 					MaxItems: 1,
 					Description: "Configuration block for using Morpheus with Disconnected PCE " +
 						"(Private Cloud Enterprise) Identity",
+					ConflictsWith: []string{
+						"morpheus.0.url",
+						"morpheus.0.username",
+						"morpheus.0.password",
+						"morpheus.0.access_token",
+						"morpheus.0.tenant_subdomain",
+					},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"client_id": {
@@ -384,6 +407,11 @@ func providerSchemaMorpheus() *schema.Schema {
 								Sensitive: true,
 								Description: "GreenLake IAM access token. If set, token " +
 									"generation from credentials is skipped.",
+								ConflictsWith: []string{
+									"morpheus.0.pce_disconnected_identity.0.client_id",
+									"morpheus.0.pce_disconnected_identity.0.client_secret",
+									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+								},
 							},
 
 							"location": {
