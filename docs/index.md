@@ -33,11 +33,19 @@ release notes for the current version (v1.6.0).
 
 ### Authentication
 
-There are two ways to authenticate with Morpheus:
+There are four ways to authenticate with Morpheus:
 1. Using a username and password
 2. Using an access_token
+3. Using PCE Identity, for a Connected PCE (Private Cloud Enterprise) deployment
+4. Using PCE Disconnected Identity, for a Disconnected PCE deployment
 
-With either method the URL of the Morpheus instance must be provided as `url`.
+For the first two the URL of the Morpheus instance must be provided as `url`.
+
+For the last two the URL and access token are obtained from GreenLake, so `url` must not be set.
+Provide a `pce_identity` or `pce_disconnected_identity` block instead, using either GreenLake API
+client credentials (`client_id`, `client_secret` and `issuer_url`) or a pre-generated `iam_token`.
+The two blocks are mutually exclusive, and neither can be combined with `url`, `username`,
+`password`, `access_token` or `tenant_subdomain`.
 
 Note that if authenticating with username and password a tenant can be specified by including the `SUBDOMAIN` value for the tenant as
 `tenant_subdomain` in the provider block.
@@ -139,6 +147,116 @@ provider "hpe" {
     access_token = "access_token"
     insecure     = true
     url          = "https://morpheus.example.com"
+  }
+}
+```
+
+#### Using PCE Identity
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    pce_identity {
+      client_id     = "client_id"
+      client_secret = "client_secret"
+      issuer_url    = "https://issuer.example.com"
+      location      = "location"
+      space         = "space"
+    }
+  }
+}
+```
+
+#### Using PCE Identity with an IAM token
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    pce_identity {
+      iam_token = "iam-token"
+      location  = "location"
+      space     = "space"
+    }
+  }
+}
+```
+
+#### Using PCE Disconnected Identity
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    pce_disconnected_identity {
+      client_id     = "client_id"
+      client_secret = "client_secret"
+      issuer_url    = "https://issuer.example.com"
+      location      = "location"
+      workspace_id  = "workspace_id"
+      broker_url    = "https://broker.example.com"
+    }
+  }
+}
+```
+
+#### Using PCE Disconnected Identity with an IAM token
+
+```terraform
+# Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide morpheus block if you want to create morpheus resources
+  morpheus {
+    pce_disconnected_identity {
+      iam_token    = "iam-token"
+      location     = "location"
+      workspace_id = "workspace_id"
+      broker_url   = "https://broker.example.com"
+    }
   }
 }
 ```
@@ -505,17 +623,50 @@ Morpheus resources and data sources are covered by a single HPE resource or data
 <a id="nestedblock--morpheus"></a>
 ### Nested Schema for `morpheus`
 
-Required:
-
-- `url` (String) Morpheus instance URL
-
 Optional:
 
 - `access_token` (String, Sensitive) Morpheus access token for authentication
 - `insecure` (Boolean) Explicitly allow the provider to perform "insecure" SSL requests. If omitted, default value is `false`
 - `password` (String, Sensitive) Morpheus password for authentication, required if username is set
+- `pce_disconnected_identity` (Block List, Max: 1) Configuration block for using Morpheus with Disconnected PCE (Private Cloud Enterprise) Identity (see [below for nested schema](#nestedblock--morpheus--pce_disconnected_identity))
+- `pce_identity` (Block List, Max: 1) Configuration block for using Morpheus with PCE (Private Cloud Enterprise) Identity (see [below for nested schema](#nestedblock--morpheus--pce_identity))
 - `tenant_subdomain` (String) Morpheus tenant subdomain used for authentication
+- `url` (String) Morpheus instance URL. May be omitted when it is supplied by a pce_identity or pce_disconnected_identity block.
 - `username` (String) Morpheus username for authentication, required if password is set
+
+<a id="nestedblock--morpheus--pce_disconnected_identity"></a>
+### Nested Schema for `morpheus.pce_disconnected_identity`
+
+Required:
+
+- `broker_url` (String) URL of the PCE broker for this deployment. There is no default: a Disconnected deployment has no hosted broker to fall back to.
+- `location` (String) The PCE instance's Location.
+- `workspace_id` (String) The GreenLake Workspace ID that the PCE instance is in.
+
+Optional:
+
+- `client_id` (String) GreenLake API client ID used for authentication.
+- `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
+- `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
+- `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
+
+
+<a id="nestedblock--morpheus--pce_identity"></a>
+### Nested Schema for `morpheus.pce_identity`
+
+Required:
+
+- `location` (String) The PCE instance's Location.
+
+Optional:
+
+- `broker_url` (String) URL of the PCE broker. Defaults to the HPE-hosted broker if not set.
+- `client_id` (String) GreenLake API client ID used for authentication.
+- `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
+- `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
+- `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
+- `space` (String) The name of the GreenLake Space that the PCE instance is in.
+
 
 
 <a id="nestedblock--opsramp"></a>
