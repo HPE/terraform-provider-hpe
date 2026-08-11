@@ -254,9 +254,7 @@ func mergeVolumesFromAPI(
 			StorageProfile:       preferKnownString(pv[i].StorageProfile, api.StorageProfile),
 		}
 
-		objVal, d := vol.ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, vol)
 	}
 
 	listVal, d := types.ListValue(VolumesValue{}.Type(ctx), values)
@@ -273,9 +271,7 @@ func mapVolumeObjs(
 
 	values := make([]attr.Value, 0, len(apiVolumes))
 	for _, v := range apiVolumes {
-		objVal, d := volumeValueFromAPI(v).ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, volumeValueFromAPI(v))
 	}
 
 	return values, diags
@@ -307,9 +303,7 @@ func mergeVolumesForRead(
 			vol.SizeId = prior[i].SizeId
 		}
 
-		objVal, d := vol.ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, vol)
 	}
 
 	listVal, d := types.ListValue(VolumesValue{}.Type(ctx), values)
@@ -350,9 +344,7 @@ func mergeInterfacesForRead(
 		diags.Append(cd...)
 		ni.ChildVirtualNetworks = children
 
-		objVal, od := ni.ToObjectValue(ctx)
-		diags.Append(od...)
-		values = append(values, objVal)
+		values = append(values, ni)
 	}
 
 	listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
@@ -387,9 +379,7 @@ func mergeChildInterfacesForRead(
 			c.MacAddress = prior[i].MacAddress
 		}
 
-		objVal, d := c.ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, c)
 	}
 
 	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
@@ -506,9 +496,7 @@ func childInterfacesFromAPI(
 
 	values := make([]attr.Value, 0, len(apiChildren))
 	for _, child := range apiChildren {
-		objVal, d := childInterfaceValueFromAPI(child).ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, childInterfaceValueFromAPI(child))
 	}
 
 	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
@@ -532,9 +520,7 @@ func mergeInterfacesFromAPI(
 		for _, iface := range apiInterfaces {
 			ni, d := interfaceValueFromAPI(ctx, iface)
 			diags.Append(d...)
-			objVal, od := ni.ToObjectValue(ctx)
-			diags.Append(od...)
-			values = append(values, objVal)
+			values = append(values, ni)
 		}
 		listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
 		diags.Append(d...)
@@ -583,9 +569,7 @@ func mergeInterfacesFromAPI(
 			ChildVirtualNetworks:   children,
 		}
 
-		objVal, od := ni.ToObjectValue(ctx)
-		diags.Append(od...)
-		values = append(values, objVal)
+		values = append(values, ni)
 	}
 
 	listVal, d := types.ListValue(NetworkInterfacesValue{}.Type(ctx), values)
@@ -640,9 +624,7 @@ func mergeChildInterfacesFromAPI(
 			NetworkInterfaceTypeId: preferKnownInt64(pc[i].NetworkInterfaceTypeId, api.NetworkInterfaceTypeId),
 		}
 
-		objVal, d := c.ToObjectValue(ctx)
-		diags.Append(d...)
-		values = append(values, objVal)
+		values = append(values, c)
 	}
 
 	listVal, d := types.ListValue(ChildVirtualNetworksValue{}.Type(ctx), values)
