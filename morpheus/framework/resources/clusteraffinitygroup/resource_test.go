@@ -1,3 +1,5 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
 package clusteraffinitygroup_test
 
 import (
@@ -22,17 +24,18 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
+// TestAccMorpheusClusterAffinityGroupResourceExampleOk tests create, read, and import.
 func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
-
-	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -45,10 +48,15 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	resourceName := "hpe_morpheus_cluster_affinity_group.example"
+
 	checks := resource.ComposeAggregateTestCheckFunc(
-		resource.TestCheckResourceAttrSet("hpe_morpheus_cluster_affinity_group.example", "id"),
-		resource.TestCheckResourceAttr("hpe_morpheus_cluster_affinity_group.example", "cluster_id", clusterID),
-		resource.TestCheckResourceAttr("hpe_morpheus_cluster_affinity_group.example", "name", name),
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "affinity_type", "KEEP_TOGETHER"),
+		// CRITICAL BEHAVIOUR 1: active must default to true even when omitted.
+		resource.TestCheckResourceAttr(resourceName, "active", "true"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -66,31 +74,33 @@ func TestAccMorpheusClusterAffinityGroupResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_cluster_affinity_group.example",
+				ResourceName:      resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources["hpe_morpheus_cluster_affinity_group.example"]
+					rs, ok := s.RootModule().Resources[resourceName]
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}
 
-					return rs.Primary.Attributes["cluster_id"] + "." + rs.Primary.Attributes["id"], nil
+					return rs.Primary.Attributes["cluster_id"] + "." +
+						rs.Primary.Attributes["id"], nil
 				},
 			},
 		},
 	})
 }
 
+// TestAccMorpheusClusterAffinityGroupResourceUpdateOk tests update (name change, in-place).
 func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
 	t.Parallel()
-
-	clusterID := "1"
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
@@ -134,8 +144,76 @@ func TestAccMorpheusClusterAffinityGroupResourceUpdateOk(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{Config: providerConfig + createConfig, Check: createChecks},
-			{Config: providerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{
+				Config:           providerConfig + updateConfig,
+				Check:            updateChecks,
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
 			{Config: providerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}
+
+// TestAccMorpheusClusterAffinityGroupResourceRequiresReplace verifies affinity_type change
+// triggers a replacement (RequiresReplace plan modifier).
+func TestAccMorpheusClusterAffinityGroupResourceRequiresReplace(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	createConfig, err := clusteraffinitygroup.RenderClusterAffinityGroupConfig(t, map[string]string{
+		"ClusterId": clusterID,
+		"Name":      name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Build a config that changes affinity_type to KEEP_SEPARATE.
+	replaceConfig := fmt.Sprintf(`
+resource "hpe_morpheus_cluster_affinity_group" "example" {
+  cluster_id    = %s
+  name          = "%s"
+  affinity_type = "KEEP_SEPARATE"
+}
+`, clusterID, name)
+
+	resourceName := "hpe_morpheus_cluster_affinity_group.example"
+
+	checkReplace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(
+				resourceName, plancheck.ResourceActionDestroyBeforeCreate,
+			),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + createConfig,
+				Check: resource.TestCheckResourceAttr(
+					resourceName, "affinity_type", "KEEP_TOGETHER",
+				),
+			},
+			{
+				Config:           providerConfig + replaceConfig,
+				ConfigPlanChecks: checkReplace,
+				Check: resource.TestCheckResourceAttr(
+					resourceName, "affinity_type", "KEEP_SEPARATE",
+				),
+			},
 		},
 	})
 }

@@ -49,7 +49,7 @@ func (r *Resource) Update(
 	plan.ServerID = state.ServerID
 	plan.IPAddress = state.IPAddress
 	plan.Name = state.Name
-	plan.UUID = state.UUID
+	plan.ContainerUUID = state.ContainerUUID
 
 	if plan.WaitForIPAddress.ValueBool() &&
 		(!state.IPAddress.IsNull() && containerip.Ready(state.IPAddress.ValueString())) {

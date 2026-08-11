@@ -1,0 +1,105 @@
+cluster_affinity_groups:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed
+        description: Set of compute server IDs in the affinity group.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, affinity_type,
+                  source, visibility.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "affinity_type", "source", "visibility")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. An affinity group matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+
+  moves:
+    - affinity_groups.resource_permissions.sites: affinity_groups.resource_permissions.groups  # sites -> groups
+    - template-servers: affinity_groups.servers                              # replace spec servers with set of int64
+    - template-tenantIds: affinity_groups.tenant_ids                         # replace spec tenants with set of int64
+
+  removes:
+    - max                                              # (query parameter) pagination
+    - offset                                           # (query parameter) pagination
+    - sort                                             # (query parameter) sorting
+    - direction                                        # (query parameter) sorting
+    - phrase                                           # (query parameter) search
+    - name                                             # (query parameter) filter
+    - code                                             # (query parameter) filter
+    - hide_inactive                                    # (query parameter) filter
+    - order                                            # (query parameter) sorting
+    - meta                                             # (response envelope) pagination metadata
+    - affinity_groups.external_id                      # (components/schemas/clusterAffinityGroup.yaml) internal
+    - affinity_groups.tenants                          # (components/schemas/clusterAffinityGroup.yaml) replaced by tenant_ids
+
+  overrides:
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the parent cluster.
+    affinity_groups:
+      computed_optional_required: computed
+      description: The list of affinity groups matching the supplied filters.
+    affinity_groups.id:
+      description: The ID of the affinity group.
+    affinity_groups.name:
+      description: The name of the affinity group.
+    affinity_groups.affinity_type:
+      description: The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
+    affinity_groups.active:
+      description: Whether the affinity group is active.
+    affinity_groups.source:
+      description: The source of the affinity group (e.g. user, sync).
+    affinity_groups.pool:
+      description: The resource pool associated with the affinity group.
+    affinity_groups.pool.id:
+      description: The ID of the resource pool.
+    affinity_groups.ref_id:
+      description: The reference ID.
+    affinity_groups.ref_type:
+      description: The reference type.
+    affinity_groups.resource_permissions:
+      description: Resource permissions for group access.
+    affinity_groups.resource_permissions.all:
+      description: Whether access is allowed to all groups.
+    affinity_groups.resource_permissions.groups:
+      description: Set of groups allowed access.
+    affinity_groups.resource_permissions.groups.id:
+      description: Group ID.
+    affinity_groups.resource_permissions.groups.default:
+      description: Whether this is the default group.
+    affinity_groups.visibility:
+      description: The visibility of the affinity group.

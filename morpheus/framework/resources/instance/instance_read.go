@@ -311,7 +311,25 @@ func getInstanceAsState(
 	// response (empty -> null).
 	state.Labels = convert.StrSliceToSet(instance.Labels)
 
-	// server_uuids - RequiresReplace, create-only input. Preserve the incoming
+	// container_id - Computed, UseStateForUnknown. Populated at create from the
+	// single container the instance provisions. Preserved across reads; if the
+	// recorded container is no longer present the stored value is kept (the
+	// instance still exists; a missing container is a different condition).
+	if !plan.ContainerId.IsNull() && !plan.ContainerId.IsUnknown() {
+		state.ContainerId = plan.ContainerId
+	} else if len(instance.ContainerDetails) > 0 && instance.ContainerDetails[0].Id != nil {
+		state.ContainerId = convert.Int64ToType(instance.ContainerDetails[0].Id)
+	} else {
+		state.ContainerId = types.Int64Null()
+	}
+
+	// server_uuid - read back ONLY from the container matching container_id.
+	// Never reconcile from all containers: hpe_morpheus_instance_node adds
+	// containers outside this resource's lifecycle, and reading their UUIDs
+	// would change the value after scaling and force replacement.
+	state.ServerUuid = readServerUUIDFromOwnedContainer(instance.ContainerDetails, state.ContainerId)
+
+	// server_uuids (deprecated) - RequiresReplace, create-only input. Preserve the incoming
 	// value when the user set it (the API assigns exactly those UUIDs to the
 	// servers, so preserving avoids any read-back mismatch). Otherwise read the
 	// auto-generated UUIDs back from containerDetails[].server.uuid so the
@@ -322,6 +340,21 @@ func getInstanceAsState(
 	} else {
 		state.ServerUuids = serverUUIDsFromContainerDetails(instance.ContainerDetails)
 	}
+	// wait_for_ip_address is provider-only; preserve from plan.
+	//
+	// Fall back to the schema default when the incoming value is null rather
+	// than copying the null through. State written before this attribute
+	// existed carries no value for it, so a provider upgrade would otherwise
+	// leave it null while the default supplies false at plan time, showing a
+	// spurious null -> false diff on the next plan.
+	if plan.WaitForIpAddress.IsNull() {
+		state.WaitForIpAddress = types.BoolValue(false)
+	} else {
+		state.WaitForIpAddress = plan.WaitForIpAddress
+	}
+
+	// compute_servers — always read from the API response (computed-only).
+	state.ComputeServers = computeServerIDsFromContainerDetails(instance.ContainerDetails)
 
 	// status
 	// Refreshed on every read so an out-of-band deletion of the underlying VM,
@@ -1167,6 +1200,47 @@ func serverUUIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.
 	return convert.StrSliceToSet(uuids)
 }
 
+// readServerUUIDFromOwnedContainer reads the server UUID only from the container
+// matching containerID. Returns null if the container is not found or has no
+// server UUID. This scoping prevents scaling (adding containers via
+// hpe_morpheus_instance_node) from changing the value and triggering replacement.
+func readServerUUIDFromOwnedContainer(
+	containers []sdk.InstanceContainer2,
+	containerID types.Int64,
+) types.String {
+	if containerID.IsNull() || containerID.IsUnknown() {
+		return types.StringNull()
+	}
+
+	target := containerID.ValueInt64()
+	for _, cont := range containers {
+		if cont.Id != nil && *cont.Id == target {
+			if cont.Server != nil && cont.Server.Uuid != nil {
+				return types.StringValue(*cont.Server.Uuid)
+			}
+
+			return types.StringNull()
+		}
+	}
+
+	// Container not present — return null rather than erroring.
+	return types.StringNull()
+}
+
+// computeServerIDsFromContainerDetails builds the compute_servers set from
+// instance.containerDetails[].server.id, skipping containers with no server or
+// no id. Returns a null set when no IDs are present.
+func computeServerIDsFromContainerDetails(containers []sdk.InstanceContainer2) types.Set {
+	ids := make([]int64, 0, len(containers))
+	for _, cont := range containers {
+		if cont.Server != nil && cont.Server.Id != nil {
+			ids = append(ids, *cont.Server.Id)
+		}
+	}
+
+	return convert.Int64SliceToSet(ids)
+}
+
 // getVolumes builds the volumes list from instance.containerDetails.server.volumes
 func getVolumes(
 	ctx context.Context,
@@ -1808,10 +1882,12 @@ func getStateInterfacesFromInstanceServer(
 	procIntfs := getAllServerInterfaces(instance)
 
 	var ifaces []NetworkInterfacesValue
-	var childInterfaces basetypes.ListValue
 	var diags diag.Diagnostics
 
 	for _, iface := range procIntfs.serverIntfsList {
+		if iface.Id == nil {
+			continue
+		}
 		// Skip sub-interfaces
 		if _, ok := procIntfs.isSubIntf[*iface.Id]; ok {
 			continue
@@ -1840,7 +1916,8 @@ func getStateInterfacesFromInstanceServer(
 		ifaceVal.Name = convert.StrToType(iface.Name)
 		ifaceVal.PrimaryInterface = convert.BoolToType(iface.PrimaryInterface)
 
-		childInterfaces, diags = getChildNetworks(ctx, iface.Id, procIntfs.subIntfsMap, procIntfs.serverIntfsMap)
+		childInterfaces, d := getChildNetworks(ctx, iface.Id, procIntfs.subIntfsMap, procIntfs.serverIntfsMap)
+		diags.Append(d...)
 
 		ifaceVal.ChildVirtualNetworks = childInterfaces
 
@@ -1935,6 +2012,13 @@ func getAllServerInterfaces(
 				}
 			}
 
+			// No row in this duplicate-name group carried network information, so
+			// there is no interface to represent. Skip rather than storing a
+			// zero-value entry.
+			if cumulativeIntf.Id == nil {
+				continue
+			}
+
 			cumulativeIntf.IpAddress = ipAddress
 			serverIntfsMergedNameMap[intfName] = cumulativeIntf
 		}
@@ -1994,7 +2078,12 @@ func getChildNetworks(
 	children := make([]ChildVirtualNetworksValue, 0)
 	for _, subIntf := range subIntfMap[*id] {
 		ifaceVal := ChildVirtualNetworksValue{}
-		iface := serverIntfsMap[subIntf]
+		iface, ok := serverIntfsMap[subIntf]
+		if !ok {
+			// A sub-interface id with no corresponding top-level interface. Skip it
+			// rather than emitting a zero-value child.
+			continue
+		}
 		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
 		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
@@ -2005,7 +2094,10 @@ func getChildNetworks(
 		if iface.NetworkPool != nil {
 			ifaceVal.IpPool = convert.Int64ToType(iface.NetworkPool.Id)
 		}
-		ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		ifaceVal.NetworkId = types.Int64Null()
+		if iface.Network != nil {
+			ifaceVal.NetworkId = convert.Int64ToType(iface.Network.Id)
+		}
 		// subnet_id round-trips from the interface's subnet association (see
 		// getStateInterfacesFromInstanceServer).
 		ifaceVal.SubnetId = types.Int64Null()

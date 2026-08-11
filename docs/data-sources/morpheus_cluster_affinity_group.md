@@ -8,6 +8,10 @@ description: |-
 
 
 
+-> Cluster affinity groups are always created by a user, so `source` is always `"user"` here. Affinity groups imported from vCenter DRS rules are cloud-scoped rather than cluster-scoped, and are returned by [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group) instead.
+
+-> Note that Morpheus version `8.0.10` or later is required for affinity group support.
+
 ## Example Usage - Name
 
 ```terraform
@@ -41,11 +45,15 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 ### Read-Only
 
 - `active` (Boolean) Whether the affinity group is active.
-- `affinity_type` (String) The type of affinity (e.g. affinity, anti-affinity).
-- `pool` (Attributes) The resource pool object associated with the affinity group. (see [below for nested schema](#nestedatt--pool))
+- `affinity_type` (String) The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
+- `pool` (Attributes) The resource pool associated with the affinity group. (see [below for nested schema](#nestedatt--pool))
 - `ref_id` (Number) The reference ID.
 - `ref_type` (String) The reference type.
-- `visibility` (String) The visibility setting for the affinity group.
+- `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `servers` (Set of Number) Set of compute server IDs in the affinity group.
+- `source` (String) The source of the affinity group (e.g. user, sync).
+- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `visibility` (String) The visibility of the affinity group.
 
 <a id="nestedatt--pool"></a>
 ### Nested Schema for `pool`
@@ -53,3 +61,20 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 Read-Only:
 
 - `id` (Number) The ID of the resource pool.
+
+
+<a id="nestedatt--resource_permissions"></a>
+### Nested Schema for `resource_permissions`
+
+Read-Only:
+
+- `all` (Boolean) Whether access is allowed to all groups.
+- `groups` (Attributes Set) Set of groups allowed access. (see [below for nested schema](#nestedatt--resource_permissions--groups))
+
+<a id="nestedatt--resource_permissions--groups"></a>
+### Nested Schema for `resource_permissions.groups`
+
+Read-Only:
+
+- `default` (Boolean) Whether this is the default group.
+- `id` (Number) Group ID.

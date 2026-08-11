@@ -39,10 +39,10 @@ type ClusterMastersInterfacesInner struct {
 	PoolAssigned         *bool                                       `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                       `json:"primaryInterface,omitempty"`
 	Network              *ClusterMastersInterfacesInnerNetwork       `json:"network,omitempty"`
-	Subnet               NullableString                              `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                              `json:"networkGroup,omitempty"`
+	Subnet               *ClusterMastersInterfacesInnerSubnet        `json:"subnet,omitempty"`
+	NetworkGroup         *ClusterMastersInterfacesInnerNetworkGroup  `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                              `json:"networkPosition,omitempty"`
-	NetworkPool          NullableString                              `json:"networkPool,omitempty"`
+	NetworkPool          *ClusterMastersInterfacesInnerNetworkPool   `json:"networkPool,omitempty"`
 	NetworkDomain        *ClusterMastersInterfacesInnerNetworkDomain `json:"networkDomain,omitempty"`
 	Type                 NullableString                              `json:"type,omitempty"`
 	IpMode               NullableString                              `json:"ipMode,omitempty"`
@@ -119,17 +119,17 @@ func (o ClusterMastersInterfacesInner) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()
 	}
-	if o.NetworkPool.IsSet() {
-		toSerialize["networkPool"] = o.NetworkPool.Get()
+	if !IsNil(o.NetworkPool) {
+		toSerialize["networkPool"] = o.NetworkPool
 	}
 	if !IsNil(o.NetworkDomain) {
 		toSerialize["networkDomain"] = o.NetworkDomain

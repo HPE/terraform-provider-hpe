@@ -20,7 +20,6 @@ var _ MappedNullable = &ClusterAffinityGroupCreate{}
 
 // ClusterAffinityGroupCreate struct for ClusterAffinityGroupCreate
 type ClusterAffinityGroupCreate struct {
-	Id *int64 `json:"id,omitempty"`
 	// Name
 	Name *string `json:"name,omitempty"`
 	// Affinity Type
@@ -29,9 +28,11 @@ type ClusterAffinityGroupCreate struct {
 	Active *bool                           `json:"active,omitempty"`
 	Pool   *ClusterAffinityGroupCreatePool `json:"pool,omitempty"`
 	// List of Server IDs to include in the Affinity Group
-	Servers []int32 `json:"servers,omitempty"`
+	Servers []int64 `json:"servers,omitempty"`
 	// Visibility - Set to public to allow all tenants
-	Visibility           *string                                        `json:"visibility,omitempty"`
+	Visibility *string `json:"visibility,omitempty"`
+	// Array of tenant account ids that are allowed access
+	Tenants              []ClusterAffinityGroupCreateTenantsInner       `json:"tenants,omitempty"`
 	ResourcePermissions  *ClusterAffinityGroupCreateResourcePermissions `json:"resourcePermissions,omitempty"`
 	AdditionalProperties map[string]interface{}                         `json:",remain"`
 }
@@ -48,9 +49,6 @@ func (o ClusterAffinityGroupCreate) MarshalJSON() ([]byte, error) {
 
 func (o ClusterAffinityGroupCreate) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
-	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
@@ -68,6 +66,9 @@ func (o ClusterAffinityGroupCreate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
 	}
 	if !IsNil(o.ResourcePermissions) {
 		toSerialize["resourcePermissions"] = o.ResourcePermissions

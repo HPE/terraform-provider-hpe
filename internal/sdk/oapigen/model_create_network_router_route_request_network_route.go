@@ -33,7 +33,9 @@ type CreateNetworkRouterRouteRequestNetworkRoute struct {
 	// Destination address or range
 	Destination string `json:"destination"`
 	// MTU
-	NetworkMtu           *float32               `json:"networkMtu,omitempty"`
+	NetworkMtu *float32 `json:"networkMtu,omitempty"`
+	// Priority of the route rule. Lower values have higher priority.
+	Priority             *string                `json:"priority,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -65,6 +67,9 @@ func (o CreateNetworkRouterRouteRequestNetworkRoute) ToMap() (map[string]interfa
 	toSerialize["destination"] = o.Destination
 	if !IsNil(o.NetworkMtu) {
 		toSerialize["networkMtu"] = o.NetworkMtu
+	}
+	if !IsNil(o.Priority) {
+		toSerialize["priority"] = o.Priority
 	}
 
 	for key, value := range o.AdditionalProperties {

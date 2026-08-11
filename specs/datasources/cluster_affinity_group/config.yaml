@@ -1,11 +1,28 @@
 cluster_affinity_group:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed
+        description: Set of compute server IDs in the affinity group.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+
   moves:
-    - affinity_group: ""                 # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
+    - affinity_group: ""                               # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
+    - resource_permissions.sites: resource_permissions.groups  # (components/schemas/clusterAffinityGroup.yaml) sites -> groups
+    - template-servers: servers                        # replace spec servers (array of objects) with set of int64
+    - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id,name}) with set of int64
+
   removes:
-    - resource_permissions               # (components/schemas/clusterAffinityGroup.yaml) freeform nested object
-    - servers                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
-    - source                             # (components/schemas/clusterAffinityGroup.yaml) internal field
-    - tenants                            # (components/schemas/clusterAffinityGroup.yaml) complex nested array
+    - tenants                                          # (components/schemas/clusterAffinityGroup.yaml) replaced by tenant_ids
+    - external_id                                      # (components/schemas/clusterAffinityGroup.yaml) internal
+
   overrides:
     id:
       computed_optional_required: computed_optional
@@ -21,14 +38,26 @@ cluster_affinity_group:
     active:
       description: Whether the affinity group is active.
     affinity_type:
-      description: The type of affinity (e.g. affinity, anti-affinity).
+      description: The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
     pool:
-      description: The resource pool object associated with the affinity group.
+      description: The resource pool associated with the affinity group.
     pool.id:
       description: The ID of the resource pool.
     ref_id:
       description: The reference ID.
     ref_type:
       description: The reference type.
+    source:
+      description: The source of the affinity group (e.g. user, sync).
+    resource_permissions:
+      description: Resource permissions for group access.
+    resource_permissions.all:
+      description: Whether access is allowed to all groups.
+    resource_permissions.groups:
+      description: Set of groups allowed access.
+    resource_permissions.groups.id:
+      description: Group ID.
+    resource_permissions.groups.default:
+      description: Whether this is the default group.
     visibility:
-      description: The visibility setting for the affinity group.
+      description: The visibility of the affinity group.
