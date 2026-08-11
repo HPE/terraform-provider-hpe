@@ -311,6 +311,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Type:        schema.TypeString,
 								Optional:    true,
 								Description: "GreenLake API client ID used for authentication.",
+								RequiredWith: []string{
+									"morpheus.0.pce_identity.0.client_secret",
+									"morpheus.0.pce_identity.0.issuer_url",
+								},
 							},
 
 							"client_secret": {
@@ -318,6 +322,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Optional:    true,
 								Sensitive:   true,
 								Description: "GreenLake API client secret used for authentication.",
+								RequiredWith: []string{
+									"morpheus.0.pce_identity.0.client_id",
+									"morpheus.0.pce_identity.0.issuer_url",
+								},
 							},
 
 							"location": {
@@ -337,6 +345,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Optional: true,
 								Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
 									`This should be set to the "Issuer" URL of the API client.`,
+								RequiredWith: []string{
+									"morpheus.0.pce_identity.0.client_id",
+									"morpheus.0.pce_identity.0.client_secret",
+								},
 							},
 
 							"iam_token": {
@@ -385,6 +397,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Type:        schema.TypeString,
 								Optional:    true,
 								Description: "GreenLake API client ID used for authentication.",
+								RequiredWith: []string{
+									"morpheus.0.pce_disconnected_identity.0.client_secret",
+									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+								},
 							},
 
 							"client_secret": {
@@ -392,6 +408,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Optional:    true,
 								Sensitive:   true,
 								Description: "GreenLake API client secret used for authentication.",
+								RequiredWith: []string{
+									"morpheus.0.pce_disconnected_identity.0.client_id",
+									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+								},
 							},
 
 							"issuer_url": {
@@ -399,6 +419,10 @@ func providerSchemaMorpheus() *schema.Schema {
 								Optional: true,
 								Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
 									`This should be set to the "Issuer" URL of the API client.`,
+								RequiredWith: []string{
+									"morpheus.0.pce_disconnected_identity.0.client_id",
+									"morpheus.0.pce_disconnected_identity.0.client_secret",
+								},
 							},
 
 							"iam_token": {
