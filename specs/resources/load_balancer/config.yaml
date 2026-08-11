@@ -171,14 +171,12 @@ load_balancer:
       description: The ID of the group associated with the load balancer
       computed_optional_required: optional
       requires_replace: true # REVIEW: likely immutable after creation
-      write_only: true # not returned in GET response
     name:
       computed_optional_required: required
       string_length_at_most: 32
     network_server_id:
       computed_optional_required: optional
       requires_replace: true # REVIEW: not in update schema, cannot be changed after creation
-      write_only: true # not returned in GET response
     permissions:
       description: Resource permissions for the load balancer
       computed_optional_required: computed_optional

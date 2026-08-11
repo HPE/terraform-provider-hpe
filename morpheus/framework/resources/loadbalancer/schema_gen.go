@@ -153,7 +153,6 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id": schema.Int64Attribute{
 				Optional:            true,
-				WriteOnly:           true,
 				Description:         "The ID of the group associated with the load balancer",
 				MarkdownDescription: "The ID of the group associated with the load balancer",
 				PlanModifiers: []planmodifier.Int64{
@@ -176,7 +175,6 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_server_id": schema.Int64Attribute{
 				Optional:            true,
-				WriteOnly:           true,
 				Description:         "Network Server ID",
 				MarkdownDescription: "Network Server ID",
 				PlanModifiers: []planmodifier.Int64{
