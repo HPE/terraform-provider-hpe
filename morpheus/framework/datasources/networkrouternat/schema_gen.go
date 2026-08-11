@@ -52,9 +52,6 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The external ID of the NAT rule.",
 				MarkdownDescription: "The external ID of the NAT rule.",
 			},
-			"firewall": schema.StringAttribute{
-				Computed: true,
-			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -118,9 +115,6 @@ func NetworkRouterNatDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the parent network router.",
 				MarkdownDescription: "The ID of the parent network router.",
 			},
-			"service": schema.StringAttribute{
-				Computed: true,
-			},
 			"source_network": schema.StringAttribute{
 				Computed:            true,
 				Description:         "Source network.",
@@ -163,7 +157,6 @@ type NetworkRouterNatModel struct {
 	DestinationPorts           types.String `tfsdk:"destination_ports"`
 	Enabled                    types.Bool   `tfsdk:"enabled"`
 	ExternalId                 types.String `tfsdk:"external_id"`
-	Firewall                   types.String `tfsdk:"firewall"`
 	Id                         types.Int64  `tfsdk:"id"`
 	InternalId                 types.String `tfsdk:"internal_id"`
 	LastUpdated                types.String `tfsdk:"last_updated"`
@@ -175,7 +168,6 @@ type NetworkRouterNatModel struct {
 	RefId                      types.String `tfsdk:"ref_id"`
 	RefType                    types.String `tfsdk:"ref_type"`
 	RouterId                   types.Int64  `tfsdk:"router_id"`
-	Service                    types.String `tfsdk:"service"`
 	SourceNetwork              types.String `tfsdk:"source_network"`
 	SourcePorts                types.String `tfsdk:"source_ports"`
 	SyncSource                 types.String `tfsdk:"sync_source"`

@@ -132,8 +132,8 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The network pool server type code (e.g. \"infoblox\", \"bluecat\", \"phpipam\", \"solarwindsipam\", \"solidserver\"). Mutually exclusive with type_id.",
 				MarkdownDescription: "The network pool server type code (e.g. \"infoblox\", \"bluecat\", \"phpipam\", \"solarwindsipam\", \"solidserver\"). Mutually exclusive with type_id.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("type_id")}...),
@@ -145,8 +145,8 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the network pool server type. Mutually exclusive with type_code.",
 				MarkdownDescription: "The ID of the network pool server type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
+					int64planmodifier.UseStateForUnknown(),
 				},
 				Validators: []validator.Int64{
 					int64validator.AtLeastOneOf(path.Expressions{path.MatchRoot("type_id"), path.MatchRoot("type_code")}...),

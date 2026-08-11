@@ -298,11 +298,6 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
 						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
 					},
-					"template_id": schema.Int64Attribute{
-						Optional:            true,
-						Description:         "The ID of the VMware template to use for cloning/provisioning.",
-						MarkdownDescription: "The ID of the VMware template to use for cloning/provisioning.",
-					},
 					"vmware_folder_id": schema.StringAttribute{
 						Optional:            true,
 						Description:         "VMware folder external ID.",
@@ -3214,24 +3209,6 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
-	templateIdAttribute, ok := attributes["template_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`template_id is missing from object`)
-
-		return nil, diags
-	}
-
-	templateIdVal, ok := templateIdAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`template_id expected to be basetypes.Int64Value, was: %T`, templateIdAttribute))
-	}
-
 	vmwareFolderIdAttribute, ok := attributes["vmware_folder_id"]
 
 	if !ok {
@@ -3259,7 +3236,6 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
-		TemplateId:           templateIdVal,
 		VmwareFolderId:       vmwareFolderIdVal,
 		state:                attr.ValueStateKnown,
 	}, diags
@@ -3400,24 +3376,6 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`resource_pool_id expected to be basetypes.StringValue, was: %T`, resourcePoolIdAttribute))
 	}
 
-	templateIdAttribute, ok := attributes["template_id"]
-
-	if !ok {
-		diags.AddError(
-			"Attribute Missing",
-			`template_id is missing from object`)
-
-		return NewConfigVmwareValueUnknown(), diags
-	}
-
-	templateIdVal, ok := templateIdAttribute.(basetypes.Int64Value)
-
-	if !ok {
-		diags.AddError(
-			"Attribute Wrong Type",
-			fmt.Sprintf(`template_id expected to be basetypes.Int64Value, was: %T`, templateIdAttribute))
-	}
-
 	vmwareFolderIdAttribute, ok := attributes["vmware_folder_id"]
 
 	if !ok {
@@ -3445,7 +3403,6 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
-		TemplateId:           templateIdVal,
 		VmwareFolderId:       vmwareFolderIdVal,
 		state:                attr.ValueStateKnown,
 	}, diags
@@ -3521,13 +3478,12 @@ type ConfigVmwareValue struct {
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
-	TemplateId           basetypes.Int64Value  `tfsdk:"template_id"`
 	VmwareFolderId       basetypes.StringValue `tfsdk:"vmware_folder_id"`
 	state                attr.ValueState
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 5)
 
 	var val tftypes.Value
 	var err error
@@ -3536,14 +3492,13 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
-	attrTypes["template_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["vmware_folder_id"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 5)
 
 		val, err = v.CreateUser.ToTerraformValue(ctx)
 		if err != nil {
@@ -3572,13 +3527,6 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		}
 
 		vals["resource_pool_id"] = val
-
-		val, err = v.TemplateId.ToTerraformValue(ctx)
-		if err != nil {
-			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
-		}
-
-		vals["template_id"] = val
 
 		val, err = v.VmwareFolderId.ToTerraformValue(ctx)
 		if err != nil {
@@ -3621,7 +3569,6 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
-		"template_id":           basetypes.Int64Type{},
 		"vmware_folder_id":      basetypes.StringType{},
 	}
 
@@ -3640,7 +3587,6 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
 			"resource_pool_id":      v.ResourcePoolId,
-			"template_id":           v.TemplateId,
 			"vmware_folder_id":      v.VmwareFolderId,
 		})
 
@@ -3678,10 +3624,6 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 		return false
 	}
 
-	if !v.TemplateId.Equal(other.TemplateId) {
-		return false
-	}
-
 	if !v.VmwareFolderId.Equal(other.VmwareFolderId) {
 		return false
 	}
@@ -3703,7 +3645,6 @@ func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
-		"template_id":           basetypes.Int64Type{},
 		"vmware_folder_id":      basetypes.StringType{},
 	}
 }

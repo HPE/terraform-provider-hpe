@@ -420,10 +420,6 @@ func buildCloneConfig(
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
-		if !plan.ConfigVmware.TemplateId.IsNull() && !plan.ConfigVmware.TemplateId.IsUnknown() {
-			configVMware.Template = plan.ConfigVmware.TemplateId.ValueInt64Pointer()
-		}
-
 		return &sdk.CloneInstanceRequestConfig{VMWareInstanceConfiguration3: configVMware}, diags
 
 	// Azure config
