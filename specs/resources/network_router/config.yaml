@@ -195,7 +195,6 @@ network_router:
     - external_network
     - instance
     - last_updated
-    - provider_id
     - router_type
     - status
     - success
