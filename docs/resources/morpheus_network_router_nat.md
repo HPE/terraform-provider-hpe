@@ -41,6 +41,7 @@ resource "hpe_morpheus_network_router_nat" "example" {
 - `service` (String) The service (protocol) applied to the NAT rule (nested under config).
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network
+- `translated_ports` (String) Translated ports for the NAT rule
 
 ### Read-Only
 

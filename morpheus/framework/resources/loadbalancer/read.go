@@ -50,6 +50,7 @@ func getLoadBalancerAsState(
 	state.Name = convert.StrToType(data.Name)
 	state.Description = convert.StrToType(data.Description)
 	state.Visibility = convert.StrToType(data.Visibility)
+	state.Enabled = convert.BoolToType(data.Enabled)
 
 	// cloud_id is Optional (not Computed), so preserve configured value from plan/state
 	// to avoid post-apply inconsistencies when API returns an implicit/default cloud.

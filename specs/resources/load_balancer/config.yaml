@@ -95,7 +95,6 @@ load_balancer:
     - zone # (components/schemas/loadBalancer.yaml)
     - credential # (components/schemas/loadBalancer.yaml)
     - date_created # (components/schemas/loadBalancer.yaml)
-    - enabled # (components/schemas/loadBalancer.yaml)
     - external_id # (components/schemas/loadBalancer.yaml)
     - external_ip # (components/schemas/loadBalancer.yaml)
     - host # (components/schemas/loadBalancer.yaml)
@@ -126,6 +125,9 @@ load_balancer:
   overrides:
     id:
       state_for_unknown: true
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the load balancer is enabled
     cloud_id:
       description: The ID of the cloud associated with the load balancer
       computed_optional_required: optional
@@ -169,14 +171,12 @@ load_balancer:
       description: The ID of the group associated with the load balancer
       computed_optional_required: optional
       requires_replace: true # REVIEW: likely immutable after creation
-      write_only: true # not returned in GET response
     name:
       computed_optional_required: required
       string_length_at_most: 32
     network_server_id:
       computed_optional_required: optional
       requires_replace: true # REVIEW: not in update schema, cannot be changed after creation
-      write_only: true # not returned in GET response
     permissions:
       description: Resource permissions for the load balancer
       computed_optional_required: computed_optional

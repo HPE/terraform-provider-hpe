@@ -42,6 +42,10 @@ func (r *Resource) Update(
 		updateLB.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		updateLB.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+
 	if err := setUpdateConfig(ctx, updateLB, plan); err != nil {
 		resp.Diagnostics.AddError("update load balancer resource", err.Error())
 

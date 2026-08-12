@@ -44,6 +44,7 @@ resource "hpe_morpheus_network_router_route" "example" {
 - `enabled` (Boolean) Whether the route is enabled
 - `name` (String) Name of the route
 - `network_mtu` (Number) Network MTU
+- `priority` (String) Priority of the route rule
 
 ### Read-Only
 

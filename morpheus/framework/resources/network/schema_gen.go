@@ -84,6 +84,12 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 					validators.ValidObjectMap(),
 				},
 			},
+			"connected_gateway": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Provider ID of the connected NSX-T Tier-1 gateway.",
+				MarkdownDescription: "Provider ID of the connected NSX-T Tier-1 gateway.",
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -298,6 +304,7 @@ type NetworkModel struct {
 	CidrIpv6                types.String             `tfsdk:"cidr_ipv6"`
 	CloudId                 types.Int64              `tfsdk:"cloud_id"`
 	Config                  types.Dynamic            `tfsdk:"config"`
+	ConnectedGateway        types.String             `tfsdk:"connected_gateway"`
 	Description             types.String             `tfsdk:"description"`
 	DhcpServer              types.Bool               `tfsdk:"dhcp_server"`
 	DhcpServerIpv6          types.Bool               `tfsdk:"dhcp_server_ipv6"`

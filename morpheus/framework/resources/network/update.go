@@ -143,6 +143,9 @@ func (r *Resource) Update(
 
 		configDataMap, ok := configMap.(map[string]any)
 		if ok {
+			if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() {
+				configDataMap["connectedGateway"] = plan.ConnectedGateway.ValueString()
+			}
 			network.Config = configDataMap
 		} else {
 			resp.Diagnostics.AddError(
@@ -151,6 +154,12 @@ func (r *Resource) Update(
 			)
 
 			return
+		}
+	}
+
+	if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() && network.Config == nil {
+		network.Config = map[string]any{
+			"connectedGateway": plan.ConnectedGateway.ValueString(),
 		}
 	}
 

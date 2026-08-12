@@ -311,6 +311,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
 - `cidr` (String) Network CIDR.
 - `cidr_ipv6` (String) Network IPv6 CIDR.
 - `config` (Dynamic) Configuration object. Settings vary by type.
+- `connected_gateway` (String) Provider ID of the connected NSX-T Tier-1 gateway.
 - `description` (String) Description
 - `dhcp_server` (Boolean) DHCP Server enabled network
 - `dhcp_server_ipv6` (Boolean) IPv6 DHCP Server enabled network

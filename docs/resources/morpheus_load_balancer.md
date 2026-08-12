@@ -89,6 +89,7 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 - `config_haproxy` (Attributes) Configuration for HAProxy container load balancer type (see [below for nested schema](#nestedatt--config_haproxy))
 - `config_nsxt` (Attributes) Configuration for NSX-T load balancer type (see [below for nested schema](#nestedatt--config_nsxt))
 - `description` (String) Description
+- `enabled` (Boolean) Whether the load balancer is enabled
 - `group_id` (Number) The ID of the group associated with the load balancer
 - `network_server_id` (Number) Network Server ID
 - `permissions` (Attributes) Resource permissions for the load balancer (see [below for nested schema](#nestedatt--permissions))
