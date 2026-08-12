@@ -14,7 +14,12 @@ import (
 )
 
 func TestAccServicemapResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	// CLIENT-only resource: runs in Run 2 (MSP + target_client) and Run 3 (CLIENT creds).
+	// Skipped in Run 1 (MSP creds without target_client).
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("create_and_import", func(t *testing.T) {
 		smName := acctest.RandomName("servicemap")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +28,7 @@ func TestAccServicemapResource(t *testing.T) {
 			CheckDestroy:             testAccCheckServicemapDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicemapConfig(smName),
+					Config: testAccServicemapConfig(smName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap.test_sm", "id"),
@@ -35,7 +40,7 @@ func TestAccServicemapResource(t *testing.T) {
 				{
 					ResourceName:      "hpe_opsramp_servicemap.test_sm",
 					ImportState:       true,
-					ImportStateIdFunc: testAccServicemapImportStateIdFunc("hpe_opsramp_servicemap.test_sm"),
+					ImportStateIdFunc: testAccServicemapImportStateIdFunc("hpe_opsramp_servicemap.test_sm", clientOverride),
 					ImportStateVerify: true,
 				},
 			},
@@ -44,7 +49,10 @@ func TestAccServicemapResource(t *testing.T) {
 }
 
 func TestAccServicemapWithChildResource(t *testing.T) {
-	t.Run("parent and child", func(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("parent_and_child", func(t *testing.T) {
 		rootName := acctest.RandomName("sm-root")
 		childName := acctest.RandomName("sm-child")
 
@@ -54,7 +62,7 @@ func TestAccServicemapWithChildResource(t *testing.T) {
 			CheckDestroy:             testAccCheckServicemapDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicemapWithChildConfig(rootName, childName),
+					Config: testAccServicemapWithChildConfig(rootName, childName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm_root"),
 						testAccEnsureServicemapExists(t, "hpe_opsramp_servicemap.test_sm_child"),
@@ -67,30 +75,43 @@ func TestAccServicemapWithChildResource(t *testing.T) {
 	})
 }
 
-func testAccServicemapConfig(name string) string {
+func testAccServicemapConfig(name string, clientOverride string) string {
+	clientAttr := ""
+	if clientOverride != "" {
+		clientAttr = fmt.Sprintf(`client = "%s"`, clientOverride)
+	}
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicemap" "test_sm" {
 	name = "%s"
 	type = "Service"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, clientAttr)
 }
 
-func testAccServicemapWithChildConfig(rootName string, childName string) string {
+func testAccServicemapWithChildConfig(rootName string, childName string, clientOverride string) string {
+	clientAttr := ""
+	if clientOverride != "" {
+		clientAttr = fmt.Sprintf(`client = "%s"`, clientOverride)
+	}
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicemap" "test_sm_root" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "test_sm_child" {
 	name   = "%s"
 	type   = "Service"
 	parent = hpe_opsramp_servicemap.test_sm_root.id
+	%s
 }
-`, acctest.ProviderConfigHCL(), rootName, childName)
+`, acctest.ProviderConfigHCL(), rootName, clientAttr, childName, clientAttr)
 }
 
 func testAccEnsureServicemapExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -162,13 +183,18 @@ func testAccCheckServicemapDestroy(t *testing.T) resource.TestCheckFunc {
 	}
 }
 
-func testAccServicemapImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccServicemapImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return "", fmt.Errorf("Not found: %s", resourceName)
 		}
 
-		return rs.Primary.ID, nil
+		id := rs.Primary.ID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

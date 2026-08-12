@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccServicedeskCategoryResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		catName := acctest.RandomName("sd-cat")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccServicedeskCategoryResource(t *testing.T) {
 			CheckDestroy:             testAccCheckServicedeskCategoryDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicedeskCategoryConfig(catName),
+					Config: testAccServicedeskCategoryConfig(catName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicedeskCategoryExists(t, "hpe_opsramp_servicedesk_category.test_category"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_category.test_category", "id"),
@@ -40,15 +42,16 @@ func TestAccServicedeskCategoryResource(t *testing.T) {
 	})
 }
 
-func testAccServicedeskCategoryConfig(name string) string {
+func testAccServicedeskCategoryConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicedesk_category" "test_category" {
 	name        = "%s"
 	description = "Acceptance test category"
 	ticket_type = "serviceRequests"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureServicedeskCategoryExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -70,7 +73,12 @@ func testAccEnsureServicedeskCategoryExists(t *testing.T, resourceName string) r
 			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
 		}
 
-		_, err = apiClient.GetServiceDeskCategory(id)
+		tenantId := rs.Primary.Attributes["client"]
+		if tenantId == "" {
+			tenantId = apiClient.TenantId
+		}
+
+		_, err = apiClient.GetServiceDeskCategory(tenantId, id)
 		if err != nil {
 			return fmt.Errorf("servicedesk category %s (%s) was not found in opsramp api: %w", resourceName, id, err)
 		}
@@ -93,7 +101,12 @@ func testAccCheckServicedeskCategoryDestroy(t *testing.T) resource.TestCheckFunc
 				continue
 			}
 
-			category, err := apiClient.GetServiceDeskCategory(rs.Primary.ID)
+			tenantId := rs.Primary.Attributes["client"]
+			if tenantId == "" {
+				tenantId = apiClient.TenantId
+			}
+
+			category, err := apiClient.GetServiceDeskCategory(tenantId, rs.Primary.ID)
 			if category != nil {
 				return fmt.Errorf("servicedesk category still exists: %s, object: %+v", rs.Primary.ID, category)
 			}

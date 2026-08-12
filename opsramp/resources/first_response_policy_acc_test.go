@@ -14,7 +14,11 @@ import (
 )
 
 func TestAccFirstResponsePolicyResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		policyName := acctest.RandomName("frp")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +27,7 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckFirstResponsePolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccFirstResponsePolicyConfig(policyName),
+					Config: testAccFirstResponsePolicyConfig(policyName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_first_response_policy.test_policy", "id"),
@@ -36,11 +40,12 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 	})
 }
 
-func testAccFirstResponsePolicyConfig(name string) string {
+func testAccFirstResponsePolicyConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_first_response_policy" "test_policy" {
 	name = "%s"
+	%s
 
 	enabled_mode = "OBSERVED"
 	filter_query = ""
@@ -52,7 +57,7 @@ resource "hpe_opsramp_first_response_policy" "test_policy" {
 		}
 	}
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureFirstResponsePolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

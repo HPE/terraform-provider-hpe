@@ -18,6 +18,8 @@ import (
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationAppResourceKubernetes(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
 	configName := acctest.RandomName("k8s-cfg")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -26,7 +28,7 @@ func TestAccIntegrationAppResourceKubernetes(t *testing.T) {
 		CheckDestroy:             testAccCheckIntegrationAppDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIntegrationAppKubernetesConfig(configName),
+				Config: testAccIntegrationAppKubernetesConfig(configName, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationAppExists(t, "hpe_opsramp_integration_app.test_with_cfg"),
 					testAccEnsureIntegrationConfigExists(t, "hpe_opsramp_integration_config.test_app_cfg"),
@@ -43,7 +45,9 @@ func TestAccIntegrationAppResourceKubernetes(t *testing.T) {
 // Config helpers
 // ---------------------------------------------------------------------------
 
-func testAccIntegrationAppKubernetesConfig(configName string) string {
+func testAccIntegrationAppKubernetesConfig(configName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 
@@ -51,11 +55,13 @@ resource "hpe_opsramp_integration_app" "test_with_cfg" {
   application                    = "Kubernetes-2.0"
   version                        = "2.3.0"
   bypass_resource_reconciliation = true
+  %s
 }
 
 resource "hpe_opsramp_integration_config" "test_app_cfg" {
   integration_id = hpe_opsramp_integration_app.test_with_cfg.id
   name           = %q
+  %s
   config         = jsonencode({
     Etcd                       = true
     coreDNS                    = true
@@ -72,13 +78,13 @@ resource "hpe_opsramp_integration_config" "test_app_cfg" {
     KubeControllerManager      = true
     replicaCount               = 1
     DistributionType           = "K8S"
-	clientLevelLogPermission = false
+	clientLevelLogPermission   = true
 	clientLevelTracePermission = false
   })
 
   all_resources = false
 }
-`, acctest.ProviderConfigHCL(), configName)
+`, acctest.ProviderConfigHCL(), clientAttr, configName, clientAttr)
 }
 
 // ---------------------------------------------------------------------------

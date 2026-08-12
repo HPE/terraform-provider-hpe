@@ -18,6 +18,9 @@ import (
 )
 
 func TestAccManagementProfile(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
 	// t.Run("happy path", func(t *testing.T) {
 	managementProfileName := acctest.RandomName("managementProfile")
 	description := acctest.RandomName("description")
@@ -29,7 +32,7 @@ func TestAccManagementProfile(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create and Read testing
 			{
-				Config: testAccManagementProfileConfig(managementProfileName, description),
+				Config: testAccManagementProfileConfig(managementProfileName, description, clientOverride),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"hpe_opsramp_management_profile.test_management_profile",
@@ -50,7 +53,7 @@ func TestAccManagementProfile(t *testing.T) {
 			},
 			// Update and Read testing
 			{
-				Config: testAccManagementProfileConfig(managementProfileName, description+" updated"),
+				Config: testAccManagementProfileConfig(managementProfileName, description+" updated", clientOverride),
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(
 						"hpe_opsramp_management_profile.test_management_profile",
@@ -75,14 +78,15 @@ func TestAccManagementProfile(t *testing.T) {
 	//})
 }
 
-func testAccManagementProfileConfig(name string, description string) string {
+func testAccManagementProfileConfig(name string, description string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
 resource "hpe_opsramp_management_profile" "test_management_profile" {
   name = "%s"
   description = "%s"
-}`, acctest.ProviderConfigHCL(), name, description)
+  %s
+}`, acctest.ProviderConfigHCL(), name, description, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureManagementProfileExists(t *testing.T, managementProfileName string) resource.TestCheckFunc {

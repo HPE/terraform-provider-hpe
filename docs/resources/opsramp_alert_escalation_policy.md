@@ -123,7 +123,7 @@ Optional:
 - `cc` (String) CC email addresses for the incident.
 - `description` (String) The description of the Incident. Supports placeholders like `$alert.description`.
 - `knowledge_article_ids` (Set of String) List of knowledge base article IDs to attach.
-- `priority` (String) Incident priority (e.g. `Normal`, `Low`, `High`, `Urgent`).
+- `priority` (String) Incident priority (e.g. `Normal`, `Low`, `High`, `Urgent`). Computed automatically when business impact and urgency are set.
 - `roster_id` (String) The ID of the roster.
 - `sub_category_id` (String) The uniqueId of the service desk sub-category.
 - `subject` (String) Incident subject. Supports placeholders like `$alert.subject`.

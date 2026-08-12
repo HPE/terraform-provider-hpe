@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccUserResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		loginName := acctest.RandomName("user")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccUserResource(t *testing.T) {
 			CheckDestroy:             testAccCheckUserDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccUserConfig(loginName),
+					Config: testAccUserConfig(loginName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureUserExists(t, "hpe_opsramp_user.test_user"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_user.test_user", "id"),
@@ -38,7 +40,7 @@ func TestAccUserResource(t *testing.T) {
 	})
 }
 
-func testAccUserConfig(loginName string) string {
+func testAccUserConfig(loginName string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_user" "test_user" {
@@ -49,6 +51,7 @@ resource "hpe_opsramp_user" "test_user" {
 	email      = "%s@example.com"
 	time_zone  = "Europe/Paris"
 	country    = "Spain"
+	%s
 
 	user_notifications = [
 		{
@@ -71,7 +74,7 @@ resource "hpe_opsramp_user" "test_user" {
 
 	change_password = false
 }
-`, acctest.ProviderConfigHCL(), loginName, loginName)
+`, acctest.ProviderConfigHCL(), loginName, loginName, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureUserExists(t *testing.T, resourceName string) resource.TestCheckFunc {

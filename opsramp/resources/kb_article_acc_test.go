@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccKBArticleResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		catName := acctest.RandomName("kb-art-cat")
 		articleSubject := acctest.RandomName("kb-article")
 
@@ -24,7 +26,7 @@ func TestAccKBArticleResource(t *testing.T) {
 			CheckDestroy:             testAccCheckKBArticleDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccKBArticleConfig(catName, articleSubject),
+					Config: testAccKBArticleConfig(catName, articleSubject, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureKBArticleExists(t, "hpe_opsramp_kb_article.test_article"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_kb_article.test_article", "id"),
@@ -36,20 +38,24 @@ func TestAccKBArticleResource(t *testing.T) {
 	})
 }
 
-func testAccKBArticleConfig(catName string, subject string) string {
+func testAccKBArticleConfig(catName string, subject string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_kb_category" "test_art_category" {
 	name        = "%s"
 	description = "Category for article test"
+	%s
 }
 
 resource "hpe_opsramp_kb_article" "test_article" {
 	subject     = "%s"
 	content     = "Acceptance test article content"
 	category_id = hpe_opsramp_kb_category.test_art_category.id
+	%s
 }
-`, acctest.ProviderConfigHCL(), catName, subject)
+`, acctest.ProviderConfigHCL(), catName, clientAttr, subject, clientAttr)
 }
 
 func testAccEnsureKBArticleExists(t *testing.T, resourceName string) resource.TestCheckFunc {

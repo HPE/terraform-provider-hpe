@@ -19,7 +19,7 @@ type ServiceDeskCategoryDelete struct {
 }
 
 // CreateServiceDeskCategory - Create new ServiceDeskCategory
-func (c *OpsRampClient) CreateServiceDeskCategory(resource ServiceDeskCategory) (*ServiceDeskCategory, error) {
+func (c *OpsRampClient) CreateServiceDeskCategory(tenantId string, resource ServiceDeskCategory) (*ServiceDeskCategory, error) {
 	// Convert Request Data/Body to JSON
 	rb, err := json.Marshal(resource)
 	if err != nil {
@@ -27,7 +27,7 @@ func (c *OpsRampClient) CreateServiceDeskCategory(resource ServiceDeskCategory) 
 	}
 
 	// Prepare the URL, Method and Payload fo the Client
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/categories", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/categories", c.BaseUrl, tenantId)
 	method := "POST"
 
 	// Create a new Request
@@ -48,9 +48,9 @@ func (c *OpsRampClient) CreateServiceDeskCategory(resource ServiceDeskCategory) 
 }
 
 // GetServiceDeskCategory - Get the resource with ID of the resource
-func (c *OpsRampClient) GetServiceDeskCategory(id string) (*ServiceDeskCategory, error) {
+func (c *OpsRampClient) GetServiceDeskCategory(tenantId string, id string) (*ServiceDeskCategory, error) {
 	// Prepare config for API request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/category/%s", c.BaseUrl, c.TenantId, id)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/category/%s", c.BaseUrl, tenantId, id)
 	method := "GET"
 
 	// Prepare the request
@@ -79,7 +79,11 @@ func (c *OpsRampClient) GetServiceDeskCategory(id string) (*ServiceDeskCategory,
 }
 
 // UpdateServiceDeskCategory - Update a resource using Az Client
-func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord ServiceDeskCategory) (*ServiceDeskCategory, error) {
+func (c *OpsRampClient) UpdateServiceDeskCategory(
+	tenantId string,
+	id string,
+	updateRecord ServiceDeskCategory,
+) (*ServiceDeskCategory, error) {
 	// Convert data into JSON
 	rb, err := json.Marshal(updateRecord)
 	if err != nil {
@@ -87,7 +91,7 @@ func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord Servic
 	}
 
 	// Prepare config for API request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/category/%s", c.BaseUrl, c.TenantId, id)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/config/category/%s", c.BaseUrl, tenantId, id)
 	method := "PUT"
 
 	// Create a new Request
@@ -108,9 +112,9 @@ func (c *OpsRampClient) UpdateServiceDeskCategory(id string, updateRecord Servic
 	return &responseBody, err
 }
 
-func (c *OpsRampClient) DeleteServiceDeskCategory(id string) error {
+func (c *OpsRampClient) DeleteServiceDeskCategory(tenantId string, id string) error {
 	// Prepare config for API Request
-	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/categories", c.BaseUrl, c.TenantId)
+	apiUrl := fmt.Sprintf("%s/api/v2/tenants/%s/serviceDesk/categories", c.BaseUrl, tenantId)
 	method := "DELETE"
 
 	req := ServiceDeskCategoryDelete{Ids: []string{id}}

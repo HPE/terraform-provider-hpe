@@ -14,7 +14,10 @@ import (
 )
 
 func TestAccCredentialSetResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("create", func(t *testing.T) {
 		credentialSetName := acctest.RandomName("credentialSet")
 		description := acctest.RandomName("description")
 
@@ -24,7 +27,7 @@ func TestAccCredentialSetResource(t *testing.T) {
 			CheckDestroy:             testAccCheckCredentialSetDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccCredentialSetConfig(credentialSetName, description),
+					Config: testAccCredentialSetConfig(credentialSetName, description, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureCredentialSetExists(t, "hpe_opsramp_credential_set.test_credential_set"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_credential_set.test_credential_set", "id"),
@@ -41,12 +44,13 @@ func TestAccCredentialSetResource(t *testing.T) {
 	})
 }
 
-func testAccCredentialSetConfig(name string, description string) string {
+func testAccCredentialSetConfig(name string, description string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_credential_set" "test_credential_set" {
   name                = "%s"
   description         = "%s"
+  %s
 
   credential_type     = "VMWARE"
   user_name           = "administrator"
@@ -59,7 +63,7 @@ resource "hpe_opsramp_credential_set" "test_credential_set" {
   ssh_credential_type = "PASSWORD"
   transport_type      = "HTTP"
 }
-`, acctest.ProviderConfigHCL(), name, description)
+`, acctest.ProviderConfigHCL(), name, description, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureCredentialSetExists(t *testing.T, resourceName string) resource.TestCheckFunc {

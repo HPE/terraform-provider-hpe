@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 // TestAccE2ESimpleResources exercises the simple-resources e2e scenario:
 // creating multiple resources with different identification methods.
 func TestAccE2ESimpleResources(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("multiple resources", func(t *testing.T) {
 		res1Name := acctest.RandomName("e2e-res1")
 		res2Name := acctest.RandomName("e2e-res2")
@@ -24,7 +27,7 @@ func TestAccE2ESimpleResources(t *testing.T) {
 			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleResourcesConfig(res1Name, res2Name, res2Host),
+					Config: testAccE2ESimpleResourcesConfig(res1Name, res2Name, res2Host, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource1"),
 						testAccEnsureResourceExists(t, "hpe_opsramp_resource.resource2"),
@@ -37,19 +40,23 @@ func TestAccE2ESimpleResources(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleResourcesConfig(res1Name string, res2Name string, res2Host string) string {
+func testAccE2ESimpleResourcesConfig(res1Name string, res2Name string, res2Host string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_resource" "resource1" {
 	alias_name    = "%s"
 	resource_name = "%s"
 	resource_type = "Other"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource2" {
 	alias_name    = "%s"
 	hostname      = "%s"
 	resource_type = "Other"
+	%s
 }
-`, acctest.ProviderConfigHCL(), res1Name, res1Name, res2Name, res2Host)
+`, acctest.ProviderConfigHCL(), res1Name, res1Name, clientAttr, res2Name, res2Host, clientAttr)
 }

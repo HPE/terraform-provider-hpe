@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,9 @@ import (
 // TestAccE2ESimpleSites exercises the simple-sites e2e scenario:
 // root site with child sites using resources, queries, and mixed approaches.
 func TestAccE2ESimpleSites(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("full hierarchy", func(t *testing.T) {
 		res1 := acctest.RandomName("site-res1")
 		res2 := acctest.RandomName("site-res2")
@@ -29,7 +32,7 @@ func TestAccE2ESimpleSites(t *testing.T) {
 			CheckDestroy:             testAccCheckSiteDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleSitesConfig(res1, res2, res3, rootSite, childValencia, childMadrid, childBarcelona),
+					Config: testAccE2ESimpleSitesConfig(res1, res2, res3, rootSite, childValencia, childMadrid, childBarcelona, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureSiteExists(t, "hpe_opsramp_site.site_root"),
 						testAccEnsureSiteExists(t, "hpe_opsramp_site.site_valencia"),
@@ -47,27 +50,37 @@ func TestAccE2ESimpleSites(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleSitesConfig(res1, res2, res3, rootSite, childValencia, childMadrid, childBarcelona string) string {
-	return fmt.Sprintf(`
+func testAccE2ESimpleSitesConfig(
+	res1, res2, res3, rootSite, childValencia, childMadrid,
+	childBarcelona, clientOverride string,
+) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_resource" "resource1" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource2" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_resource" "resource3" {
 	resource_name = "%s"
 	resource_type = "Linux"
+	%s
 }
 
 resource "hpe_opsramp_site" "site_root" {
 	name    = "%s"
 	country = "Spain"
+	%s
 }
 
 resource "hpe_opsramp_site" "site_valencia" {
@@ -79,6 +92,7 @@ resource "hpe_opsramp_site" "site_valencia" {
 	state     = "Comunitat Valenciana"
 	city      = "València"
 	resources = [hpe_opsramp_resource.resource1.uuid]
+	%s
 }
 
 resource "hpe_opsramp_site" "site_madrid" {
@@ -90,6 +104,7 @@ resource "hpe_opsramp_site" "site_madrid" {
 	state        = "Madrid"
 	city         = "Las Rozas de Madrid"
 	search_query = format("uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
+	%s
 }
 
 resource "hpe_opsramp_site" "site_barcelona" {
@@ -102,6 +117,16 @@ resource "hpe_opsramp_site" "site_barcelona" {
 	city         = "Sant Martí"
 	search_query = format("uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
 	resources    = [hpe_opsramp_resource.resource3.uuid]
+	%s
 }
-`, acctest.ProviderConfigHCL(), res1, res2, res3, rootSite, childValencia, childMadrid, childBarcelona)
+`,
+		acctest.ProviderConfigHCL(),
+		res1, clientAttr,
+		res2, clientAttr,
+		res3, clientAttr,
+		rootSite, clientAttr,
+		childValencia, clientAttr,
+		childMadrid, clientAttr,
+		childBarcelona, clientAttr,
+	)
 }

@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccUserGroupResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		groupName := acctest.RandomName("usergroup")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccUserGroupResource(t *testing.T) {
 			CheckDestroy:             testAccCheckUserGroupDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccUserGroupConfig(groupName),
+					Config: testAccUserGroupConfig(groupName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureUserGroupExists(t, "hpe_opsramp_user_group.test_group"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_user_group.test_group", "unique_id"),
@@ -35,14 +37,15 @@ func TestAccUserGroupResource(t *testing.T) {
 	})
 }
 
-func testAccUserGroupConfig(name string) string {
+func testAccUserGroupConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_user_group" "test_group" {
 	name        = "%s"
 	description = "Acceptance test user group"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureUserGroupExists(t *testing.T, resourceName string) resource.TestCheckFunc {

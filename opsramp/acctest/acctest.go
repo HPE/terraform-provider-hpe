@@ -109,16 +109,23 @@ func RandomName(prefix string) string {
 // --- Scope detection and skip helpers ---
 //
 // Tests run with a single set of credentials (TF_VAR_testacc_opsramp_*).
-// Scope is auto-detected from those credentials (MSP or CLIENT).
+// Credential scope is auto-detected (MSP or CLIENT). The effective scope
+// additionally considers whether target_client is set:
 //
-// To run all tests seamlessly:
-//   Run 1: MSP credentials + target_client				→ MSP tests pass, CLIENT-scoped tests pass via override
-//   Run 2: CLIENT credentials                          → CLIENT-scoped tests pass directly, MSP tests skip
+//   Credential scope  | target_client | Effective scope
+//   MSP               | not set       | MSP
+//   MSP               | set           | CLIENT (delegated)
+//   CLIENT            | n/a           | CLIENT (direct)
+//
+// Three CI runs cover all paths:
+//   Run 1: MSP credentials, no target_client       → MSP-level tests run
+//   Run 2: MSP credentials + target_client         → Client tests via delegation (client attr set)
+//   Run 3: CLIENT credentials                      → Client tests directly (no client attr)
 
 const envTargetClientSuffix = "target_client"
 
-// Scope returns the API client scope ("MSP" or "CLIENT") for the current credentials.
-func Scope(t *testing.T) string {
+// CredentialScope returns the raw API credential scope ("MSP" or "CLIENT").
+func CredentialScope(t *testing.T) string {
 	t.Helper()
 
 	apiClient, err := APIClient(t)
@@ -129,36 +136,55 @@ func Scope(t *testing.T) string {
 	return strings.ToUpper(apiClient.Scope)
 }
 
-// SkipIfNotMSP skips the test if the credentials are not MSP-scoped.
+// EffectiveScope returns the testing scope taking target_client into account.
+//   - MSP creds without target_client → "MSP"
+//   - MSP creds with target_client    → "CLIENT"
+//   - CLIENT creds                    → "CLIENT"
+func EffectiveScope(t *testing.T) string {
+	t.Helper()
+
+	if CredentialScope(t) == "CLIENT" {
+		return "CLIENT"
+	}
+
+	// MSP credentials — check if target_client makes this a client-level run
+	if _, ok := LookupProviderEnv(envTargetClientSuffix); ok {
+		return "CLIENT"
+	}
+
+	return "MSP"
+}
+
+// SkipIfNotMSP skips the test unless the effective scope is MSP.
 // Use for resources that can only be managed at the MSP level (e.g., client resources).
 func SkipIfNotMSP(t *testing.T) {
 	t.Helper()
 
-	if Scope(t) != "MSP" {
-		t.Skip("skipping: test requires MSP-level credentials")
+	if EffectiveScope(t) != "MSP" {
+		t.Skip("skipping: test requires MSP-level scope (MSP creds without target_client)")
 	}
 }
 
-// SkipIfNotClient skips the test if the credentials are not CLIENT-scoped.
-// Use for resources that require direct CLIENT scope only.
+// SkipIfNotClient skips the test unless the effective scope is CLIENT.
+// Use for resources that require client-level scope.
 func SkipIfNotClient(t *testing.T) {
 	t.Helper()
 
-	if Scope(t) != "CLIENT" {
-		t.Skip("skipping: test requires CLIENT-level credentials")
+	if EffectiveScope(t) != "CLIENT" {
+		t.Skip("skipping: test requires CLIENT-level scope")
 	}
 }
 
 // RequireClientScope ensures the test can operate at CLIENT level.
-//   - If credentials are CLIENT-scoped: returns "" (no override needed).
-//   - If credentials are MSP-scoped: returns the OPSRAMP_ACC_TARGET_CLIENT value
-//     (skips the test if that env var is not set).
+//   - CLIENT credentials: returns "" (no override needed).
+//   - MSP credentials + target_client: returns the target client ID.
+//   - MSP credentials without target_client: skips the test.
 //
 // Use the returned value as the `client` attribute in resource HCL configs.
 func RequireClientScope(t *testing.T) string {
 	t.Helper()
 
-	if Scope(t) == "CLIENT" {
+	if CredentialScope(t) == "CLIENT" {
 		return ""
 	}
 
@@ -166,7 +192,7 @@ func RequireClientScope(t *testing.T) string {
 	return TargetClientID(t)
 }
 
-// TargetClientID returns the OPSRAMP_ACC_TARGET_CLIENT env var value.
+// TargetClientID returns the TF_VAR_testacc_opsramp_target_client env var value.
 // Skips the test if it is not set.
 func TargetClientID(t *testing.T) string {
 	t.Helper()
@@ -174,10 +200,39 @@ func TargetClientID(t *testing.T) string {
 	id, ok := LookupProviderEnv(envTargetClientSuffix)
 
 	if !ok {
-		t.Fatalf("TF_VAR_testacc_opsramp_%s not set for acceptance tests", envTargetClientSuffix)
+		t.Skipf("skipping: TF_VAR_testacc_opsramp_%s not set", envTargetClientSuffix)
 	}
 
 	return id
+}
+
+// OptionalClientOverride returns the client override for the current credentials.
+// Unlike RequireClientScope it never skips:
+//   - CLIENT credentials: returns "".
+//   - MSP + target_client: returns the target client ID.
+//   - MSP without target_client: returns "" (resource created at MSP level).
+func OptionalClientOverride(t *testing.T) string {
+	t.Helper()
+
+	if CredentialScope(t) == "CLIENT" {
+		return ""
+	}
+
+	if id, ok := LookupProviderEnv(envTargetClientSuffix); ok {
+		return id
+	}
+
+	return ""
+}
+
+// ClientAttrHCL returns a Terraform HCL snippet for the `client` attribute.
+// Returns an empty string when clientOverride is empty (no attribute emitted).
+func ClientAttrHCL(clientOverride string) string {
+	if clientOverride != "" {
+		return fmt.Sprintf(`client = "%s"`, clientOverride)
+	}
+
+	return ""
 }
 
 const providerConfig = `
@@ -196,8 +251,8 @@ variable "testacc_opsramp_tenant" {
 
 provider "hpe" {
   opsramp {
-    clientID = var.testacc_opsramp_client_id
-    clientSecret = var.testacc_opsramp_client_secret
+    client_id = var.testacc_opsramp_client_id
+    client_secret = var.testacc_opsramp_client_secret
     endpoint      = var.testacc_opsramp_endpoint
     tenant        = var.testacc_opsramp_tenant
   }

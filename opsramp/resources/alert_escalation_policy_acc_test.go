@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccAlertEscalationPolicyResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		policyName := acctest.RandomName("esc-policy")
 		groupName := acctest.RandomName("esc-group")
 
@@ -24,7 +26,7 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertEscalationPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertEscalationPolicyConfig(policyName, groupName),
+					Config: testAccAlertEscalationPolicyConfig(policyName, groupName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertEscalationPolicyExists(t, "hpe_opsramp_alert_escalation_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_escalation_policy.test_policy", "id"),
@@ -41,43 +43,56 @@ func TestAccAlertEscalationPolicyResource(t *testing.T) {
 	})
 }
 
-func testAccAlertEscalationPolicyConfig(policyName string, groupName string) string {
+func testAccAlertEscalationPolicyConfig(policyName string, groupName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_user_group" "esc_test_group" {
 	name        = "%s"
 	description = "Group for escalation policy test"
+	%s
 }
 
 resource "hpe_opsramp_alert_escalation_policy" "test_policy" {
 	name         = "%s"
 	precedence   = 1
 	enabled_mode = "OBSERVED"
+	%s
 
 	escalation_type = "AUTOMATIC_UNTIL_ACKNOWLEDGED_CLOSED_SUPPRESSED_TICKETED"
 	policy_type     = "ESCALATION_POLICY"
 
 	escalations = [
 		{
-			wait_mins          = 0
-			priority           = "Normal"
-			repeat_frequency   = 5
-			notify_limit_count = 2
-			action             = "NOTIFICATION"
-			recipients = [
-				{
-					id   = hpe_opsramp_user_group.esc_test_group.unique_id
-					type = "USERGROUP"
-				}
-			]
-			notification_type        = "basic"
-			notification_template_id = "ae6d595e-77a1-5262-a674-ea4c5afa6320"
+			wait_mins = 5
+			action    = "INCIDENT"
+			incident = {
+				priority              = "Normal"
+				subject               = "Event $alert.subject have been found"
+				description           = "Event description $alert.description"
+				assignee_group_id     = ""
+				category_id           = ""
+				sub_category_id       = ""
+				business_impact_id    = ""
+				urgency_id            = ""
+				knowledge_article_ids = []
+			}
+			update_incident = {
+				update_incident_mode         = "UpdateWhenAlertStateChange"
+				update_incident_subject_mode = "UpdateIncidentSubject"
+				auto_resolve_incident_mode   = "AutoResolveIncident"
+				auto_heal_wait_time          = 0
+
+				update_priority_by_ml_configuration = false
+				priority_rules                      = []
+			}
 		}
 	]
 	search_query = "subject CONTAINS \"test\""
 	resource_search_query = "name CONTAINS \"test\""
 }
-`, acctest.ProviderConfigHCL(), groupName, policyName)
+`, acctest.ProviderConfigHCL(), groupName, clientAttr, policyName, clientAttr)
 }
 
 func testAccEnsureAlertEscalationPolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

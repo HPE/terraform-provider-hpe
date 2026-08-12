@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package resources_test
+package e2e_test
 
 import (
 	"fmt"
@@ -14,6 +14,8 @@ import (
 // TestAccE2ESimpleIAM exercises the simple-iam e2e scenario:
 // permission sets, roles, users, and user groups working together.
 func TestAccE2ESimpleIAM(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
 	t.Run("full IAM stack", func(t *testing.T) {
 		adminPerms := acctest.RandomName("e2e-admin-perms")
 		viewPerms := acctest.RandomName("e2e-view-perms")
@@ -27,7 +29,7 @@ func TestAccE2ESimpleIAM(t *testing.T) {
 			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName),
+					Config: testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.admin_perms"),
 						testAccEnsurePermissionSetExists(t, "hpe_opsramp_permission_set.view_perms"),
@@ -48,12 +50,16 @@ func TestAccE2ESimpleIAM(t *testing.T) {
 	})
 }
 
-func testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName string) string {
-	return fmt.Sprintf(`
+func testAccE2ESimpleIAMConfig(adminPerms, viewPerms, adminRole, viewRole, userName, groupName, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(
+		`
 %s
 resource "hpe_opsramp_permission_set" "admin_perms" {
 	name        = "%s"
 	description = "Full administrative access"
+	%s
 
 	permissions = [
 		{
@@ -70,6 +76,7 @@ resource "hpe_opsramp_permission_set" "admin_perms" {
 resource "hpe_opsramp_permission_set" "view_perms" {
 	name        = "%s"
 	description = "View-only access"
+	%s
 
 	permissions = [
 		{
@@ -86,6 +93,7 @@ resource "hpe_opsramp_permission_set" "view_perms" {
 resource "hpe_opsramp_role" "admin_role" {
 	name        = "%s"
 	description = "Administrative role"
+	%s
 
 	permissions = [
 		hpe_opsramp_permission_set.admin_perms.unique_id
@@ -95,6 +103,7 @@ resource "hpe_opsramp_role" "admin_role" {
 resource "hpe_opsramp_role" "view_role" {
 	name        = "%s"
 	description = "View-only role"
+	%s
 
 	permissions = [
 		hpe_opsramp_permission_set.view_perms.unique_id
@@ -109,6 +118,7 @@ resource "hpe_opsramp_user" "admin" {
 	email      = "%s@example.com"
 	time_zone  = "Europe/Paris"
 	country    = "Spain"
+	%s
 
 	user_notifications = [
 		{
@@ -135,6 +145,7 @@ resource "hpe_opsramp_user" "admin" {
 resource "hpe_opsramp_user_group" "admin_group" {
 	name        = "%s"
 	description = "E2E test admin group"
+	%s
 
 	roles = [
 		hpe_opsramp_role.admin_role.id
@@ -144,5 +155,13 @@ resource "hpe_opsramp_user_group" "admin_group" {
 		hpe_opsramp_user.admin.id
 	]
 }
-`, acctest.ProviderConfigHCL(), adminPerms, viewPerms, adminRole, viewRole, userName, userName, groupName)
+`,
+		acctest.ProviderConfigHCL(),
+		adminPerms, clientAttr,
+		viewPerms, clientAttr,
+		adminRole, clientAttr,
+		viewRole, clientAttr,
+		userName, userName, clientAttr,
+		groupName, clientAttr,
+	)
 }

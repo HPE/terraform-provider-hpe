@@ -13,7 +13,10 @@ import (
 )
 
 func TestAccServicemapLinkResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("create_and_import", func(t *testing.T) {
 		rootName := acctest.RandomName("sm-link-root")
 		linkedName := acctest.RandomName("sm-link-target")
 
@@ -22,7 +25,7 @@ func TestAccServicemapLinkResource(t *testing.T) {
 			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicemapLinkConfig(rootName, linkedName),
+					Config: testAccServicemapLinkConfig(rootName, linkedName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap_link.test_link", "parent"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicemap_link.test_link", "link"),
@@ -42,6 +45,7 @@ func TestAccServicemapLinkResource(t *testing.T) {
 					ImportState:  true,
 					ImportStateIdFunc: testAccServicemapLinkImportStateIdFunc(
 						"hpe_opsramp_servicemap_link.test_link",
+						clientOverride,
 					),
 					ImportStateVerify:                    true,
 					ImportStateVerifyIdentifierAttribute: "parent",
@@ -51,28 +55,32 @@ func TestAccServicemapLinkResource(t *testing.T) {
 	})
 }
 
-func testAccServicemapLinkConfig(rootName string, linkedName string) string {
+func testAccServicemapLinkConfig(rootName string, linkedName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicemap" "test_link_root" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicemap" "test_link_target" {
 	name = "%s"
 	type = "Service"
+	%s
 }
 
 resource "hpe_opsramp_servicemap_link" "test_link" {
 	parent = hpe_opsramp_servicemap.test_link_root.id
 	link   = hpe_opsramp_servicemap.test_link_target.id
+	%s
 }
-`, acctest.ProviderConfigHCL(), rootName, linkedName)
+`, acctest.ProviderConfigHCL(), rootName, clientAttr, linkedName, clientAttr, clientAttr)
 }
 
-// testAccServicemapLinkImportStateIdFunc builds the composite import ID: <parent_id>:<link_id>
-func testAccServicemapLinkImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccServicemapLinkImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -82,6 +90,11 @@ func testAccServicemapLinkImportStateIdFunc(resourceName string) resource.Import
 		parentID := rs.Primary.Attributes["parent"]
 		linkID := rs.Primary.Attributes["link"]
 
-		return parentID + ":" + linkID, nil
+		id := parentID + ":" + linkID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

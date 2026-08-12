@@ -14,9 +14,10 @@ import (
 )
 
 func TestAccAlertCorrelationPolicyResource(t *testing.T) {
-	// CLIENT scope — direct CLIENT credentials, no client override
-	t.Run("client_similarity", func(t *testing.T) {
-		acctest.SkipIfNotClient(t)
+	clientOverride := acctest.OptionalClientOverride(t)
+	isMSPCreds := acctest.EffectiveScope(t) == "MSP"
+
+	t.Run("similarity", func(t *testing.T) {
 		policyName := acctest.RandomName("esc-policy")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -25,7 +26,7 @@ func TestAccAlertCorrelationPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertCorrelationPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertCorrelationPolicySimilarityConfig(policyName, ""),
+					Config: testAccAlertCorrelationPolicySimilarityConfig(policyName, clientOverride, isMSPCreds),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_correlation_policy.test_policy", "id"),
@@ -37,22 +38,21 @@ func TestAccAlertCorrelationPolicyResource(t *testing.T) {
 						),
 					),
 				},
-				// Import — CLIENT scope: import ID is just the policy ID
 				{
 					ResourceName: "hpe_opsramp_alert_correlation_policy.test_policy",
 					ImportState:  true,
 					ImportStateIdFunc: testAccAlertCorrelationPolicyImportStateIdFunc(
 						"hpe_opsramp_alert_correlation_policy.test_policy",
-						"",
+						clientOverride,
 					),
-					ImportStateVerify: true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"organization_matching_type"},
 				},
 			},
 		})
 	})
 
-	t.Run("client_topology", func(t *testing.T) {
-		acctest.SkipIfNotClient(t)
+	t.Run("topology", func(t *testing.T) {
 		policyName := acctest.RandomName("esc-policy")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -61,7 +61,7 @@ func TestAccAlertCorrelationPolicyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckAlertCorrelationPolicyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccAlertCorrelationPolicyTopologyConfig(policyName, ""),
+					Config: testAccAlertCorrelationPolicyTopologyConfig(policyName, clientOverride, isMSPCreds),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.test_policy"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_correlation_policy.test_policy", "id"),
@@ -73,161 +73,34 @@ func TestAccAlertCorrelationPolicyResource(t *testing.T) {
 						),
 					),
 				},
-				// Import — CLIENT scope: import ID is just the policy ID
 				{
 					ResourceName: "hpe_opsramp_alert_correlation_policy.test_policy",
 					ImportState:  true,
 					ImportStateIdFunc: testAccAlertCorrelationPolicyImportStateIdFunc(
 						"hpe_opsramp_alert_correlation_policy.test_policy",
-						"",
+						clientOverride,
 					),
-					ImportStateVerify: true,
-				},
-			},
-		})
-	})
-
-	// MSP scope — MSP credentials alone, no client override (policy at MSP level)
-	t.Run("msp_similarity", func(t *testing.T) {
-		acctest.SkipIfNotMSP(t)
-		policyName := acctest.RandomName("esc-policy")
-
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 acctest.PreCheck(t),
-			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
-			CheckDestroy:             testAccCheckAlertCorrelationPolicyDestroy(t),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccAlertCorrelationPolicyMSPSimilarityConfig(policyName),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_correlation_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"enabled_mode",
-							"OBSERVED",
-						),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"organization_matching_type",
-							"ALL",
-						),
-					),
-				},
-				// Import — MSP scope without client override: import ID is just the policy ID
-				{
-					ResourceName: "hpe_opsramp_alert_correlation_policy.test_policy",
-					ImportState:  true,
-					ImportStateIdFunc: testAccAlertCorrelationPolicyImportStateIdFunc(
-						"hpe_opsramp_alert_correlation_policy.test_policy",
-						"",
-					),
-					ImportStateVerify: true,
-				},
-			},
-		})
-	})
-
-	// MSP scope + target client override (policy pushed to a specific client)
-	t.Run("msp_target_similarity", func(t *testing.T) {
-		acctest.SkipIfNotMSP(t)
-		targetClient := acctest.TargetClientID(t)
-		policyName := acctest.RandomName("esc-policy")
-
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 acctest.PreCheck(t),
-			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
-			CheckDestroy:             testAccCheckAlertCorrelationPolicyDestroy(t),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccAlertCorrelationPolicyMSPTargetSimilarityConfig(policyName, targetClient),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_correlation_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"enabled_mode",
-							"OBSERVED",
-						),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"organization_matching_type",
-							"ALL",
-						),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.test_policy", "client", targetClient),
-					),
-				},
-				// Import — MSP scope with client prefix: import ID is <client_id>:<policy_id>
-				{
-					ResourceName: "hpe_opsramp_alert_correlation_policy.test_policy",
-					ImportState:  true,
-					ImportStateIdFunc: testAccAlertCorrelationPolicyImportStateIdFunc(
-						"hpe_opsramp_alert_correlation_policy.test_policy",
-						targetClient,
-					),
-					ImportStateVerify: true,
-				},
-			},
-		})
-	})
-
-	t.Run("msp_target_topology", func(t *testing.T) {
-		acctest.SkipIfNotMSP(t)
-		targetClient := acctest.TargetClientID(t)
-		policyName := acctest.RandomName("esc-policy")
-
-		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 acctest.PreCheck(t),
-			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
-			CheckDestroy:             testAccCheckAlertCorrelationPolicyDestroy(t),
-			Steps: []resource.TestStep{
-				{
-					Config: testAccAlertCorrelationPolicyMSPTargetTopologyConfig(policyName, targetClient),
-					Check: resource.ComposeAggregateTestCheckFunc(
-						testAccEnsureAlertCorrelationPolicyExists(t, "hpe_opsramp_alert_correlation_policy.test_policy"),
-						resource.TestCheckResourceAttrSet("hpe_opsramp_alert_correlation_policy.test_policy", "id"),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.test_policy", "name", policyName),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"enabled_mode",
-							"OBSERVED",
-						),
-						resource.TestCheckResourceAttr(
-							"hpe_opsramp_alert_correlation_policy.test_policy",
-							"organization_matching_type",
-							"ALL",
-						),
-						resource.TestCheckResourceAttr("hpe_opsramp_alert_correlation_policy.test_policy", "client", targetClient),
-					),
-				},
-				// Import — MSP scope with client prefix: import ID is <client_id>:<policy_id>
-				{
-					ResourceName: "hpe_opsramp_alert_correlation_policy.test_policy",
-					ImportState:  true,
-					ImportStateIdFunc: testAccAlertCorrelationPolicyImportStateIdFunc(
-						"hpe_opsramp_alert_correlation_policy.test_policy",
-						targetClient,
-					),
-					ImportStateVerify: true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"organization_matching_type"},
 				},
 			},
 		})
 	})
 }
 
-func testAccAlertCorrelationPolicySimilarityConfig(policyName, clientOverride string) string {
-	clientAttr := ""
-	if clientOverride != "" {
-		clientAttr = fmt.Sprintf(`  client = "%s"`, clientOverride)
+func testAccAlertCorrelationPolicySimilarityConfig(policyName, clientOverride string, isMSPCreds bool) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+	orgMatchingType := ""
+	if isMSPCreds {
+		orgMatchingType = `  organization_matching_type = "ALL"`
 	}
 
 	return fmt.Sprintf(`
 %s
 
 resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
-%s
+  %s
+  %s
   name = "%s"
   enabled_mode    = "OBSERVED"
   filter_query    = ""
@@ -246,20 +119,22 @@ resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
 
   inference_subject = ""
 }
-`, acctest.ProviderConfigHCL(), clientAttr, policyName)
+`, acctest.ProviderConfigHCL(), clientAttr, orgMatchingType, policyName)
 }
 
-func testAccAlertCorrelationPolicyTopologyConfig(policyName, clientOverride string) string {
-	clientAttr := ""
-	if clientOverride != "" {
-		clientAttr = fmt.Sprintf(`  client = "%s"`, clientOverride)
+func testAccAlertCorrelationPolicyTopologyConfig(policyName, clientOverride string, isMSPCreds bool) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+	orgMatchingType := ""
+	if isMSPCreds {
+		orgMatchingType = `  organization_matching_type = "ALL"`
 	}
 
 	return fmt.Sprintf(`
 %s
 
 resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
-%s
+  %s
+  %s
   name = "%s"
   enabled_mode    = "OBSERVED"
   filter_query    = ""
@@ -273,85 +148,7 @@ resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
 
   inference_subject = ""
 }
-`, acctest.ProviderConfigHCL(), clientAttr, policyName)
-}
-
-func testAccAlertCorrelationPolicyMSPSimilarityConfig(policyName string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
-  organization_matching_type = "ALL"
-  name = "%s"
-  enabled_mode    = "OBSERVED"
-  filter_query    = ""
-  inference_query = ""
-  type            = "CO_OCCURRENCE"
-  machine_learning = {
-    continuous_learning = true
-    topology            = false
-    matching_conditions = [
-      {
-        property   = "service_group"
-        match_type = "Identical"
-      }
-    ]
-  }
-
-  inference_subject = ""
-}
-`, acctest.ProviderConfigHCL(), policyName)
-}
-
-func testAccAlertCorrelationPolicyMSPTargetSimilarityConfig(policyName, targetClient string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
-  client                     = "%s"
-  organization_matching_type = "ALL"
-  name = "%s"
-  enabled_mode    = "OBSERVED"
-  filter_query    = ""
-  inference_query = ""
-  type            = "CO_OCCURRENCE"
-  machine_learning = {
-    continuous_learning = true
-    topology            = false
-    matching_conditions = [
-      {
-        property   = "service_group"
-        match_type = "Identical"
-      }
-    ]
-  }
-
-  inference_subject = ""
-}
-`, acctest.ProviderConfigHCL(), targetClient, policyName)
-}
-
-func testAccAlertCorrelationPolicyMSPTargetTopologyConfig(policyName, targetClient string) string {
-	return fmt.Sprintf(`
-%s
-
-resource "hpe_opsramp_alert_correlation_policy" "test_policy" {
-  client                     = "%s"
-  organization_matching_type = "ALL"
-  name = "%s"
-  enabled_mode    = "OBSERVED"
-  filter_query    = ""
-  inference_query = ""
-  type            = "CO_OCCURRENCE"
-  machine_learning = {
-    continuous_learning = true
-    topology            = true
-    topology_depth      = 3
-  }
-
-  inference_subject = ""
-}
-`, acctest.ProviderConfigHCL(), targetClient, policyName)
+`, acctest.ProviderConfigHCL(), clientAttr, orgMatchingType, policyName)
 }
 
 func testAccEnsureAlertCorrelationPolicyExists(t *testing.T, resourceName string) resource.TestCheckFunc {

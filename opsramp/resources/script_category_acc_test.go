@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccScriptCategoryResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		catName := acctest.RandomName("script-cat")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccScriptCategoryResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScriptCategoryDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScriptCategoryConfig(catName),
+					Config: testAccScriptCategoryConfig(catName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_category"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_script_category.test_category", "uuid"),
@@ -36,7 +38,9 @@ func TestAccScriptCategoryResource(t *testing.T) {
 }
 
 func TestAccScriptCategoryWithParentResource(t *testing.T) {
-	t.Run("parent and child", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("parent_and_child", func(t *testing.T) {
 		parentName := acctest.RandomName("script-parent")
 		childName := acctest.RandomName("script-child")
 
@@ -46,7 +50,7 @@ func TestAccScriptCategoryWithParentResource(t *testing.T) {
 			CheckDestroy:             testAccCheckScriptCategoryDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccScriptCategoryWithParentConfig(parentName, childName),
+					Config: testAccScriptCategoryWithParentConfig(parentName, childName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_parent"),
 						testAccEnsureScriptCategoryExists(t, "hpe_opsramp_script_category.test_child"),
@@ -59,27 +63,32 @@ func TestAccScriptCategoryWithParentResource(t *testing.T) {
 	})
 }
 
-func testAccScriptCategoryConfig(name string) string {
+func testAccScriptCategoryConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_script_category" "test_category" {
 	name = "%s"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccScriptCategoryWithParentConfig(parentName string, childName string) string {
+func testAccScriptCategoryWithParentConfig(parentName string, childName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_script_category" "test_parent" {
 	name = "%s"
+	%s
 }
 
 resource "hpe_opsramp_script_category" "test_child" {
 	name      = "%s"
 	parent_id = hpe_opsramp_script_category.test_parent.uuid
+	%s
 }
-`, acctest.ProviderConfigHCL(), parentName, childName)
+`, acctest.ProviderConfigHCL(), parentName, clientAttr, childName, clientAttr)
 }
 
 func testAccEnsureScriptCategoryExists(t *testing.T, resourceName string) resource.TestCheckFunc {

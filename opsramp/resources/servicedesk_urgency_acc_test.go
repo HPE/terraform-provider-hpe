@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccServicedeskUrgencyResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		urgencyName := acctest.RandomName("sd-urgency")
 
 		resource.ParallelTest(t, resource.TestCase{
@@ -23,7 +25,7 @@ func TestAccServicedeskUrgencyResource(t *testing.T) {
 			CheckDestroy:             testAccCheckServicedeskUrgencyDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccServicedeskUrgencyConfig(urgencyName),
+					Config: testAccServicedeskUrgencyConfig(urgencyName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureServicedeskUrgencyExists(t, "hpe_opsramp_servicedesk_urgency.test_urgency"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_servicedesk_urgency.test_urgency", "id"),
@@ -35,14 +37,15 @@ func TestAccServicedeskUrgencyResource(t *testing.T) {
 	})
 }
 
-func testAccServicedeskUrgencyConfig(name string) string {
+func testAccServicedeskUrgencyConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_servicedesk_urgency" "test_urgency" {
 	name        = "%s"
 	description = "Acceptance test urgency"
+	%s
 }
-`, acctest.ProviderConfigHCL(), name)
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureServicedeskUrgencyExists(t *testing.T, resourceName string) resource.TestCheckFunc {
@@ -64,7 +67,12 @@ func testAccEnsureServicedeskUrgencyExists(t *testing.T, resourceName string) re
 			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
 		}
 
-		_, err = apiClient.GetServiceDeskUrgency(id)
+		tenantId := rs.Primary.Attributes["client"]
+		if tenantId == "" {
+			tenantId = apiClient.TenantId
+		}
+
+		_, err = apiClient.GetServiceDeskUrgency(tenantId, id)
 		if err != nil {
 			return fmt.Errorf("servicedesk urgency %s (%s) was not found in opsramp api: %w", resourceName, id, err)
 		}
@@ -87,7 +95,12 @@ func testAccCheckServicedeskUrgencyDestroy(t *testing.T) resource.TestCheckFunc 
 				continue
 			}
 
-			urgency, err := apiClient.GetServiceDeskUrgency(rs.Primary.ID)
+			tenantId := rs.Primary.Attributes["client"]
+			if tenantId == "" {
+				tenantId = apiClient.TenantId
+			}
+
+			urgency, err := apiClient.GetServiceDeskUrgency(tenantId, rs.Primary.ID)
 			if urgency != nil {
 				return fmt.Errorf("servicedesk urgency still exists: %s, object: %+v", rs.Primary.ID, urgency)
 			}

@@ -14,7 +14,9 @@ import (
 )
 
 func TestAccRoleResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
 		permName := acctest.RandomName("role-perm")
 		roleName := acctest.RandomName("role")
 
@@ -24,7 +26,7 @@ func TestAccRoleResource(t *testing.T) {
 			CheckDestroy:             testAccCheckRoleDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccRoleConfig(permName, roleName),
+					Config: testAccRoleConfig(permName, roleName, clientOverride),
 					Check: resource.ComposeAggregateTestCheckFunc(
 						testAccEnsureRoleExists(t, "hpe_opsramp_role.test_role"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_role.test_role", "id"),
@@ -36,12 +38,15 @@ func TestAccRoleResource(t *testing.T) {
 	})
 }
 
-func testAccRoleConfig(permName string, roleName string) string {
+func testAccRoleConfig(permName string, roleName string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_permission_set" "test_role_perms" {
 	name        = "%s"
 	description = "Permissions for role test"
+	%s
 
 	permissions = [
 		{
@@ -54,12 +59,13 @@ resource "hpe_opsramp_permission_set" "test_role_perms" {
 resource "hpe_opsramp_role" "test_role" {
 	name        = "%s"
 	description = "Acceptance test role"
+	%s
 
 	permissions = [
 		hpe_opsramp_permission_set.test_role_perms.unique_id
 	]
 }
-`, acctest.ProviderConfigHCL(), permName, roleName)
+`, acctest.ProviderConfigHCL(), permName, clientAttr, roleName, clientAttr)
 }
 
 func testAccEnsureRoleExists(t *testing.T, resourceName string) resource.TestCheckFunc {

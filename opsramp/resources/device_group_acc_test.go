@@ -17,7 +17,9 @@ import (
 )
 
 func TestAccDeviceGroupResource(t *testing.T) {
-	t.Run("happy path", func(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create_and_update", func(t *testing.T) {
 		groupNameOne := acctest.RandomName("device-group")
 		groupNameTwo := acctest.RandomName("device-group")
 
@@ -27,7 +29,7 @@ func TestAccDeviceGroupResource(t *testing.T) {
 			CheckDestroy:             testAccCheckDeviceGroupDestroy(t),
 			Steps: []resource.TestStep{
 				{
-					Config: testAccDeviceGroupConfig(groupNameOne, "resourceType = \"Server\""),
+					Config: testAccDeviceGroupConfig(groupNameOne, "resourceType = \"Server\"", clientOverride),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
 							"hpe_opsramp_device_group.test_group",
@@ -51,7 +53,7 @@ func TestAccDeviceGroupResource(t *testing.T) {
 					),
 				},
 				{
-					Config: testAccDeviceGroupConfig(groupNameTwo, "name CONTAINS \"updated\""),
+					Config: testAccDeviceGroupConfig(groupNameTwo, "name CONTAINS \"updated\"", clientOverride),
 					ConfigStateChecks: []statecheck.StateCheck{
 						statecheck.ExpectKnownValue(
 							"hpe_opsramp_device_group.test_group",
@@ -79,14 +81,15 @@ func TestAccDeviceGroupResource(t *testing.T) {
 	})
 }
 
-func testAccDeviceGroupConfig(name string, searchQuery string) string {
+func testAccDeviceGroupConfig(name string, searchQuery string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_device_group" "test_group" {
 	name         = "%s"
 	search_query = %q
+	%s
 }
-`, acctest.ProviderConfigHCL(), name, searchQuery)
+`, acctest.ProviderConfigHCL(), name, searchQuery, acctest.ClientAttrHCL(clientOverride))
 }
 
 func testAccEnsureDeviceGroupExists(t *testing.T, resourceName string) resource.TestCheckFunc {

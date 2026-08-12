@@ -18,6 +18,7 @@ import (
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
 	eventName := acctest.RandomName("event")
 	eventNameUpdated := eventName + "-upd"
 
@@ -28,7 +29,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Create
 			{
-				Config: testAccIntegrationEventBaseNotifierConfig(eventName, true),
+				Config: testAccIntegrationEventBaseNotifierConfig(eventName, true, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationEventExists(t, "hpe_opsramp_integration_event.test"),
 					resource.TestCheckResourceAttrSet("hpe_opsramp_integration_event.test", "id"),
@@ -41,7 +42,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 			},
 			// Update – rename and change active state
 			{
-				Config: testAccIntegrationEventBaseNotifierConfig(eventNameUpdated, false),
+				Config: testAccIntegrationEventBaseNotifierConfig(eventNameUpdated, false, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "name", eventNameUpdated),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "active", "false"),
@@ -51,7 +52,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 			{
 				ResourceName:      "hpe_opsramp_integration_event.test",
 				ImportState:       true,
-				ImportStateIdFunc: testAccIntegrationEventImportStateIdFunc("hpe_opsramp_integration_event.test"),
+				ImportStateIdFunc: testAccIntegrationEventImportStateIdFunc("hpe_opsramp_integration_event.test", clientOverride),
 				ImportStateVerify: true,
 			},
 		},
@@ -63,6 +64,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
 	eventName := acctest.RandomName("event-override")
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -71,7 +73,7 @@ func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
 		CheckDestroy:             testAccCheckIntegrationEventDestroy(t),
 		Steps: []resource.TestStep{
 			{
-				Config: testAccIntegrationEventOverrideNotifierConfig(eventName),
+				Config: testAccIntegrationEventOverrideNotifierConfig(eventName, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					testAccEnsureIntegrationEventExists(t, "hpe_opsramp_integration_event.test_override"),
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test_override", "use_base_notifier", "false"),
@@ -92,7 +94,7 @@ func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 // The integration_event tests share a parent CUSTOM integration (outbound required).
-func testAccIntegrationEventParentConfig(pos int) string {
+func testAccIntegrationEventParentConfig(pos int, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -100,6 +102,7 @@ resource "hpe_opsramp_integration" "event_parent" {
   display_name = "tf-acc-event-parent - %d"
   application  = "CUSTOM"
   category     = "Custom"
+  %s
 
   inbound = {
     auth_type = "OAUTH2"
@@ -110,10 +113,10 @@ resource "hpe_opsramp_integration" "event_parent" {
     auth_type = "NONE"
   }
 }
-`, acctest.ProviderConfigHCL(), pos)
+`, acctest.ProviderConfigHCL(), pos, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccIntegrationEventBaseNotifierConfig(name string, enabled bool) string {
+func testAccIntegrationEventBaseNotifierConfig(name string, enabled bool, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -127,15 +130,16 @@ resource "hpe_opsramp_integration_event" "test" {
   endpoint_uri           = "https://httpbin.org/post"
   event_payload          = "test payload"
   active                 = %t
+  %s
   headers = {
     "Content-Type" = "application/json"
     "Accept" = "application/json"
   }
 }
-`, testAccIntegrationEventParentConfig(1), name, enabled)
+`, testAccIntegrationEventParentConfig(2, clientOverride), name, enabled, acctest.ClientAttrHCL(clientOverride))
 }
 
-func testAccIntegrationEventOverrideNotifierConfig(name string) string {
+func testAccIntegrationEventOverrideNotifierConfig(name string, clientOverride string) string {
 	return fmt.Sprintf(`
 %s
 
@@ -149,6 +153,7 @@ resource "hpe_opsramp_integration_event" "test_override" {
   endpoint_uri           = "https://httpbin.org/post"
   event_payload          = "override payload"
   active                 = true
+  %s
   headers = {
     "Content-Type" = "application/json"
     "Accept" = "application/json"
@@ -167,7 +172,7 @@ resource "hpe_opsramp_integration_event" "test_override" {
     scope            = "read"
   }
 }
-`, testAccIntegrationEventParentConfig(3), name)
+`, testAccIntegrationEventParentConfig(3, clientOverride), name, acctest.ClientAttrHCL(clientOverride))
 }
 
 // ---------------------------------------------------------------------------
@@ -248,7 +253,7 @@ func testAccCheckIntegrationEventDestroy(t *testing.T) resource.TestCheckFunc {
 }
 
 // testAccIntegrationEventImportStateIdFunc builds the composite import ID: <integration_id>:<event_id>
-func testAccIntegrationEventImportStateIdFunc(resourceName string) resource.ImportStateIdFunc {
+func testAccIntegrationEventImportStateIdFunc(resourceName string, clientOverride string) resource.ImportStateIdFunc {
 	return func(s *terraform.State) (string, error) {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
@@ -258,6 +263,11 @@ func testAccIntegrationEventImportStateIdFunc(resourceName string) resource.Impo
 		integrationID := rs.Primary.Attributes["integration_id"]
 		eventID := rs.Primary.ID
 
-		return integrationID + ":" + eventID, nil
+		id := integrationID + ":" + eventID
+		if clientOverride != "" {
+			return clientOverride + ":" + id, nil
+		}
+
+		return id, nil
 	}
 }

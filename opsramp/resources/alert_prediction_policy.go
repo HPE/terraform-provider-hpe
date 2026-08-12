@@ -30,13 +30,14 @@ type AlertPredictionPolicyResource struct {
 
 // AlertPredictionPolicyModel maps Terraform schema attributes to the provider model.
 type AlertPredictionPolicyModel struct {
-	Client                  types.String `tfsdk:"client"`
-	Id                      types.String `tfsdk:"id"`
-	Name                    types.String `tfsdk:"name"`
-	EnabledMode             types.String `tfsdk:"enabled_mode"`
-	SeasonalityTimeFrame    types.String `tfsdk:"seasonality_time_frame"`
-	GeneratePredictionAlert types.Bool   `tfsdk:"generate_prediction_alert"`
-	FilterQuery             types.String `tfsdk:"filter_query"`
+	Client                   types.String `tfsdk:"client"`
+	Id                       types.String `tfsdk:"id"`
+	Name                     types.String `tfsdk:"name"`
+	OrganizationMatchingType types.String `tfsdk:"organization_matching_type"`
+	EnabledMode              types.String `tfsdk:"enabled_mode"`
+	SeasonalityTimeFrame     types.String `tfsdk:"seasonality_time_frame"`
+	GeneratePredictionAlert  types.Bool   `tfsdk:"generate_prediction_alert"`
+	FilterQuery              types.String `tfsdk:"filter_query"`
 }
 
 // NewAlertPredictionPolicy creates a new instance of the resource.
@@ -107,6 +108,13 @@ func (r *AlertPredictionPolicyResource) Schema(_ context.Context, _ resource.Sch
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"organization_matching_type": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "Organization matching type. Required when using MSP credentials. Valid values: `ALL`, `INCLUDE`.",
+				Validators: []validator.String{
+					stringvalidator.OneOf("ALL", "INCLUDE"),
+				},
+			},
 		},
 	}
 }
@@ -119,6 +127,10 @@ func buildAlertPredictionPolicyRequest(plan AlertPredictionPolicyModel) client.A
 		FilterQuery:          plan.FilterQuery.ValueString(),
 	}
 
+	if !plan.OrganizationMatchingType.IsNull() && !plan.OrganizationMatchingType.IsUnknown() {
+		policy.OrganizationMatchingType = plan.OrganizationMatchingType.ValueString()
+	}
+
 	return policy
 }
 
@@ -128,6 +140,12 @@ func mapAlertPredictionPolicyToState(resp *client.AlertPredictionPolicy, state *
 	state.EnabledMode = types.StringValue(resp.EnabledMode)
 	state.SeasonalityTimeFrame = types.StringValue(resp.SeasonalityTimeFrame)
 	state.FilterQuery = types.StringValue(resp.FilterQuery)
+
+	if resp.OrganizationMatchingType != "" {
+		state.OrganizationMatchingType = types.StringValue(resp.OrganizationMatchingType)
+	} else if state.OrganizationMatchingType.IsNull() || state.OrganizationMatchingType.IsUnknown() {
+		state.OrganizationMatchingType = types.StringNull()
+	}
 }
 
 // Create handles the creation of the resource.

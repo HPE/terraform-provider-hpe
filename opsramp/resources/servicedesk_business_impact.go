@@ -84,6 +84,14 @@ func (r *ServiceDeskBusinessImpact) Schema(_ context.Context, _ resource.SchemaR
 	}
 }
 
+func (r *ServiceDeskBusinessImpact) resolveTenantId(clientAttr types.String) string {
+	if !clientAttr.IsNull() && clientAttr.ValueString() != "" {
+		return clientAttr.ValueString()
+	}
+
+	return r.apiClient.TenantId
+}
+
 func (r *ServiceDeskBusinessImpact) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan ServiceDeskBusinessImpactModel
 	diags := req.Plan.Get(ctx, &plan)
@@ -92,13 +100,15 @@ func (r *ServiceDeskBusinessImpact) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
+	tenantId := r.resolveTenantId(plan.Client)
+
 	businessImpact := client.ServiceDeskBusinessImpact{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		State:       plan.State.ValueBool(),
 	}
 
-	created, err := r.apiClient.CreateServiceDeskBusinessImpact(businessImpact)
+	created, err := r.apiClient.CreateServiceDeskBusinessImpact(tenantId, businessImpact)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 
@@ -120,8 +130,9 @@ func (r *ServiceDeskBusinessImpact) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	// Use ticket type from state (required for API)
-	businessImpact, err := r.apiClient.GetServiceDeskBusinessImpact(state.Id.ValueString())
+	tenantId := r.resolveTenantId(state.Client)
+
+	businessImpact, err := r.apiClient.GetServiceDeskBusinessImpact(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
 
@@ -150,6 +161,8 @@ func (r *ServiceDeskBusinessImpact) Update(ctx context.Context, req resource.Upd
 		return
 	}
 
+	tenantId := r.resolveTenantId(plan.Client)
+
 	businessImpact := client.ServiceDeskBusinessImpact{
 		Id:          plan.Id.ValueString(),
 		Name:        plan.Name.ValueString(),
@@ -159,7 +172,7 @@ func (r *ServiceDeskBusinessImpact) Update(ctx context.Context, req resource.Upd
 
 	// The API may not support update directly; if not, implement as needed.
 	// For now, try create (upsert) pattern:
-	updated, err := r.apiClient.UpdateServiceDeskBusinessImpact(plan.Id.ValueString(), businessImpact)
+	updated, err := r.apiClient.UpdateServiceDeskBusinessImpact(tenantId, plan.Id.ValueString(), businessImpact)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
 
@@ -182,9 +195,13 @@ func (r *ServiceDeskBusinessImpact) Delete(ctx context.Context, req resource.Del
 		return
 	}
 
-	err := r.apiClient.DeleteServiceDeskBusinessImpact(state.Id.ValueString())
+	tenantId := r.resolveTenantId(state.Client)
+
+	err := r.apiClient.DeleteServiceDeskBusinessImpact(tenantId, state.Id.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
+		return
 	}
 
 	resp.State.RemoveResource(ctx)
