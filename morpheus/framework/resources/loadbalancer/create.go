@@ -71,6 +71,10 @@ func (r *Resource) Create(
 		createLB.NetworkServerId = plan.NetworkServerId.ValueInt64Pointer()
 	}
 
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		createLB.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+
 	if err := setCreateConfig(ctx, createLB, plan); err != nil {
 		resp.Diagnostics.AddError("create load balancer resource", err.Error())
 

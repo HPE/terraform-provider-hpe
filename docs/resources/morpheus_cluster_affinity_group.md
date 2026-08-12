@@ -2,18 +2,37 @@
 page_title: "hpe_morpheus_cluster_affinity_group Resource - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Manages a Morpheus Cluster Affinity Group resource.
+  
 ---
 # hpe_morpheus_cluster_affinity_group (Resource)
 
-Manages a Morpheus Cluster Affinity Group resource.
+
+
+-> This resource creates a cluster-scoped affinity group, which is supported on HPE Virtual Machines (HVM) clusters. To place an affinity group on a VMware, VMware Cloud on AWS or MacStadium cloud, use [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group) instead.
+
+-> HVM is the only cluster type on which Morpheus enables affinity groups today, but that is not a limit of this resource: the capability is enabled per cluster type, and a cluster type contributed by a plugin can advertise it too, in which case this resource works against it unchanged.
+
+!> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — for example by provisioning an instance into the group — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
+
+~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. Creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.
+
+-> `servers` always shows as "known after apply" in a plan, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
+
+-> Morpheus ignores `affinity_type` on update, so a change to it replaces the affinity group.
+
+-> `pool_id` is assigned by Morpheus and cannot be set. It is read-only on this resource.
+
+-> Note that Morpheus version `8.0.10` or later is required for affinity group support.
+
+-> When an instance is provisioned with an affinity group selected, that membership is reflected here in `servers`. It is not exposed on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance), because the Morpheus instance API only echoes back the value requested at creation rather than the instance's actual group membership.
 
 ## Example Usage
 
 ```terraform
 resource "hpe_morpheus_cluster_affinity_group" "example" {
-  cluster_id = 1
-  name       = "Example Affinity Group"
+  cluster_id    = 1
+  name          = "Example Affinity Group"
+  affinity_type = "KEEP_TOGETHER"
 }
 ```
 
@@ -28,14 +47,18 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 ### Optional
 
 - `active` (Boolean) Whether the affinity group is active.
-- `description` (String) The description of the affinity group.
-- `resource_permissions` (Attributes) Resource permissions for group and service plan access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
+- `description` (String, Deprecated) Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.
+- `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
+- `servers` (Set of Number) Set of compute server IDs to include in the affinity group.
 - `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
-- `visibility` (String) The visibility of the cluster affinity group (public or private).
+- `visibility` (String) The visibility of the affinity group (public or private).
 
 ### Read-Only
 
 - `id` (Number) The ID of the cluster affinity group.
+- `pool_id` (Number) The ID of the resource pool associated with the affinity group.
+- `source` (String) The source of the affinity group (e.g. user, sync).
 
 <a id="nestedatt--resource_permissions"></a>
 ### Nested Schema for `resource_permissions`
@@ -48,13 +71,10 @@ Optional:
 <a id="nestedatt--resource_permissions--groups"></a>
 ### Nested Schema for `resource_permissions.groups`
 
-Required:
-
-- `id` (Number) Group ID.
-
 Optional:
 
 - `default` (Boolean) Whether this is the default group.
+- `id` (Number) Group ID.
 
 ## Import
 

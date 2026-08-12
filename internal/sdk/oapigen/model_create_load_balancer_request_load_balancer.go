@@ -26,6 +26,8 @@ type CreateLoadBalancerRequestLoadBalancer struct {
 	Name *string `json:"name,omitempty"`
 	// Description
 	Description *string `json:"description,omitempty"`
+	// Activate (true) or disable (false)
+	Enabled *bool `json:"enabled,omitempty"`
 	// Network Server ID
 	NetworkServerId *int64                                       `json:"networkServerId,omitempty"`
 	Site            *CreateLoadBalancerRequestLoadBalancerSite   `json:"site,omitempty"`
@@ -59,6 +61,9 @@ func (o CreateLoadBalancerRequestLoadBalancer) ToMap() (map[string]interface{}, 
 	}
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.Enabled) {
+		toSerialize["enabled"] = o.Enabled
 	}
 	if !IsNil(o.NetworkServerId) {
 		toSerialize["networkServerId"] = o.NetworkServerId

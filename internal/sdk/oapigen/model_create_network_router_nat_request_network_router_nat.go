@@ -32,6 +32,12 @@ type CreateNetworkRouterNatRequestNetworkRouterNAT struct {
 	DestinationNetwork *string `json:"destinationNetwork,omitempty"`
 	// Translated network for the NAT rule.
 	TranslatedNetwork *string `json:"translatedNetwork,omitempty"`
+	// Source ports for the NAT rule.
+	SourcePorts *string `json:"sourcePorts,omitempty"`
+	// Destination ports for the NAT rule.
+	DestinationPorts *string `json:"destinationPorts,omitempty"`
+	// Translated ports for the NAT rule.
+	TranslatedPorts *string `json:"translatedPorts,omitempty"`
 	// Priority of the NAT rule.
 	Priority *int64 `json:"priority,omitempty"`
 	// Protocol for the NAT rule.
@@ -67,6 +73,15 @@ func (o CreateNetworkRouterNatRequestNetworkRouterNAT) ToMap() (map[string]inter
 	}
 	if !IsNil(o.TranslatedNetwork) {
 		toSerialize["translatedNetwork"] = o.TranslatedNetwork
+	}
+	if !IsNil(o.SourcePorts) {
+		toSerialize["sourcePorts"] = o.SourcePorts
+	}
+	if !IsNil(o.DestinationPorts) {
+		toSerialize["destinationPorts"] = o.DestinationPorts
+	}
+	if !IsNil(o.TranslatedPorts) {
+		toSerialize["translatedPorts"] = o.TranslatedPorts
 	}
 	if !IsNil(o.Priority) {
 		toSerialize["priority"] = o.Priority

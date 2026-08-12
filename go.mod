@@ -4,7 +4,9 @@ go 1.25.8
 
 require (
 	github.com/cenkalti/backoff/v5 v5.0.3
+	github.com/go-jose/go-jose/v3 v3.0.5
 	github.com/go-viper/mapstructure/v2 v2.5.1-0.20260127154234-41eafd1297d5
+	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/go-version v1.9.0

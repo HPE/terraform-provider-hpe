@@ -10,6 +10,9 @@ templates-combined-temp/
 .terraform.lock*
 .vscode/
 
+# Mocks (GreenLake providers)
+greenlake/sdk/token/mocks/
+
 # Hero (AI tooling - not part of project)
 .hero/
 

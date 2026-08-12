@@ -15,7 +15,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -24,6 +26,11 @@ const (
 	ErrorNoValidSearchTerms            = `no valid search terms - an id or name is required`
 	ErrorNoClusterAffinityGroupFound   = `no cluster affinity group found`
 	ErrorMultipleClusterAffinityGroups = `multiple cluster affinity groups were returned`
+
+	// gatedFeature names this data source in the appliance version gate
+	// diagnostic. Phrased as a plural noun so the message reads "Cluster
+	// affinity groups require ...".
+	gatedFeature = "Cluster affinity groups"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -72,6 +79,7 @@ func affinityGroupAsState(
 		RefId:        convert.Int64ToType(ag.RefId),
 		RefType:      convert.StrToType(ag.RefType),
 		Visibility:   convert.StrToType(ag.Visibility),
+		Source:       convert.StrToType(ag.Source),
 	}
 
 	// Pool — nested {id}
@@ -86,6 +94,74 @@ func affinityGroupAsState(
 		state.Pool = NewPoolValueNull()
 	}
 
+	// Servers — [{id, name}] → Set of Int64 (extract IDs only)
+	if len(ag.Servers) > 0 {
+		serverVals := make([]attr.Value, 0, len(ag.Servers))
+		for i := range ag.Servers {
+			if ag.Servers[i].Id != nil {
+				serverVals = append(serverVals, types.Int64Value(*ag.Servers[i].Id))
+			}
+		}
+
+		if len(serverVals) > 0 {
+			state.Servers, _ = types.SetValue(types.Int64Type, serverVals)
+		} else {
+			state.Servers = types.SetNull(types.Int64Type)
+		}
+	} else {
+		state.Servers = types.SetNull(types.Int64Type)
+	}
+
+	// TenantIds — [{id, name}] → Set of Int64 (extract IDs only)
+	if len(ag.Tenants) > 0 {
+		tenantVals := make([]attr.Value, 0, len(ag.Tenants))
+		for i := range ag.Tenants {
+			if ag.Tenants[i].Id != nil {
+				tenantVals = append(tenantVals, types.Int64Value(*ag.Tenants[i].Id))
+			}
+		}
+
+		if len(tenantVals) > 0 {
+			state.TenantIds, _ = types.SetValue(types.Int64Type, tenantVals)
+		} else {
+			state.TenantIds = types.SetNull(types.Int64Type)
+		}
+	} else {
+		state.TenantIds = types.SetNull(types.Int64Type)
+	}
+
+	// ResourcePermissions — {all, groups: [{id, default}]}
+	if ag.ResourcePermissions != nil {
+		groupsVals := make([]attr.Value, 0, len(ag.ResourcePermissions.Sites))
+		for i := range ag.ResourcePermissions.Sites {
+			s := ag.ResourcePermissions.Sites[i]
+			gv := NewGroupsValueMust(
+				GroupsValue{}.AttributeTypes(ctx),
+				map[string]attr.Value{
+					"id":      convert.Int64ToType(s.Id),
+					"default": convert.BoolToType(s.Default),
+				},
+			)
+
+			groupsVals = append(groupsVals, gv)
+		}
+
+		// resource_permissions declares groups with GroupsType as its element
+		// type, so the elements must be GroupsValue. Converting them to bare
+		// objects first fails the set's element type check.
+		groupsSet, _ := types.SetValue(GroupsValue{}.Type(ctx), groupsVals)
+
+		state.ResourcePermissions = NewResourcePermissionsValueMust(
+			ResourcePermissionsValue{}.AttributeTypes(ctx),
+			map[string]attr.Value{
+				"all":    convert.BoolToType(ag.ResourcePermissions.All),
+				"groups": groupsSet,
+			},
+		)
+	} else {
+		state.ResourcePermissions = NewResourcePermissionsValueNull()
+	}
+
 	return state
 }
 
@@ -95,7 +171,6 @@ func getAffinityGroupByID(
 	clusterID int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetClusterAffinityGroup200ResponseAffinityGroup, error) {
-	// GetClusterAffinityGroup(ctx, clusterId, id)
 	r, hresp, err := apiClient.ClustersAPI.GetClusterAffinityGroup(
 		ctx, clusterID, id,
 	).Execute()
@@ -115,7 +190,6 @@ func getAffinityGroupByName(
 	clusterID int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetClusterAffinityGroup200ResponseAffinityGroup, error) {
-	// ListClusterAffinityGroups(ctx, clusterId)
 	rs, hresp, err := apiClient.ClustersAPI.ListClusterAffinityGroups(
 		ctx, clusterID,
 	).Execute()
@@ -191,6 +265,22 @@ func (d *DataSource) Read(
 			"could not create sdk client",
 		)
 
+		return
+	}
+
+	// MORPH-15506: refuse to read against an appliance older than the first
+	// release with stable affinity group semantics, so the practitioner gets a
+	// diagnostic naming the required version instead of an opaque API error.
+	//
+	// The check sits in Read rather than Configure because the framework calls
+	// Configure on every RPC for the type, including ValidateDataSourceConfig,
+	// which should not reach the network. One extra request per Read, on an
+	// operation that was going to call the API regardless. See
+	// versioncheck.Require, including why an unreadable version fails open.
+	resp.Diagnostics.Append(versioncheck.Require(
+		ctx, apiClient, gatedFeature, constants.AffinityGroupMinVersion,
+	)...)
+	if resp.Diagnostics.HasError() {
 		return
 	}
 

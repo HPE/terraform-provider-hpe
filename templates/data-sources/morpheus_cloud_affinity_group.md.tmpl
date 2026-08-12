@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> Unlike the [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group) resource, this data source also returns affinity groups that Morpheus imported from vCenter DRS rules on a VMware cloud. Check `source` to tell a group created by a user (`"user"`) from an imported one (`"sync"`). This data source is the supported way to reference an imported group.
+
+-> Note that Morpheus version `8.0.10` or later is required for affinity group support.
+
+## Example Usage - Name
+
+{{ tffile "examples/data-sources/morpheus_cloud_affinity_group/example-name.tf" }}
+
+## Example Usage - Id
+
+{{ tffile "examples/data-sources/morpheus_cloud_affinity_group/example-id.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

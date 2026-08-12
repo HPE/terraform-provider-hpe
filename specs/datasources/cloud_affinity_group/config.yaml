@@ -1,0 +1,77 @@
+cloud_affinity_group:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed
+        description: Set of compute server IDs in the affinity group.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed
+        description: List of tenant account IDs that are allowed access.
+        element_type:
+          int64: {}
+    resourcePermissions:
+      single_nested:
+        computed_optional_required: computed
+        description: Resource permissions for group access.
+        attributes:
+        - name: all
+          bool:
+            computed_optional_required: computed
+            description: Whether access is allowed to all groups.
+        - name: groups
+          set_nested:
+            computed_optional_required: computed
+            description: Set of groups allowed access.
+            nested_object:
+              attributes:
+              - name: id
+                int64:
+                  computed_optional_required: computed
+                  description: Group ID.
+              - name: default
+                bool:
+                  computed_optional_required: computed
+                  description: Whether this is the default group.
+
+  moves:
+    - affinity_group: ""                               # unnest wrapper (components/schemas/zoneAffinityGroup.yaml)
+    - zone_id: cloud_id                                # path param rename (zones -> clouds)
+    - template-servers: servers                        # replace spec servers (array of objects) with set of int64
+    - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id,name}) with set of int64
+    - template-resourcePermissions: resource_permissions  # replace spec resourcePermissions (sites has no inner props)
+
+  removes:
+    - tenants                                          # (components/schemas/zoneAffinityGroup.yaml) replaced by tenant_ids
+    - external_id                                      # (components/schemas/zoneAffinityGroup.yaml) internal
+
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the cloud affinity group.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the cloud affinity group.
+      conflicts_with: ["id"]
+    cloud_id:
+      computed_optional_required: required
+      description: The ID of the parent cloud.
+    active:
+      description: Whether the affinity group is active.
+    affinity_type:
+      description: The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
+    pool:
+      description: The resource pool associated with the affinity group.
+    pool.id:
+      description: The ID of the resource pool.
+    ref_id:
+      description: The reference ID.
+    ref_type:
+      description: The reference type.
+    source:
+      description: The source of the affinity group (e.g. user, sync).
+    visibility:
+      description: The visibility of the affinity group.

@@ -39,8 +39,8 @@ type AddBaremetalHost200ResponseServerInterfacesInner struct {
 	PoolAssigned         *bool                                                          `json:"poolAssigned,omitempty"`
 	PrimaryInterface     *bool                                                          `json:"primaryInterface,omitempty"`
 	Network              *AddBaremetalHost200ResponseServerInterfacesInnerNetwork       `json:"network,omitempty"`
-	Subnet               NullableString                                                 `json:"subnet,omitempty"`
-	NetworkGroup         NullableString                                                 `json:"networkGroup,omitempty"`
+	Subnet               *AddBaremetalHost200ResponseServerInterfacesInnerSubnet        `json:"subnet,omitempty"`
+	NetworkGroup         *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup  `json:"networkGroup,omitempty"`
 	NetworkPosition      NullableString                                                 `json:"networkPosition,omitempty"`
 	NetworkPool          *AddBaremetalHost200ResponseServerInterfacesInnerNetworkPool   `json:"networkPool,omitempty"`
 	NetworkDomain        *AddBaremetalHost200ResponseServerInterfacesInnerNetworkDomain `json:"networkDomain,omitempty"`
@@ -119,11 +119,11 @@ func (o AddBaremetalHost200ResponseServerInterfacesInner) ToMap() (map[string]in
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.NetworkPosition.IsSet() {
 		toSerialize["networkPosition"] = o.NetworkPosition.Get()

@@ -30,7 +30,7 @@ type UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInner stru
 	Uuid                 *string                                                                                `json:"uuid,omitempty"`
 	Active               *bool                                                                                  `json:"active,omitempty"`
 	UniqueId             *string                                                                                `json:"uniqueId,omitempty"`
-	Subnet               NullableString                                                                         `json:"subnet,omitempty"`
+	Subnet               *UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInnerSubnet          `json:"subnet,omitempty"`
 	ReplaceHostRecord    *bool                                                                                  `json:"replaceHostRecord,omitempty"`
 	IpMode               *string                                                                                `json:"ipMode,omitempty"`
 	Version              NullableString                                                                         `json:"version,omitempty"`
@@ -42,7 +42,7 @@ type UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInner stru
 	MacAddress           *string                                                                                `json:"macAddress,omitempty"`
 	PublicIpv6Address    NullableString                                                                         `json:"publicIpv6Address,omitempty"`
 	RefType              NullableString                                                                         `json:"refType,omitempty"`
-	NetworkGroup         NullableString                                                                         `json:"networkGroup,omitempty"`
+	NetworkGroup         *UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInnerNetworkGroup    `json:"networkGroup,omitempty"`
 	RefId                NullableString                                                                         `json:"refId,omitempty"`
 	NetworkDomain        *UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInnerNetworkDomain   `json:"networkDomain,omitempty"`
 	Name                 *string                                                                                `json:"name,omitempty"`
@@ -101,8 +101,8 @@ func (o UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInner) 
 	if !IsNil(o.UniqueId) {
 		toSerialize["uniqueId"] = o.UniqueId
 	}
-	if o.Subnet.IsSet() {
-		toSerialize["subnet"] = o.Subnet.Get()
+	if !IsNil(o.Subnet) {
+		toSerialize["subnet"] = o.Subnet
 	}
 	if !IsNil(o.ReplaceHostRecord) {
 		toSerialize["replaceHostRecord"] = o.ReplaceHostRecord
@@ -137,8 +137,8 @@ func (o UpdateServerNetworkInterface200ResponseAllOfOneOfServerInterfacesInner) 
 	if o.RefType.IsSet() {
 		toSerialize["refType"] = o.RefType.Get()
 	}
-	if o.NetworkGroup.IsSet() {
-		toSerialize["networkGroup"] = o.NetworkGroup.Get()
+	if !IsNil(o.NetworkGroup) {
+		toSerialize["networkGroup"] = o.NetworkGroup
 	}
 	if o.RefId.IsSet() {
 		toSerialize["refId"] = o.RefId.Get()

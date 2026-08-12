@@ -73,6 +73,20 @@ const (
 	// skip on environments lacking the HAProxy layout/infrastructure.
 	NetworkLoadBalancerHAProxy Capability = "network_loadbalancer_haproxy"
 
+	// Compute Features
+
+	// AffinityGroup marks tests that create or read cloud/cluster affinity
+	// groups. These need more than the underlying cloud or cluster: the
+	// appliance must be Morpheus >= 8.0.10 (the affinity group APIs do not
+	// exist before that), and the target must be a cloud type that seeds
+	// hasAffinityGroups (vmware, vmwareCloudAws, macstadium) or an HVM
+	// (mvm-cluster) cluster. That is why this is separate from the
+	// infrastructure capability it is paired with -- an appliance can advertise
+	// "vmware" or "hvm" and still be unable to run these tests. Gate affinity
+	// group tests on this alongside VMware or HVM so they skip on older or
+	// unsupported environments.
+	AffinityGroup Capability = "affinity_group"
+
 	// Automation Integrations
 	Ansible      Capability = "ansible"
 	AnsibleTower Capability = "ansible_tower"
@@ -108,6 +122,9 @@ const (
 
 	// Licensing
 	License Capability = "license"
+
+	// Bare Metal
+	Metal Capability = "metal"
 )
 
 // String returns the string representation of the capability.

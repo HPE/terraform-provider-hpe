@@ -163,6 +163,12 @@ func getNetworkAsState(
 
 	state.Config = types.DynamicNull()
 
+	if net.Config != nil {
+		state.ConnectedGateway = convert.StrToType(net.Config.ConnectedGateway)
+	} else {
+		state.ConnectedGateway = types.StringNull()
+	}
+
 	if net.NetworkDomain != nil {
 		state.NetworkDomainId = convert.Int64ToType(
 			net.NetworkDomain.Id,

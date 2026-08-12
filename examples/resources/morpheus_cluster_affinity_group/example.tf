@@ -1,4 +1,5 @@
 resource "hpe_morpheus_cluster_affinity_group" "example" {
-  cluster_id = 1
-  name       = "Example Affinity Group"
+  cluster_id    = 1
+  name          = "Example Affinity Group"
+  affinity_type = "KEEP_TOGETHER"
 }

@@ -115,6 +115,12 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Translated network",
 				MarkdownDescription: "Translated network",
 			},
+			"translated_ports": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Translated ports for the NAT rule",
+				MarkdownDescription: "Translated ports for the NAT rule",
+			},
 		},
 	}
 }
@@ -134,4 +140,5 @@ type NetworkRouterNatModel struct {
 	Service            types.String `tfsdk:"service"`
 	SourceNetwork      types.String `tfsdk:"source_network"`
 	TranslatedNetwork  types.String `tfsdk:"translated_network"`
+	TranslatedPorts    types.String `tfsdk:"translated_ports"`
 }

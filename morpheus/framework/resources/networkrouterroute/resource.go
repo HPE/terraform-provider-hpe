@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 var (
@@ -99,6 +100,10 @@ func (r *Resource) Create(
 	if !plan.NetworkMtu.IsNull() && !plan.NetworkMtu.IsUnknown() {
 		networkMtu := float32(plan.NetworkMtu.ValueFloat64())
 		route.NetworkMtu = &networkMtu
+	}
+
+	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
+		route.Priority = plan.Priority.ValueStringPointer()
 	}
 
 	createReq := sdk.CreateNetworkRouterRouteRequest{
@@ -213,6 +218,8 @@ func getRouteAsState(
 	} else {
 		state.NetworkMtu = types.Float64Null()
 	}
+
+	state.Priority = convert.StrToType(route.Priority.Get())
 
 	return state, diags
 }

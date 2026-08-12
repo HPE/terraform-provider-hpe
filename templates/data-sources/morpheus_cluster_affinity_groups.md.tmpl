@@ -1,0 +1,19 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> Cluster affinity groups are always created by a user, so every entry's `source` is `"user"` here. Affinity groups imported from vCenter DRS rules are cloud-scoped rather than cluster-scoped, and are returned by [`hpe_morpheus_cloud_affinity_groups`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_groups) instead.
+
+-> Note that Morpheus version `8.0.10` or later is required for affinity group support.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_cluster_affinity_groups/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
