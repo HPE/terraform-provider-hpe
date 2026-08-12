@@ -1296,6 +1296,10 @@ data_sources:
     read:
       path: /api/servers/{id}
       method: GET
+  clusters:
+    read:
+      path: /api/clusters
+      method: GET
   compute_servers:
     read:
       path: /api/servers

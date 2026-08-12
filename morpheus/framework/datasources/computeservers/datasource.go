@@ -261,6 +261,14 @@ func fieldValue(
 		if srv.Uuid != nil {
 			return *srv.Uuid, true
 		}
+	case "parent_host_id":
+		if p := srv.ParentServer.Get(); p != nil && p.Id != nil {
+			return strconv.FormatInt(*p.Id, 10), true
+		}
+	case "parent_host_name":
+		if p := srv.ParentServer.Get(); p != nil && p.Name != nil {
+			return *p.Name, true
+		}
 	case "external_id":
 		if v := srv.ExternalId.Get(); v != nil {
 			return *v, true
@@ -370,6 +378,16 @@ func serverToValue(
 		instanceId = convert.Int64ToType(srv.Instance.Id)
 	}
 
+	// Parent host: the hypervisor this compute server runs on. Null for a host
+	// itself, which has no parent.
+	parentHostId := types.Int64Null()
+	parentHostName := types.StringNull()
+
+	if p := srv.ParentServer.Get(); p != nil {
+		parentHostId = convert.Int64ToType(p.Id)
+		parentHostName = convert.StrToType(p.Name)
+	}
+
 	v, d := NewServersValue(
 		ServersValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
@@ -387,6 +405,8 @@ func serverToValue(
 			"hostname":                    convert.StrToType(srv.Hostname),
 			"id":                          convert.Int64ToType(srv.Id),
 			"instance_id":                 instanceId,
+			"parent_host_id":              parentHostId,
+			"parent_host_name":            parentHostName,
 			"internal_id":                 convert.StrToType(srv.InternalId.Get()),
 			"internal_ip":                 convert.StrToType(srv.InternalIp.Get()),
 			"labels":                      labelsVal,

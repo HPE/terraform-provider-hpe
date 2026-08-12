@@ -52,6 +52,13 @@ data "hpe_morpheus_compute_server" "example" {
 - `labels` (Set of String) The labels associated with the compute server.
 - `max_memory` (Number) The maximum memory allocated to the compute server in bytes.
 - `max_storage` (Number) The maximum storage allocated to the compute server in bytes.
+- `parent_host_id` (Number) The ID of the hypervisor host this compute server runs on, or null for
+a host itself. In Morpheus a host is a compute server record too, so
+this is the parent compute server, exposed as "host" for clarity.
+- `parent_host_name` (String) The name of the hypervisor host this compute server runs on, or null
+for a host itself. Reflects placement at the time of read: it changes
+when the guest is migrated, once Morpheus has picked the move up in
+its next inventory sync.
 - `plan_code` (String) The code of the service plan.
 - `plan_id` (Number) The ID of the service plan.
 - `plan_name` (String) The name of the service plan.

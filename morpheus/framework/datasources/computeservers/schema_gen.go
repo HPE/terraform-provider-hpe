@@ -144,6 +144,16 @@ func ComputeServersDataSourceSchema(ctx context.Context) schema.Schema {
 							Description:         "The name of the compute server.",
 							MarkdownDescription: "The name of the compute server.",
 						},
+						"parent_host_id": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The ID of the hypervisor host this compute server runs on, or null for\na host itself. In Morpheus a host is a compute server record too, so\nthis is the parent compute server, exposed as \"host\" for clarity.",
+							MarkdownDescription: "The ID of the hypervisor host this compute server runs on, or null for\na host itself. In Morpheus a host is a compute server record too, so\nthis is the parent compute server, exposed as \"host\" for clarity.",
+						},
+						"parent_host_name": schema.StringAttribute{
+							Computed:            true,
+							Description:         "The name of the hypervisor host this compute server runs on, or null\nfor a host itself. Reflects placement at the time of read: it changes\nwhen the guest is migrated, once Morpheus has picked the move up in\nits next inventory sync.",
+							MarkdownDescription: "The name of the hypervisor host this compute server runs on, or null\nfor a host itself. Reflects placement at the time of read: it changes\nwhen the guest is migrated, once Morpheus has picked the move up in\nits next inventory sync.",
+						},
 						"plan_code": schema.StringAttribute{
 							Computed:            true,
 							Description:         "The code of the service plan.",
@@ -202,10 +212,10 @@ func ComputeServersDataSourceSchema(ctx context.Context) schema.Schema {
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required:            true,
-							Description:         "The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility.",
-							MarkdownDescription: "The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility.",
+							Description:         "The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility, parent_host_id, parent_host_name.",
+							MarkdownDescription: "The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility, parent_host_id, parent_host_name.",
 							Validators: []validator.String{
-								stringvalidator.OneOf("name", "status", "power_state", "platform", "hostname", "uuid", "external_id", "internal_id", "cloud_id", "cloud_name", "group_id", "compute_server_type_code", "compute_server_type_name", "plan_code", "plan_name", "visibility"),
+								stringvalidator.OneOf("name", "status", "power_state", "platform", "hostname", "uuid", "external_id", "internal_id", "cloud_id", "cloud_name", "group_id", "compute_server_type_code", "compute_server_type_name", "plan_code", "plan_name", "visibility", "parent_host_id", "parent_host_name"),
 							},
 						},
 						"values": schema.SetAttribute{
@@ -632,6 +642,42 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
+	parentHostIdAttribute, ok := attributes["parent_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`parent_host_id is missing from object`)
+
+		return nil, diags
+	}
+
+	parentHostIdVal, ok := parentHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`parent_host_id expected to be basetypes.Int64Value, was: %T`, parentHostIdAttribute))
+	}
+
+	parentHostNameAttribute, ok := attributes["parent_host_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`parent_host_name is missing from object`)
+
+		return nil, diags
+	}
+
+	parentHostNameVal, ok := parentHostNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`parent_host_name expected to be basetypes.StringValue, was: %T`, parentHostNameAttribute))
+	}
+
 	planCodeAttribute, ok := attributes["plan_code"]
 
 	if !ok {
@@ -801,6 +847,8 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		MaxMemory:                maxMemoryVal,
 		MaxStorage:               maxStorageVal,
 		Name:                     nameVal,
+		ParentHostId:             parentHostIdVal,
+		ParentHostName:           parentHostNameVal,
 		PlanCode:                 planCodeVal,
 		PlanId:                   planIdVal,
 		PlanName:                 planNameVal,
@@ -1236,6 +1284,42 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
 	}
 
+	parentHostIdAttribute, ok := attributes["parent_host_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`parent_host_id is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	parentHostIdVal, ok := parentHostIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`parent_host_id expected to be basetypes.Int64Value, was: %T`, parentHostIdAttribute))
+	}
+
+	parentHostNameAttribute, ok := attributes["parent_host_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`parent_host_name is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	parentHostNameVal, ok := parentHostNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`parent_host_name expected to be basetypes.StringValue, was: %T`, parentHostNameAttribute))
+	}
+
 	planCodeAttribute, ok := attributes["plan_code"]
 
 	if !ok {
@@ -1405,6 +1489,8 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		MaxMemory:                maxMemoryVal,
 		MaxStorage:               maxStorageVal,
 		Name:                     nameVal,
+		ParentHostId:             parentHostIdVal,
+		ParentHostName:           parentHostNameVal,
 		PlanCode:                 planCodeVal,
 		PlanId:                   planIdVal,
 		PlanName:                 planNameVal,
@@ -1503,6 +1589,8 @@ type ServersValue struct {
 	MaxMemory                basetypes.Int64Value  `tfsdk:"max_memory"`
 	MaxStorage               basetypes.Int64Value  `tfsdk:"max_storage"`
 	Name                     basetypes.StringValue `tfsdk:"name"`
+	ParentHostId             basetypes.Int64Value  `tfsdk:"parent_host_id"`
+	ParentHostName           basetypes.StringValue `tfsdk:"parent_host_name"`
 	PlanCode                 basetypes.StringValue `tfsdk:"plan_code"`
 	PlanId                   basetypes.Int64Value  `tfsdk:"plan_id"`
 	PlanName                 basetypes.StringValue `tfsdk:"plan_name"`
@@ -1515,7 +1603,7 @@ type ServersValue struct {
 }
 
 func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 28)
+	attrTypes := make(map[string]tftypes.Type, 30)
 
 	var val tftypes.Value
 	var err error
@@ -1542,6 +1630,8 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["max_memory"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["max_storage"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["parent_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["parent_host_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["plan_code"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["plan_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["plan_name"] = basetypes.StringType{}.TerraformType(ctx)
@@ -1555,7 +1645,7 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 28)
+		vals := make(map[string]tftypes.Value, 30)
 
 		val, err = v.AgentInstalled.ToTerraformValue(ctx)
 		if err != nil {
@@ -1697,6 +1787,20 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 		vals["name"] = val
 
+		val, err = v.ParentHostId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["parent_host_id"] = val
+
+		val, err = v.ParentHostName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["parent_host_name"] = val
+
 		val, err = v.PlanCode.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -1815,17 +1919,19 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"labels": basetypes.SetType{
 				ElemType: types.StringType,
 			},
-			"max_memory":  basetypes.Int64Type{},
-			"max_storage": basetypes.Int64Type{},
-			"name":        basetypes.StringType{},
-			"plan_code":   basetypes.StringType{},
-			"plan_id":     basetypes.Int64Type{},
-			"plan_name":   basetypes.StringType{},
-			"platform":    basetypes.StringType{},
-			"power_state": basetypes.StringType{},
-			"status":      basetypes.StringType{},
-			"uuid":        basetypes.StringType{},
-			"visibility":  basetypes.StringType{},
+			"max_memory":       basetypes.Int64Type{},
+			"max_storage":      basetypes.Int64Type{},
+			"name":             basetypes.StringType{},
+			"parent_host_id":   basetypes.Int64Type{},
+			"parent_host_name": basetypes.StringType{},
+			"plan_code":        basetypes.StringType{},
+			"plan_id":          basetypes.Int64Type{},
+			"plan_name":        basetypes.StringType{},
+			"platform":         basetypes.StringType{},
+			"power_state":      basetypes.StringType{},
+			"status":           basetypes.StringType{},
+			"uuid":             basetypes.StringType{},
+			"visibility":       basetypes.StringType{},
 		}), diags
 	}
 
@@ -1849,17 +1955,19 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"labels": basetypes.SetType{
 			ElemType: types.StringType,
 		},
-		"max_memory":  basetypes.Int64Type{},
-		"max_storage": basetypes.Int64Type{},
-		"name":        basetypes.StringType{},
-		"plan_code":   basetypes.StringType{},
-		"plan_id":     basetypes.Int64Type{},
-		"plan_name":   basetypes.StringType{},
-		"platform":    basetypes.StringType{},
-		"power_state": basetypes.StringType{},
-		"status":      basetypes.StringType{},
-		"uuid":        basetypes.StringType{},
-		"visibility":  basetypes.StringType{},
+		"max_memory":       basetypes.Int64Type{},
+		"max_storage":      basetypes.Int64Type{},
+		"name":             basetypes.StringType{},
+		"parent_host_id":   basetypes.Int64Type{},
+		"parent_host_name": basetypes.StringType{},
+		"plan_code":        basetypes.StringType{},
+		"plan_id":          basetypes.Int64Type{},
+		"plan_name":        basetypes.StringType{},
+		"platform":         basetypes.StringType{},
+		"power_state":      basetypes.StringType{},
+		"status":           basetypes.StringType{},
+		"uuid":             basetypes.StringType{},
+		"visibility":       basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -1893,6 +2001,8 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"max_memory":                  v.MaxMemory,
 			"max_storage":                 v.MaxStorage,
 			"name":                        v.Name,
+			"parent_host_id":              v.ParentHostId,
+			"parent_host_name":            v.ParentHostName,
 			"plan_code":                   v.PlanCode,
 			"plan_id":                     v.PlanId,
 			"plan_name":                   v.PlanName,
@@ -2001,6 +2111,14 @@ func (v ServersValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.ParentHostId.Equal(other.ParentHostId) {
+		return false
+	}
+
+	if !v.ParentHostName.Equal(other.ParentHostName) {
+		return false
+	}
+
 	if !v.PlanCode.Equal(other.PlanCode) {
 		return false
 	}
@@ -2065,17 +2183,19 @@ func (v ServersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"labels": basetypes.SetType{
 			ElemType: types.StringType,
 		},
-		"max_memory":  basetypes.Int64Type{},
-		"max_storage": basetypes.Int64Type{},
-		"name":        basetypes.StringType{},
-		"plan_code":   basetypes.StringType{},
-		"plan_id":     basetypes.Int64Type{},
-		"plan_name":   basetypes.StringType{},
-		"platform":    basetypes.StringType{},
-		"power_state": basetypes.StringType{},
-		"status":      basetypes.StringType{},
-		"uuid":        basetypes.StringType{},
-		"visibility":  basetypes.StringType{},
+		"max_memory":       basetypes.Int64Type{},
+		"max_storage":      basetypes.Int64Type{},
+		"name":             basetypes.StringType{},
+		"parent_host_id":   basetypes.Int64Type{},
+		"parent_host_name": basetypes.StringType{},
+		"plan_code":        basetypes.StringType{},
+		"plan_id":          basetypes.Int64Type{},
+		"plan_name":        basetypes.StringType{},
+		"platform":         basetypes.StringType{},
+		"power_state":      basetypes.StringType{},
+		"status":           basetypes.StringType{},
+		"uuid":             basetypes.StringType{},
+		"visibility":       basetypes.StringType{},
 	}
 }
 

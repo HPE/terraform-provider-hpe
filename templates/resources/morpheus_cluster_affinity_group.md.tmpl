@@ -14,7 +14,7 @@ description: |-
 
 !> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — for example by provisioning an instance into the group — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
 
-~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. Creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.
+~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. That loop is the cluster's Dynamic Placement and **must be enabled on the cluster** — `config_hvm.dynamic_placement = true` on [`hpe_morpheus_cluster`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster). It is off by default, and with it off the rule and its membership are recorded but no virtual machine is ever placed or moved to satisfy them. With it enabled, creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.
 
 -> `servers` always shows as "known after apply" in a plan, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
 
@@ -24,7 +24,7 @@ description: |-
 
 -> Note that Morpheus version `8.0.10` or later is required for affinity group support.
 
--> When an instance is provisioned with an affinity group selected, that membership is reflected here in `servers`. It is not exposed on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance), because the Morpheus instance API only echoes back the value requested at creation rather than the instance's actual group membership.
+-> An instance can alternatively be placed into a group when it is provisioned, with `config_hvm.affinity_group_id` on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance). Do not mix the two approaches for the same instance: where `servers` is managed here it is authoritative, so a server this resource does not list — including one placed into the group at provision time — is removed on the next apply. `affinity_group_id` records only what was requested at creation, so `servers` here remains the source of truth for actual membership.
 
 ## Example Usage
 

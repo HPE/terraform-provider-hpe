@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusters"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
@@ -91,6 +92,7 @@ func (p *MorpheusProvider) DataSources(
 		backup.NewDataSource,
 		backuptype.NewDataSource,
 		cluster.NewDataSource,
+		clusters.NewDataSource,
 		cloud.NewDataSource,
 		datastore.NewDataSource,
 		datastores.NewDataSource,
