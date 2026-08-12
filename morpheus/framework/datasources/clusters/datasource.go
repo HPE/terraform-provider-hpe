@@ -5,6 +5,7 @@ package clusters
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"regexp"
@@ -299,9 +300,9 @@ func clusterTypeCodes(
 ) (map[int64]string, error) {
 	out := map[int64]string{}
 
-	types, _, err := apiClient.ClustersAPI.ListClusterTypes(ctx).Execute()
+	types, hresp, err := apiClient.ClustersAPI.ListClusterTypes(ctx).Execute()
 	if err != nil {
-		return nil, err
+		return nil, errors.New(providererrors.ErrMsg(err, hresp))
 	}
 
 	if types == nil {

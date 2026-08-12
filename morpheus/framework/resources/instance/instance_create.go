@@ -172,7 +172,8 @@ func (g *Resource) Create(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
-		if !plan.ConfigHvm.AffinityGroupId.IsNull() {
+		if !plan.ConfigHvm.AffinityGroupId.IsNull() &&
+			!plan.ConfigHvm.AffinityGroupId.IsUnknown() {
 			// The config.affinityGroup field records membership in the group, while host
 			// selection reads config.affinityGroupId; both must be sent so that
 			// KEEP_TOGETHER placement works at create.
@@ -203,7 +204,8 @@ func (g *Resource) Create(
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
 		}
 
-		if !plan.ConfigVmware.AffinityGroupId.IsNull() {
+		if !plan.ConfigVmware.AffinityGroupId.IsNull() &&
+			!plan.ConfigVmware.AffinityGroupId.IsUnknown() {
 			configVMware.AffinityGroup = plan.ConfigVmware.AffinityGroupId.ValueInt64Pointer()
 		}
 
