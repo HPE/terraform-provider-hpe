@@ -11,6 +11,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinitylock"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityread"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -91,6 +92,15 @@ func (r *Resource) Create(
 }
 
 // readMembership returns the group's current server list.
+//
+// TODO(MORPH-15806): drop the list fallback once the appliance defect is fixed.
+// An affinity group that has been sent tenant permissions returns HTTP 500 from
+// its single-item endpoint from then on, permanently, even though the record is
+// undamaged. Without the fallback one such group makes every plan fail for every
+// membership that references it.
+//
+// The fallback is lossless here: the list omits only resourcePermissions and
+// tenants, and this function needs neither.
 func readMembership(
 	ctx context.Context,
 	client *sdk.APIClient,
@@ -99,25 +109,77 @@ func readMembership(
 ) ([]int64, bool) {
 	result, httpResp, err := client.CloudsAPI.
 		GetCloudAffinityGroup(ctx, cloudID, groupID).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			diags, errfmt.OpRead, "cloud_affinity_group_member", "", err, httpResp,
-		)
+	if err == nil && result != nil && result.AffinityGroup != nil {
+		servers := make([]int64, 0, len(result.AffinityGroup.Servers))
+		for _, s := range result.AffinityGroup.Servers {
+			if s.Id != nil {
+				servers = append(servers, *s.Id)
+			}
+		}
 
-		return nil, false
+		return servers, true
 	}
 
-	if result == nil || result.AffinityGroup == nil {
+	if !affinityread.IsSingleItemRenderFailure(httpResp) {
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			errfmt.DiagError(
+				diags, errfmt.OpRead, "cloud_affinity_group_member", "", err, httpResp,
+			)
+
+			return nil, false
+		}
+
 		diags.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return nil, false
 	}
 
-	servers := make([]int64, 0, len(result.AffinityGroup.Servers))
-	for _, s := range result.AffinityGroup.Servers {
-		if s.Id != nil {
-			servers = append(servers, *s.Id)
-		}
+	listResult, listResp, listErr := client.CloudsAPI.
+		ListCloudAffinityGroups(ctx, cloudID).Execute()
+	if err := errfmt.CheckResponse(listErr, listResp); err != nil {
+		errfmt.DiagError(
+			diags, errfmt.OpRead, "cloud_affinity_group_member", "", err, listResp,
+		)
+
+		return nil, false
+	}
+
+	if listResult == nil {
+		diags.AddError("API returned nil", "affinity group list is nil in the response")
+
+		return nil, false
+	}
+
+	servers, found := affinityread.ServersFromList(
+		listResult.AffinityGroups,
+		groupID,
+		func(a sdk.ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) (int64, bool) {
+			if a.Id == nil {
+				return 0, false
+			}
+
+			return *a.Id, true
+		},
+		func(a sdk.ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) []int64 {
+			out := make([]int64, 0, len(a.Servers))
+			for _, s := range a.Servers {
+				if s.Id != nil {
+					out = append(out, *s.Id)
+				}
+			}
+
+			return out
+		},
+	)
+
+	if !found {
+		diags.AddError(
+			"affinity group not found",
+			"The affinity group could not be read from its single-item endpoint, "+
+				"and does not appear in the group listing either.",
+		)
+
+		return nil, false
 	}
 
 	return servers, true
@@ -140,6 +202,20 @@ func writeMembership(
 	_, httpResp, err := client.CloudsAPI.
 		UpdateCloudAffinityGroup(ctx, cloudID, groupID).
 		UpdateCloudAffinityGroupRequest(body).Execute()
+
+	// TODO(MORPH-15806): stop treating 500 as inconclusive once the appliance
+	// defect is fixed.
+	//
+	// On a group that has been sent tenant permissions, the update applies but
+	// rendering the response fails, so a 500 comes back for a write that
+	// succeeded. Failing here would make such a group unmanageable. The caller
+	// verifies the outcome by reading membership back, which is the authority
+	// either way, so an inconclusive result is passed through rather than
+	// reported as a failure.
+	if affinityread.IsSingleItemRenderFailure(httpResp) {
+		return true
+	}
+
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(
 			diags, errfmt.OpUpdate, "cloud_affinity_group_member", "", err, httpResp,

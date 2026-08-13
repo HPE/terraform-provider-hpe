@@ -13,7 +13,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
-	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 func (r *cloudAffinityGroupResource) Create(
@@ -144,25 +143,14 @@ func (r *cloudAffinityGroupResource) Create(
 	id := *result.AffinityGroup.Id
 
 	// Read-back to populate full state.
-	readResult, httpResp, err := client.CloudsAPI.GetCloudAffinityGroup(ctx, cloudID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cloud_affinity_group",
-			plan.Name.ValueString(), err, httpResp,
-		)
-		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
-			ResourceType: "cloud_affinity_group",
-			ResourceID:   id,
-			StateWriter:  &resp.State,
-			Diagnostics:  &resp.Diagnostics,
-		})
-
-		return
-	}
-
-	readAg := readResult.AffinityGroup
-	if readAg == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+	readAg, ok := fetchAffinityGroup(ctx, client, cloudID, id, &resp.Diagnostics)
+	if !ok {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"affinity group not found after create",
+				"The affinity group was created but could not be read back.",
+			)
+		}
 
 		return
 	}

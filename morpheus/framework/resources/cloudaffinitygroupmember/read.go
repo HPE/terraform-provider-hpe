@@ -6,8 +6,6 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // Read checks whether the server is still in the group.
@@ -38,35 +36,25 @@ func (r *Resource) Read(
 	groupID := state.AffinityGroupID.ValueInt64()
 	serverID := state.ServerID.ValueInt64()
 
-	result, httpResp, err := client.CloudsAPI.
-		GetCloudAffinityGroup(ctx, cloudID, groupID).Execute()
+	// Uses readMembership so a group whose single-item endpoint is broken still
+	// resolves via the listing. TODO(MORPH-15806).
+	servers, ok := readMembership(ctx, client, cloudID, groupID, &resp.Diagnostics)
+	if !ok {
+		// The group itself is gone, so the membership is too. Deleting a cloud
+		// or its resource pool cascades to its affinity groups.
+		if resp.Diagnostics.HasError() {
+			return
+		}
 
-	// The group itself is gone, so the membership is too. Deleting a cloud or
-	// its resource pool cascades to its affinity groups.
-	if errfmt.IsNotFound(httpResp) {
 		resp.State.RemoveResource(ctx)
-
-		return
-	}
-
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cloud_affinity_group_member", "", err, httpResp,
-		)
-
-		return
-	}
-
-	if result == nil || result.AffinityGroup == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return
 	}
 
 	found := false
 
-	for _, s := range result.AffinityGroup.Servers {
-		if s.Id != nil && *s.Id == serverID {
+	for _, id := range servers {
+		if id == serverID {
 			found = true
 
 			break

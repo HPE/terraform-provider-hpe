@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinitylock"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityread"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -117,7 +118,17 @@ func (r *clusterAffinityGroupResource) Update(
 
 	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).
 		UpdateClusterAffinityGroupRequest(body).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+
+	// TODO(MORPH-15806): stop treating 500 as inconclusive once the appliance
+	// defect is fixed.
+	//
+	// On a group that has been sent tenant permissions the update applies but
+	// rendering the response fails, so a 500 comes back for a write that
+	// succeeded. Failing here would make the group unmanageable. The read-back
+	// below establishes the real outcome either way.
+	renderFailed := affinityread.IsSingleItemRenderFailure(httpResp)
+
+	if err := errfmt.CheckResponse(err, httpResp); err != nil && !renderFailed {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpUpdate, "cluster_affinity_group",
 			plan.Name.ValueString(), err, httpResp,
@@ -127,19 +138,14 @@ func (r *clusterAffinityGroupResource) Update(
 	}
 
 	// Read-back.
-	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group",
-			plan.Name.ValueString(), err, httpResp,
-		)
-
-		return
-	}
-
-	readAg := readResult.AffinityGroup
-	if readAg == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+	readAg, ok := fetchAffinityGroup(ctx, client, clusterID, id, &resp.Diagnostics)
+	if !ok {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"affinity group not found after update",
+				"The affinity group was updated but could not be read back.",
+			)
+		}
 
 		return
 	}
@@ -196,25 +202,78 @@ func readCurrentServers(
 	diags *diag.Diagnostics,
 ) ([]int64, bool) {
 	result, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			diags, errfmt.OpRead, "cluster_affinity_group", "", err, httpResp,
-		)
+	if err == nil && result != nil && result.AffinityGroup != nil {
+		servers := make([]int64, 0, len(result.AffinityGroup.Servers))
+		for _, s := range result.AffinityGroup.Servers {
+			if s.Id != nil {
+				servers = append(servers, *s.Id)
+			}
+		}
 
-		return nil, false
+		return servers, true
 	}
 
-	if result == nil || result.AffinityGroup == nil {
+	// TODO(MORPH-15806): drop this fallback once the appliance defect is fixed.
+	//
+	// A group that has been sent tenant permissions returns 500 from its
+	// single-item endpoint permanently, so without this an unrelated rename
+	// would fail. The listing renders the same group correctly, and membership
+	// is all this function needs, so the fallback loses nothing.
+	if !affinityread.IsSingleItemRenderFailure(httpResp) {
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			errfmt.DiagError(diags, errfmt.OpRead, "cluster_affinity_group", "", err, httpResp)
+
+			return nil, false
+		}
+
 		diags.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return nil, false
 	}
 
-	servers := make([]int64, 0, len(result.AffinityGroup.Servers))
-	for _, s := range result.AffinityGroup.Servers {
-		if s.Id != nil {
-			servers = append(servers, *s.Id)
-		}
+	listResult, listResp, listErr := client.ClustersAPI.ListClusterAffinityGroups(ctx, clusterID).Execute()
+	if err := errfmt.CheckResponse(listErr, listResp); err != nil {
+		errfmt.DiagError(diags, errfmt.OpRead, "cluster_affinity_group", "", err, listResp)
+
+		return nil, false
+	}
+
+	if listResult == nil {
+		diags.AddError("API returned nil", "affinity group list is nil in the response")
+
+		return nil, false
+	}
+
+	servers, found := affinityread.ServersFromList(
+		listResult.AffinityGroups,
+		id,
+		func(a sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner) (int64, bool) {
+			if a.Id == nil {
+				return 0, false
+			}
+
+			return *a.Id, true
+		},
+		func(a sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner) []int64 {
+			out := make([]int64, 0, len(a.Servers))
+			for _, s := range a.Servers {
+				if s.Id != nil {
+					out = append(out, *s.Id)
+				}
+			}
+
+			return out
+		},
+	)
+
+	if !found {
+		diags.AddError(
+			"affinity group not found",
+			"The affinity group could not be read from its single-item endpoint, "+
+				"and does not appear in the group listing either.",
+		)
+
+		return nil, false
 	}
 
 	return servers, true
