@@ -172,6 +172,15 @@ func (g *Resource) Create(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
+		if !plan.ConfigHvm.AffinityGroupId.IsNull() &&
+			!plan.ConfigHvm.AffinityGroupId.IsUnknown() {
+			// The config.affinityGroup field records membership in the group, while host
+			// selection reads config.affinityGroupId; both must be sent so that
+			// KEEP_TOGETHER placement works at create.
+			configHvm.AffinityGroup = plan.ConfigHvm.AffinityGroupId.ValueInt64Pointer()
+			configHvm.AffinityGroupId = plan.ConfigHvm.AffinityGroupId.ValueInt64Pointer()
+		}
+
 		reqInstance.Config = sdk.AddInstanceRequestConfig{
 			HVMInstanceConfiguration: configHvm,
 		}
@@ -193,6 +202,11 @@ func (g *Resource) Create(
 		if !config.ConfigVmware.CreateUser.IsNull() && !config.ConfigVmware.CreateUser.IsUnknown() {
 			createUser := plan.ConfigVmware.CreateUser.ValueBool()
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
+		}
+
+		if !plan.ConfigVmware.AffinityGroupId.IsNull() &&
+			!plan.ConfigVmware.AffinityGroupId.IsUnknown() {
+			configVMware.AffinityGroup = plan.ConfigVmware.AffinityGroupId.ValueInt64Pointer()
 		}
 
 		reqInstance.Config = sdk.AddInstanceRequestConfig{

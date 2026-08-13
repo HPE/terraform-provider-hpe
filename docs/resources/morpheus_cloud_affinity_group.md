@@ -32,7 +32,7 @@ Morpheus enables affinity groups on the following cloud types:
 
 -> Note that Morpheus version `8.0.10` or later is required for affinity group support.
 
--> When an instance is provisioned with an affinity group selected, that membership is reflected here in `servers`. It is not exposed on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance), because the Morpheus instance API only echoes back the value requested at creation rather than the instance's actual group membership.
+-> An instance can alternatively be placed into a group when it is provisioned, with `config_vmware.affinity_group_id` on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance). Do not mix the two approaches for the same instance: where `servers` is managed here it is authoritative, so a server this resource does not list — including one placed into the group at provision time — is removed on the next apply. `affinity_group_id` records only what was requested at creation, so `servers` here remains the source of truth for actual membership.
 
 ## Example Usage
 

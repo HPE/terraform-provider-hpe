@@ -36,6 +36,21 @@ compute_server:
       string:
         computed_optional_required: computed
         description: The name of the service plan.
+    parent_host_id:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The ID of the hypervisor host this compute server runs on, or null for
+          a host itself. In Morpheus a host is a compute server record too, so
+          this is the parent compute server, exposed as "host" for clarity.
+    parent_host_name:
+      string:
+        computed_optional_required: computed
+        description: |-
+          The name of the hypervisor host this compute server runs on, or null
+          for a host itself. Reflects placement at the time of read: it changes
+          when the guest is migrated, once Morpheus has picked the move up in
+          its next inventory sync.
 
   moves:
     - id: _path_param_id                                                       # move path param id out of the way
@@ -51,6 +66,8 @@ compute_server:
     - template-plan_id: plan_id                                                # (template) flatten plan.id
     - template-plan_code: plan_code                                            # (template) flatten plan.code
     - template-plan_name: plan_name                                            # (template) flatten plan.name
+    - template-parent_host_id: parent_host_id                                  # (template) flatten parentServer.id
+    - template-parent_host_name: parent_host_name                              # (template) flatten parentServer.name
 
   removes:
     - _path_param_id                         # path param id (single_nested with id/uuid sub-fields)
@@ -91,7 +108,7 @@ compute_server:
     - os_device                              # (components/schemas/server.yaml) internal
     - os_type                                # (components/schemas/server.yaml) low-value
     - owner                                  # (components/schemas/server.yaml) nested object
-    - parent_server                          # (components/schemas/server.yaml) nested object
+    - parent_server                          # (components/schemas/server.yaml) replaced by parent_host_id/parent_host_name
     - plan                                   # (components/schemas/server.yaml) replaced by flattened fields
     - platform_version                       # (components/schemas/server.yaml) low-value
     - resource_pool_id                       # (components/schemas/server.yaml) low-value

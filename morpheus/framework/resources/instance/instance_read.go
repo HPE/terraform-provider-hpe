@@ -588,6 +588,21 @@ func getInstanceVMwareConfig(
 	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
+
+	// affinity_group_id is recorded at provision time and never updated by the
+	// platform afterwards, so what the API returns is what was requested at
+	// create, not live membership. It is still read back deliberately: on import
+	// there is no prior state to carry the value, so leaving it unset would make
+	// the next plan see a change from null and, because the attribute forces
+	// replacement, propose destroying and recreating the instance.
+	//
+	// For live membership use the servers attribute of the affinity group
+	// resources and data sources, or parent_host_id on the compute server data
+	// sources to see where a guest actually landed.
+	//
+	// VMware sends only affinityGroup on create, so that is the field read back.
+	configVmware.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroup)
+
 	configVmware.state = attr.ValueStateKnown
 
 	return configVmware, diag.Diagnostics{}
@@ -636,6 +651,19 @@ func getInstanceHVMConfig(
 	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
+
+	// affinity_group_id is recorded at provision time and never updated by the
+	// platform afterwards, so what the API returns is what was requested at
+	// create, not live membership. It is still read back deliberately: on import
+	// there is no prior state to carry the value, so leaving it unset would make
+	// the next plan see a change from null and, because the attribute forces
+	// replacement, propose destroying and recreating the instance.
+	//
+	// For live membership use the servers attribute of the affinity group
+	// resources and data sources, or parent_host_id on the compute server data
+	// sources to see where a guest actually landed.
+	configHvm.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroupId)
+
 	configHvm.state = attr.ValueStateKnown
 
 	return configHvm, diag.Diagnostics{}

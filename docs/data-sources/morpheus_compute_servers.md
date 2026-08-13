@@ -42,7 +42,7 @@ data "hpe_morpheus_compute_servers" "example" {
 
 Required:
 
-- `name` (String) The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility.
+- `name` (String) The field to filter on. Valid names are: name, status, power_state, platform, hostname, uuid, external_id, internal_id, cloud_id, cloud_name, group_id, compute_server_type_code, compute_server_type_name, plan_code, plan_name, visibility, parent_host_id, parent_host_name.
 - `values` (Set of String) The filter values. A server matches the block if the chosen field matches ANY value (Go regular expression).
 
 
@@ -71,6 +71,13 @@ Read-Only:
 - `max_memory` (Number) The maximum memory allocated to the compute server in bytes.
 - `max_storage` (Number) The maximum storage allocated to the compute server in bytes.
 - `name` (String) The name of the compute server.
+- `parent_host_id` (Number) The ID of the hypervisor host this compute server runs on, or null for
+a host itself. In Morpheus a host is a compute server record too, so
+this is the parent compute server, exposed as "host" for clarity.
+- `parent_host_name` (String) The name of the hypervisor host this compute server runs on, or null
+for a host itself. Reflects placement at the time of read: it changes
+when the guest is migrated, once Morpheus has picked the move up in
+its next inventory sync.
 - `plan_code` (String) The code of the service plan.
 - `plan_id` (Number) The ID of the service plan.
 - `plan_name` (String) The name of the service plan.

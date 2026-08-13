@@ -69,6 +69,62 @@ network configuration use the `hpe_morpheus_instance` `data-source` to read back
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  `false`<br><br>
 These settings can be changed as required.
 
+-> `affinity_group_id`, in the `config_vmware` and `config_hvm` blocks, places the instance into an
+affinity group when it is provisioned. It is create-only: the value cannot be changed once the
+instance exists, and changing it in HCL replaces the instance. On VMware the placement rule is applied
+to the cluster before the virtual machine is powered on, so the instance is placed according to the
+rule from the outset.
+
+!> **Warning** On VMware the affinity group must already contain at least one member. A vSphere DRS
+rule requires two virtual machines, so provisioning the first machine into an empty group produces a
+one-machine rule that vCenter rejects. Provisioning then fails at power on with `Error running vm`,
+after every earlier stage has succeeded. The resulting instance cannot be removed with
+`terraform destroy` — it never powered on, so stopping it fails — and has to be deleted through the
+Morpheus UI or API. Seed the group with an existing server, or provision one instance without an
+affinity group and add it to the group first.
+
+!> **Warning** On HVM, an affinity group is enforced only when the cluster the instance is provisioned
+onto has Dynamic Placement enabled — `config_hvm.dynamic_placement = true` on `hpe_morpheus_cluster`.
+It is **off by default**. With it off, the membership is recorded but no placement action is ever
+taken: the instance is never placed or moved to satisfy the rule, and the apply still succeeds, so
+nothing indicates that the group is having no effect.
+
+~> **Note** On HVM, only a `KEEP_TOGETHER` group that already has members reliably changes where an
+instance lands at creation: the instance is placed on the same host as the existing members. This was
+confirmed by pinning a member to a host the scheduler would not otherwise have picked, and observing a
+new instance follow it there. An empty group cannot affect placement either way, since there are no
+members to be placed alongside or away from.
+
+~> **Note** A `KEEP_SEPARATE` group is **not reliably applied at creation** on HVM. Across repeated
+runs of an identical configuration, an instance was placed on the same host as the existing member
+more often than not. It converges shortly afterwards instead: the cluster's placement loop detects the
+violation and live-migrates the instance to another host, observed between two and six minutes after
+provisioning, recorded as a `Move Server` process on the instance. Allow for that delay rather than
+reading the placement immediately after `terraform apply` and concluding the group was ignored.
+
+~> **Note** On HVM, an empty affinity group is accepted at provision time — there is no DRS rule to
+build, so nothing rejects it — and membership is recorded. An apply against an empty group therefore
+succeeds while demonstrating nothing.
+
+~> **Note** A cluster will often place consecutive instances on the same host of its own accord, and
+will avoid a host that is already loaded. Both effects can imitate an affinity rule. Judge placement
+against the host the scheduler chooses with no group applied, rather than assuming the group caused
+what you see.
+
+-> `config_hvm.kvm_host_id` and `config_hvm.affinity_group_id` cannot both be set; the provider rejects
+such a configuration. An affinity group silently overrides an explicit host pin, so the instance would
+land on a host chosen by the group rather than the one named by `kvm_host_id`.
+
+-> `affinity_group_id` reflects what was requested when the instance was created, not its live
+membership. Morpheus returns the value but never updates it, so it does not follow membership changes
+made elsewhere. Actual membership is reported by the `servers` attribute of the
+[`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group)
+and [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group)
+resources, and by the corresponding
+[cloud](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group)
+and [cluster](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cluster_affinity_group)
+data sources.
+
 ## HVM Instance
 
 {{ tffile "morpheus/framework/resources/instance/example.tf" }}
