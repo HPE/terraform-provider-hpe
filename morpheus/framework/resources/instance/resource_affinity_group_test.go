@@ -19,31 +19,7 @@ import (
 
 // --- env var helpers (inlined because testhelpers/config.go is outside edit scope) ---
 
-const (
-	envAffinityGroupCloudAGID   = "TF_VAR_testacc_morpheus_affinity_group_cloud_ag_id"
-	envAffinityGroupClusterAGID = "TF_VAR_testacc_morpheus_affinity_group_cluster_ag_id"
-)
-
-// affinityGroupCloudAGID returns a cloud affinity group to provision into.
-//
-// The group must already contain at least one compute server. vSphere DRS
-// rules require two virtual machines, so provisioning the first machine into an
-// empty group builds a one-VM rule that vCenter rejects; Morpheus reports
-// "Error running vm" at Power On and fails the provision. An empty group
-// therefore fails this test for reasons that have nothing to do with the
-// provider.
-func affinityGroupCloudAGID(t *testing.T) string {
-	t.Helper()
-
-	v := os.Getenv(envAffinityGroupCloudAGID)
-	if v == "" {
-		t.Skip(envAffinityGroupCloudAGID +
-			" not set; skipping test requiring a cloud affinity group " +
-			"(which must already have at least one member) for VMware instance placement")
-	}
-
-	return v
-}
+const envAffinityGroupClusterAGID = "TF_VAR_testacc_morpheus_affinity_group_cluster_ag_id"
 
 func affinityGroupClusterAGID(t *testing.T) string {
 	t.Helper()
@@ -139,7 +115,6 @@ func TestAccMorpheusInstanceResourceAffinityGroupVMware(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.VMware, capabilities.AffinityGroup)
 
 	cloudID := testhelpers.AffinityCloudID(t)
-	agID := affinityGroupCloudAGID(t)
 	poolID := testhelpers.AffinityPoolID(t)
 
 	if testing.Short() {
@@ -151,6 +126,14 @@ func TestAccMorpheusInstanceResourceAffinityGroupVMware(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// The test provisions its own seed instance and creates its own affinity
+	// group, rather than using a group maintained outside the test.
+	//
+	// It has to. On VMware a DRS rule requires two virtual machines, so
+	// provisioning the first machine into an empty group builds a one-machine
+	// rule that vCenter rejects and the instance fails at power on. Depending on
+	// a shared group also makes the test fail confusingly if someone deletes the
+	// server that happened to be seeding it.
 	resourceConfig := fmt.Sprintf(`
 data "hpe_morpheus_service_plan" "vmware_1cpu" {
   name                = "1 CPU, 1GB Memory"
@@ -162,23 +145,8 @@ data "hpe_morpheus_instance_type_layout" "vmware" {
   version = "22.04"
 }
 
-resource "hpe_morpheus_instance" "affinity_vmware" {
-  name             = "%[1]s"
-  cloud_id         = %[2]s
-  layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
-  instance_type_id = 9
-  group_id         = 28
-  plan_id          = data.hpe_morpheus_service_plan.vmware_1cpu.id
-
-  instance_context = "dev"
-
-  network_interfaces = [
-    {
-      network_id = 86657
-    }
-  ]
-
-  volumes = [
+locals {
+  vmware_volumes = [
     {
       root_volume              = true
       name                     = "root"
@@ -187,26 +155,72 @@ resource "hpe_morpheus_instance" "affinity_vmware" {
       datastore_auto_selection = "auto"
     }
   ]
-
-  tags = [
-    {
-      name  = "sweepable"
-      value = "true"
-    },
-    {
-      name  = "managed_by"
-      value = "terraform"
-    }
+  vmware_tags = [
+    { name = "sweepable", value = "true" },
+    { name = "managed_by", value = "terraform" },
   ]
-
-  config_vmware = {
+  vmware_config = {
     resource_pool_id      = "pool-%[3]s"
     nested_virtualization = "off"
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
-    affinity_group_id     = %[4]s
   }
+}
+
+resource "hpe_morpheus_instance" "affinity_vmware_seed" {
+  name             = "%[1]s-seed"
+  cloud_id         = %[2]s
+  layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
+  instance_type_id = 9
+  group_id         = 28
+  plan_id          = data.hpe_morpheus_service_plan.vmware_1cpu.id
+  instance_context = "dev"
+
+  network_interfaces = [{ network_id = 86657 }]
+  volumes            = local.vmware_volumes
+  tags               = local.vmware_tags
+  config_vmware      = local.vmware_config
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+  }
+}
+
+resource "hpe_morpheus_cloud_affinity_group" "check_group" {
+  cloud_id      = %[2]s
+  pool_id       = %[3]s
+  name          = "%[1]s"
+  affinity_type = "KEEP_SEPARATE"
+  active        = true
+
+  servers = hpe_morpheus_instance.affinity_vmware_seed.compute_servers
+
+  # Morpheus adds the instance under test to this group itself, at provision
+  # time, in response to affinity_group_id. Without this the next apply would
+  # treat that member as drift and remove it.
+  lifecycle {
+    ignore_changes = [servers]
+  }
+}
+
+resource "hpe_morpheus_instance" "affinity_vmware" {
+  name             = "%[1]s"
+  cloud_id         = %[2]s
+  layout_id        = data.hpe_morpheus_instance_type_layout.vmware.id
+  instance_type_id = 9
+  group_id         = 28
+  plan_id          = data.hpe_morpheus_service_plan.vmware_1cpu.id
+  instance_context = "dev"
+
+  network_interfaces = [{ network_id = 86657 }]
+  volumes            = local.vmware_volumes
+  tags               = local.vmware_tags
+
+  config_vmware = merge(local.vmware_config, {
+    affinity_group_id = hpe_morpheus_cloud_affinity_group.check_group.id
+  })
 
   timeouts = {
     create = "1h"
@@ -217,11 +231,11 @@ resource "hpe_morpheus_instance" "affinity_vmware" {
 # Read the affinity group AFTER the instance is created to check membership.
 data "hpe_morpheus_cloud_affinity_group" "check" {
   cloud_id = %[2]s
-  id       = %[4]s
+  id       = hpe_morpheus_cloud_affinity_group.check_group.id
 
   depends_on = [hpe_morpheus_instance.affinity_vmware]
 }
-`, name, cloudID, poolID, agID)
+`, name, cloudID, poolID)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
@@ -448,6 +462,117 @@ resource "hpe_morpheus_instance" "replace_test" {
 							resourceName, plancheck.ResourceActionDestroyBeforeCreate,
 						),
 					},
+				},
+			},
+		},
+	})
+}
+
+// TestAccMorpheusInstanceResourceAffinityGroupImport verifies that an instance
+// provisioned into an affinity group can be imported without the next plan
+// proposing a replacement.
+//
+// This is the case that makes reading affinity_group_id back from the API
+// necessary. On refresh the prior state carries the value, so nothing appears
+// to be wrong; on import there is no prior state, and if Read does not populate
+// the attribute the plan sees a change from null. Because the attribute forces
+// replacement, that becomes a proposal to destroy and recreate the instance.
+func TestAccMorpheusInstanceResourceAffinityGroupImport(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.HVM, capabilities.AffinityGroup)
+
+	clusterID := testhelpers.AffinityClusterID(t)
+	agID := affinityGroupClusterAGID(t)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := fmt.Sprintf(`
+data "hpe_morpheus_cloud" "hvm_cloud" {
+  name = "QA HVM"
+}
+
+resource "hpe_morpheus_instance" "import_test" {
+  name             = "%[1]s"
+  cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
+  layout_id        = 5385
+  instance_type_id = 9
+  group_id         = 1
+  plan_id          = 176
+
+  instance_context = "dev"
+
+  network_interfaces = [
+    {
+      network_id = 235699
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 80
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  tags = [
+    {
+      name  = "sweepable"
+      value = "true"
+    },
+    {
+      name  = "managed_by"
+      value = "terraform"
+    }
+  ]
+
+  config_hvm = {
+    resource_pool_id  = "pool-153047"
+    no_agent          = true
+    create_user       = false
+    affinity_group_id = %[2]s
+  }
+
+  timeouts = {
+    create = "1h"
+    delete = "20m"
+  }
+}
+`, name, agID)
+
+	_ = clusterID
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+			},
+			{
+				// The import must round-trip affinity_group_id. The ignored
+				// attributes are pre-existing import gaps on this resource and
+				// are not what this test is about.
+				ResourceName:      "hpe_morpheus_instance.import_test",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"compute_servers",
+					"config",
+					"connection_info",
+					"labels",
+					"network_interfaces",
+					"timeouts",
+					"volumes",
 				},
 			},
 		},

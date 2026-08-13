@@ -26,6 +26,10 @@ type GetInstance200ResponseInstanceConfig struct {
 	NoAgent         *GetInstance200ResponseInstanceConfigNoAgent                        `json:"noAgent,omitempty"`
 	SecurityGroups  []AddInstance200ResponseAllOfOneOfInstanceConfigSecurityGroupsInner `json:"securityGroups,omitempty"`
 	KvmHostId       NullableInt64                                                       `json:"kvmHostId,omitempty"`
+	// ID of the affinity group this instance's servers were added to when it was provisioned. Recorded at provision time and not updated afterwards, so it reflects what was requested rather than current membership. Current membership is reported by the affinity group itself.
+	AffinityGroup *int64 `json:"affinityGroup,omitempty"`
+	// ID of the affinity group considered during host selection when the instance was provisioned. Recorded at provision time and not updated afterwards. Normally the same value as affinityGroup.
+	AffinityGroupId *int64 `json:"affinityGroupId,omitempty"`
 	// The ID of the source instance this instance was cloned from. Set by Morpheus when the instance is created via the clone endpoint; absent for instances that were not cloned.
 	CloneInstanceId      *int64                                                `json:"cloneInstanceId,omitempty"`
 	SmbiosAssetTag       NullableString                                        `json:"smbiosAssetTag,omitempty"`
@@ -89,6 +93,12 @@ func (o GetInstance200ResponseInstanceConfig) ToMap() (map[string]interface{}, e
 	}
 	if o.KvmHostId.IsSet() {
 		toSerialize["kvmHostId"] = o.KvmHostId.Get()
+	}
+	if !IsNil(o.AffinityGroup) {
+		toSerialize["affinityGroup"] = o.AffinityGroup
+	}
+	if !IsNil(o.AffinityGroupId) {
+		toSerialize["affinityGroupId"] = o.AffinityGroupId
 	}
 	if !IsNil(o.CloneInstanceId) {
 		toSerialize["cloneInstanceId"] = o.CloneInstanceId
