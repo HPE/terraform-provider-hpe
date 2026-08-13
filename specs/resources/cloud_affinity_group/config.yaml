@@ -2,8 +2,13 @@ cloud_affinity_group:
   templates:
     servers:
       set:
-        computed_optional_required: computed_optional
-        description: Set of compute server IDs to include in the affinity group.
+        computed_optional_required: computed
+        description: |-
+          The compute servers currently in this affinity group, reported by the
+          API. Read-only: membership is managed with
+          hpe_morpheus_cloud_affinity_group_member, one resource per member, so
+          that servers added by other means -- an instance provisioned into the
+          group, or a node added to one -- are not evicted.
         element_type:
           int64: {}
     tenantIds:

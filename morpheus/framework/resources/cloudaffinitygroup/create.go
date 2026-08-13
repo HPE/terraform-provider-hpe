@@ -83,16 +83,6 @@ func (r *cloudAffinityGroupResource) Create(
 		}
 	}
 
-	// Servers — send as []int64 (SDK type).
-	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
-		var serverIDs []int64
-		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &serverIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		ag.Servers = serverIDs
-	}
-
 	// Tenants — mapped inside the affinityGroup body.
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
 		var tenantIDs []int64

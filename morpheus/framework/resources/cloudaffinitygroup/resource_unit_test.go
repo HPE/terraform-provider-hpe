@@ -4,8 +4,6 @@ package cloudaffinitygroup
 
 import (
 	"context"
-	"encoding/json"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -37,99 +35,6 @@ func int64Set(ids ...int64) types.Set {
 //
 // The unknown and null rows below are the regression guard: they must resolve to the
 // membership held in STATE, never to an empty array.
-func TestResolveUpdateServers(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		plan  types.Set
-		state types.Set
-		want  []int64
-	}{
-		// Known, non-empty plan: the practitioner's set is the desired membership.
-		"known non-empty plan replaces state": {
-			plan:  int64Set(10, 11),
-			state: int64Set(20, 21, 22),
-			want:  []int64{10, 11},
-		},
-		"known non-empty plan with empty state": {
-			plan:  int64Set(10),
-			state: int64Set(),
-			want:  []int64{10},
-		},
-
-		// Known, EMPTY plan: `servers = []` is an explicit "remove all members".
-		// This must stay distinguishable from null/unknown.
-		"known empty plan clears populated state": {
-			plan:  int64Set(),
-			state: int64Set(20, 21),
-			want:  []int64{},
-		},
-		"known empty plan with null state": {
-			plan:  int64Set(),
-			state: types.SetNull(types.Int64Type),
-			want:  []int64{},
-		},
-
-		// UNKNOWN plan: fall back to state so membership survives.
-		"unknown plan preserves state membership": {
-			plan:  types.SetUnknown(types.Int64Type),
-			state: int64Set(20, 21, 22),
-			want:  []int64{20, 21, 22},
-		},
-		"unknown plan with empty state stays empty": {
-			plan:  types.SetUnknown(types.Int64Type),
-			state: int64Set(),
-			want:  []int64{},
-		},
-
-		// NULL plan: fall back to state so membership survives.
-		"null plan preserves state membership": {
-			plan:  types.SetNull(types.Int64Type),
-			state: int64Set(30, 31),
-			want:  []int64{30, 31},
-		},
-		"null plan with empty state stays empty": {
-			plan:  types.SetNull(types.Int64Type),
-			state: int64Set(),
-			want:  []int64{},
-		},
-
-		// Membership unknowable from either source: omit the key rather than
-		// assert a membership we cannot substantiate.
-		"unknown plan and unknown state omits": {
-			plan:  types.SetUnknown(types.Int64Type),
-			state: types.SetUnknown(types.Int64Type),
-			want:  nil,
-		},
-		"null plan and null state omits": {
-			plan:  types.SetNull(types.Int64Type),
-			state: types.SetNull(types.Int64Type),
-			want:  nil,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			got, diags := resolveUpdateServers(context.Background(), tc.plan, tc.state)
-			if diags.HasError() {
-				t.Fatalf("unexpected diagnostics: %v", diags.Errors())
-			}
-
-			// reflect.DeepEqual separates a nil slice from an empty one, which is
-			// exactly the distinction that decides whether the key is sent at all.
-			if !reflect.DeepEqual(got, tc.want) {
-				t.Fatalf("resolveUpdateServers = %#v, want %#v", got, tc.want)
-			}
-
-			if (tc.want == nil) != (got == nil) {
-				t.Fatalf("nil-ness mismatch: got nil=%t, want nil=%t", got == nil, tc.want == nil)
-			}
-		})
-	}
-}
-
 // TestResolveUpdateServersSerialisation pins the on-the-wire consequence of the
 // resolution, since that is what actually reaches the API.
 //
@@ -137,71 +42,6 @@ func TestResolveUpdateServers(t *testing.T) {
 // a slice is reflect nil-ness, not emptiness). A known-empty set must therefore
 // serialise as "servers": [] so an explicit `servers = []` really does clear the group,
 // while an unknown plan must serialise the members held in state.
-func TestResolveUpdateServersSerialisation(t *testing.T) {
-	t.Parallel()
-
-	tests := map[string]struct {
-		plan       types.Set
-		state      types.Set
-		wantKey    bool
-		wantValues []any
-	}{
-		"explicit empty is sent as an empty array": {
-			plan:       int64Set(),
-			state:      int64Set(20, 21),
-			wantKey:    true,
-			wantValues: []any{},
-		},
-		"unknown plan sends the state membership": {
-			plan:       types.SetUnknown(types.Int64Type),
-			state:      int64Set(20, 21),
-			wantKey:    true,
-			wantValues: []any{float64(20), float64(21)},
-		},
-		"unknowable membership omits the key": {
-			plan:    types.SetNull(types.Int64Type),
-			state:   types.SetNull(types.Int64Type),
-			wantKey: false,
-		},
-	}
-
-	for name, tc := range tests {
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-
-			servers, diags := resolveUpdateServers(context.Background(), tc.plan, tc.state)
-			if diags.HasError() {
-				t.Fatalf("unexpected diagnostics: %v", diags.Errors())
-			}
-
-			raw, err := json.Marshal(sdk.UpdateCloudAffinityGroupRequestAffinityGroup{
-				Servers: servers,
-			})
-			if err != nil {
-				t.Fatalf("marshal: %s", err)
-			}
-
-			var body map[string]any
-			if err := json.Unmarshal(raw, &body); err != nil {
-				t.Fatalf("unmarshal: %s", err)
-			}
-
-			got, ok := body["servers"]
-			if ok != tc.wantKey {
-				t.Fatalf("servers key present = %t, want %t (body: %s)", ok, tc.wantKey, raw)
-			}
-
-			if !tc.wantKey {
-				return
-			}
-
-			if !reflect.DeepEqual(got, tc.wantValues) {
-				t.Fatalf("servers = %#v, want %#v (body: %s)", got, tc.wantValues, raw)
-			}
-		})
-	}
-}
-
 // group builds a known GroupsValue. Pass a nil default to leave it null, and use
 // unknownDefaultGroup for the case Terraform actually produces from a partial config.
 func group(id int64, dflt types.Bool) GroupsValue {

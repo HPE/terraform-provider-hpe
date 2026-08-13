@@ -78,16 +78,6 @@ func (r *clusterAffinityGroupResource) Create(
 	// CRITICAL BEHAVIOUR 6: pool is COMPUTED ONLY for clusters — the API force-assigns it.
 	// Never send it on create or update; only read it back.
 
-	// Servers — send as []int64 (SDK type).
-	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
-		var serverIDs []int64
-		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &serverIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		ag.Servers = serverIDs
-	}
-
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{

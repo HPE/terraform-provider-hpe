@@ -136,10 +136,9 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"servers": schema.SetAttribute{
 				ElementType:         types.Int64Type,
-				Optional:            true,
 				Computed:            true,
-				Description:         "Set of compute server IDs to include in the affinity group.",
-				MarkdownDescription: "Set of compute server IDs to include in the affinity group.",
+				Description:         "The compute servers currently in this affinity group, reported by the\nAPI. Read-only: membership is managed with\nhpe_morpheus_cluster_affinity_group_member, one resource per member, so\nthat servers added by other means -- an instance provisioned into the\ngroup, or a node added to one -- are not evicted.",
+				MarkdownDescription: "The compute servers currently in this affinity group, reported by the\nAPI. Read-only: membership is managed with\nhpe_morpheus_cluster_affinity_group_member, one resource per member, so\nthat servers added by other means -- an instance provisioned into the\ngroup, or a node added to one -- are not evicted.",
 			},
 			"source": schema.StringAttribute{
 				Computed:            true,
