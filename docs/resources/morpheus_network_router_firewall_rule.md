@@ -42,9 +42,10 @@ hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
 ### Optional
 
 - `application` (String) Application the rule matches (depends on the network router type)
-- `description` (String) Description of the firewall rule. This is a write-only input: the API
-accepts it on create and update but does not return it, so it cannot be
-used for drift detection.
+- `description` (String) Description of the firewall rule. The Morpheus API accepts this on
+create and update but does not return it, so it cannot be used for
+drift detection. Removing it from the configuration clears it on the
+appliance.
 - `destination_type` (String) Destination match type (for example cidr, group, tier, instance)
 - `direction` (String) Direction (ingress or egress)
 - `enabled` (Boolean) Whether the firewall rule is enabled

@@ -10,11 +10,12 @@ network_router_firewall_rule:
           hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
     description:
       string:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: |-
-          Description of the firewall rule. This is a write-only input: the API
-          accepts it on create and update but does not return it, so it cannot be
-          used for drift detection.
+          Description of the firewall rule. The Morpheus API accepts this on
+          create and update but does not return it, so it cannot be used for
+          drift detection. Removing it from the configuration clears it on the
+          appliance.
   moves:
     - rule: ""
     - template-parent_id: parent_id
@@ -83,11 +84,12 @@ network_router_firewall_rule:
       computed_optional_required: computed_optional
       description: Application the rule matches (depends on the network router type)
     description:
-      computed_optional_required: computed_optional
+      computed_optional_required: optional
       description: |-
-        Description of the firewall rule. This is a write-only input: the API
-        accepts it on create and update but does not return it, so it cannot be
-        used for drift detection.
+        Description of the firewall rule. The Morpheus API accepts this on
+        create and update but does not return it, so it cannot be used for
+        drift detection. Removing it from the configuration clears it on the
+        appliance.
     router_id:
       computed_optional_required: required
       description: The ID of the parent network router

@@ -29,9 +29,8 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
-				MarkdownDescription: "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
+				Description:         "Description of the firewall rule. The Morpheus API accepts this on\ncreate and update but does not return it, so it cannot be used for\ndrift detection. Removing it from the configuration clears it on the\nappliance.",
+				MarkdownDescription: "Description of the firewall rule. The Morpheus API accepts this on\ncreate and update but does not return it, so it cannot be used for\ndrift detection. Removing it from the configuration clears it on the\nappliance.",
 			},
 			"destination_type": schema.StringAttribute{
 				Optional:            true,
