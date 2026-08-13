@@ -72,18 +72,6 @@ func (r *Resource) Read(
 
 	inst := getResp.Instance
 
-	// On import the source_instance_id is unknown because the clone API does not
-	// return it as a first-class field. Morpheus does stamp the source id onto
-	// the clone's config as "cloneInstanceId", so recover it best-effort when the
-	// current state has no source_instance_id (i.e. after import). On a normal
-	// refresh the value is already set and is left untouched (it is
-	// RequiresReplace, so it must never be clobbered here).
-	if state.SourceInstanceId.IsNull() || state.SourceInstanceId.IsUnknown() {
-		if srcID, ok := sourceInstanceIDFromConfig(inst); ok {
-			state.SourceInstanceId = types.Int64Value(srcID)
-		}
-	}
-
 	// user_group is provision-time only (RequiresReplace) and the clone API does
 	// not return it as a first-class field; Morpheus stamps it onto the config.
 	// On import recover it from config.userGroup.id; on a normal refresh the

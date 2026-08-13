@@ -62,7 +62,9 @@ func (r *Resource) Create(
 		return
 	}
 
-	sourceID := plan.SourceInstanceId.ValueInt64()
+	// source_instance_id is write-only: the framework nullifies it in the plan,
+	// so it must be read from the config or the clone is created with source 0.
+	sourceID := config.SourceInstanceId.ValueInt64()
 	cloneName := plan.Name.ValueString()
 
 	// Build CloneInstanceRequest
@@ -166,6 +168,16 @@ func (r *Resource) Create(
 			return &pollResult{id: *inst.Id, status: status}, nil
 		}
 
+		// The clone is not visible yet. Before waiting again, check whether
+		// Morpheus has already given up: the clone runs as a "cloning" process
+		// on the *source* instance, and when it fails the clone will never
+		// appear. Without this the poll runs for the full timeout after a
+		// failure that was known within seconds.
+		if failure := cloneProcessFailure(ctx, client, sourceID); failure != "" {
+			return nil, backoff.Permanent(fmt.Errorf(
+				"clone of instance %d failed: %s", sourceID, failure))
+		}
+
 		return nil, fmt.Errorf("clone %q not yet found in instance list", cloneName)
 	}
 
@@ -176,11 +188,25 @@ func (r *Resource) Create(
 		backoff.WithMaxElapsedTime(createTimeout),
 	)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"create instance clone",
-			fmt.Sprintf("clone %q of instance %d failed to appear: %v",
-				cloneName, sourceID, errors.Unwrap(err)),
-		)
+		// Report err itself. errors.Unwrap is nil for the error backoff
+		// returns, which rendered this diagnostic as a bare "<nil>" and
+		// discarded the reason.
+		detail := fmt.Sprintf("clone %q of instance %d failed to appear "+
+			"within %s: %s", cloneName, sourceID, createTimeout, err)
+
+		// Distinguish a still-running clone from a failed one: a clone that is
+		// merely slow needs a longer timeout, whereas a failed one never
+		// arrives no matter how long Terraform waits.
+		if status := cloneProcessStatus(ctx, client, sourceID); status != "" {
+			detail += fmt.Sprintf(
+				"\n\nThe most recent clone process on instance %d is %q. "+
+					"If it is still running, raise the create timeout; the "+
+					"instance may still be created outside Terraform's "+
+					"knowledge and need removing by hand.",
+				sourceID, status)
+		}
+
+		resp.Diagnostics.AddError("create instance clone", detail)
 
 		return
 	}
@@ -658,4 +684,116 @@ func buildChildInterfaces(
 	}
 
 	return children, diags
+}
+
+// cloneProcessTypeCode is the Morpheus process type for an instance clone. The
+// process is recorded against the *source* instance, not the clone.
+const cloneProcessTypeCode = "cloning"
+
+// cloneStatusFailed is the process status Morpheus sets when a clone has
+// definitively failed, as opposed to still running.
+const cloneStatusFailed = "failed"
+
+// latestCloneProcess returns the most recent "cloning" process on the source
+// instance, or nil if there is none or the history cannot be read.
+//
+// History is advisory here: a clone that is progressing normally must not be
+// aborted just because this lookup failed, so every error path returns nil.
+func latestCloneProcess(
+	ctx context.Context,
+	client *sdk.APIClient,
+	sourceID int64,
+) *sdk.GetInstanceHistory200ResponseAllOfProcessesInner {
+	histResp, _, err := client.InstancesAPI.
+		GetInstanceHistory(ctx, sourceID).Execute()
+	if err != nil || histResp == nil {
+		return nil
+	}
+
+	return pickLatestCloneProcess(histResp.Processes)
+}
+
+// pickLatestCloneProcess returns the most recent "cloning" process from a
+// history page, ignoring every other process type. Split out from the API call
+// so the selection rule can be tested directly.
+func pickLatestCloneProcess(
+	processes []sdk.GetInstanceHistory200ResponseAllOfProcessesInner,
+) *sdk.GetInstanceHistory200ResponseAllOfProcessesInner {
+	var latest *sdk.GetInstanceHistory200ResponseAllOfProcessesInner
+
+	for i := range processes {
+		p := &processes[i]
+		if p.ProcessType == nil || p.ProcessType.Code == nil {
+			continue
+		}
+
+		if *p.ProcessType.Code != cloneProcessTypeCode {
+			continue
+		}
+
+		if latest == nil || processStart(p).After(processStart(latest)) {
+			latest = p
+		}
+	}
+
+	return latest
+}
+
+// processStart returns a process's start time, falling back to zero so that
+// ordering still works when the field is absent.
+func processStart(
+	p *sdk.GetInstanceHistory200ResponseAllOfProcessesInner,
+) time.Time {
+	if p == nil || p.StartDate == nil {
+		return time.Time{}
+	}
+
+	return *p.StartDate
+}
+
+// cloneProcessFailure returns a human-readable reason when the latest clone
+// process on the source instance has failed, or "" when it has not.
+func cloneProcessFailure(
+	ctx context.Context,
+	client *sdk.APIClient,
+	sourceID int64,
+) string {
+	return cloneFailureReason(latestCloneProcess(ctx, client, sourceID))
+}
+
+// cloneFailureReason returns a reason when the given clone process has failed,
+// and "" when it is absent, running, or succeeded. Split out from the API call
+// so the failure rule can be tested directly.
+func cloneFailureReason(
+	p *sdk.GetInstanceHistory200ResponseAllOfProcessesInner,
+) string {
+	if p == nil || p.Status == nil || *p.Status != cloneStatusFailed {
+		return ""
+	}
+
+	// Morpheus populates whichever of these it has; none is guaranteed.
+	for _, s := range []*string{
+		p.Error.Get(), p.Message.Get(), p.Reason.Get(),
+	} {
+		if s != nil && *s != "" {
+			return *s
+		}
+	}
+
+	return "the clone process failed without reporting a reason"
+}
+
+// cloneProcessStatus returns the status of the latest clone process on the
+// source instance, or "" if it cannot be determined.
+func cloneProcessStatus(
+	ctx context.Context,
+	client *sdk.APIClient,
+	sourceID int64,
+) string {
+	p := latestCloneProcess(ctx, client, sourceID)
+	if p == nil || p.Status == nil {
+		return ""
+	}
+
+	return *p.Status
 }

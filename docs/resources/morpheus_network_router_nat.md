@@ -26,19 +26,26 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 ### Required
 
-- `action` (String) The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `action` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The NAT action (e.g. SNAT, DNAT, REFLEXIVE). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment action_version to apply a change.
 - `name` (String) Name of the NAT rule
 - `router_id` (Number) The ID of the parent network router
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `action_version` (Number) Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.
 - `description` (String) Description of the NAT rule
 - `destination_network` (String) Destination network
 - `enabled` (Boolean) Whether the NAT rule is enabled
-- `firewall` (String) The firewall match applied to the NAT rule (nested under config).
+- `firewall` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.
+- `firewall_version` (Number) Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.
 - `priority` (Number) Priority of the NAT rule
 - `protocol` (String, Deprecated) Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.
-- `service` (String) The service (protocol) applied to the NAT rule (nested under config).
+- `service` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.
+- `service_version` (Number) Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network
 - `translated_ports` (String) Translated ports for the NAT rule
@@ -47,6 +54,28 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 - `external_id` (String) The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
 - `id` (Number) The ID of the NAT rule
+
+## Notes
+
+### Write-Only Attributes
+
+`action`, `firewall` and `service` are **write-only**. They are sent to the
+Morpheus API when the NAT rule is created or updated, but the API never returns
+them, so they are never stored in Terraform state and Terraform cannot detect
+drift in them.
+
+Because the values are not in state, editing one of them on its own produces
+**no plan diff**. To push a new value, increment the matching companion --
+`action_version`, `firewall_version` or `service_version`. Incrementing a
+companion triggers an in-place update of the NAT rule; none of them force
+replacement.
+
+If `firewall` is omitted on create, `MATCH_INTERNAL_ADDRESS` is sent, because
+the underlying API field is required. On update an omitted `firewall` is left
+out of the payload entirely, so the value already configured on the router is
+preserved rather than overwritten.
+
+Write-only attributes require Terraform >= 1.11.
 
 ## Import
 

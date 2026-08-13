@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,8 +22,14 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"action": schema.StringAttribute{
 				Required:            true,
-				Description:         "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
-				MarkdownDescription: "The NAT action (e.g. SNAT, DNAT, REFLEXIVE).",
+				WriteOnly:           true,
+				Description:         "The NAT action (e.g. SNAT, DNAT, REFLEXIVE). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment action_version to apply a change.",
+				MarkdownDescription: "The NAT action (e.g. SNAT, DNAT, REFLEXIVE). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment action_version to apply a change.",
+			},
+			"action_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.",
+				MarkdownDescription: "Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -55,13 +60,17 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"firewall": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "The firewall match applied to the NAT rule (nested under config).",
-				MarkdownDescription: "The firewall match applied to the NAT rule (nested under config).",
+				WriteOnly:           true,
+				Description:         "The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.",
+				MarkdownDescription: "The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("MATCH_INTERNAL_ADDRESS", "MATCH_EXTERNAL_ADDRESS", "BYPASS"),
 				},
-				Default: stringdefault.StaticString("MATCH_INTERNAL_ADDRESS"),
+			},
+			"firewall_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.",
+				MarkdownDescription: "Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -100,8 +109,14 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The service (protocol) applied to the NAT rule (nested under config).",
-				MarkdownDescription: "The service (protocol) applied to the NAT rule (nested under config).",
+				WriteOnly:           true,
+				Description:         "The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.",
+				MarkdownDescription: "The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.",
+			},
+			"service_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.",
+				MarkdownDescription: "Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.",
 			},
 			"source_network": schema.StringAttribute{
 				Optional:            true,
@@ -127,17 +142,20 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 
 type NetworkRouterNatModel struct {
 	Action             types.String `tfsdk:"action"`
+	ActionVersion      types.Int64  `tfsdk:"action_version"`
 	Description        types.String `tfsdk:"description"`
 	DestinationNetwork types.String `tfsdk:"destination_network"`
 	Enabled            types.Bool   `tfsdk:"enabled"`
 	ExternalId         types.String `tfsdk:"external_id"`
 	Firewall           types.String `tfsdk:"firewall"`
+	FirewallVersion    types.Int64  `tfsdk:"firewall_version"`
 	Id                 types.Int64  `tfsdk:"id"`
 	Name               types.String `tfsdk:"name"`
 	Priority           types.Int64  `tfsdk:"priority"`
 	Protocol           types.String `tfsdk:"protocol"`
 	RouterId           types.Int64  `tfsdk:"router_id"`
 	Service            types.String `tfsdk:"service"`
+	ServiceVersion     types.Int64  `tfsdk:"service_version"`
 	SourceNetwork      types.String `tfsdk:"source_network"`
 	TranslatedNetwork  types.String `tfsdk:"translated_network"`
 	TranslatedPorts    types.String `tfsdk:"translated_ports"`

@@ -153,8 +153,14 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "The ID of the group associated with the load balancer",
-				MarkdownDescription: "The ID of the group associated with the load balancer",
+				WriteOnly:           true,
+				Description:         "The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.",
+				MarkdownDescription: "The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.",
+			},
+			"group_id_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.",
+				MarkdownDescription: "Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -175,8 +181,14 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_server_id": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Network Server ID",
-				MarkdownDescription: "Network Server ID",
+				WriteOnly:           true,
+				Description:         "The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.",
+				MarkdownDescription: "The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.",
+			},
+			"network_server_id_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.",
+				MarkdownDescription: "Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.",
 				PlanModifiers: []planmodifier.Int64{
 					int64planmodifier.RequiresReplace(),
 				},
@@ -257,20 +269,22 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type LoadBalancerModel struct {
-	CloudId         types.Int64        `tfsdk:"cloud_id"`
-	Config          types.Dynamic      `tfsdk:"config"`
-	ConfigHaproxy   ConfigHaproxyValue `tfsdk:"config_haproxy"`
-	ConfigNsxt      ConfigNsxtValue    `tfsdk:"config_nsxt"`
-	Description     types.String       `tfsdk:"description"`
-	Enabled         types.Bool         `tfsdk:"enabled"`
-	GroupId         types.Int64        `tfsdk:"group_id"`
-	Id              types.Int64        `tfsdk:"id"`
-	Name            types.String       `tfsdk:"name"`
-	NetworkServerId types.Int64        `tfsdk:"network_server_id"`
-	Permissions     PermissionsValue   `tfsdk:"permissions"`
-	Tenants         types.Set          `tfsdk:"tenants"`
-	TypeCode        types.String       `tfsdk:"type_code"`
-	Visibility      types.String       `tfsdk:"visibility"`
+	CloudId                types.Int64        `tfsdk:"cloud_id"`
+	Config                 types.Dynamic      `tfsdk:"config"`
+	ConfigHaproxy          ConfigHaproxyValue `tfsdk:"config_haproxy"`
+	ConfigNsxt             ConfigNsxtValue    `tfsdk:"config_nsxt"`
+	Description            types.String       `tfsdk:"description"`
+	Enabled                types.Bool         `tfsdk:"enabled"`
+	GroupId                types.Int64        `tfsdk:"group_id"`
+	GroupIdVersion         types.Int64        `tfsdk:"group_id_version"`
+	Id                     types.Int64        `tfsdk:"id"`
+	Name                   types.String       `tfsdk:"name"`
+	NetworkServerId        types.Int64        `tfsdk:"network_server_id"`
+	NetworkServerIdVersion types.Int64        `tfsdk:"network_server_id_version"`
+	Permissions            PermissionsValue   `tfsdk:"permissions"`
+	Tenants                types.Set          `tfsdk:"tenants"`
+	TypeCode               types.String       `tfsdk:"type_code"`
+	Visibility             types.String       `tfsdk:"visibility"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHaproxyType{}

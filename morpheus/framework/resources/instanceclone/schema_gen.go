@@ -453,11 +453,14 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"source_instance_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The ID of the source instance to clone.",
-				MarkdownDescription: "The ID of the source instance to clone.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				WriteOnly:           true,
+				Description:         "The ID of the source instance to clone. The API never returns this value, so it is write-only and not stored in state. It cannot be changed after the clone is created; changing it produces no plan diff and has no effect on the existing instance.",
+				MarkdownDescription: "The ID of the source instance to clone. The API never returns this value, so it is write-only and not stored in state. It cannot be changed after the clone is created; changing it produces no plan diff and has no effect on the existing instance.",
+			},
+			"source_instance_id_version": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.",
+				MarkdownDescription: "Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.",
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -547,22 +550,23 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceCloneModel struct {
-	CloudId           types.Int64       `tfsdk:"cloud_id"`
-	Config            types.Dynamic     `tfsdk:"config"`
-	ConfigAws         ConfigAwsValue    `tfsdk:"config_aws"`
-	ConfigAzure       ConfigAzureValue  `tfsdk:"config_azure"`
-	ConfigHvm         ConfigHvmValue    `tfsdk:"config_hvm"`
-	ConfigVmware      ConfigVmwareValue `tfsdk:"config_vmware"`
-	GroupId           types.Int64       `tfsdk:"group_id"`
-	Id                types.Int64       `tfsdk:"id"`
-	Name              types.String      `tfsdk:"name"`
-	NetworkInterfaces types.List        `tfsdk:"network_interfaces"`
-	PlanId            types.Int64       `tfsdk:"plan_id"`
-	SourceInstanceId  types.Int64       `tfsdk:"source_instance_id"`
-	Status            types.String      `tfsdk:"status"`
-	Timeouts          timeouts.Value    `tfsdk:"timeouts"`
-	UserGroup         types.Int64       `tfsdk:"user_group"`
-	Volumes           types.List        `tfsdk:"volumes"`
+	CloudId                 types.Int64       `tfsdk:"cloud_id"`
+	Config                  types.Dynamic     `tfsdk:"config"`
+	ConfigAws               ConfigAwsValue    `tfsdk:"config_aws"`
+	ConfigAzure             ConfigAzureValue  `tfsdk:"config_azure"`
+	ConfigHvm               ConfigHvmValue    `tfsdk:"config_hvm"`
+	ConfigVmware            ConfigVmwareValue `tfsdk:"config_vmware"`
+	GroupId                 types.Int64       `tfsdk:"group_id"`
+	Id                      types.Int64       `tfsdk:"id"`
+	Name                    types.String      `tfsdk:"name"`
+	NetworkInterfaces       types.List        `tfsdk:"network_interfaces"`
+	PlanId                  types.Int64       `tfsdk:"plan_id"`
+	SourceInstanceId        types.Int64       `tfsdk:"source_instance_id"`
+	SourceInstanceIdVersion types.Int64       `tfsdk:"source_instance_id_version"`
+	Status                  types.String      `tfsdk:"status"`
+	Timeouts                timeouts.Value    `tfsdk:"timeouts"`
+	UserGroup               types.Int64       `tfsdk:"user_group"`
+	Volumes                 types.List        `tfsdk:"volumes"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}
