@@ -52,6 +52,7 @@ func getRouterAsState(
 	state.Code = convert.StrToType(router.Code)
 	state.Enabled = convert.BoolToType(router.Enabled)
 	state.EnableBgp = convert.BoolToType(router.EnableBgp)
+	state.ProviderId = convert.StrToType(router.ProviderId)
 
 	// Preserve plan values for immutable fields
 	state.GroupId = plan.GroupId

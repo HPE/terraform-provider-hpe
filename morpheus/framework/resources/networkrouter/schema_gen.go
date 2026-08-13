@@ -381,6 +381,9 @@ func NetworkRouterResourceSchema(ctx context.Context) schema.Schema {
 					}...),
 				},
 			},
+			"provider_id": schema.StringAttribute{
+				Computed: true,
+			},
 			"shared_group_access": schema.BoolAttribute{
 				Optional:            true,
 				Description:         "Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.",
@@ -444,6 +447,7 @@ type NetworkRouterModel struct {
 	Id                     types.Int64                 `tfsdk:"id"`
 	Name                   types.String                `tfsdk:"name"`
 	NetworkIntegrationId   types.Int64                 `tfsdk:"network_integration_id"`
+	ProviderId             types.String                `tfsdk:"provider_id"`
 	SharedGroupAccess      types.Bool                  `tfsdk:"shared_group_access"`
 	TenantIds              types.Set                   `tfsdk:"tenant_ids"`
 	TypeId                 types.Int64                 `tfsdk:"type_id"`
