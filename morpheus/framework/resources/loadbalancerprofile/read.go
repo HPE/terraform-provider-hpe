@@ -174,8 +174,15 @@ func getLoadBalancerProfileAsState(
 	// straight from the API response, so it is available on import too.
 	serviceType := state.ServiceType.ValueString()
 
-	// Tags: read from config response
-	state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
+	// Tags: read from config response.
+	// If the user never configured tags (prior state is null), preserve null to
+	// avoid perpetual computed diffs from API-injected sentinel tags (NSX-T
+	// returns empty {name:"",value:""} entries even when no tags were set).
+	if prior.Tags.IsNull() {
+		state.Tags = types.SetNull(TagsValue{}.Type(ctx))
+	} else {
+		state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
+	}
 
 	// Config blocks: preserve every value the practitioner configured, while
 	// resolving any attribute that arrived unknown from the API response.
