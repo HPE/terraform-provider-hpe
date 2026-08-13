@@ -154,6 +154,7 @@ load_balancer_virtual_server:
       computed_optional_required: computed
     vip_type:
       computed_optional_required: computed_optional
+      state_for_unknown: true
       description: >-
         The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI)
         to distinguish between normal, parent (shared), and child VIPs. It has
