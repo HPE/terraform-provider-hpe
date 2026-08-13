@@ -594,6 +594,7 @@ func LoadBalancerProfileResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
+				Computed:            true,
 				Description:         "NSX-T tags applied to the profile.",
 				MarkdownDescription: "NSX-T tags applied to the profile.",
 			},
