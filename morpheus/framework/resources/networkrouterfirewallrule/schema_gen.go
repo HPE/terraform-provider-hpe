@@ -73,7 +73,7 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
-					stringvalidator.RegexMatches(regexp.MustCompile("^group-\\d+$"), ""),
+					stringvalidator.RegexMatches(regexp.MustCompile(`^group-[0-9]+$`), "must be the parent firewall rule group id in the format \"group-{id}\", for example \"group-123\""),
 				},
 			},
 			"policy": schema.StringAttribute{

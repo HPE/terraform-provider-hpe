@@ -57,7 +57,9 @@ network_router_firewall_rule:
         rejects any other format. Required to create the rule. Use the
         hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
       requires_replace: true
-      string_matches_regex: '^group-\d+$'
+      regex_matches:
+        regex: '^group-[0-9]+$'
+        message: 'must be the parent firewall rule group id in the format "group-{id}", for example "group-123"'
     policy:
       computed_optional_required: computed_optional
       description: Policy action (accept, block, reject)
