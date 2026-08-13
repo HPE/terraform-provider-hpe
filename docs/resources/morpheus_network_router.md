@@ -81,6 +81,7 @@ resource "hpe_morpheus_network_router" "example" {
 
 - `code` (String)
 - `id` (Number) The ID of this resource.
+- `provider_id` (String)
 
 <a id="nestedatt--config_nsxt_gateway_tier0"></a>
 ### Nested Schema for `config_nsxt_gateway_tier0`
