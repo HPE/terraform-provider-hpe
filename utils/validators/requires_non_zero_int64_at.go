@@ -37,6 +37,13 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 		return
 	}
 
+	// 0 is a sentinel meaning "not configured" for reference-ID fields
+	// (e.g., ssl_client_profile = 0 means no SSL profile is assigned).
+	// Treat it the same as null — don't require the sibling attribute.
+	if request.ConfigValue.ValueInt64() == 0 {
+		return
+	}
+
 	var refValue types.Int64
 	diags := request.Config.GetAttribute(ctx, path.Root(v.AttributeName), &refValue)
 	response.Diagnostics.Append(diags...)
