@@ -4,12 +4,15 @@ package networkrouterfirewallrule
 
 import (
 	"context"
+	"regexp"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -64,10 +67,13 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"parent_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
-				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				Description:         "The id of the parent firewall rule group the rule belongs to. Must be in\nthe format \"group-{id}\" (for example \"group-123\") - the Morpheus API\nrejects any other format. Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to. Must be in\nthe format \"group-{id}\" (for example \"group-123\") - the Morpheus API\nrejects any other format. Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+				Validators: []validator.String{
+					stringvalidator.RegexMatches(regexp.MustCompile("^group-\\d+$"), ""),
 				},
 			},
 			"policy": schema.StringAttribute{

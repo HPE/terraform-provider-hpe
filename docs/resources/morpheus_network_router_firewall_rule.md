@@ -33,8 +33,9 @@ resource "hpe_morpheus_network_router_firewall_rule" "example" {
 ### Required
 
 - `name` (String) Name of the firewall rule
-- `parent_id` (String) The id of the parent firewall rule group the rule belongs to (for NSX-T,
-e.g. "group-123"). Required to create the rule. Use the
+- `parent_id` (String) The id of the parent firewall rule group the rule belongs to. Must be in
+the format "group-{id}" (for example "group-123") - the Morpheus API
+rejects any other format. Required to create the rule. Use the
 hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
 - `router_id` (Number) The ID of the parent network router
 

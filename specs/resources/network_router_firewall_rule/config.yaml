@@ -4,8 +4,9 @@ network_router_firewall_rule:
       string:
         computed_optional_required: required
         description: |-
-          The id of the parent firewall rule group the rule belongs to (for NSX-T,
-          e.g. "group-123"). Required to create the rule. Use the
+          The id of the parent firewall rule group the rule belongs to. Must be in
+          the format "group-{id}" (for example "group-123") - the Morpheus API
+          rejects any other format. Required to create the rule. Use the
           hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
     description:
       string:
@@ -51,10 +52,12 @@ network_router_firewall_rule:
     parent_id:
       computed_optional_required: required
       description: |-
-        The id of the parent firewall rule group the rule belongs to (for NSX-T,
-        e.g. "group-123"). Required to create the rule. Use the
+        The id of the parent firewall rule group the rule belongs to. Must be in
+        the format "group-{id}" (for example "group-123") - the Morpheus API
+        rejects any other format. Required to create the rule. Use the
         hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
       requires_replace: true
+      string_matches_regex: '^group-\d+$'
     policy:
       computed_optional_required: computed_optional
       description: Policy action (accept, block, reject)
