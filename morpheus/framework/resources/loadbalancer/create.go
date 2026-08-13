@@ -29,6 +29,15 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Write-only attributes are nullified in the plan by the framework.
+	// Read them from the raw config instead.
+	var config LoadBalancerModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -53,8 +62,8 @@ func (r *Resource) Create(
 		createLB.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
-		groupID := plan.GroupId.ValueInt64()
+	if !config.GroupId.IsNull() && !config.GroupId.IsUnknown() {
+		groupID := config.GroupId.ValueInt64()
 		createLB.Site = &sdk.CreateLoadBalancerRequestLoadBalancerSite{
 			Id: &groupID,
 		}
@@ -67,8 +76,8 @@ func (r *Resource) Create(
 		}
 	}
 
-	if !plan.NetworkServerId.IsNull() && !plan.NetworkServerId.IsUnknown() {
-		createLB.NetworkServerId = plan.NetworkServerId.ValueInt64Pointer()
+	if !config.NetworkServerId.IsNull() && !config.NetworkServerId.IsUnknown() {
+		createLB.NetworkServerId = config.NetworkServerId.ValueInt64Pointer()
 	}
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {

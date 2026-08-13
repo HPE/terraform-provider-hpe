@@ -34,20 +34,28 @@ provider "hpe" {
 `
 
 // nsxtTier1RouterConfig renders an NSX-T tier-1 gateway required for NAT rules.
-func nsxtTier1RouterConfig(name string) string {
+//
+// The tier-0, group, network server and edge cluster must already exist on the
+// appliance under test and are supplied via the environment; see
+// testhelpers.RequireNsxtFixture. The test skips when they are not configured.
+func nsxtTier1RouterConfig(t *testing.T, name string) string {
+	t.Helper()
+
+	fixture := testhelpers.RequireNsxtFixture(t)
+
 	return `
 data "hpe_morpheus_network_router" "nat_tier0" {
-  id = 28
+  id = ` + fixture.Tier0RouterID + `
 }
 
 resource "hpe_morpheus_network_router" "nat_tier1" {
   name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
+  group_id               = ` + fixture.GroupID + `
+  network_integration_id = ` + fixture.NetworkServerID + `
 
   config_nsxt_gateway_tier1 = {
     ip_management_type = "dhcpLocal"
-    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
+    edge_cluster       = "` + fixture.EdgeCluster + `"
     fail_over          = "NON_PREEMPTIVE"
     tier0_gateway      = data.hpe_morpheus_network_router.nat_tier0.provider_id
   }
@@ -69,7 +77,7 @@ func TestAccMorpheusFindNetworkRouterNatByName(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxtTier1RouterConfig(t, name)
 
 	resourceConfig, err := natresource.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
@@ -114,7 +122,7 @@ func TestAccMorpheusFindNetworkRouterNatById(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxtTier1RouterConfig(t, name)
 
 	resourceConfig, err := natresource.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
@@ -159,7 +167,7 @@ func TestAccMorpheusFindNetworkRouterNatNotFound(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxtTier1RouterConfig(t, name)
 
 	dataSourceConfig := `
 data "hpe_morpheus_network_router_nat" "example" {

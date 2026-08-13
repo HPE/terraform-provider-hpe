@@ -28,23 +28,27 @@ func TestMain(m *testing.M) {
 // tier-1 that is connected to a tier-0 and has an edge cluster. The tier-0's
 // provider_id/path is read via a data source.
 //
-// QA verify: tier-0 router id 28 is a realized NSX-T tier-0 on integration 5;
-// edge_cluster is the NSX-T edge cluster external id (display name
-// "qa-edge-cluster-01").
-func nsxtTier1RouterConfig(name string) string {
+// The tier-0, group, network server and edge cluster must already exist on the
+// appliance under test and are supplied via the environment; see
+// testhelpers.RequireNsxtFixture. The test skips when they are not configured.
+func nsxtTier1RouterConfig(t *testing.T, name string) string {
+	t.Helper()
+
+	fixture := testhelpers.RequireNsxtFixture(t)
+
 	return `
 data "hpe_morpheus_network_router" "nat_tier0" {
-  id = 28
+  id = ` + fixture.Tier0RouterID + `
 }
 
 resource "hpe_morpheus_network_router" "nat_tier1" {
   name                   = "` + name + `-tier1"
-  group_id               = 3
-  network_integration_id = 5
+  group_id               = ` + fixture.GroupID + `
+  network_integration_id = ` + fixture.NetworkServerID + `
 
   config_nsxt_gateway_tier1 = {
     ip_management_type = "dhcpLocal"
-    edge_cluster       = "3de5f8d0-4f8a-433b-95ed-91020c948084"
+    edge_cluster       = "` + fixture.EdgeCluster + `"
     fail_over          = "NON_PREEMPTIVE"
     tier0_gateway      = data.hpe_morpheus_network_router.nat_tier0.provider_id
   }
@@ -67,7 +71,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxtTier1RouterConfig(t, name)
 
 	resourceConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
@@ -100,11 +104,7 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				// action and firewall are create-only inputs that the NAT read
-				// (GET) API does not return, so they cannot round-trip through
-				// import (verified: only these two differ after import).
-				ImportStateVerifyIgnore: []string{"action", "firewall"},
-				ResourceName:            "hpe_morpheus_network_router_nat.example",
+				ResourceName:      "hpe_morpheus_network_router_nat.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_nat.example"]
 					if !ok {
@@ -133,7 +133,7 @@ func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	resourceName := "hpe_morpheus_network_router_nat.example"
 
-	routerConfig := nsxtTier1RouterConfig(name)
+	routerConfig := nsxtTier1RouterConfig(t, name)
 
 	createConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
 		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",

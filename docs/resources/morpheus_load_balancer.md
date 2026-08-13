@@ -84,14 +84,18 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `cloud_id` (Number) The ID of the cloud associated with the load balancer
 - `config` (Dynamic) Configuration object with parameters that vary by load balancer type.
 - `config_haproxy` (Attributes) Configuration for HAProxy container load balancer type (see [below for nested schema](#nestedatt--config_haproxy))
 - `config_nsxt` (Attributes) Configuration for NSX-T load balancer type (see [below for nested schema](#nestedatt--config_nsxt))
 - `description` (String) Description
 - `enabled` (Boolean) Whether the load balancer is enabled
-- `group_id` (Number) The ID of the group associated with the load balancer
-- `network_server_id` (Number) Network Server ID
+- `group_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.
+- `group_id_version` (Number) Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.
+- `network_server_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.
+- `network_server_id_version` (Number) Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.
 - `permissions` (Attributes) Resource permissions for the load balancer (see [below for nested schema](#nestedatt--permissions))
 - `tenants` (Attributes Set) Array of tenant account ids that are allowed access (see [below for nested schema](#nestedatt--tenants))
 - `type_code` (String) The type code of the load balancer (e.g. haproxyContainer)
@@ -143,6 +147,23 @@ Optional:
 Read-Only:
 
 - `name` (String)
+
+## Notes
+
+### Write-Only Attributes
+
+`group_id` and `network_server_id` are **write-only**. They are sent to the
+Morpheus API when the load balancer is created, but the API never returns them,
+so they are never stored in Terraform state and Terraform cannot detect drift in
+them.
+
+Because the values are not in state, editing one of them on its own produces
+**no plan diff**. To push a new value, increment the matching companion --
+`group_id_version` or `network_server_id_version`. Both companions **force
+replacement** of the load balancer, because neither underlying value can be
+changed on an existing load balancer.
+
+Write-only attributes require Terraform >= 1.11.
 
 ## Import
 

@@ -68,6 +68,15 @@ func (r *Resource) Create(
 		return
 	}
 
+	// Write-only attributes (action, firewall, service) are nullified in the
+	// plan by the framework. Read them from the raw config instead.
+	var config NetworkRouterNatModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError(createOperation, "failed to create client: "+err.Error())
@@ -77,18 +86,11 @@ func (r *Resource) Create(
 
 	routerID := plan.RouterId.ValueInt64()
 
-	// firewall and service are NAT config-context options nested under config.
-	// firewall has a schema default so it is normally set; service is optional.
-	// Guard both so an unknown value is omitted rather than sent as "".
-	natConfig := sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
-		Action: plan.Action.ValueString(),
-	}
-	if !plan.Firewall.IsNull() && !plan.Firewall.IsUnknown() {
-		natConfig.Firewall = plan.Firewall.ValueStringPointer()
-	}
-	if !plan.Service.IsNull() && !plan.Service.IsUnknown() {
-		natConfig.Service = plan.Service.ValueStringPointer()
-	}
+	// action, firewall, and service are write-only — sourced from config.
+	// The Morpheus OptionType declares firewall as required with a UI-only
+	// default of MATCH_INTERNAL_ADDRESS; the provider must supply it when
+	// the practitioner omits it.
+	natConfig := buildCreateNatConfig(&config)
 
 	nat := sdk.CreateNetworkRouterNatRequestNetworkRouterNAT{
 		Name:   plan.Name.ValueString(),
@@ -215,11 +217,15 @@ func getNatAsState(
 
 	state.Name = convert.StrToType(nat.Name)
 
-	if nat.Action != nil {
-		state.Action = types.StringValue(*nat.Action)
-	} else {
-		state.Action = plan.Action
-	}
+	// action, firewall, and service are write-only — always null in state.
+	state.Action = types.StringNull()
+	state.Firewall = types.StringNull()
+	state.Service = types.StringNull()
+
+	// Carry forward the version companions from the plan/prior state.
+	state.ActionVersion = plan.ActionVersion
+	state.FirewallVersion = plan.FirewallVersion
+	state.ServiceVersion = plan.ServiceVersion
 
 	state.Description = convert.StrToType(nat.Description)
 
@@ -250,19 +256,6 @@ func getNatAsState(
 		state.Protocol = plan.Protocol
 	} else {
 		state.Protocol = types.StringNull()
-	}
-
-	// firewall and service are create-time config options. Read them back from
-	// the response, falling back to the plan value when the API omits them.
-	if nat.Firewall != nil {
-		state.Firewall = types.StringValue(*nat.Firewall)
-	} else {
-		state.Firewall = plan.Firewall
-	}
-	if nat.Service != nil {
-		state.Service = types.StringValue(*nat.Service)
-	} else {
-		state.Service = plan.Service
 	}
 
 	return state, diags
@@ -310,6 +303,15 @@ func (r *Resource) Update(
 		return
 	}
 
+	// Write-only attributes (action, firewall, service) are nullified in the
+	// plan by the framework. Read them from the raw config instead.
+	var config NetworkRouterNatModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("update network router nat resource", "failed to create client: "+err.Error())
@@ -320,15 +322,7 @@ func (r *Resource) Update(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
-	natConfig := &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
-		Action: plan.Action.ValueStringPointer(),
-	}
-	if !plan.Firewall.IsNull() && !plan.Firewall.IsUnknown() {
-		natConfig.Firewall = plan.Firewall.ValueStringPointer()
-	}
-	if !plan.Service.IsNull() && !plan.Service.IsUnknown() {
-		natConfig.Service = plan.Service.ValueStringPointer()
-	}
+	natConfig := buildUpdateNatConfig(&config)
 
 	nat := sdk.UpdateNetworkRouterNatRequestNetworkRouterNAT{
 		Name:   plan.Name.ValueStringPointer(),
@@ -467,4 +461,64 @@ func (r *Resource) ImportState(
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("router_id"), routerID)...)
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), id)...)
+}
+
+// defaultFirewallMatch is the firewall value applied on create when the
+// practitioner supplies none.
+//
+// firewall is write-only, and write-only attributes cannot carry a schema
+// default, so the default has to be applied here. The Morpheus OptionType is
+// required, and applyOptionTypes does not honour the seed's defaultValue -
+// that is a UI form default only - so omitting it would send null to a
+// required field.
+const defaultFirewallMatch = "MATCH_INTERNAL_ADDRESS"
+
+// buildCreateNatConfig assembles the NAT config sent on create.
+//
+// It reads from the *config*, never the plan: action, firewall and service are
+// write-only, so the framework nullifies them in the plan. Sourcing them from
+// the plan compiles cleanly and silently sends nulls.
+func buildCreateNatConfig(
+	config *NetworkRouterNatModel,
+) sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig {
+	natConfig := sdk.CreateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action: config.Action.ValueString(),
+	}
+
+	if !config.Firewall.IsNull() && !config.Firewall.IsUnknown() {
+		natConfig.Firewall = config.Firewall.ValueStringPointer()
+	} else {
+		firewall := defaultFirewallMatch
+		natConfig.Firewall = &firewall
+	}
+
+	if !config.Service.IsNull() && !config.Service.IsUnknown() {
+		natConfig.Service = config.Service.ValueStringPointer()
+	}
+
+	return natConfig
+}
+
+// buildUpdateNatConfig assembles the NAT config sent on update.
+//
+// Unlike create it applies no default. The fields are omitempty pointers and
+// the controller merges the payload over the current config, so leaving a key
+// out preserves whatever the router already has. Sending a default here would
+// overwrite a real NSX-T value with a guess.
+func buildUpdateNatConfig(
+	config *NetworkRouterNatModel,
+) *sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig {
+	natConfig := &sdk.UpdateNetworkRouterNatRequestNetworkRouterNATConfig{
+		Action: config.Action.ValueStringPointer(),
+	}
+
+	if !config.Firewall.IsNull() && !config.Firewall.IsUnknown() {
+		natConfig.Firewall = config.Firewall.ValueStringPointer()
+	}
+
+	if !config.Service.IsNull() && !config.Service.IsUnknown() {
+		natConfig.Service = config.Service.ValueStringPointer()
+	}
+
+	return natConfig
 }
