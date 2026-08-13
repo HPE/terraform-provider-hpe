@@ -77,6 +77,15 @@ func init() {
 			"hpe_morpheus_load_balancer_pool",
 			"hpe_morpheus_load_balancer_profile",
 		),
+		// An appliance without load balancer support, or a sweep account
+		// without permission for it, answers the list call with 404 or 403.
+		// Without this the sweeper reports a failure, and a failing sweeper
+		// leaves its own test resources behind while making the whole sweep
+		// look broken.
+		testsweep.WithIgnoreListStatuses[sdk.ListLoadBalancers200ResponseAllOfLoadBalancersInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 
 	// Register a second sweeper that runs after load balancers are deleted.
