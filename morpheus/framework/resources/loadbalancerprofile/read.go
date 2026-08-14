@@ -181,6 +181,12 @@ func getLoadBalancerProfileAsState(
 	// NSX-T injects are filtered inside readTagsFromConfig.
 	// During normal refresh, if the user never configured tags (prior is null
 	// but this is NOT an import), preserve null to avoid computed diffs.
+	//
+	// Note: allConfigBlocksNull is a heuristic for "is this an import?" — it
+	// could false-positive if a user provisions a profile without any config
+	// block. In that edge case, readTagsFromConfig's sentinel filtering is
+	// the primary defense: it strips empty {name:"",value:""} entries, so
+	// even if we enter the else branch unnecessarily, the result is correct.
 	if prior.Tags.IsNull() && !allConfigBlocksNull(prior) {
 		// Normal refresh, user never set tags: preserve null.
 		state.Tags = types.SetNull(TagsValue{}.Type(ctx))

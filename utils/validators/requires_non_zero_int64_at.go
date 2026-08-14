@@ -52,7 +52,7 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 		return
 	}
 
-	if refValue.IsNull() || refValue.IsUnknown() {
+	if refValue.IsNull() {
 		response.Diagnostics.Append(
 			diag.NewAttributeErrorDiagnostic(
 				request.Path,
