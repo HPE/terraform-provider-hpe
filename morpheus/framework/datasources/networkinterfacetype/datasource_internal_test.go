@@ -83,12 +83,12 @@ func TestMatchNetworkInterfaceType(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if got.id != tt.wantID {
-				t.Errorf("id: want %d, got %d", tt.wantID, got.id)
+			if got.id == nil || *got.id != tt.wantID {
+				t.Errorf("id: want %d, got %v", tt.wantID, got.id)
 			}
 
-			if got.code != tt.wantCode {
-				t.Errorf("code: want %q, got %q", tt.wantCode, got.code)
+			if got.code == nil || *got.code != tt.wantCode {
+				t.Errorf("code: want %q, got %v", tt.wantCode, got.code)
 			}
 		})
 	}

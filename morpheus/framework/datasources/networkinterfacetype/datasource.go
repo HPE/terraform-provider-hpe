@@ -15,6 +15,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -55,10 +56,16 @@ func (d *DataSource) Schema(
 	resp.Schema = NetworkInterfaceTypeDataSourceSchema(ctx)
 }
 
-// matchedNetworkInterfaceType is the resolved id and code of a NIC type.
+// matchedNetworkInterfaceType is the resolved NIC type. Fields are held as
+// pointers so a value the API omits stays null in state (mapped via the convert
+// helpers) rather than being flattened to a zero value.
 type matchedNetworkInterfaceType struct {
-	id   int64
-	code string
+	id           *int64
+	code         *string
+	displayOrder *int64
+	enabled      *bool
+	defaultType  *bool
+	externalId   *string
 }
 
 // matchNetworkInterfaceType finds the single NIC type whose name equals the
@@ -73,16 +80,14 @@ func matchNetworkInterfaceType(
 
 	for _, nt := range networkTypes {
 		if nt.Name != nil && *nt.Name == name {
-			m := matchedNetworkInterfaceType{}
-			if nt.Id != nil {
-				m.id = *nt.Id
-			}
-
-			if nt.Code != nil {
-				m.code = *nt.Code
-			}
-
-			matches = append(matches, m)
+			matches = append(matches, matchedNetworkInterfaceType{
+				id:           nt.Id,
+				code:         nt.Code,
+				displayOrder: nt.DisplayOrder,
+				enabled:      nt.Enabled,
+				defaultType:  nt.DefaultType,
+				externalId:   nt.ExternalId,
+			})
 		}
 	}
 
@@ -190,12 +195,22 @@ func (d *DataSource) Read(
 		return
 	}
 
+	if match.id == nil {
+		resp.Diagnostics.AddError(summary, "matched network interface type has no id")
+
+		return
+	}
+
 	state := NetworkInterfaceTypeModel{
 		Name:              config.Name,
 		CloudId:           config.CloudId,
 		ProvisionTypeCode: types.StringValue(provisionTypeCode),
-		Id:                types.Int64Value(match.id),
-		Code:              types.StringValue(match.code),
+		Id:                convert.Int64ToType(match.id),
+		Code:              convert.StrToType(match.code),
+		DisplayOrder:      convert.Int64ToType(match.displayOrder),
+		Enabled:           convert.BoolToType(match.enabled),
+		DefaultType:       convert.BoolToType(match.defaultType),
+		ExternalId:        convert.StrToType(match.externalId),
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

@@ -5,9 +5,9 @@ network_proxy:
   removes:
     - account                               # (components/schemas/networkProxy.yaml) - nested {id,name}
     - owner                                 # (components/schemas/networkProxy.yaml) - nested {id,name}
-    - proxy_password                        # sensitive; not returned by the API
-    - proxy_user                            # credential-adjacent; not needed to resolve a proxy id
-    - proxy_workstation                     # credential-adjacent; not needed to resolve a proxy id
+    - proxy_password                        # (components/schemas/networkProxy.yaml) - sensitive; not returned by the API
+    - proxy_user                            # (components/schemas/networkProxy.yaml) - credential-adjacent; not needed to resolve a proxy id
+    - proxy_workstation                     # (components/schemas/networkProxy.yaml) - credential-adjacent; not needed to resolve a proxy id
 
   overrides:
     id:

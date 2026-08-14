@@ -106,6 +106,16 @@ func StorageControllerTypeDataSourceSchema(_ context.Context) schema.Schema {
 				Description:         "The display order of the storage controller type in the Morpheus UI.",
 				MarkdownDescription: "The display order of the storage controller type in the Morpheus UI.",
 			},
+			"enabled": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the storage controller type is enabled.",
+				MarkdownDescription: "Whether the storage controller type is enabled.",
+			},
+			"creatable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether volumes using this storage controller type can be created.",
+				MarkdownDescription: "Whether volumes using this storage controller type can be created.",
+			},
 		},
 	}
 }
@@ -120,4 +130,6 @@ type StorageControllerTypeModel struct {
 	Category             types.String `tfsdk:"category"`
 	MaxDevices           types.Int64  `tfsdk:"max_devices"`
 	DisplayOrder         types.Int64  `tfsdk:"display_order"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	Creatable            types.Bool   `tfsdk:"creatable"`
 }

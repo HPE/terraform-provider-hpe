@@ -44,7 +44,7 @@ data "hpe_morpheus_network_interface_type" "example" {
 
 ### Required
 
-- `cloud_id` (Number) The id of the cloud (zone) the network interface type is available in.
+- `cloud_id` (Number) The id of the cloud the network interface type is available in.
 - `name` (String) The name of the network interface type to look up (for example `E1000` or `VMXNET 3`).
 
 ### Optional
@@ -54,4 +54,8 @@ data "hpe_morpheus_network_interface_type" "example" {
 ### Read-Only
 
 - `code` (String) The code of the network interface type.
+- `default_type` (Boolean) Whether this is the default network interface type.
+- `display_order` (Number) The display order of the network interface type in the Morpheus UI.
+- `enabled` (Boolean) Whether the network interface type is enabled.
+- `external_id` (String) The external id of the network interface type.
 - `id` (Number) The id of the network interface type.

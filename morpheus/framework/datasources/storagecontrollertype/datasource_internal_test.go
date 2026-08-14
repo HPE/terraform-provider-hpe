@@ -148,16 +148,16 @@ func TestMatchControllerType(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if got.id != tt.wantID {
-				t.Errorf("id: want %d, got %d", tt.wantID, got.id)
+			if got.id == nil || *got.id != tt.wantID {
+				t.Errorf("id: want %d, got %v", tt.wantID, got.id)
 			}
 
-			if got.category != tt.wantCategory {
-				t.Errorf("category: want %q, got %q", tt.wantCategory, got.category)
+			if got.category == nil || *got.category != tt.wantCategory {
+				t.Errorf("category: want %q, got %v", tt.wantCategory, got.category)
 			}
 
-			if got.maxDevices != tt.wantMaxDevice {
-				t.Errorf("maxDevices: want %d, got %d", tt.wantMaxDevice, got.maxDevices)
+			if got.maxDevices == nil || *got.maxDevices != tt.wantMaxDevice {
+				t.Errorf("maxDevices: want %d, got %v", tt.wantMaxDevice, got.maxDevices)
 			}
 		})
 	}

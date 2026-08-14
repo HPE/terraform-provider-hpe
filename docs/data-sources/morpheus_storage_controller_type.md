@@ -77,6 +77,8 @@ volumes = [{
 
 - `category` (String) The category of the storage controller type (for example `scsi`).
 - `controller_mount_point` (String) The composed controller mount point, in the format `id:busNumber:typeId:unitNumber` (for example `-1:1:6:0`).
+- `creatable` (Boolean) Whether volumes using this storage controller type can be created.
 - `display_order` (Number) The display order of the storage controller type in the Morpheus UI.
+- `enabled` (Boolean) Whether the storage controller type is enabled.
 - `id` (Number) The id of the storage controller type.
 - `max_devices` (Number) The base maximum number of devices the controller type supports. Informational only: the effective limit can be higher on newer VM hardware versions, so it is not enforced here.

@@ -16,6 +16,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -78,12 +79,16 @@ func normalizeControllerName(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-// matchedControllerType is the resolved storage controller type.
+// matchedControllerType is the resolved storage controller type. Fields are
+// held as pointers so a value the API omits stays null in state (mapped via the
+// convert helpers) rather than being flattened to a zero value.
 type matchedControllerType struct {
-	id           int64
-	category     string
-	maxDevices   int64
-	displayOrder int64
+	id           *int64
+	category     *string
+	maxDevices   *int64
+	displayOrder *int64
+	enabled      *bool
+	creatable    *bool
 }
 
 // matchControllerType finds the single controller type whose name matches the
@@ -104,24 +109,14 @@ func matchControllerType(
 			continue
 		}
 
-		m := matchedControllerType{}
-		if ct.Id != nil {
-			m.id = *ct.Id
-		}
-
-		if ct.Category != nil {
-			m.category = *ct.Category
-		}
-
-		if ct.MaxDevices != nil {
-			m.maxDevices = *ct.MaxDevices
-		}
-
-		if ct.DisplayOrder != nil {
-			m.displayOrder = *ct.DisplayOrder
-		}
-
-		matches = append(matches, m)
+		matches = append(matches, matchedControllerType{
+			id:           ct.Id,
+			category:     ct.Category,
+			maxDevices:   ct.MaxDevices,
+			displayOrder: ct.DisplayOrder,
+			enabled:      ct.Enabled,
+			creatable:    ct.Creatable,
+		})
 	}
 
 	switch len(matches) {
@@ -215,18 +210,28 @@ func (d *DataSource) Read(
 		return
 	}
 
-	mountPoint := buildControllerMountPoint(config.BusNumber.ValueInt64(), match.id, interfaceNumber)
+	// The controller type id is required to compose the mount point; a match
+	// without one cannot produce a usable value.
+	if match.id == nil {
+		resp.Diagnostics.AddError(summary, "matched storage controller type has no id")
+
+		return
+	}
+
+	mountPoint := buildControllerMountPoint(config.BusNumber.ValueInt64(), *match.id, interfaceNumber)
 
 	state := StorageControllerTypeModel{
 		ControllerName:       config.ControllerName,
 		BusNumber:            config.BusNumber,
 		InterfaceNumber:      types.Int64Value(interfaceNumber),
 		ProvisionTypeCode:    types.StringValue(provisionTypeCode),
-		Id:                   types.Int64Value(match.id),
+		Id:                   convert.Int64ToType(match.id),
 		ControllerMountPoint: types.StringValue(mountPoint),
-		Category:             types.StringValue(match.category),
-		MaxDevices:           types.Int64Value(match.maxDevices),
-		DisplayOrder:         types.Int64Value(match.displayOrder),
+		Category:             convert.StrToType(match.category),
+		MaxDevices:           convert.Int64ToType(match.maxDevices),
+		DisplayOrder:         convert.Int64ToType(match.displayOrder),
+		Enabled:              convert.BoolToType(match.enabled),
+		Creatable:            convert.BoolToType(match.creatable),
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

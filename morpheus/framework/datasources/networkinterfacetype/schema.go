@@ -45,8 +45,8 @@ func NetworkInterfaceTypeDataSourceSchema(_ context.Context) schema.Schema {
 			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
-				Description:         "The id of the cloud (zone) the network interface type is available in.",
-				MarkdownDescription: "The id of the cloud (zone) the network interface type is available in.",
+				Description:         "The id of the cloud the network interface type is available in.",
+				MarkdownDescription: "The id of the cloud the network interface type is available in.",
 			},
 			"provision_type_code": schema.StringAttribute{
 				Optional: true,
@@ -66,6 +66,26 @@ func NetworkInterfaceTypeDataSourceSchema(_ context.Context) schema.Schema {
 				Description:         "The code of the network interface type.",
 				MarkdownDescription: "The code of the network interface type.",
 			},
+			"display_order": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The display order of the network interface type in the Morpheus UI.",
+				MarkdownDescription: "The display order of the network interface type in the Morpheus UI.",
+			},
+			"enabled": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the network interface type is enabled.",
+				MarkdownDescription: "Whether the network interface type is enabled.",
+			},
+			"default_type": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether this is the default network interface type.",
+				MarkdownDescription: "Whether this is the default network interface type.",
+			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external id of the network interface type.",
+				MarkdownDescription: "The external id of the network interface type.",
+			},
 		},
 	}
 }
@@ -76,4 +96,8 @@ type NetworkInterfaceTypeModel struct {
 	ProvisionTypeCode types.String `tfsdk:"provision_type_code"`
 	Id                types.Int64  `tfsdk:"id"`
 	Code              types.String `tfsdk:"code"`
+	DisplayOrder      types.Int64  `tfsdk:"display_order"`
+	Enabled           types.Bool   `tfsdk:"enabled"`
+	DefaultType       types.Bool   `tfsdk:"default_type"`
+	ExternalId        types.String `tfsdk:"external_id"`
 }
