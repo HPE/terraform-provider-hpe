@@ -68,6 +68,13 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 		return
 	}
 
+	// During plan or import the referenced attribute may be unknown (e.g. it
+	// comes from a resource that hasn't been created yet). Allow it through —
+	// Terraform will re-validate once the value is resolved.
+	if refValue.IsUnknown() {
+		return
+	}
+
 	if refValue.ValueInt64() == 0 {
 		response.Diagnostics.Append(
 			diag.NewAttributeErrorDiagnostic(

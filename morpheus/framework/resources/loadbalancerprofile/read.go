@@ -174,26 +174,11 @@ func getLoadBalancerProfileAsState(
 	// straight from the API response, so it is available on import too.
 	serviceType := state.ServiceType.ValueString()
 
-	// Tags: read from config response.
-	// During import, prior state is empty (ImportState only sets id and
-	// load_balancer_id), so prior.Tags is null — but we still need to read
-	// real tags from the API. Sentinel entries ({name:"",value:""}) that
-	// NSX-T injects are filtered inside readTagsFromConfig.
-	// During normal refresh, if the user never configured tags (prior is null
-	// but this is NOT an import), preserve null to avoid computed diffs.
-	//
-	// Note: allConfigBlocksNull is a heuristic for "is this an import?" — it
-	// could false-positive if a user provisions a profile without any config
-	// block. In that edge case, readTagsFromConfig's sentinel filtering is
-	// the primary defense: it strips empty {name:"",value:""} entries, so
-	// even if we enter the else branch unnecessarily, the result is correct.
-	if prior.Tags.IsNull() && !allConfigBlocksNull(prior) {
-		// Normal refresh, user never set tags: preserve null.
-		state.Tags = types.SetNull(TagsValue{}.Type(ctx))
-	} else {
-		// Import path OR user configured tags: read from API (sentinels filtered).
-		state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
-	}
+	// Tags: read from config response. Sentinel entries ({name:"",value:""})
+	// that NSX-T injects even when no tags were configured are filtered inside
+	// readTagsFromConfig. The attribute is Computed+Optional, so Terraform
+	// natively handles the case where config omits tags but state has them.
+	state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
 
 	// Config blocks: preserve every value the practitioner configured, while
 	// resolving any attribute that arrived unknown from the API response.
