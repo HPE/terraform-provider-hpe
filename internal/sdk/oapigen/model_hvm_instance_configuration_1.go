@@ -32,6 +32,10 @@ type HVMInstanceConfiguration1 struct {
 	PoolProviderType *string `json:"poolProviderType,omitempty"`
 	// The ID of the KVM host to provision the instance on
 	KvmHostId *int64 `json:"kvmHostId,omitempty"`
+	// ID of an affinity group to add this instance's servers to. This records membership; it does not by itself influence which host the instance is placed on. Placement is applied by the cluster's dynamic placement loop, which must be enabled on the cluster. Applies at provision time only.
+	AffinityGroup *int64 `json:"affinityGroup,omitempty"`
+	// ID of an affinity group to consider during host selection. For a KEEP_TOGETHER group the instance is placed on the same host as the group's existing members. Has no effect for a KEEP_SEPARATE group, or when the group has no members yet. Normally set to the same value as affinityGroup, which records the membership itself. Applies at provision time only.
+	AffinityGroupId *int64 `json:"affinityGroupId,omitempty"`
 	// Whether to provision the instance in a powered off state
 	ProvisionPoweredOff  *bool                  `json:"provisionPoweredOff,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -66,6 +70,12 @@ func (o HVMInstanceConfiguration1) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.KvmHostId) {
 		toSerialize["kvmHostId"] = o.KvmHostId
+	}
+	if !IsNil(o.AffinityGroup) {
+		toSerialize["affinityGroup"] = o.AffinityGroup
+	}
+	if !IsNil(o.AffinityGroupId) {
+		toSerialize["affinityGroupId"] = o.AffinityGroupId
 	}
 	if !IsNil(o.ProvisionPoweredOff) {
 		toSerialize["provisionPoweredOff"] = o.ProvisionPoweredOff

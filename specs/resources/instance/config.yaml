@@ -519,6 +519,26 @@ instance:
       single_nested:
         computed_optional_required: optional
         description: Custom options for selected service plan - the supported options depend on the service plan selected
+    affinityGroupId:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          The affinity group to place the instance into at provision time.
+          Create-only: changing it replaces the instance.
+
+          On VMware the group must already contain at least one member. A
+          vSphere DRS rule requires two virtual machines, so provisioning the
+          first machine into an empty group produces a one-machine rule that
+          vCenter rejects. The instance then fails at power on, and cannot be
+          removed with terraform destroy because it never started.
+
+          On HVM an empty group is accepted, but placement is only enforced
+          when the cluster has dynamic placement enabled.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
     vmwareFolderID:
       string:
         computed_optional_required: optional
@@ -552,12 +572,14 @@ instance:
     - template-nestedVirtualization: config_hvm.nested_virtualization
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
+    - template-affinityGroupId: config_hvm.affinity_group_id
     - template-configVMware: config_vmware
     - template-createUser: config_vmware.create_user
     - template-noAgent: config_vmware.no_agent
     - template-nestedVirtualization: config_vmware.nested_virtualization
     - template-resourcePoolId: config_vmware.resource_pool_id
     - template-vmwareFolderID: config_vmware.vmware_folder_id
+    - template-affinityGroupId: config_vmware.affinity_group_id
     - template-configAWS: config_aws
     - template-availabilityId: config_aws.availability_zone_id
     - template-instanceProfile: config_aws.instance_profile

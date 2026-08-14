@@ -48,6 +48,21 @@ compute_servers:
       string:
         computed_optional_required: computed
         description: The name of the service plan.
+    servers_parent_host_id:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The ID of the hypervisor host this compute server runs on, or null for
+          a host itself. In Morpheus a host is a compute server record too, so
+          this is the parent compute server, exposed as "host" for clarity.
+    servers_parent_host_name:
+      string:
+        computed_optional_required: computed
+        description: |-
+          The name of the hypervisor host this compute server runs on, or null
+          for a host itself. Reflects placement at the time of read: it changes
+          when the guest is migrated, once Morpheus has picked the move up in
+          its next inventory sync.
 
   blocks:
     filter:
@@ -65,12 +80,13 @@ compute_servers:
                   The field to filter on. Valid names are: name, status,
                   power_state, platform, hostname, uuid, external_id,
                   internal_id, cloud_id, cloud_name, group_id, compute_server_type_code,
-                  compute_server_type_name, plan_code, plan_name, visibility.
+                  compute_server_type_name, plan_code, plan_name, visibility,
+                  parent_host_id, parent_host_name.
                 validators:
                   - custom:
                       imports:
                         - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
-                      schema_definition: stringvalidator.OneOf("name", "status", "power_state", "platform", "hostname", "uuid", "external_id", "internal_id", "cloud_id", "cloud_name", "group_id", "compute_server_type_code", "compute_server_type_name", "plan_code", "plan_name", "visibility")
+                      schema_definition: stringvalidator.OneOf("name", "status", "power_state", "platform", "hostname", "uuid", "external_id", "internal_id", "cloud_id", "cloud_name", "group_id", "compute_server_type_code", "compute_server_type_name", "plan_code", "plan_name", "visibility", "parent_host_id", "parent_host_name")
             - name: values
               set:
                 element_type:
@@ -100,6 +116,8 @@ compute_servers:
     - template-servers_plan_id: servers.plan_id                                # (template) flatten plan.id
     - template-servers_plan_code: servers.plan_code                            # (template) flatten plan.code
     - template-servers_plan_name: servers.plan_name                            # (template) flatten plan.name
+    - template-servers_parent_host_id: servers.parent_host_id                  # (template) flatten parentServer.id
+    - template-servers_parent_host_name: servers.parent_host_name              # (template) flatten parentServer.name
 
   removes:
     - max                                              # (query parameter) pagination
@@ -170,7 +188,7 @@ compute_servers:
     - servers.os_device                                # (components/schemas/server.yaml) internal
     - servers.os_type                                  # (components/schemas/server.yaml) low-value
     - servers.owner                                    # (components/schemas/server.yaml) nested object
-    - servers.parent_server                            # (components/schemas/server.yaml) nested object
+    - servers.parent_server                            # (components/schemas/server.yaml) replaced by parent_host_id/parent_host_name
     - servers.plan                                     # (components/schemas/server.yaml) replaced by flattened fields
     - servers.platform_version                         # (components/schemas/server.yaml) low-value
     - servers.resource_pool_id                         # (components/schemas/server.yaml) low-value

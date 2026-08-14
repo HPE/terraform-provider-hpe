@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -41,6 +42,51 @@ func checkServersNotEmpty() resource.TestCheckFunc {
 		})
 }
 
+// checkSomeServerHasParentHost asserts that at least one returned server reports
+// the hypervisor host it runs on.
+//
+// This exists because API contract validation flags parentServer as possibly
+// absent from the implementation, which would make parent_host_id and
+// parent_host_name silently null. It is not absent: it is populated for guests
+// and null for hypervisor hosts, which have no parent. A sample made up of host
+// records therefore looks like a missing field.
+//
+// Asserting "at least one" rather than naming a server keeps the check honest
+// without tying it to a particular guest that someone may later delete.
+func checkSomeServerHasParentHost() resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[dataSourceName]
+		if !ok {
+			return fmt.Errorf("data source %s not found in state", dataSourceName)
+		}
+
+		count, err := strconv.Atoi(rs.Primary.Attributes["servers.#"])
+		if err != nil {
+			return fmt.Errorf("servers.# is not a number: %w", err)
+		}
+
+		hosts := 0
+
+		for i := range count {
+			name := rs.Primary.Attributes[fmt.Sprintf("servers.%d.parent_host_name", i)]
+			id := rs.Primary.Attributes[fmt.Sprintf("servers.%d.parent_host_id", i)]
+
+			if name != "" && id != "" && id != "0" {
+				hosts++
+			}
+		}
+
+		if hosts == 0 {
+			return fmt.Errorf(
+				"no server reported parent_host_name/parent_host_id out of %d returned; "+
+					"either the API stopped returning parentServer, or the result "+
+					"contained only hypervisor hosts", count)
+		}
+
+		return nil
+	}
+}
+
 func TestAccMorpheusListComputeServers(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -66,6 +112,7 @@ data "hpe_morpheus_compute_servers" "example" {
 				Config: providerConfig + dataSourceConfig,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrSet(dataSourceName, "servers.#"),
+					checkSomeServerHasParentHost(),
 				),
 			},
 		},

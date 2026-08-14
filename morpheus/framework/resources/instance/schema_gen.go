@@ -281,6 +281,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_hvm": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
+					"affinity_group_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The affinity group to place the instance into at provision time.\nCreate-only: changing it replaces the instance.\n\nOn VMware the group must already contain at least one member. A\nvSphere DRS rule requires two virtual machines, so provisioning the\nfirst machine into an empty group produces a one-machine rule that\nvCenter rejects. The instance then fails at power on, and cannot be\nremoved with terraform destroy because it never started.\n\nOn HVM an empty group is accepted, but placement is only enforced\nwhen the cluster has dynamic placement enabled.",
+						MarkdownDescription: "The affinity group to place the instance into at provision time.\nCreate-only: changing it replaces the instance.\n\nOn VMware the group must already contain at least one member. A\nvSphere DRS rule requires two virtual machines, so provisioning the\nfirst machine into an empty group produces a one-machine rule that\nvCenter rejects. The instance then fails at power on, and cannot be\nremoved with terraform destroy because it never started.\n\nOn HVM an empty group is accepted, but placement is only enforced\nwhen the cluster has dynamic placement enabled.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
 					"create_user": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
@@ -327,6 +335,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_vmware": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
+					"affinity_group_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The affinity group to place the instance into at provision time.\nCreate-only: changing it replaces the instance.\n\nOn VMware the group must already contain at least one member. A\nvSphere DRS rule requires two virtual machines, so provisioning the\nfirst machine into an empty group produces a one-machine rule that\nvCenter rejects. The instance then fails at power on, and cannot be\nremoved with terraform destroy because it never started.\n\nOn HVM an empty group is accepted, but placement is only enforced\nwhen the cluster has dynamic placement enabled.",
+						MarkdownDescription: "The affinity group to place the instance into at provision time.\nCreate-only: changing it replaces the instance.\n\nOn VMware the group must already contain at least one member. A\nvSphere DRS rule requires two virtual machines, so provisioning the\nfirst machine into an empty group produces a one-machine rule that\nvCenter rejects. The instance then fails at power on, and cannot be\nremoved with terraform destroy because it never started.\n\nOn HVM an empty group is accepted, but placement is only enforced\nwhen the cluster has dynamic placement enabled.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
 					"create_user": schema.BoolAttribute{
 						Optional:            true,
 						Computed:            true,
@@ -3599,6 +3615,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 
 	attributes := in.Attributes()
 
+	affinityGroupIdAttribute, ok := attributes["affinity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`affinity_group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	affinityGroupIdVal, ok := affinityGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`affinity_group_id expected to be basetypes.Int64Value, was: %T`, affinityGroupIdAttribute))
+	}
+
 	createUserAttribute, ok := attributes["create_user"]
 
 	if !ok {
@@ -3694,6 +3728,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	}
 
 	return ConfigHvmValue{
+		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
@@ -3766,6 +3801,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 		return NewConfigHvmValueUnknown(), diags
 	}
 
+	affinityGroupIdAttribute, ok := attributes["affinity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`affinity_group_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	affinityGroupIdVal, ok := affinityGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`affinity_group_id expected to be basetypes.Int64Value, was: %T`, affinityGroupIdAttribute))
+	}
+
 	createUserAttribute, ok := attributes["create_user"]
 
 	if !ok {
@@ -3861,6 +3914,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	}
 
 	return ConfigHvmValue{
+		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
@@ -3936,6 +3990,7 @@ func (t ConfigHvmType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigHvmValue{}
 
 type ConfigHvmValue struct {
+	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
 	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
@@ -3945,11 +4000,12 @@ type ConfigHvmValue struct {
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 5)
+	attrTypes := make(map[string]tftypes.Type, 6)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
@@ -3960,7 +4016,14 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 5)
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["affinity_group_id"] = val
 
 		val, err = v.CreateUser.ToTerraformValue(ctx)
 		if err != nil {
@@ -4027,6 +4090,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
+		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
@@ -4045,6 +4109,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
 			"kvm_host_id":           v.KvmHostId,
 			"nested_virtualization": v.NestedVirtualization,
@@ -4068,6 +4133,10 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.AffinityGroupId.Equal(other.AffinityGroupId) {
+		return false
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
@@ -4103,6 +4172,7 @@ func (v ConfigHvmValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
@@ -4143,6 +4213,24 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	}
 
 	attributes := in.Attributes()
+
+	affinityGroupIdAttribute, ok := attributes["affinity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`affinity_group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	affinityGroupIdVal, ok := affinityGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`affinity_group_id expected to be basetypes.Int64Value, was: %T`, affinityGroupIdAttribute))
+	}
 
 	createUserAttribute, ok := attributes["create_user"]
 
@@ -4239,6 +4327,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	}
 
 	return ConfigVmwareValue{
+		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -4311,6 +4400,24 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 		return NewConfigVmwareValueUnknown(), diags
 	}
 
+	affinityGroupIdAttribute, ok := attributes["affinity_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`affinity_group_id is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	affinityGroupIdVal, ok := affinityGroupIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`affinity_group_id expected to be basetypes.Int64Value, was: %T`, affinityGroupIdAttribute))
+	}
+
 	createUserAttribute, ok := attributes["create_user"]
 
 	if !ok {
@@ -4406,6 +4513,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	}
 
 	return ConfigVmwareValue{
+		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -4481,6 +4589,7 @@ func (t ConfigVmwareType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = ConfigVmwareValue{}
 
 type ConfigVmwareValue struct {
+	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
@@ -4490,11 +4599,12 @@ type ConfigVmwareValue struct {
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 5)
+	attrTypes := make(map[string]tftypes.Type, 6)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -4505,7 +4615,14 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 5)
+		vals := make(map[string]tftypes.Value, 6)
+
+		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["affinity_group_id"] = val
 
 		val, err = v.CreateUser.ToTerraformValue(ctx)
 		if err != nil {
@@ -4572,6 +4689,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
+		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
@@ -4590,6 +4708,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
@@ -4613,6 +4732,10 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.AffinityGroupId.Equal(other.AffinityGroupId) {
+		return false
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
@@ -4648,6 +4771,7 @@ func (v ConfigVmwareValue) Type(ctx context.Context) attr.Type {
 
 func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},

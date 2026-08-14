@@ -120,6 +120,16 @@ func serverAsState(
 		state.InstanceId = types.Int64Null()
 	}
 
+	// Parent host: the hypervisor this compute server runs on. Null for a host
+	// itself, which has no parent.
+	if s.ParentServer != nil {
+		state.ParentHostId = convert.Int64ToType(s.ParentServer.Id)
+		state.ParentHostName = convert.StrToType(s.ParentServer.Name)
+	} else {
+		state.ParentHostId = types.Int64Null()
+		state.ParentHostName = types.StringNull()
+	}
+
 	// Labels
 	if len(s.Labels) > 0 {
 		vals := make([]attr.Value, 0, len(s.Labels))
