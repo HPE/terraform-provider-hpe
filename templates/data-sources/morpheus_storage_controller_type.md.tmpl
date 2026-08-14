@@ -1,0 +1,57 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_storage_controller_type/example.tf" }}
+
+## Migrating from hpegl
+
+This data source is the hpe equivalent of `hpegl_vmaas_instance_storage_controller`. hpegl's
+`id` is the composed mount string (for example `-1:1:6:0`), which is exactly hpe's
+`controller_mount_point` format `id:busNumber:typeId:unitNumber`. This data source exposes
+both the controller type `id` and the composed `controller_mount_point`, so it is a superset.
+
+```hcl
+# hpegl
+data "hpegl_vmaas_instance_storage_controller" "scsi_0" {
+  name             = "SCSI VMware Paravirtual"
+  bus_number       = 1
+  interface_number = 0
+}
+
+# hpe
+data "hpe_morpheus_storage_controller_type" "scsi_0" {
+  controller_name  = "SCSI VMware Paravirtual"
+  bus_number       = 1
+  interface_number = 0
+}
+
+resource "hpe_morpheus_instance" "example" {
+  volumes = [{
+    controller_mount_point = data.hpe_morpheus_storage_controller_type.scsi_0.controller_mount_point
+  }]
+}
+```
+
+hpegl's `layout_id` has no equivalent argument: the Morpheus option source resolves the
+layout to its provision type and reads the same controller list, so layout scoping is
+incidental. Use `provision_type_code` (defaulting to `vmware`) instead.
+
+The raw form is still available, which is useful on older provider versions:
+
+```hcl
+locals { scsi_paravirtual = 6 } # from /api/provision-types?code=vmware
+volumes = [{
+  controller_mount_point = format("-1:%d:%d:%d", 1, local.scsi_paravirtual, 0)
+}]
+```
+
+{{ .SchemaMarkdown | trimspace }}

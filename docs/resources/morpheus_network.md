@@ -327,7 +327,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
 - `labels` (Set of String) Array of label strings, can be used for filtering.
 - `netmask_ipv6` (String)
 - `network_domain_id` (Number) Network domain id
-- `network_proxy_id` (Number) Network proxy id
+- `network_proxy_id` (Number) The id of the network proxy. Use the hpe_morpheus_network_proxy data source to look this up by name.
 - `no_proxy` (String) Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.
 - `pool_id` (Number) Network Pool ID
 - `pool_ipv6_id` (Number) IPv6 Network Pool ID

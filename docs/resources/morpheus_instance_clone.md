@@ -382,7 +382,7 @@ support virtual interfaces (the VMware family). The Options API
 - `ip_address` (String) The static IP address. Only applicable when ip_mode is static.
 - `ip_mode` (String) The mode for determining the IP address. One of static, dhcp or an empty string (IP pool).
 - `mac_address` (String) A specific MAC address to assign to the interface. Not returned by the API.
-- `network_interface_type_id` (Number) The ID of the network interface type.
+- `network_interface_type_id` (Number) The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
 
 Read-Only:
 
@@ -400,7 +400,7 @@ Optional:
 - `ip_address` (String) The static IP address. Only applicable when ip_mode is static.
 - `ip_mode` (String) The mode for determining the IP address. One of static, dhcp or an empty string (IP pool).
 - `mac_address` (String) A specific MAC address to assign to the interface. Not returned by the API.
-- `network_interface_type_id` (Number) The ID of the network interface type.
+- `network_interface_type_id` (Number) The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
 
 Read-Only:
 

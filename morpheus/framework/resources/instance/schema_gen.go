@@ -567,8 +567,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 									"network_type_id": schema.Int64Attribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "The id of the type of network interface",
-										MarkdownDescription: "The id of the type of network interface",
+										Description:         "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+										MarkdownDescription: "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
 									},
 									"primary_interface": schema.BoolAttribute{
 										Computed:            true,
@@ -665,8 +665,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						"network_type_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The id of the type of network interface",
-							MarkdownDescription: "The id of the type of network interface",
+							Description:         "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+							MarkdownDescription: "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
 						},
 						"primary_interface": schema.BoolAttribute{
 							Computed:            true,
@@ -693,8 +693,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Required:            true,
-				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
-				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available.\n",
+				Description:         "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available. The hpe_morpheus_network_interface_type data source resolves a network interface type id by name for a given cloud.\n",
+				MarkdownDescription: "The networkInterfaces parameter is for network configuration.\n\nThe Options API \"/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10\" can be used to see which options are available. The hpe_morpheus_network_interface_type data source resolves a network interface type id by name for a given cloud.\n",
 			},
 			"plan_id": schema.Int64Attribute{
 				Required:            true,
@@ -839,8 +839,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						"controller_mount_point": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
-							MarkdownDescription: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
+							Description:         "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse the hpe_morpheus_storage_controller_type data source to compose this value from a controller name, or /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
+							MarkdownDescription: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse the hpe_morpheus_storage_controller_type data source to compose this value from a controller name, or /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n",
 						},
 						"datastore_auto_selection": schema.StringAttribute{
 							Optional:            true,

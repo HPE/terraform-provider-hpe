@@ -1,0 +1,28 @@
+network_proxy:
+  moves:
+    - network_proxy: ""                     # unnest wrapper (components/schemas/networkProxy.yaml)
+
+  removes:
+    - account                               # (components/schemas/networkProxy.yaml) - nested {id,name}
+    - owner                                 # (components/schemas/networkProxy.yaml) - nested {id,name}
+    - proxy_password                        # sensitive; not returned by the API
+    - proxy_user                            # credential-adjacent; not needed to resolve a proxy id
+    - proxy_workstation                     # credential-adjacent; not needed to resolve a proxy id
+
+  overrides:
+    id:
+      description: The ID of the network proxy
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network proxy
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    proxy_host:
+      description: The proxy host
+    proxy_port:
+      description: The proxy port
+    proxy_domain:
+      description: The proxy domain
+    visibility:
+      description: The visibility of the network proxy (public or private)

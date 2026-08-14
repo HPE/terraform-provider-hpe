@@ -1,0 +1,5 @@
+data "hpe_morpheus_storage_controller_type" "example" {
+  controller_name  = "{{.ControllerName}}"
+  bus_number       = {{.BusNumber}}
+  interface_number = {{.InterfaceNumber}}
+}

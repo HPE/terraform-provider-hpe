@@ -380,8 +380,8 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 									"network_interface_type_id": schema.Int64Attribute{
 										Optional:            true,
 										Computed:            true,
-										Description:         "The ID of the network interface type.",
-										MarkdownDescription: "The ID of the network interface type.",
+										Description:         "The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+										MarkdownDescription: "The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
 									},
 								},
 								CustomType: ChildVirtualNetworksType{
@@ -432,8 +432,8 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 						"network_interface_type_id": schema.Int64Attribute{
 							Optional:            true,
 							Computed:            true,
-							Description:         "The ID of the network interface type.",
-							MarkdownDescription: "The ID of the network interface type.",
+							Description:         "The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+							MarkdownDescription: "The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
 						},
 					},
 					CustomType: NetworkInterfacesType{
