@@ -6,6 +6,8 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // Read checks whether the server is still in the group.
@@ -27,7 +29,7 @@ func (r *Resource) Read(
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("could not create sdk client", err.Error())
+		errfmt.DiagClientError(&resp.Diagnostics, err)
 
 		return
 	}

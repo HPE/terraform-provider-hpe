@@ -103,8 +103,7 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 									MarkdownDescription: "Whether this is the default group.",
 								},
 								"id": schema.Int64Attribute{
-									Optional:            true,
-									Computed:            true,
+									Required:            true,
 									Description:         "Group ID.",
 									MarkdownDescription: "Group ID.",
 								},

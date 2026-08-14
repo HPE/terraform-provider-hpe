@@ -83,10 +83,13 @@ Optional:
 <a id="nestedatt--resource_permissions--groups"></a>
 ### Nested Schema for `resource_permissions.groups`
 
+Required:
+
+- `id` (Number) Group ID.
+
 Optional:
 
 - `default` (Boolean) Whether this is the default group.
-- `id` (Number) Group ID.
 
 ## Import
 

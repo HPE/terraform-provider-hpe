@@ -87,6 +87,10 @@ cluster_affinity_group:
       computed_optional_required: computed_optional
     resource_permissions.groups.id:
       description: Group ID.
+      # Required, matching the cloud resource. The spec leaves the id of a sites
+      # entry optional, which left this Optional+Computed: a practitioner could
+      # list a group without saying which, and the payload would carry id 0.
+      computed_optional_required: required
     resource_permissions.groups.default:
       description: Whether this is the default group.
       computed_optional_required: computed_optional

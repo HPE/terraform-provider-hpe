@@ -178,6 +178,14 @@ func (r *cloudAffinityGroupResource) Update(
 func buildSitesPayload(groups []GroupsValue) []map[string]interface{} {
 	sites := make([]map[string]interface{}, 0, len(groups))
 	for _, g := range groups {
+		// Skip an entry with no usable id rather than sending 0, which the API
+		// would take as a real group. id is required by the schema, so this
+		// should not arise from configuration, but it can still be unknown
+		// while a value it depends on is being computed.
+		if g.Id.IsNull() || g.Id.IsUnknown() {
+			continue
+		}
+
 		site := map[string]interface{}{
 			"id": g.Id.ValueInt64(),
 		}

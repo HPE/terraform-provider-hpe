@@ -35,7 +35,7 @@ func (r *Resource) Create(
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("could not create sdk client", err.Error())
+		errfmt.DiagClientError(&resp.Diagnostics, err)
 
 		return
 	}

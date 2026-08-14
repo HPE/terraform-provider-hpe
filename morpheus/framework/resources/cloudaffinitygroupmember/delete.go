@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinitylock"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // Delete removes the server from the group.
@@ -28,7 +29,7 @@ func (r *Resource) Delete(
 
 	client, err := r.NewClient(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("could not create sdk client", err.Error())
+		errfmt.DiagClientError(&resp.Diagnostics, err)
 
 		return
 	}
