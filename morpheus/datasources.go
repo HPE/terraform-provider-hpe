@@ -79,6 +79,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouternat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkservergroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/provisioninglicense"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdiapp"
@@ -169,5 +170,7 @@ func (p *MorpheusProvider) DataSources(
 		// missing-data-sources — backup data sources (Group D)
 		backuphost.NewDataSource,
 		backupinstance.NewDataSource,
+		// hpegl VMaaS parity — network server group (lb_pool_member_group replacement)
+		networkservergroup.NewDataSource,
 	}
 }
