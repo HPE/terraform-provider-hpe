@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
 func (r *clusterAffinityGroupResource) Create(
@@ -154,6 +155,16 @@ func (r *clusterAffinityGroupResource) Create(
 				"The affinity group was created but could not be read back.",
 			)
 		}
+
+		// The group exists in Morpheus but never reached state. Taint so the
+		// next apply replaces it rather than leaving it orphaned and invisible
+		// to Terraform.
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "cluster_affinity_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
 
 		return
 	}

@@ -120,6 +120,13 @@ func readMembership(
 		return servers, true
 	}
 
+	// The group is gone. Report absence without a diagnostic so the caller can
+	// drop the membership from state rather than failing the plan: a group
+	// deleted out of band should surface as drift, not as an error.
+	if errfmt.IsNotFound(httpResp) {
+		return nil, false
+	}
+
 	if !affinityread.IsSingleItemRenderFailure(httpResp) {
 		if err := errfmt.CheckResponse(err, httpResp); err != nil {
 			errfmt.DiagError(
