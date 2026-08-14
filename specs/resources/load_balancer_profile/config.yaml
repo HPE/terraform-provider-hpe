@@ -13,7 +13,7 @@ load_balancer_profile:
     # injects it into the active config block). Replaces the per-block tags.
     tags:
       set_nested:
-        computed_optional_required: computed_optional
+        computed_optional_required: optional
         description: NSX-T tags applied to the profile.
         nested_object:
           attributes:
@@ -95,7 +95,7 @@ load_balancer_profile:
         - LBClientSslProfile
         - LBServerSslProfile
     tags:
-      computed_optional_required: computed_optional
+      computed_optional_required: optional
       description: NSX-T tags applied to the profile.
     # cookie_type is exposed with friendly values; the provider translates
     # session<->LBSessionCookieTime and persistence<->LBPersistenceCookieTime.
