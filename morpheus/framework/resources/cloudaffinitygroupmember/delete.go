@@ -4,6 +4,7 @@ package cloudaffinitygroupmember
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -47,7 +48,7 @@ func (r *Resource) Delete(
 
 	// Already absent: nothing to do, and rewriting the list would touch other
 	// members for no reason.
-	if !containsServer(servers, serverID) {
+	if !slices.Contains(servers, serverID) {
 		return
 	}
 
@@ -62,7 +63,7 @@ func (r *Resource) Delete(
 		return
 	}
 
-	if containsServer(after, serverID) {
+	if slices.Contains(after, serverID) {
 		resp.Diagnostics.AddError(
 			"affinity group membership was not removed",
 			"Server "+state.ServerID.String()+" is still a member of affinity group "+

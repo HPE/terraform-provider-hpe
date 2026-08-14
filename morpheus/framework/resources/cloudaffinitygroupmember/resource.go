@@ -14,6 +14,7 @@ package cloudaffinitygroupmember
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -127,28 +128,15 @@ func membershipID(cloudID, groupID, serverID int64) string {
 	return fmt.Sprintf("%d/%d/%d", cloudID, groupID, serverID)
 }
 
-// containsServer reports whether the server is in the membership list.
-func containsServer(servers []int64, serverID int64) bool {
-	for _, s := range servers {
-		if s == serverID {
-			return true
-		}
-	}
-
-	return false
-}
-
 // withoutServer returns the list with the server removed, preserving order.
+//
+// The input is cloned because DeleteFunc rewrites its argument in place, and
+// the caller's slice is membership read back from the API which must not be
+// mutated underneath it.
 func withoutServer(servers []int64, serverID int64) []int64 {
-	out := make([]int64, 0, len(servers))
-
-	for _, s := range servers {
-		if s != serverID {
-			out = append(out, s)
-		}
-	}
-
-	return out
+	return slices.DeleteFunc(slices.Clone(servers), func(s int64) bool {
+		return s == serverID
+	})
 }
 
 // importIDPath is the attribute reported when an import identifier is malformed.

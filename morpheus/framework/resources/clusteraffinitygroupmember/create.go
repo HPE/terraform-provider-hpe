@@ -4,6 +4,7 @@ package clusteraffinitygroupmember
 
 import (
 	"context"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -53,7 +54,7 @@ func (r *Resource) Create(
 
 	// Already a member. Nothing to send, and sending anyway would rewrite the
 	// whole list for no reason.
-	if !containsServer(servers, serverID) {
+	if !slices.Contains(servers, serverID) {
 		if !writeMembership(
 			ctx, client, clusterID, groupID, append(servers, serverID), &resp.Diagnostics,
 		) {
@@ -71,7 +72,7 @@ func (r *Resource) Create(
 			return
 		}
 
-		if !containsServer(after, serverID) {
+		if !slices.Contains(after, serverID) {
 			resp.Diagnostics.AddError(
 				"affinity group membership was not applied",
 				"Server "+plan.ServerID.String()+" is not a member of affinity group "+

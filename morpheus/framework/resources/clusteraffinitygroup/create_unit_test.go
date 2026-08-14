@@ -4,8 +4,10 @@ package clusteraffinitygroup
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -26,40 +28,38 @@ func testClient(t *testing.T, handler http.HandlerFunc) *sdk.APIClient {
 	)
 }
 
-func listJSON(t *testing.T, ids ...int64) string {
+// listJSON renders a listing response.
+//
+// Built from the generated types and marshalled, rather than assembled as a
+// string, so the fixture cannot drift from the shape the SDK actually parses.
+func listJSON(t *testing.T, ids ...int64) []byte {
 	t.Helper()
 
-	out := `{"affinityGroups":[`
-
-	for i, id := range ids {
-		if i > 0 {
-			out += ","
-		}
-
-		out += `{"id":` + itoa(id) + `,"name":"g` + itoa(id) + `"}`
-	}
-
-	return out + `],"meta":{"total":` + itoa(int64(len(ids))) + `}}`
-}
-
-func itoa(i int64) string {
-	if i == 0 {
-		return "0"
-	}
-
-	var (
-		buf [20]byte
-		pos = len(buf)
+	groups := make(
+		[]sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner, 0, len(ids),
 	)
 
-	for i > 0 {
-		pos--
-		buf[pos] = byte('0' + i%10)
-		i /= 10
+	for _, id := range ids {
+		groups = append(
+			groups,
+			sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner{
+				Id:   idPtr(id),
+				Name: ptrStr("g" + strconv.FormatInt(id, 10)),
+			},
+		)
 	}
 
-	return string(buf[pos:])
+	body, err := json.Marshal(
+		sdk.ListClusterAffinityGroups200Response{AffinityGroups: groups},
+	)
+	if err != nil {
+		t.Fatalf("marshalling the listing fixture: %v", err)
+	}
+
+	return body
 }
+
+func ptrStr(s string) *string { return &s }
 
 func idPtr(i int64) *int64 { return &i }
 
@@ -100,7 +100,7 @@ func TestCreatedGroupIDRecoversAfterRenderFailure(t *testing.T) {
 
 	client := testClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(listJSON(t, 1, 2, 7)))
+		_, _ = w.Write(listJSON(t, 1, 2, 7))
 	})
 
 	prior := map[int64]struct{}{1: {}, 2: {}}
@@ -124,7 +124,7 @@ func TestCreatedGroupIDRefusesToGuess(t *testing.T) {
 
 	client := testClient(t, func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(listJSON(t, 1, 8, 9)))
+		_, _ = w.Write(listJSON(t, 1, 8, 9))
 	})
 
 	prior := map[int64]struct{}{1: {}}
