@@ -5,17 +5,21 @@ resource "hpe_morpheus_instance_clone" "example" {
   user_group = {{.UserGroup}}
 {{- end}}
 
-  volumes {
-    name        = "root"
-    size        = 20
-    root_volume = true
+  volumes = [
+    {
+      name        = "root"
+      size        = 20
+      root_volume = true
 {{- if .StorageProfile}}
-    storage_profile = "{{.StorageProfile}}"
+      storage_profile = "{{.StorageProfile}}"
 {{- end}}
-  }
+    }
+  ]
 
-  network_interfaces {
-    network_id = {{.NetworkId}}
-    ip_mode    = ""
-  }
+  network_interfaces = [
+    {
+      network_id = {{.NetworkId}}
+      ip_mode    = ""
+    }
+  ]
 }

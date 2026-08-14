@@ -13,6 +13,16 @@ instance_clone:
       int64:
         computed_optional_required: required
         description: The ID of the source instance to clone.
+    source_instance_id_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only source_instance_id attribute. Because
+          source_instance_id is write-only it is never stored in state, so editing
+          source_instance_id on its own produces no plan diff. The clone source is only meaningful
+          at creation time and cannot be changed afterwards, so incrementing this value has no
+          effect on an existing instance; it exists so that a value may be supplied for it without
+          error, for example in configurations produced by migration tooling.
     volumesOuter:
       list_nested:
         computed_optional_required: required
@@ -256,6 +266,7 @@ instance_clone:
   moves:
     - instance: ""                              # unnest the instance read wrapper to root
     - template-source_instance_id: source_instance_id
+    - template-source_instance_id_version: source_instance_id_version
     - group.id: group_id
     - cloud.id: cloud_id
     - plan.id: plan_id
@@ -328,8 +339,8 @@ instance_clone:
   overrides:
     source_instance_id:
       computed_optional_required: required
-      description: The ID of the source instance to clone.
-      requires_replace: true
+      description: The ID of the source instance to clone. The API never returns this value, so it is write-only and not stored in state. It cannot be changed after the clone is created; changing it produces no plan diff and has no effect on the existing instance.
+      write_only: true
     id:
       computed_optional_required: computed
       description: The ID of the cloned instance.
