@@ -65,3 +65,58 @@ func ServersFromList[T any](
 
 	return nil, false
 }
+
+// IDsFromList collects every affinity group id in a list response.
+//
+// Used to record what exists before a create that is expected to fail to
+// render, so the new group can be identified afterwards by difference.
+//
+// The result is non-nil whenever the listing was read, so a nil map means the
+// listing could not be read at all. That is a different thing from a cloud or
+// cluster which legitimately holds no groups, and the two must not be
+// conflated: one is recoverable, the other is not.
+func IDsFromList[T any](items []T, id func(T) (int64, bool)) map[int64]struct{} {
+	ids := make(map[int64]struct{}, len(items))
+
+	for _, item := range items {
+		if got, ok := id(item); ok {
+			ids[got] = struct{}{}
+		}
+	}
+
+	return ids
+}
+
+// NewIDFromList returns the one id present in items but absent from before.
+//
+// It reports false unless exactly one such id exists. If another client created
+// a group at the same moment, more than one id is new and picking between them
+// would be a guess; adopting the wrong group into state is worse than reporting
+// that the group cannot be identified, because the practitioner can recover
+// from an error but not from silently managing someone else's resource.
+func NewIDFromList[T any](
+	items []T,
+	before map[int64]struct{},
+	id func(T) (int64, bool),
+) (int64, bool) {
+	var (
+		found int64
+		count int
+	)
+
+	for _, item := range items {
+		got, ok := id(item)
+		if !ok {
+			continue
+		}
+
+		if _, existed := before[got]; existed {
+			continue
+		}
+
+		found = got
+		count++
+	}
+
+	return found, count == 1
+}
