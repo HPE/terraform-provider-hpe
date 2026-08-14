@@ -175,12 +175,17 @@ func getLoadBalancerProfileAsState(
 	serviceType := state.ServiceType.ValueString()
 
 	// Tags: read from config response.
-	// If the user never configured tags (prior state is null), preserve null to
-	// avoid perpetual computed diffs from API-injected sentinel tags (NSX-T
-	// returns empty {name:"",value:""} entries even when no tags were set).
-	if prior.Tags.IsNull() {
+	// During import, prior state is empty (ImportState only sets id and
+	// load_balancer_id), so prior.Tags is null — but we still need to read
+	// real tags from the API. Sentinel entries ({name:"",value:""}) that
+	// NSX-T injects are filtered inside readTagsFromConfig.
+	// During normal refresh, if the user never configured tags (prior is null
+	// but this is NOT an import), preserve null to avoid computed diffs.
+	if prior.Tags.IsNull() && !allConfigBlocksNull(prior) {
+		// Normal refresh, user never set tags: preserve null.
 		state.Tags = types.SetNull(TagsValue{}.Type(ctx))
 	} else {
+		// Import path OR user configured tags: read from API (sentinels filtered).
 		state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
 	}
 

@@ -434,6 +434,18 @@ func readTagsFromConfig(
 		}
 	}
 
+	// Filter out NSX-T sentinel entries ({name:"", value:""}) that the API
+	// injects even when no tags were configured. These sentinels cause
+	// perpetual diffs if allowed into state.
+	filtered := apiTags[:0]
+	for _, t := range apiTags {
+		if t.name == "" && t.value == "" {
+			continue
+		}
+		filtered = append(filtered, t)
+	}
+	apiTags = filtered
+
 	if len(apiTags) == 0 {
 		return types.SetNull(TagsValue{}.Type(ctx))
 	}
