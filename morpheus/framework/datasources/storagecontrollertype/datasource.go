@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -79,17 +78,6 @@ func normalizeControllerName(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-// displayOrderOf returns the controller type's display order, or 0 when unset.
-func displayOrderOf(
-	ct sdk.ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner,
-) int64 {
-	if ct.DisplayOrder != nil {
-		return *ct.DisplayOrder
-	}
-
-	return 0
-}
-
 // matchedControllerType is the resolved storage controller type.
 type matchedControllerType struct {
 	id           int64
@@ -99,28 +87,19 @@ type matchedControllerType struct {
 }
 
 // matchControllerType finds the single controller type whose name matches the
-// requested name (case-insensitive, whitespace-trimmed). Candidates are sorted
-// by displayOrder first, mirroring the Morpheus option source, so any ambiguity
-// resolves the same way the UI does. It errors on zero or more than one match,
-// so the data source fails clearly rather than silently picking an arbitrary
-// one. It is a pure function so the match/error logic is unit testable without
-// an appliance.
+// requested name (case-insensitive, whitespace-trimmed). It errors on zero or
+// more than one match, so the data source fails clearly rather than silently
+// picking an arbitrary one. It is a pure function so the match/error logic is
+// unit testable without an appliance.
 func matchControllerType(
 	controllerTypes []sdk.ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner,
 	name string,
 ) (matchedControllerType, error) {
-	sorted := make([]sdk.ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner,
-		len(controllerTypes))
-	copy(sorted, controllerTypes)
-	sort.SliceStable(sorted, func(i, j int) bool {
-		return displayOrderOf(sorted[i]) < displayOrderOf(sorted[j])
-	})
-
 	target := normalizeControllerName(name)
 
 	var matches []matchedControllerType
 
-	for _, ct := range sorted {
+	for _, ct := range controllerTypes {
 		if ct.Name == nil || normalizeControllerName(*ct.Name) != target {
 			continue
 		}

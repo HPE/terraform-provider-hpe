@@ -162,19 +162,3 @@ func TestMatchControllerType(t *testing.T) {
 		})
 	}
 }
-
-// TestMatchControllerTypeSortedByDisplayOrder verifies the candidate list is
-// processed in displayOrder order, mirroring the Morpheus option source.
-func TestMatchControllerTypeSortedByDisplayOrder(t *testing.T) {
-	// Same normalized name at different display orders must still be detected as
-	// an ambiguous (>1) match regardless of input ordering.
-	input := []sdk.ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner{
-		ct(7, "SCSI", 5, "scsi", 16),
-		ct(6, "scsi", 2, "scsi", 16),
-	}
-
-	_, err := matchControllerType(input, "SCSI")
-	if err == nil || err.Error() != ErrorMultipleStorageControllerTypes {
-		t.Fatalf("expected %q, got %v", ErrorMultipleStorageControllerTypes, err)
-	}
-}
