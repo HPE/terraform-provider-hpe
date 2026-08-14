@@ -56,8 +56,6 @@ func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The visibility of the network proxy (public or private)",
 			},
 		},
-		Description:         "Retrieves the id of a Morpheus network proxy by name or id, for use with network_proxy_id on hpe_morpheus_network.",
-		MarkdownDescription: "Retrieves the id of a Morpheus network proxy by name or id, for use with network_proxy_id on hpe_morpheus_network.",
 	}
 }
 

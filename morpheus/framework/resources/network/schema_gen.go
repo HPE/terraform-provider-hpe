@@ -199,8 +199,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			"network_proxy_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The id of the network proxy. Use the hpe_morpheus_network_proxy data source to look this up by name.",
-				MarkdownDescription: "The id of the network proxy. Use the hpe_morpheus_network_proxy data source to look this up by name.",
+				Description:         "Network proxy id",
+				MarkdownDescription: "Network proxy id",
 			},
 			"no_proxy": schema.StringAttribute{
 				Optional:            true,

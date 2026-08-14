@@ -98,7 +98,7 @@ instance_clone:
     networkInterfaceTypeId:
       int64:
         computed_optional_required: computed_optional
-        description: The ID of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
+        description: The ID of the network interface type.
     macAddress:
       string:
         computed_optional_required: optional

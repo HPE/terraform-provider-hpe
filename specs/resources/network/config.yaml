@@ -56,7 +56,7 @@ network:
     network_proxy_id:
       int64:
         computed_optional_required: computed_optional
-        description: The id of the network proxy. Use the hpe_morpheus_network_proxy data source to look this up by name.
+        description: Network proxy id
     type_id:
       int64:
         computed_optional_required: required

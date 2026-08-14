@@ -268,7 +268,7 @@ func ResourceClusterHKSVSphere() *schema.Resource {
 									},
 									/* AWAITING API Support for the master node pool for consistency
 									"network_interface_type_id": {
-										Description: "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+										Description: "The id of the network interface type",
 										Type:        schema.TypeInt,
 										Optional:    true,
 									},
@@ -384,7 +384,7 @@ func ResourceClusterHKSVSphere() *schema.Resource {
 									},
 									/* AWAITING API Support for the master node pool for consistency
 									"network_interface_type_id": {
-										Description: "The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.",
+										Description: "The id of the network interface type",
 										Type:        schema.TypeInt,
 										Optional:    true,
 									},

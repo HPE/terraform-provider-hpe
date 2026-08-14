@@ -954,7 +954,7 @@ An instance has one compute server initially and gains more when it is scaled wi
 - `name` (String) Name of the instance to be created.
 - `network_interfaces` (Attributes List) The networkInterfaces parameter is for network configuration.
 
-The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. The hpe_morpheus_network_interface_type data source resolves a network interface type id by name for a given cloud. (see [below for nested schema](#nestedatt--network_interfaces))
+The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. (see [below for nested schema](#nestedatt--network_interfaces))
 - `plan_id` (Number) The id for the memory and storage option pre-configured within Morpheus.
 
 ### Optional
@@ -1044,7 +1044,7 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
-- `network_type_id` (Number) The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
+- `network_type_id` (Number) The id of the type of network interface
 - `subnet_id` (Number) id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.
 
 Read-Only:
@@ -1063,7 +1063,7 @@ Optional:
 - `ip_pool` (Number) id of the ip pool to be used with this network
 - `network_group_id` (Number) id of the network group to be used. Cannot be used with 'network_id', will be used instead of 'network_id'
 - `network_id` (Number) id of the network to be used.  This cannot be used with 'network_group_id'
-- `network_type_id` (Number) The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
+- `network_type_id` (Number) The id of the type of network interface
 - `subnet_id` (Number) id of the subnet to be used (required by some clouds, e.g. Azure). Cannot be used with 'network_id' or 'network_group_id'.
 
 Read-Only:
@@ -1256,7 +1256,7 @@ For new storage controllers the id is passed as -1, so an example value would be
   "-1:1:6:0"
 which translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.
 The current list of storage controllers is returned for instances and servers for determining existing id values.
-Use the hpe_morpheus_storage_controller_type data source to compose this value from a controller name, or /api/provision-types?code=vmware to see the available controllerTypes for vmware."
+Use /api/provision-types?code=vmware to see the available controllerTypes for vmware."
 - `datastore_auto_selection` (String) Auto selection can be specified as auto or autoCluster (for clusters).
 - `datastore_id` (Number) The ID of the specific datastore.
 - `name` (String) Name/type of the LV being created.

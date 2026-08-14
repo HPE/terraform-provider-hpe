@@ -146,7 +146,7 @@ instance:
           - name: controller_mount_point
             string:
               computed_optional_required: computed_optional
-              description: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse the hpe_morpheus_storage_controller_type data source to compose this value from a controller name, or /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n"
+              description: "The controller mount point specification for this volume in the format:\n  \"id:busNumber:typeId:unitNumber\"\nFor new storage controllers the id is passed as -1, so an example value would be:\n  \"-1:1:6:0\"\nwhich translates to id: -1 (new), busNumber: 1, storage controller type id: 6 (SCSI VMware Paravirtual), unit number: 0.\nThe current list of storage controllers is returned for instances and servers for determining existing id values.\nUse /api/provision-types?code=vmware to see the available controllerTypes for vmware.\"\n"
           - name: datastore_auto_selection
             string:
               computed_optional_required: optional
@@ -459,14 +459,14 @@ instance:
     networkInterfaceTypeId:
       int64:
         computed_optional_required: computed_optional
-        description: The id of the network interface type. Use the hpe_morpheus_network_interface_type data source to look this up by name for a given cloud.
+        description: The id of the type of network interface
     networkInterfacesOuter:
       list_nested:
         computed_optional_required: required
         description: |
           The networkInterfaces parameter is for network configuration.
 
-          The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available. The hpe_morpheus_network_interface_type data source resolves a network interface type id by name for a given cloud.
+          The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
     networkInterfacesInner:
       list_nested:
         computed_optional_required: optional
