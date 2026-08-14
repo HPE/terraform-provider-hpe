@@ -87,8 +87,12 @@ func (r *Resource) Update(
 		instance.VipProtocol = plan.VipProtocol.ValueStringPointer()
 	}
 
-	if !plan.VipHostname.IsNull() && !plan.VipHostname.IsUnknown() {
-		instance.VipHostname = plan.VipHostname.ValueStringPointer()
+	if !plan.VipHostname.IsUnknown() {
+		if plan.VipHostname.IsNull() {
+			instance.VipHostname = sdk.PtrString("")
+		} else {
+			instance.VipHostname = plan.VipHostname.ValueStringPointer()
+		}
 	}
 
 	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {

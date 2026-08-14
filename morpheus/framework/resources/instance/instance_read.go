@@ -1746,6 +1746,28 @@ func getStateInterfaces(
 		return nil, diags
 	}
 
+	// The server interfaces response does not carry all the fields that the
+	// instance-level interfaces response does (e.g. NetworkInterfaceTypeId,
+	// and IpMode may be absent). Fill gaps from intfsFromInstance so that
+	// Read returns consistent values regardless of which code path is taken.
+	for i := range intfsFromServer {
+		if i >= len(intfsFromInstance) {
+			break
+		}
+		if intfsFromServer[i].NetworkTypeId.IsNull() || intfsFromServer[i].NetworkTypeId.IsUnknown() {
+			intfsFromServer[i].NetworkTypeId = intfsFromInstance[i].NetworkTypeId
+		}
+		if intfsFromServer[i].IpMode.IsNull() || intfsFromServer[i].IpMode.IsUnknown() {
+			intfsFromServer[i].IpMode = intfsFromInstance[i].IpMode
+		}
+		// IpMode: the API omits ipMode from both instance-level and server-level
+		// interface responses when it is empty/unset, producing null in both paths.
+		// Fall back to the schema default ("") to stay consistent with the plan.
+		if intfsFromServer[i].IpMode.IsNull() {
+			intfsFromServer[i].IpMode = types.StringValue("")
+		}
+	}
+
 	// Get []NetworkInterfacesValue from the plan
 	var intfsFromPlan []NetworkInterfacesValue
 	pd := plan.NetworkInterfaces.ElementsAs(ctx, &intfsFromPlan, false)
