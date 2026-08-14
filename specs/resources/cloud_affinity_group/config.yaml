@@ -14,7 +14,8 @@ cloud_affinity_group:
     tenantIds:
       set:
         computed_optional_required: computed_optional
-        description: List of tenant account IDs that are allowed access.
+        description: "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
+        deprecation_message: "tenant_ids has no effect: the Morpheus API rejects tenant assignment on affinity groups and does not apply it. The value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
         element_type:
           int64: {}
     resourcePermissions:

@@ -147,8 +147,9 @@ func CloudAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				ElementType:         types.Int64Type,
 				Optional:            true,
 				Computed:            true,
-				Description:         "List of tenant account IDs that are allowed access.",
-				MarkdownDescription: "List of tenant account IDs that are allowed access.",
+				Description:         "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
+				MarkdownDescription: "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
+				DeprecationMessage:  "tenant_ids has no effect: the Morpheus API rejects tenant assignment on affinity groups and does not apply it. The value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},

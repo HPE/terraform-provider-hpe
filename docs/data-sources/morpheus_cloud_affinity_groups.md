@@ -72,7 +72,7 @@ Read-Only:
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--affinity_groups--resource_permissions))
 - `servers` (Set of Number) Set of compute server IDs in the affinity group.
 - `source` (String) The source of the affinity group (e.g. user, sync).
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number) Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group.
 
 <a id="nestedatt--affinity_groups--pool"></a>

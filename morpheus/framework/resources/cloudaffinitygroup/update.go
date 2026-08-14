@@ -79,24 +79,7 @@ func (r *cloudAffinityGroupResource) Update(
 
 	ag.Servers = currentServers
 
-	// Tenants.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		tenants := make(
-			[]sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner, 0, len(tenantIDs),
-		)
-		for _, tid := range tenantIDs {
-			tid := tid
-			tenants = append(tenants, sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner{
-				Id: &tid,
-			})
-		}
-		ag.Tenants = tenants
-	}
+	// tenant_ids is deliberately NOT sent. See the note in Create and MORPH-15806.
 
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {

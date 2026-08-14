@@ -102,19 +102,7 @@ func (r *clusterAffinityGroupResource) Update(
 		AffinityGroup: &ag,
 	}
 
-	// Tenants: request-root `tenantPermissions` wrapper, matching Create. See the longer
-	// note in Create — this form is checked first by AffinityGroupService and is the form
-	// this shipped resource has always sent. Do not move it into `affinityGroup.tenants`.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		body.TenantPermissions = &sdk.UpdateClusterAffinityGroupRequestTenantPermissions{
-			Accounts: tenantIDs,
-		}
-	}
+	// tenant_ids is deliberately NOT sent. See the note in Create and MORPH-15806.
 
 	_, httpResp, err := client.ClustersAPI.UpdateClusterAffinityGroup(ctx, clusterID, id).
 		UpdateClusterAffinityGroupRequest(body).Execute()

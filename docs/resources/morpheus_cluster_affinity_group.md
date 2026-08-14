@@ -58,7 +58,7 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 - `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
 - `description` (String, Deprecated) Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number, Deprecated) Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group (public or private).
 
 ### Read-Only

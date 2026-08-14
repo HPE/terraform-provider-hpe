@@ -5,13 +5,11 @@ package clusteraffinitygroup
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
-	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityread"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -100,53 +98,25 @@ func (r *clusterAffinityGroupResource) Create(
 		AffinityGroup: &ag,
 	}
 
-	// Tenants are sent as the request-root `tenantPermissions` wrapper
-	// (`{"accounts": [<id>, ...]}`), NOT as the nested `affinityGroup.tenants`
-	// (`[{"id": <id>}]`) form. This is DELIBERATE — do not "harmonise" it with the
-	// cloud affinity group resource, which legitimately uses the nested form.
+	// tenant_ids is deliberately NOT sent. See MORPH-15806.
 	//
-	// AffinityGroupService (morpheus-core) resolves tenant permissions as:
+	// The API accepts two shapes for this -- request-root `tenantPermissions`
+	// ({"accounts": [<id>]}) and nested `affinityGroup.tenants` ([{"id": <id>}])
+	// -- and parses both correctly. Neither works. Verified against 9.0.1:
+	// supplying tenants on create answers 403 while still creating the group
+	// with no tenants applied, supplying them on update answers 500, and either
+	// one leaves that group's single-item GET returning 500 permanently. A
+	// control group never given tenants reads back 200, so the damage is caused
+	// by the request rather than being a property of the endpoint.
 	//
-	//	params.tenantPermissions ?: params.tenantPermission
-	//	    ?: params.affinityGroup?.tenantPermissions ?: params.affinityGroup?.tenantPermission
-	//	    ?: params.affinityGroup?.tenants
-	//
-	// so the request-root form is checked FIRST, at the highest precedence. Both forms
-	// are accepted, but they have different shapes and are parsed by different branches
-	// of permissionService.parseTenantPermissions. This resource has shipped sending the
-	// request-root form, so switching would change the on-the-wire payload for existing
-	// users with no benefit.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{
-			Accounts: tenantIDs,
-		}
-	}
-
-	// MORPH-15806: a create carrying tenant permissions is stored but cannot be
-	// rendered, so it answers 500 and the response arrives without the id.
-	// Record what exists beforehand so the new group can be found by difference.
-	//
-	// Only done when tenants are actually sent: nothing else provokes the
-	// defect, and the extra listing is not free.
-	var priorIDs map[int64]struct{}
-	if body.TenantPermissions != nil {
-		priorIDs = listAffinityGroupIDs(ctx, client, clusterID)
-	}
+	// Sending nothing keeps groups readable. The attribute stays in the schema,
+	// carrying a deprecation message, so existing configurations continue to
+	// plan; the value is state-only and does not reflect the appliance.
 
 	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
 		SaveClusterAffinityGroupRequest(body).Execute()
 
-	// The group is created even when the response cannot be rendered. Failing
-	// here would abandon it: never in state, invisible to Terraform, and
-	// removable only by hand.
-	renderFailed := affinityread.IsSingleItemRenderFailure(httpResp)
-
-	if err := errfmt.CheckResponse(err, httpResp); err != nil && !renderFailed {
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpCreate, "cluster_affinity_group",
 			plan.Name.ValueString(), err, httpResp,
@@ -155,12 +125,15 @@ func (r *clusterAffinityGroupResource) Create(
 		return
 	}
 
-	id, ok := createdGroupID(
-		ctx, client, clusterID, result, priorIDs, renderFailed, &resp.Diagnostics,
-	)
-	if !ok {
+	if result.AffinityGroup == nil || result.AffinityGroup.Id == nil {
+		resp.Diagnostics.AddError(
+			"API returned nil ID", "AffinityGroup ID is nil in the create response",
+		)
+
 		return
 	}
+
+	id := *result.AffinityGroup.Id
 
 	// Read-back to populate full state.
 	readAg, found := fetchAffinityGroup(ctx, client, clusterID, id, &resp.Diagnostics)
@@ -195,116 +168,4 @@ func (r *clusterAffinityGroupResource) Create(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
-}
-
-// listAffinityGroupIDs returns the ids of every affinity group on the cluster.
-//
-// TODO(MORPH-15806): remove alongside the rest of the workaround.
-//
-// A nil result means the listing could not be read. Errors are deliberately
-// swallowed: this runs before the create as a precaution, and a failure to take
-// the precaution must not stop a create that would otherwise succeed. If the
-// precaution turns out to have been needed, createdGroupID reports it then,
-// where the consequence is real rather than hypothetical.
-func listAffinityGroupIDs(
-	ctx context.Context,
-	client *sdk.APIClient,
-	clusterID int64,
-) map[int64]struct{} {
-	result, httpResp, err := client.ClustersAPI.ListClusterAffinityGroups(ctx, clusterID).Execute()
-	if errfmt.CheckResponse(err, httpResp) != nil || result == nil {
-		return nil
-	}
-
-	return affinityread.IDsFromList(
-		result.AffinityGroups,
-		func(e sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner) (int64, bool) {
-			if e.Id == nil {
-				return 0, false
-			}
-
-			return *e.Id, true
-		},
-	)
-}
-
-// createdGroupID determines the id of the group that was just created.
-//
-// TODO(MORPH-15806): remove alongside the rest of the workaround.
-//
-// Normally the create response carries it. When the response could not be
-// rendered it does not, and the id is recovered by listing the groups and
-// taking the one that was not there before.
-func createdGroupID(
-	ctx context.Context,
-	client *sdk.APIClient,
-	clusterID int64,
-	result *sdk.SaveClusterAffinityGroup200Response,
-	priorIDs map[int64]struct{},
-	renderFailed bool,
-	diags *diag.Diagnostics,
-) (int64, bool) {
-	if result != nil && result.AffinityGroup != nil && result.AffinityGroup.Id != nil {
-		return *result.AffinityGroup.Id, true
-	}
-
-	if !renderFailed {
-		diags.AddError(
-			"API returned nil ID", "AffinityGroup ID is nil in the create response",
-		)
-
-		return 0, false
-	}
-
-	if priorIDs == nil {
-		diags.AddError(
-			"affinity group created but could not be identified",
-			"The affinity group was created, but the API could not render the "+
-				"response and the existing groups could not be listed beforehand, "+
-				"so its ID is unknown. The group exists on the appliance and is "+
-				"not managed by Terraform. Import it or remove it by hand.",
-		)
-
-		return 0, false
-	}
-
-	listResult, listResp, listErr := client.ClustersAPI.
-		ListClusterAffinityGroups(ctx, clusterID).Execute()
-	if err := errfmt.CheckResponse(listErr, listResp); err != nil {
-		errfmt.DiagError(diags, errfmt.OpCreate, "cluster_affinity_group", "", err, listResp)
-
-		return 0, false
-	}
-
-	if listResult == nil {
-		diags.AddError("API returned nil", "affinity group list is nil in the response")
-
-		return 0, false
-	}
-
-	id, ok := affinityread.NewIDFromList(
-		listResult.AffinityGroups, priorIDs,
-		func(e sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner) (int64, bool) {
-			if e.Id == nil {
-				return 0, false
-			}
-
-			return *e.Id, true
-		},
-	)
-	if !ok {
-		diags.AddError(
-			"affinity group created but could not be identified",
-			"The affinity group was created, but the API could not render the "+
-				"response and the group could not be singled out from the listing "+
-				"afterwards. This happens when another affinity group is created "+
-				"on the same cluster at the same moment. The group exists on the "+
-				"appliance and is not managed by Terraform. Import it or remove it "+
-				"by hand.",
-		)
-
-		return 0, false
-	}
-
-	return id, true
 }
