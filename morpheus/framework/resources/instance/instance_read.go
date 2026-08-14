@@ -1760,6 +1760,12 @@ func getStateInterfaces(
 		if intfsFromServer[i].IpMode.IsNull() || intfsFromServer[i].IpMode.IsUnknown() {
 			intfsFromServer[i].IpMode = intfsFromInstance[i].IpMode
 		}
+		// IpMode: the API omits ipMode from both instance-level and server-level
+		// interface responses when it is empty/unset, producing null in both paths.
+		// Fall back to the schema default ("") to stay consistent with the plan.
+		if intfsFromServer[i].IpMode.IsNull() {
+			intfsFromServer[i].IpMode = types.StringValue("")
+		}
 	}
 
 	// Get []NetworkInterfacesValue from the plan

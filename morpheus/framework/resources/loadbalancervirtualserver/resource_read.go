@@ -160,7 +160,15 @@ func getVirtualServerAsState(
 	state.VipAddress = convert.StrToType(vs.VipAddress)
 	state.VipPort = convert.Int64ToType(vs.VipPort)
 	state.VipProtocol = convert.StrToType(vs.VipProtocol)
-	state.VipHostname = convert.StrToType(vs.VipHostname.Get())
+	// VipHostname: coerce empty string to null. The API returns "" for an
+	// unset hostname; since vip_hostname is Optional (not Computed), Read must
+	// return null when the user never configured it to avoid an inconsistent
+	// result (null in plan vs "" from API).
+	if h := vs.VipHostname.Get(); h == nil || *h == "" {
+		state.VipHostname = types.StringNull()
+	} else {
+		state.VipHostname = types.StringValue(*h)
+	}
 
 	// Computed fields
 	state.Active = convert.BoolToType(vs.Active)
