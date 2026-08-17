@@ -13,6 +13,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityread"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -53,27 +54,16 @@ func (r *clusterAffinityGroupResource) Read(
 	clusterID := state.ClusterId.ValueInt64()
 	id := state.Id.ValueInt64()
 
-	result, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
-
 	// CRITICAL BEHAVIOUR 4: Treat HTTP 404 as resource-gone.
 	// Deleting the parent resource pool or cluster cascades and hard-deletes affinity groups.
-	if errfmt.IsNotFound(httpResp) {
+	// fetchAffinityGroup reports the same for a group absent from the listing.
+	ag, ok := fetchAffinityGroup(ctx, client, clusterID, id, &resp.Diagnostics)
+	if !ok {
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
 		resp.State.RemoveResource(ctx)
-
-		return
-	}
-
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group", "", err, httpResp,
-		)
-
-		return
-	}
-
-	ag := result.AffinityGroup
-	if ag == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return
 	}
@@ -425,4 +415,110 @@ func mapGetResponseToModel(
 	}
 
 	return diags
+}
+
+// fetchAffinityGroup reads one affinity group, falling back to the listing when
+// the single-item endpoint fails.
+//
+// TODO(MORPH-15806): remove the fallback once the appliance defect is fixed.
+//
+// A group that has been sent tenant permissions returns HTTP 500 from its
+// single-item endpoint from then on, permanently, although the stored record is
+// undamaged and the listing renders it correctly. Without this, one such group
+// makes every plan fail and the group cannot be repaired, only recreated.
+//
+// The second return reports whether the group exists at all, so callers can
+// distinguish "gone" from "failed".
+func fetchAffinityGroup(
+	ctx context.Context,
+	client *sdk.APIClient,
+	clusterID, id int64,
+	diags *diag.Diagnostics,
+) (*sdk.GetClusterAffinityGroup200ResponseAffinityGroup, bool) {
+	result, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
+
+	if errfmt.IsNotFound(httpResp) {
+		return nil, false
+	}
+
+	if err == nil && result != nil && result.AffinityGroup != nil {
+		return result.AffinityGroup, true
+	}
+
+	if !affinityread.IsSingleItemRenderFailure(httpResp) {
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			errfmt.DiagError(diags, errfmt.OpRead, "cluster_affinity_group", "", err, httpResp)
+
+			return nil, false
+		}
+
+		diags.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return nil, false
+	}
+
+	listResult, listResp, listErr := client.ClustersAPI.ListClusterAffinityGroups(ctx, clusterID).Execute()
+	if err := errfmt.CheckResponse(listErr, listResp); err != nil {
+		errfmt.DiagError(diags, errfmt.OpRead, "cluster_affinity_group", "", err, listResp)
+
+		return nil, false
+	}
+
+	if listResult == nil {
+		diags.AddError("API returned nil", "affinity group list is nil in the response")
+
+		return nil, false
+	}
+
+	for i := range listResult.AffinityGroups {
+		entry := listResult.AffinityGroups[i]
+		if entry.Id == nil || *entry.Id != id {
+			continue
+		}
+
+		return affinityGroupFromListEntry(&entry), true
+	}
+
+	// Absent from the listing too, so it really is gone.
+	return nil, false
+}
+
+// affinityGroupFromListEntry converts a listing entry into the single-item
+// shape.
+//
+// TODO(MORPH-15806): remove alongside the fallback above.
+//
+// Tenants and ResourcePermissions are deliberately left unset: the listing does
+// not carry them. That is the correct input for the caller, because
+// mapAndResolveResponse restores both from prior state when the API supplies
+// nothing, so the practitioner's configured values survive rather than being
+// reported as removed.
+func affinityGroupFromListEntry(
+	e *sdk.ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInner,
+) *sdk.GetClusterAffinityGroup200ResponseAffinityGroup {
+	ag := &sdk.GetClusterAffinityGroup200ResponseAffinityGroup{
+		Id:           e.Id,
+		Name:         e.Name,
+		AffinityType: e.AffinityType,
+		Source:       e.Source,
+		RefType:      e.RefType,
+		RefId:        e.RefId,
+		Active:       e.Active,
+		Visibility:   e.Visibility,
+	}
+
+	if e.Pool != nil {
+		ag.Pool = &sdk.GetClusterAffinityGroup200ResponseAffinityGroupPool{Id: e.Pool.Id}
+	}
+
+	if e.Servers != nil {
+		servers := make([]sdk.GetClusterAffinityGroup200ResponseAffinityGroupServersInner, 0, len(e.Servers))
+		for _, s := range e.Servers {
+			servers = append(servers, sdk.GetClusterAffinityGroup200ResponseAffinityGroupServersInner{Id: s.Id, Name: s.Name})
+		}
+
+		ag.Servers = servers
+	}
+
+	return ag
 }

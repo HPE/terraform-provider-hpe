@@ -8,6 +8,14 @@ description: |-
 
 
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 -> The `cloud_id` and `bare_metal` filters are applied server-side. The `instance_id` filter is applied client-side because the ListHosts API does not support an instance query parameter. Use `instance_id` to resolve the compute servers backing a specific instance — this is the primary way to obtain server IDs for affinity group membership.
 
 ## Example Usage

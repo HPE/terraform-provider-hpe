@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -18,6 +17,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/dsfilter"
 	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -61,11 +61,6 @@ func (d *DataSource) Schema(
 
 // compiledFilter is a filter block with its values pre-compiled as regular
 // expressions.
-type compiledFilter struct {
-	field string
-	res   []*regexp.Regexp
-}
-
 // Read refreshes the Terraform state with the latest data.
 func (d *DataSource) Read(
 	ctx context.Context,
@@ -132,7 +127,9 @@ func (d *DataSource) Read(
 		cl := &rs.Clusters[i]
 
 		// Client-side: generic filter blocks
-		if !matchesFilters(cl, typeCodes, filters) {
+		if !dsfilter.Matches(cl, filters, func(c *sdk.ListClusters200ResponseAllOfClustersInner, field string) (string, bool) {
+			return fieldValue(c, typeCodes, field)
+		}) {
 			continue
 		}
 
@@ -154,77 +151,6 @@ func (d *DataSource) Read(
 	config.Clusters = setVal
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &config)...)
-}
-
-func compileFilters(
-	ctx context.Context,
-	filterSet types.Set,
-	diags *diag.Diagnostics,
-) []compiledFilter {
-	if filterSet.IsNull() || filterSet.IsUnknown() {
-		return nil
-	}
-
-	var filterBlocks []FilterValue
-	diags.Append(filterSet.ElementsAs(ctx, &filterBlocks, false)...)
-	if diags.HasError() {
-		return nil
-	}
-
-	compiled := make([]compiledFilter, 0, len(filterBlocks))
-
-	for _, b := range filterBlocks {
-		field := b.Name.ValueString()
-
-		var values []string
-		diags.Append(b.Values.ElementsAs(ctx, &values, false)...)
-		if diags.HasError() {
-			return nil
-		}
-
-		res := make([]*regexp.Regexp, 0, len(values))
-		for _, v := range values {
-			re, err := regexp.Compile(v)
-			if err != nil {
-				diags.AddError(summary,
-					fmt.Sprintf("invalid regular expression %q for filter %q: %s", v, field, err))
-
-				return nil
-			}
-			res = append(res, re)
-		}
-
-		compiled = append(compiled, compiledFilter{field: field, res: res})
-	}
-
-	return compiled
-}
-
-func matchesFilters(
-	cl *sdk.ListClusters200ResponseAllOfClustersInner,
-	typeCodes map[int64]string,
-	filters []compiledFilter,
-) bool {
-	for _, f := range filters {
-		val, ok := fieldValue(cl, typeCodes, f.field)
-		if !ok {
-			return false
-		}
-
-		matched := false
-		for _, re := range f.res {
-			if re.MatchString(val) {
-				matched = true
-
-				break
-			}
-		}
-		if !matched {
-			return false
-		}
-	}
-
-	return true
 }
 
 func fieldValue(
@@ -316,6 +242,45 @@ func clusterTypeCodes(
 	}
 
 	return out, nil
+}
+
+// compileFilters converts the configured filter blocks into compiled filters.
+//
+// Only the extraction is data-source specific: FilterValue is generated per
+// data source. Compilation and matching live in dsfilter, shared with the other
+// plural data sources.
+func compileFilters(
+	ctx context.Context,
+	filterSet types.Set,
+	diags *diag.Diagnostics,
+) []dsfilter.Compiled {
+	if filterSet.IsNull() || filterSet.IsUnknown() {
+		return nil
+	}
+
+	var filterBlocks []FilterValue
+
+	diags.Append(filterSet.ElementsAs(ctx, &filterBlocks, false)...)
+
+	if diags.HasError() {
+		return nil
+	}
+
+	blocks := make([]dsfilter.Block, 0, len(filterBlocks))
+
+	for _, b := range filterBlocks {
+		var values []string
+
+		diags.Append(b.Values.ElementsAs(ctx, &values, false)...)
+
+		if diags.HasError() {
+			return nil
+		}
+
+		blocks = append(blocks, dsfilter.Block{Name: b.Name.ValueString(), Values: values})
+	}
+
+	return dsfilter.Compile(blocks, summary, diags)
 }
 
 func clusterToValue(

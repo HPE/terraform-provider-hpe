@@ -8,6 +8,14 @@ description: |-
 
 
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 -> Cluster affinity groups are always created by a user, so `source` is always `"user"` here. Affinity groups imported from vCenter DRS rules are cloud-scoped rather than cluster-scoped, and are returned by [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group) instead.
 
 -> Note that Morpheus version `8.0.10` or later is required for affinity group support.
@@ -52,7 +60,7 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
 - `servers` (Set of Number) Set of compute server IDs in the affinity group.
 - `source` (String) The source of the affinity group (e.g. user, sync).
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number) Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group.
 
 <a id="nestedatt--pool"></a>

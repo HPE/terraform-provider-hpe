@@ -8,6 +8,14 @@ description: |-
 
 {{ .Description | trimspace }}
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 -> This resource creates a cloud-scoped affinity group, which is realised as a DRS rule on the cluster backing `pool`. To place an affinity group on an HPE Virtual Machines (HVM) cluster, use [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group) instead.
 
 Morpheus enables affinity groups on the following cloud types:
