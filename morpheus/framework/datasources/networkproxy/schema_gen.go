@@ -17,6 +17,11 @@ import (
 func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"account_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The id of the tenant account that owns the network proxy",
+				MarkdownDescription: "The id of the tenant account that owns the network proxy",
+			},
 			"id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -35,6 +40,11 @@ func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"owner_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The id of the tenant that owns the network proxy",
+				MarkdownDescription: "The id of the tenant that owns the network proxy",
+			},
 			"proxy_domain": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The proxy domain",
@@ -50,6 +60,16 @@ func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The proxy port",
 				MarkdownDescription: "The proxy port",
 			},
+			"proxy_user": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The proxy username",
+				MarkdownDescription: "The proxy username",
+			},
+			"proxy_workstation": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The proxy workstation",
+				MarkdownDescription: "The proxy workstation",
+			},
 			"visibility": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The visibility of the network proxy (public or private)",
@@ -60,10 +80,14 @@ func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type NetworkProxyModel struct {
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	ProxyDomain types.String `tfsdk:"proxy_domain"`
-	ProxyHost   types.String `tfsdk:"proxy_host"`
-	ProxyPort   types.Int64  `tfsdk:"proxy_port"`
-	Visibility  types.String `tfsdk:"visibility"`
+	AccountId        types.Int64  `tfsdk:"account_id"`
+	Id               types.Int64  `tfsdk:"id"`
+	Name             types.String `tfsdk:"name"`
+	OwnerId          types.Int64  `tfsdk:"owner_id"`
+	ProxyDomain      types.String `tfsdk:"proxy_domain"`
+	ProxyHost        types.String `tfsdk:"proxy_host"`
+	ProxyPort        types.Int64  `tfsdk:"proxy_port"`
+	ProxyUser        types.String `tfsdk:"proxy_user"`
+	ProxyWorkstation types.String `tfsdk:"proxy_workstation"`
+	Visibility       types.String `tfsdk:"visibility"`
 }

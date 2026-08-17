@@ -49,7 +49,11 @@ data "hpe_morpheus_network_proxy" "example" {
 
 ### Read-Only
 
+- `account_id` (Number) The id of the tenant account that owns the network proxy
+- `owner_id` (Number) The id of the tenant that owns the network proxy
 - `proxy_domain` (String) The proxy domain
 - `proxy_host` (String) The proxy host
 - `proxy_port` (Number) The proxy port
+- `proxy_user` (String) The proxy username
+- `proxy_workstation` (String) The proxy workstation
 - `visibility` (String) The visibility of the network proxy (public or private)

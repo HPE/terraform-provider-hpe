@@ -65,13 +65,27 @@ func (d *DataSource) Schema(
 func networkProxyAsState(
 	np *sdk.GetNetworkProxy200ResponseNetworkProxy,
 ) NetworkProxyModel {
+	var accountID *int64
+	if account := np.Account.Get(); account != nil {
+		accountID = account.Id
+	}
+
+	var ownerID *int64
+	if owner := np.Owner.Get(); owner != nil {
+		ownerID = owner.Id
+	}
+
 	return NetworkProxyModel{
-		Id:          convert.Int64ToType(np.Id),
-		Name:        convert.StrToType(np.Name),
-		ProxyHost:   convert.StrToType(np.ProxyHost),
-		ProxyPort:   convert.Int64ToType(np.ProxyPort),
-		ProxyDomain: convert.StrToType(np.ProxyDomain),
-		Visibility:  convert.StrToType(np.Visibility),
+		Id:               convert.Int64ToType(np.Id),
+		Name:             convert.StrToType(np.Name),
+		ProxyHost:        convert.StrToType(np.ProxyHost),
+		ProxyPort:        convert.Int64ToType(np.ProxyPort),
+		ProxyDomain:      convert.StrToType(np.ProxyDomain),
+		ProxyUser:        convert.StrToType(np.ProxyUser.Get()),
+		ProxyWorkstation: convert.StrToType(np.ProxyWorkstation.Get()),
+		AccountId:        convert.Int64ToType(accountID),
+		OwnerId:          convert.Int64ToType(ownerID),
+		Visibility:       convert.StrToType(np.Visibility),
 	}
 }
 

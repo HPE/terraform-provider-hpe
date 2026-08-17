@@ -82,6 +82,10 @@ func TestAccMorpheusFindNetworkProxyByName(t *testing.T) {
 			"data.hpe_morpheus_network_proxy.example",
 			"proxy_host",
 		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_network_proxy.example",
+			"account_id",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
