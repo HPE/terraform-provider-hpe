@@ -48,6 +48,25 @@ load_balancer:
       string: {}
     group_id:
       int64: {}
+    group_id_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only group_id attribute. Because group_id is write-only it
+          is never stored in state, so editing group_id on its own produces no plan diff. The
+          group is set only when the load balancer is created and the API provides no way to move
+          it afterwards, so increment this value when group_id changes to replace the load
+          balancer with one in the new group.
+    network_server_id_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only network_server_id attribute. Because
+          network_server_id is write-only it is never stored in state, so editing
+          network_server_id on its own produces no plan diff. The network server is set only when
+          the load balancer is created and the API provides no way to change it afterwards, so
+          increment this value when network_server_id changes to replace the load balancer with
+          one registered against the new network server.
     permissions_all:
       bool:
         computed_optional_required: computed_optional
@@ -72,6 +91,8 @@ load_balancer:
     - load_balancer: "" # unnest wrapper (components/schemas/loadBalancerCreate.yaml)
     - template-type_code: type_code # replace read-only type object with string for type code
     - template-group_id: group_id # site.id from create payload (not in OpenAPI spec)
+    - template-group_id_version: group_id_version # write-only companion for group_id
+    - template-network_server_id_version: network_server_id_version # write-only companion for network_server_id
     - zone.id: cloud_id # (components/schemas/loadBalancer.yaml)
     - template-config_haproxy: config_haproxy
     - template-config_nsxt: config_nsxt
@@ -168,15 +189,20 @@ load_balancer:
     description:
       computed_optional_required: computed_optional
     group_id:
-      description: The ID of the group associated with the load balancer
+      description: The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.
       computed_optional_required: optional
-      requires_replace: true # REVIEW: likely immutable after creation
+      write_only: true # not returned in GET response
+    group_id_version:
+      requires_replace: true
     name:
       computed_optional_required: required
       string_length_at_most: 32
     network_server_id:
       computed_optional_required: optional
-      requires_replace: true # REVIEW: not in update schema, cannot be changed after creation
+      description: The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.
+      write_only: true # not returned in GET response
+    network_server_id_version:
+      requires_replace: true
     permissions:
       description: Resource permissions for the load balancer
       computed_optional_required: computed_optional

@@ -51,7 +51,7 @@ func (v RequiresNonEmptyStringAlsoRequiresInt64AtValidator) ValidateString(
 		return
 	}
 
-	if siblingValue.IsNull() || siblingValue.IsUnknown() {
+	if siblingValue.IsNull() {
 		response.Diagnostics.Append(
 			diag.NewAttributeErrorDiagnostic(
 				request.Path,

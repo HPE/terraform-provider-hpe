@@ -56,10 +56,13 @@ func getLoadBalancerAsState(
 	// to avoid post-apply inconsistencies when API returns an implicit/default cloud.
 	state.CloudId = plan.CloudId
 
-	// The API does not return group or network_server_id on load balancers,
-	// so these must be preserved from plan/state. After import they will be null.
-	state.GroupId = plan.GroupId
-	state.NetworkServerId = plan.NetworkServerId
+	// Write-only: the API never returns these and the framework nullifies them in state.
+	state.GroupId = types.Int64Null()
+	state.NetworkServerId = types.Int64Null()
+
+	// Carry forward the write-only version companions from plan/state.
+	state.GroupIdVersion = plan.GroupIdVersion
+	state.NetworkServerIdVersion = plan.NetworkServerIdVersion
 
 	// Check if load balancer is HAProxy or NSX-T based on returned type code
 	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy

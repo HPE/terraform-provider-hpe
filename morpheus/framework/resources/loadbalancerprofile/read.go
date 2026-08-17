@@ -174,7 +174,10 @@ func getLoadBalancerProfileAsState(
 	// straight from the API response, so it is available on import too.
 	serviceType := state.ServiceType.ValueString()
 
-	// Tags: read from config response
+	// Tags: read from config response. Sentinel entries ({name:"",value:""})
+	// that NSX-T injects even when no tags were configured are filtered inside
+	// readTagsFromConfig. The attribute is Computed+Optional, so Terraform
+	// natively handles the case where config omits tags but state has them.
 	state.Tags = readTagsFromConfig(ctx, serviceType, p.Config, prior.Tags)
 
 	// Config blocks: preserve every value the practitioner configured, while

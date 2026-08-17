@@ -310,6 +310,7 @@ func LoadBalancerVirtualServerResourceSchema(ctx context.Context) schema.Schema 
 				Description:         "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
 				MarkdownDescription: "The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI) to distinguish between normal, parent (shared), and child VIPs. It has no effect for NSX-T load balancers and will be null.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},

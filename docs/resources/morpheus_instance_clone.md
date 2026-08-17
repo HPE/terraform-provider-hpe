@@ -22,16 +22,20 @@ resource "hpe_morpheus_instance_clone" "example" {
   source_instance_id = 1
   name               = "my-clone"
 
-  volumes {
-    name        = "root"
-    size        = 20
-    root_volume = true
-  }
+  volumes = [
+    {
+      name        = "root"
+      size        = 20
+      root_volume = true
+    }
+  ]
 
-  network_interfaces {
-    network_id = 1
-    ip_mode    = ""
-  }
+  network_interfaces = [
+    {
+      network_id = 1
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -111,27 +115,31 @@ resource "hpe_morpheus_instance_clone" "staging" {
   name               = "staging-copy"
 
   # Volume names match the source so their contents are cloned.
-  volumes {
-    name         = "root"
-    root_volume  = true
-    size         = 50 # grown from the source's 40 GB
-    datastore_id = 12
-  }
-  volumes {
-    name         = "data"
-    size         = 500 # grown from the source's 200 GB (resized after the clone)
-    datastore_id = 14
-    storage_type = 1
-  }
+  volumes = [
+    {
+      name         = "root"
+      root_volume  = true
+      size         = 50 # grown from the source's 40 GB
+      datastore_id = 12
+    },
+    {
+      name         = "data"
+      size         = 500 # grown from the source's 200 GB (resized after the clone)
+      datastore_id = 14
+      storage_type = 1
+    }
+  ]
 
-  network_interfaces {
-    network_id = 7
-    ip_mode    = "" # IP pool - the clone gets a new address
-  }
-  network_interfaces {
-    network_id = 9
-    ip_mode    = "dhcp"
-  }
+  network_interfaces = [
+    {
+      network_id = 7
+      ip_mode    = "" # IP pool - the clone gets a new address
+    },
+    {
+      network_id = 9
+      ip_mode    = "dhcp"
+    }
+  ]
 }
 ```
 
@@ -144,16 +152,20 @@ resource "hpe_morpheus_instance_clone" "dr_copy" {
   group_id           = 3
   cloud_id           = 5 # the networks below must exist in this cloud
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 40
+    }
+  ]
 
-  network_interfaces {
-    network_id = 21
-    ip_mode    = ""
-  }
+  network_interfaces = [
+    {
+      network_id = 21
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -171,15 +183,19 @@ resource "hpe_morpheus_instance_clone" "vmware" {
     vmware_folder_id      = "group-v10"
   }
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 7
-    ip_mode    = ""
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 40
+    }
+  ]
+  network_interfaces = [
+    {
+      network_id = 7
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -202,15 +218,19 @@ resource "hpe_morpheus_instance_clone" "aws" {
     }
   }
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 30
-  }
-  network_interfaces {
-    network_id = 11
-    ip_mode    = "dhcp"
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 30
+    }
+  ]
+  network_interfaces = [
+    {
+      network_id = 11
+      ip_mode    = "dhcp"
+    }
+  ]
 }
 ```
 
@@ -229,15 +249,19 @@ resource "hpe_morpheus_instance_clone" "azure" {
     availability_zone    = "1"
   }
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 31
-    ip_mode    = ""
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 40
+    }
+  ]
+  network_interfaces = [
+    {
+      network_id = 31
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -255,15 +279,19 @@ resource "hpe_morpheus_instance_clone" "hvm" {
     kvm_host_id           = 4
   }
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 41
-    ip_mode    = ""
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 40
+    }
+  ]
+  network_interfaces = [
+    {
+      network_id = 41
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -287,15 +315,19 @@ resource "hpe_morpheus_instance_clone" "generic" {
     }
   }
 
-  volumes {
-    name        = "root"
-    root_volume = true
-    size        = 40
-  }
-  network_interfaces {
-    network_id = 51
-    ip_mode    = ""
-  }
+  volumes = [
+    {
+      name        = "root"
+      root_volume = true
+      size        = 40
+    }
+  ]
+  network_interfaces = [
+    {
+      network_id = 51
+      ip_mode    = ""
+    }
+  ]
 }
 ```
 
@@ -304,10 +336,12 @@ resource "hpe_morpheus_instance_clone" "generic" {
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `name` (String) A unique name for the new cloned instance. Used to retrieve the clone after the asynchronous clone operation.
 - `network_interfaces` (Attributes List) The complete set of network interfaces for the clone. Replaces the source instance's network interfaces.
 Use an ip_mode of pool or dhcp to avoid IP conflicts with the source. (see [below for nested schema](#nestedatt--network_interfaces))
-- `source_instance_id` (Number) The ID of the source instance to clone.
+- `source_instance_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the source instance to clone. The API never returns this value, so it is write-only and not stored in state. It cannot be changed after the clone is created; changing it produces no plan diff and has no effect on the existing instance.
 - `volumes` (Attributes List) The complete set of volumes for the clone. Replaces the source instance's volumes.
 Volume specifications define infrastructure parameters only - disk contents are copied from the source. (see [below for nested schema](#nestedatt--volumes))
 
@@ -324,6 +358,7 @@ combined with a typed config_* block.
 - `config_vmware` (Attributes) Configuration overrides for VMware clones, merged over the source instance's configuration. (see [below for nested schema](#nestedatt--config_vmware))
 - `group_id` (Number) The ID of the group to clone into. Defaults to the source instance's group.
 - `plan_id` (Number) The ID of the service plan override for the clone. Defaults to the source instance's service plan.
+- `source_instance_id_version` (Number) Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_group` (Number) The id of the user group to associate with the clone. Can only be set at clone time; changing it forces replacement.
 
@@ -488,6 +523,23 @@ Optional:
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `read` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Read operations occur during any refresh or planning operation when refresh is enabled.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+## Notes
+
+### Write-Only Attributes
+
+`source_instance_id` is **write-only**. It is sent to the Morpheus API when the
+clone is created, but the API never returns it, so it is never stored in
+Terraform state and Terraform cannot detect drift in it.
+
+The clone source is only meaningful at creation time and **cannot be changed
+after the instance exists**. Editing `source_instance_id` produces no plan diff
+and has no effect on the existing instance; to clone from a different source,
+create a new resource. The `source_instance_id_version` companion exists so a
+value may be supplied without error (for example by migration tooling), but
+incrementing it likewise has no effect.
+
+Write-only attributes require Terraform >= 1.11.
 
 ## Import
 

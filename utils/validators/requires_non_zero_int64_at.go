@@ -37,6 +37,13 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 		return
 	}
 
+	// 0 is a sentinel meaning "not configured" for reference-ID fields
+	// (e.g., ssl_client_profile = 0 means no SSL profile is assigned).
+	// Treat it the same as null — don't require the sibling attribute.
+	if request.ConfigValue.ValueInt64() == 0 {
+		return
+	}
+
 	var refValue types.Int64
 	diags := request.Config.GetAttribute(ctx, path.Root(v.AttributeName), &refValue)
 	response.Diagnostics.Append(diags...)
@@ -45,7 +52,7 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 		return
 	}
 
-	if refValue.IsNull() || refValue.IsUnknown() {
+	if refValue.IsNull() {
 		response.Diagnostics.Append(
 			diag.NewAttributeErrorDiagnostic(
 				request.Path,
@@ -58,6 +65,13 @@ func (v RequiresNonZeroInt64AtValidator) ValidateInt64(
 			),
 		)
 
+		return
+	}
+
+	// During plan or import the referenced attribute may be unknown (e.g. it
+	// comes from a resource that hasn't been created yet). Allow it through —
+	// Terraform will re-validate once the value is resolved.
+	if refValue.IsUnknown() {
 		return
 	}
 

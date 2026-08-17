@@ -75,5 +75,14 @@ func init() {
 
 			return hresp, err
 		},
+		// The router endpoints this sweeper lists from are not present on every
+		// appliance version, and a sweep account without network permissions
+		// gets 403. Either way there is nothing to sweep, but without this the
+		// sweeper reports a failure, and a failing sweeper leaves its own test
+		// resources behind while making the whole sweep look broken.
+		testsweep.WithIgnoreListStatuses[natSweeperItem](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
 	)
 }

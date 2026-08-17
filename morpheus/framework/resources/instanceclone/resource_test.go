@@ -80,9 +80,8 @@ func TestAccMorpheusInstanceCloneResource(t *testing.T) {
 					return rs.Primary.Attributes["id"], nil
 				},
 				ImportStateVerify: true,
-				// source_instance_id is not returned by the API
 				ImportStateVerifyIgnore: []string{
-					"source_instance_id", "timeouts",
+					"timeouts",
 				},
 			},
 		},
@@ -159,7 +158,7 @@ func TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile(t *testing.T) {
 				},
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"source_instance_id", "timeouts",
+					"timeouts",
 					// storage_profile is a write-mostly volume input recovered
 					// best-effort from the API on import.
 					"volumes.0.storage_profile",
