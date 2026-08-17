@@ -10,7 +10,7 @@ description: |-
 
 ## Example Usage
 
-{{ tffile "examples/data-sources/morpheus_storage_controller_type/example.tf" }}
+{{ tffile "examples/data-sources/morpheus_instance_storage_controller/example.tf" }}
 
 ## Migrating from hpegl
 
@@ -28,7 +28,7 @@ data "hpegl_vmaas_instance_storage_controller" "scsi_0" {
 }
 
 # hpe
-data "hpe_morpheus_storage_controller_type" "scsi_0" {
+data "hpe_morpheus_instance_storage_controller" "scsi_0" {
   controller_name  = "SCSI VMware Paravirtual"
   bus_number       = 1
   interface_number = 0
@@ -36,7 +36,7 @@ data "hpe_morpheus_storage_controller_type" "scsi_0" {
 
 resource "hpe_morpheus_instance" "example" {
   volumes = [{
-    controller_mount_point = data.hpe_morpheus_storage_controller_type.scsi_0.controller_mount_point
+    controller_mount_point = data.hpe_morpheus_instance_storage_controller.scsi_0.controller_mount_point
   }]
 }
 ```

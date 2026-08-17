@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package storagecontrollertype
+package instancestoragecontroller
 
 import (
 	"context"
@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	summary                             = "read storage controller type data source"
-	ErrorNoStorageControllerTypeFound   = `no storage controller type found`
-	ErrorMultipleStorageControllerTypes = `multiple storage controller types were returned`
+	summary                                 = "read instance storage controller data source"
+	ErrorNoInstanceStorageControllerFound   = `no instance storage controller found`
+	ErrorMultipleInstanceStorageControllers = `multiple instance storage controllers were returned`
 
 	// newControllerID is the id component of the mount point. Morpheus uses -1
 	// to mean "a new controller": it resolves an existing controller by matching
@@ -51,7 +51,7 @@ func (d *DataSource) Metadata(
 	req datasource.MetadataRequest,
 	resp *datasource.MetadataResponse,
 ) {
-	resp.TypeName = req.ProviderTypeName + "_" + "storage_controller_type"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance_storage_controller"
 }
 
 // Schema defines the schema for the data source.
@@ -60,7 +60,7 @@ func (d *DataSource) Schema(
 	_ datasource.SchemaRequest,
 	resp *datasource.SchemaResponse,
 ) {
-	resp.Schema = StorageControllerTypeDataSourceSchema(ctx)
+	resp.Schema = InstanceStorageControllerDataSourceSchema(ctx)
 }
 
 // buildControllerMountPoint composes a controller_mount_point in the Morpheus
@@ -79,7 +79,7 @@ func normalizeControllerName(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-// matchedControllerType is the resolved storage controller type. Fields are
+// matchedControllerType is the resolved instance storage controller. Fields are
 // held as pointers so a value the API omits stays null in state (mapped via the
 // convert helpers) rather than being flattened to a zero value.
 type matchedControllerType struct {
@@ -121,11 +121,11 @@ func matchControllerType(
 
 	switch len(matches) {
 	case 0:
-		return matchedControllerType{}, errors.New(ErrorNoStorageControllerTypeFound)
+		return matchedControllerType{}, errors.New(ErrorNoInstanceStorageControllerFound)
 	case 1:
 		return matches[0], nil
 	default:
-		return matchedControllerType{}, errors.New(ErrorMultipleStorageControllerTypes)
+		return matchedControllerType{}, errors.New(ErrorMultipleInstanceStorageControllers)
 	}
 }
 
@@ -169,7 +169,7 @@ func (d *DataSource) Read(
 	req datasource.ReadRequest,
 	resp *datasource.ReadResponse,
 ) {
-	var config StorageControllerTypeModel
+	var config InstanceStorageControllerModel
 
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
@@ -213,14 +213,14 @@ func (d *DataSource) Read(
 	// The controller type id is required to compose the mount point; a match
 	// without one cannot produce a usable value.
 	if match.id == nil {
-		resp.Diagnostics.AddError(summary, "matched storage controller type has no id")
+		resp.Diagnostics.AddError(summary, "matched instance storage controller has no id")
 
 		return
 	}
 
 	mountPoint := buildControllerMountPoint(config.BusNumber.ValueInt64(), *match.id, interfaceNumber)
 
-	state := StorageControllerTypeModel{
+	state := InstanceStorageControllerModel{
 		ControllerName:       config.ControllerName,
 		BusNumber:            config.BusNumber,
 		InterfaceNumber:      types.Int64Value(interfaceNumber),

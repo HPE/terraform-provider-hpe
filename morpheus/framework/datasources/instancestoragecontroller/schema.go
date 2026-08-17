@@ -1,9 +1,9 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-// Hand-written schema for the hpe_morpheus_storage_controller_type data source.
+// Hand-written schema for the hpe_morpheus_instance_storage_controller data source.
 //
 // This lookup has no singular REST endpoint to generate from: it composes a
-// controller_mount_point string from a storage controller type id (read from
+// controller_mount_point string from a instance storage controller id (read from
 // /api/provision-types) and the caller's bus and interface numbers. The schema
 // is therefore maintained here directly rather than produced by the code-spec
 // generator.
@@ -14,7 +14,7 @@
 // this data source is a superset, exposing both the controller type id and the
 // composed controller_mount_point.
 
-package storagecontrollertype
+package instancestoragecontroller
 
 import (
 	"context"
@@ -30,21 +30,21 @@ import (
 // so non-VMware provision types remain reachable.
 const defaultProvisionTypeCode = "vmware"
 
-func StorageControllerTypeDataSourceSchema(_ context.Context) schema.Schema {
+func InstanceStorageControllerDataSourceSchema(_ context.Context) schema.Schema {
 	return schema.Schema{
-		Description: "Composes a controller_mount_point for a Morpheus storage controller type, " +
+		Description: "Composes a controller_mount_point for a Morpheus instance storage controller, " +
 			"for use with volumes on hpe_morpheus_instance. The mount point has the format " +
 			"id:busNumber:typeId:unitNumber, where id is -1 (a new controller).",
-		MarkdownDescription: "Composes a `controller_mount_point` for a Morpheus storage controller " +
-			"type, for use with volumes on `hpe_morpheus_instance`. The mount point has the format " +
+		MarkdownDescription: "Composes a `controller_mount_point` for a Morpheus instance storage controller, " +
+			"for use with volumes on `hpe_morpheus_instance`. The mount point has the format " +
 			"`id:busNumber:typeId:unitNumber`, where `id` is `-1` (a new controller).",
 		Attributes: map[string]schema.Attribute{
 			"controller_name": schema.StringAttribute{
 				Required: true,
-				Description: "The name of the storage controller type to look up " +
+				Description: "The name of the instance storage controller to look up " +
 					"(for example \"SCSI VMware Paravirtual\"). Matched case-insensitively " +
 					"and whitespace-trimmed.",
-				MarkdownDescription: "The name of the storage controller type to look up " +
+				MarkdownDescription: "The name of the instance storage controller to look up " +
 					"(for example `SCSI VMware Paravirtual`). Matched case-insensitively " +
 					"and whitespace-trimmed.",
 			},
@@ -70,15 +70,15 @@ func StorageControllerTypeDataSourceSchema(_ context.Context) schema.Schema {
 			"provision_type_code": schema.StringAttribute{
 				Optional: true,
 				Computed: true,
-				Description: "The provision type code the storage controller type belongs to. " +
+				Description: "The provision type code the instance storage controller belongs to. " +
 					"Defaults to \"vmware\".",
-				MarkdownDescription: "The provision type code the storage controller type belongs to. " +
+				MarkdownDescription: "The provision type code the instance storage controller belongs to. " +
 					"Defaults to `vmware`.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "The id of the storage controller type.",
-				MarkdownDescription: "The id of the storage controller type.",
+				Description:         "The id of the instance storage controller.",
+				MarkdownDescription: "The id of the instance storage controller.",
 			},
 			"controller_mount_point": schema.StringAttribute{
 				Computed: true,
@@ -89,8 +89,8 @@ func StorageControllerTypeDataSourceSchema(_ context.Context) schema.Schema {
 			},
 			"category": schema.StringAttribute{
 				Computed:            true,
-				Description:         "The category of the storage controller type (for example \"scsi\").",
-				MarkdownDescription: "The category of the storage controller type (for example `scsi`).",
+				Description:         "The category of the instance storage controller (for example \"scsi\").",
+				MarkdownDescription: "The category of the instance storage controller (for example `scsi`).",
 			},
 			"max_devices": schema.Int64Attribute{
 				Computed: true,
@@ -103,24 +103,24 @@ func StorageControllerTypeDataSourceSchema(_ context.Context) schema.Schema {
 			},
 			"display_order": schema.Int64Attribute{
 				Computed:            true,
-				Description:         "The display order of the storage controller type in the Morpheus UI.",
-				MarkdownDescription: "The display order of the storage controller type in the Morpheus UI.",
+				Description:         "The display order of the instance storage controller in the Morpheus UI.",
+				MarkdownDescription: "The display order of the instance storage controller in the Morpheus UI.",
 			},
 			"enabled": schema.BoolAttribute{
 				Computed:            true,
-				Description:         "Whether the storage controller type is enabled.",
-				MarkdownDescription: "Whether the storage controller type is enabled.",
+				Description:         "Whether the instance storage controller is enabled.",
+				MarkdownDescription: "Whether the instance storage controller is enabled.",
 			},
 			"creatable": schema.BoolAttribute{
 				Computed:            true,
-				Description:         "Whether volumes using this storage controller type can be created.",
-				MarkdownDescription: "Whether volumes using this storage controller type can be created.",
+				Description:         "Whether volumes using this instance storage controller can be created.",
+				MarkdownDescription: "Whether volumes using this instance storage controller can be created.",
 			},
 		},
 	}
 }
 
-type StorageControllerTypeModel struct {
+type InstanceStorageControllerModel struct {
 	ControllerName       types.String `tfsdk:"controller_name"`
 	BusNumber            types.Int64  `tfsdk:"bus_number"`
 	InterfaceNumber      types.Int64  `tfsdk:"interface_number"`

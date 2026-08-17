@@ -1,6 +1,6 @@
 // (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
-package storagecontrollertype
+package instancestoragecontroller
 
 import (
 	"testing"
@@ -109,13 +109,13 @@ func TestMatchControllerType(t *testing.T) {
 			name:       "no match errors",
 			lookupName: "NVMe",
 			input:      controllers,
-			wantErr:    ErrorNoStorageControllerTypeFound,
+			wantErr:    ErrorNoInstanceStorageControllerFound,
 		},
 		{
 			name:       "empty list errors as not found",
 			lookupName: "SCSI VMware Paravirtual",
 			input:      nil,
-			wantErr:    ErrorNoStorageControllerTypeFound,
+			wantErr:    ErrorNoInstanceStorageControllerFound,
 		},
 		{
 			name:       "multiple matches errors",
@@ -124,7 +124,7 @@ func TestMatchControllerType(t *testing.T) {
 				ct(6, "scsi", 2, "scsi", 16),
 				ct(7, "SCSI", 5, "scsi", 16),
 			},
-			wantErr: ErrorMultipleStorageControllerTypes,
+			wantErr: ErrorMultipleInstanceStorageControllers,
 		},
 	}
 

@@ -1,17 +1,17 @@
 ---
-page_title: "hpe_morpheus_storage_controller_type Data Source - terraform-provider-hpe"
+page_title: "hpe_morpheus_instance_storage_controller Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Composes a controller_mount_point for a Morpheus storage controller type, for use with volumes on hpe_morpheus_instance. The mount point has the format id:busNumber:typeId:unitNumber, where id is -1 (a new controller).
+  Composes a controller_mount_point for a Morpheus instance storage controller, for use with volumes on hpe_morpheus_instance. The mount point has the format id:busNumber:typeId:unitNumber, where id is -1 (a new controller).
 ---
-# hpe_morpheus_storage_controller_type (Data Source)
+# hpe_morpheus_instance_storage_controller (Data Source)
 
-Composes a `controller_mount_point` for a Morpheus storage controller type, for use with volumes on `hpe_morpheus_instance`. The mount point has the format `id:busNumber:typeId:unitNumber`, where `id` is `-1` (a new controller).
+Composes a `controller_mount_point` for a Morpheus instance storage controller, for use with volumes on `hpe_morpheus_instance`. The mount point has the format `id:busNumber:typeId:unitNumber`, where `id` is `-1` (a new controller).
 
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_storage_controller_type" "example" {
+data "hpe_morpheus_instance_storage_controller" "example" {
   controller_name  = "SCSI VMware Paravirtual"
   bus_number       = 1
   interface_number = 0
@@ -34,7 +34,7 @@ data "hpegl_vmaas_instance_storage_controller" "scsi_0" {
 }
 
 # hpe
-data "hpe_morpheus_storage_controller_type" "scsi_0" {
+data "hpe_morpheus_instance_storage_controller" "scsi_0" {
   controller_name  = "SCSI VMware Paravirtual"
   bus_number       = 1
   interface_number = 0
@@ -42,7 +42,7 @@ data "hpe_morpheus_storage_controller_type" "scsi_0" {
 
 resource "hpe_morpheus_instance" "example" {
   volumes = [{
-    controller_mount_point = data.hpe_morpheus_storage_controller_type.scsi_0.controller_mount_point
+    controller_mount_point = data.hpe_morpheus_instance_storage_controller.scsi_0.controller_mount_point
   }]
 }
 ```
@@ -66,19 +66,19 @@ volumes = [{
 ### Required
 
 - `bus_number` (Number) The controller bus number to embed in the mount point.
-- `controller_name` (String) The name of the storage controller type to look up (for example `SCSI VMware Paravirtual`). Matched case-insensitively and whitespace-trimmed.
+- `controller_name` (String) The name of the instance storage controller to look up (for example `SCSI VMware Paravirtual`). Matched case-insensitively and whitespace-trimmed.
 
 ### Optional
 
 - `interface_number` (Number) The device (unit) number to embed in the mount point. Defaults to `0`, matching hpegl.
-- `provision_type_code` (String) The provision type code the storage controller type belongs to. Defaults to `vmware`.
+- `provision_type_code` (String) The provision type code the instance storage controller belongs to. Defaults to `vmware`.
 
 ### Read-Only
 
-- `category` (String) The category of the storage controller type (for example `scsi`).
+- `category` (String) The category of the instance storage controller (for example `scsi`).
 - `controller_mount_point` (String) The composed controller mount point, in the format `id:busNumber:typeId:unitNumber` (for example `-1:1:6:0`).
-- `creatable` (Boolean) Whether volumes using this storage controller type can be created.
-- `display_order` (Number) The display order of the storage controller type in the Morpheus UI.
-- `enabled` (Boolean) Whether the storage controller type is enabled.
-- `id` (Number) The id of the storage controller type.
+- `creatable` (Boolean) Whether volumes using this instance storage controller can be created.
+- `display_order` (Number) The display order of the instance storage controller in the Morpheus UI.
+- `enabled` (Boolean) Whether the instance storage controller is enabled.
+- `id` (Number) The id of the instance storage controller.
 - `max_devices` (Number) The base maximum number of devices the controller type supports. Informational only: the effective limit can be higher on newer VM hardware versions, so it is not enforced here.
