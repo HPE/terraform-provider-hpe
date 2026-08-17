@@ -127,8 +127,8 @@ func ClusterAffinityGroupsDataSourceSchema(ctx context.Context) schema.Schema {
 						"tenant_ids": schema.SetAttribute{
 							ElementType:         types.Int64Type,
 							Computed:            true,
-							Description:         "List of tenant account IDs that are allowed access.",
-							MarkdownDescription: "List of tenant account IDs that are allowed access.",
+							Description:         "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.",
+							MarkdownDescription: "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.",
 						},
 						"visibility": schema.StringAttribute{
 							Computed:            true,

@@ -103,8 +103,7 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 									MarkdownDescription: "Whether this is the default group.",
 								},
 								"id": schema.Int64Attribute{
-									Optional:            true,
-									Computed:            true,
+									Required:            true,
 									Description:         "Group ID.",
 									MarkdownDescription: "Group ID.",
 								},
@@ -136,10 +135,9 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"servers": schema.SetAttribute{
 				ElementType:         types.Int64Type,
-				Optional:            true,
 				Computed:            true,
-				Description:         "Set of compute server IDs to include in the affinity group.",
-				MarkdownDescription: "Set of compute server IDs to include in the affinity group.",
+				Description:         "The compute servers currently in this affinity group, reported by the\nAPI. Read-only: membership is managed with\nhpe_morpheus_cluster_affinity_group_member, one resource per member, so\nthat servers added by other means -- an instance provisioned into the\ngroup, or a node added to one -- are not evicted.",
+				MarkdownDescription: "The compute servers currently in this affinity group, reported by the\nAPI. Read-only: membership is managed with\nhpe_morpheus_cluster_affinity_group_member, one resource per member, so\nthat servers added by other means -- an instance provisioned into the\ngroup, or a node added to one -- are not evicted.",
 			},
 			"source": schema.StringAttribute{
 				Computed:            true,
@@ -153,8 +151,9 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				ElementType:         types.Int64Type,
 				Optional:            true,
 				Computed:            true,
-				Description:         "List of tenant account IDs that are allowed access.",
-				MarkdownDescription: "List of tenant account IDs that are allowed access.",
+				Description:         "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
+				MarkdownDescription: "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
+				DeprecationMessage:  "tenant_ids has no effect: the Morpheus API rejects tenant assignment on affinity groups and does not apply it. The value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.",
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.UseStateForUnknown(),
 				},

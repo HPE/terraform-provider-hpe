@@ -1,0 +1,34 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_network_proxy/example-id.tf" }}
+
+{{ tffile "examples/data-sources/morpheus_network_proxy/example-name.tf" }}
+
+## Migrating from hpegl
+
+This data source is the hpe equivalent of `hpegl_vmaas_network_proxy`. It resolves a
+network proxy id, which is consumed by `network_proxy_id` on `hpe_morpheus_network`.
+
+```hcl
+# hpegl
+data "hpegl_vmaas_network_proxy" "example" {
+  name = "example-proxy"
+}
+
+# hpe
+data "hpe_morpheus_network_proxy" "example" {
+  name = "example-proxy"
+}
+```
+
+{{ .SchemaMarkdown | trimspace }}

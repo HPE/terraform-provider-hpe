@@ -78,16 +78,6 @@ func (r *clusterAffinityGroupResource) Create(
 	// CRITICAL BEHAVIOUR 6: pool is COMPUTED ONLY for clusters — the API force-assigns it.
 	// Never send it on create or update; only read it back.
 
-	// Servers — send as []int64 (SDK type).
-	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
-		var serverIDs []int64
-		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &serverIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		ag.Servers = serverIDs
-	}
-
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
 		rp := sdk.SaveClusterAffinityGroupRequestAffinityGroupResourcePermissions{
@@ -108,35 +98,24 @@ func (r *clusterAffinityGroupResource) Create(
 		AffinityGroup: &ag,
 	}
 
-	// Tenants are sent as the request-root `tenantPermissions` wrapper
-	// (`{"accounts": [<id>, ...]}`), NOT as the nested `affinityGroup.tenants`
-	// (`[{"id": <id>}]`) form. This is DELIBERATE — do not "harmonise" it with the
-	// cloud affinity group resource, which legitimately uses the nested form.
+	// tenant_ids is deliberately NOT sent. See MORPH-15806.
 	//
-	// AffinityGroupService (morpheus-core) resolves tenant permissions as:
+	// The API accepts two shapes for this -- request-root `tenantPermissions`
+	// ({"accounts": [<id>]}) and nested `affinityGroup.tenants` ([{"id": <id>}])
+	// -- and parses both correctly. Neither works. Verified against 9.0.1:
+	// supplying tenants on create answers 403 while still creating the group
+	// with no tenants applied, supplying them on update answers 500, and either
+	// one leaves that group's single-item GET returning 500 permanently. A
+	// control group never given tenants reads back 200, so the damage is caused
+	// by the request rather than being a property of the endpoint.
 	//
-	//	params.tenantPermissions ?: params.tenantPermission
-	//	    ?: params.affinityGroup?.tenantPermissions ?: params.affinityGroup?.tenantPermission
-	//	    ?: params.affinityGroup?.tenants
-	//
-	// so the request-root form is checked FIRST, at the highest precedence. Both forms
-	// are accepted, but they have different shapes and are parsed by different branches
-	// of permissionService.parseTenantPermissions. This resource has shipped sending the
-	// request-root form, so switching would change the on-the-wire payload for existing
-	// users with no benefit.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		body.TenantPermissions = &sdk.SaveClusterAffinityGroupRequestTenantPermissions{
-			Accounts: tenantIDs,
-		}
-	}
+	// Sending nothing keeps groups readable. The attribute stays in the schema,
+	// carrying a deprecation message, so existing configurations continue to
+	// plan; the value is state-only and does not reflect the appliance.
 
 	result, httpResp, err := client.ClustersAPI.SaveClusterAffinityGroup(ctx, clusterID).
 		SaveClusterAffinityGroupRequest(body).Execute()
+
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpCreate, "cluster_affinity_group",
@@ -157,25 +136,24 @@ func (r *clusterAffinityGroupResource) Create(
 	id := *result.AffinityGroup.Id
 
 	// Read-back to populate full state.
-	readResult, httpResp, err := client.ClustersAPI.GetClusterAffinityGroup(ctx, clusterID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cluster_affinity_group",
-			plan.Name.ValueString(), err, httpResp,
-		)
+	readAg, found := fetchAffinityGroup(ctx, client, clusterID, id, &resp.Diagnostics)
+	if !found {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"affinity group not found after create",
+				"The affinity group was created but could not be read back.",
+			)
+		}
+
+		// The group exists in Morpheus but never reached state. Taint so the
+		// next apply replaces it rather than leaving it orphaned and invisible
+		// to Terraform.
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "cluster_affinity_group",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
-
-		return
-	}
-
-	readAg := readResult.AffinityGroup
-	if readAg == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return
 	}

@@ -8,6 +8,14 @@ description: |-
 
 
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 -> This resource creates a cloud-scoped affinity group, which is realised as a DRS rule on the cluster backing `pool`. To place an affinity group on an HPE Virtual Machines (HVM) cluster, use [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group) instead.
 
 Morpheus enables affinity groups on the following cloud types:
@@ -62,13 +70,17 @@ resource "hpe_morpheus_cloud_affinity_group" "example" {
 - `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
 - `pool_id` (Number) The ID of the resource pool to scope the affinity group to.
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
-- `servers` (Set of Number) Set of compute server IDs to include in the affinity group.
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number, Deprecated) Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group (public or private).
 
 ### Read-Only
 
 - `id` (Number) The ID of the cloud affinity group.
+- `servers` (Set of Number) The compute servers currently in this affinity group, reported by the
+API. Read-only: membership is managed with
+hpe_morpheus_cloud_affinity_group_member, one resource per member, so
+that servers added by other means -- an instance provisioned into the
+group, or a node added to one -- are not evicted.
 - `source` (String) The source of the affinity group (e.g. user, sync).
 
 <a id="nestedatt--resource_permissions"></a>

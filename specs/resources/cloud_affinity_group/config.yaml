@@ -2,14 +2,20 @@ cloud_affinity_group:
   templates:
     servers:
       set:
-        computed_optional_required: computed_optional
-        description: Set of compute server IDs to include in the affinity group.
+        computed_optional_required: computed
+        description: |-
+          The compute servers currently in this affinity group, reported by the
+          API. Read-only: membership is managed with
+          hpe_morpheus_cloud_affinity_group_member, one resource per member, so
+          that servers added by other means -- an instance provisioned into the
+          group, or a node added to one -- are not evicted.
         element_type:
           int64: {}
     tenantIds:
       set:
         computed_optional_required: computed_optional
-        description: List of tenant account IDs that are allowed access.
+        description: "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
+        deprecation_message: "tenant_ids has no effect: the Morpheus API rejects tenant assignment on affinity groups and does not apply it. The value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
         element_type:
           int64: {}
     resourcePermissions:

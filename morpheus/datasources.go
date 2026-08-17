@@ -84,6 +84,11 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdiapp"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdigateway"
+
+	// hpegl parity lookups (MORPH-15864)
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancestoragecontroller"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkinterfacetype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkproxy"
 )
 
 func (p *MorpheusProvider) DataSources(
@@ -172,5 +177,9 @@ func (p *MorpheusProvider) DataSources(
 		backupinstance.NewDataSource,
 		// hpegl VMaaS parity — network server group (lb_pool_member_group replacement)
 		networkservergroup.NewDataSource,
+		// hpegl parity lookups (MORPH-15864)
+		networkproxy.NewDataSource,
+		networkinterfacetype.NewDataSource,
+		instancestoragecontroller.NewDataSource,
 	}
 }
