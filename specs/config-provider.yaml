@@ -1469,6 +1469,10 @@ data_sources:
     read:
       path: /api/network-types/{id}
       method: GET
+  network_proxy:
+    read:
+      path: /api/networks/proxies/{id}
+      method: GET
   network_router_type:
     read:
       path: /api/network-router-types/{id}
