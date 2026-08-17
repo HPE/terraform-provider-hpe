@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -24,6 +23,10 @@ const (
 	ErrorNoInstanceDiskTypeFound   = `no instance disk type found`
 	ErrorMultipleInstanceDiskTypes = `multiple instance disk types were returned`
 )
+
+// diskType is the disk type element returned by the service plans options
+// endpoint, aliased to keep the generated SDK name out of the signatures below.
+type diskType = sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner
 
 // Ensure the implementation satisfies the expected interfaces.
 var _ datasource.DataSource = &DataSource{}
@@ -70,31 +73,16 @@ func normalizeName(s string) string {
 	return strings.TrimSpace(strings.ToLower(s))
 }
 
-// matchedDiskType is the resolved instance disk type. Fields are held as
-// pointers so a value the API omits stays null in state (mapped via the convert
-// helpers) rather than being flattened to a zero value.
-type matchedDiskType struct {
-	id             *int32
-	code           *string
-	displayName    *string
-	displayOrder   *int32
-	volumeCategory *string
-	defaultType    *bool
-	enabled        *bool
-}
-
 // collectDiskTypes flattens the storage types from every service plan and
 // dedupes them by id. Morpheus repeats the same storage types in every plan, so
 // without deduping a lookup would always see multiple matches. The first
 // occurrence of each id wins; entries without an id are skipped as they cannot
 // be used as a storage_type_id. It is a pure function so it is unit testable
 // without an appliance.
-func collectDiskTypes(
-	plans []sdk.ListInstanceServicePlans200ResponsePlansInner,
-) []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner {
+func collectDiskTypes(plans []sdk.ListInstanceServicePlans200ResponsePlansInner) []diskType {
 	seen := make(map[int32]struct{})
 
-	var out []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner
+	var out []diskType
 
 	for _, p := range plans {
 		for _, st := range p.StorageTypes {
@@ -119,49 +107,86 @@ func collectDiskTypes(
 // match, so the data source fails clearly rather than silently picking an
 // arbitrary one. It is a pure function so the match/error logic is unit testable
 // without an appliance.
-func matchDiskType(
-	diskTypes []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner,
-	name string,
-) (matchedDiskType, error) {
+func matchDiskType(diskTypes []diskType, name string) (diskType, error) {
 	target := normalizeName(name)
 
-	var matches []matchedDiskType
+	var matches []diskType
 
 	for _, st := range diskTypes {
 		if st.Name == nil || normalizeName(*st.Name) != target {
 			continue
 		}
 
-		matches = append(matches, matchedDiskType{
-			id:             st.Id,
-			code:           st.Code,
-			displayName:    st.DisplayName,
-			displayOrder:   st.DisplayOrder,
-			volumeCategory: st.VolumeCategory,
-			defaultType:    st.DefaultType,
-			enabled:        st.Enabled,
-		})
+		matches = append(matches, st)
 	}
 
 	switch len(matches) {
 	case 0:
-		return matchedDiskType{}, errors.New(ErrorNoInstanceDiskTypeFound)
+		return diskType{}, errors.New(ErrorNoInstanceDiskTypeFound)
 	case 1:
 		return matches[0], nil
 	default:
-		return matchedDiskType{}, errors.New(ErrorMultipleInstanceDiskTypes)
+		return diskType{}, errors.New(ErrorMultipleInstanceDiskTypes)
 	}
 }
 
-// int32PtrToType converts an optional int32 (as several service-plan storage
-// type fields are typed) to a Terraform Int64 value, preserving null. The
-// convert package only provides an Int64 helper.
-func int32PtrToType(p *int32) types.Int64 {
-	if p == nil {
-		return types.Int64Null()
-	}
+// diskTypeAsState maps a matched disk type onto the Terraform model. Every
+// scalar on the model is exposed except:
+//
+//   - optionTypes, an array of free-form maps, which carries no useful value in
+//     a lookup (the network_type data source omits its equivalent too).
+//   - createDatastore, where the API returns a JSON boolean but the schema types
+//     the field as a nullable string. The SDK therefore surfaces it as the
+//     coerced string "0"/"1", so exposing it would be actively misleading. It is
+//     omitted until the schema types it as a boolean.
+func diskTypeAsState(st diskType, config InstanceDiskTypeModel) InstanceDiskTypeModel {
+	return InstanceDiskTypeModel{
+		// Arguments, echoed back unchanged.
+		Name:     config.Name,
+		CloudId:  config.CloudId,
+		LayoutId: config.LayoutId,
+		GroupId:  config.GroupId,
 
-	return types.Int64Value(int64(*p))
+		// Identity and presentation.
+		Id:           convert.Int32ToType(st.Id),
+		Code:         convert.StrToType(st.Code),
+		DisplayName:  convert.StrToType(st.DisplayName),
+		DisplayOrder: convert.Int32ToType(st.DisplayOrder),
+		Description:  convert.StrToType(st.Description.Get()),
+
+		// Classification.
+		VolumeType:     convert.StrToType(st.VolumeType),
+		VolumeCategory: convert.StrToType(st.VolumeCategory),
+		StorageType:    convert.StrToType(st.StorageType.Get()),
+		ExternalId:     convert.StrToType(st.ExternalId.Get()),
+
+		// Capabilities.
+		DefaultType:          convert.BoolToType(st.DefaultType),
+		Enabled:              convert.BoolToType(st.Enabled),
+		Editable:             convert.BoolToType(st.Editable),
+		Deletable:            convert.BoolToType(st.Deletable),
+		Resizable:            convert.BoolToType(st.Resizable),
+		PlanResizable:        convert.BoolToType(st.PlanResizable),
+		NameEditable:         convert.BoolToType(st.NameEditable),
+		CustomLabel:          convert.BoolToType(st.CustomLabel),
+		CustomSize:           convert.BoolToType(st.CustomSize),
+		AutoDelete:           convert.BoolToType(st.AutoDelete),
+		AllowSearch:          convert.BoolToType(st.AllowSearch),
+		HasDatastore:         convert.BoolToType(st.HasDatastore),
+		HasIso:               convert.BoolToType(st.HasISO),
+		NoStorage:            convert.BoolToType(st.NoStorage),
+		MultiAttachSupported: convert.BoolToType(st.MultiAttachSupported),
+		HasActiveReplica:     convert.BoolToType(st.HasActiveReplica.Get()),
+
+		// Sizing and IOPS. The API returns these as strings, and null when no
+		// limit applies.
+		ConfigurableIops:   convert.BoolToType(st.ConfigurableIOPS),
+		MinIops:            convert.StrToType(st.MinIOPS.Get()),
+		MaxIops:            convert.StrToType(st.MaxIOPS.Get()),
+		MinStorage:         convert.StrToType(st.MinStorage.Get()),
+		MaxStorage:         convert.StrToType(st.MaxStorage.Get()),
+		VolumeOptionSource: convert.StrToType(st.VolumeOptionSource.Get()),
+	}
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -214,27 +239,7 @@ func (d *DataSource) Read(
 		return
 	}
 
-	// The disk type id is the value consumers need (storage_type_id); a match
-	// without one cannot produce a usable result.
-	if match.id == nil {
-		resp.Diagnostics.AddError(summary, "matched instance disk type has no id")
-
-		return
-	}
-
-	state := InstanceDiskTypeModel{
-		Name:           config.Name,
-		CloudId:        config.CloudId,
-		LayoutId:       config.LayoutId,
-		GroupId:        config.GroupId,
-		Id:             int32PtrToType(match.id),
-		Code:           convert.StrToType(match.code),
-		DisplayName:    convert.StrToType(match.displayName),
-		DisplayOrder:   int32PtrToType(match.displayOrder),
-		VolumeCategory: convert.StrToType(match.volumeCategory),
-		DefaultType:    convert.BoolToType(match.defaultType),
-		Enabled:        convert.BoolToType(match.enabled),
-	}
+	state := diskTypeAsState(match, config)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

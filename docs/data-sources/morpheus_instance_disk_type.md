@@ -67,10 +67,34 @@ resource "hpe_morpheus_instance" "example" {
 
 ### Read-Only
 
+- `allow_search` (Boolean) Whether the disk type supports searching for a volume.
+- `auto_delete` (Boolean) Whether volumes of this disk type are deleted automatically with their instance.
 - `code` (String) The code of the disk type.
+- `configurable_iops` (Boolean) Whether IOPS can be configured on volumes of this disk type.
+- `custom_label` (Boolean) Whether a custom label can be set on volumes of this disk type.
+- `custom_size` (Boolean) Whether a custom size can be set on volumes of this disk type.
 - `default_type` (Boolean) Whether this is the default disk type.
+- `deletable` (Boolean) Whether volumes using this disk type can be deleted.
+- `description` (String) A description of the disk type.
 - `display_name` (String) The display name of the disk type.
 - `display_order` (Number) The display order of the disk type in the Morpheus UI.
+- `editable` (Boolean) Whether the disk type can be edited.
 - `enabled` (Boolean) Whether the disk type is enabled.
+- `external_id` (String) The external ID of the disk type on the underlying platform.
+- `has_active_replica` (Boolean) Whether the disk type supports an active replica.
+- `has_datastore` (Boolean) Whether the disk type requires a datastore.
+- `has_iso` (Boolean) Whether the disk type represents an ISO image.
 - `id` (Number) The ID of the disk type. Use this as storage_type_id on hpe_morpheus_instance volumes.
+- `max_iops` (String) The maximum IOPS for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.
+- `max_storage` (String) The maximum size for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.
+- `min_iops` (String) The minimum IOPS for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.
+- `min_storage` (String) The minimum size for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.
+- `multi_attach_supported` (Boolean) Whether volumes of this disk type can be attached to more than one instance.
+- `name_editable` (Boolean) Whether the name of a volume using this disk type can be edited.
+- `no_storage` (Boolean) Whether the disk type consumes no storage.
+- `plan_resizable` (Boolean) Whether a service plan change resizes volumes of this disk type, even when they cannot be resized directly.
+- `resizable` (Boolean) Whether volumes using this disk type can be resized.
+- `storage_type` (String) The underlying storage type backing the disk type (for example "block").
 - `volume_category` (String) The volume category of the disk type (for example "disk").
+- `volume_option_source` (String) The option source used to populate volume choices for this disk type, if any.
+- `volume_type` (String) The volume type of the disk type (for example "disk").

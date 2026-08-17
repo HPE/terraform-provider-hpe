@@ -67,6 +67,31 @@ func TestAccMorpheusFindInstanceDiskType(t *testing.T) {
 			"name",
 			diskTypeName,
 		),
+		// Assert a representative attribute of each mapped shape, so a
+		// regression in the conversion of any one of them fails the test:
+		// a plain string, a nullable string and a plain bool. The nullable
+		// bool (has_active_replica) is deliberately not asserted here: the API
+		// returns null for it on most disk types, so it is covered by the unit
+		// test instead.
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_instance_disk_type.example",
+			"volume_category",
+			"disk",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_instance_disk_type.example",
+			"storage_type",
+			"block",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_instance_disk_type.example",
+			"default_type",
+			"true",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_instance_disk_type.example",
+			"description",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)

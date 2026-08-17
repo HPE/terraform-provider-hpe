@@ -13,6 +13,16 @@ import (
 func InstanceDiskTypeDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"allow_search": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type supports searching for a volume.",
+				MarkdownDescription: "Whether the disk type supports searching for a volume.",
+			},
+			"auto_delete": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether volumes of this disk type are deleted automatically with their instance.",
+				MarkdownDescription: "Whether volumes of this disk type are deleted automatically with their instance.",
+			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the cloud (zone) to scope the disk type lookup.",
@@ -23,10 +33,35 @@ func InstanceDiskTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The code of the disk type.",
 				MarkdownDescription: "The code of the disk type.",
 			},
+			"configurable_iops": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether IOPS can be configured on volumes of this disk type.",
+				MarkdownDescription: "Whether IOPS can be configured on volumes of this disk type.",
+			},
+			"custom_label": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a custom label can be set on volumes of this disk type.",
+				MarkdownDescription: "Whether a custom label can be set on volumes of this disk type.",
+			},
+			"custom_size": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a custom size can be set on volumes of this disk type.",
+				MarkdownDescription: "Whether a custom size can be set on volumes of this disk type.",
+			},
 			"default_type": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether this is the default disk type.",
 				MarkdownDescription: "Whether this is the default disk type.",
+			},
+			"deletable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether volumes using this disk type can be deleted.",
+				MarkdownDescription: "Whether volumes using this disk type can be deleted.",
+			},
+			"description": schema.StringAttribute{
+				Computed:            true,
+				Description:         "A description of the disk type.",
+				MarkdownDescription: "A description of the disk type.",
 			},
 			"display_name": schema.StringAttribute{
 				Computed:            true,
@@ -38,15 +73,40 @@ func InstanceDiskTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The display order of the disk type in the Morpheus UI.",
 				MarkdownDescription: "The display order of the disk type in the Morpheus UI.",
 			},
+			"editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type can be edited.",
+				MarkdownDescription: "Whether the disk type can be edited.",
+			},
 			"enabled": schema.BoolAttribute{
 				Computed:            true,
 				Description:         "Whether the disk type is enabled.",
 				MarkdownDescription: "Whether the disk type is enabled.",
 			},
+			"external_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The external ID of the disk type on the underlying platform.",
+				MarkdownDescription: "The external ID of the disk type on the underlying platform.",
+			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
 				Description:         "The ID of the group (site) to scope the disk type lookup.",
 				MarkdownDescription: "The ID of the group (site) to scope the disk type lookup.",
+			},
+			"has_active_replica": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type supports an active replica.",
+				MarkdownDescription: "Whether the disk type supports an active replica.",
+			},
+			"has_datastore": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type requires a datastore.",
+				MarkdownDescription: "Whether the disk type requires a datastore.",
+			},
+			"has_iso": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type represents an ISO image.",
+				MarkdownDescription: "Whether the disk type represents an ISO image.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -58,30 +118,114 @@ func InstanceDiskTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the instance layout to scope the disk type lookup.",
 				MarkdownDescription: "The ID of the instance layout to scope the disk type lookup.",
 			},
+			"max_iops": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The maximum IOPS for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.",
+				MarkdownDescription: "The maximum IOPS for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.",
+			},
+			"max_storage": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The maximum size for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.",
+				MarkdownDescription: "The maximum size for volumes of this disk type. Returned by the API as a string, and null when no maximum applies.",
+			},
+			"min_iops": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The minimum IOPS for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.",
+				MarkdownDescription: "The minimum IOPS for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.",
+			},
+			"min_storage": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The minimum size for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.",
+				MarkdownDescription: "The minimum size for volumes of this disk type. Returned by the API as a string, and null when no minimum applies.",
+			},
+			"multi_attach_supported": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether volumes of this disk type can be attached to more than one instance.",
+				MarkdownDescription: "Whether volumes of this disk type can be attached to more than one instance.",
+			},
 			"name": schema.StringAttribute{
 				Required:            true,
 				Description:         "The name of the disk type (storage volume type) to look up (for example \"Standard\"). Matched case-insensitively and whitespace-trimmed.",
 				MarkdownDescription: "The name of the disk type (storage volume type) to look up (for example \"Standard\"). Matched case-insensitively and whitespace-trimmed.",
+			},
+			"name_editable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the name of a volume using this disk type can be edited.",
+				MarkdownDescription: "Whether the name of a volume using this disk type can be edited.",
+			},
+			"no_storage": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether the disk type consumes no storage.",
+				MarkdownDescription: "Whether the disk type consumes no storage.",
+			},
+			"plan_resizable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether a service plan change resizes volumes of this disk type, even when they cannot be resized directly.",
+				MarkdownDescription: "Whether a service plan change resizes volumes of this disk type, even when they cannot be resized directly.",
+			},
+			"resizable": schema.BoolAttribute{
+				Computed:            true,
+				Description:         "Whether volumes using this disk type can be resized.",
+				MarkdownDescription: "Whether volumes using this disk type can be resized.",
+			},
+			"storage_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The underlying storage type backing the disk type (for example \"block\").",
+				MarkdownDescription: "The underlying storage type backing the disk type (for example \"block\").",
 			},
 			"volume_category": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The volume category of the disk type (for example \"disk\").",
 				MarkdownDescription: "The volume category of the disk type (for example \"disk\").",
 			},
+			"volume_option_source": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The option source used to populate volume choices for this disk type, if any.",
+				MarkdownDescription: "The option source used to populate volume choices for this disk type, if any.",
+			},
+			"volume_type": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The volume type of the disk type (for example \"disk\").",
+				MarkdownDescription: "The volume type of the disk type (for example \"disk\").",
+			},
 		},
 	}
 }
 
 type InstanceDiskTypeModel struct {
-	CloudId        types.Int64  `tfsdk:"cloud_id"`
-	Code           types.String `tfsdk:"code"`
-	DefaultType    types.Bool   `tfsdk:"default_type"`
-	DisplayName    types.String `tfsdk:"display_name"`
-	DisplayOrder   types.Int64  `tfsdk:"display_order"`
-	Enabled        types.Bool   `tfsdk:"enabled"`
-	GroupId        types.Int64  `tfsdk:"group_id"`
-	Id             types.Int64  `tfsdk:"id"`
-	LayoutId       types.Int64  `tfsdk:"layout_id"`
-	Name           types.String `tfsdk:"name"`
-	VolumeCategory types.String `tfsdk:"volume_category"`
+	AllowSearch          types.Bool   `tfsdk:"allow_search"`
+	AutoDelete           types.Bool   `tfsdk:"auto_delete"`
+	CloudId              types.Int64  `tfsdk:"cloud_id"`
+	Code                 types.String `tfsdk:"code"`
+	ConfigurableIops     types.Bool   `tfsdk:"configurable_iops"`
+	CustomLabel          types.Bool   `tfsdk:"custom_label"`
+	CustomSize           types.Bool   `tfsdk:"custom_size"`
+	DefaultType          types.Bool   `tfsdk:"default_type"`
+	Deletable            types.Bool   `tfsdk:"deletable"`
+	Description          types.String `tfsdk:"description"`
+	DisplayName          types.String `tfsdk:"display_name"`
+	DisplayOrder         types.Int64  `tfsdk:"display_order"`
+	Editable             types.Bool   `tfsdk:"editable"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	ExternalId           types.String `tfsdk:"external_id"`
+	GroupId              types.Int64  `tfsdk:"group_id"`
+	HasActiveReplica     types.Bool   `tfsdk:"has_active_replica"`
+	HasDatastore         types.Bool   `tfsdk:"has_datastore"`
+	HasIso               types.Bool   `tfsdk:"has_iso"`
+	Id                   types.Int64  `tfsdk:"id"`
+	LayoutId             types.Int64  `tfsdk:"layout_id"`
+	MaxIops              types.String `tfsdk:"max_iops"`
+	MaxStorage           types.String `tfsdk:"max_storage"`
+	MinIops              types.String `tfsdk:"min_iops"`
+	MinStorage           types.String `tfsdk:"min_storage"`
+	MultiAttachSupported types.Bool   `tfsdk:"multi_attach_supported"`
+	Name                 types.String `tfsdk:"name"`
+	NameEditable         types.Bool   `tfsdk:"name_editable"`
+	NoStorage            types.Bool   `tfsdk:"no_storage"`
+	PlanResizable        types.Bool   `tfsdk:"plan_resizable"`
+	Resizable            types.Bool   `tfsdk:"resizable"`
+	StorageType          types.String `tfsdk:"storage_type"`
+	VolumeCategory       types.String `tfsdk:"volume_category"`
+	VolumeOptionSource   types.String `tfsdk:"volume_option_source"`
+	VolumeType           types.String `tfsdk:"volume_type"`
 }

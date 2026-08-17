@@ -10,20 +10,17 @@ import (
 
 func strPtr(s string) *string { return &s }
 
+func boolPtr(b bool) *bool { return &b }
+
 func int32Ptr(i int32) *int32 { return &i }
 
-// st builds a storage type (disk type) with the given id and name, the two
-// fields the lookup keys on.
-func st(id int32, name string) sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner {
-	return sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner{
-		Id:   int32Ptr(id),
-		Name: strPtr(name),
-	}
+// st builds a disk type with the given id and name, the two fields the lookup
+// keys on.
+func st(id int32, name string) diskType {
+	return diskType{Id: int32Ptr(id), Name: strPtr(name)}
 }
 
-func plan(
-	sts ...sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner,
-) sdk.ListInstanceServicePlans200ResponsePlansInner {
+func plan(sts ...diskType) sdk.ListInstanceServicePlans200ResponsePlansInner {
 	return sdk.ListInstanceServicePlans200ResponsePlansInner{StorageTypes: sts}
 }
 
@@ -43,14 +40,11 @@ func TestCollectDiskTypesDedupesByID(t *testing.T) {
 	}
 }
 
-// TestCollectDiskTypesSkipsNilID verifies storage types without an id are
-// dropped, since the id is the value the data source exists to return.
+// TestCollectDiskTypesSkipsNilID verifies disk types without an id are dropped,
+// since the id is the value the data source exists to return.
 func TestCollectDiskTypesSkipsNilID(t *testing.T) {
 	plans := []sdk.ListInstanceServicePlans200ResponsePlansInner{
-		plan(
-			sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner{Name: strPtr("no id")},
-			st(5, "Standard"),
-		),
+		plan(diskType{Name: strPtr("no id")}, st(5, "Standard")),
 	}
 
 	got := collectDiskTypes(plans)
@@ -60,7 +54,7 @@ func TestCollectDiskTypesSkipsNilID(t *testing.T) {
 }
 
 func TestMatchDiskType(t *testing.T) {
-	diskTypes := []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner{
+	diskTypes := []diskType{
 		st(1, "Standard"),
 		st(2, "Thin"),
 		st(3, "Thick"),
@@ -69,7 +63,7 @@ func TestMatchDiskType(t *testing.T) {
 	tests := []struct {
 		name       string
 		lookupName string
-		input      []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner
+		input      []diskType
 		wantID     int32
 		wantErr    string
 	}{
@@ -100,11 +94,8 @@ func TestMatchDiskType(t *testing.T) {
 		{
 			name:       "multiple matches errors",
 			lookupName: "dup",
-			input: []sdk.ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner{
-				st(4, "dup"),
-				st(5, "DUP"),
-			},
-			wantErr: ErrorMultipleInstanceDiskTypes,
+			input:      []diskType{st(4, "dup"), st(5, "DUP")},
+			wantErr:    ErrorMultipleInstanceDiskTypes,
 		},
 	}
 
@@ -128,19 +119,67 @@ func TestMatchDiskType(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 
-			if got.id == nil || *got.id != tt.wantID {
-				t.Errorf("id: want %d, got %v", tt.wantID, got.id)
+			if got.Id == nil || *got.Id != tt.wantID {
+				t.Errorf("id: want %d, got %v", tt.wantID, got.Id)
 			}
 		})
 	}
 }
 
-func TestInt32PtrToType(t *testing.T) {
-	if v := int32PtrToType(nil); !v.IsNull() {
-		t.Errorf("nil int32 should map to a null Int64, got %v", v)
+// TestDiskTypeAsState covers the three mapping shapes the model mixes: plain
+// pointers, NullableString/NullableBool (which must be read through Get), and
+// int32 widening. It also pins that absent values stay null rather than being
+// flattened to a zero value.
+func TestDiskTypeAsState(t *testing.T) {
+	in := diskType{
+		Id:           int32Ptr(1),
+		Name:         strPtr("Standard"),
+		Code:         strPtr("standard"),
+		DisplayOrder: int32Ptr(3),
+		VolumeType:   strPtr("disk"),
+		Enabled:      boolPtr(true),
+		HasISO:       boolPtr(false),
+	}
+	in.Description.Set(strPtr("Standard"))
+	in.StorageType.Set(strPtr("block"))
+	in.HasActiveReplica.Set(boolPtr(true))
+	// MinIOPS, MaxStorage, ExternalId and VolumeOptionSource left unset.
+
+	got := diskTypeAsState(in, InstanceDiskTypeModel{})
+
+	if got.Id.ValueInt64() != 1 {
+		t.Errorf("id: want 1, got %v", got.Id)
 	}
 
-	if v := int32PtrToType(int32Ptr(7)); v.IsNull() || v.ValueInt64() != 7 {
-		t.Errorf("int32(7) should map to Int64(7), got %v", v)
+	if got.DisplayOrder.ValueInt64() != 3 {
+		t.Errorf("display_order: want 3 (int32 widened), got %v", got.DisplayOrder)
+	}
+
+	if got.Description.ValueString() != "Standard" {
+		t.Errorf("description: want %q, got %v", "Standard", got.Description)
+	}
+
+	if got.StorageType.ValueString() != "block" {
+		t.Errorf("storage_type: want %q, got %v", "block", got.StorageType)
+	}
+
+	if !got.HasActiveReplica.ValueBool() {
+		t.Errorf("has_active_replica: want true, got %v", got.HasActiveReplica)
+	}
+
+	if got.HasIso.ValueBool() {
+		t.Errorf("has_iso: want false, got %v", got.HasIso)
+	}
+
+	for name, v := range map[string]interface{ IsNull() bool }{
+		"min_iops":             got.MinIops,
+		"max_storage":          got.MaxStorage,
+		"external_id":          got.ExternalId,
+		"volume_option_source": got.VolumeOptionSource,
+		"deletable":            got.Deletable,
+	} {
+		if !v.IsNull() {
+			t.Errorf("%s: want null when the API omits it, got %v", name, v)
+		}
 	}
 }
