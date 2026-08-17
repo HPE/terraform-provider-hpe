@@ -46,8 +46,16 @@ func TestAccMorpheusFindNetworkProxyByName(t *testing.T) {
 
 	t.Parallel()
 
-	proxyID, proxyName := testhelpers.CreateNetworkProxy(t)
-	t.Cleanup(func() { testhelpers.DeleteNetworkProxy(t, proxyID) })
+	proxyID, proxyName, err := testhelpers.CreateNetworkProxy(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		if err := testhelpers.DeleteNetworkProxy(t, proxyID); err != nil {
+			t.Logf("cleanup: %v", err)
+		}
+	})
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -102,8 +110,16 @@ func TestAccMorpheusFindNetworkProxyById(t *testing.T) {
 
 	t.Parallel()
 
-	proxyID, proxyName := testhelpers.CreateNetworkProxy(t)
-	t.Cleanup(func() { testhelpers.DeleteNetworkProxy(t, proxyID) })
+	proxyID, proxyName, err := testhelpers.CreateNetworkProxy(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		if err := testhelpers.DeleteNetworkProxy(t, proxyID); err != nil {
+			t.Logf("cleanup: %v", err)
+		}
+	})
 
 	providerConfig := testhelpers.ProviderBlock()
 

@@ -5,6 +5,7 @@ package testhelpers
 import (
 	"context"
 	"crypto/rand"
+	"fmt"
 	"net/http"
 	"testing"
 
@@ -18,7 +19,7 @@ import (
 // source test builds its own fixture through the SDK rather than depending on a
 // proxy that happens to exist on the appliance. This keeps the test
 // self-contained and free of environment configuration.
-func CreateNetworkProxy(t *testing.T) (int64, string) {
+func CreateNetworkProxy(t *testing.T) (int64, string, error) {
 	t.Helper()
 
 	ctx := context.TODO()
@@ -42,18 +43,18 @@ func CreateNetworkProxy(t *testing.T) (int64, string) {
 		CreateNetworkProxyRequest(req).Execute()
 	if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK ||
 		resp == nil || resp.NetworkProxy == nil || resp.NetworkProxy.Id == nil {
-		t.Fatalf("failed to create network proxy fixture %q: %v", name, err)
+		return 0, "", fmt.Errorf("failed to create network proxy fixture %q: %w", name, err)
 	}
 
 	id := *resp.NetworkProxy.Id
 	t.Logf("created network proxy fixture %d (%s)", id, name)
 
-	return id, name
+	return id, name, nil
 }
 
 // DeleteNetworkProxy deletes a network proxy fixture created by
 // CreateNetworkProxy. A missing proxy (already deleted) is not an error.
-func DeleteNetworkProxy(t *testing.T, id int64) {
+func DeleteNetworkProxy(t *testing.T, id int64) error {
 	t.Helper()
 
 	ctx := context.TODO()
@@ -61,10 +62,10 @@ func DeleteNetworkProxy(t *testing.T, id int64) {
 
 	_, hresp, err := client.NetworksAPI.DeleteNetworkProxy(ctx, id).Execute()
 	if err != nil && (hresp == nil || hresp.StatusCode != http.StatusNotFound) {
-		t.Logf("warning: failed to delete network proxy fixture %d: %v", id, err)
-
-		return
+		return fmt.Errorf("failed to delete network proxy fixture %d: %w", id, err)
 	}
 
 	t.Logf("deleted network proxy fixture %d", id)
+
+	return nil
 }

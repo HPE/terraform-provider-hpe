@@ -3,7 +3,6 @@
 package networkinterfacetype_test
 
 import (
-	"fmt"
 	"os"
 	"regexp"
 	"strconv"
@@ -20,17 +19,6 @@ func TestMain(m *testing.M) {
 	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
-}
-
-// networkInterfaceTypeConfig renders a data source block for the given inputs.
-func networkInterfaceTypeConfig(name string, cloudID int64, provisionTypeCode string) string {
-	return fmt.Sprintf(`
-data "hpe_morpheus_network_interface_type" "example" {
-  name                = %q
-  cloud_id            = %d
-  provision_type_code = %q
-}
-`, name, cloudID, provisionTypeCode)
 }
 
 // TestAccMorpheusFindNetworkInterfaceType discovers a real (cloud, provision
@@ -51,7 +39,16 @@ func TestAccMorpheusFindNetworkInterfaceType(t *testing.T) {
 	fx := testhelpers.DiscoverNetworkInterfaceType(t)
 
 	providerConfig := testhelpers.ProviderBlock()
-	config := providerConfig + networkInterfaceTypeConfig(fx.Name, fx.CloudID, fx.ProvisionTypeCode)
+
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example.tf.tmpl",
+		"Name", fx.Name,
+		"CloudId", strconv.FormatInt(fx.CloudID, 10),
+		"ProvisionTypeCode", fx.ProvisionTypeCode,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -81,7 +78,7 @@ func TestAccMorpheusFindNetworkInterfaceType(t *testing.T) {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config: config,
+				Config: providerConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -105,14 +102,22 @@ func TestAccMorpheusFindNetworkInterfaceTypeNotFound(t *testing.T) {
 	fx := testhelpers.DiscoverNetworkInterfaceType(t)
 
 	providerConfig := testhelpers.ProviderBlock()
-	config := providerConfig + networkInterfaceTypeConfig(
-		"__nonexistent_nic_type__", fx.CloudID, fx.ProvisionTypeCode)
+
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example.tf.tmpl",
+		"Name", "__nonexistent_nic_type__",
+		"CloudId", strconv.FormatInt(fx.CloudID, 10),
+		"ProvisionTypeCode", fx.ProvisionTypeCode,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
-				Config:      config,
+				Config:      providerConfig + dataSourceConfig,
 				ExpectError: regexp.MustCompile(`no network interface type found`),
 			},
 		},

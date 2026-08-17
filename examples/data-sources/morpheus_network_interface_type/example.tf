@@ -1,4 +1,5 @@
 data "hpe_morpheus_network_interface_type" "example" {
-  name     = "VMXNET 3"
-  cloud_id = 1
+  name                = "VMXNET 3"
+  cloud_id            = 1
+  provision_type_code = "vmware"
 }
