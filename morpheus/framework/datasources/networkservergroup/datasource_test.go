@@ -46,7 +46,7 @@ func TestAccMorpheusFindNetworkServerGroupByName(t *testing.T) {
 
 	dataSourceConfig, err := testhelpers.RenderExample(t,
 		"example-name.tf.tmpl",
-		"Name", "defaultL7SrcVipGroup",
+		"Name", "Edge_NSGroup",
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -60,7 +60,7 @@ func TestAccMorpheusFindNetworkServerGroupByName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_network_server_group.example",
 			"name",
-			"defaultL7SrcVipGroup",
+			"Edge_NSGroup",
 		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_network_server_group.example",
