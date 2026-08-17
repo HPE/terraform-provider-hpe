@@ -1,0 +1,74 @@
+instance_disk_type:
+  # The instance disk type (Morpheus "storage volume type") is only returned by
+  # the /api/instances/service-plans options endpoint, nested at
+  # plans[].storageTypes[]. There is no singular component to generate a flat
+  # schema from, so the single matched disk type's fields are injected here as
+  # top-level computed attributes (the cloud_affinity_groups template technique)
+  # and the generated plans[] envelope is removed. The hand-written Read scopes
+  # the call by cloud/layout/group, dedupes storageTypes by id, and matches one
+  # by name (erroring on zero or multiple). A plural instance_disk_types list
+  # data source is planned for a future PR off the same endpoint.
+  templates:
+    name:
+      string:
+        computed_optional_required: required
+        description: >-
+          The name of the disk type (storage volume type) to look up (for
+          example "Standard"). Matched case-insensitively and
+          whitespace-trimmed.
+    id:
+      int64:
+        computed_optional_required: computed
+        description: >-
+          The ID of the disk type. Use this as storage_type_id on
+          hpe_morpheus_instance volumes.
+    code:
+      string:
+        computed_optional_required: computed
+        description: The code of the disk type.
+    display_name:
+      string:
+        computed_optional_required: computed
+        description: The display name of the disk type.
+    display_order:
+      int64:
+        computed_optional_required: computed
+        description: The display order of the disk type in the Morpheus UI.
+    volume_category:
+      string:
+        computed_optional_required: computed
+        description: The volume category of the disk type (for example "disk").
+    default_type:
+      bool:
+        computed_optional_required: computed
+        description: Whether this is the default disk type.
+    enabled:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type is enabled.
+
+  moves:
+    - zone_id: cloud_id                 # (query parameter) rename zone -> cloud
+    - site_id: group_id                 # (query parameter) rename site -> group
+    - template-name: name               # (template) injected match key
+    - template-id: id                   # (template) matched disk type id
+    - template-code: code               # (template) matched disk type field
+    - template-display_name: display_name
+    - template-display_order: display_order
+    - template-volume_category: volume_category
+    - template-default_type: default_type
+    - template-enabled: enabled
+
+  removes:
+    - plans                             # (response) plans[] envelope; disk types are lifted in the Read
+
+  overrides:
+    cloud_id:
+      computed_optional_required: required
+      description: The ID of the cloud (zone) to scope the disk type lookup.
+    layout_id:
+      computed_optional_required: required
+      description: The ID of the instance layout to scope the disk type lookup.
+    group_id:
+      computed_optional_required: required
+      description: The ID of the group (site) to scope the disk type lookup.
