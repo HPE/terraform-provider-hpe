@@ -83,34 +83,20 @@ func (r *cloudAffinityGroupResource) Create(
 		}
 	}
 
-	// Servers — send as []int64 (SDK type).
-	if !plan.Servers.IsNull() && !plan.Servers.IsUnknown() {
-		var serverIDs []int64
-		resp.Diagnostics.Append(plan.Servers.ElementsAs(ctx, &serverIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		ag.Servers = serverIDs
-	}
-
-	// Tenants — mapped inside the affinityGroup body.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		tenants := make(
-			[]sdk.SaveCloudAffinityGroupRequestAffinityGroupTenantsInner, 0, len(tenantIDs),
-		)
-		for _, tid := range tenantIDs {
-			tid := tid
-			tenants = append(tenants, sdk.SaveCloudAffinityGroupRequestAffinityGroupTenantsInner{
-				Id: &tid,
-			})
-		}
-		ag.Tenants = tenants
-	}
+	// tenant_ids is deliberately NOT sent. See MORPH-15806.
+	//
+	// The API accepts two shapes for this -- nested `affinityGroup.tenants`
+	// ([{"id": <id>}]) and request-root `tenantPermissions` ({"accounts": [<id>]})
+	// -- and parses both correctly. Neither works. Verified against 9.0.1:
+	// supplying tenants on create answers 403 while still creating the group
+	// with no tenants applied, supplying them on update answers 500, and either
+	// one leaves that group's single-item GET returning 500 permanently. A
+	// control group never given tenants reads back 200, so the damage is caused
+	// by the request rather than being a property of the endpoint.
+	//
+	// Sending nothing keeps groups readable. The attribute stays in the schema,
+	// carrying a deprecation message, so existing configurations continue to
+	// plan; the value is state-only and does not reflect the appliance.
 
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
@@ -134,6 +120,7 @@ func (r *cloudAffinityGroupResource) Create(
 
 	result, httpResp, err := client.CloudsAPI.SaveCloudAffinityGroup(ctx, cloudID).
 		SaveCloudAffinityGroupRequest(body).Execute()
+
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpCreate, "cloud_affinity_group",
@@ -154,25 +141,24 @@ func (r *cloudAffinityGroupResource) Create(
 	id := *result.AffinityGroup.Id
 
 	// Read-back to populate full state.
-	readResult, httpResp, err := client.CloudsAPI.GetCloudAffinityGroup(ctx, cloudID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cloud_affinity_group",
-			plan.Name.ValueString(), err, httpResp,
-		)
+	readAg, found := fetchAffinityGroup(ctx, client, cloudID, id, &resp.Diagnostics)
+	if !found {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"affinity group not found after create",
+				"The affinity group was created but could not be read back.",
+			)
+		}
+
+		// The group exists in Morpheus but never reached state. Taint so the
+		// next apply replaces it rather than leaving it orphaned and invisible
+		// to Terraform.
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "cloud_affinity_group",
 			ResourceID:   id,
 			StateWriter:  &resp.State,
 			Diagnostics:  &resp.Diagnostics,
 		})
-
-		return
-	}
-
-	readAg := readResult.AffinityGroup
-	if readAg == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
 
 		return
 	}

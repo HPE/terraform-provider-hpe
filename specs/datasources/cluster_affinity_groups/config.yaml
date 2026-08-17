@@ -9,7 +9,7 @@ cluster_affinity_groups:
     tenantIds:
       set:
         computed_optional_required: computed
-        description: List of tenant account IDs that are allowed access.
+        description: "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806."
         element_type:
           int64: {}
 

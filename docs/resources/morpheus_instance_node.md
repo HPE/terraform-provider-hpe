@@ -10,6 +10,14 @@ Adds a single node to an existing Morpheus instance. This resource works with an
 
 Volumes, networks, and service plan are inherited from the instance and must not be set here.
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 For **HPE bare-metal instances only**, `resource_pool_id` can place the node in a specific resource pool. This enables multi-pool HA topologies where nodes are spread across failure domains. Omit `resource_pool_id` for all other instance types.
 
 When this resource is destroyed:
