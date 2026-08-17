@@ -1461,6 +1461,10 @@ data_sources:
     read:
       path: /api/networks/servers/{id}
       method: GET
+  network_server_group:
+    read:
+      path: /api/networks/servers/{serverId}/groups/{id}
+      method: GET
   network_transport_zone:
     read:
       path: /api/networks/servers/{serverId}/scopes/{id}

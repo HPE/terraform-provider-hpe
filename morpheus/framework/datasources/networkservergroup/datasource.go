@@ -9,13 +9,14 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	providererrors "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 const (
@@ -66,7 +67,7 @@ func discoverNSXTServerID(
 	ctx context.Context,
 	apiClient *sdk.APIClient,
 ) (int64, error) {
-	rs, hresp, err := apiClient.NetworksAPI.ListNetworkServers(ctx).Execute()
+	rs, hresp, err := apiClient.NetworksAPI.ListNetworkServers(ctx).Max(10000).Execute()
 	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return 0, fmt.Errorf("failed to list network servers: %s", providererrors.ErrMsg(err, hresp))
 	}
@@ -134,51 +135,83 @@ func findGroupByName(
 	return matched, nil
 }
 
+func mapTag(t sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) TagsValue {
+	return TagsValue{
+		Id:    convert.Int64ToType(t.Id),
+		Name:  convert.StrToType(t.Name),
+		Value: convert.StrToType(t.Value),
+		state: attr.ValueStateKnown,
+	}
+}
+
+func mapMember(m sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerMembersInner) MembersValue {
+	return MembersValue{
+		Id:               convert.Int64ToType(m.Id),
+		Category:         convert.StrToType(m.Category),
+		MembersType:      convert.StrToType(m.Type),
+		MemberName:       convert.StrToType(m.MemberName.Get()),
+		MemberType:       convert.StrToType(m.MemberType.Get()),
+		MemberValue:      convert.StrToType(m.MemberValue.Get()),
+		MemberExpression: convert.StrToType(m.MemberExpression.Get()),
+		DisplayOrder:     convert.Int64ToType(m.DisplayOrder),
+		InternalId:       convert.StrToType(m.InternalId.Get()),
+		ExternalId:       convert.StrToType(m.ExternalId),
+		state:            attr.ValueStateKnown,
+	}
+}
+
+func idOnlyAccount(a *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerAccount) AccountValue {
+	if a == nil {
+		return NewAccountValueNull()
+	}
+
+	return AccountValue{
+		Id:    convert.Int64ToType(a.Id),
+		state: attr.ValueStateKnown,
+	}
+}
+
+func idOnlyOwner(o *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) OwnerValue {
+	if o == nil {
+		return NewOwnerValueNull()
+	}
+
+	return OwnerValue{
+		Id:    convert.Int64ToType(o.Id),
+		state: attr.ValueStateKnown,
+	}
+}
+
 func groupAsState(
+	ctx context.Context,
 	g *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInner,
 	serverID int64,
-) NetworkServerGroupModel {
+) (NetworkServerGroupModel, error) {
+	tagsSet, diags := convert.ToSetType(ctx, g.Tags, mapTag)
+	if diags.HasError() {
+		return NetworkServerGroupModel{}, fmt.Errorf("error mapping tags: %s", diags.Errors())
+	}
+
+	membersSet, diags := convert.ToSetType(ctx, g.Members, mapMember)
+	if diags.HasError() {
+		return NetworkServerGroupModel{}, fmt.Errorf("error mapping members: %s", diags.Errors())
+	}
+
 	state := NetworkServerGroupModel{
-		NetworkServerId: types.Int64Value(serverID),
+		Id:              convert.Int64ToType(g.Id),
+		Name:            convert.StrToType(g.Name),
+		Description:     convert.StrToType(g.Description.Get()),
+		ExternalId:      convert.StrToType(g.ExternalId),
+		InternalId:      convert.StrToType(g.InternalId),
+		Visibility:      convert.StrToType(g.Visibility),
+		NetworkServerId: convert.Int64ToType(&serverID),
+		Account:         idOnlyAccount(g.Account),
+		Owner:           idOnlyOwner(g.Owner),
+		Tags:            tagsSet,
+		Members:         membersSet,
 	}
 
-	if g.Id != nil {
-		state.Id = types.Int64Value(*g.Id)
-	} else {
-		state.Id = types.Int64Null()
-	}
-
-	if g.Name != nil {
-		state.Name = types.StringValue(*g.Name)
-	} else {
-		state.Name = types.StringNull()
-	}
-
-	if g.Description.IsSet() && g.Description.Get() != nil {
-		state.Description = types.StringValue(*g.Description.Get())
-	} else {
-		state.Description = types.StringNull()
-	}
-
-	if g.ExternalId != nil {
-		state.ExternalId = types.StringValue(*g.ExternalId)
-	} else {
-		state.ExternalId = types.StringNull()
-	}
-
-	if g.InternalId != nil {
-		state.InternalId = types.StringValue(*g.InternalId)
-	} else {
-		state.InternalId = types.StringNull()
-	}
-
-	if g.Visibility != nil {
-		state.Visibility = types.StringValue(*g.Visibility)
-	} else {
-		state.Visibility = types.StringNull()
-	}
-
-	return state
+	return state, nil
 }
 
 // Read refreshes the Terraform state with the latest data.
@@ -230,7 +263,12 @@ func (d *DataSource) Read(
 		return
 	}
 
-	state := groupAsState(group, serverID)
+	state, err := groupAsState(ctx, group, serverID)
+	if err != nil {
+		resp.Diagnostics.AddError(summary, err.Error())
+
+		return
+	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

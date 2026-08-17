@@ -1,0 +1,74 @@
+network_server_group:
+  templates:
+    network_server_id:
+      int64:
+        description: The ID of the parent network server (integration). If omitted, the first NSX-T server is used.
+        computed_optional_required: computed_optional
+
+  moves:
+    - group: ""                                  # unnest GET response wrapper
+    - template-network_server_id: network_server_id
+
+  removes:
+    - server_id                                  # path-param duplicate of network_server_id
+    - success                                    # API response wrapper
+    - network_server                             # redundant with network_server_id (only carries id)
+    - permissions                                # deeply nested; dropped per network_server/transport_zone precedent
+    - members.members                            # untyped recursive sub-array (no items schema)
+
+  overrides:
+    id:
+      description: The ID of the network server group
+      computed_optional_required: computed
+    name:
+      description: The name of the network server group
+      computed_optional_required: required
+    network_server_id:
+      description: The ID of the parent network server (integration). If omitted, the first NSX-T server is used.
+      computed_optional_required: computed_optional
+    description:
+      description: The description of the network server group
+    external_id:
+      description: The external identifier of the network server group
+    internal_id:
+      description: The internal identifier of the network server group
+    visibility:
+      description: The visibility of the network server group
+    account:
+      description: The tenant account that owns the network server group
+    account.id:
+      description: The tenant account ID
+    owner:
+      description: The owner of the network server group
+    owner.id:
+      description: The owner ID
+    tags:
+      description: Metadata tags on the network server group
+    tags.id:
+      description: Tag ID
+    tags.name:
+      description: Tag name
+    tags.value:
+      description: Tag value
+    members:
+      description: The members of the network server group
+    members.id:
+      description: Member ID
+    members.category:
+      description: Member category
+    members.type:
+      description: Member type
+    members.member_name:
+      description: Member name
+    members.member_type:
+      description: Member type classification
+    members.member_value:
+      description: Member value
+    members.member_expression:
+      description: Member expression
+    members.display_order:
+      description: Display order
+    members.internal_id:
+      description: Member internal ID
+    members.external_id:
+      description: Member external ID

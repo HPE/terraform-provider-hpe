@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_network_server_group Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Look up a Network Server Group (e.g. NSX-T IP Pool / NSGROUP) by name.
+  
 ---
 # hpe_morpheus_network_server_group (Data Source)
 
-Look up a Network Server Group (e.g. NSX-T IP Pool / NSGROUP) by name.
+
 
 
 
@@ -23,10 +23,56 @@ Look up a Network Server Group (e.g. NSX-T IP Pool / NSGROUP) by name.
 
 ### Read-Only
 
-- `description` (String) Description
-- `external_id` (String) External ID
+- `account` (Attributes) The tenant account that owns the network server group (see [below for nested schema](#nestedatt--account))
+- `description` (String) The description of the network server group
+- `external_id` (String) The external identifier of the network server group
 - `id` (Number) The ID of the network server group
-- `internal_id` (String) Internal ID
-- `visibility` (String) Visibility
+- `internal_id` (String) The internal identifier of the network server group
+- `members` (Attributes Set) The members of the network server group (see [below for nested schema](#nestedatt--members))
+- `owner` (Attributes) The owner of the network server group (see [below for nested schema](#nestedatt--owner))
+- `tags` (Attributes Set) Metadata tags on the network server group (see [below for nested schema](#nestedatt--tags))
+- `visibility` (String) The visibility of the network server group
+
+<a id="nestedatt--account"></a>
+### Nested Schema for `account`
+
+Read-Only:
+
+- `id` (Number) The tenant account ID
+
+
+<a id="nestedatt--members"></a>
+### Nested Schema for `members`
+
+Read-Only:
+
+- `category` (String) Member category
+- `display_order` (Number) Display order
+- `external_id` (String) Member external ID
+- `id` (Number) Member ID
+- `internal_id` (String) Member internal ID
+- `member_expression` (String) Member expression
+- `member_name` (String) Member name
+- `member_type` (String) Member type classification
+- `member_value` (String) Member value
+- `type` (String) Member type
+
+
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
+
+Read-Only:
+
+- `id` (Number) The owner ID
+
+
+<a id="nestedatt--tags"></a>
+### Nested Schema for `tags`
+
+Read-Only:
+
+- `id` (Number) Tag ID
+- `name` (String) Tag name
+- `value` (String) Tag value
 
 
