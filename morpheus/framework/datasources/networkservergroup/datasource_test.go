@@ -21,16 +21,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 func TestAccMorpheusFindNetworkServerGroupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -111,14 +101,12 @@ func TestAccMorpheusFindNetworkServerGroupNotFound(t *testing.T) {
 	})
 }
 
-func TestAccMorpheusFindNetworkServerGroupNoName(t *testing.T) {
+func TestUnitMorpheusFindNetworkServerGroupNoName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
-
-	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	config := testhelpers.ProviderBlockUnitTest() + `
       data "hpe_morpheus_network_server_group" "test" {
         name = ""
       }`
@@ -126,6 +114,7 @@ func TestAccMorpheusFindNetworkServerGroupNoName(t *testing.T) {
 	expected := regexp.MustCompile(networkservergroup.ErrorNoValidSearchTerms)
 
 	resource.Test(t, resource.TestCase{
+		IsUnitTest:               true,
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
