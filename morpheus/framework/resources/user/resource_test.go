@@ -1750,15 +1750,18 @@ func TestAccMorpheusUserResourceMissingPasswordWo(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	providerConfig := `
-provider "hpe" {
-	morpheus {
-		url = ""
-		username = ""
-		password = ""
-	}
-}
-
+	// A real provider block is required here. The "required on create" check for
+	// password_wo is an attribute plan modifier
+	// (modifiers.RequireOnCreateModifier, see the password_wo attribute in
+	// schema_gen.go), so it only runs during PlanResourceChange, which Terraform
+	// performs after ConfigureProvider. With an unconfigured provider the
+	// provider fails first with "Missing Morpheus connection details" and the
+	// plan modifier is never reached.
+	//
+	// This differs from the sibling MissingEmail/MissingRoles/MissingUsername
+	// tests, which omit genuinely Required attributes and are therefore rejected
+	// by schema validation before the provider is ever configured.
+	providerConfig := testhelpers.ProviderBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "bar@testacc.com"
