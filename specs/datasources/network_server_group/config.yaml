@@ -1,4 +1,5 @@
 network_server_group:
+  description: "Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID."
   templates:
     network_server_id:
       int64:

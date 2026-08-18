@@ -195,6 +195,8 @@ func NetworkServerGroupDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The visibility of the network server group",
 			},
 		},
+		Description:         "Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID.",
+		MarkdownDescription: "Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID.",
 	}
 }
 

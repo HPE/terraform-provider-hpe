@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_network_server_group Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  
+  Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID.
 ---
 # hpe_morpheus_network_server_group (Data Source)
 
-
+Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID.
 
 
 
