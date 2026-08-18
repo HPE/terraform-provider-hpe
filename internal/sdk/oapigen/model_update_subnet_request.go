@@ -20,9 +20,9 @@ var _ MappedNullable = &UpdateSubnetRequest{}
 
 // UpdateSubnetRequest struct for UpdateSubnetRequest
 type UpdateSubnetRequest struct {
-	Subnet               *UpdateSubnetRequestSubnet             `json:"subnet,omitempty"`
-	ResourcePermission   *UpdateSubnetRequestResourcePermission `json:"resourcePermission,omitempty"`
-	AdditionalProperties map[string]interface{}                 `json:",remain"`
+	Subnet               *UpdateSubnetRequestSubnet              `json:"subnet,omitempty"`
+	ResourcePermissions  *UpdateSubnetRequestResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                  `json:",remain"`
 }
 
 type _UpdateSubnetRequest UpdateSubnetRequest
@@ -40,8 +40,8 @@ func (o UpdateSubnetRequest) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Subnet) {
 		toSerialize["subnet"] = o.Subnet
 	}
-	if !IsNil(o.ResourcePermission) {
-		toSerialize["resourcePermission"] = o.ResourcePermission
+	if !IsNil(o.ResourcePermissions) {
+		toSerialize["resourcePermissions"] = o.ResourcePermissions
 	}
 
 	for key, value := range o.AdditionalProperties {

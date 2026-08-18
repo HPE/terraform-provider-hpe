@@ -83,6 +83,7 @@ subnet:
     - network_proxy
     - pool
     - resource_permission
+    - resource_permissions
     - search_domains
     - security_groups
     - status
