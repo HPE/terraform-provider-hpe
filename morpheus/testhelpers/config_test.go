@@ -184,6 +184,16 @@ func TestAccMorpheusProviderBlockAllAuth(t *testing.T) {
 	})
 }
 
+// missingConnectionDetails matches the summary line of the diagnostic the
+// provider reports from Configure when neither "url" nor a usable identity
+// block is set. "url" is Optional in the schema because an identity block may
+// supply it, so this is no longer a schema-level required-attribute violation.
+//
+// Deliberately pinned to the summary line alone. The detail body carries
+// example HCL and identity block attribute names, and asserting on that text
+// is exactly what left these tests stale when the wording last moved.
+const missingConnectionDetails = `Missing\s+Morpheus\s+connection\s+details`
+
 func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -192,8 +202,7 @@ func TestAccMorpheusProviderBlockMissingURL(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
-	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
-		`provider has marked it as required.`
+	expected := missingConnectionDetails
 
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
@@ -345,8 +354,7 @@ func TestAccMorpheusProviderBlockNoneSet(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	resourceConfig := testhelpers.FakeResourceConfig()
 
-	expected := `Must set a configuration value for the morpheus\[0\].url attribute as the\n` +
-		`provider has marked it as required.`
+	expected := missingConnectionDetails
 
 	testresource.Test(t, testresource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
