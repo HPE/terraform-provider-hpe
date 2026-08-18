@@ -146,7 +146,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	// Resource permissions
 	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
-		rp := &sdk.CreateSubnetRequestResourcePermission{
+		rp := &sdk.CreateSubnetRequestResourcePermissions{
 			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
 		}
 		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
@@ -155,14 +155,14 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			sites := make([]sdk.CreateSubnetRequestResourcePermissionSitesInner, len(groupIDs))
+			sites := make([]sdk.CreateSubnetRequestResourcePermissionsSitesInner, len(groupIDs))
 			for i, gid := range groupIDs {
 				id := gid
-				sites[i] = sdk.CreateSubnetRequestResourcePermissionSitesInner{Id: &id}
+				sites[i] = sdk.CreateSubnetRequestResourcePermissionsSitesInner{Id: &id}
 			}
 			rp.Sites = sites
 		}
-		createReq.ResourcePermission = rp
+		createReq.ResourcePermissions = rp
 	}
 
 	result, httpResp, err := client.NetworksAPI.CreateSubnet(ctx).CreateSubnetRequest(createReq).Execute()
@@ -330,7 +330,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	// Resource permissions
 	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
-		rp := &sdk.UpdateSubnetRequestResourcePermission{
+		rp := &sdk.UpdateSubnetRequestResourcePermissions{
 			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
 		}
 		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
@@ -339,14 +339,14 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			sites := make([]sdk.UpdateSubnetRequestResourcePermissionSitesInner, len(groupIDs))
+			sites := make([]sdk.UpdateSubnetRequestResourcePermissionsSitesInner, len(groupIDs))
 			for i, gid := range groupIDs {
 				id := gid
-				sites[i] = sdk.UpdateSubnetRequestResourcePermissionSitesInner{Id: &id}
+				sites[i] = sdk.UpdateSubnetRequestResourcePermissionsSitesInner{Id: &id}
 			}
 			rp.Sites = sites
 		}
-		updateReq.ResourcePermission = rp
+		updateReq.ResourcePermissions = rp
 	}
 
 	_, httpResp, err := client.NetworksAPI.UpdateSubnet(ctx, id).UpdateSubnetRequest(updateReq).Execute()
@@ -458,10 +458,15 @@ func mapResponseToModel(model *SubnetModel, subnet *sdk.GetSubnet200ResponseSubn
 	if subnet.Network != nil && subnet.Network.Id != nil {
 		model.NetworkId = convert.Int64ToType(subnet.Network.Id)
 	}
+	// pool_id is Optional-only (not Computed): the applied value must equal the
+	// config value. The API/GET response omits pool for some subnet types (and
+	// echoes null), so overwriting with null would corrupt an explicitly
+	// configured pool_id and trip "inconsistent result after apply: .pool_id was
+	// N, but now null". Only assign when the response actually carries a pool;
+	// otherwise preserve the incoming model value (plan on create/update, prior
+	// state on read) — the same approach used for tenants below.
 	if subnet.Pool != nil && subnet.Pool.Id != nil {
 		model.PoolId = convert.Int64ToType(subnet.Pool.Id)
-	} else {
-		model.PoolId = types.Int64Null()
 	}
 	if subnet.Zone != nil && subnet.Zone.Id != nil {
 		model.CloudId = convert.Int64ToType(subnet.Zone.Id)
