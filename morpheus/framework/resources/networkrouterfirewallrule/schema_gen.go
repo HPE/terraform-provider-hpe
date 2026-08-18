@@ -26,9 +26,8 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
-				MarkdownDescription: "Description of the firewall rule. This is a write-only input: the API\naccepts it on create and update but does not return it, so it cannot be\nused for drift detection.",
+				Description:         "Description of the firewall rule. The Morpheus API accepts this on\ncreate and update but does not return it, so it cannot be used for\ndrift detection. Removing it from the configuration clears it on the\nappliance.",
+				MarkdownDescription: "Description of the firewall rule. The Morpheus API accepts this on\ncreate and update but does not return it, so it cannot be used for\ndrift detection. Removing it from the configuration clears it on the\nappliance.",
 			},
 			"destination_type": schema.StringAttribute{
 				Optional:            true,
@@ -64,8 +63,8 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			},
 			"parent_id": schema.StringAttribute{
 				Required:            true,
-				Description:         "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
-				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to (for NSX-T,\ne.g. \"group-123\"). Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				Description:         "The id of the parent firewall rule group the rule belongs to. Must be in\nthe format \"group-{id}\" (for example \"group-123\") - the Morpheus API\nrejects any other format. Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
+				MarkdownDescription: "The id of the parent firewall rule group the rule belongs to. Must be in\nthe format \"group-{id}\" (for example \"group-123\") - the Morpheus API\nrejects any other format. Required to create the rule. Use the\nhpe_morpheus_network_router_firewall_rule_groups data source to look one up.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
