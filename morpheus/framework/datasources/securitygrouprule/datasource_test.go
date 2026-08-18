@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // securityGroupFixture renders a security group labelled
 // hpe_morpheus_security_group.test.
 func securityGroupFixture(name string) string {
@@ -176,7 +166,11 @@ func TestAccMorpheusFindSecurityGroupRuleNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_security_group_rule" "test" {
         security_group_id = 1
       }`
