@@ -35,6 +35,11 @@ func NetworkPoolDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Whether DHCP server is enabled for this pool",
 				MarkdownDescription: "Whether DHCP server is enabled for this pool",
 			},
+			"display_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The display name of the network pool",
+				MarkdownDescription: "The display name of the network pool",
+			},
 			"dns_domain": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The DNS domain for the network pool",
@@ -102,6 +107,7 @@ type NetworkPoolModel struct {
 	Code          types.String `tfsdk:"code"`
 	DhcpIp        types.String `tfsdk:"dhcp_ip"`
 	DhcpServer    types.Bool   `tfsdk:"dhcp_server"`
+	DisplayName   types.String `tfsdk:"display_name"`
 	DnsDomain     types.String `tfsdk:"dns_domain"`
 	ExternalId    types.String `tfsdk:"external_id"`
 	FreeCount     types.Int64  `tfsdk:"free_count"`

@@ -19,7 +19,6 @@ network_dhcp_server:
     - owner                                      # (components/schemas/networkDhcpServer.yaml)
     - network_server                             # (components/schemas/networkDhcpServer.yaml)
     - external_id                                # (components/schemas/networkDhcpServer.yaml)
-    - provider_id                                # (components/schemas/networkDhcpServer.yaml)
     - success                                    
     - server_id                                  # duplicate of network_server_id template
 
@@ -53,3 +52,6 @@ network_dhcp_server:
     network_integration_id:
       description: The ID of the network integration this DHCP server belongs to
       computed_optional_required: required
+    provider_id:
+      description: The provider ID of the DHCP server
+      computed_optional_required: computed
