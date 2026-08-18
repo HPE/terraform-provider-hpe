@@ -68,6 +68,7 @@ func networkPoolAsState(
 		Code:          convert.StrToType(pool.Code.Get()),
 		DhcpIp:        convert.StrToType(pool.DhcpIp.Get()),
 		DhcpServer:    convert.BoolToType(pool.DhcpServer),
+		DisplayName:   convert.StrToType(pool.DisplayName.Get()),
 		DnsDomain:     convert.StrToType(pool.DnsDomain.Get()),
 		ExternalId:    convert.StrToType(pool.ExternalId.Get()),
 		FreeCount:     convert.Int64ToType(pool.FreeCount),

@@ -222,9 +222,15 @@ func getFirewallRuleAsState(
 	state.DestinationType = convert.StrToType(rule.DestinationType)
 	state.Application = convert.StrToType(rule.Application.Get())
 
-	// description is a write-only input: the API accepts it on create/update but
-	// does not return it, so preserve the configured/prior value.
-	state.Description = plan.Description
+	// description is accepted by the API on create and update but is never
+	// returned by the GET, so preserve the configured/prior value. Never write
+	// an unknown into state: that fails the apply with "Provider returned
+	// invalid result object after apply".
+	if plan.Description.IsUnknown() {
+		state.Description = types.StringNull()
+	} else {
+		state.Description = plan.Description
+	}
 
 	// parent_id is a create-time (RequiresReplace) input that the response does
 	// not echo back cleanly, so preserve the configured value.
@@ -275,6 +281,15 @@ func (r *Resource) Update(
 		return
 	}
 
+	// The prior state is needed to detect a description that has been removed
+	// from the configuration, so that it can be cleared on the appliance.
+	var priorState NetworkRouterFirewallRuleModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("update network router firewall rule resource", "failed to create client: "+err.Error())
@@ -317,8 +332,16 @@ func (r *Resource) Update(
 	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
 		rule.Application = plan.Application.ValueStringPointer()
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+	// description is accepted by the API but never returned. Omitting it from
+	// the payload leaves the stored value untouched, so when it has been
+	// removed from the configuration send an empty string to clear it on the
+	// appliance. Only a value Terraform previously set is cleared, so a
+	// description set out of band is left alone.
+	switch {
+	case !plan.Description.IsNull() && !plan.Description.IsUnknown():
 		rule.Description = plan.Description.ValueStringPointer()
+	case plan.Description.IsNull() && !priorState.Description.IsNull():
+		rule.Description = convert.PtrString("")
 	}
 	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
