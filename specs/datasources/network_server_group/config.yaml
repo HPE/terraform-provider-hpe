@@ -6,23 +6,25 @@ network_server_group:
         computed_optional_required: computed_optional
 
   moves:
-    - group: ""                                  # unnest GET response wrapper
+    - group: ""                                  # (components/schemas/networkServerGroup.yaml) - unnest GET response wrapper
     - template-network_server_id: network_server_id
 
   removes:
-    - server_id                                  # path-param duplicate of network_server_id
+    - server_id                                  # path param duplicate of network_server_id
     - success                                    # API response wrapper
-    - network_server                             # redundant with network_server_id (only carries id)
-    - permissions                                # deeply nested; dropped per network_server/transport_zone precedent
-    - members.members                            # untyped recursive sub-array (no items schema)
+    - network_server                             # (components/schemas/networkServerGroup.yaml) - redundant with network_server_id
+    - permissions                                # (components/schemas/networkServerGroup.yaml) - deeply nested
+    - members.members                            # (components/schemas/networkServerGroup.yaml) - untyped recursive sub-array
 
   overrides:
     id:
       description: The ID of the network server group
-      computed_optional_required: computed
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
     name:
       description: The name of the network server group
-      computed_optional_required: required
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
     network_server_id:
       description: The ID of the parent network server (integration). If omitted, the first NSX-T server is used.
       computed_optional_required: computed_optional

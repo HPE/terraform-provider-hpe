@@ -7,8 +7,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -47,9 +51,13 @@ func NetworkServerGroupDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The external identifier of the network server group",
 			},
 			"id": schema.Int64Attribute{
+				Optional:            true,
 				Computed:            true,
 				Description:         "The ID of the network server group",
 				MarkdownDescription: "The ID of the network server group",
+				Validators: []validator.Int64{
+					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("name")}...),
+				},
 			},
 			"internal_id": schema.StringAttribute{
 				Computed:            true,
@@ -121,9 +129,13 @@ func NetworkServerGroupDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "The members of the network server group",
 			},
 			"name": schema.StringAttribute{
-				Required:            true,
+				Optional:            true,
+				Computed:            true,
 				Description:         "The name of the network server group",
 				MarkdownDescription: "The name of the network server group",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+				},
 			},
 			"network_server_id": schema.Int64Attribute{
 				Optional:            true,

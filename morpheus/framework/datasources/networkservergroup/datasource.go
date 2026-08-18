@@ -4,7 +4,6 @@ package networkservergroup
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,7 +20,7 @@ import (
 
 const (
 	summary                          = "read network server group data source"
-	ErrorNoValidSearchTerms          = `name is required`
+	ErrorNoValidSearchTerms          = `id or name is required`
 	ErrorNoNetworkServerGroupFound   = `no network server group found`
 	ErrorMultipleNetworkServerGroups = `multiple network server groups matched`
 	ErrorNoNSXTServerFound           = `no NSX-T network server found`
@@ -84,14 +83,40 @@ func discoverNSXTServerID(
 	return 0, errors.New(ErrorNoNSXTServerFound)
 }
 
-// findGroupByName lists groups under the given serverId and returns the first
-// exact name match.
-func findGroupByName(
+// getGroupByID retrieves a single network server group by its ID via the
+// GET /api/networks/servers/{serverId}/groups/{id} endpoint.
+func getGroupByID(
+	ctx context.Context,
+	apiClient *sdk.APIClient,
+	serverID int64,
+	groupID int64,
+) (*sdk.GetNetworkServerGroup200ResponseGroup, error) {
+	r, hresp, err := apiClient.NetworksAPI.GetNetworkServerGroup(ctx, serverID, groupID).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"GET failed for network server group %d (server %d): %s",
+			groupID, serverID, providererrors.ErrMsg(err, hresp),
+		)
+	}
+
+	if r.Group == nil {
+		return nil, fmt.Errorf(
+			"GET failed for network server group %d (server %d): response missing group",
+			groupID, serverID,
+		)
+	}
+
+	return r.Group, nil
+}
+
+// findGroupIDByName lists groups under the given serverID and returns the ID
+// of the first exact name match, then funnels through getGroupByID.
+func findGroupIDByName(
 	ctx context.Context,
 	apiClient *sdk.APIClient,
 	serverID int64,
 	name string,
-) (*sdk.ListNetworkServerGroups200ResponseAllOfGroupsInner, error) {
+) (*sdk.GetNetworkServerGroup200ResponseGroup, error) {
 	rs, hresp, err := apiClient.NetworksAPI.ListNetworkServerGroups(ctx, serverID).
 		Max(10000).Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
@@ -102,26 +127,14 @@ func findGroupByName(
 		return nil, errors.New(ErrorNoNetworkServerGroupFound)
 	}
 
-	// The SDK types the slice, but round-trip through JSON for robustness
-	// (same pattern as networkserver).
-	raw, marshalErr := json.Marshal(rs.Groups)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("error marshaling groups: %w", marshalErr)
-	}
-
-	var groups []sdk.ListNetworkServerGroups200ResponseAllOfGroupsInner
-
-	if unmarshalErr := json.Unmarshal(raw, &groups); unmarshalErr != nil {
-		return nil, fmt.Errorf("error decoding groups: %w", unmarshalErr)
-	}
-
-	var matched *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInner
+	var matchedID *int64
 
 	var matchCount int
 
-	for i := range groups {
-		if groups[i].Name != nil && *groups[i].Name == name {
-			matched = &groups[i]
+	for i := range rs.Groups {
+		g := &rs.Groups[i]
+		if g.Name != nil && *g.Name == name {
+			matchedID = g.Id
 			matchCount++
 		}
 	}
@@ -132,10 +145,14 @@ func findGroupByName(
 		return nil, errors.New(ErrorMultipleNetworkServerGroups)
 	}
 
-	return matched, nil
+	if matchedID == nil {
+		return nil, fmt.Errorf("network server group %q has nil id", name)
+	}
+
+	return getGroupByID(ctx, apiClient, serverID, *matchedID)
 }
 
-func mapTag(t sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) TagsValue {
+func mapTag(t sdk.GetNetworkServerGroup200ResponseGroupTagsInner) TagsValue {
 	return TagsValue{
 		Id:    convert.Int64ToType(t.Id),
 		Name:  convert.StrToType(t.Name),
@@ -144,7 +161,7 @@ func mapTag(t sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) T
 	}
 }
 
-func mapMember(m sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerMembersInner) MembersValue {
+func mapMember(m sdk.GetNetworkServerGroup200ResponseGroupMembersInner) MembersValue {
 	return MembersValue{
 		Id:               convert.Int64ToType(m.Id),
 		Category:         convert.StrToType(m.Category),
@@ -160,7 +177,7 @@ func mapMember(m sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerMembersIn
 	}
 }
 
-func idOnlyAccount(a *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerAccount) AccountValue {
+func idOnlyAccount(a *sdk.GetNetworkServerGroup200ResponseGroupAccount) AccountValue {
 	if a == nil {
 		return NewAccountValueNull()
 	}
@@ -171,7 +188,7 @@ func idOnlyAccount(a *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerAcco
 	}
 }
 
-func idOnlyOwner(o *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner) OwnerValue {
+func idOnlyOwner(o *sdk.GetNetworkServerGroup200ResponseGroupOwner) OwnerValue {
 	if o == nil {
 		return NewOwnerValueNull()
 	}
@@ -184,7 +201,7 @@ func idOnlyOwner(o *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInnerOwner)
 
 func groupAsState(
 	ctx context.Context,
-	g *sdk.ListNetworkServerGroups200ResponseAllOfGroupsInner,
+	g *sdk.GetNetworkServerGroup200ResponseGroup,
 	serverID int64,
 ) (NetworkServerGroupModel, error) {
 	tagsSet, diags := convert.ToSetType(ctx, g.Tags, mapTag)
@@ -229,7 +246,10 @@ func (d *DataSource) Read(
 		return
 	}
 
-	if config.Name.IsNull() || config.Name.ValueString() == "" {
+	hasID := !config.Id.IsNull() && config.Id.ValueInt64() != 0
+	hasName := !config.Name.IsNull() && config.Name.ValueString() != ""
+
+	if !hasID && !hasName {
 		resp.Diagnostics.AddError(summary, ErrorNoValidSearchTerms)
 
 		return
@@ -256,7 +276,14 @@ func (d *DataSource) Read(
 		}
 	}
 
-	group, err := findGroupByName(ctx, apiClient, serverID, config.Name.ValueString())
+	var group *sdk.GetNetworkServerGroup200ResponseGroup
+
+	if hasID {
+		group, err = getGroupByID(ctx, apiClient, serverID, config.Id.ValueInt64())
+	} else {
+		group, err = findGroupIDByName(ctx, apiClient, serverID, config.Name.ValueString())
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError(summary, err.Error())
 

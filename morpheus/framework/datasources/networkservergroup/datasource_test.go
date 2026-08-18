@@ -16,7 +16,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	code := m.Run()
+	code := testhelpers.TestMain(m)
 	testhelpers.WriteMergedResults()
 	os.Exit(code)
 }
@@ -108,7 +108,6 @@ func TestUnitMorpheusFindNetworkServerGroupNoName(t *testing.T) {
 
 	config := testhelpers.ProviderBlockUnitTest() + `
       data "hpe_morpheus_network_server_group" "test" {
-        name = ""
       }`
 
 	expected := regexp.MustCompile(networkservergroup.ErrorNoValidSearchTerms)
