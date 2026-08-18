@@ -83,6 +83,11 @@ func NetworkDhcpServerDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the network integration this DHCP server belongs to",
 				MarkdownDescription: "The ID of the network integration this DHCP server belongs to",
 			},
+			"provider_id": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The provider ID of the DHCP server",
+				MarkdownDescription: "The provider ID of the DHCP server",
+			},
 			"server_ip_address": schema.StringAttribute{
 				Computed:            true,
 				Description:         "Server address for the DHCP server",
@@ -99,6 +104,7 @@ type NetworkDhcpServerModel struct {
 	LeaseTime            types.Int64     `tfsdk:"lease_time"`
 	Name                 types.String    `tfsdk:"name"`
 	NetworkIntegrationId types.Int64     `tfsdk:"network_integration_id"`
+	ProviderId           types.String    `tfsdk:"provider_id"`
 	ServerIpAddress      types.String    `tfsdk:"server_ip_address"`
 }
 
