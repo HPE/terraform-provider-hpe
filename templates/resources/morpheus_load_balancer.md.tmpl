@@ -22,6 +22,23 @@ description: |-
 
 {{ .SchemaMarkdown | trimspace }}
 
+## Notes
+
+### Write-Only Attributes
+
+`group_id` and `network_server_id` are **write-only**. They are sent to the
+Morpheus API when the load balancer is created, but the API never returns them,
+so they are never stored in Terraform state and Terraform cannot detect drift in
+them.
+
+Because the values are not in state, editing one of them on its own produces
+**no plan diff**. To push a new value, increment the matching companion --
+`group_id_version` or `network_server_id_version`. Both companions **force
+replacement** of the load balancer, because neither underlying value can be
+changed on an existing load balancer.
+
+Write-only attributes require Terraform >= 1.11.
+
 ## Import
 
 Load balancers can be imported using the load balancer ID, e.g.

@@ -13,6 +13,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cloud"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/cluster"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusterlayout"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/clusters"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastore"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastores"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/datastoretypes"
@@ -78,10 +79,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouterfirewallrulegroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkrouternat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkservergroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/provisioninglicense"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/securitygrouprule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdiapp"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/vdigateway"
+
+	// hpegl parity lookups (MORPH-15864)
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancedisktype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancestoragecontroller"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkinterfacetype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/networkproxy"
 )
 
 func (p *MorpheusProvider) DataSources(
@@ -91,6 +99,7 @@ func (p *MorpheusProvider) DataSources(
 		backup.NewDataSource,
 		backuptype.NewDataSource,
 		cluster.NewDataSource,
+		clusters.NewDataSource,
 		cloud.NewDataSource,
 		datastore.NewDataSource,
 		datastores.NewDataSource,
@@ -167,5 +176,12 @@ func (p *MorpheusProvider) DataSources(
 		// missing-data-sources — backup data sources (Group D)
 		backuphost.NewDataSource,
 		backupinstance.NewDataSource,
+		// hpegl VMaaS parity — network server group (lb_pool_member_group replacement)
+		networkservergroup.NewDataSource,
+		// hpegl parity lookups (MORPH-15864)
+		networkproxy.NewDataSource,
+		networkinterfacetype.NewDataSource,
+		instancestoragecontroller.NewDataSource,
+		instancedisktype.NewDataSource,
 	}
 }

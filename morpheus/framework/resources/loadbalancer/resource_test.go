@@ -64,9 +64,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"config",
 					"config_haproxy",
-					"group_id",
 					"cloud_id",
-					"network_server_id",
 				},
 			},
 		},
@@ -116,9 +114,7 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"config",
 					"config_haproxy",
-					"group_id",
 					"cloud_id",
-					"network_server_id",
 					"type_code",
 					"permissions.groups",
 				},
@@ -159,6 +155,85 @@ resource "hpe_morpheus_load_balancer" "test" {
 			{
 				Config:      providerConfig + resourceConfig,
 				ExpectError: regexp.MustCompile(`(?i)attribute "permissions.groups" cannot be specified when`),
+			},
+		},
+	})
+}
+
+// TestMorpheusLoadBalancerWriteOnlyConfigParsing verifies that write-only attributes
+// (group_id, network_server_id) are accepted in config and produce a valid plan.
+// The framework nullifies write-only values in the plan, so Create must source them
+// from req.Config — this test confirms the schema accepts the attributes correctly.
+func TestAccMorpheusLoadBalancerWriteOnlyConfigParsing(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping acceptance test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	resourceConfig := `
+resource "hpe_morpheus_load_balancer" "test" {
+  name              = "test-wo-attrs"
+  group_id          = 1
+  network_server_id = 42
+  config_nsxt = {
+    admin_state   = true
+    log_level     = "INFO"
+    size          = "SMALL"
+    tier1_gateway = "/infra/tier-1s/test"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
+		},
+	})
+}
+
+// TestMorpheusLoadBalancerWriteOnlyVersionCompanions verifies that the version
+// companion attributes (group_id_version, network_server_id_version) are accepted
+// in config alongside the write-only attributes they track.
+func TestAccMorpheusLoadBalancerWriteOnlyVersionCompanions(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping acceptance test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	resourceConfig := `
+resource "hpe_morpheus_load_balancer" "test" {
+  name                      = "test-wo-companions"
+  group_id                  = 1
+  group_id_version          = 1
+  network_server_id         = 42
+  network_server_id_version = 1
+  config_nsxt = {
+    admin_state   = true
+    log_level     = "INFO"
+    size          = "SMALL"
+    tier1_gateway = "/infra/tier-1s/test"
+  }
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:             providerConfig + resourceConfig,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
 			},
 		},
 	})

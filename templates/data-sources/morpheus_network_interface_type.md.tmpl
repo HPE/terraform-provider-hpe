@@ -1,0 +1,37 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_network_interface_type/example.tf" }}
+
+## Migrating from hpegl
+
+This data source is the hpe equivalent of `hpegl_vmaas_network_interface`. It resolves a
+network interface (NIC) type id, which is consumed by `network_type_id` on
+`hpe_morpheus_instance` and `network_interface_type_id` on `hpe_morpheus_instance_clone`.
+
+hpegl hardcodes the VMware provision type; hpe exposes `provision_type_code` (defaulting
+to `vmware`) so non-VMware clouds remain reachable.
+
+```hcl
+# hpegl
+data "hpegl_vmaas_network_interface" "example" {
+  name = "VMXNET 3"
+}
+
+# hpe
+data "hpe_morpheus_network_interface_type" "example" {
+  name     = "VMXNET 3"
+  cloud_id = 1
+}
+```
+
+{{ .SchemaMarkdown | trimspace }}

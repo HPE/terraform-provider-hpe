@@ -8,10 +8,11 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinitylock"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/affinityread"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -57,33 +58,28 @@ func (r *cloudAffinityGroupResource) Update(
 	}
 
 	// CRITICAL BEHAVIOUR 2: servers is WHOLESALE REPLACE on update.
-	// resolveUpdateServers falls back to the membership recorded in STATE when the
-	// planned value is unknown or null. Read its doc comment before changing this.
-	servers, serverDiags := resolveUpdateServers(ctx, plan.Servers, state.Servers)
-	resp.Diagnostics.Append(serverDiags...)
-	if resp.Diagnostics.HasError() {
+	//
+	// The API has no encoding for "leave membership alone": omitting servers and
+	// sending an empty array both empty the group. Every update therefore has to
+	// re-assert the current membership, even when the practitioner is only
+	// renaming the group.
+	//
+	// That membership is read live rather than taken from Terraform state.
+	// State records what this resource last saw, which is not the same thing: a
+	// server added since then -- by an instance provisioned into the group, or
+	// by a membership resource -- is absent from state, and echoing state back
+	// would evict it. The read and the write happen under the group's lock so
+	// they cannot interleave with a membership resource doing the same thing.
+	defer affinitylock.Acquire(affinitylock.Cloud, cloudID, id)()
+
+	currentServers, ok := readCurrentServers(ctx, client, cloudID, id, &resp.Diagnostics)
+	if !ok {
 		return
 	}
-	ag.Servers = servers
 
-	// Tenants.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		tenants := make(
-			[]sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner, 0, len(tenantIDs),
-		)
-		for _, tid := range tenantIDs {
-			tid := tid
-			tenants = append(tenants, sdk.UpdateCloudAffinityGroupRequestAffinityGroupTenantsInner{
-				Id: &tid,
-			})
-		}
-		ag.Tenants = tenants
-	}
+	ag.Servers = currentServers
+
+	// tenant_ids is deliberately NOT sent. See the note in Create and MORPH-15806.
 
 	// ResourcePermissions.
 	if !plan.ResourcePermissions.IsNull() && !plan.ResourcePermissions.IsUnknown() {
@@ -110,7 +106,17 @@ func (r *cloudAffinityGroupResource) Update(
 
 	_, httpResp, err := client.CloudsAPI.UpdateCloudAffinityGroup(ctx, cloudID, id).
 		UpdateCloudAffinityGroupRequest(body).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+
+	// TODO(MORPH-15806): stop treating 500 as inconclusive once the appliance
+	// defect is fixed.
+	//
+	// On a group that has been sent tenant permissions the update applies but
+	// rendering the response fails, so a 500 comes back for a write that
+	// succeeded. Failing here would make the group unmanageable. The read-back
+	// below establishes the real outcome either way.
+	renderFailed := affinityread.IsSingleItemRenderFailure(httpResp)
+
+	if err := errfmt.CheckResponse(err, httpResp); err != nil && !renderFailed {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpUpdate, "cloud_affinity_group",
 			plan.Name.ValueString(), err, httpResp,
@@ -120,19 +126,14 @@ func (r *cloudAffinityGroupResource) Update(
 	}
 
 	// Read-back.
-	readResult, httpResp, err := client.CloudsAPI.GetCloudAffinityGroup(ctx, cloudID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
-		errfmt.DiagError(
-			&resp.Diagnostics, errfmt.OpRead, "cloud_affinity_group",
-			plan.Name.ValueString(), err, httpResp,
-		)
-
-		return
-	}
-
-	readAg := readResult.AffinityGroup
-	if readAg == nil {
-		resp.Diagnostics.AddError("API returned nil", "AffinityGroup is nil in the response")
+	readAg, ok := fetchAffinityGroup(ctx, client, cloudID, id, &resp.Diagnostics)
+	if !ok {
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"affinity group not found after update",
+				"The affinity group was updated but could not be read back.",
+			)
+		}
 
 		return
 	}
@@ -156,69 +157,18 @@ func (r *cloudAffinityGroupResource) Update(
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-// resolveUpdateServers decides what to send for affinityGroup.servers on update.
-//
-// WHY THIS EXISTS — do not collapse the unknown/null branch back into an empty array.
-//
-// The Morpheus API treats servers on update as a WHOLESALE REPLACE.
-// AffinityGroupService.updateAffinityGroup diffs the supplied collection against the
-// current members and evicts everything absent from it; its else-branch removes every
-// member. Because Groovy truthiness makes both a missing key and an empty list falsy,
-// OMITTING servers and SENDING [] are identical to the API: both wipe the group.
-//
-// servers is Optional+Computed in the generated schema (schema_gen.go) and carries no
-// UseStateForUnknown plan modifier. So whenever a practitioner has not configured
-// servers and changes any other attribute — a rename, for instance — Terraform marks
-// servers UNKNOWN in the plan. Treating that unknown as "send []" silently destroyed
-// the group's entire membership, with no error and no warning.
-//
-// Resolution:
-//
-//	plan known, non-empty  -> the planned set   (the intended wholesale replace)
-//	plan known, EMPTY      -> []                (practitioner wrote `servers = []`;
-//	                                            a genuine, explicit "remove all")
-//	plan UNKNOWN or NULL   -> the set in STATE  (re-asserts current membership, so the
-//	                                            wholesale replace is a no-op and the
-//	                                            members survive)
-//
-// The known-empty case must stay distinguishable from null/unknown: that distinction is
-// the entire point of this function.
-//
-// If neither plan nor state carries a known set, the current membership is unknowable.
-// The API has no encoding for "leave unchanged", so nil is returned and the key is
-// omitted rather than asserting a membership we cannot substantiate.
-func resolveUpdateServers(
-	ctx context.Context,
-	planServers types.Set,
-	stateServers types.Set,
-) ([]int64, diag.Diagnostics) {
-	var diags diag.Diagnostics
-
-	source := planServers
-	if planServers.IsNull() || planServers.IsUnknown() {
-		source = stateServers
-	}
-
-	if source.IsNull() || source.IsUnknown() {
-		return nil, diags
-	}
-
-	var serverIDs []int64
-	diags.Append(source.ElementsAs(ctx, &serverIDs, false)...)
-	if diags.HasError() {
-		return nil, diags
-	}
-
-	// ElementsAs always allocates for a known set, so a known-empty set yields []int64{}
-	// rather than a nil slice. The SDK's ToMap only omits the key when the slice is nil,
-	// so this is what makes an explicit `servers = []` serialise as "servers": [].
-	return serverIDs, diags
-}
-
 // buildSitesPayload converts GroupsValue slice to []map[string]interface{} the SDK expects.
 func buildSitesPayload(groups []GroupsValue) []map[string]interface{} {
 	sites := make([]map[string]interface{}, 0, len(groups))
 	for _, g := range groups {
+		// Skip an entry with no usable id rather than sending 0, which the API
+		// would take as a real group. id is required by the schema, so this
+		// should not arise from configuration, but it can still be unknown
+		// while a value it depends on is being computed.
+		if g.Id.IsNull() || g.Id.IsUnknown() {
+			continue
+		}
+
 		site := map[string]interface{}{
 			"id": g.Id.ValueInt64(),
 		}
@@ -229,4 +179,92 @@ func buildSitesPayload(groups []GroupsValue) []map[string]interface{} {
 	}
 
 	return sites
+}
+
+// readCurrentServers returns the group's membership as it is right now.
+//
+// Used to re-assert membership on update. See CRITICAL BEHAVIOUR 2 in Update for
+// why this cannot come from Terraform state.
+func readCurrentServers(
+	ctx context.Context,
+	client *sdk.APIClient,
+	cloudID, id int64,
+	diags *diag.Diagnostics,
+) ([]int64, bool) {
+	result, httpResp, err := client.CloudsAPI.GetCloudAffinityGroup(ctx, cloudID, id).Execute()
+	if err == nil && result != nil && result.AffinityGroup != nil {
+		servers := make([]int64, 0, len(result.AffinityGroup.Servers))
+		for _, s := range result.AffinityGroup.Servers {
+			if s.Id != nil {
+				servers = append(servers, *s.Id)
+			}
+		}
+
+		return servers, true
+	}
+
+	// TODO(MORPH-15806): drop this fallback once the appliance defect is fixed.
+	//
+	// A group that has been sent tenant permissions returns 500 from its
+	// single-item endpoint permanently, so without this an unrelated rename
+	// would fail. The listing renders the same group correctly, and membership
+	// is all this function needs, so the fallback loses nothing.
+	if !affinityread.IsSingleItemRenderFailure(httpResp) {
+		if err := errfmt.CheckResponse(err, httpResp); err != nil {
+			errfmt.DiagError(diags, errfmt.OpRead, "cloud_affinity_group", "", err, httpResp)
+
+			return nil, false
+		}
+
+		diags.AddError("API returned nil", "AffinityGroup is nil in the response")
+
+		return nil, false
+	}
+
+	listResult, listResp, listErr := client.CloudsAPI.ListCloudAffinityGroups(ctx, cloudID).Execute()
+	if err := errfmt.CheckResponse(listErr, listResp); err != nil {
+		errfmt.DiagError(diags, errfmt.OpRead, "cloud_affinity_group", "", err, listResp)
+
+		return nil, false
+	}
+
+	if listResult == nil {
+		diags.AddError("API returned nil", "affinity group list is nil in the response")
+
+		return nil, false
+	}
+
+	servers, found := affinityread.ServersFromList(
+		listResult.AffinityGroups,
+		id,
+		func(a sdk.ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) (int64, bool) {
+			if a.Id == nil {
+				return 0, false
+			}
+
+			return *a.Id, true
+		},
+		func(a sdk.ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInner) []int64 {
+			out := make([]int64, 0, len(a.Servers))
+			for _, s := range a.Servers {
+				if s.Id != nil {
+					out = append(out, *s.Id)
+				}
+			}
+
+			return out
+		},
+	)
+
+	if !found {
+		diags.AddError(
+			"affinity group not found",
+			"The affinity group could not be read from its single-item endpoint, "+
+				"and does not appear in the group listing either.",
+		)
+
+		return nil, false
+	}
+
+	return servers, true
 }

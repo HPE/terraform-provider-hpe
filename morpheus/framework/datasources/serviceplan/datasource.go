@@ -4,6 +4,7 @@ package serviceplan
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,6 +22,11 @@ import (
 )
 
 const (
+	// listMax bounds a by-name lookup. name and provision type are exact
+	// server-side filters, so this is only reached when many plans share one
+	// name; the default page of 25 would silently hide the rest.
+	listMax = 250
+
 	summary                 = "read service plan data source"
 	ErrorNoServicePlanFound = `no service plan found`
 	ErrorNoValidSearchTerms = "no valid search terms - an id or (name and provision_type_code) " +
@@ -133,10 +139,24 @@ func getServicePlanByName(
 	// in, so we can disambiguate plans that share a name across clouds/regions
 	// (e.g. Azure) using the optional cloud_id filter.
 	ps, hresp, err := apiClient.ServicePlansAPI.ListServicePlans(ctx).Name(
-		name).ProvisionTypeId(*matchingProvisionTypes[0].Id).IncludeZones(true).Execute()
+		name).ProvisionTypeId(*matchingProvisionTypes[0].Id).IncludeZones(true).
+		Max(listMax).Execute()
 	if ps == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(
 			"GET failed for service_plan %s: %s", name, internalErrors.ErrMsg(err, hresp))
+	}
+
+	// name and provisionTypeId are exact server-side filters, so meta.total
+	// counts the matches rather than all 1000-odd plans an appliance may carry.
+	// A total larger than the page means more plans share this name and
+	// provision type than were fetched. Paging them in would not help: the
+	// practitioner still has to say which one they meant.
+	if ps.Meta != nil && ps.Meta.Total != nil && *ps.Meta.Total > int64(len(ps.ServicePlans)) {
+		return nil, fmt.Errorf(
+			"%d service plans are named %s with provision type %s, more than the %d "+
+				"fetched. Specify an ID instead",
+			*ps.Meta.Total, name, provisionTypeCode, listMax,
+		)
 	}
 
 	var matchingServicePlans []sdk.ListServicePlans200ResponseAllOfServicePlansInner
@@ -155,8 +175,12 @@ func getServicePlanByName(
 	}
 	if len(matchingServicePlans) == 1 {
 		if matchingServicePlans[0].Id != nil {
-			// same return types as GetPlanByID
-			return getServicePlanByID(ctx, *matchingServicePlans[0].Id, apiClient)
+			// The listing entry is the whole plan, so it is converted rather
+			// than re-read by id. The re-read this replaces was not merely
+			// wasteful: on some appliances GET /api/service-plans/{id} answers
+			// 404 for a plan the listing returns quite happily, which made this
+			// data source unusable for them.
+			return servicePlanFromListEntry(&matchingServicePlans[0])
 		}
 
 		return nil, fmt.Errorf("service plan %s, id not found", name)
@@ -165,6 +189,29 @@ func getServicePlanByName(
 	}
 
 	return nil, errors.New(ErrorNoServicePlanFound)
+}
+
+// servicePlanFromListEntry converts a listing entry into the single-item shape.
+//
+// The two are generated from the same API object and carry the same fields but
+// one: the single-item shape also has permissions, which this data source does
+// not expose. Re-encoding is used in preference to copying thirty-odd fields
+// and their nested structures by hand, which would be silently wrong the first
+// time the SDK gained a field and nobody updated the copy.
+func servicePlanFromListEntry(
+	in *sdk.ListServicePlans200ResponseAllOfServicePlansInner,
+) (*sdk.GetServicePlans200ResponseServicePlan, error) {
+	encoded, err := json.Marshal(in)
+	if err != nil {
+		return nil, fmt.Errorf("service plan could not be encoded: %w", err)
+	}
+
+	var out sdk.GetServicePlans200ResponseServicePlan
+	if err := json.Unmarshal(encoded, &out); err != nil {
+		return nil, fmt.Errorf("service plan could not be decoded: %w", err)
+	}
+
+	return &out, nil
 }
 
 func getServicePlan(

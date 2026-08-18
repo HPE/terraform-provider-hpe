@@ -14,6 +14,28 @@ description: |-
 
 {{ .SchemaMarkdown | trimspace }}
 
+## Notes
+
+### Write-Only Attributes
+
+`action`, `firewall` and `service` are **write-only**. They are sent to the
+Morpheus API when the NAT rule is created or updated, but the API never returns
+them, so they are never stored in Terraform state and Terraform cannot detect
+drift in them.
+
+Because the values are not in state, editing one of them on its own produces
+**no plan diff**. To push a new value, increment the matching companion --
+`action_version`, `firewall_version` or `service_version`. Incrementing a
+companion triggers an in-place update of the NAT rule; none of them force
+replacement.
+
+If `firewall` is omitted on create, `MATCH_INTERNAL_ADDRESS` is sent, because
+the underlying API field is required. On update an omitted `firewall` is left
+out of the payload entirely, so the value already configured on the router is
+preserved rather than overwritten.
+
+Write-only attributes require Terraform >= 1.11.
+
 ## Import
 
 Import is supported using `router_id.nat_id`.

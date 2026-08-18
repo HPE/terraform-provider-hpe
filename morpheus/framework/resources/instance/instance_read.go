@@ -588,6 +588,21 @@ func getInstanceVMwareConfig(
 	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
+
+	// affinity_group_id is recorded at provision time and never updated by the
+	// platform afterwards, so what the API returns is what was requested at
+	// create, not live membership. It is still read back deliberately: on import
+	// there is no prior state to carry the value, so leaving it unset would make
+	// the next plan see a change from null and, because the attribute forces
+	// replacement, propose destroying and recreating the instance.
+	//
+	// For live membership use the servers attribute of the affinity group
+	// resources and data sources, or parent_host_id on the compute server data
+	// sources to see where a guest actually landed.
+	//
+	// VMware sends only affinityGroup on create, so that is the field read back.
+	configVmware.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroup)
+
 	configVmware.state = attr.ValueStateKnown
 
 	return configVmware, diag.Diagnostics{}
@@ -636,6 +651,19 @@ func getInstanceHVMConfig(
 	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
+
+	// affinity_group_id is recorded at provision time and never updated by the
+	// platform afterwards, so what the API returns is what was requested at
+	// create, not live membership. It is still read back deliberately: on import
+	// there is no prior state to carry the value, so leaving it unset would make
+	// the next plan see a change from null and, because the attribute forces
+	// replacement, propose destroying and recreating the instance.
+	//
+	// For live membership use the servers attribute of the affinity group
+	// resources and data sources, or parent_host_id on the compute server data
+	// sources to see where a guest actually landed.
+	configHvm.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroupId)
+
 	configHvm.state = attr.ValueStateKnown
 
 	return configHvm, diag.Diagnostics{}
@@ -942,16 +970,25 @@ func getNoAgent(
 	return nil, diags
 }
 
+// nestedVirtualizationDefault mirrors the schema default for
+// config_vmware.nested_virtualization and config_hvm.nested_virtualization.
+var nestedVirtualizationDefault = "off"
+
 func getNestedVirtualization(
 	id int64,
 	apiConfig *apiConfigType,
 ) (*string, diag.Diagnostics) {
-	// nestedVirtualization is optional: hpegl never sets it, so Morpheus omits
-	// it from the GET response entirely (IsSet() == false).  Treat absence as
-	// nil rather than an error — the caller passes nil to convert.StrToType
-	// which produces a null value, valid for this Optional+Computed attribute.
+	// nestedVirtualization is optional and Morpheus omits it from the GET
+	// response entirely when it was never set (IsSet() == false).
+	//
+	// Absence resolves to the schema default rather than to nil. The attribute
+	// is Optional+Computed with a default of "off", so a configuration that
+	// leaves it out plans "off"; returning nil would put null in state, and
+	// null against "off" is a change Terraform acts on. On an instance that
+	// means a permanent diff on config_vmware after import, for an attribute
+	// nobody set. Same reasoning as ipModeOrDefault.
 	if !apiConfig.NestedVirtualization.IsSet() {
-		return nil, nil
+		return &nestedVirtualizationDefault, nil
 	}
 
 	return apiConfig.NestedVirtualization.Get(), nil
@@ -1692,6 +1729,27 @@ func getConnectionInfo(
 }
 
 // getStateInterfaces get the interfaces to be returned as state entries
+// ipModeOrDefault converts an API ip_mode into state, substituting the schema
+// default for an absent value.
+//
+// The API omits ipMode from interface responses when it is unset, which arrives
+// as nil and would otherwise become null. The schema declares ip_mode as
+// Optional+Computed with a default of "", so a configuration that leaves it out
+// plans "" -- and null in state against "" in the plan is a change Terraform
+// will act on. On an instance that means a diff on network_interfaces, which
+// before appliance 8.1.2 forces the instance to be replaced.
+//
+// Normalising here rather than in one caller keeps every path consistent: the
+// import path returns interfaces straight from the instance response and never
+// reaches the server/instance merge, which is where this was previously handled.
+func ipModeOrDefault(apiValue *string) basetypes.StringValue {
+	if apiValue == nil {
+		return types.StringValue("")
+	}
+
+	return convert.StrToType(apiValue)
+}
+
 func getStateInterfaces(
 	ctx context.Context,
 	instance sdk.GetInstance200ResponseInstance,
@@ -1716,6 +1774,22 @@ func getStateInterfaces(
 	diags = append(diags, id...)
 	if diags.HasError() {
 		return nil, diags
+	}
+
+	// The server interfaces response does not carry all the fields that the
+	// instance-level interfaces response does (e.g. NetworkInterfaceTypeId,
+	// and IpMode may be absent). Fill gaps from intfsFromInstance so that
+	// Read returns consistent values regardless of which code path is taken.
+	for i := range intfsFromServer {
+		if i >= len(intfsFromInstance) {
+			break
+		}
+		if intfsFromServer[i].NetworkTypeId.IsNull() || intfsFromServer[i].NetworkTypeId.IsUnknown() {
+			intfsFromServer[i].NetworkTypeId = intfsFromInstance[i].NetworkTypeId
+		}
+		if intfsFromServer[i].IpMode.IsNull() || intfsFromServer[i].IpMode.IsUnknown() {
+			intfsFromServer[i].IpMode = intfsFromInstance[i].IpMode
+		}
 	}
 
 	// Get []NetworkInterfacesValue from the plan
@@ -1792,7 +1866,7 @@ func getStateInterfacesFromInstance(
 		ifaceVal := NetworkInterfacesValue{}
 		ifaceVal.Id = types.Int64Null()
 		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
-		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
+		ifaceVal.IpMode = ipModeOrDefault(instIntf.IpMode)
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
@@ -1844,7 +1918,7 @@ func getInstanceInterfacesChildNetworks(
 		ifaceVal := ChildVirtualNetworksValue{}
 		ifaceVal.Id = types.Int64Null()
 		ifaceVal.IpAddress = convert.StrToType(instIntf.IpAddress)
-		ifaceVal.IpMode = convert.StrToType(instIntf.IpMode)
+		ifaceVal.IpMode = ipModeOrDefault(instIntf.IpMode)
 		ifaceVal.PrimaryInterface = types.BoolNull()
 		ifaceVal.Name = types.StringNull()
 		ifaceVal.NetworkId = types.Int64Null()
@@ -1895,7 +1969,7 @@ func getStateInterfacesFromInstanceServer(
 		ifaceVal := NetworkInterfacesValue{}
 		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
-		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
+		ifaceVal.IpMode = ipModeOrDefault(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
 		if iface.NetworkGroup != nil {
 			ifaceVal.NetworkGroupId = convert.Int64ToType(iface.NetworkGroup.Id)
@@ -2086,7 +2160,7 @@ func getChildNetworks(
 		}
 		ifaceVal.Id = convert.Int64ToType(iface.Id)
 		ifaceVal.IpAddress = convert.StrToType(iface.IpAddress)
-		ifaceVal.IpMode = convert.StrToType(iface.IpMode)
+		ifaceVal.IpMode = ipModeOrDefault(iface.IpMode)
 		ifaceVal.NetworkGroupId = types.Int64Null()
 		if iface.NetworkGroup != nil {
 			ifaceVal.NetworkGroupId = convert.Int64ToType(iface.NetworkGroup.Id)

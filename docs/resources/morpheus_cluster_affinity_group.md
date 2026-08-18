@@ -8,13 +8,21 @@ description: |-
 
 
 
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
 -> This resource creates a cluster-scoped affinity group, which is supported on HPE Virtual Machines (HVM) clusters. To place an affinity group on a VMware, VMware Cloud on AWS or MacStadium cloud, use [`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group) instead.
 
 -> HVM is the only cluster type on which Morpheus enables affinity groups today, but that is not a limit of this resource: the capability is enabled per cluster type, and a cluster type contributed by a plugin can advertise it too, in which case this resource works against it unchanged.
 
 !> **Warning** Setting `servers` makes Terraform the sole owner of this affinity group's membership. Morpheus replaces the entire member set on every update, so any server added out-of-band — for example by provisioning an instance into the group — is removed on the next apply. Omit `servers` entirely to manage the group's other attributes while leaving its membership untouched.
 
-~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. Creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.
+~> **Note** Affinity rules on HVM are enforced by the platform's own placement loop, not applied at the moment you create or change them. That loop is the cluster's Dynamic Placement and **must be enabled on the cluster** — `config_hvm.dynamic_placement = true` on [`hpe_morpheus_cluster`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster). It is off by default, and with it off the rule and its membership are recorded but no virtual machine is ever placed or moved to satisfy them. With it enabled, creating a group, changing its members, or changing `affinity_type` records the intent straight away, but the affected virtual machines are only migrated when that loop next runs and finds hosts that can satisfy the rule. A `terraform apply` therefore returns once Morpheus has recorded the rule — before the virtual machines have necessarily moved to satisfy it — so do not expect placement to have converged the instant the apply completes.
 
 -> `servers` always shows as "known after apply" in a plan, even when the membership has not changed. Membership can change outside Terraform, so the provider deliberately does not assume the set it last recorded is still current. Where nothing has actually changed, the apply is a no-op.
 
@@ -24,7 +32,7 @@ description: |-
 
 -> Note that Morpheus version `8.0.10` or later is required for affinity group support.
 
--> When an instance is provisioned with an affinity group selected, that membership is reflected here in `servers`. It is not exposed on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance), because the Morpheus instance API only echoes back the value requested at creation rather than the instance's actual group membership.
+-> An instance can alternatively be placed into a group when it is provisioned, with `config_hvm.affinity_group_id` on [`hpe_morpheus_instance`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_instance). Do not mix the two approaches for the same instance: where `servers` is managed here it is authoritative, so a server this resource does not list — including one placed into the group at provision time — is removed on the next apply. `affinity_group_id` records only what was requested at creation, so `servers` here remains the source of truth for actual membership.
 
 ## Example Usage
 
@@ -50,14 +58,18 @@ resource "hpe_morpheus_cluster_affinity_group" "example" {
 - `affinity_type` (String) The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
 - `description` (String, Deprecated) Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release.
 - `resource_permissions` (Attributes) Resource permissions for group access. (see [below for nested schema](#nestedatt--resource_permissions))
-- `servers` (Set of Number) Set of compute server IDs to include in the affinity group.
-- `tenant_ids` (Set of Number) List of tenant account IDs that are allowed access.
+- `tenant_ids` (Set of Number, Deprecated) Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group (public or private).
 
 ### Read-Only
 
 - `id` (Number) The ID of the cluster affinity group.
 - `pool_id` (Number) The ID of the resource pool associated with the affinity group.
+- `servers` (Set of Number) The compute servers currently in this affinity group, reported by the
+API. Read-only: membership is managed with
+hpe_morpheus_cluster_affinity_group_member, one resource per member, so
+that servers added by other means -- an instance provisioned into the
+group, or a node added to one -- are not evicted.
 - `source` (String) The source of the affinity group (e.g. user, sync).
 
 <a id="nestedatt--resource_permissions"></a>
@@ -71,10 +83,13 @@ Optional:
 <a id="nestedatt--resource_permissions--groups"></a>
 ### Nested Schema for `resource_permissions.groups`
 
+Required:
+
+- `id` (Number) Group ID.
+
 Optional:
 
 - `default` (Boolean) Whether this is the default group.
-- `id` (Number) Group ID.
 
 ## Import
 

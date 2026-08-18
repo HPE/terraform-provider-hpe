@@ -1296,6 +1296,10 @@ data_sources:
     read:
       path: /api/servers/{id}
       method: GET
+  clusters:
+    read:
+      path: /api/clusters
+      method: GET
   compute_servers:
     read:
       path: /api/servers
@@ -1363,6 +1367,10 @@ data_sources:
   instance_type:
     read:
       path: /api/library/instance-types/{instanceTypeId}
+      method: GET
+  instance_disk_type:
+    read:
+      path: /api/instances/service-plans
       method: GET
   integration:
     read:
@@ -1457,6 +1465,10 @@ data_sources:
     read:
       path: /api/networks/servers/{id}
       method: GET
+  network_server_group:
+    read:
+      path: /api/networks/servers/{serverId}/groups/{id}
+      method: GET
   network_transport_zone:
     read:
       path: /api/networks/servers/{serverId}/scopes/{id}
@@ -1464,6 +1476,10 @@ data_sources:
   network_type:
     read:
       path: /api/network-types/{id}
+      method: GET
+  network_proxy:
+    read:
+      path: /api/networks/proxies/{id}
       method: GET
   network_router_type:
     read:

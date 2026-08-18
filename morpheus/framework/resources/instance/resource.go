@@ -12,9 +12,9 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/cenkalti/backoff/v5"
-	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
@@ -114,8 +114,8 @@ func (g *Resource) ModifyPlan(
 	// Check for network updates that require a resource replacement
 	networkConstraint := &morpheusConstraint{
 		morphVersion: morphVersion,
-		plan:         plan.NetworkInterfaces,
-		state:        state.NetworkInterfaces,
+		planRaw:      resp.Plan.Raw,
+		stateRaw:     req.State.Raw,
 		constraint:   ">= 8.1.2",
 		hclAttribute: "network_interfaces",
 		mnemonic:     "network",
@@ -125,8 +125,8 @@ func (g *Resource) ModifyPlan(
 	// Check for service plan options updates that require a resource replacement
 	servicePlanOptionsConstraint := &morpheusConstraint{
 		morphVersion: morphVersion,
-		plan:         plan.ServicePlanOptions,
-		state:        state.ServicePlanOptions,
+		planRaw:      resp.Plan.Raw,
+		stateRaw:     req.State.Raw,
 		constraint:   ">= 8.1.2",
 		hclAttribute: "service_plan_options",
 		mnemonic:     "Service Plan Options",
@@ -136,8 +136,8 @@ func (g *Resource) ModifyPlan(
 
 type morpheusConstraint struct {
 	morphVersion *versioncheck.Version
-	plan         attr.Value
-	state        attr.Value
+	planRaw      tftypes.Value
+	stateRaw     tftypes.Value
 	constraint   string
 	hclAttribute string
 	mnemonic     string
@@ -146,8 +146,19 @@ type morpheusConstraint struct {
 func (m *morpheusConstraint) checkForAttributeUpdate(
 	resp *resource.ModifyPlanResponse,
 ) {
-	// Has there been a change in the "shape" of the attribute?
-	if m.plan.Equal(m.state) {
+	// Has the practitioner changed the shape of the attribute?
+	//
+	// Unknowns are filled from prior state before comparing, which is how
+	// restoreUnchangedComputedAttributes already decides whether a collection
+	// was touched. The two are now consistent.
+	//
+	// A strict comparison counted the framework's own "(known after apply)"
+	// placeholders as a change. The framework marks every null computed
+	// attribute unknown whenever anything in the resource differs, so editing
+	// an unrelated attribute left the interface and volume collections unknown
+	// and looked like a reconfiguration -- forcing a replacement, on appliances
+	// below the constraint, of an instance whose networking nobody had touched.
+	if !attributeChanged(m.planRaw, m.stateRaw, m.hclAttribute) {
 		return
 	}
 
@@ -177,6 +188,7 @@ func (g *Resource) ConfigValidators(
 ) []resource.ConfigValidator {
 	return []resource.ConfigValidator{
 		serverUUIDConflictValidator{},
+		hvmHostAffinityConflictValidator{},
 	}
 }
 

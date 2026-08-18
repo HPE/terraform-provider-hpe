@@ -126,6 +126,16 @@ func ComputeServerDataSourceSchema(ctx context.Context) schema.Schema {
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 				},
 			},
+			"parent_host_id": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The ID of the hypervisor host this compute server runs on, or null for\na host itself. In Morpheus a host is a compute server record too, so\nthis is the parent compute server, exposed as \"host\" for clarity.",
+				MarkdownDescription: "The ID of the hypervisor host this compute server runs on, or null for\na host itself. In Morpheus a host is a compute server record too, so\nthis is the parent compute server, exposed as \"host\" for clarity.",
+			},
+			"parent_host_name": schema.StringAttribute{
+				Computed:            true,
+				Description:         "The name of the hypervisor host this compute server runs on, or null\nfor a host itself. Reflects placement at the time of read: it changes\nwhen the guest is migrated, once Morpheus has picked the move up in\nits next inventory sync.",
+				MarkdownDescription: "The name of the hypervisor host this compute server runs on, or null\nfor a host itself. Reflects placement at the time of read: it changes\nwhen the guest is migrated, once Morpheus has picked the move up in\nits next inventory sync.",
+			},
 			"plan_code": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The code of the service plan.",
@@ -191,6 +201,8 @@ type ComputeServerModel struct {
 	MaxMemory                types.Int64  `tfsdk:"max_memory"`
 	MaxStorage               types.Int64  `tfsdk:"max_storage"`
 	Name                     types.String `tfsdk:"name"`
+	ParentHostId             types.Int64  `tfsdk:"parent_host_id"`
+	ParentHostName           types.String `tfsdk:"parent_host_name"`
 	PlanCode                 types.String `tfsdk:"plan_code"`
 	PlanId                   types.Int64  `tfsdk:"plan_id"`
 	PlanName                 types.String `tfsdk:"plan_name"`

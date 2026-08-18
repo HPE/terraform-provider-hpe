@@ -26,6 +26,8 @@ type VMWareInstanceConfiguration7 struct {
 	ResourcePoolId *string `json:"resourcePoolId,omitempty"`
 	// Specific host to deploy to if so desired.
 	HostId *string `json:"hostId,omitempty"`
+	// ID of an affinity group to place this instance into. The placement rule is applied to the cluster before the virtual machine is powered on, so the instance is placed according to the rule from the outset. Applies at provision time only.
+	AffinityGroup *int64 `json:"affinityGroup,omitempty"`
 	// Sets the asset tag on the SMBIOS for use by the guest operating system. If left blank, the virtual machine name will be used.
 	SmbiosAssetTag *string `json:"smbiosAssetTag,omitempty"`
 	// Enable Nested Virtualization
@@ -59,6 +61,9 @@ func (o VMWareInstanceConfiguration7) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.HostId) {
 		toSerialize["hostId"] = o.HostId
+	}
+	if !IsNil(o.AffinityGroup) {
+		toSerialize["affinityGroup"] = o.AffinityGroup
 	}
 	if !IsNil(o.SmbiosAssetTag) {
 		toSerialize["smbiosAssetTag"] = o.SmbiosAssetTag

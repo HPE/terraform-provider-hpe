@@ -70,6 +70,7 @@ func dhcpServerAsState(
 		Id:                   convert.Int64ToType(dhcp.Id),
 		Name:                 convert.StrToType(dhcp.Name),
 		LeaseTime:            convert.Int64ToType(dhcp.LeaseTime),
+		ProviderId:           convert.StrToType(dhcp.ProviderId),
 		ServerIpAddress:      convert.StrToType(dhcp.ServerIpAddress),
 		NetworkIntegrationId: types.Int64Value(networkServerId),
 	}
