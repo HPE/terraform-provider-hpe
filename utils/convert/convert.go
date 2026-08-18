@@ -152,6 +152,17 @@ func Int64ToType(i *int64) types.Int64 {
 	return types.Int64Value(*i)
 }
 
+// Int32ToType converts an optional int32 to a Terraform Int64 value, preserving
+// null. Terraform has no 32-bit number type, so int32 fields (which the
+// generated SDK uses for several models) widen to Int64.
+func Int32ToType(i *int32) types.Int64 {
+	if i == nil {
+		return types.Int64Null()
+	}
+
+	return types.Int64Value(int64(*i))
+}
+
 func NumToType(f *float32) types.Number {
 	if f == nil {
 		return types.NumberNull()
