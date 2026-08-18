@@ -36,6 +36,7 @@ data "hpe_morpheus_network_pool" "example" {
 - `code` (String) The code of the network pool
 - `dhcp_ip` (String)
 - `dhcp_server` (Boolean) Whether DHCP server is enabled for this pool
+- `display_name` (String) The display name of the network pool
 - `dns_domain` (String) The DNS domain for the network pool
 - `external_id` (String) The external identifier of the network pool
 - `free_count` (Number) The number of free IPs in the pool
