@@ -1,0 +1,222 @@
+instance_disk_type:
+  # The instance disk type (Morpheus "storage volume type") is only returned by
+  # the /api/instances/service-plans options endpoint, nested at
+  # plans[].storageTypes[]. There is no singular component to generate a flat
+  # schema from, so the matched disk type's fields are injected here as
+  # top-level computed attributes (the cloud_affinity_groups template technique)
+  # and the generated plans[] envelope is removed. The hand-written Read scopes
+  # the call by cloud/layout/group, dedupes storageTypes by id, and matches one
+  # by name (erroring on zero or multiple). A plural instance_disk_types list
+  # data source is planned for a future PR off the same endpoint.
+  #
+  # Every scalar on the underlying model is exposed, matching the convention set
+  # by network_type. Two model fields are deliberately not exposed:
+  #   optionTypes     - array of free-form maps; network_type removes its
+  #                     equivalent for the same reason.
+  #   createDatastore - the API returns a JSON boolean here but the schema types
+  #                     it as a nullable string, so the SDK surfaces it as the
+  #                     coerced string "0"/"1" rather than a usable boolean.
+  #                     Exposing that would be actively misleading. Tracked to be
+  #                     corrected in the schema; see the note in datasource.go.
+  templates:
+    name:
+      string:
+        computed_optional_required: required
+        description: >-
+          The name of the disk type (storage volume type) to look up (for
+          example "Standard"). Matched case-insensitively and
+          whitespace-trimmed.
+    id:
+      int64:
+        computed_optional_required: computed
+        description: >-
+          The ID of the disk type. Use this as storage_type_id on
+          hpe_morpheus_instance volumes.
+    code:
+      string:
+        computed_optional_required: computed
+        description: The code of the disk type.
+    display_name:
+      string:
+        computed_optional_required: computed
+        description: The display name of the disk type.
+    display_order:
+      int64:
+        computed_optional_required: computed
+        description: The display order of the disk type in the Morpheus UI.
+    description:
+      string:
+        computed_optional_required: computed
+        description: A description of the disk type.
+    volume_type:
+      string:
+        computed_optional_required: computed
+        description: The volume type of the disk type (for example "disk").
+    volume_category:
+      string:
+        computed_optional_required: computed
+        description: The volume category of the disk type (for example "disk").
+    storage_type:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The underlying storage type backing the disk type (for example
+          "block").
+    external_id:
+      string:
+        computed_optional_required: computed
+        description: The external ID of the disk type on the underlying platform.
+    default_type:
+      bool:
+        computed_optional_required: computed
+        description: Whether this is the default disk type.
+    enabled:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type is enabled.
+    editable:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type can be edited.
+    deletable:
+      bool:
+        computed_optional_required: computed
+        description: Whether volumes using this disk type can be deleted.
+    resizable:
+      bool:
+        computed_optional_required: computed
+        description: Whether volumes using this disk type can be resized.
+    plan_resizable:
+      bool:
+        computed_optional_required: computed
+        description: >-
+          Whether a service plan change resizes volumes of this disk type, even
+          when they cannot be resized directly.
+    name_editable:
+      bool:
+        computed_optional_required: computed
+        description: Whether the name of a volume using this disk type can be edited.
+    custom_label:
+      bool:
+        computed_optional_required: computed
+        description: Whether a custom label can be set on volumes of this disk type.
+    custom_size:
+      bool:
+        computed_optional_required: computed
+        description: Whether a custom size can be set on volumes of this disk type.
+    auto_delete:
+      bool:
+        computed_optional_required: computed
+        description: >-
+          Whether volumes of this disk type are deleted automatically with their
+          instance.
+    allow_search:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type supports searching for a volume.
+    has_datastore:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type requires a datastore.
+    has_iso:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type represents an ISO image.
+    no_storage:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type consumes no storage.
+    multi_attach_supported:
+      bool:
+        computed_optional_required: computed
+        description: >-
+          Whether volumes of this disk type can be attached to more than one
+          instance.
+    has_active_replica:
+      bool:
+        computed_optional_required: computed
+        description: Whether the disk type supports an active replica.
+    configurable_iops:
+      bool:
+        computed_optional_required: computed
+        description: Whether IOPS can be configured on volumes of this disk type.
+    min_iops:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The minimum IOPS for volumes of this disk type. Returned by the API as
+          a string, and null when no minimum applies.
+    max_iops:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The maximum IOPS for volumes of this disk type. Returned by the API as
+          a string, and null when no maximum applies.
+    min_storage:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The minimum size for volumes of this disk type. Returned by the API as
+          a string, and null when no minimum applies.
+    max_storage:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The maximum size for volumes of this disk type. Returned by the API as
+          a string, and null when no maximum applies.
+    volume_option_source:
+      string:
+        computed_optional_required: computed
+        description: >-
+          The option source used to populate volume choices for this disk type,
+          if any.
+
+  moves:
+    - zone_id: cloud_id                 # (query parameter) rename zone -> cloud
+    - site_id: group_id                 # (query parameter) rename site -> group
+    - template-name: name               # (template) injected match key
+    - template-id: id                   # (template) matched disk type id
+    - template-code: code               # (template) matched disk type fields follow
+    - template-display_name: display_name
+    - template-display_order: display_order
+    - template-description: description
+    - template-volume_type: volume_type
+    - template-volume_category: volume_category
+    - template-storage_type: storage_type
+    - template-external_id: external_id
+    - template-default_type: default_type
+    - template-enabled: enabled
+    - template-editable: editable
+    - template-deletable: deletable
+    - template-resizable: resizable
+    - template-plan_resizable: plan_resizable
+    - template-name_editable: name_editable
+    - template-custom_label: custom_label
+    - template-custom_size: custom_size
+    - template-auto_delete: auto_delete
+    - template-allow_search: allow_search
+    - template-has_datastore: has_datastore
+    - template-has_iso: has_iso
+    - template-no_storage: no_storage
+    - template-multi_attach_supported: multi_attach_supported
+    - template-has_active_replica: has_active_replica
+    - template-configurable_iops: configurable_iops
+    - template-min_iops: min_iops
+    - template-max_iops: max_iops
+    - template-min_storage: min_storage
+    - template-max_storage: max_storage
+    - template-volume_option_source: volume_option_source
+
+  removes:
+    - plans                             # (response) plans[] envelope; disk types are lifted in the Read
+
+  overrides:
+    cloud_id:
+      computed_optional_required: required
+      description: The ID of the cloud (zone) to scope the disk type lookup.
+    layout_id:
+      computed_optional_required: required
+      description: The ID of the instance layout to scope the disk type lookup.
+    group_id:
+      computed_optional_required: required
+      description: The ID of the group (site) to scope the disk type lookup.

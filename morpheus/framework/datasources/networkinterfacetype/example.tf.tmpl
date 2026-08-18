@@ -1,0 +1,5 @@
+data "hpe_morpheus_network_interface_type" "example" {
+  name                = "{{.Name}}"
+  cloud_id            = {{.CloudId}}
+  provision_type_code = "{{.ProvisionTypeCode}}"
+}

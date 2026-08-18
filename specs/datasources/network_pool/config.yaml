@@ -6,7 +6,6 @@ network_pool:
     - account                               # (components/schemas/networkPool.yaml) - internal ref
     - boot_file                             # (components/schemas/networkPool.yaml) - not needed
     - config                                # (components/schemas/networkPool.yaml) - not needed
-    - display_name                          # (components/schemas/networkPool.yaml) - duplicate of name
     - dns_search_path                       # (components/schemas/networkPool.yaml) - not needed
     - dns_servers                           # (components/schemas/networkPool.yaml) - not needed
     - dns_suffix_list                       # (components/schemas/networkPool.yaml) - not needed
@@ -52,5 +51,7 @@ network_pool:
       description: The netmask for the network pool
     pool_enabled:
       description: Whether the pool is enabled
+    display_name:
+      description: The display name of the network pool
     subnet_address:
       description: The subnet address for the network pool
