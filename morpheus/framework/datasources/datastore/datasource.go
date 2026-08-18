@@ -4,6 +4,7 @@ package datastore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -24,6 +25,11 @@ import (
 )
 
 const (
+	// listMax bounds a by-name lookup. name is an exact server-side filter, so
+	// this is only reached when many datastores share one name; the default
+	// page of 25 would silently hide the rest.
+	listMax = 250
+
 	nfsDatastoreCode   = "libvirt-netfs-nfs"
 	alletraMPHVMCode   = "hpedatastore-alletra-mp"
 	alletraMPBmaasCode = "hpedatastore-alletra-mp-bmaas"
@@ -80,12 +86,26 @@ func getDatastoreById(
 		return nil, fmt.Errorf("datastore %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
 	}
 
-	state := &DatastoreModel{}
-
 	datastore := response.Datastore
 	if datastore == nil {
 		return nil, fmt.Errorf("datastore %d is nil", id)
 	}
+
+	return datastoreToModel(ctx, datastore, id, client)
+}
+
+// datastoreToModel maps a datastore onto the data source model.
+//
+// Split out from getDatastoreById so that the by-name path can reuse it. That
+// path already holds the datastore from the listing and does not fetch it
+// again; see getDatastoreByName.
+func datastoreToModel(
+	ctx context.Context,
+	datastore *sdk.GetDatastores200ResponseAllOfDatastore,
+	id int64,
+	client *sdk.APIClient,
+) (*DatastoreModel, error) {
+	state := &DatastoreModel{}
 
 	state.Id = types.Int64Value(id)
 	state.Name = convert.StrToType(&datastore.Name)
@@ -116,41 +136,64 @@ func getDatastoreById(
 	datastoreTypeValue.state = attr.ValueStateKnown
 	state.DatastoreType = datastoreTypeValue
 
-	// Set AssociatedResourceType based on RefType
+	// associated_resource_type, associated_resource_id, tenants and
+	// resource_permissions all derive from refType and refId.
+	//
+	// Not every appliance reports them. Some answer with the datastore's own
+	// fields and nothing about what it belongs to, and a datastore that exists
+	// and can be named is still worth returning: the common use of this data
+	// source is to resolve a name to an id. So a missing association leaves
+	// those four attributes null rather than failing the read, which is how the
+	// plural hpe_morpheus_datastores data source has always treated it.
+	//
+	// An unrecognised refType is treated the same way. It means the API knows a
+	// kind of association this provider does not, which is not a reason to
+	// refuse the datastore.
 	refType := datastore.RefType
-	if refType == nil {
-		return nil, fmt.Errorf("datastore %d missing ref type in response", id)
-	}
-
 	refId := datastore.RefId
-	if refId == nil {
-		return nil, fmt.Errorf("datastore %d missing ref id in response", id)
-	}
 
-	state.AssociatedResourceId = convert.Int64ToType(refId)
-	switch *refType {
-	case cloudRefType:
-		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCloud)
-		tenants, resourcePermissions, err := populateCloudDatastoreInformation(
-			ctx, id, *refId, client)
-		if err != nil {
-			return nil, err
+	// Typed nulls, not zero values. TenantsType{} on its own carries no
+	// attribute types, so the set it produces is Object[] rather than the
+	// object the schema declares, and Terraform rejects that as a provider bug
+	// instead of reading it as an absent value. Deriving the type from the
+	// value keeps it in step with the schema.
+	state.Tenants = types.SetNull(TenantsValue{}.Type(ctx))
+	state.ResourcePermissions = NewResourcePermissionsValueNull()
+
+	if refType != nil && refId != nil {
+		state.AssociatedResourceId = convert.Int64ToType(refId)
+
+		switch *refType {
+		case cloudRefType:
+			state.AssociatedResourceType = types.StringValue(associatedResourceTypeCloud)
+			tenants, resourcePermissions, err := populateCloudDatastoreInformation(
+				ctx, id, *refId, client)
+			if err != nil {
+				return nil, err
+			}
+			state.Tenants = tenants
+			state.ResourcePermissions = resourcePermissions
+
+		case clusterRefType:
+			state.AssociatedResourceType = types.StringValue(associatedResourceTypeCluster)
+			tenants, resourcePermissions, err := populateClusterDatastoreInformation(
+				ctx, id, *refId, client)
+			if err != nil {
+				return nil, err
+			}
+			state.Tenants = tenants
+			state.ResourcePermissions = resourcePermissions
+
+		default:
+			tflog.Debug(ctx, "datastore has an unrecognised ref type", map[string]any{
+				"datastore_id": id,
+				"ref_type":     *refType,
+			})
 		}
-		state.Tenants = tenants
-		state.ResourcePermissions = resourcePermissions
-
-	case clusterRefType:
-		state.AssociatedResourceType = types.StringValue(associatedResourceTypeCluster)
-		tenants, resourcePermissions, err := populateClusterDatastoreInformation(
-			ctx, id, *refId, client)
-		if err != nil {
-			return nil, err
-		}
-		state.Tenants = tenants
-		state.ResourcePermissions = resourcePermissions
-
-	default:
-		return nil, fmt.Errorf("datastore %d has invalid ref type '%s' in response", id, *refType)
+	} else {
+		tflog.Debug(ctx, "datastore reports no association; "+
+			"associated_resource_type, associated_resource_id, tenants and "+
+			"resource_permissions will be null", map[string]any{"datastore_id": id})
 	}
 
 	// Populate Config
@@ -546,7 +589,10 @@ func getDatastoreByName(
 	name string,
 	client *sdk.APIClient,
 ) (*DatastoreModel, error) {
-	datastores, hresp, err := client.DatastoresAPI.ListDatastores(ctx).Name(name).Execute()
+	datastores, hresp, err := client.DatastoresAPI.ListDatastores(ctx).
+		Name(name).
+		Max(listMax).
+		Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("datastore %s list failed: %s", name, errfmt.ErrMsg(err, hresp))
 	}
@@ -556,7 +602,20 @@ func getDatastoreByName(
 		return nil, fmt.Errorf("datastore %s not found", name)
 	}
 
-	// Not sure if this can happen
+	// name is an exact server-side filter, so meta.total counts the matches
+	// rather than the whole collection. A total larger than the page means more
+	// datastores share this name than were fetched, and the ones not fetched
+	// cannot be reported. Paging them in would not help: the practitioner still
+	// has to say which one they meant.
+	if datastores.Meta != nil && datastores.Meta.Total != nil &&
+		*datastores.Meta.Total > int64(len(matchingDatastores)) {
+		return nil, fmt.Errorf(
+			"%d datastores are named %s, more than the %d fetched. "+
+				"Specify an ID instead",
+			*datastores.Meta.Total, name, listMax,
+		)
+	}
+
 	if len(matchingDatastores) > 1 {
 		var datastoreIDs []string
 		for _, n := range matchingDatastores {
@@ -571,9 +630,64 @@ func getDatastoreByName(
 		)
 	}
 
-	id := matchingDatastores[0].Id
+	entry := matchingDatastores[0]
 
-	return getDatastoreById(ctx, id, client)
+	// Newer appliances answer this listing with the whole datastore, which is
+	// worth using: it saves a request, and it avoids GET /api/data-stores/{id},
+	// which on some appliances answers 404 for a cloud-associated datastore the
+	// listing returns quite happily.
+	//
+	// Older ones answer with nothing but an id and a name. There the fetch is
+	// worth attempting, because it carries fields the entry does not -- but it
+	// is an improvement, not a requirement. If it fails, the entry the listing
+	// already gave us is still a datastore, and resolving a name to an id is
+	// what this data source is mostly asked for. Refusing to answer because a
+	// second request failed would leave the data source unusable on exactly the
+	// appliances that need it most.
+	//
+	// refType marks a full entry: it is absent from a thin one.
+	if entry.RefType == nil {
+		model, err := getDatastoreById(ctx, entry.Id, client)
+		if err == nil {
+			return model, nil
+		}
+
+		tflog.Debug(ctx, "datastore could not be fetched by id; "+
+			"falling back to the listing entry", map[string]any{
+			"datastore_id": entry.Id,
+			"error":        err.Error(),
+		})
+	}
+
+	datastore, err := datastoreFromListEntry(&entry)
+	if err != nil {
+		return nil, err
+	}
+
+	return datastoreToModel(ctx, datastore, entry.Id, client)
+}
+
+// datastoreFromListEntry converts a listing entry into the single-item shape.
+//
+// The two are generated from the same API object and carry the same fields;
+// only the Go type names differ, nested types included. Re-encoding is used in
+// preference to copying thirty-odd fields and seven nested structures by hand,
+// which would be silently wrong the first time the SDK gained a field and
+// nobody updated the copy.
+func datastoreFromListEntry(
+	in *sdk.ListDatastores200ResponseAllOfDatastoresInner,
+) (*sdk.GetDatastores200ResponseAllOfDatastore, error) {
+	encoded, err := json.Marshal(in)
+	if err != nil {
+		return nil, fmt.Errorf("datastore %d could not be encoded: %w", in.Id, err)
+	}
+
+	var out sdk.GetDatastores200ResponseAllOfDatastore
+	if err := json.Unmarshal(encoded, &out); err != nil {
+		return nil, fmt.Errorf("datastore %d could not be decoded: %w", in.Id, err)
+	}
+
+	return &out, nil
 }
 
 func getDatastore(
