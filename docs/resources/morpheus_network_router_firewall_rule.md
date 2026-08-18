@@ -33,17 +33,19 @@ resource "hpe_morpheus_network_router_firewall_rule" "example" {
 ### Required
 
 - `name` (String) Name of the firewall rule
-- `parent_id` (String) The id of the parent firewall rule group the rule belongs to (for NSX-T,
-e.g. "group-123"). Required to create the rule. Use the
+- `parent_id` (String) The id of the parent firewall rule group the rule belongs to. Must be in
+the format "group-{id}" (for example "group-123") - the Morpheus API
+rejects any other format. Required to create the rule. Use the
 hpe_morpheus_network_router_firewall_rule_groups data source to look one up.
 - `router_id` (Number) The ID of the parent network router
 
 ### Optional
 
 - `application` (String) Application the rule matches (depends on the network router type)
-- `description` (String) Description of the firewall rule. This is a write-only input: the API
-accepts it on create and update but does not return it, so it cannot be
-used for drift detection.
+- `description` (String) Description of the firewall rule. The Morpheus API accepts this on
+create and update but does not return it, so it cannot be used for
+drift detection. Removing it from the configuration clears it on the
+appliance.
 - `destination_type` (String) Destination match type (for example cidr, group, tier, instance)
 - `direction` (String) Direction (ingress or egress)
 - `enabled` (Boolean) Whether the firewall rule is enabled

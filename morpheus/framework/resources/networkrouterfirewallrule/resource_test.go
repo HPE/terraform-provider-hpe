@@ -92,6 +92,10 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(resourceName, "policy", "accept"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		// description is Optional and never returned by the API. It must settle
+		// as null when unset: when it was Optional+Computed the apply failed
+		// with "Provider returned invalid result object after apply".
+		resource.TestCheckNoResourceAttr(resourceName, "description"),
 	)
 
 	resource.Test(t, resource.TestCase{
@@ -184,6 +188,84 @@ resource "hpe_morpheus_network_router_firewall_rule" "example" {
 			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
 			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
 			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}
+
+// TestAccMorpheusNetworkRouterFirewallRuleResourceDescriptionOk exercises the
+// full lifecycle of the description attribute: absent on create, added, then
+// removed again.
+//
+// description is accepted by the API on create and update but is never returned
+// by the GET, so every assertion here is necessarily state-only. In particular
+// the final step cannot prove the appliance actually cleared the description --
+// only that Terraform's state and plan are consistent. Confirming the appliance
+// side needs a manual check in the Morpheus UI.
+func TestAccMorpheusNetworkRouterFirewallRuleResourceDescriptionOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter, capabilities.NetworkFirewall)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_firewall_rule.example"
+
+	routerConfig := firewallRuleFixture(t, name)
+
+	ruleConfig := func(description string) string {
+		descriptionLine := ""
+		if description != "" {
+			descriptionLine = `  description = "` + description + `"` + "\n"
+		}
+
+		return `
+resource "hpe_morpheus_network_router_firewall_rule" "example" {
+  router_id = hpe_morpheus_network_router.fw_tier1.id
+  parent_id = hpe_morpheus_network_router_firewall_rule_group.example.external_id
+  name      = "` + name + `"
+` + descriptionLine + `}
+`
+	}
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			// Created without a description: the value must be known (null)
+			// after apply, not unknown.
+			{
+				Config: providerConfig + routerConfig + ruleConfig(""),
+				Check:  resource.TestCheckNoResourceAttr(resourceName, "description"),
+			},
+			// Adding a description is an in-place update.
+			{
+				Config:           providerConfig + routerConfig + ruleConfig("managed by terraform"),
+				Check:            resource.TestCheckResourceAttr(resourceName, "description", "managed by terraform"),
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			// Removing it again clears it on the appliance and returns state to
+			// null, leaving no residual diff.
+			{
+				Config:           providerConfig + routerConfig + ruleConfig(""),
+				Check:            resource.TestCheckNoResourceAttr(resourceName, "description"),
+				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			{
+				Config:             providerConfig + routerConfig + ruleConfig(""),
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
 		},
 	})
 }
