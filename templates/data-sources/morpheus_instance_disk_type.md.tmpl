@@ -1,0 +1,47 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_instance_disk_type/example.tf" }}
+
+## Migrating from hpegl
+
+This data source is the hpe equivalent of `hpegl_vmaas_instance_disk_type`. Both resolve a
+disk type (Morpheus "storage volume type") by name within a cloud, layout and group, and
+return its `id` for use as `storage_type_id` on `hpe_morpheus_instance` volumes. The cloud,
+layout and group ids that hpegl takes as strings are `int64` here, so they compose directly
+with other hpe data sources.
+
+```hcl
+# hpegl
+data "hpegl_vmaas_instance_disk_type" "std" {
+  name      = "Standard"
+  cloud_id  = data.hpegl_vmaas_cloud.cloud.id
+  layout_id = data.hpegl_vmaas_layout.layout.id
+  group_id  = data.hpegl_vmaas_group.group.id
+}
+
+# hpe
+data "hpe_morpheus_instance_disk_type" "std" {
+  name      = "Standard"
+  cloud_id  = data.hpe_morpheus_cloud.cloud.id
+  layout_id = data.hpe_morpheus_instance_type_layout.layout.id
+  group_id  = data.hpe_morpheus_group.group.id
+}
+
+resource "hpe_morpheus_instance" "example" {
+  volumes = [{
+    storage_type_id = data.hpe_morpheus_instance_disk_type.std.id
+  }]
+}
+```
+
+{{ .SchemaMarkdown | trimspace }}

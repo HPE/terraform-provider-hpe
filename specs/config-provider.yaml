@@ -1368,6 +1368,10 @@ data_sources:
     read:
       path: /api/library/instance-types/{instanceTypeId}
       method: GET
+  instance_disk_type:
+    read:
+      path: /api/instances/service-plans
+      method: GET
   integration:
     read:
       path: /api/integrations/{id}

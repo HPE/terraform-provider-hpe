@@ -48,6 +48,12 @@ type ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner struct {
 	VolumeCategory       *string                  `json:"volumeCategory,omitempty"`
 	ExternalId           NullableString           `json:"externalId,omitempty"`
 	MaxStorage           NullableString           `json:"maxStorage,omitempty"`
+	NameEditable         *bool                    `json:"nameEditable,omitempty"`
+	PlanResizable        *bool                    `json:"planResizable,omitempty"`
+	HasISO               *bool                    `json:"hasISO,omitempty"`
+	NoStorage            *bool                    `json:"noStorage,omitempty"`
+	MultiAttachSupported *bool                    `json:"multiAttachSupported,omitempty"`
+	HasActiveReplica     NullableBool             `json:"hasActiveReplica,omitempty"`
 	AdditionalProperties map[string]interface{}   `json:",remain"`
 }
 
@@ -146,6 +152,24 @@ func (o ListInstanceServicePlans200ResponsePlansInnerStorageTypesInner) ToMap() 
 	}
 	if o.MaxStorage.IsSet() {
 		toSerialize["maxStorage"] = o.MaxStorage.Get()
+	}
+	if !IsNil(o.NameEditable) {
+		toSerialize["nameEditable"] = o.NameEditable
+	}
+	if !IsNil(o.PlanResizable) {
+		toSerialize["planResizable"] = o.PlanResizable
+	}
+	if !IsNil(o.HasISO) {
+		toSerialize["hasISO"] = o.HasISO
+	}
+	if !IsNil(o.NoStorage) {
+		toSerialize["noStorage"] = o.NoStorage
+	}
+	if !IsNil(o.MultiAttachSupported) {
+		toSerialize["multiAttachSupported"] = o.MultiAttachSupported
+	}
+	if o.HasActiveReplica.IsSet() {
+		toSerialize["hasActiveReplica"] = o.HasActiveReplica.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {
