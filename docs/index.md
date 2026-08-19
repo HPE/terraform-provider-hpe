@@ -657,6 +657,7 @@ Optional:
 Required:
 
 - `location` (String) The PCE instance's Location.
+- `space` (String) The name of the GreenLake Space that the PCE instance is in.
 
 Optional:
 
@@ -665,7 +666,6 @@ Optional:
 - `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
 - `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
 - `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
-- `space` (String) The name of the GreenLake Space that the PCE instance is in.
 
 
 
