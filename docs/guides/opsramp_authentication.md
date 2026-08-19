@@ -1,0 +1,71 @@
+---
+page_title: "Authentication"
+subcategory: "OpsRamp"
+---
+
+# OpsRamp authentication
+
+OpsRamp resources and data sources are configured with an `opsramp` block in the provider
+configuration.  The provider authenticates against the OpsRamp API with OAuth client credentials,
+scoped to a tenant:
+
+- `client_id` — OAuth client ID for the OpsRamp API
+- `client_secret` — OAuth client secret for the OpsRamp API
+- `endpoint` — the OpsRamp API endpoint for your instance, for example `tenant.api.pov.opsramp.com`
+- `tenant` — the OpsRamp Tenant ID
+
+## Example Usage
+
+```terraform
+terraform {
+  required_providers {
+    hpe = {
+      source  = "HPE/hpe"
+      version = ">= 2.0.0"
+    }
+  }
+}
+
+provider "hpe" {
+  # Provide opsramp block if you want to create opsramp resources
+  opsramp {
+    client_id     = "abcdefghijklmnopqrstuvwxyz123456"
+    client_secret = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890ab"
+    endpoint      = "tenant.api.pov.opsramp.com"
+    tenant        = "abcdefgh-1234-5678-90ab-cdefghijklmn"
+  }
+}
+```
+
+## Using environment variables
+
+Each of the four values may be omitted from the provider block and supplied through the
+environment instead:
+
+| Attribute | Environment variable |
+|---|---|
+| `client_id` | `OPSRAMP_CLIENT_ID` |
+| `client_secret` | `OPSRAMP_CLIENT_SECRET` |
+| `endpoint` | `OPSRAMP_ENDPOINT` |
+| `tenant` | `OPSRAMP_TENANT` |
+
+A value set in the provider block takes precedence over the corresponding environment variable.
+This is what allows credentials to be kept out of the configuration entirely:
+
+```terraform
+provider "hpe" {
+  opsramp {}
+}
+```
+
+-> The API client is not created while the provider is configured; it is built the first time a
+resource or data source needs it.  A credential or endpoint problem therefore surfaces on the
+first operation against OpsRamp rather than at provider configuration time.
+
+## Using OpsRamp alongside Morpheus
+
+The `morpheus` and `opsramp` blocks are independent, and both may be given in a single provider
+configuration.  Supply only the block for the products you are managing — omitting a block simply
+means no resources of that kind are configured.  See the
+[Morpheus authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/morpheus_authentication)
+guide for the `morpheus` block.

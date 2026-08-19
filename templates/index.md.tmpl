@@ -33,59 +33,28 @@ release notes for the current version (v2.0.0).
 
 ### Authentication
 
-There are four ways to authenticate with Morpheus:
-1. Using a username and password
-2. Using an access_token
-3. Using PCE Identity, for a Connected PCE (Private Cloud Enterprise) deployment
-4. Using PCE Disconnected Identity, for a Disconnected PCE deployment
-
-For the first two the URL of the Morpheus instance must be provided as `url`.
-
-For the last two the URL and access token are obtained from GreenLake, so `url` must not be set.
-Provide a `pce_identity` or `pce_disconnected_identity` block instead, using either GreenLake API
-client credentials (`client_id`, `client_secret` and `issuer_url`) or a pre-generated `iam_token`.
-The two blocks are mutually exclusive, and neither can be combined with `url`, `username`,
-`password`, `access_token` or `tenant_subdomain`.
-
-Note that if authenticating with username and password a tenant can be specified by including the `SUBDOMAIN` value for the tenant as
-`tenant_subdomain` in the provider block.
-
-By default the provider will check the Morpheus server certificate and will fail if it is not valid.  This can be
-be toggled off by setting `insecure` to `true` in the provider block.
+There are four ways to authenticate with Morpheus: a username and password, an access token, PCE
+Identity for a Connected PCE (Private Cloud Enterprise) deployment, and PCE Disconnected Identity
+for a Disconnected deployment.  See the [Authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/morpheus_authentication) guide for the
+details of each, with a worked example of every supported provider configuration.
 
 ### Example Usage
 
-#### Using a username and password
-
 {{ tffile "examples/provider/morpheus/provider-unamepasswd.tf" }}
 
-#### Using a username and password with tenant_subdomain
+## OpsRamp
 
-{{ tffile "examples/provider/morpheus/provider-tenant.tf" }}
+This provider can also be used to manage OpsRamp resources.
 
-#### Using an access token
+### Authentication
 
-{{ tffile "examples/provider/morpheus/provider-accesstoken.tf" }}
+OpsRamp resources are configured with an `opsramp` block, authenticating against the OpsRamp API
+with OAuth client credentials scoped to a tenant.  Each value may instead be supplied through the
+environment.  See the [Authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/opsramp_authentication) guide for the details.
 
-#### Using an access token with insecure
+### Example Usage
 
-{{ tffile "examples/provider/morpheus/provider-insecure.tf" }}
-
-#### Using PCE Identity
-
-{{ tffile "examples/provider/morpheus/provider-pce-identity.tf" }}
-
-#### Using PCE Identity with an IAM token
-
-{{ tffile "examples/provider/morpheus/provider-pce-identity-iamtoken.tf" }}
-
-#### Using PCE Disconnected Identity
-
-{{ tffile "examples/provider/morpheus/provider-pce-disconnected-identity.tf" }}
-
-#### Using PCE Disconnected Identity with an IAM token
-
-{{ tffile "examples/provider/morpheus/provider-pce-disconnected-identity-iamtoken.tf" }}
+{{ tffile "examples/provider/opsramp/provider.tf" }}
 
 ## Release Notes
 

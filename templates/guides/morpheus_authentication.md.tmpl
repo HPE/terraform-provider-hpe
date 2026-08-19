@@ -1,0 +1,59 @@
+---
+page_title: "Authentication"
+subcategory: "Morpheus"
+---
+
+# Morpheus authentication
+
+There are four ways to authenticate with Morpheus:
+
+1. Using a username and password
+2. Using an access_token
+3. Using PCE Identity, for a Connected PCE (Private Cloud Enterprise) deployment
+4. Using PCE Disconnected Identity, for a Disconnected PCE deployment
+
+For the first two the URL of the Morpheus instance must be provided as `url`.
+
+For the last two the URL and access token are obtained from GreenLake, so `url` must not be set.
+Provide a `pce_identity` or `pce_disconnected_identity` block instead, using either GreenLake API
+client credentials (`client_id`, `client_secret` and `issuer_url`) or a pre-generated `iam_token`.
+The two blocks are mutually exclusive, and neither can be combined with `url`, `username`,
+`password`, `access_token` or `tenant_subdomain`.
+
+Note that if authenticating with username and password a tenant can be specified by including the
+`SUBDOMAIN` value for the tenant as `tenant_subdomain` in the provider block.
+
+By default the provider will check the Morpheus server certificate and will fail if it is not
+valid.  This can be toggled off by setting `insecure` to `true` in the provider block.
+
+## Using a username and password
+
+{{ tffile "examples/provider/morpheus/provider-unamepasswd.tf" }}
+
+## Using a username and password with tenant_subdomain
+
+{{ tffile "examples/provider/morpheus/provider-tenant.tf" }}
+
+## Using an access token
+
+{{ tffile "examples/provider/morpheus/provider-accesstoken.tf" }}
+
+## Using an access token with insecure
+
+{{ tffile "examples/provider/morpheus/provider-insecure.tf" }}
+
+## Using PCE Identity
+
+{{ tffile "examples/provider/morpheus/provider-pce-identity.tf" }}
+
+## Using PCE Identity with an IAM token
+
+{{ tffile "examples/provider/morpheus/provider-pce-identity-iamtoken.tf" }}
+
+## Using PCE Disconnected Identity
+
+{{ tffile "examples/provider/morpheus/provider-pce-disconnected-identity.tf" }}
+
+## Using PCE Disconnected Identity with an IAM token
+
+{{ tffile "examples/provider/morpheus/provider-pce-disconnected-identity-iamtoken.tf" }}
