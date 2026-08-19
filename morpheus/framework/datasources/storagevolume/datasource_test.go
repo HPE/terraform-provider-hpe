@@ -21,19 +21,8 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url      = ""
-    username = ""
-    password = ""
-  }
-}
-`
-
 // TestAccMorpheusStorageVolumeNoSearchTerms verifies that the data source
-// errors when neither id nor name is supplied. The error is raised before any
-// API call, so the offline provider configuration is sufficient.
+// errors when neither id nor name is supplied.
 func TestAccMorpheusStorageVolumeNoSearchTerms(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -41,7 +30,11 @@ func TestAccMorpheusStorageVolumeNoSearchTerms(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
 data "hpe_morpheus_storage_volume" "test" {
 }`
 

@@ -332,7 +332,11 @@ func TestAccMorpheusFindInstanceTypeLayoutByNameAndVersionNoSearchAttrs(t *testi
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	dataSourceConfig := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	dataSourceConfig := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_instance_type_layout" "test" {
       }`
 

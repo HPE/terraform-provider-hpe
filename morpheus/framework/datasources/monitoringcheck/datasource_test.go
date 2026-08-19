@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // checkFixture renders a minimal monitoring check resource labelled
 // hpe_morpheus_monitoring_check.example using the resource's template.
 func checkFixture(t *testing.T, name string) string {
@@ -153,7 +143,11 @@ func TestAccMorpheusFindMonitoringCheckNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_monitoring_check" "test" {
       }`
 

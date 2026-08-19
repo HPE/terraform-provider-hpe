@@ -16,16 +16,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 const (
 	testCertFile = `-----BEGIN CERTIFICATE-----
 MIIB...
@@ -192,7 +182,11 @@ func TestAccMorpheusFindCertificateNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_certificate" "test" {
       }`
 

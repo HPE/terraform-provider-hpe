@@ -23,16 +23,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
@@ -245,7 +235,11 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_policy" "test" {
       }`
 
@@ -261,8 +255,7 @@ func TestAccMorpheusPolicyDataSourceNoSearchAttrs(t *testing.T) {
 	expected := consts.ErrorNoValidPolicyTerms
 
 	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		IsUnitTest:               true,
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
 		Steps: []resource.TestStep{
 			{
 				Config:      config,
