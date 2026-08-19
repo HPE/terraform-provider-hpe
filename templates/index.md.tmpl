@@ -23,7 +23,14 @@ We have developed tooling [tfmigrator](https://registry.terraform.io/providers/H
 to assist with the migration from the Morpheus provider to this provider.  Please see the
 [documentation](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration) for more
 information on how to use this tool.<br><br>
-See the [Legacy provider mapping](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/legacy_provider_mapping) guide for the mapping of Morpheus provider resources and data sources to those in this provider.
+See the [Legacy provider mapping](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/legacy_provider_mapping) guide for the mapping of Morpheus provider resources and data sources to those in this provider.<br><br>
+This release also covers the VMaaS resources and data sources of the
+[HPE GreenLake Terraform Provider](https://registry.terraform.io/providers/HPE/hpegl/latest) (`hpegl`),
+which this provider will likewise replace.  The remaining parity gaps are closed in this release, so an
+`hpegl` VMaaS configuration now has a direct translation here and users are encouraged to migrate.<br><br>
+Note that `tfmigrator` supports the Morpheus provider only, so an `hpegl` configuration must be migrated
+by hand.  The data sources that replace an `hpegl` lookup each carry a "Migrating from hpegl" section
+showing the two configurations side by side.
 
 
 ## Morpheus
