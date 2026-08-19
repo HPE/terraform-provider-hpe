@@ -369,9 +369,7 @@ as a write-only attribute must be null in state.
 ### OpsRamp support
 
 This provider now serves HPE OpsRamp resources and data sources alongside Morpheus, configured with
-an `opsramp` block in the provider configuration.  See the
-[OpsRamp to HPE migration guide](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/opsramp_to_hpe_migration) for moving an existing
-`HPE/opsramp` configuration across.
+an `opsramp` block in the provider configuration.
 
 ### PCE Identity authentication
 
