@@ -190,7 +190,11 @@ func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
 
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_environment" "test" {
       }`
 

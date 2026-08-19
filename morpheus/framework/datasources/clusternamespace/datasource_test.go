@@ -24,16 +24,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // clusterID identifies a namespace-capable Kubernetes cluster on the target
 // appliance. These tests are gated on the kubernetes_cluster capability and are
 // skipped unless it is enabled; override the ID for the target environment via
@@ -173,7 +163,11 @@ func TestAccMorpheusFindClusterNamespaceNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_cluster_namespace" "test" {
         cluster_id = 571
       }`
