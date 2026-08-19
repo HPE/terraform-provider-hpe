@@ -125,6 +125,9 @@ const (
 
 	// Bare Metal
 	Metal Capability = "metal"
+
+	// PCE - For tests against a live PCE Cloud system.
+	PCE Capability = "pce"
 )
 
 // String returns the string representation of the capability.
