@@ -1,6 +1,6 @@
 ---
-page_title: "Authentication"
-subcategory: "OpsRamp"
+page_title: "OpsRamp"
+subcategory: "Authentication"
 ---
 
 # OpsRamp authentication

@@ -1,6 +1,6 @@
 ---
-page_title: "Authentication"
-subcategory: "Morpheus"
+page_title: "Morpheus"
+subcategory: "Authentication"
 ---
 
 # Morpheus authentication

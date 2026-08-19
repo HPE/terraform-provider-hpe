@@ -1,9 +1,9 @@
 ---
-page_title: "Legacy provider mapping"
-subcategory: "Morpheus"
+page_title: "Morpheus to HPE mappings"
+subcategory: "Migration"
 ---
 
-# Legacy Morpheus provider mapping
+# Morpheus to HPE mappings
 
 The tables below show the mapping of the Morpheus provider resources and data sources to the corresponding
 HPE Morpheus resources and data sources where there are one-to-one equivalents.  Note that some Morpheus
