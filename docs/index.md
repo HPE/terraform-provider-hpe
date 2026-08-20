@@ -8,11 +8,14 @@ description: |-
 
 # hpe Provider
 
-This is the HPE Terraform provider which is still in development.  It will eventually replace the
-[HPE GreenLake Terraform Provider](https://registry.terraform.io/providers/HPE/hpegl/latest) and the
+This is the HPE Terraform provider.  It replaces the
+[HPE GreenLake Terraform Provider](https://registry.terraform.io/providers/HPE/hpegl/latest), for its
+VMaaS resources and data sources, and the
 [Morpheus Terraform Provider](https://registry.terraform.io/providers/gomorpheus/morpheus/latest).
 
-This provider supports Morpheus and OpsRamp, and will in time expand to cover other HPE offerings.
+This provider manages Morpheus and OpsRamp resources, configured with `morpheus` and `opsramp`
+blocks, and will in time expand to cover other HPE offerings.  GreenLake VMaaS is covered by the
+Morpheus resources, so there is no separate `hpegl` block.
 
 This provider requires 64-bit versions of the Terraform binary to work properly.
 
