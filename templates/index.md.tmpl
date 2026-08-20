@@ -23,11 +23,11 @@ This provider requires 64-bit versions of the Terraform binary to work properly.
 and closes the remaining parity gaps with the `hpegl` VMaaS resources and data sources, so an `hpegl`
 VMaaS configuration now has a direct translation here.  Users of either provider are encouraged to
 migrate; the Morpheus provider will be deprecated in the future.<br><br>
-We have developed tooling [tfmigrator](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration)
+We have developed tooling [tfmigrator](guides/tfmigrator_migration.md)
 to assist with migration, which supports `hpegl` configurations as well as Morpheus ones.  Please see the
-[documentation](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/tfmigrator_migration) for more
+[documentation](guides/tfmigrator_migration.md) for more
 information on how to use this tool.<br><br>
-See the [Morpheus to HPE](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/morpheus_to_hpe_migration) guide for the mapping of Morpheus provider resources and data sources to those in this provider.  The data
+See the [Morpheus to HPE](guides/morpheus_to_hpe_migration.md) guide for the mapping of Morpheus provider resources and data sources to those in this provider.  The data
 sources that replace an `hpegl` lookup each carry a "Migrating from hpegl" section showing the two
 configurations side by side.
 
@@ -41,7 +41,7 @@ release notes for the current version (v2.0.0).
 
 There are four ways to authenticate with Morpheus: a username and password, an access token, PCE
 Identity for a Connected PCE (Private Cloud Enterprise) deployment, and PCE Disconnected Identity
-for a Disconnected deployment.  See the [Authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/morpheus_authentication) guide for the
+for a Disconnected deployment.  See the [Authentication](guides/morpheus_authentication.md) guide for the
 details of each, with a worked example of every supported provider configuration.
 
 ### Example Usage
@@ -56,7 +56,7 @@ This provider can also be used to manage OpsRamp resources.
 
 OpsRamp resources are configured with an `opsramp` block, authenticating against the OpsRamp API
 with OAuth client credentials scoped to a tenant.  Each value may instead be supplied through the
-environment.  See the [Authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/opsramp_authentication) guide for the details.
+environment.  See the [Authentication](guides/opsramp_authentication.md) guide for the details.
 
 ### Example Usage
 
@@ -180,8 +180,9 @@ details can be obtained from GreenLake rather than configured by hand (MORPH-156
 - `pce_identity` — Connected PCE, using GLCS IAM and scoped by GreenLake Space
 - `pce_disconnected_identity` — Disconnected PCE, using GLP IAM and scoped by GreenLake Workspace
 
-Each accepts either GreenLake API client credentials (`client_id`, `client_secret`, `issuer_url`) or
-a pre-generated `iam_token`.  Neither can be combined with `url`, `username`, `password`,
+Each accepts either GreenLake API client credentials — `client_id`, `client_secret` and an issuer
+URL, which is `issuer_url` in the Connected block and `token_issuer_url` in the Disconnected one —
+or a pre-generated `iam_token`.  Neither can be combined with `url`, `username`, `password`,
 `access_token` or `tenant_subdomain`.
 
 ### New resources

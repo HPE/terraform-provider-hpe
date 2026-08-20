@@ -67,5 +67,5 @@ first operation against OpsRamp rather than at provider configuration time.
 The `morpheus` and `opsramp` blocks are independent, and both may be given in a single provider
 configuration.  Supply only the block for the products you are managing — omitting a block simply
 means no resources of that kind are configured.  See the
-[Morpheus authentication](https://registry.terraform.io/providers/HPE/hpe/latest/docs/guides/morpheus_authentication)
+[Morpheus authentication](./morpheus_authentication.md)
 guide for the `morpheus` block.

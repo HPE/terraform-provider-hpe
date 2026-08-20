@@ -16,7 +16,10 @@ For the first two the URL of the Morpheus instance must be provided as `url`.
 
 For the last two the URL and access token are obtained from GreenLake, so `url` must not be set.
 Provide a `pce_identity` or `pce_disconnected_identity` block instead, using either GreenLake API
-client credentials (`client_id`, `client_secret` and `issuer_url`) or a pre-generated `iam_token`.
+client credentials or a pre-generated `iam_token`.  The credentials are `client_id`, `client_secret`
+and an issuer URL — `issuer_url` in the Connected block, `token_issuer_url` in the Disconnected one.
+Each block is also scoped: `pce_identity` requires the GreenLake `space`, and
+`pce_disconnected_identity` requires the `workspace_id`.
 The two blocks are mutually exclusive, and neither can be combined with `url`, `username`,
 `password`, `access_token` or `tenant_subdomain`.
 
@@ -194,12 +197,12 @@ provider "hpe" {
   # Provide morpheus block if you want to create morpheus resources
   morpheus {
     pce_disconnected_identity {
-      client_id     = "client_id"
-      client_secret = "client_secret"
-      issuer_url    = "https://issuer.example.com"
-      location      = "location"
-      workspace_id  = "workspace_id"
-      broker_url    = "https://broker.example.com"
+      client_id        = "client_id"
+      client_secret    = "client_secret"
+      token_issuer_url = "https://issuer.example.com"
+      location         = "location"
+      workspace_id     = "workspace_id"
+      broker_url       = "https://broker.example.com"
     }
   }
 }

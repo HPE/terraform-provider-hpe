@@ -68,8 +68,9 @@ details can be obtained from GreenLake rather than configured by hand (MORPH-156
 - `pce_identity` — Connected PCE, using GLCS IAM and scoped by GreenLake Space
 - `pce_disconnected_identity` — Disconnected PCE, using GLP IAM and scoped by GreenLake Workspace
 
-Each accepts either GreenLake API client credentials (`client_id`, `client_secret`, `issuer_url`) or
-a pre-generated `iam_token`.  Neither can be combined with `url`, `username`, `password`,
+Each accepts either GreenLake API client credentials — `client_id`, `client_secret` and an issuer
+URL, which is `issuer_url` in the Connected block and `token_issuer_url` in the Disconnected one —
+or a pre-generated `iam_token`.  Neither can be combined with `url`, `username`, `password`,
 `access_token` or `tenant_subdomain`.
 
 ## New resources

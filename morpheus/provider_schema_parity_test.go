@@ -99,13 +99,13 @@ func TestIdentityRequiredAttributesSurviveConversion(t *testing.T) {
 			"broker_url":    false,
 		},
 		"pce_disconnected_identity": {
-			"broker_url":    true,
-			"location":      true,
-			"workspace_id":  true,
-			"client_id":     false,
-			"client_secret": false,
-			"issuer_url":    false,
-			"iam_token":     false,
+			"broker_url":       true,
+			"location":         true,
+			"workspace_id":     true,
+			"client_id":        false,
+			"client_secret":    false,
+			"token_issuer_url": false,
+			"iam_token":        false,
 		},
 	}
 

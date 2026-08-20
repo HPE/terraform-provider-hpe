@@ -43,13 +43,15 @@ var identityExamples = map[string]struct {
 	},
 	"provider-pce-disconnected-identity.tf": {
 		block: "pce_disconnected_identity",
+		// #nosec G101 -- token_issuer_url names an IAM endpoint, not a
+		// credential, and the value is the documentation's example URL.
 		attrs: map[string]string{
-			"client_id":     "client_id",
-			"client_secret": "client_secret",
-			"issuer_url":    "https://issuer.example.com",
-			"location":      "location",
-			"workspace_id":  "workspace_id",
-			"broker_url":    "https://broker.example.com",
+			"client_id":        "client_id",
+			"client_secret":    "client_secret",
+			"token_issuer_url": "https://issuer.example.com",
+			"location":         "location",
+			"workspace_id":     "workspace_id",
+			"broker_url":       "https://broker.example.com",
 		},
 	},
 	"provider-pce-disconnected-identity-iamtoken.tf": {
