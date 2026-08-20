@@ -255,6 +255,7 @@ func TestValidateProviderConfigRejectsIdentityBlockWithDirectURL(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 			}
 		})
@@ -281,6 +282,7 @@ func TestValidateProviderConfigRejectsBothIdentityBlocks(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 				"pce_disconnected_identity": identityBlockValue(t, obj, absent, "pce_disconnected_identity",
 					map[string]string{
@@ -316,6 +318,7 @@ func TestValidateProviderConfigIgnoresUnknownConnectionDetails(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 			}
 		})
@@ -331,6 +334,10 @@ func TestValidateProviderConfigIgnoresUnknownConnectionDetails(t *testing.T) {
 func identityBlockAttrs(block string) map[string]string {
 	attrs := map[string]string{
 		"location": "site-a",
+	}
+
+	if block == "pce_identity" {
+		attrs["space"] = "space"
 	}
 
 	if block == "pce_disconnected_identity" {

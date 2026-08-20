@@ -336,7 +336,7 @@ func providerSchemaMorpheus() *schema.Schema {
 
 							"space": {
 								Type:        schema.TypeString,
-								Optional:    true,
+								Required:    true,
 								Description: "The name of the GreenLake Space that the PCE instance is in.",
 							},
 

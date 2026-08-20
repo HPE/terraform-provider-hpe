@@ -239,7 +239,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 						},
 						"space": schema.StringAttribute{
 							Description: "The name of the GreenLake Space that the PCE instance is in.",
-							Optional:    true,
+							Required:    true,
 						},
 						"issuer_url": schema.StringAttribute{
 							Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
