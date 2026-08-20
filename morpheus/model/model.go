@@ -44,9 +44,12 @@ type PCEIdentityModel struct {
 type PCEDisconnectedIdentityModel struct {
 	ClientID     types.String `tfsdk:"client_id"`
 	ClientSecret types.String `tfsdk:"client_secret"`
-	IssuerURL    types.String `tfsdk:"issuer_url"`
-	IAMToken     types.String `tfsdk:"iam_token"`
-	Location     types.String `tfsdk:"location"`
-	WorkspaceID  types.String `tfsdk:"workspace_id"`
-	BrokerURL    types.String `tfsdk:"broker_url"`
+	// TokenIssuerURL is this block's spelling of the Connected block's
+	// issuer_url: GLP names the same value differently. The two blocks are
+	// configured independently, so the Connected spelling is left as it is.
+	TokenIssuerURL types.String `tfsdk:"token_issuer_url"`
+	IAMToken       types.String `tfsdk:"iam_token"`
+	Location       types.String `tfsdk:"location"`
+	WorkspaceID    types.String `tfsdk:"workspace_id"`
+	BrokerURL      types.String `tfsdk:"broker_url"`
 }

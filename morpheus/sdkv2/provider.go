@@ -399,7 +399,7 @@ func providerSchemaMorpheus() *schema.Schema {
 								Description: "GreenLake API client ID used for authentication.",
 								RequiredWith: []string{
 									"morpheus.0.pce_disconnected_identity.0.client_secret",
-									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+									"morpheus.0.pce_disconnected_identity.0.token_issuer_url",
 								},
 							},
 
@@ -410,11 +410,11 @@ func providerSchemaMorpheus() *schema.Schema {
 								Description: "GreenLake API client secret used for authentication.",
 								RequiredWith: []string{
 									"morpheus.0.pce_disconnected_identity.0.client_id",
-									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+									"morpheus.0.pce_disconnected_identity.0.token_issuer_url",
 								},
 							},
 
-							"issuer_url": {
+							"token_issuer_url": {
 								Type:     schema.TypeString,
 								Optional: true,
 								Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
@@ -434,7 +434,7 @@ func providerSchemaMorpheus() *schema.Schema {
 								ConflictsWith: []string{
 									"morpheus.0.pce_disconnected_identity.0.client_id",
 									"morpheus.0.pce_disconnected_identity.0.client_secret",
-									"morpheus.0.pce_disconnected_identity.0.issuer_url",
+									"morpheus.0.pce_disconnected_identity.0.token_issuer_url",
 								},
 							},
 
@@ -615,7 +615,7 @@ func pceDisconnectedIdentityConfig(morpheusConfig map[string]interface{}) (pce.C
 	return pce.Config{
 		ClientID:     stringAttr(block, "client_id"),
 		ClientSecret: stringAttr(block, "client_secret"),
-		IssuerURL:    stringAttr(block, "issuer_url"),
+		IssuerURL:    stringAttr(block, "token_issuer_url"),
 		IAMToken:     stringAttr(block, "iam_token"),
 		Location:     stringAttr(block, "location"),
 		WorkspaceID:  stringAttr(block, "workspace_id"),

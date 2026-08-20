@@ -43,7 +43,8 @@ For the first two the URL of the Morpheus instance must be provided as `url`.
 
 For the last two the URL and access token are obtained from GreenLake, so `url` must not be set.
 Provide a `pce_identity` or `pce_disconnected_identity` block instead, using either GreenLake API
-client credentials (`client_id`, `client_secret` and `issuer_url`) or a pre-generated `iam_token`.
+client credentials (`client_id`, `client_secret` and `issuer_url`, or `token_issuer_url` in the
+Disconnected block) or a pre-generated `iam_token`.
 The two blocks are mutually exclusive, and neither can be combined with `url`, `username`,
 `password`, `access_token` or `tenant_subdomain`.
 
@@ -223,12 +224,12 @@ provider "hpe" {
   # Provide morpheus block if you want to create morpheus resources
   morpheus {
     pce_disconnected_identity {
-      client_id     = "client_id"
-      client_secret = "client_secret"
-      issuer_url    = "https://issuer.example.com"
-      location      = "location"
-      workspace_id  = "workspace_id"
-      broker_url    = "https://broker.example.com"
+      client_id        = "client_id"
+      client_secret    = "client_secret"
+      token_issuer_url = "https://issuer.example.com"
+      location         = "location"
+      workspace_id     = "workspace_id"
+      broker_url       = "https://broker.example.com"
     }
   }
 }
@@ -648,7 +649,7 @@ Optional:
 - `client_id` (String) GreenLake API client ID used for authentication.
 - `client_secret` (String, Sensitive) GreenLake API client secret used for authentication.
 - `iam_token` (String, Sensitive) GreenLake IAM access token. If set, token generation from credentials is skipped.
-- `issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
+- `token_issuer_url` (String) GreenLake IAM Issuer URL used to generate access tokens. This should be set to the "Issuer" URL of the API client.
 
 
 <a id="nestedblock--morpheus--pce_identity"></a>
