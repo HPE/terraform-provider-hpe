@@ -70,7 +70,9 @@ provider "hpe" {
 
 ## OpsRamp
 
-This provider can also be used to manage OpsRamp resources.
+This provider can also be used to manage OpsRamp resources.  See the
+[OpsRamp to HPE](guides/opsramp_to_hpe_migration.md) guide for moving an existing OpsRamp provider
+configuration across.
 
 ### Authentication
 
@@ -209,7 +211,9 @@ as a write-only attribute must be null in state.
 ### OpsRamp support
 
 This provider now serves HPE OpsRamp resources and data sources alongside Morpheus, configured with
-an `opsramp` block in the provider configuration.
+an `opsramp` block in the provider configuration.  See the
+[OpsRamp to HPE](guides/opsramp_to_hpe_migration.md) guide for moving an existing OpsRamp provider
+configuration across.
 
 ### PCE Identity authentication
 
