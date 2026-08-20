@@ -114,6 +114,12 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | `Alletra` | `alletra` | HPE Alletra storage |
 | `VDI` | `vdi` | VDI pools/apps/gateways |
 
+### Identity / Platform
+
+| Capability | Env Value | Description |
+|------------|-----------|-------------|
+| `PCE` | `pce` | A live PCE (Private Cloud Enterprise) instance reachable via GreenLake IAM. Gates the end-to-end `pce_identity` auth-flow test, which authenticates through GreenLake rather than the main appliance credentials. The test skips unless `TF_VAR_testacc_pce_identity_client_id`, `_client_secret`, `_issuer_url`, `_location`, `_space` and `TF_ACC_PCE_IDENTITY_CLOUD_NAME` are all set |
+
 ### Special Capabilities
 
 | Capability | Env Value | Description |
@@ -248,6 +254,13 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the `affinity_group` + `hvm` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
+| `TF_VAR_testacc_pce_identity_client_id` | GreenLake API client ID. Required by the `pce` test |
+| `TF_VAR_testacc_pce_identity_client_secret` | GreenLake API client secret. Required by the `pce` test |
+| `TF_VAR_testacc_pce_identity_issuer_url` | GreenLake IAM issuer URL used to mint access tokens. Required by the `pce` test |
+| `TF_VAR_testacc_pce_identity_location` | PCE instance location. Required by the `pce` test — the `pce_identity` block rejects a null `location` |
+| `TF_VAR_testacc_pce_identity_space` | GreenLake space containing the PCE instance. Required by the `pce` test — the `pce_identity` block rejects a null `space` |
+| `TF_VAR_testacc_pce_identity_broker_url` | PCE broker URL override. Optional; leave unset to use the HPE-hosted cloud broker |
+| `TF_ACC_PCE_IDENTITY_CLOUD_NAME` | Name of a cloud to read back through the PCE token exchange. Required by the `pce` test; there is no default, as the reachable clouds differ per GreenLake tenant. Not a `TF_VAR_`, because the test renders it into HCL rather than passing it through a Terraform variable |
 
 ### Examples
 

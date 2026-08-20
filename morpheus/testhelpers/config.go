@@ -256,3 +256,48 @@ provider "hpe" {
 func ProviderBlockUnitTest() string {
 	return providerConfigUnitTest
 }
+
+// If broker_url is null, it'll default to the cloud broker.
+// So don't set testacc_pce_identity_broker_url if we wish to test the cloud broker.
+const providerConfigPceIdentity = `
+variable "testacc_pce_identity_client_id" {
+  default = null
+}
+
+variable "testacc_pce_identity_client_secret" {
+  default = null
+}
+
+variable "testacc_pce_identity_issuer_url" {
+  default = null
+}
+
+variable "testacc_pce_identity_location" {
+  default = null
+}
+
+variable "testacc_pce_identity_space" {
+  default = null
+}
+
+variable "testacc_pce_identity_broker_url" {
+  default = null
+}
+
+provider "hpe" {
+  morpheus {
+    pce_identity {
+      client_id     = var.testacc_pce_identity_client_id
+      client_secret = var.testacc_pce_identity_client_secret
+      issuer_url    = var.testacc_pce_identity_issuer_url
+      location      = var.testacc_pce_identity_location
+      space         = var.testacc_pce_identity_space
+      broker_url    = var.testacc_pce_identity_broker_url
+    }
+  }
+}
+`
+
+func ProviderBlockPceIdentity() string {
+	return providerConfigPceIdentity
+}
