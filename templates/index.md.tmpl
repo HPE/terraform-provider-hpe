@@ -333,6 +333,14 @@ In this release (v2.0.0) we have added the following data sources:
   password sent to `/oauth/token`, and the `access_token` and `refresh_token` in the response.
   These traces are captured in test output and kept as build artifacts, so credentials were being
   written to logs in clear text.
+- Resources with a `Dynamic` `config` attribute — the provider no longer panics when a value inside
+  `config` is not known until apply, for example `config = { templateId = var.image_id }`.  A literal
+  worked, and so did arithmetic between literals, because Terraform folds those at parse time, so the
+  crash appeared only once a value was deferred — taking an id from a `.tfvars` file was enough.
+  Unknown is now treated as absent, as null already was (MORPH-16244).
+- `hpe_morpheus_image` — reading an image with two or more tenants failed with `Duplicate Set
+  Element`, whether or not anything was duplicated.  The tenant objects were built without a known
+  state, so their `name` and `id` were discarded and every tenant became identical (MORPH-16245).
 
 ### Known issues
 
