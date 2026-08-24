@@ -14,7 +14,18 @@ import (
 // This function handles null values, primitive types, and complex types
 // like objects, lists, sets, tuples and maps.
 func ValueToAny(ctx context.Context, v attr.Value) (any, error) {
-	if v == nil || v.IsNull() {
+	// Unknown is treated as absent, the same as null.
+	//
+	// A value that is not yet known cannot be converted, and the accessors do
+	// not tolerate being asked: an unknown NumberValue returns a nil
+	// *big.Float, so ValueBigFloat().Float64() dereferences nil and panics.
+	//
+	// The callers are validators, which have nothing to validate until the
+	// value is resolved. Guarding only null was enough while every value came
+	// from a literal, and became a crash the moment one came from a variable,
+	// a count or for_each reference, or any other expression deferred to
+	// apply.
+	if v == nil || v.IsNull() || v.IsUnknown() {
 		return nil, nil
 	}
 
@@ -50,7 +61,7 @@ func ValueToAny(ctx context.Context, v attr.Value) (any, error) {
 }
 
 func ListToAny(ctx context.Context, l basetypes.ListValue) ([]any, error) {
-	if l.IsNull() {
+	if l.IsNull() || l.IsUnknown() {
 		return nil, nil
 	}
 
@@ -69,7 +80,7 @@ func ListToAny(ctx context.Context, l basetypes.ListValue) ([]any, error) {
 }
 
 func SetToAny(ctx context.Context, s basetypes.SetValue) ([]any, error) {
-	if s.IsNull() {
+	if s.IsNull() || s.IsUnknown() {
 		return nil, nil
 	}
 
@@ -88,7 +99,7 @@ func SetToAny(ctx context.Context, s basetypes.SetValue) ([]any, error) {
 }
 
 func MapToAny(ctx context.Context, m basetypes.MapValue) (map[string]any, error) {
-	if m.IsNull() {
+	if m.IsNull() || m.IsUnknown() {
 		return nil, nil
 	}
 
@@ -107,7 +118,7 @@ func MapToAny(ctx context.Context, m basetypes.MapValue) (map[string]any, error)
 }
 
 func ObjectToAny(ctx context.Context, o basetypes.ObjectValue) (map[string]any, error) {
-	if o.IsNull() {
+	if o.IsNull() || o.IsUnknown() {
 		return nil, nil
 	}
 
@@ -126,7 +137,7 @@ func ObjectToAny(ctx context.Context, o basetypes.ObjectValue) (map[string]any, 
 }
 
 func TupleToAny(ctx context.Context, t basetypes.TupleValue) ([]any, error) {
-	if t.IsNull() {
+	if t.IsNull() || t.IsUnknown() {
 		return nil, nil
 	}
 
