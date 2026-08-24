@@ -76,9 +76,62 @@ resource "hpe_morpheus_cluster_affinity_group_member" "app" {
 The cloud equivalent is `hpe_morpheus_cloud_affinity_group_member`, taking
 `cloud_id` instead of `cluster_id`.
 
-Note `server_id` is a **compute server**, not an instance. An instance may have
-more than one; `one()` is correct for a single-node instance, otherwise index the
-list explicitly.
+Note `server_id` is a **compute server**, not an instance.
+
+### Getting the server ID
+
+`compute_servers` on an instance is read-only, and it is a **set**. A new
+instance has one element, and gains another each time you scale with
+`hpe_morpheus_instance_node`.
+
+`one()` is correct while the instance stays single-node. It **errors** once the
+set holds more than one element — and because the instance's state only picks up
+a new server on the next refresh, scaling does not break the apply that scaled
+it. It breaks the plan after that.
+
+Being a set, it also cannot be indexed. `compute_servers[0]` is an error, and
+`tolist(compute_servers)[0]` returns an arbitrary element rather than the
+original server: Morpheus does not guarantee ordering and the provider does not
+sort. Since `server_id` forces replacement, an expression whose value can shift
+will destroy and recreate the membership.
+
+For a node you added yourself, take the ID from the node. It is exact, singular,
+and known during the apply:
+
+```hcl
+resource "hpe_morpheus_cluster_affinity_group_member" "app_2" {
+  cluster_id        = var.cluster_id
+  affinity_group_id = hpe_morpheus_cluster_affinity_group.web.id
+  server_id         = hpe_morpheus_instance_node.app_2.server_id
+}
+```
+
+To put every node of a multi-node instance in the group, iterate the set. Nodes
+added later get their own membership on the next apply:
+
+```hcl
+resource "hpe_morpheus_cluster_affinity_group_member" "app" {
+  for_each = toset([
+    for id in hpe_morpheus_instance.app.compute_servers : tostring(id)
+  ])
+
+  cluster_id        = var.cluster_id
+  affinity_group_id = hpe_morpheus_cluster_affinity_group.web.id
+  server_id         = tonumber(each.value)
+}
+```
+
+This needs the instance to exist already: `for_each` cannot take a value that is
+unknown at plan time, so it will not work in the same apply that creates the
+instance.
+
+To single out one server of several, use the `hpe_morpheus_compute_servers` data
+source — the documented way to resolve server IDs for affinity group membership
+— and filter until one matches. Its `servers` attribute is a set too, so read it
+with `one(data.hpe_morpheus_compute_servers.app.servers).id`.
+
+The remaining examples in this guide use `one()` for brevity, and assume a
+single-node instance.
 
 ### Why membership is separate
 
