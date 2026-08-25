@@ -40,19 +40,19 @@ The following examples use Bash on Linux (x64).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_linux_amd64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_linux_amd64.zip
    ```
 
 2. Extract the archive.
 
    ```console
-   unzip migration_tool_${RELEASE}_linux_amd64.zip
+   unzip tfmigrator_${RELEASE}_linux_amd64.zip
    ```
 
 3. Move the binary to a directory in your PATH.
 
    ```console
-   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
+   sudo mv tfmigrator_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -76,20 +76,20 @@ The following example uses Zsh (default) on macOS (Apple Silicon).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_darwin_arm64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_darwin_arm64.zip
    ```
 
 3. Extract the archive.
 
    ```console
-   unzip migration_tool_${RELEASE}_darwin_arm64.zip
+   unzip tfmigrator_${RELEASE}_darwin_arm64.zip
    ```
 
 4. Move the binary to a directory in your PATH.
 
 
    ```console
-   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
+   sudo mv tfmigrator_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -107,20 +107,20 @@ The following examples use PowerShell on Windows (x64).
 
    ```powershell
    Set-Variable -Name "RELEASE" -Value "x.y.z"
-   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_windows_amd64.zip -outfile migration_tool_${RELEASE}_windows_amd64.zip
+   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_windows_amd64.zip -outfile tfmigrator_${RELEASE}_windows_amd64.zip
    ```
 
 2. Extract the archive.
 
    ```powershell
-   Expand-Archive migration_tool_${RELEASE}_windows_amd64.zip
-   cd migration_tool_${RELEASE}_windows_amd64
+   Expand-Archive tfmigrator_${RELEASE}_windows_amd64.zip
+   cd tfmigrator_${RELEASE}_windows_amd64
    ```
 
 3. Move the binary to a directory in your PATH.
 
    ```powershell
-   Move-Item migration_tool_v${RELEASE}.exe C:\Windows\System32\tfmigrator.exe
+   Move-Item tfmigrator_v${RELEASE}.exe C:\Windows\System32\tfmigrator.exe
    ```
 
 4. Verify the installation.
