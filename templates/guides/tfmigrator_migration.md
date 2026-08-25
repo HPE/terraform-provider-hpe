@@ -287,6 +287,7 @@ tfmigrator generate \
 
 - `--state, -s` Path to Terraform state JSON from `terraform show -json > state.json` (required)
 - `--output-dir, -o` Output directory for generated files (default `./generated`)
+- `--terraform-path` Path to the `terraform` binary (default `terraform`)
 - `--provider-config` Path to a Terraform provider context file containing `terraform` and provider blocks (and optional `variable` / `locals` blocks)
 - `--provider-var-file` Optional var-file(s) for provider context, repeatable (default none)
 - `--provider-var` Optional variable(s) passed to Terraform plan in `key=value` format, repeatable (default none)
@@ -409,8 +410,8 @@ tfmigrator merge \
 
 ### Merge flags
 
-- `--generated, -g` Path to generated Terraform file (default `./generated/generated.tf`)
-- `--original, -o` Original Terraform configuration file(s) and/or directories, repeatable
+- `--generated, -g` Path(s) to generated Terraform file(s), repeatable. If omitted, auto-discovers `generated.tf` and `generated_*.tf` from `./generated`
+- `--original, -o` Original Terraform configuration file(s) and/or directories, repeatable (required)
 - `--output-dir, -d` Output directory for merged configuration (default `./migrated`)
 - `--imports-file` Explicit imports file path (auto-discovered from generated file location when omitted)
 - `--var-file` Var-file(s) to copy into output directory, repeatable (default none)
