@@ -32,6 +32,8 @@ This can be useful in environments that do not allow direct access to the Intern
 
 See [linux](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator.sh), [windows](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator-windows.ps1), and [macOS](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator-macos.sh) install scripts that will download the latest release of tfmigrator and install it in the appropriate location for your operating system.
 
+~> The install scripts support release v2.0.0 and later. Prior to v2.0.0 the release archives were published under the name `migration_tool` rather than `tfmigrator`; to install an earlier version, download the `migration_tool_*` archive manually from the [releases page](https://github.com/HPE/terraform-provider-hpe/releases).
+
 ### Linux
 
 The following examples use Bash on Linux (x64).
