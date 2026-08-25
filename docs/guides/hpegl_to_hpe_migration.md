@@ -188,7 +188,7 @@ The following hpegl data source has no HPE equivalent and is removed during migr
 ## Migration Workflow
 
 The end-to-end command workflow - installation, the one-shot `tfmigrator migrate` command, and the
-individual `migrate-providers` -> `generate` -> `merge` -> `migrate-datasources` steps - is documented
+individual `migrate-providers` -> `generate` -> `merge` -> `migrate-datasources` -> `cleanup-providers` steps - is documented
 in the [tfmigrator guide](./tfmigrator_migration.md). tfmigrator auto-detects the hpegl provider in
 your workspace, so the same commands apply here. For common issues, see
 [tfmigrator Troubleshooting](./tfmigrator_troubleshooting.md).

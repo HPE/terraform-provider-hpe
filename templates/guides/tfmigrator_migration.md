@@ -16,7 +16,7 @@ This document is a step-by-step guide for migrating Terraform configuration to H
 `tfmigrator` supports two ways of running the migration:
 
 - **Full pipeline** - a single `migrate` command that runs every step end to end.
-- **Individual steps** - run `migrate-providers`, `generate`, `merge`, and `migrate-datasources` yourself for finer control.
+- **Individual steps** - run `migrate-providers`, `generate`, `merge`, `migrate-datasources`, and `cleanup-providers` yourself for finer control.
 
 Both approaches are documented below.
 
@@ -150,12 +150,13 @@ The following examples use PowerShell on Windows (x64).
 - `generate` - extract resources from state, build `generated.tf` + `import.tf`
 - `merge` - merge generated resources into original config while preserving user intent
 - `migrate-datasources` - rewrite `hpegl_vmaas_*` / `morpheus_*` data source blocks to `hpe_morpheus_*` equivalents
+- `cleanup-providers` - remove the superseded source/intermediary provider blocks, the broker data source, and unused `required_providers` entries that the migration has replaced (run automatically by `migrate`)
 - `clean` - post-process a generated file with cleanup rules (run automatically by `generate`)
 
 A typical migration is either:
 
 - **Full pipeline:** `migrate` followed by `terraform init / plan / apply --refresh-only / apply` in the migrated output, or
-- **Individual steps:** `migrate-providers` → `generate` → `merge` → `migrate-datasources`, then the same Terraform validation/apply flow.
+- **Individual steps:** `migrate-providers` → `generate` → `merge` → `migrate-datasources` → `cleanup-providers`, then the same Terraform validation/apply flow.
 
 Optional:
 
@@ -183,7 +184,13 @@ terraform show -json > state.json
 
 The `migrate` command runs the entire migration end to end. It auto-detects the source provider
 (Morpheus or hpegl) in your workspace and runs `migrate-providers` → `generate` → `merge` →
-`migrate-datasources` in sequence.
+`migrate-datasources` in sequence. As part of this it also removes the superseded source and
+intermediary provider blocks and the broker data source (before `migrate-datasources`) and prunes the
+now-unused `required_providers` entries (after `migrate-datasources`) - the same work the standalone
+[`cleanup-providers`](#step-5-remove-superseded-provider-configuration-cleanup-providers) command
+performs for the individual flow. `migrate` interleaves this around its `migrate-datasources` step
+deliberately, to keep the output quiet; the individual flow runs it once at the end instead (see
+[Step 5](#step-5-remove-superseded-provider-configuration-cleanup-providers)).
 
 ### Basic command
 
@@ -212,7 +219,7 @@ tfmigrator migrate \
 
 - `migrated/provider-config/` - generated `hpe` provider blocks and `credentials.auto.tfvars` (from `migrate-providers`)
 - `migrated/generated/` - `generated.tf` + `import.tf` (from `generate`)
-- `migrated/final/` - the merged, ready-to-review configuration (from `merge`, then rewritten in place by `migrate-datasources`)
+- `migrated/final/` - the merged, ready-to-review configuration (from `merge`, with the superseded provider blocks removed, then rewritten in place by `migrate-datasources`, and its `required_providers` pruned)
 
 The `migrate` command derives the provider context and credentials from your existing configuration
 automatically, so you do not need to hand-author a `--provider-config` file as you would when running
@@ -240,7 +247,7 @@ the one-shot `migrate` command, for example to review the transformed provider b
 configuration before merging.
 
 The individual flow is: **Step 1** `migrate-providers` → **Step 2** `generate` → **Step 3** `merge`
-→ **Step 4** `migrate-datasources`.
+→ **Step 4** `migrate-datasources` → **Step 5** `cleanup-providers`.
 
 ---
 
@@ -454,6 +461,49 @@ tfmigrator migrate-datasources \
 Point `--input` at your merged output (for example `./migrated` from Step 3) and use `--in-place` to
 rewrite the data source blocks there. The one-shot `migrate` command runs this step automatically
 against `migrated/final/`.
+
+---
+
+## Step 5: Remove Superseded Provider Configuration (`cleanup-providers`)
+
+The migrated output still carries the original source provider blocks, the intermediary provider
+blocks, and the broker data source that chained them together (for example
+`hpegl_vmaas_morpheus_details`). These have been replaced by the generated `hpe` provider block, so
+what remains is dead configuration that still asks Terraform to install and authenticate the old
+providers. `cleanup-providers` removes those blocks and then prunes the `required_providers` entries
+that nothing references any more. Run it last, as a final tidy-up over the migrated output.
+
+Detection runs against your **original** configuration (`--working-dir`), while the removal is applied
+to the **migrated output** (`--target-dir`). The two are deliberately separate: a provider chain
+cannot be reconstructed from the migrated output alone, because `migrate-datasources` has removed the
+broker data source that identifies the chain.
+
+-> Running `cleanup-providers` after `migrate-datasources` (Step 4) is expected to surface two harmless
+messages. Step 4 will already have reported `⚠  Removed N data source(s) with no HPE equivalent ...
+(referenced in ...)` for the broker data source, and `cleanup-providers` may print a `note:` that an
+intermediary provider block references a broker data source no longer declared in the target. Both are
+benign: detection uses `--working-dir` (the untouched original), so the removal completes correctly and
+the final result is identical to what the one-shot `migrate` command produces. `migrate` simply
+interleaves the same work around its own `migrate-datasources` step to suppress those messages.
+
+### Basic command
+
+```bash
+tfmigrator cleanup-providers \
+  --working-dir . \
+  --target-dir ./migrated
+```
+
+### Cleanup-providers flags
+
+- `--working-dir, -w` Original configuration to detect against (default `.`)
+- `--target-dir, -t` Migrated output to clean up (default `./migrated/final`)
+- `--config, -c` Migration config: `auto` to detect from the workspace, or an embedded config name (`hpegl`, `morpheus`) (default `auto`)
+- `--dry-run` Show what would be removed without writing files (default `false`)
+
+The default `--target-dir` (`./migrated/final`) matches the layout the full `migrate` command produces.
+For the individual flow, point `--target-dir` at the output directory `merge` wrote to in Step 3
+(`./migrated` by default), as shown above.
 
 ---
 
