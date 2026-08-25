@@ -30,7 +30,7 @@ This can be useful in environments that do not allow direct access to the Intern
 
 ### Install Scripts
 
-See [linux](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator.sh), [windows](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-windows.ps1), and [macOS](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-macos.sh) install scripts that will download the latest release of tfmigrator and install it in the appropriate location for your operating system.
+See [linux](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator.sh), [windows](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator-windows.ps1), and [macOS](https://github.com/HPE/terraform-provider-hpe/blob/-/scripts/install-tfmigrator-macos.sh) install scripts that will download the latest release of tfmigrator and install it in the appropriate location for your operating system.
 
 ### Linux
 
