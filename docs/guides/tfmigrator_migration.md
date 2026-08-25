@@ -190,7 +190,9 @@ The `migrate` command runs the entire migration end to end. It auto-detects the 
 ```bash
 tfmigrator migrate \
   --state state.json \
-  --working-dir .
+  --working-dir . \
+  --var-file terraform.tfvars \
+  --original .
 ```
 
 ### Migrate flags
@@ -277,7 +279,8 @@ and `credentials.auto.tfvars` supplied via `--provider-var-file`.
 ```bash
 tfmigrator generate \
   --state state.json \
-  --provider-config ./provider.tf
+  --provider-config ./provider.tf \
+  --provider-var-file terraform.tfvars
 ```
 
 ### Generate flags
@@ -366,18 +369,30 @@ Use this when:
 Recommended in-place cleanup:
 
 ```bash
+# Morpheus source
 tfmigrator clean \
-  --input ./generated/generated.tf \
+  --input ./generated/generated_morpheus.tf \
+  --config morpheus \
+  --in-place
+
+# hpegl source
+tfmigrator clean \
+  --input ./generated/generated_hpegl.tf \
+  --config hpegl \
   --in-place
 ```
 
 If you prefer a separate output file:
 
 ```bash
+# Morpheus source
 tfmigrator clean \
-  --input ./generated/generated.tf \
+  --input ./generated/generated_morpheus.tf \
+  --config morpheus \
   --output ./generated/cleaned.tf
 ```
+
+The `--config` flag is required and takes an embedded config name (`morpheus` or `hpegl`) or a filesystem path to a cleanup config directory - use the value matching your source provider.
 
 If you write to `cleaned.tf`, use that file as the `--generated` input in Step 3.
 
