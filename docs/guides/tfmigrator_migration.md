@@ -24,6 +24,8 @@ This can be useful in environments that do not allow direct access to the Intern
 
 See [linux](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator.sh), [windows](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-windows.ps1), and [macOS](https://github.com/HPE/terraform-provider-hpe/blob/main/scripts/install-tfmigrator-macos.sh) install scripts that will download the latest release of tfmigrator and install it in the appropriate location for your operating system.
 
+~> The install scripts support release v2.0.0 and later. Prior to v2.0.0 the release archives were published under the name `migration_tool` rather than `tfmigrator`; to install an earlier version, download the `migration_tool_*` archive manually from the [releases page](https://github.com/HPE/terraform-provider-hpe/releases).
+
 ### Linux
 
 The following examples use Bash on Linux (x64).
@@ -32,19 +34,19 @@ The following examples use Bash on Linux (x64).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_linux_amd64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_linux_amd64.zip
    ```
 
 2. Extract the archive.
 
    ```console
-   unzip migration_tool_${RELEASE}_linux_amd64.zip
+   unzip tfmigrator_${RELEASE}_linux_amd64.zip
    ```
 
 3. Move the binary to a directory in your PATH.
 
    ```console
-   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
+   sudo mv tfmigrator_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -68,20 +70,20 @@ The following example uses Zsh (default) on macOS (Apple Silicon).
 
    ```console
    RELEASE=x.y.z
-   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_darwin_arm64.zip
+   wget -q https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_darwin_arm64.zip
    ```
 
 3. Extract the archive.
 
    ```console
-   unzip migration_tool_${RELEASE}_darwin_arm64.zip
+   unzip tfmigrator_${RELEASE}_darwin_arm64.zip
    ```
 
 4. Move the binary to a directory in your PATH.
 
 
    ```console
-   sudo mv migration_tool_v${RELEASE} /usr/local/bin/tfmigrator
+   sudo mv tfmigrator_v${RELEASE} /usr/local/bin/tfmigrator
    chmod +x /usr/local/bin/tfmigrator
    ```
 
@@ -99,20 +101,20 @@ The following examples use PowerShell on Windows (x64).
 
    ```powershell
    Set-Variable -Name "RELEASE" -Value "x.y.z"
-   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/migration_tool_${RELEASE}_windows_amd64.zip -outfile migration_tool_${RELEASE}_windows_amd64.zip
+   Invoke-WebRequest https://github.com/HPE/terraform-provider-hpe/releases/download/v${RELEASE}/tfmigrator_${RELEASE}_windows_amd64.zip -outfile tfmigrator_${RELEASE}_windows_amd64.zip
    ```
 
 2. Extract the archive.
 
    ```powershell
-   Expand-Archive migration_tool_${RELEASE}_windows_amd64.zip
-   cd migration_tool_${RELEASE}_windows_amd64
+   Expand-Archive tfmigrator_${RELEASE}_windows_amd64.zip
+   cd tfmigrator_${RELEASE}_windows_amd64
    ```
 
 3. Move the binary to a directory in your PATH.
 
    ```powershell
-   Move-Item migration_tool_v${RELEASE}.exe C:\Windows\System32\tfmigrator.exe
+   Move-Item tfmigrator_v${RELEASE}.exe C:\Windows\System32\tfmigrator.exe
    ```
 
 4. Verify the installation.

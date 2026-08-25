@@ -37,6 +37,28 @@ is preserved rather than overwritten.
 `hpe_morpheus_instance_clone` no longer recovers `source_instance_id` from `config.cloneInstanceId`,
 as a write-only attribute must be null in state.
 
+### tfmigrator release artifacts renamed
+
+The migration tool's release artifacts are now published as `tfmigrator_*` rather than
+`migration_tool_*`.  This affects the archives, the binary inside them, and the checksum files:
+
+| Was | Now |
+|---|---|
+| `migration_tool_<version>_<os>_<arch>.zip` | `tfmigrator_<version>_<os>_<arch>.zip` |
+| `migration_tool_v<version>` | `tfmigrator_v<version>` |
+| `migration_tool_<version>_SHA256SUMS` (+ `.sig`) | `tfmigrator_<version>_SHA256SUMS` (+ `.sig`) |
+
+The installed binary is still called `tfmigrator`, so nothing changes once the tool is on your
+PATH — only the download URL and the name of the file inside the archive.  Any automation that
+fetches the archive by name needs updating.
+
+The `install-tfmigrator` scripts have been updated to match and therefore support v2.0.0 and later.
+To install an earlier version, download the `migration_tool_*` archive manually from the releases
+page.
+
+`tfmigrator --version` now reports the release it was built from.  Previously it reported a version
+compiled into the source, which did not track the release.
+
 ## Deprecations
 
 - `hpe_morpheus_instance` — `server_uuids` is deprecated in favour of the new `server_uuid`

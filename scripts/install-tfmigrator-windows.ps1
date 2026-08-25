@@ -27,7 +27,7 @@ if (!$VERSION) {
 $version_number=$VERSION -replace 'v'  
 
 $tmp_dir="${env:TEMP}\tfmigrator-install-$(Get-Random)"
-$archive_name="migration_tool_${version_number}_${os}_${arch}.zip"
+$archive_name="tfmigrator_${version_number}_${os}_${arch}.zip"
 $archive_path="${tmp_dir}\${archive_name}"
 $download_url="https://github.com/${repo}/releases/download/${VERSION}/${archive_name}"
 
@@ -50,9 +50,9 @@ catch {
 Write-Host "Extracting release files"
 Expand-Archive $archive_path -Force
 
-# Binary is named migration_tool_v${version_number}.exe
+# Binary is named tfmigrator_v${version_number}.exe
 $extract_dir = $archive_name -replace '.zip'
-$binary_path = "${extract_dir}\migration_tool_v${version_number}.exe"
+$binary_path = "${extract_dir}\tfmigrator_v${version_number}.exe"
 if (!(Test-Path $binary_path)) {
     Write-Host "Error: Could not find binary ${binary_path} in archive"
     Set-Location "${users_pwd}"
