@@ -173,63 +173,9 @@ Before starting, ensure you have:
 terraform show -json > state.json
 ```
 
-2. Your HPE provider setup in Terraform configuration (root and modules as needed).
+2. Your original Terraform configuration directory, containing the source (`morpheus` / `hpegl`) provider configuration.
 
-3. Your original Terraform configuration directory.
-
-Ensure provider setup is already in your Terraform files before running migration.
-
----
-
-## Basic Provider Setup (Do This First)
-
-Set up `required_providers` and provider blocks in your Terraform code before using `tfmigrator`. Update the `required_providers` block in root and modules as needed.
-
-```hcl
-terraform {
-  required_providers {
-    morpheus = {
-      source  = "gomorpheus/morpheus"
-      version = "0.14.1"
-    }
-    hpe = {
-      source  = "HPE/hpe"
-      version = ">= 2.0.0"
-    }
-  }
-}
-
-
-provider "morpheus" {
-  url      = var.morpheus_url
-  username = var.morpheus_username
-  password = var.morpheus_password
-}
-
-provider "hpe" {
-  morpheus {
-    url      = var.morpheus_url
-    username = var.morpheus_username
-    password = var.morpheus_password
-  }
-}
-
-variable "morpheus_url" {
-  type = string
-}
-
-variable "morpheus_username" {
-  type = string
-}
-
-variable "morpheus_password" {
-  type      = string
-  sensitive = true
-}
-```
-
-This setup is expected to exist before migration.
-
+-> The `migrate` and `migrate-providers` commands generate the `hpe` provider block for you automatically from your existing configuration - you do **not** need to hand-author an `hpe` provider block for the recommended workflow. A hand-authored provider block is only required if you run `generate` on its own without `migrate-providers` (see [Step 2](#step-2-generate-migration-artifacts)).
 
 ---
 
@@ -351,7 +297,16 @@ tfmigrator generate \
 - `generated/import.tf`
   - Import blocks for migrated resources
 
-- `--provider-config` should point to wherever your HPE provider is configured for the migration context (for example, `./provider.tf` or `./main.tf`). Alternatively - create a temporary file for this step (i.e. `.provider/provider.tf`) that follows the below format:
+- Cleanup is run automatically at the end of `generate` unless you pass `--no-cleanup`.
+
+### Provider context (standalone `generate` only)
+
+`generate` runs Terraform internally to produce the configuration, so it needs a provider context via `--provider-config`.
+
+- If you ran `migrate-providers` first (or used the full `migrate` command), this is already handled for you - point `--provider-config` at the generated `provider-config/` directory. No manual provider block is required.
+- If you are running `generate` **on its own**, supply a `--provider-config` file that configures the `hpe` provider (and the source provider used for planning). This can be an existing file such as `./provider.tf` or `./main.tf`, or a temporary file created just for this step.
+
+A minimal `--provider-config` file using variables:
 
 ```hcl
 terraform {
@@ -369,22 +324,34 @@ terraform {
 
 
 provider "morpheus" {
-  url      = "YOURURLHERE"
-  username = "YOURUSERNAMEHERE"
-  password = "YOURPASSWORDHERE"
+  url      = var.morpheus_url
+  username = var.morpheus_username
+  password = var.morpheus_password
 }
 
 provider "hpe" {
   morpheus {
-    url      = "YOURURLHERE"
-    username = "YOURUSERNAMEHERE"
-    password = "YOURPASSWORDHERE"
+    url      = var.morpheus_url
+    username = var.morpheus_username
+    password = var.morpheus_password
   }
 }
-```
--> If variables are used in the `--provider-config` - the respective `variable` blocks are expected to be provided in that file. The values themselves can then be passed in via `--provider-var-file` or `--provider-var`.
 
-- Cleanup is run automatically at the end of `generate` unless you pass `--no-cleanup`.
+variable "morpheus_url" {
+  type = string
+}
+
+variable "morpheus_username" {
+  type = string
+}
+
+variable "morpheus_password" {
+  type      = string
+  sensitive = true
+}
+```
+
+-> If variables are used in the `--provider-config`, the respective `variable` blocks are expected to be provided in that file. The values themselves can then be passed in via `--provider-var-file` or `--provider-var`. Alternatively, for a quick throwaway context you can inline literal values in place of the `var.*` references (for example a `.provider/provider.tf` with `url = "YOURURLHERE"`, `username = "YOURUSERNAMEHERE"`, `password = "YOURPASSWORDHERE"`) and skip the `variable` blocks.
 
 ---
 
