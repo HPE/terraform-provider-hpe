@@ -23,6 +23,11 @@ provider (hpegl used the Terraform Plugin SDK v2; the HPE provider uses the Plug
 resource therefore requires Terraform-generated configuration and manual post-migration review. The
 process documented for [tfmigrator](./tfmigrator_migration.md) handles this generation for you.
 
+## Prerequisites
+
+- Terraform >= 1.5.0 (required for `import` blocks)
+- HPE provider >= 2.0.0
+
 ## Provider Block Transformation
 
 The largest difference between an hpegl configuration and an HPE configuration is the provider block.
@@ -66,6 +71,17 @@ provider "hpe" {
 ### GreenLake IAM - Disconnected (`iam_version = "glp"`)
 
 ```HCL
+# Before (hpegl)
+provider "hpegl" {
+  iam_version      = "glp"
+  iam_service_url  = "https://client.greenlake.hpe.com/..."
+  vmaas {
+    location   = "HPE-Data-Center"
+    space_name = "my-space"
+    broker_url = "https://vmaas-broker.example.com"
+  }
+}
+
 # After (hpe)
 provider "hpe" {
   morpheus {
@@ -84,10 +100,18 @@ provider "hpe" {
 ### Direct-connect (`vmaas.morpheus_url` present)
 
 When the hpegl `vmaas` block sets `morpheus_url`, the provider connects directly to Morpheus with no
-GreenLake IAM broker. In that case the credentials land directly inside the `morpheus` block and no
-`pce_identity` sub-block is emitted:
+GreenLake IAM broker. In that case the credentials land directly inside the `morpheus` block, with
+neither a `pce_identity` nor a `pce_disconnected_identity` sub-block emitted:
 
 ```HCL
+# Before (hpegl)
+provider "hpegl" {
+  vmaas {
+    morpheus_url   = "https://morpheus.example.com"
+    morpheus_token = var.hpe_morpheus_access_token
+  }
+}
+
 # After (hpe)
 provider "hpe" {
   morpheus {

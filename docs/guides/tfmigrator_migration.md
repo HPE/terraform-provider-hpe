@@ -145,7 +145,7 @@ The following examples use PowerShell on Windows (x64).
 
 `tfmigrator` provides the following commands:
 
-- `migrate` - run the full pipeline (`migrate-providers` → `generate` → `merge` → `migrate-datasources`) in one command
+- `migrate` - run the full pipeline (`migrate-providers` → `generate` → `merge` → `migrate-datasources` → `cleanup-providers`) in one command
 - `migrate-providers` - transform source (Morpheus / hpegl) provider blocks into `hpe` provider blocks
 - `generate` - extract resources from state, build `generated.tf` + `import.tf`
 - `merge` - merge generated resources into original config while preserving user intent
@@ -184,12 +184,16 @@ terraform show -json > state.json
 
 The `migrate` command runs the entire migration end to end. It auto-detects the source provider
 (Morpheus or hpegl) in your workspace and runs `migrate-providers` → `generate` → `merge` →
-`migrate-datasources` in sequence. As part of this it also removes the superseded source and
-intermediary provider blocks and the broker data source (before `migrate-datasources`) and prunes the
-now-unused `required_providers` entries (after `migrate-datasources`) - the same work the standalone
-[`cleanup-providers`](#step-5-remove-superseded-provider-configuration-cleanup-providers) command
-performs for the individual flow. `migrate` interleaves this around its `migrate-datasources` step
-deliberately, to keep the output quiet; the individual flow runs it once at the end instead (see
+`migrate-datasources` in sequence. It also performs the same work as the standalone
+[`cleanup-providers`](#step-5-remove-superseded-provider-configuration-cleanup-providers) command,
+interleaved around the `migrate-datasources` step:
+
+1. Before `migrate-datasources`: it removes the superseded source and intermediary provider blocks
+   and the broker data source.
+2. After `migrate-datasources`: it prunes the now-unused `required_providers` entries.
+
+`migrate` interleaves the cleanup this way deliberately, to keep the output quiet. The individual
+flow instead runs `cleanup-providers` once at the end (see
 [Step 5](#step-5-remove-superseded-provider-configuration-cleanup-providers)).
 
 ### Basic command
