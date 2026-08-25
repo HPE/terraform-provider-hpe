@@ -25,7 +25,7 @@ terraform {
     }
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 2.0.0"
     }
   }
 }
@@ -119,7 +119,7 @@ terraform {
     }
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.3.0"
+      version = ">= 2.0.0"
     }
   }
 }
@@ -138,7 +138,7 @@ Attribute config_vmware.nested_virtualization value must be one of: ["on" "off"]
 ```
 
 Fix:
-- Ensure the HPE provider is at version `1.2.0` or later.
+- Ensure the HPE provider is at version `2.0.0` or later.
 - Alternatively, set `nested_virtualization` values to `"on"` or `"off"` in the migrated configuration.
 
 
