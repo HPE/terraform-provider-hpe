@@ -650,6 +650,8 @@ This allows it to identify which resources belong to modules on a merge and upda
 
 -> Ensure that the module configuration (located in `./user-policy` in the above example) is included as part of what is passed into `merge` as the `--original` configuration. Note that `--original` searches for Terraform configuration files recursively so passing in `--original .` while in the working directory where all modules are available as subdirectories is generally sufficient.  
 
+-> Modules must be available locally on disk to be migrated. `tfmigrator` only rewrites `.tf` files it can read from the paths passed to `--original`; it does not fetch remote modules. If a module is sourced remotely, copy its configuration locally, point the module `source` at the local path, and ensure that directory is reachable from `--original`. Modules that remain remote-only will be left unmigrated.
+
 ---
 
 ## Common Patterns
