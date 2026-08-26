@@ -255,6 +255,7 @@ func TestValidateProviderConfigRejectsIdentityBlockWithDirectURL(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 			}
 		})
@@ -281,6 +282,7 @@ func TestValidateProviderConfigRejectsBothIdentityBlocks(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 				"pce_disconnected_identity": identityBlockValue(t, obj, absent, "pce_disconnected_identity",
 					map[string]string{
@@ -316,6 +318,7 @@ func TestValidateProviderConfigIgnoresUnknownConnectionDetails(t *testing.T) {
 				"pce_identity": identityBlockValue(t, obj, absent, "pce_identity", map[string]string{
 					"iam_token": "token",
 					"location":  "site-a",
+					"space":     "space",
 				}),
 			}
 		})
@@ -333,12 +336,28 @@ func identityBlockAttrs(block string) map[string]string {
 		"location": "site-a",
 	}
 
+	if block == "pce_identity" {
+		attrs["space"] = "space"
+	}
+
 	if block == "pce_disconnected_identity" {
 		attrs["workspace_id"] = "workspace"
 		attrs["broker_url"] = "https://broker.example.invalid"
 	}
 
 	return attrs
+}
+
+// identityIssuerAttr returns the name a block gives the GreenLake issuer URL.
+// The Disconnected block calls it token_issuer_url where the Connected block
+// calls it issuer_url, and neither has the other's spelling, so a test that
+// covers both blocks has to ask rather than assume.
+func identityIssuerAttr(block string) string {
+	if block == "pce_disconnected_identity" {
+		return "token_issuer_url"
+	}
+
+	return "issuer_url"
 }
 
 // A pre-generated token and the credentials it would be generated from are two
@@ -352,7 +371,7 @@ func TestValidateProviderConfigRejectsIamTokenWithCredentials(t *testing.T) {
 				attrs["iam_token"] = "token"
 				attrs["client_id"] = "client-id"
 				attrs["client_secret"] = "client-secret"
-				attrs["issuer_url"] = "https://issuer.example.invalid"
+				attrs[identityIssuerAttr(block)] = "https://issuer.example.invalid"
 
 				diags := validateProviderConfig(t, absent,
 					func(t *testing.T, obj tftypes.Object, absent absentBlocks) map[string]tftypes.Value {
@@ -361,7 +380,13 @@ func TestValidateProviderConfigRejectsIamTokenWithCredentials(t *testing.T) {
 						}
 					})
 
-				for _, conflicting := range []string{"client_id", "client_secret", "issuer_url"} {
+				conflicts := []string{
+					"client_id",
+					"client_secret",
+					identityIssuerAttr(block),
+				}
+
+				for _, conflicting := range conflicts {
 					want := fmt.Sprintf(
 						`Attribute "morpheus[0].%s[0].%s" cannot be specified when `+
 							`"morpheus[0].%s[0].iam_token" is specified`,
@@ -387,7 +412,7 @@ func TestValidateProviderConfigAcceptsCredentialsWithoutIamToken(t *testing.T) {
 				attrs := identityBlockAttrs(block)
 				attrs["client_id"] = "client-id"
 				attrs["client_secret"] = "client-secret"
-				attrs["issuer_url"] = "https://issuer.example.invalid"
+				attrs[identityIssuerAttr(block)] = "https://issuer.example.invalid"
 
 				diags := validateProviderConfig(t, absent,
 					func(t *testing.T, obj tftypes.Object, absent absentBlocks) map[string]tftypes.Value {
@@ -423,8 +448,8 @@ func TestValidateProviderConfigRejectsIdentityBlockWithoutCredentials(t *testing
 					})
 
 				want := "Configure either the GreenLake API client credentials " +
-					"(client_id, client_secret and issuer_url) or a pre-generated " +
-					"iam_token."
+					"(client_id, client_secret and issuer_url or " +
+					"token_issuer_url) or a pre-generated iam_token."
 
 				if !containsDiag(diags, want) {
 					t.Errorf("ValidateProviderConfig() diagnostics = %v, want one containing %q",

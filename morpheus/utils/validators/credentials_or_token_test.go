@@ -19,11 +19,12 @@ func identityObject(t *testing.T, set map[string]attr.Value) basetypes.ObjectVal
 	t.Helper()
 
 	attributeTypes := map[string]attr.Type{
-		"client_id":     types.StringType,
-		"client_secret": types.StringType,
-		"issuer_url":    types.StringType,
-		"iam_token":     types.StringType,
-		"location":      types.StringType,
+		"client_id":        types.StringType,
+		"client_secret":    types.StringType,
+		"issuer_url":       types.StringType,
+		"token_issuer_url": types.StringType,
+		"iam_token":        types.StringType,
+		"location":         types.StringType,
 	}
 
 	values := map[string]attr.Value{}
@@ -69,6 +70,12 @@ func TestIdentityCredentialsOrTokenValidator(t *testing.T) {
 		"issuer url only": {
 			value: identityObject(t, map[string]attr.Value{
 				"issuer_url": types.StringValue("https://issuer.example.invalid"),
+			}),
+		},
+		// The Disconnected block's spelling of the same credential.
+		"token issuer url only": {
+			value: identityObject(t, map[string]attr.Value{
+				"token_issuer_url": types.StringValue("https://issuer.example.invalid"),
 			}),
 		},
 		"iam token only": {
@@ -128,6 +135,60 @@ func TestIdentityCredentialsOrTokenValidator(t *testing.T) {
 			if got := resp.Diagnostics.HasError(); got != tc.wantError {
 				t.Errorf("HasError = %v, want %v (diags: %v)",
 					got, tc.wantError, resp.Diagnostics)
+			}
+		})
+	}
+}
+
+// The two identity blocks name the issuer URL differently, and neither has the
+// other's spelling. The credential list spans both, so it names an attribute
+// that any given block does not have: that has to be skipped rather than
+// treated as unset, and the block's own spelling has to still be found.
+func TestIdentityCredentialsOrTokenValidatorPerBlockIssuerAttribute(t *testing.T) {
+	t.Parallel()
+
+	for block, issuerAttr := range map[string]string{
+		"pce_identity":              "issuer_url",
+		"pce_disconnected_identity": "token_issuer_url",
+	} {
+		name, attribute := block, issuerAttr
+
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			// Only the attributes this block actually has, so the other
+			// block's issuer spelling is absent from the object entirely.
+			obj, diags := types.ObjectValue(
+				map[string]attr.Type{
+					"client_id":     types.StringType,
+					"client_secret": types.StringType,
+					attribute:       types.StringType,
+					"iam_token":     types.StringType,
+				},
+				map[string]attr.Value{
+					"client_id":     types.StringNull(),
+					"client_secret": types.StringNull(),
+					attribute:       types.StringValue("https://issuer.example.invalid"),
+					"iam_token":     types.StringNull(),
+				},
+			)
+			if diags.HasError() {
+				t.Fatalf("could not build the object value: %v", diags)
+			}
+
+			resp := &validator.ObjectResponse{}
+			IdentityCredentialsOrTokenValidator().ValidateObject(
+				context.Background(),
+				validator.ObjectRequest{
+					Path:        path.Root(name),
+					ConfigValue: obj,
+				},
+				resp,
+			)
+
+			if resp.Diagnostics.HasError() {
+				t.Errorf("HasError = true for %s set on %s, want false: %v",
+					attribute, name, resp.Diagnostics)
 			}
 		})
 	}

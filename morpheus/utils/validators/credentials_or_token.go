@@ -12,10 +12,16 @@ import (
 
 // identityCredentialAttributes are the attributes of an identity block that can
 // supply a way of authenticating with GreenLake. At least one has to be set.
+//
+// The list spans both identity blocks, which name the issuer URL differently:
+// the Connected block calls it issuer_url and the Disconnected block
+// token_issuer_url. A block only has one of the two, and an attribute this list
+// names but the block does not have is skipped.
 var identityCredentialAttributes = []string{
 	"client_id",
 	"client_secret",
 	"issuer_url",
+	"token_issuer_url",
 	"iam_token",
 }
 
@@ -78,6 +84,7 @@ func (v identityCredentialsOrTokenValidator) ValidateObject(
 		req.Path,
 		"Missing GreenLake credentials",
 		"Configure either the GreenLake API client credentials (client_id, "+
-			"client_secret and issuer_url) or a pre-generated iam_token.",
+			"client_secret and issuer_url or token_issuer_url) or a "+
+			"pre-generated iam_token.",
 	)
 }

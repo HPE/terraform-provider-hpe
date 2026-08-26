@@ -360,15 +360,7 @@ func parseAsData(
 	data.Tags = tags
 
 	// tenants
-	tenants, d := convert.ToSetType(
-		ctx, image.Accounts,
-		func(in sdk.GetVirtualImage200ResponseVirtualImageAccountsInner) TenantsValue {
-			return TenantsValue{
-				Name: convert.StrToType(in.Name),
-				Id:   convert.Int64ToType(in.Id),
-			}
-		},
-	)
+	tenants, d := convert.ToSetType(ctx, image.Accounts, tenantValue)
 	diags.Append(d...)
 	data.Tenants = tenants
 
@@ -397,4 +389,26 @@ func parseAsData(
 	data.VmToolsInstalled = convert.BoolToType(image.VmToolsInstalled)
 
 	return diags
+}
+
+// tenantValue maps an account from the API onto the schema's tenant object.
+//
+// state must be set explicitly. A zero ValueState is ValueStateNull, and a null
+// object lowers to a null tftypes value whatever attributes were set on it -- so
+// every tenant became indistinguishable from every other, and SetType.Validate
+// rejected the set as containing duplicates. The effect was that any image with
+// two or more tenants failed to read, with "Duplicate Set Element", whether or
+// not anything was actually duplicated.
+//
+// Named rather than inline so the mapping can be tested directly; the bug is
+// invisible at the attr.Value layer and only appears once the value is lowered
+// to tftypes.
+func tenantValue(
+	in sdk.GetVirtualImage200ResponseVirtualImageAccountsInner,
+) TenantsValue {
+	return TenantsValue{
+		Name:  convert.StrToType(in.Name),
+		Id:    convert.Int64ToType(in.Id),
+		state: attr.ValueStateKnown,
+	}
 }
