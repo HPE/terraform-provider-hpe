@@ -10,7 +10,7 @@ This guide describes how to migrate existing Terraform configurations from the s
 ## Prerequisites
 
 - Terraform >= 1.5.0 (required for `import` blocks)
-- HPE provider >= 1.6.0
+- HPE provider >= 2.0.0
 - Access to your existing OpsRamp resource IDs (from state or the OpsRamp API)
 
 ## Step 1: Update the Provider Declaration
@@ -44,7 +44,7 @@ terraform {
   required_providers {
     hpe = {
       source  = "HPE/hpe"
-      version = ">= 1.6.0"
+      version = ">= 2.0.0"
     }
   }
 }

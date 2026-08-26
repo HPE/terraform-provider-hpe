@@ -239,7 +239,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 						},
 						"space": schema.StringAttribute{
 							Description: "The name of the GreenLake Space that the PCE instance is in.",
-							Optional:    true,
+							Required:    true,
 						},
 						"issuer_url": schema.StringAttribute{
 							Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
@@ -296,7 +296,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							Validators: []validator.String{
 								stringvalidator.AlsoRequires(
 									path.MatchRelative().AtParent().AtName("client_secret"),
-									path.MatchRelative().AtParent().AtName("issuer_url"),
+									path.MatchRelative().AtParent().AtName("token_issuer_url"),
 								),
 							},
 						},
@@ -307,11 +307,11 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 							Validators: []validator.String{
 								stringvalidator.AlsoRequires(
 									path.MatchRelative().AtParent().AtName("client_id"),
-									path.MatchRelative().AtParent().AtName("issuer_url"),
+									path.MatchRelative().AtParent().AtName("token_issuer_url"),
 								),
 							},
 						},
-						"issuer_url": schema.StringAttribute{
+						"token_issuer_url": schema.StringAttribute{
 							Description: `GreenLake IAM Issuer URL used to generate access tokens. ` +
 								`This should be set to the "Issuer" URL of the API client.`,
 							Optional: true,
@@ -331,7 +331,7 @@ func (p *MorpheusProvider) Schema(ctx context.Context, req provider.SchemaReques
 								stringvalidator.ConflictsWith(
 									path.MatchRelative().AtParent().AtName("client_id"),
 									path.MatchRelative().AtParent().AtName("client_secret"),
-									path.MatchRelative().AtParent().AtName("issuer_url"),
+									path.MatchRelative().AtParent().AtName("token_issuer_url"),
 								),
 							},
 						},
@@ -401,7 +401,7 @@ func pceDisconnectedIdentityTokenExchange(
 	return pce.TokenExchange(ctx, pce.Config{
 		ClientID:     m.ClientID.ValueString(),
 		ClientSecret: m.ClientSecret.ValueString(),
-		IssuerURL:    m.IssuerURL.ValueString(),
+		IssuerURL:    m.TokenIssuerURL.ValueString(),
 		IAMToken:     m.IAMToken.ValueString(),
 		Location:     m.Location.ValueString(),
 		WorkspaceID:  m.WorkspaceID.ValueString(),

@@ -185,3 +185,77 @@ in the HPE provider and several Morpheus provider resources map to a single HPE 
 
 For these resources terraform can be used to generate the HPE resource definition.  This is how the process documented
 for [tfmigrator](./tfmigrator_migration.md) handles these resources.
+
+## Data Source Definitions
+Data sources are migrated in the same way, by updating the data source type.  The following table lists the
+Morpheus provider data sources and their HPE equivalents.
+
+| Morpheus Provider Data Source Name  | HPE Provider Data Source Name           |
+|-------------------------------------|-----------------------------------------|
+| morpheus_ansible_tower_inventory    | hpe_morpheus_ansible_tower_inventory    |
+| morpheus_ansible_tower_job_template | hpe_morpheus_ansible_tower_job_template |
+| morpheus_blueprint                  | hpe_morpheus_blueprint                  |
+| morpheus_budget                     | hpe_morpheus_budget                     |
+| morpheus_catalog_item_type          | hpe_morpheus_catalog_item_type          |
+| morpheus_cloud                      | hpe_morpheus_cloud                      |
+| morpheus_cloud_datastore            | hpe_morpheus_datastore                  |
+| morpheus_cloud_folder               | hpe_morpheus_cloud_folder               |
+| morpheus_cloud_type                 | hpe_morpheus_cloud_type                 |
+| morpheus_clouds                     | hpe_morpheus_clouds                     |
+| morpheus_cluster_type               | hpe_morpheus_cluster_type               |
+| morpheus_contact                    | hpe_morpheus_contact                    |
+| morpheus_credential                 | hpe_morpheus_credential                 |
+| morpheus_cypher_secret              | hpe_morpheus_cypher_secret              |
+| morpheus_domain                     | hpe_morpheus_network_domain             |
+| morpheus_environment                | hpe_morpheus_environment                |
+| morpheus_environments               | hpe_morpheus_environments               |
+| morpheus_execute_schedule           | hpe_morpheus_execute_schedule           |
+| morpheus_file_template              | hpe_morpheus_file_template              |
+| morpheus_git_integration            | hpe_morpheus_integration_git            |
+| morpheus_group                      | hpe_morpheus_group                      |
+| morpheus_groups                     | hpe_morpheus_groups                     |
+| morpheus_instance_layout            | hpe_morpheus_instance_type_layout       |
+| morpheus_instance_type              | hpe_morpheus_instance_type              |
+| morpheus_integration                | hpe_morpheus_integration                |
+| morpheus_job                        | hpe_morpheus_job                        |
+| morpheus_key_pair                   | hpe_morpheus_key_pair                   |
+| morpheus_network                    | hpe_morpheus_network                    |
+| morpheus_network_group              | hpe_morpheus_network_group              |
+| morpheus_network_subnet             | hpe_morpheus_network_subnet             |
+| morpheus_networks                   | hpe_morpheus_networks                   |
+| morpheus_node_type                  | hpe_morpheus_node_type                  |
+| morpheus_option_list                | hpe_morpheus_option_list                |
+| morpheus_option_type                | hpe_morpheus_option_type                |
+| morpheus_plan                       | hpe_morpheus_service_plan               |
+| morpheus_policies                   | hpe_morpheus_policies                   |
+| morpheus_policy                     | hpe_morpheus_policy                     |
+| morpheus_power_schedule             | hpe_morpheus_power_schedule             |
+| morpheus_price                      | hpe_morpheus_price                      |
+| morpheus_price_set                  | hpe_morpheus_price_set                  |
+| morpheus_provision_type             | hpe_morpheus_provision_type             |
+| morpheus_resource_pool              | hpe_morpheus_resource_pool              |
+| morpheus_script_template            | hpe_morpheus_script_template            |
+| morpheus_security_package           | hpe_morpheus_security_package           |
+| morpheus_servicenow_workflow        | hpe_morpheus_servicenow_workflow        |
+| morpheus_spec_template              | hpe_morpheus_spec_template              |
+| morpheus_storage_bucket             | hpe_morpheus_storage_bucket             |
+| morpheus_storage_volume             | hpe_morpheus_storage_volume             |
+| morpheus_storage_volume_type        | hpe_morpheus_storage_volume_type        |
+| morpheus_task                       | hpe_morpheus_task                       |
+| morpheus_tasks                      | hpe_morpheus_tasks                      |
+| morpheus_tenant                     | hpe_morpheus_tenant                     |
+| morpheus_tenant_role                | hpe_morpheus_role                       |
+| morpheus_tenants                    | hpe_morpheus_tenants                    |
+| morpheus_user_group                 | hpe_morpheus_user_group                 |
+| morpheus_user_groups                | hpe_morpheus_user_groups                |
+| morpheus_user_role                  | hpe_morpheus_role                       |
+| morpheus_vdi_pool                   | hpe_morpheus_vdi_pool                   |
+| morpheus_virtual_image              | hpe_morpheus_image                      |
+| morpheus_virtual_images             | hpe_morpheus_images                     |
+| morpheus_vro_workflow               | hpe_morpheus_vro_workflow               |
+| morpheus_workflow                   | hpe_morpheus_workflow                   |
+
+Note that several Morpheus provider data sources are covered by a single generalised HPE data source, so more
+than one row can share the same HPE name.
+
+The following Morpheus provider data sources have no HPE equivalent: `morpheus_chef_server`, `morpheus_permission_set`.
