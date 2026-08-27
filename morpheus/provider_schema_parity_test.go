@@ -83,27 +83,29 @@ func TestIdentityBlocksDeriveMaxItems(t *testing.T) {
 
 // Both identity blocks need a location: the broker resolves it to a service
 // instance and to the zone that the returned token's roles are granted against,
-// and rejects a request without one. The disconnected block additionally has no
-// HPE hosted broker to fall back to and no implicit workspace.
+// and rejects a request without one. Each block also needs whatever scopes its
+// broker request: the connected block a space, the disconnected block a
+// workspace. The disconnected block additionally has no HPE hosted broker to
+// fall back to.
 func TestIdentityRequiredAttributesSurviveConversion(t *testing.T) {
 	tests := map[string]map[string]bool{
 		"pce_identity": {
 			"location":      true,
+			"space":         true,
 			"client_id":     false,
 			"client_secret": false,
-			"space":         false,
 			"issuer_url":    false,
 			"iam_token":     false,
 			"broker_url":    false,
 		},
 		"pce_disconnected_identity": {
-			"broker_url":    true,
-			"location":      true,
-			"workspace_id":  true,
-			"client_id":     false,
-			"client_secret": false,
-			"issuer_url":    false,
-			"iam_token":     false,
+			"broker_url":       true,
+			"location":         true,
+			"workspace_id":     true,
+			"client_id":        false,
+			"client_secret":    false,
+			"token_issuer_url": false,
+			"iam_token":        false,
 		},
 	}
 

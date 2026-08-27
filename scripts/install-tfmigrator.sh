@@ -17,15 +17,15 @@ download_and_install () {
   local tmp_dir
   tmp_dir=$(mktemp -d)
   
-  local archive_name="migration_tool_${version_number}_${os}_${arch}.zip"
+  local archive_name="tfmigrator_${version_number}_${os}_${arch}.zip"
   local download_url="https://github.com/${repo}/releases/download/${VERSION}/${archive_name}"
   
   cd "$tmp_dir"
   curl -sL "$download_url" -o "$archive_name" && \
     unzip -q "$archive_name"
   
-  # Binary is named migration_tool_v${version_number}
-  local binary_path="migration_tool_v${version_number}"
+  # Binary is named tfmigrator_v${version_number}
+  local binary_path="tfmigrator_v${version_number}"
   if [[ ! -f "$binary_path" ]]; then
     echo "Error: Could not find binary ${binary_path} in archive"
     rm -rf "$tmp_dir"
