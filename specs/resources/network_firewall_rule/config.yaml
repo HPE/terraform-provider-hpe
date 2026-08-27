@@ -1,0 +1,62 @@
+network_firewall_rule:
+  templates:
+    priority:
+      int64:
+        computed_optional_required: computed_optional
+        description: The priority of the network firewall rule.
+  moves:
+    - rule: ""                       # unnest wrapper — MUST BE FIRST
+    - server_id: network_integration_id
+    - rule_group: rule_group_id      # (components/schemas/networkFirewallRuleCreate.yaml)
+    - config.application: application  # (components/schemas/networkFirewallRuleCreate.yaml)
+    - config.profile: profile          # (components/schemas/networkFirewallRuleCreate.yaml)
+    - template-priority: priority    # override String → Int64
+  removes:
+    - success                        # (components/schemas/successId.yaml)
+    - source_type                    # (components/schemas/networkFirewallRule.yaml) read-only
+    - destination_type               # (components/schemas/networkFirewallRule.yaml) read-only
+    - group_name                     # (components/schemas/networkFirewallRule.yaml) read-only
+    - applications                   # (components/schemas/networkFirewallRule.yaml) read-only
+    - profiles                       # (components/schemas/networkFirewallRule.yaml) read-only
+    - applied_targets                # (components/schemas/networkFirewallRule.yaml) read-only
+    - config                         # (components/schemas/networkFirewallRuleCreate.yaml) empty after promotion
+  overrides:
+    id:
+      state_for_unknown: true
+    network_integration_id:
+      computed_optional_required: required
+      requires_replace: true
+      description: The ID of the network integration
+    name:
+      computed_optional_required: required
+      description: The name of the network firewall rule.
+    description:
+      computed_optional_required: computed_optional
+      description: The description of the network firewall rule.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the firewall rule is enabled.
+    direction:
+      computed_optional_required: computed_optional
+      description: The traffic direction for the firewall rule (e.g. ingress, egress).
+    policy:
+      computed_optional_required: computed_optional
+      description: The policy action for the firewall rule (e.g. accept, deny, drop).
+    rule_group_id:
+      computed_optional_required: computed_optional
+      description: The ID of the firewall rule group this rule belongs to.
+    sources:
+      computed_optional_required: computed_optional
+      description: Source addresses or groups for the firewall rule.
+    destinations:
+      computed_optional_required: computed_optional
+      description: Destination addresses or groups for the firewall rule.
+    scopes:
+      computed_optional_required: computed_optional
+      description: The scopes applied to the firewall rule.
+    application:
+      computed_optional_required: computed_optional
+      description: Application identifiers for the firewall rule.
+    profile:
+      computed_optional_required: computed_optional
+      description: Profile identifiers for the firewall rule.

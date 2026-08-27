@@ -1,0 +1,7 @@
+resource "hpe_morpheus_key_pair" "example" {
+  name        = "{{.Name}}"
+  public_key  = "{{.PublicKey}}"
+  private_key = <<EOF
+  {{.PrivateKey}}
+  EOF
+}

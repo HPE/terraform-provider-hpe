@@ -1,0 +1,16 @@
+{{- if .ParentGroupName -}}
+# Firewall rules attach to a rule group on the router. Look the group up and
+# use its external_id as the rule's parent_id.
+data "hpe_morpheus_network_router_firewall_rule_group" "example" {
+  router_id = {{.RouterId}}
+  name      = "{{.ParentGroupName}}"
+}
+
+{{ end -}}
+resource "hpe_morpheus_network_router_firewall_rule" "example" {
+  router_id = {{.RouterId}}
+  parent_id = {{.ParentId}}
+  name      = "{{.Name}}"
+  policy    = "{{.Policy}}"
+  enabled   = {{.Enabled}}
+}

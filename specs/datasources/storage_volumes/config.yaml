@@ -1,0 +1,112 @@
+storage_volumes:
+  templates:
+    type:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type name.
+    type_code:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type code.
+    type_name:
+      string:
+        computed_optional_required: computed
+        description: The storage volume type name.
+    datastore_name:
+      string:
+        computed_optional_required: computed
+        description: The datastore name associated with the storage volume.
+    cloud_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the cloud the volume belongs to.
+    storage_server_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage server the volume is provisioned on, when present.
+    storage_server_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage server the volume is provisioned on, when present.
+    storage_group_id:
+      int64:
+        computed_optional_required: computed
+        description: The id of the storage group the volume belongs to, when present.
+    storage_group_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the storage group the volume belongs to, when present.
+  moves:
+    - storage_volumes.type: storage_volumes.type_obj                         # rename nested type object out of the way
+    - storage_volumes.zone_id: storage_volumes.cloud_id                      # (components/schemas/storageVolume.yaml) rename zone→cloud
+    - template-type: storage_volumes.type                                    # (template) backward-compat sdkv2 `type` attribute
+    - template-type_code: storage_volumes.type_code                          # (template)
+    - template-type_name: storage_volumes.type_name                          # (template)
+    - template-datastore_name: storage_volumes.datastore_name                # (template)
+    - template-cloud_name: storage_volumes.cloud_name                        # (template)
+    - template-storage_server_id: storage_volumes.storage_server_id          # (template)
+    - template-storage_server_name: storage_volumes.storage_server_name      # (template)
+    - template-storage_group_id: storage_volumes.storage_group_id            # (template) flattened from storageGroup map
+    - template-storage_group_name: storage_volumes.storage_group_name        # (template) flattened from storageGroup map
+  removes:
+    - max                                   # (query parameter) pagination
+    - offset                                # (query parameter) pagination
+    - sort                                  # (query parameter) sorting
+    - direction                             # (query parameter) sorting
+    - phrase                                # (query parameter) search
+    - name                                  # (query parameter) filter
+    - uuid                                  # (query parameter) filter
+    - meta                                  # (response envelope) pagination metadata
+    - storage_volumes.type_obj              # (components/schemas/storageVolume.yaml) nested object renamed from type
+    - storage_volumes.account               # (components/schemas/storageVolume.yaml) nested object
+    - storage_volumes.controller            # (components/schemas/storageVolume.yaml) nested object; keep controller_id
+    - storage_volumes.datastore             # (components/schemas/storageVolume.yaml) nested object; keep datastore_id
+    - storage_volumes.owner                 # (components/schemas/storageVolume.yaml) nested object
+    - storage_volumes.raw_data              # (components/schemas/storageVolume.yaml) dynamic/unstructured
+    - storage_volumes.source_image          # (components/schemas/storageVolume.yaml) nested/dynamic
+    - storage_volumes.storage_server        # (components/schemas/storageVolume.yaml) nested object
+    - storage_volumes.storage_group         # (components/schemas/storageVolume.yaml) empty/typeless response object; keep storage_group_id/name
+    - storage_volumes.zone                  # (components/schemas/storageVolume.yaml) nested object; keep cloud_id
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, type_id,
+                  type_code, type_name, volume_type, volume_name, volume_path,
+                  category, disk_type, disk_mode, device_name, datastore_id,
+                  datastore_name, cloud_id, cloud_name, storage_server_id,
+                  storage_server_name, storage_group_id, storage_group_name,
+                  status, uuid, provision_type, ref_type, ref_id, pool_name,
+                  source, external_id, internal_id, unique_id, namespace,
+                  storage_profile.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "type_id", "type_code", "type_name", "volume_type", "volume_name", "volume_path", "category", "disk_type", "disk_mode", "device_name", "datastore_id", "datastore_name", "cloud_id", "cloud_name", "storage_server_id", "storage_server_name", "storage_group_id", "storage_group_name", "status", "uuid", "provision_type", "ref_type", "ref_id", "pool_name", "source", "external_id", "internal_id", "unique_id", "namespace", "storage_profile")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A storage volume matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+  overrides:
+    storage_volumes:
+      computed_optional_required: computed
+      description: The list of storage volumes matching the supplied filters.

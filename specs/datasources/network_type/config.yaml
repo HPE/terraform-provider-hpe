@@ -1,0 +1,60 @@
+network_type:
+  moves:
+    - network_type: ""                      # unnest wrapper (components/schemas/networkType.yaml)
+
+  removes:
+    - option_types                          # (components/schemas/networkType.yaml) - nested array of objects
+    - route_option_types                    # (components/schemas/networkType.yaml) - nested array of objects
+    - success                               # API response wrapper
+
+  overrides:
+    id:
+      description: The ID of the network type
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network type
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: The code identifier of the network type
+    category:
+      description: The category of the network type
+    description:
+      description: A description of the network type
+    external_type:
+      description: The external type identifier
+    creatable:
+      description: Whether networks of this type can be created
+    deletable:
+      description: Whether networks of this type can be deleted
+    has_cidr:
+      description: Whether the network type supports CIDR notation
+    cidr_editable:
+      description: Whether the CIDR field is editable
+    cidr_required:
+      description: Whether the CIDR field is required
+    can_assign_pool:
+      description: Whether a network pool can be assigned to this network type
+    dns_editable:
+      description: Whether DNS settings are editable
+    gateway_editable:
+      description: Whether the gateway field is editable
+    dhcp_server_editable:
+      description: Whether the DHCP server setting is editable
+    has_floating_ips:
+      description: Whether the network type supports floating IPs
+    has_network_server:
+      description: Whether the network type has an associated network server
+    has_static_routes:
+      description: Whether the network type supports static routes
+    name_editable:
+      description: Whether the network name is editable
+    network_domain_editable:
+      description: Whether the network domain is editable
+    overlay:
+      description: Whether this is an overlay network type
+    static_override_editable:
+      description: Whether the static override setting is editable
+    vlan_id_editable:
+      description: Whether the VLAN ID is editable

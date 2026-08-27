@@ -1,0 +1,105 @@
+storage_bucket:
+  description: "Manages a Morpheus Storage Bucket resource."
+  templates:
+    access_key:
+      string:
+        computed_optional_required: optional
+        description: The access key.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    access_key_version:
+      int64:
+        computed_optional_required: optional
+        description: Access key version. Used to determine if access_key has been updated.
+    secret_key:
+      string:
+        computed_optional_required: optional
+        description: The secret key.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    secret_key_version:
+      int64:
+        computed_optional_required: optional
+        description: Secret key version. Used to determine if secret_key has been updated.
+    endpoint:
+      string:
+        computed_optional_required: optional
+        description: The endpoint URL.
+    retention_days:
+      int64:
+        computed_optional_required: optional
+        description: The number of days to retain backups.
+  moves:
+    - storage_bucket: ""
+    - template-access_key: access_key
+    - template-access_key_version: access_key_version
+    - template-secret_key: secret_key
+    - template-secret_key_version: secret_key_version
+    - template-endpoint: endpoint
+    - template-retention_days: retention_days
+  removes:
+    - account_id
+    - active
+    - config
+    - copy_to_store
+    - create_bucket
+    - default_deployment_target
+    - default_virtual_image_target
+    - read_only
+    - retention_policy_days
+    - retention_policy_type
+    - retention_provider
+    - storage_server
+    - success
+  overrides:
+    access_key:
+      computed_optional_required: optional
+      description: The access key for the storage bucket.
+      sensitive: true
+      write_only: true
+    access_key_version:
+      computed_optional_required: optional
+      description: Access key version. Used to determine if access_key has been updated.
+    bucket_name:
+      computed_optional_required: optional
+      description: The name of the bucket.
+    default_backup_target:
+      computed_optional_required: computed_optional
+      description: Whether this is the default backup target.
+      default: false
+    endpoint:
+      computed_optional_required: optional
+      description: The endpoint URL for the storage bucket.
+    id:
+      computed_optional_required: computed
+      description: The ID of the storage bucket.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the storage bucket.
+    provider_type:
+      computed_optional_required: required
+      description: The type of storage bucket (e.g. s3, azure, etc.).
+    retention_days:
+      computed_optional_required: optional
+      description: The number of days to retain files before deletion.
+    secret_key:
+      computed_optional_required: optional
+      description: The secret key for the storage bucket.
+      sensitive: true
+      write_only: true
+    secret_key_version:
+      computed_optional_required: optional
+      description: Secret key version. Used to determine if secret_key has been updated.

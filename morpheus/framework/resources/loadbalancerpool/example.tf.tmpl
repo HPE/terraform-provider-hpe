@@ -1,0 +1,13 @@
+resource "hpe_morpheus_load_balancer_pool" "nsxt" {
+  load_balancer_id = {{.LoadBalancerId}}
+  name             = "{{.Name}}"
+  description      = "{{.Description}}"
+  vip_balance      = "{{.VipBalance}}"
+  min_active       = {{.MinActive}}
+
+  config_nsxt = {
+    snat_translation_type  = "{{.SnatTranslationType}}"
+    tcp_multiplexing       = {{.TcpMultiplexing}}
+    tcp_multiplexing_number = {{.TcpMultiplexingNumber}}
+  }
+}

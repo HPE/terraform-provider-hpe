@@ -1,0 +1,10 @@
+resource "hpe_morpheus_setting_guidance" "tf_example_guidance_setting" {
+  power_settings_average_cpu          = {{.PowerSettingsAverageCpu}}
+  power_settings_maximum_cpu          = {{.PowerSettingsMaximumCpu}}
+  power_settings_network_threshold    = {{.PowerSettingsNetworkThreshold}}
+  cpu_upsize_average_cpu              = {{.CpuUpsizeAverageCpu}}
+  cpu_upsize_maximum_cpu              = {{.CpuUpsizeMaximumCpu}}
+  memory_upsize_minimum_free_memory   = {{.MemoryUpsizeMinimumFreeMemory}}
+  memory_downsize_average_free_memory = {{.MemoryDownsizeAverageFreeMemory}}
+  memory_downsize_maximum_free_memory = {{.MemoryDownsizeMaximumFreeMemory}}
+}

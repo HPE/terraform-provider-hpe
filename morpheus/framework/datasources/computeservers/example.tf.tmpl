@@ -1,0 +1,8 @@
+data "hpe_morpheus_compute_servers" "example" {
+  instance_id = {{.InstanceId}}
+
+  filter {
+    name   = "status"
+    values = ["provisioned"]
+  }
+}

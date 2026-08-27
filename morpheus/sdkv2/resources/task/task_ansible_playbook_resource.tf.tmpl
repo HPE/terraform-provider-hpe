@@ -1,0 +1,16 @@
+resource "hpe_morpheus_task_ansible_playbook" "example" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = {{.Labels}}
+  ansible_repo_id     = "{{.AnsibleRepoId}}"
+  git_ref             = "{{.GitRef}}"
+  playbook            = "{{.Playbook}}"
+  tags                = "{{.Tags}}"
+  skip_tags           = "{{.SkipTags}}"
+  command_options     = "{{.CommandOptions}}"
+  execute_target      = "{{.ExecuteTarget}}"
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}

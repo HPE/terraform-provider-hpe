@@ -1,0 +1,61 @@
+network_transport_zone:
+  templates:
+    config:
+      dynamic:
+        description: Transport zone configuration object.
+        computed_optional_required: computed
+    network_server_id:
+      int64:
+        description: The ID of the network server (integration) this transport zone belongs to.
+        computed_optional_required: required
+
+  moves:
+    - network_scope: ""                     # unnest wrapper (response wraps in networkScope)
+    - template-config: config
+    - template-network_server_id: network_server_id
+
+  removes:
+    - date_created                          # (components/schemas/networkTransportZone.yaml) - read-only
+    - last_updated                          # (components/schemas/networkTransportZone.yaml) - read-only
+    - network_server                        # (components/schemas/networkTransportZone.yaml) - nested object
+    - owner                                 # (components/schemas/networkTransportZone.yaml) - internal ref
+    - server_id                             # path param duplicate of network_server_id
+    - success                               # API response wrapper
+    - tenants                               # (components/schemas/networkTransportZone.yaml) - nested array
+    - zone                                  # (components/schemas/networkTransportZone.yaml) - nested object
+
+  overrides:
+    id:
+      description: The ID of the network transport zone
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network transport zone
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    network_server_id:
+      description: The ID of the network server (integration) this transport zone belongs to
+      computed_optional_required: required
+    config:
+      description: Transport zone configuration object
+      computed_optional_required: computed
+    description:
+      description: The description of the transport zone
+    display_name:
+      description: The display name of the transport zone
+    external_id:
+      description: The external identifier of the transport zone in the network provider
+    internal_id:
+      description: The internal identifier of the transport zone
+    provider_id:
+      description: The provider-assigned identifier for the transport zone
+    enabled:
+      description: Whether the transport zone is enabled
+    active:
+      description: Whether the transport zone is active
+    status:
+      description: The current status of the transport zone
+    stream_type:
+      description: The stream type of the transport zone (e.g. OVERLAY, VLAN)
+    visibility:
+      description: The visibility of the transport zone (e.g. public, private)

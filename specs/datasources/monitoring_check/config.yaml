@@ -1,0 +1,75 @@
+monitoring_check:
+  templates:
+    config:
+      dynamic:
+        description: Check type-specific configuration object.
+        computed_optional_required: computed
+
+  moves:
+    - check: ""                                  # unnest wrapper (components/schemas/check.yaml)
+    - template-config: config                    # dynamic fallback for type-specific config
+
+  removes:
+    - account                                    # (components/schemas/check.yaml) nested object (use tenant DS)
+    - api_key                                    # (components/schemas/check.yaml) sensitive credential
+    - availability                               # (components/schemas/check.yaml) transient runtime metric
+    - check_agent                                # (components/schemas/check.yaml) transient runtime state
+    - check_spec                                 # (components/schemas/check.yaml) transient runtime state
+    - container                                  # (components/schemas/check.yaml) read-only nested object
+    - create_incident                            # (components/schemas/check.yaml) transient runtime state
+    - created_by                                 # (components/schemas/check.yaml) read-only nested object
+    - deleted                                    # (components/schemas/check.yaml) transient runtime state
+    - end_date                                   # (components/schemas/check.yaml) transient runtime state
+    - health                                     # (components/schemas/check.yaml) transient runtime metric
+    - last_box_stats                             # (components/schemas/check.yaml) transient runtime metric
+    - last_check_status                          # (components/schemas/check.yaml) transient runtime metric
+    - last_error                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_error_date                            # (components/schemas/check.yaml) transient runtime metric
+    - last_message                               # (components/schemas/check.yaml) transient runtime metric
+    - last_metric                                # (components/schemas/check.yaml) transient runtime metric
+    - last_run_date                              # (components/schemas/check.yaml) transient runtime metric
+    - last_stats                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_success_date                          # (components/schemas/check.yaml) transient runtime metric
+    - last_timer                                 # (components/schemas/check.yaml) transient runtime metric
+    - last_warning_date                          # (components/schemas/check.yaml) transient runtime metric
+    - muted                                      # (components/schemas/check.yaml) transient runtime state
+    - next_run_date                              # (components/schemas/check.yaml) transient runtime state
+    - outage_time                                # (components/schemas/check.yaml) transient runtime metric
+    - start_date                                 # (components/schemas/check.yaml) transient runtime state
+    - success                                    # envelope field
+
+  overrides:
+    id:
+      description: The ID of the monitoring check.
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the monitoring check.
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    active:
+      description: Whether the check is active.
+    check_interval:
+      description: Check interval in seconds.
+    check_type:
+      description: The check type object.
+    check_type.code:
+      description: The code of the check type.
+    check_type.id:
+      description: The ID of the check type.
+    check_type.metric_name:
+      description: The metric name of the check type.
+    check_type.name:
+      description: The name of the check type.
+    config:
+      description: Check type-specific configuration object.
+    date_created:
+      description: The date the check was created.
+    description:
+      description: The description of the monitoring check.
+    in_uptime:
+      description: Whether the check affects account-wide availability calculations.
+    last_updated:
+      description: The date the check was last updated.
+    severity:
+      description: Severity level threshold for sending notifications.

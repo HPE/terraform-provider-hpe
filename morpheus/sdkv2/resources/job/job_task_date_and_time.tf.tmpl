@@ -1,0 +1,10 @@
+resource "hpe_morpheus_job_task" "example" {
+  name                    = "{{.Name}}"
+  enabled                 = {{.Enabled}}
+  labels                  = {{.Labels}}
+  task_id                 = {{.TaskId}}
+  schedule_mode           = "{{.ScheduleMode}}"
+  scheduled_date_and_time = "{{.ScheduledDateAndTime}}"
+  context_type            = "{{.ContextType}}"
+  instance_ids            = {{.InstanceIds}}
+}

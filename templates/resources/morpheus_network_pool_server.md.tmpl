@@ -1,0 +1,94 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+This resource supports multiple IPAM pool server types, including Infoblox, Bluecat,
+phpIPAM, SolarWinds, and EfficientIP (SOLIDserver). The pool server type is selected with
+either `type_code` (a stable, environment-independent string) or `type_id` (a numeric ID).
+These two attributes are mutually exclusive, and exactly one must be set. Using `type_code`
+is recommended. All types share common connection attributes, while some attributes only
+apply to specific types.
+
+## Pool Server Type Codes
+
+The `type_code` value is resolved by the Morpheus API against the registered pool server
+types. The codes below are the most common; some are provided by built-in integrations and
+others by installed plugins (for example, EfficientIP requires the
+`morpheus-efficientip-plugin`).
+
+| IPAM System | `type_code` | Availability |
+|-------------|-------------|--------------|
+| Infoblox | `infoblox` | Built-in / plugin |
+| BlueCat | `bluecat` | Built-in / plugin |
+| phpIPAM | `phpipam` | Built-in / plugin |
+| SolarWinds | `solarwindsipam` | Built-in / plugin |
+| EfficientIP (SOLIDserver) | `solidserver` | Plugin |
+| NetBox | `netbox` | Plugin |
+| Micetro | `micetro` | Plugin |
+| Morpheus (internal) | `morpheus` | Built-in |
+
+The authoritative, environment-specific list of available type codes can be retrieved from
+the Morpheus API at `GET /api/networks/pool-server-types`, since the available codes depend
+on which integrations and plugins are installed.
+
+## Attribute Applicability by Type
+
+| Attribute | Infoblox | Bluecat | phpIPAM | SolarWinds | EfficientIP |
+|-----------|:--------:|:-------:|:-------:|:----------:|:-----------:|
+| `name` | Yes | Yes | Yes | Yes | Yes |
+| `type_code` | Yes | Yes | Yes | Yes | Yes |
+| `type_id` | Yes | Yes | Yes | Yes | Yes |
+| `enabled` | Yes | Yes | Yes | Yes | Yes |
+| `service_url` | Yes | Yes | Yes | Yes | Yes |
+| `service_username` | Yes | Yes | Yes | Yes | Yes |
+| `service_password_wo` | Yes | Yes | Yes | Yes | Yes |
+| `credential_id` | Yes | Yes | Yes | Yes | Yes |
+| `ignore_ssl` | Yes | Yes | Yes | Yes | Yes |
+| `inventory_existing` | Yes | Yes | Yes | Yes | Yes |
+| `service_throttle_rate` | Yes | Yes | Yes | Yes | Yes |
+| `network_filter` | Yes | Yes | Yes | - | - |
+| `zone_filter` | Yes | - | - | - | - |
+| `tenant_match` | Yes | - | - | - | - |
+| `service_mode` | Yes | - | - | - | - |
+
+## Example Usage
+
+### Infoblox
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_infoblox.tf" }}
+
+### Bluecat
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_bluecat.tf" }}
+
+### phpIPAM
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_phpipam.tf" }}
+
+### SolarWinds
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_solarwinds.tf" }}
+
+### EfficientIP (SOLIDserver)
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_efficientip.tf" }}
+
+### Using a Stored Credential
+
+{{ tffile "examples/resources/morpheus_network_pool_server/example_credential.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Network pool servers can be imported using the pool server ID, e.g.
+
+```shell
+terraform import hpe_morpheus_network_pool_server.example 42
+```

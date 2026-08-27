@@ -1,11 +1,10 @@
 ---
 page_title: "hpe_morpheus_user Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
 # hpe_morpheus_user (Resource)
-
 
 
 
@@ -14,8 +13,8 @@ description: |-
 ```terraform
 resource "hpe_morpheus_user" "example" {
   tenant_id                   = 1
-  username                    = "testacc-example"
-  email                       = "user@example.com"
+  username                    = "example-user"
+  email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1
   role_ids                    = [1]
@@ -48,14 +47,14 @@ resource "hpe_morpheus_user" "example" {
 - `first_name` (String) User's first name (optional)
 - `last_name` (String) User's last name (optional)
 - `linux_key_pair_id` (Number) Linux key pair id (optional)
-- `linux_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Linux password (Write Only)
+- `linux_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Linux password (Write Only)
 - `linux_password_wo_version` (Number) Linux password version. Used to determine if linux_password_wo has been updated.
 - `linux_username` (String) Linux username
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user (Write Only)
 - `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
 - `receive_notifications` (Boolean) Receive Notifications?
 - `tenant_id` (Number) Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
-- `windows_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
+- `windows_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
 - `windows_password_wo_version` (Number) Windows password version. Used to determine if windows_password_wo has been updated.
 - `windows_username` (String) Windows username
 

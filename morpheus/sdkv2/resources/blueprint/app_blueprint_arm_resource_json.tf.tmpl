@@ -1,0 +1,12 @@
+resource "hpe_morpheus_app_blueprint_arm" "example" {
+  name               = "{{.Name}}"
+  description        = "{{.Description}}"
+  category           = "{{.Category}}"
+  source_type        = "{{.SourceType}}"
+  install_agent      = {{.InstallAgent}}
+  cloud_init_enabled = {{.CloudInitEnabled}}
+  os_type            = "{{.OsType}}"
+  blueprint_content  = <<EOF
+{{.BlueprintContent}}
+EOF
+}

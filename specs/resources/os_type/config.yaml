@@ -1,0 +1,55 @@
+os_type:
+  moves:
+    - os_type: "" # unnest os_type
+    - template-owner: owner
+  removes:
+    - success
+    - images
+  templates:
+    owner:
+      string:
+        computed_optional_required: computed
+        description: The owner of the osType.
+  overrides:
+    id:
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the osType.
+    code:
+      computed_optional_required: required
+      requires_replace: true
+      description: The code Morpheus uses as an internal identifier.
+    bit_count:
+      computed_optional_required: required
+      description: The architecture bit count (e.g. 32 or 64)
+    platform:
+      computed_optional_required: required
+      description: The platform of the osType (e.g. linux, windows).
+    category:
+      computed_optional_required: optional
+      description: The category of the osType.
+    cloud_init_version:
+      computed_optional_required: computed_optional
+      description: The version of CloudInit being used
+    description:
+      computed_optional_required: computed_optional
+      description: The description of the osType.
+    install_agent:
+      computed_optional_required: computed_optional
+      description: Whether to install the Morpheus agent on provisioned instances
+    os_codename:
+      computed_optional_required: optional
+      description: The osCodename of the osType.
+    os_family:
+      computed_optional_required: computed_optional
+      description: The osFamily of the osType.
+    os_name:
+      computed_optional_required: optional
+      description: The osName of the osType.
+    os_version:
+      computed_optional_required: computed_optional
+      description: The osVersion of the osType.
+    vendor:
+      computed_optional_required: optional
+      description: The vendor of the osType.

@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -14,8 +14,8 @@ Provides a Morpheus environment data source.
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/datasources/environment/example-id.tf" }}
+{{ tffile "examples/data-sources/morpheus_environment/example-id.tf" }}
 
-{{ tffile "internal/subproviders/morpheus/datasources/environment/example-name.tf" }}
+{{ tffile "examples/data-sources/morpheus_environment/example-name.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

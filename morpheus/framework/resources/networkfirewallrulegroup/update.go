@@ -1,0 +1,141 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package networkfirewallrulegroup
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+)
+
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, currentState NetworkFirewallRuleGroupModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &currentState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("creating client failed", err.Error())
+
+		return
+	}
+
+	id := currentState.Id.ValueInt64()
+	serverID := currentState.NetworkIntegrationId.ValueInt64()
+
+	name := plan.Name.ValueString()
+	ruleGroup := &sdk.UpdateNetworkFirewallRuleGroupRequestRuleGroup{
+		Name: &name,
+	}
+
+	if plan.Description.IsNull() {
+		ruleGroup.Description.Set(nil)
+	} else if !plan.Description.IsUnknown() {
+		desc := plan.Description.ValueString()
+		ruleGroup.Description.Set(&desc)
+	}
+
+	if plan.Priority.IsNull() {
+		ruleGroup.Priority.Set(nil)
+	} else if !plan.Priority.IsUnknown() {
+		priority := plan.Priority.ValueInt64()
+		ruleGroup.Priority.Set(&priority)
+	}
+
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		ruleGroup.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var ids []int64
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &ids, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		tenants := make([]sdk.UpdateNetworkFirewallRuleGroupRequestRuleGroupTenantsInner, 0, len(ids))
+		for i := range ids {
+			id := ids[i]
+			tenants = append(tenants, sdk.UpdateNetworkFirewallRuleGroupRequestRuleGroupTenantsInner{Id: &id})
+		}
+		ruleGroup.Tenants = tenants
+	}
+
+	updateReq := &sdk.UpdateNetworkFirewallRuleGroupRequest{
+		RuleGroup: ruleGroup,
+	}
+
+	_, httpResp, err := client.NetworksAPI.
+		UpdateNetworkFirewallRuleGroup(ctx, id, serverID).
+		UpdateNetworkFirewallRuleGroupRequest(*updateReq).Execute()
+	if err != nil || httpResp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"error updating network firewall rule group",
+			fmt.Sprintf("network firewall rule group %d PUT failed: ", id)+
+				errfmt.ErrMsg(err, httpResp),
+		)
+
+		return
+	}
+
+	taintResourceState := func(id int64) {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_firewall_rule_group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
+	state, _, diags := getNetworkFirewallRuleGroupAsState(
+		ctx, id, serverID, client, plan,
+	)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		resp.Diagnostics.AddError(
+			"failed to read network firewall rule group state",
+			fmt.Sprintf(
+				"Network firewall rule group %d was updated but could not be read",
+				id,
+			),
+		)
+		taintResourceState(id)
+
+		return
+	}
+
+	// Preserve plan value: API may silently drop tenant IDs that don't exist.
+	// When tenant_ids is unset (Optional+Computed) the plan value is unknown;
+	// keep the known value derived from the API read in that case.
+	if !plan.TenantIds.IsUnknown() {
+		state.TenantIds = plan.TenantIds
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set network firewall rule group state",
+			fmt.Sprintf(
+				"Network firewall rule group %d was updated but state could not be saved",
+				id,
+			),
+		)
+		taintResourceState(id)
+
+		return
+	}
+}

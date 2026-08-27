@@ -1,0 +1,47 @@
+network_firewall_rule_group:
+  description: "Manages a network firewall rule group resource in Morpheus."
+  templates:
+    tenantIds:
+      set:
+        computed_optional_required: computed_optional
+        description: List of tenant account IDs that are allowed access. Only configurable from a master tenant account.
+        element_type:
+          int64: {}
+  moves:
+    - rule_group: "" # unnest wrapper (components/schemas/networkFirewallRuleGroupCreate.yaml)
+    - server_id: network_integration_id
+    - template-tenantIds: tenant_ids
+  removes:
+    - success # (POST response wrapper)
+    - rules # (components/schemas/networkFirewallRuleGroup.yaml)
+    - tenants # replaced by tenant_ids template
+  overrides:
+    id:
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: Network firewall rule group name
+    description:
+      computed_optional_required: computed_optional
+      description: Network firewall rule group description
+    external_type:
+      computed_optional_required: required
+      requires_replace: true
+      description: The external type of the firewall rule group (e.g. SecurityPolicy)
+    priority:
+      computed_optional_required: computed_optional
+      description: Network firewall rule group priority
+    group_layer:
+      computed_optional_required: computed_optional
+      requires_replace: true
+      description: The group layer of the firewall rule group
+    network_integration_id:
+      computed_optional_required: required
+      requires_replace: true
+      description: The ID of the network integration
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the firewall rule group (public or private).
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true

@@ -1,0 +1,36 @@
+network_proxy:
+  moves:
+    - network_proxy: ""                     # unnest wrapper (components/schemas/networkProxy.yaml)
+    - account.id: account_id                # (components/schemas/networkProxy.yaml) - flatten nested account.id
+    - owner.id: owner_id                    # (components/schemas/networkProxy.yaml) - flatten nested owner.id
+
+  removes:
+    - account                               # (components/schemas/networkProxy.yaml) - {name} leftover after account_id extracted
+    - owner                                 # (components/schemas/networkProxy.yaml) - {name} leftover after owner_id extracted
+    - proxy_password                        # (components/schemas/networkProxy.yaml) - sensitive; write-only/masked by the API
+
+  overrides:
+    id:
+      description: The ID of the network proxy
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network proxy
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    proxy_host:
+      description: The proxy host
+    proxy_port:
+      description: The proxy port
+    proxy_domain:
+      description: The proxy domain
+    proxy_user:
+      description: The proxy username
+    proxy_workstation:
+      description: The proxy workstation
+    account_id:
+      description: The id of the tenant account that owns the network proxy
+    owner_id:
+      description: The id of the tenant that owns the network proxy
+    visibility:
+      description: The visibility of the network proxy (public or private)

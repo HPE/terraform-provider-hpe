@@ -1,0 +1,182 @@
+compute_server:
+  templates:
+    instance_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the instance associated with this compute server, if any.
+    cloud_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the cloud this compute server belongs to.
+    compute_server_type_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the compute server type.
+    compute_server_type_code:
+      string:
+        computed_optional_required: computed
+        description: The code of the compute server type.
+    compute_server_type_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the compute server type.
+    compute_server_type_managed:
+      bool:
+        computed_optional_required: computed
+        description: Whether the compute server type is managed.
+    plan_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the service plan.
+    plan_code:
+      string:
+        computed_optional_required: computed
+        description: The code of the service plan.
+    plan_name:
+      string:
+        computed_optional_required: computed
+        description: The name of the service plan.
+    parent_host_id:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The ID of the hypervisor host this compute server runs on, or null for
+          a host itself. In Morpheus a host is a compute server record too, so
+          this is the parent compute server, exposed as "host" for clarity.
+    parent_host_name:
+      string:
+        computed_optional_required: computed
+        description: |-
+          The name of the hypervisor host this compute server runs on, or null
+          for a host itself. Reflects placement at the time of read: it changes
+          when the guest is migrated, once Morpheus has picked the move up in
+          its next inventory sync.
+
+  moves:
+    - id: _path_param_id                                                       # move path param id out of the way
+    - server: ""                                                               # unnest wrapper (response envelope)
+    - zone_id: cloud_id                                                        # (components/schemas/server.yaml) rename zone→cloud
+    - site_id: group_id                                                        # (components/schemas/server.yaml) rename site→group
+    - template-instance_id: instance_id                                        # (template) flatten instance.id
+    - template-cloud_name: cloud_name                                          # (template) flatten zone.name
+    - template-compute_server_type_id: compute_server_type_id                  # (template) flatten computeServerType.id
+    - template-compute_server_type_code: compute_server_type_code              # (template) flatten computeServerType.code
+    - template-compute_server_type_name: compute_server_type_name              # (template) flatten computeServerType.name
+    - template-compute_server_type_managed: compute_server_type_managed        # (template) flatten computeServerType.managed
+    - template-plan_id: plan_id                                                # (template) flatten plan.id
+    - template-plan_code: plan_code                                            # (template) flatten plan.code
+    - template-plan_name: plan_name                                            # (template) flatten plan.name
+    - template-parent_host_id: parent_host_id                                  # (template) flatten parentServer.id
+    - template-parent_host_name: parent_host_name                              # (template) flatten parentServer.name
+
+  removes:
+    - _path_param_id                         # path param id (single_nested with id/uuid sub-fields)
+    - account                                # (components/schemas/server.yaml) nested object
+    - account_id                             # (components/schemas/server.yaml) internal tenant ref
+    - agent_version                          # (components/schemas/server.yaml) internal
+    - api_key                                # (components/schemas/server.yaml) sensitive internal
+    - compute_server_type                    # (components/schemas/server.yaml) replaced by flattened fields
+    - config                                 # (components/schemas/server.yaml) dynamic/unstructured
+    - containers                             # (components/schemas/server.yaml) nested collection
+    - controllers                            # (components/schemas/server.yaml) nested collection
+    - cores_per_socket                       # (components/schemas/server.yaml) low-value detail
+    - data_device                            # (components/schemas/server.yaml) internal
+    - date_created                           # (components/schemas/server.yaml) read-only timestamp
+    - enable_logs                            # (components/schemas/server.yaml) internal
+    - enabled                                # (components/schemas/server.yaml) internal
+    - error_message                          # (components/schemas/server.yaml) transient
+    - external_name                          # (components/schemas/server.yaml) internal
+    - external_unique_id                     # (components/schemas/server.yaml) internal
+    - folder_id                              # (components/schemas/server.yaml) low-value
+    - guest_console_password                 # (components/schemas/server.yaml) sensitive
+    - guest_console_password_hash            # (components/schemas/server.yaml) sensitive
+    - guest_console_port                     # (components/schemas/server.yaml) internal
+    - guest_console_preferred                # (components/schemas/server.yaml) internal
+    - guest_console_type                     # (components/schemas/server.yaml) internal
+    - guest_console_username                 # (components/schemas/server.yaml) internal
+    - hourly_cost                            # (components/schemas/server.yaml) billing
+    - hourly_price                           # (components/schemas/server.yaml) billing
+    - instance                               # (components/schemas/server.yaml) replaced by instance_id
+    - interfaces                             # (components/schemas/server.yaml) nested collection
+    - last_agent_update                      # (components/schemas/server.yaml) internal timestamp
+    - last_updated                           # (components/schemas/server.yaml) read-only timestamp
+    - lvm_enabled                            # (components/schemas/server.yaml) low-value
+    - manage_internal_firewall               # (components/schemas/server.yaml) internal
+    - max_cores                              # (components/schemas/server.yaml) low-value detail
+    - max_cpu                                # (components/schemas/server.yaml) low-value detail
+    - max_gpus                               # (components/schemas/server.yaml) low-value detail
+    - os_device                              # (components/schemas/server.yaml) internal
+    - os_type                                # (components/schemas/server.yaml) low-value
+    - owner                                  # (components/schemas/server.yaml) nested object
+    - parent_server                          # (components/schemas/server.yaml) replaced by parent_host_id/parent_host_name
+    - plan                                   # (components/schemas/server.yaml) replaced by flattened fields
+    - platform_version                       # (components/schemas/server.yaml) low-value
+    - resource_pool_id                       # (components/schemas/server.yaml) low-value
+    - secure_metadata_datastore              # (components/schemas/server.yaml) nested object
+    - server_os                              # (components/schemas/server.yaml) nested object
+    - software_raid                          # (components/schemas/server.yaml) low-value
+    - source_image                           # (components/schemas/server.yaml) nested object
+    - ssh_host                               # (components/schemas/server.yaml) sensitive
+    - ssh_key_pair                           # (components/schemas/server.yaml) sensitive nested
+    - ssh_password                           # (components/schemas/server.yaml) sensitive
+    - ssh_password_hash                      # (components/schemas/server.yaml) sensitive
+    - ssh_port                               # (components/schemas/server.yaml) sensitive
+    - ssh_username                           # (components/schemas/server.yaml) sensitive
+    - stats                                  # (components/schemas/server.yaml) dynamic object — also response envelope field
+    - status_date                            # (components/schemas/server.yaml) read-only timestamp
+    - status_eta                             # (components/schemas/server.yaml) transient
+    - status_message                         # (components/schemas/server.yaml) transient
+    - status_percent                         # (components/schemas/server.yaml) transient
+    - tag_compliant                          # (components/schemas/server.yaml) internal
+    - tags                                   # (components/schemas/server.yaml) nested collection
+    - volume_id                              # (components/schemas/server.yaml) internal
+    - volumes                                # (components/schemas/server.yaml) nested collection
+    - zone                                   # (components/schemas/server.yaml) replaced by cloud_id/cloud_name
+
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the compute server. Conflicts with name.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the compute server. Conflicts with id.
+      conflicts_with: ["id"]
+    cloud_id:
+      description: The ID of the cloud this compute server belongs to.
+    cloud_name:
+      description: The name of the cloud this compute server belongs to.
+    compute_server_type_managed:
+      description: Whether the compute server type is managed.
+    description:
+      description: The description of the compute server.
+    external_id:
+      description: The external ID of the compute server.
+    external_ip:
+      description: The external IP address of the compute server.
+    group_id:
+      description: The ID of the group this compute server belongs to.
+    hostname:
+      description: The hostname of the compute server.
+    internal_id:
+      description: The internal ID of the compute server.
+    internal_ip:
+      description: The internal IP address of the compute server.
+    labels:
+      description: The labels associated with the compute server.
+    max_memory:
+      description: The maximum memory allocated to the compute server in bytes.
+    max_storage:
+      description: The maximum storage allocated to the compute server in bytes.
+    platform:
+      description: The platform of the compute server (e.g. linux, windows).
+    power_state:
+      description: The power state of the compute server (e.g. on, off).
+    status:
+      description: The status of the compute server (e.g. provisioned, running).
+    uuid:
+      description: The UUID of the compute server.
+    visibility:
+      description: The visibility of the compute server (public or private).
+    agent_installed:
+      description: Whether the Morpheus agent is installed on this compute server.

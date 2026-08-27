@@ -1,0 +1,64 @@
+storage_server:
+  templates:
+    type_id:
+      int64:
+        computed_optional_required: computed
+        description: The storage server type ID.
+    type_code:
+      string:
+        computed_optional_required: computed
+        description: The storage server type code (for example, 3par or hpealletramp-storage-provider).
+    type_name:
+      string:
+        computed_optional_required: computed
+        description: The storage server type name.
+    cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The cloud (zone) ID the storage server is scoped to, when ref_type is ComputeZone.
+    cloud_name:
+      string:
+        computed_optional_required: computed
+        description: The cloud (zone) name the storage server is scoped to, when ref_type is ComputeZone.
+  moves:
+    - storage_server: "" # unnest GET envelope
+    - template-type_id: type_id
+    - template-type_code: type_code
+    - template-type_name: type_name
+    - template-cloud_id: cloud_id
+    - template-cloud_name: cloud_name
+  removes:
+    - type
+    - config
+    - chassis
+    - credential
+    - groups
+    - host_groups
+    - hosts
+    - owner
+    - tenants
+    - service_password
+    - service_password_hash
+    - service_token
+    - service_token_hash
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+      description: The ID of the storage server. Conflicts with name.
+    name:
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+      description: The name of the storage server. Conflicts with id.
+    description:
+      description: The description of the storage server.
+    visibility:
+      description: The visibility of the storage server (public or private).
+    enabled:
+      description: Whether the storage server is enabled.
+    status:
+      description: The status of the storage server.
+    ref_type:
+      description: The reference type the storage server is scoped to (for example, ComputeZone).
+    ref_id:
+      description: The reference ID the storage server is scoped to.

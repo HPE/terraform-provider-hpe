@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_environment Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -15,13 +15,13 @@ Provides a Morpheus environment data source.
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_environment" "test" {
+data "hpe_morpheus_environment" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_environment" "test" {
+data "hpe_morpheus_environment" "example" {
   name = "Example name"
 }
 ```

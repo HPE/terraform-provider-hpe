@@ -1,0 +1,149 @@
+network:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed_optional
+        description: Configuration object. Settings vary by type.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.ValidObjectMap()
+    name:
+      string:
+        computed_optional_required: required
+        description: Network name.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+    cidr:
+      string:
+        computed_optional_required: optional
+        description: Network CIDR.
+        plan_modifiers:
+        - custom:
+            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+    cidr_ipv6:
+      string:
+        computed_optional_required: optional
+        description: Network IPv6 CIDR.
+        plan_modifiers:
+        - custom:
+            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+    connected_gateway:
+      string:
+        computed_optional_required: computed_optional
+        description: Provider ID of the connected NSX-T Tier-1 gateway.
+    id:
+      int64:
+        computed_optional_required: computed
+        description: Network id
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    network_domain_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Network domain id
+    zone_pool_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Zone pool id
+    network_proxy_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Network proxy id
+    type_id:
+      int64:
+        computed_optional_required: required
+        description: Network type id
+    pool_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: Network Pool ID
+    pool_ipv6_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: IPv6 Network Pool ID
+    group_id:
+      int64:
+        computed_optional_required: required
+        description: Group (site) id
+    cloud_id:
+      int64:
+        computed_optional_required: required
+        description: Cloud (zone) id
+        plan_modifiers:
+        - custom:
+            schema_definition: int64planmodifier.RequiresReplace(), // force new
+    tenant_ids:
+      set:
+        computed_optional_required: computed_optional
+        description: List of tenant account ids that are allowed access
+        element_type:
+          int64: {}
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.RequiresReplace(), // force new
+    resource_permissions:
+      single_nested:
+        computed_optional_required: computed
+        attributes:
+          - name: all
+            bool:
+              computed_optional_required: computed
+              description: Pass true to allow access all groups
+          - name: group_ids
+            set:
+              computed_optional_required: computed
+              description: Array of group (site) IDs that are allowed access
+              element_type:
+                int64: {}
+  includes:
+    - network.active
+    - network.allow_static_override
+    - network.appliance_url_proxy_bypass
+    - network.assign_public_ip
+    - network.description
+    - network.dhcp_server
+    - network.dhcp_server_ipv6
+    - network.display_name
+    - network.dns_primary
+    - network.dns_primary_ipv6
+    - network.dns_secondary
+    - network.dns_secondary_ipv6
+    - network.gateway
+    - network.gateway_ipv6
+    - network.ipv4enabled
+    - network.ipv6enabled
+    - network.labels
+    - network.netmask_ipv6
+    - network.no_proxy
+    - network.search_domains
+    - network.switch_id
+    - network.vlan_id
+    - network.visibility
+  moves:
+    - network: "" # unnest network wrapper to root
+    - template-config: config
+    - template-name: name
+    - template-cidr: cidr
+    - template-cidr_ipv6: cidr_ipv6
+    - template-id: id
+    - template-network_domain_id: network_domain_id
+    - template-zone_pool_id: zone_pool_id
+    - template-network_proxy_id: network_proxy_id
+    - template-type_id: type_id
+    - template-pool_id: pool_id
+    - template-pool_ipv6_id: pool_ipv6_id
+    - template-group_id: group_id
+    - template-cloud_id: cloud_id
+    - template-tenant_ids: tenant_ids
+    - template-resource_permissions: resource_permissions
+    - template-connected_gateway: connected_gateway

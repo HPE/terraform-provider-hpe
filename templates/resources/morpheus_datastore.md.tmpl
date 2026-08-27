@@ -1,0 +1,76 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Datastores are used to provide storage for virtual machines and instances within a cloud environment.
+They can represent various types of storage backends, such as NFS shares, iSCSI or FC targets (such as Alletra MP),
+or cloud-based storage services.
+
+-> Currently, only the Alletra MP HVM and NFS datastores are supported with specific config blocks, `config_alletramp_hvm`
+and `config_nfs`. Other datastore types can be created using the generic `config` which is a dynamic attribute.<br><br>
+One of the config blocks must be specified, either `config_alletramp_hvm`, `config_nfs`, or the generic `config`.<br><br>
+Some datastore plugins add additional fields that aren't set by the user to their returned `config` block.  These fields are
+read-only and will be added to the `config_from_api` dynamic attribute after creation.
+
+-> Datastore `destroy` is not guaranteed to succeed.  Alletra MP HVM and BMaaS datastores will `destroy` but NFS datastores
+may fail to `destroy`.  Always `destroy` VMs and other resources using the datastore before `destroying` the datastore itself.
+
+-> NFS datastores may remain in a `provisioning` state indefinitely if the NFS server is not reachable or the share is not accessible.
+Ensure the Morpheus appliance can reach the NFS server and that the share is accessible before creating.
+
+-> When creating `associated_resource_type` `Cluster` datastores, the `storage_server` block is required.
+
+## Example Usage
+
+The `datastore_type` stanza requires only the `code`; the `id` is optional (it is resolved from the
+`code` and populated after apply). To find the `code` (and `id`) get a Morpheus API Token for authentication
+using the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html)
+and then make a call to the `/api/data-store-types` endpoint to list the available datastore types:
+
+```bash
+$ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
+$ export MORPHEUS_API_TOKEN=$(morpheus access-token get)
+$ curl -H "Authorization: Bearer $MORPHEUS_API_TOKEN" <morpheus-url>/api/data-store-types | jq . > data-store-types.json
+```
+
+### Alletra MP HVM Datastore
+
+{{ tffile "morpheus/framework/resources/datastore/example_alletramp_hvm.tf" }}
+
+### Alletra MP BMaaS Datastore
+
+-> Note that Morpheus version `8.0.13` or later is required for BMaaS datastore support.
+
+{{ tffile "morpheus/framework/resources/datastore/example_alletramp_bm.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Datastores can be imported using their ID, either on the command line or by using `import blocks` in your configuration.
+For example:
+
+```bash
+terraform import hpe_morpheus_datastore.example 123
+```
+
+Note that when importing a datastore the `resource_permissions` `groups` will be populated with the current group assignments.
+For `associated_resource_type` of `Cloud` the `tenants` list will always contain at least the `tenant` associated with the
+user who created the datastore.  For `associated_resource_type` of `Cluster` the `tenants` list will be empty if no `tenants`
+other than that associated with the user who created the datastore have access to the datastore.
+
+## Notes
+
+### Resource Dependencies
+
+Before creating a datastore resource, ensure that:
+
+1. The specific `Cloud` or `Cluster` to be associated with the datastore exists.
+2. If any `tenants` are specified, they must already exist in Morpheus and the user must have permission to assign them.
+3. If any `groups` are specified, they must already exist in Morpheus and the user must have permission to assign them.

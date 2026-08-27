@@ -1,0 +1,786 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package loadbalancerprofile
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+)
+
+// Supported service_type values. These mirror the OneOf validator on the
+// service_type attribute and select which config_* block, SDK config variant
+// and tag list apply to a profile.
+const (
+	serviceTypeHTTP                = "LBHttpProfile"
+	serviceTypeFastTCP             = "LBFastTcpProfile"
+	serviceTypeFastUDP             = "LBFastUdpProfile"
+	serviceTypeCookiePersistence   = "LBCookiePersistenceProfile"
+	serviceTypeSourceIPPersistence = "LBSourceIpPersistenceProfile"
+	serviceTypeGenericPersistence  = "LBGenericPersistenceProfile"
+	serviceTypeClientSSL           = "LBClientSslProfile"
+	serviceTypeServerSSL           = "LBServerSslProfile"
+)
+
+// profileTypeForServiceType returns the profileType API value for a given serviceType.
+func profileTypeForServiceType(serviceType string) string {
+	switch serviceType {
+	case serviceTypeHTTP, serviceTypeFastTCP, serviceTypeFastUDP:
+		return "application-profile"
+	case serviceTypeCookiePersistence, serviceTypeSourceIPPersistence, serviceTypeGenericPersistence:
+		return "persistence-profile"
+	case serviceTypeClientSSL, serviceTypeServerSSL:
+		return "ssl-profile"
+	default:
+		return ""
+	}
+}
+
+// buildCreateConfig constructs the create config wrapper from the plan.
+func buildCreateConfig(
+	ctx context.Context,
+	plan LoadBalancerProfileModel,
+) (*sdk.CreateLoadBalancerProfileRequestLoadBalancerProfileConfig, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	serviceType := plan.ServiceType.ValueString()
+	profileType := profileTypeForServiceType(serviceType)
+
+	cfg := &sdk.CreateLoadBalancerProfileRequestLoadBalancerProfileConfig{}
+
+	switch serviceType {
+	case serviceTypeHTTP:
+		variant := &sdk.HTTPLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigHttp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.HttpIdleTimeout, c.HttpIdleTimeout)
+			setNullableInt64(&variant.RequestHeaderSize, c.RequestHeaderSize)
+			setNullableInt64(&variant.ResponseHeaderSize, c.ResponseHeaderSize)
+			setNullableInt64(&variant.RequestBodySize, c.RequestBodySize)
+			setNullableInt64(&variant.ResponseTimeout, c.ResponseTimeout)
+			if !c.HttpsRedirect.IsNull() && !c.HttpsRedirect.IsUnknown() {
+				variant.HttpsRedirect = convert.BoolTypeToStringPointerOnOff(c.HttpsRedirect)
+			}
+			setStringPtr(&variant.RedirectAddress, c.RedirectAddress)
+			setStringPtr(&variant.XForwardedFor, c.XForwardedFor)
+			setBoolPtr(&variant.NtlmAuthentication, c.NtlmAuthentication)
+			variant.Tags = buildTagsForHTTPCreate(ctx, plan.Tags)
+		}
+		cfg.HTTPLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeFastTCP:
+		variant := &sdk.FastTCPLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigFastTcp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.FastTcpIdleTimeout, c.FastTcpIdleTimeout)
+			setNullableInt64(&variant.ConnectionCloseTimeout, c.ConnectionCloseTimeout)
+			setBoolPtr(&variant.HaFlowMirroring, c.HaFlowMirroring)
+			variant.Tags = buildTagsForFastTCPCreate(ctx, plan.Tags)
+		}
+		cfg.FastTCPLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeFastUDP:
+		variant := &sdk.FastUDPLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigFastUdp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.FastUdpIdleTimeout, c.FastUdpIdleTimeout)
+			setBoolPtr(&variant.HaFlowMirroring, c.HaFlowMirroring)
+			variant.Tags = buildTagsForFastUDPCreate(ctx, plan.Tags)
+		}
+		cfg.FastUDPLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeCookiePersistence:
+		variant := &sdk.CookiePersistenceLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigCookiePersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setStringPtr(&variant.CookieName, c.CookieName)
+			setBoolPtr(&variant.CookieFallback, c.CookieFallback)
+			setBoolPtr(&variant.CookieGarbling, c.CookieGarbling)
+			setStringPtr(&variant.CookieMode, c.CookieMode)
+			setStringPtr(&variant.CookieDomain, c.CookieDomain)
+			setStringPtr(&variant.CookiePath, c.CookiePath)
+			if !c.CookieType.IsNull() && !c.CookieType.IsUnknown() {
+				variant.CookieType = convert.CookieTypeToAPI(c.CookieType)
+			}
+			setNullableInt64(&variant.MaxIdleTime, c.MaxIdleTime)
+			setNullableInt64(&variant.MaxCookieAge, c.MaxCookieAge)
+			variant.Tags = buildTagsForCookieCreate(ctx, plan.Tags)
+		}
+		cfg.CookiePersistenceLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeSourceIPPersistence:
+		variant := &sdk.SourceIPPersistenceLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigSourceIpPersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setBoolPtr(&variant.PurgeEntries, c.PurgeEntries)
+			setBoolPtr(&variant.HaPersistenceMirroring, c.HaPersistenceMirroring)
+			setNullableInt64(&variant.PersistenceEntryTimeout, c.PersistenceEntryTimeout)
+			variant.Tags = buildTagsForSourceIPCreate(ctx, plan.Tags)
+		}
+		cfg.SourceIPPersistenceLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeGenericPersistence:
+		variant := &sdk.GenericPersistenceLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigGenericPersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setBoolPtr(&variant.HaPersistenceMirroring, c.HaPersistenceMirroring)
+			setNullableInt64(&variant.PersistenceEntryTimeout, c.PersistenceEntryTimeout)
+			variant.Tags = buildTagsForGenericCreate(ctx, plan.Tags)
+		}
+		cfg.GenericPersistenceLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeClientSSL:
+		variant := &sdk.ClientSSLLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigClientSsl
+		if !c.IsNull() && !c.IsUnknown() {
+			setStringPtr(&variant.SslSuite, c.SslSuite)
+			setBoolPtr(&variant.SessionCache, c.SessionCache)
+			setNullableInt64(&variant.SessionCacheTimeout, c.SessionCacheTimeout)
+			setBoolPtr(&variant.PreferServerCipher, c.PreferServerCipher)
+			if !c.SupportedSslCiphers.IsNull() && !c.SupportedSslCiphers.IsUnknown() {
+				ciphers, err := convert.SetToStrSlice(c.SupportedSslCiphers)
+				if err == nil {
+					variant.SupportedSslCiphers = ciphers
+				}
+			}
+			if !c.SupportedSslProtocols.IsNull() && !c.SupportedSslProtocols.IsUnknown() {
+				protocols, err := convert.SetToStrSlice(c.SupportedSslProtocols)
+				if err == nil {
+					variant.SupportedSslProtocols = protocols
+				}
+			}
+			variant.Tags = buildTagsForClientSSLCreate(ctx, plan.Tags)
+		}
+		cfg.ClientSSLLoadBalancerProfileConfig1 = variant
+
+	case serviceTypeServerSSL:
+		variant := &sdk.ServerSSLLoadBalancerProfileConfig1{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigServerSsl
+		if !c.IsNull() && !c.IsUnknown() {
+			setStringPtr(&variant.SslSuite, c.SslSuite)
+			setBoolPtr(&variant.SessionCache, c.SessionCache)
+			if !c.SupportedSslCiphers.IsNull() && !c.SupportedSslCiphers.IsUnknown() {
+				ciphers, err := convert.SetToStrSlice(c.SupportedSslCiphers)
+				if err == nil {
+					variant.SupportedSslCiphers = ciphers
+				}
+			}
+			if !c.SupportedSslProtocols.IsNull() && !c.SupportedSslProtocols.IsUnknown() {
+				protocols, err := convert.SetToStrSlice(c.SupportedSslProtocols)
+				if err == nil {
+					variant.SupportedSslProtocols = protocols
+				}
+			}
+			variant.Tags = buildTagsForServerSSLCreate(ctx, plan.Tags)
+		}
+		cfg.ServerSSLLoadBalancerProfileConfig1 = variant
+	}
+
+	return cfg, diags
+}
+
+// buildUpdateConfig constructs the update config wrapper from the plan.
+func buildUpdateConfig(
+	ctx context.Context,
+	plan LoadBalancerProfileModel,
+) (*sdk.UpdateLoadBalancerProfileRequestLoadBalancerProfileConfig, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	serviceType := plan.ServiceType.ValueString()
+	profileType := profileTypeForServiceType(serviceType)
+
+	cfg := &sdk.UpdateLoadBalancerProfileRequestLoadBalancerProfileConfig{}
+
+	switch serviceType {
+	case serviceTypeHTTP:
+		variant := &sdk.HTTPLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigHttp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.HttpIdleTimeout, c.HttpIdleTimeout)
+			setNullableInt64(&variant.RequestHeaderSize, c.RequestHeaderSize)
+			setNullableInt64(&variant.ResponseHeaderSize, c.ResponseHeaderSize)
+			setNullableInt64(&variant.RequestBodySize, c.RequestBodySize)
+			setNullableInt64(&variant.ResponseTimeout, c.ResponseTimeout)
+			if !c.HttpsRedirect.IsNull() && !c.HttpsRedirect.IsUnknown() {
+				variant.HttpsRedirect = convert.BoolTypeToStringPointerOnOff(c.HttpsRedirect)
+			}
+			setStringPtr(&variant.RedirectAddress, c.RedirectAddress)
+			setStringPtr(&variant.XForwardedFor, c.XForwardedFor)
+			setBoolPtr(&variant.NtlmAuthentication, c.NtlmAuthentication)
+			variant.Tags = buildTagsForHTTPUpdate(ctx, plan.Tags)
+		}
+		cfg.HTTPLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeFastTCP:
+		variant := &sdk.FastTCPLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigFastTcp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.FastTcpIdleTimeout, c.FastTcpIdleTimeout)
+			setNullableInt64(&variant.ConnectionCloseTimeout, c.ConnectionCloseTimeout)
+			setBoolPtr(&variant.HaFlowMirroring, c.HaFlowMirroring)
+			variant.Tags = buildTagsForFastTCPUpdate(ctx, plan.Tags)
+		}
+		cfg.FastTCPLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeFastUDP:
+		variant := &sdk.FastUDPLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigFastUdp
+		if !c.IsNull() && !c.IsUnknown() {
+			setNullableInt64(&variant.FastUdpIdleTimeout, c.FastUdpIdleTimeout)
+			setBoolPtr(&variant.HaFlowMirroring, c.HaFlowMirroring)
+			variant.Tags = buildTagsForFastUDPUpdate(ctx, plan.Tags)
+		}
+		cfg.FastUDPLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeCookiePersistence:
+		variant := &sdk.CookiePersistenceLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigCookiePersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setStringPtr(&variant.CookieName, c.CookieName)
+			setBoolPtr(&variant.CookieFallback, c.CookieFallback)
+			setBoolPtr(&variant.CookieGarbling, c.CookieGarbling)
+			setStringPtr(&variant.CookieMode, c.CookieMode)
+			setStringPtr(&variant.CookieDomain, c.CookieDomain)
+			setStringPtr(&variant.CookiePath, c.CookiePath)
+			if !c.CookieType.IsNull() && !c.CookieType.IsUnknown() {
+				variant.CookieType = convert.CookieTypeToAPI(c.CookieType)
+			}
+			setNullableInt64(&variant.MaxIdleTime, c.MaxIdleTime)
+			setNullableInt64(&variant.MaxCookieAge, c.MaxCookieAge)
+			variant.Tags = buildTagsForCookieUpdate(ctx, plan.Tags)
+		}
+		cfg.CookiePersistenceLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeSourceIPPersistence:
+		variant := &sdk.SourceIPPersistenceLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigSourceIpPersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setBoolPtr(&variant.PurgeEntries, c.PurgeEntries)
+			setBoolPtr(&variant.HaPersistenceMirroring, c.HaPersistenceMirroring)
+			setNullableInt64(&variant.PersistenceEntryTimeout, c.PersistenceEntryTimeout)
+			variant.Tags = buildTagsForSourceIPUpdate(ctx, plan.Tags)
+		}
+		cfg.SourceIPPersistenceLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeGenericPersistence:
+		variant := &sdk.GenericPersistenceLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigGenericPersistence
+		if !c.IsNull() && !c.IsUnknown() {
+			setBoolPtr(&variant.SharePersistence, c.SharePersistence)
+			setBoolPtr(&variant.HaPersistenceMirroring, c.HaPersistenceMirroring)
+			setNullableInt64(&variant.PersistenceEntryTimeout, c.PersistenceEntryTimeout)
+			variant.Tags = buildTagsForGenericUpdate(ctx, plan.Tags)
+		}
+		cfg.GenericPersistenceLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeClientSSL:
+		variant := &sdk.ClientSSLLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigClientSsl
+		if !c.IsNull() && !c.IsUnknown() {
+			setStringPtr(&variant.SslSuite, c.SslSuite)
+			setBoolPtr(&variant.SessionCache, c.SessionCache)
+			setNullableInt64(&variant.SessionCacheTimeout, c.SessionCacheTimeout)
+			setBoolPtr(&variant.PreferServerCipher, c.PreferServerCipher)
+			if !c.SupportedSslCiphers.IsNull() && !c.SupportedSslCiphers.IsUnknown() {
+				ciphers, err := convert.SetToStrSlice(c.SupportedSslCiphers)
+				if err == nil {
+					variant.SupportedSslCiphers = ciphers
+				}
+			}
+			if !c.SupportedSslProtocols.IsNull() && !c.SupportedSslProtocols.IsUnknown() {
+				protocols, err := convert.SetToStrSlice(c.SupportedSslProtocols)
+				if err == nil {
+					variant.SupportedSslProtocols = protocols
+				}
+			}
+			variant.Tags = buildTagsForClientSSLUpdate(ctx, plan.Tags)
+		}
+		cfg.ClientSSLLoadBalancerProfileConfig4 = variant
+
+	case serviceTypeServerSSL:
+		variant := &sdk.ServerSSLLoadBalancerProfileConfig4{
+			ProfileType: sdk.PtrString(profileType),
+		}
+		c := plan.ConfigServerSsl
+		if !c.IsNull() && !c.IsUnknown() {
+			setStringPtr(&variant.SslSuite, c.SslSuite)
+			setBoolPtr(&variant.SessionCache, c.SessionCache)
+			if !c.SupportedSslCiphers.IsNull() && !c.SupportedSslCiphers.IsUnknown() {
+				ciphers, err := convert.SetToStrSlice(c.SupportedSslCiphers)
+				if err == nil {
+					variant.SupportedSslCiphers = ciphers
+				}
+			}
+			if !c.SupportedSslProtocols.IsNull() && !c.SupportedSslProtocols.IsUnknown() {
+				protocols, err := convert.SetToStrSlice(c.SupportedSslProtocols)
+				if err == nil {
+					variant.SupportedSslProtocols = protocols
+				}
+			}
+			variant.Tags = buildTagsForServerSSLUpdate(ctx, plan.Tags)
+		}
+		cfg.ServerSSLLoadBalancerProfileConfig4 = variant
+	}
+
+	return cfg, diags
+}
+
+// readTagsFromConfig extracts tags from the read response config and returns them
+// as a Terraform Set, preserving user-specified name casing from the plan/state.
+//
+// Like reconstructConfigBlockFromResponse, the variant is selected by
+// serviceType rather than by which union pointer the SDK left non-nil: the
+// config schema has no discriminator, so several anyOf variants are populated
+// from the same payload and dispatching on order would read another variant's
+// tag list.
+func readTagsFromConfig(
+	ctx context.Context,
+	serviceType string,
+	cfg *sdk.GetLoadBalancerProfile200ResponseLoadBalancerProfileConfig,
+	priorTags types.Set,
+) types.Set {
+	if cfg == nil {
+		return priorTags
+	}
+
+	// Collect API tags as name→value pairs
+	type tagPair struct {
+		name  string
+		value string
+	}
+
+	var apiTags []tagPair
+
+	addTags := func(n int, at func(int) (*string, *string)) {
+		for i := range n {
+			name, value := at(i)
+			apiTags = append(apiTags, tagPair{name: ptrStr(name), value: ptrStr(value)})
+		}
+	}
+
+	switch serviceType {
+	case serviceTypeHTTP:
+		if v := cfg.HTTPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeFastTCP:
+		if v := cfg.FastTCPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeFastUDP:
+		if v := cfg.FastUDPLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeCookiePersistence:
+		if v := cfg.CookiePersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeSourceIPPersistence:
+		if v := cfg.SourceIPPersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeGenericPersistence:
+		if v := cfg.GenericPersistenceLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeClientSSL:
+		if v := cfg.ClientSSLLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	case serviceTypeServerSSL:
+		if v := cfg.ServerSSLLoadBalancerProfileConfig3; v != nil {
+			addTags(len(v.Tags), func(i int) (*string, *string) { return v.Tags[i].Name, v.Tags[i].Value })
+		}
+	}
+
+	// Filter out NSX-T sentinel entries ({name:"", value:""}) that the API
+	// injects even when no tags were configured. These sentinels cause
+	// perpetual diffs if allowed into state.
+	filtered := apiTags[:0]
+	for _, t := range apiTags {
+		if t.name == "" && t.value == "" {
+			continue
+		}
+		filtered = append(filtered, t)
+	}
+	apiTags = filtered
+
+	if len(apiTags) == 0 {
+		return types.SetNull(TagsValue{}.Type(ctx))
+	}
+
+	vals := make([]attr.Value, 0, len(apiTags))
+	for _, t := range apiTags {
+		tv := TagsValue{
+			Name:  types.StringValue(t.name),
+			Value: types.StringValue(t.value),
+			state: attr.ValueStateKnown,
+		}
+		vals = append(vals, tv)
+	}
+
+	setVal, diags := types.SetValue(TagsValue{}.Type(ctx), vals)
+	if diags.HasError() {
+		return priorTags
+	}
+
+	return setVal
+}
+
+// --- Helper functions ---
+
+func setStringPtr(dst **string, src types.String) {
+	if !src.IsNull() && !src.IsUnknown() {
+		*dst = sdk.PtrString(src.ValueString())
+	}
+}
+
+func setBoolPtr(dst **bool, src types.Bool) {
+	if !src.IsNull() && !src.IsUnknown() {
+		*dst = sdk.PtrBool(src.ValueBool())
+	}
+}
+
+func setNullableInt64(dst *sdk.NullableInt64, src types.Int64) {
+	if !src.IsNull() && !src.IsUnknown() {
+		dst.Set(sdk.PtrInt64(src.ValueInt64()))
+	}
+}
+
+func ptrStr(s *string) string {
+	if s == nil {
+		return ""
+	}
+
+	return *s
+}
+
+// --- Tag builders per variant/context ---
+
+func tagsFromPlan(ctx context.Context, tags types.Set) []struct {
+	name  string
+	value string
+} {
+	if tags.IsNull() || tags.IsUnknown() {
+		return nil
+	}
+
+	var elems []TagsValue
+	if d := tags.ElementsAs(ctx, &elems, false); d.HasError() {
+		return nil
+	}
+
+	result := make([]struct {
+		name  string
+		value string
+	}, 0, len(elems))
+	for _, e := range elems {
+		result = append(result, struct {
+			name  string
+			value string
+		}{
+			name:  e.Name.ValueString(),
+			value: e.Value.ValueString(),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForHTTPCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag8 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag8, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag8{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForFastTCPCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag9 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag9, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag9{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForFastUDPCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag10 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag10, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag10{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForCookieCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag11 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag11, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag11{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForSourceIPCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag12 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag12, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag12{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForGenericCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag13 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag13, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag13{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForClientSSLCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag14 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag14, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag14{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForServerSSLCreate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag15 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag15, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag15{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+// Update tag builders use Config4 tag types (Tag32-39).
+func buildTagsForHTTPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag32 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag32, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag32{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForFastTCPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag33 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag33, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag33{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForFastUDPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag34 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag34, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag34{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForCookieUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag35 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag35, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag35{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForSourceIPUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag36 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag36, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag36{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForGenericUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag37 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag37, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag37{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForClientSSLUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag38 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag38, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag38{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}
+
+func buildTagsForServerSSLUpdate(ctx context.Context, tags types.Set) []sdk.LoadBalancerProfileTag39 {
+	pairs := tagsFromPlan(ctx, tags)
+	if pairs == nil {
+		return nil
+	}
+	result := make([]sdk.LoadBalancerProfileTag39, 0, len(pairs))
+	for _, p := range pairs {
+		result = append(result, sdk.LoadBalancerProfileTag39{
+			Name:  sdk.PtrString(p.name),
+			Value: sdk.PtrString(p.value),
+		})
+	}
+
+	return result
+}

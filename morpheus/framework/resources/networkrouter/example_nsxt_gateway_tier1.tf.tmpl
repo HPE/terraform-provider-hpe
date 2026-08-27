@@ -1,0 +1,9 @@
+resource "hpe_morpheus_network_router" "example" {
+  name                   = "{{.Name}}"
+  group_id               = {{.GroupId}}
+  network_integration_id = {{.NetworkIntegrationId}}
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+  }
+}

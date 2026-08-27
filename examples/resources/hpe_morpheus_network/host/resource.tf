@@ -19,7 +19,7 @@ variable "cloud_id" {
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 6446
 }
 
 variable "group_id" {
@@ -78,4 +78,5 @@ resource "hpe_morpheus_network" "host" {
   tenant_ids                 = [1]
   visibility                 = var.visibility
   cidr                       = var.cidr
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 }

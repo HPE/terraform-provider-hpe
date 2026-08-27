@@ -1,0 +1,6 @@
+resource "hpe_morpheus_environment" "tf_example_environment" {
+  active      = {{.Active}}
+  code        = "{{.Code}}"
+  description = "{{.Description}}"
+  name        = "{{.Name}}"
+}

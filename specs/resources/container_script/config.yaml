@@ -1,0 +1,84 @@
+container_script:
+  description: "Manages a Morpheus Library Container Script resource."
+  templates:
+    labelsList:
+      list:
+        computed_optional_required: computed_optional
+        element_type:
+          string: {}
+        description: The labels of the library container script.
+  moves:
+    - container_script: ""           # unnest wrapper (components/schemas/scriptCreate.yaml)
+    - template-labelsList: labels
+  removes:
+    - account                        # (components/schemas/script.yaml) read-only
+    - code                           # (components/schemas/script.yaml) read-only
+    - run_as_password                # (components/schemas/scriptCreate.yaml) sensitive
+    - script_method                  # (components/schemas/script.yaml) read-only
+    - script_service                 # (components/schemas/script.yaml) read-only
+    - sort_order                     # (components/schemas/script.yaml) read-only
+    - success                        # (components/schemas/successId.yaml)
+  overrides:
+    category:
+      computed_optional_required: optional
+      description: The category of the library container script.
+    date_created:
+      computed_optional_required: computed
+      description: The date the library container script was created.
+      state_for_unknown: true
+    fail_on_error:
+      computed_optional_required: computed_optional
+      description: Whether the script fails on error.
+      state_for_unknown: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the library container script.
+      state_for_unknown: true
+    labels:
+      computed_optional_required: computed_optional
+      description: The labels of the library container script.
+    last_updated:
+      computed_optional_required: computed
+      description: The date the library container script was last updated.
+    name:
+      computed_optional_required: required
+      description: The name of the library container script.
+    run_as_user:
+      computed_optional_required: optional
+      description: The user to run the script as.
+    script:
+      computed_optional_required: computed_optional
+      description: The script content.
+      # The API stores/returns the script body with LF line endings, but a
+      # practitioner may author it with CRLF (e.g. on Windows). normalize_line_endings
+      # applies a semantic-equality custom type that treats CRLF/CR and LF as equal,
+      # avoiding both "inconsistent result after apply" and perpetual diffs. This must
+      # NOT be done with a plan modifier that rewrites the planned value: Terraform
+      # Core rejects a planned value that differs from a set config value ("provider
+      # produced invalid plan"), which is why the earlier normalize plan modifier
+      # failed for CRLF input (MORPH-12525).
+      normalize_line_endings: true
+      # UseStateForUnknown holds the prior script value in the plan when the config is
+      # unchanged, so this Optional+Computed field does not report a spurious
+      # "known after apply" diff.
+      plan_modifiers:
+      - custom:
+          imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+          schema_definition: stringplanmodifier.UseStateForUnknown()
+    script_phase:
+      computed_optional_required: computed_optional
+      description: The phase of the script.
+      default: "provision"
+    script_type:
+      computed_optional_required: computed_optional
+      description: The type of the script.
+      default: "bash"
+    script_version:
+      computed_optional_required: computed_optional
+      description: The version of the script.
+      default: 1
+    sudo_user:
+      computed_optional_required: computed_optional
+      description: Whether to run the script as sudo.
+      default: false

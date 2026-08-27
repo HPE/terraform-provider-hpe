@@ -1,0 +1,23 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Reads a Morpheus host backup.
+---
+# {{.Name}} ({{.Type}})
+
+Reads a Morpheus Host Backup resource by its ID or name.
+
+A host backup is a typed projection of the underlying backup object, exposing host-specific fields (the associated server, target path, etc.).
+
+## Example Usage
+
+### Look up by ID
+
+{{ tffile "examples/data-sources/morpheus_backup_host/example-id.tf" }}
+
+### Look up by Name
+
+{{ tffile "examples/data-sources/morpheus_backup_host/example-name.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

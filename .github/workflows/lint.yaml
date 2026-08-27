@@ -2,22 +2,46 @@
 
 name: Lint
 
+permissions:
+  contents: read
+  pull-requests: read
+
 on:
   push:
     branches:
       - main
   pull_request:
 jobs:
-  lint:
-    runs-on: ubuntu-24.04
-    strategy:
-      matrix:
-        go: [ '1.24.1' ]
+  golangci:
+    name: Lint
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        id: setup-go
         with:
-          go-version: ${{ matrix.go }}
-      - run: go version
-      - run: make linter
-      - run: make lint
+          go-version-file: go.mod
+      # golangci-lint keeps its analysis cache in ~/.cache/golangci-lint, separate
+      # from the Go build cache setup-go restores. Without persisting it, every CI
+      # run re-type-checks the whole import graph from source -- including the
+      # 9.4k-file internal/sdk/oapigen package pulled in by ~105 packages -- which
+      # dominates lint time (~235s cold vs ~7s warm). A warm build cache does not
+      # help this; only this cache does.
+      - name: Cache golangci-lint
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/golangci-lint
+          key: golangci-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-glci2.11.3-${{ hashFiles('**/go.sum', '.golangci.yml') }}-${{ github.sha }}
+          restore-keys: |
+            golangci-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-glci2.11.3-${{ hashFiles('**/go.sum', '.golangci.yml') }}-
+            golangci-${{ runner.os }}-go${{ steps.setup-go.outputs.go-version }}-glci2.11.3-
+            golangci-${{ runner.os }}-
+      # Run lint via the Makefile so the vendored SDK (internal/sdk) exclusion
+      # lives in one place. golangci-lint cannot skip analysis of those ~9k
+      # generated files via config alone, so the lint target filters them out
+      # of the package set (they are still type-checked as a dependency).
+      - name: Lint
+        run: |
+          make linter
+          export PATH="$(go env GOPATH)/bin:$PATH"
+          make lint

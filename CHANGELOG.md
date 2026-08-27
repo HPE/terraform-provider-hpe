@@ -1,32 +1,272 @@
-# v0.1.0 Release Notes
+# v2.0.0 Release Notes
 
-## New functionality
+This is a major release.  Alongside the Morpheus support this provider already offered, it adds
+support for **HPE OpsRamp**, introduces PCE (Private Cloud Enterprise) Identity authentication for
+Morpheus, and closes the remaining hpegl VMaaS parity gaps.
 
-In this release (v0.1.0) the following resources have been added:
-- hpe_morpheus_cloud for HPE HVM or HPE VME clouds
-- hpe_morpheus_group
-- hpe_morpheus_instance for HPE HVM or HPE VME instances (Create, Delete and Read - no Update)
-- hpe_morpheus_network
-- hpe_morpheus_role for Morpheus roles (user and tenant)
-- hpe_morpheus_service_plan (Create, Delete and Read - no Update)
-- hpe_morpheus_user (Create, Delete and Read - no Update)
+Release notes for earlier versions are in [HISTORY.md](./HISTORY.md).
 
-In this release (v0.1.0) the following data sources have been added:
-- hpe_morpheus_cloud
-- hpe_morpheus_environment
-- hpe_morpheus_group
-- hpe_morpheus_instance_type_layout
-- hpe_morpheus_network
-- hpe_morpheus_role
-- hpe_morpheus_service_plan
+## Breaking changes
 
-## Known Issues
+### Write-only attributes
 
-- hpe_morpheus_instance has issues with using the same `datastore_id` with multiple volumes, please use
-  a different `datastore_id` for each volume.
-- hpe_morpheus_instance depending on the layout used may require one or more `volumes` to be specified,
+Six attributes are accepted by the Morpheus API on write but never returned on read.  They were
+stored in Terraform state anyway, so state held values the provider could not refresh and drift was
+undetectable.  They are now write-only, and each gains a `_version` companion used to signal a
+change:
+
+| Resource | Attributes now write-only |
+|---|---|
+| `hpe_morpheus_network_router_nat` | `action`, `firewall`, `service` |
+| `hpe_morpheus_load_balancer` | `group_id`, `network_server_id` |
+| `hpe_morpheus_instance_clone` | `source_instance_id` |
+
+These attributes are no longer stored in state, so changing one on its own produces no plan diff —
+increment the matching `_version` attribute to apply a change.  On `hpe_morpheus_load_balancer`,
+`group_id_version` and `network_server_id_version` force replacement, because neither value can be
+changed on an existing load balancer.  On `hpe_morpheus_instance_clone`,
+`source_instance_id_version` has no effect, because the clone source cannot be changed after
+creation; it exists so that a value may be supplied without error.
+
+Write-only attributes require **Terraform 1.11 or later**.
+
+`hpe_morpheus_network_router_nat.firewall` now defaults to `MATCH_INTERNAL_ADDRESS` on create.  On
+update an omitted `firewall` is left out of the payload entirely, so the value already on the router
+is preserved rather than overwritten.
+
+`hpe_morpheus_instance_clone` no longer recovers `source_instance_id` from `config.cloneInstanceId`,
+as a write-only attribute must be null in state.
+
+### tfmigrator release artifacts renamed
+
+The migration tool's release artifacts are now published as `tfmigrator_*` rather than
+`migration_tool_*`.  This affects the archives, the binary inside them, and the checksum files:
+
+| Was | Now |
+|---|---|
+| `migration_tool_<version>_<os>_<arch>.zip` | `tfmigrator_<version>_<os>_<arch>.zip` |
+| `migration_tool_v<version>` | `tfmigrator_v<version>` |
+| `migration_tool_<version>_SHA256SUMS` (+ `.sig`) | `tfmigrator_<version>_SHA256SUMS` (+ `.sig`) |
+
+The installed binary is still called `tfmigrator`, so nothing changes once the tool is on your
+PATH — only the download URL and the name of the file inside the archive.  Any automation that
+fetches the archive by name needs updating.
+
+The `install-tfmigrator` scripts have been updated to match and therefore support v2.0.0 and later.
+To install an earlier version, download the `migration_tool_*` archive manually from the releases
+page.
+
+`tfmigrator --version` now reports the release it was built from.  Previously it reported a version
+compiled into the source, which did not track the release.
+
+## Deprecations
+
+- `hpe_morpheus_instance` — `server_uuids` is deprecated in favour of the new `server_uuid`
+  (String).  Morpheus assigns UUIDs strictly by position and an instance provisions exactly one
+  server, so only the first element of the set was ever used and the rest were discarded silently.
+  Both attributes continue to work and are mutually exclusive (MORPH-15552).
+- `hpe_morpheus_task_powershell_script` and `hpe_morpheus_task_shell_script` —
+  `remote_target_password` is deprecated in favour of the write-only `remote_target_password_wo`
+  with `remote_target_password_wo_version`.  Morpheus returns the password as a hash, so the
+  plaintext in configuration never matched the hash in state and every plan was non-empty
+  (MORPH-14024).
+- `hpe_morpheus_network_domain` — `domain_password` is deprecated in favour of the write-only
+  `domain_password_wo` with `domain_password_wo_version`.  `auto_join_domain` is deprecated.
+- `hpe_morpheus_cloud_affinity_group` and `hpe_morpheus_cluster_affinity_group` — `tenant_ids` is
+  deprecated and has no effect, because the Morpheus API rejects tenant assignment on affinity
+  groups.  `hpe_morpheus_cluster_affinity_group.description` is deprecated because it is not backed
+  by the API.
+
+## OpsRamp support
+
+This provider now serves HPE OpsRamp resources and data sources alongside Morpheus, configured with
+an `opsramp` block in the provider configuration.  See the
+[OpsRamp to HPE migration guide](./docs/guides/opsramp_to_hpe_migration.md) for moving an existing
+OpsRamp provider configuration across.
+
+## PCE Identity authentication
+
+The `morpheus` provider block accepts two new mutually exclusive blocks, so Morpheus connection
+details can be obtained from GreenLake rather than configured by hand (MORPH-15611):
+
+- `pce_identity` — Connected PCE, using GLCS IAM and scoped by GreenLake Space
+- `pce_disconnected_identity` — Disconnected PCE, using GLP IAM and scoped by GreenLake Workspace
+
+Each accepts either GreenLake API client credentials — `client_id`, `client_secret` and an issuer
+URL, which is `issuer_url` in the Connected block and `token_issuer_url` in the Disconnected one —
+or a pre-generated `iam_token`.  Neither can be combined with `url`, `username`, `password`,
+`access_token` or `tenant_subdomain`.
+
+## New resources
+
+In this release (v2.0.0) we have added the following resources:
+
+### Morpheus
+
+- hpe_morpheus_cloud_affinity_group
+- hpe_morpheus_cloud_affinity_group_member
+- hpe_morpheus_cluster_affinity_group_member
+- hpe_morpheus_instance_node
+- hpe_morpheus_network_router_firewall_rule_group
+
+### OpsRamp
+
+- hpe_opsramp_alert_correlation_policy
+- hpe_opsramp_alert_escalation_policy
+- hpe_opsramp_alert_prediction_policy
+- hpe_opsramp_client
+- hpe_opsramp_credential_set
+- hpe_opsramp_custom_integration
+- hpe_opsramp_device_group
+- hpe_opsramp_first_response_policy
+- hpe_opsramp_integration
+- hpe_opsramp_integration_app
+- hpe_opsramp_integration_config
+- hpe_opsramp_integration_event
+- hpe_opsramp_kb_article
+- hpe_opsramp_kb_category
+- hpe_opsramp_log_alert_definition
+- hpe_opsramp_management_profile
+- hpe_opsramp_metric_alert_definition
+- hpe_opsramp_permission_set
+- hpe_opsramp_resource
+- hpe_opsramp_role
+- hpe_opsramp_scheduled_maintenance
+- hpe_opsramp_script
+- hpe_opsramp_script_category
+- hpe_opsramp_servicedesk_business_impact
+- hpe_opsramp_servicedesk_category
+- hpe_opsramp_servicedesk_urgency
+- hpe_opsramp_servicemap
+- hpe_opsramp_servicemap_link
+- hpe_opsramp_site
+- hpe_opsramp_user
+- hpe_opsramp_user_group
+
+## New data sources
+
+In this release (v2.0.0) we have added the following data sources:
+
+### Morpheus
+
+- hpe_morpheus_cloud_affinity_group
+- hpe_morpheus_cloud_affinity_groups
+- hpe_morpheus_cluster_affinity_groups
+- hpe_morpheus_clusters
+- hpe_morpheus_compute_server
+- hpe_morpheus_compute_servers
+- hpe_morpheus_instance_disk_type
+- hpe_morpheus_instance_storage_controller
+- hpe_morpheus_network_interface_type
+- hpe_morpheus_network_proxy
+- hpe_morpheus_network_router_firewall_rule_group
+- hpe_morpheus_network_server_group
+
+### OpsRamp
+
+- hpe_opsramp_custom_event_alert_source
+- hpe_opsramp_resource_lookup
+- hpe_opsramp_role
+- hpe_opsramp_servicedesk_business_impact
+- hpe_opsramp_servicedesk_category
+- hpe_opsramp_servicedesk_urgency
+- hpe_opsramp_tenant
+
+## Enhancements to existing resources
+
+- `hpe_morpheus_instance` — added `wait_for_ip_address`, an opt-in wait that holds the apply until
+  at least one container reports a usable address, rather than recording the `0.0.0.0` placeholder
+  Morpheus returns for a container that has not reported yet.  On expiry it warns and continues
+  (MORPH-12804).  Added `config_vmware.affinity_group_id` and `config_hvm.affinity_group_id` to
+  place an instance into an affinity group at provision time; create-only, and rejected alongside
+  `config_hvm.kvm_host_id` (MORPH-15596).  Added the computed `compute_servers` and `container_id`,
+  and the new `server_uuid`.
+- `hpe_morpheus_cluster_affinity_group` — reworked.  The shipped resource could not set an affinity
+  type and could not manage membership at all; it now supports `affinity_type`, `pool_id`, `servers`
+  and `source`.
+- `hpe_morpheus_load_balancer` — added `enabled`, to activate or disable a load balancer on create
+  and update.
+- `hpe_morpheus_network` — added `connected_gateway`, the provider ID of a connected NSX-T Tier-1
+  gateway.
+- `hpe_morpheus_network_router` — `provider_id` is available again, for configurations that
+  reference it when building dependent resources.
+- `hpe_morpheus_network_router_nat` — added `translated_ports`.
+- `hpe_morpheus_network_router_route` — added `priority`, which forces replacement to match the
+  API's behaviour.
+- `hpe_morpheus_compute_server` and `hpe_morpheus_compute_servers` — report `parent_host_id` and
+  `parent_host_name`, the hypervisor host a guest runs on; the plural data source can filter on it.
+- `hpe_morpheus_cluster_affinity_group` (data source) — now exposes `servers`, `source`,
+  `tenant_ids` and `resource_permissions`.
+- `hpe_morpheus_network_dhcp_server` (data source) — added `provider_id`.
+- `hpe_morpheus_network_pool` (data source) — added `display_name`.
+
+## Resolved issues
+
+- `hpe_morpheus_instance` — unrelated computed attributes no longer churn the plan; a small edit
+  used to show `connection_info`, `labels` and every computed field of `network_interfaces` and
+  `volumes` as `(known after apply)` (MORPH-14919).  An imported instance no longer plans changes
+  nobody made, which on appliances before 8.1.2 escalated to a replacement of a running VM.
+  Instances created by the hpegl provider no longer fail to read: string-encoded `noAgent` is
+  handled, and an absent `nestedVirtualization` is treated as optional rather than an error.
+- `hpe_morpheus_subnet` — `resource_permission_groups_all` was sent under a request key the Morpheus
+  API does not read, so the setting was silently dropped; an explicitly configured `pool_id` was
+  overwritten with `null` when the API response omitted the pool (MORPH-14001).
+- `hpe_morpheus_network_domain` — `public_zone`, `visibility` and `active` are now sent on update,
+  so changing them takes effect; `auto_join_domain` is preserved on import and `tenant_id` is read
+  back (MORPH-8836/MORPH-10305).
+- `hpe_morpheus_network_router_firewall_rule` — creating a rule without a `description` no longer
+  fails; the required format of `parent_id` is documented.
+- `hpe_morpheus_network_router` — BGP neighbor configuration is read correctly on import, and API
+  flags returned as JSON booleans are handled alongside the `on`/`off` strings.
+- `hpe_morpheus_os_type_image` — inconsistent `os_type_id` after apply (MORPH-13276).
+- `hpe_morpheus_tenant` — `currency` is validated against the supported ISO codes (MORPH-10304).
+- `hpe_morpheus_option_type` — rows and description are validated at plan time
+  (MORPH-7445/MORPH-8853).
+- `hpe_morpheus_service_plan` and `hpe_morpheus_datastore` — name lookups now work on Private Cloud
+  appliances.  Both looked the object up by name and then re-fetched it by id, and it was that
+  second request that failed.
+- `hpe_morpheus_load_balancer` — resources no longer return state inconsistent with the plan, and
+  the sweepers keep up with leaked NSX-T load balancer services.
+- `hpe_morpheus_instance_clone` — clone failures are now detected and reported.  Create polled only
+  for the clone's name and never inspected the `cloning` process, so a server-side failure was
+  indistinguishable from a slow clone and the diagnostic reported `<nil>`.  The documented examples
+  used block syntax for `volumes` and `network_interfaces`, which are list nested attributes, so
+  copying them produced `Blocks of type "volumes" are not expected here`; they now use
+  list-of-object syntax.
+- hpegl to hpe migration — several Read-vs-plan consistency errors that blocked `terraform apply`
+  with `import` blocks are fixed, covering instance, instance clone, load balancer and its profiles,
+  monitors, pool and virtual server, network, network router, BGP neighbor, NAT rule, static route
+  and firewall rule group.
+- API tracing (`MORPHEUS_API_HTTPTRACE`) now redacts the `Authorization` header, the appliance
+  password sent to `/oauth/token`, and the `access_token` and `refresh_token` in the response.
+  These traces are captured in test output and kept as build artifacts, so credentials were being
+  written to logs in clear text.
+- Resources with a `Dynamic` `config` attribute — the provider no longer panics when a value inside
+  `config` is not known until apply, for example `config = { templateId = var.image_id }`.  A literal
+  worked, and so did arithmetic between literals, because Terraform folds those at parse time, so the
+  crash appeared only once a value was deferred — taking an id from a `.tfvars` file was enough.
+  Unknown is now treated as absent, as null already was (MORPH-16244).
+- `hpe_morpheus_image` — reading an image with two or more tenants failed with `Duplicate Set
+  Element`, whether or not anything was duplicated.  The tenant objects were built without a known
+  state, so their `name` and `id` were discarded and every tenant became identical (MORPH-16245).
+
+## Known issues
+
+- `hpe_morpheus_cluster_namespace`: `active` is not supported on import. `name` update is not supported.
+- `hpe_morpheus_cluster_hks_hvm` Destroy may return an error but the cluster will be deleted successfully, this is being investigated.
+- `hpe_morpheus_instance` updates fail when removing optional fields.
+  This will be addressed in a future release.
+- `hpe_morpheus_instance` updates fail when removing `evars`.
+  This will be addressed in a future release.
+- Long running operations can fail when using username and password.
+- `hpe_morpheus_instance` depending on the layout used may require one or more `volumes` to be specified,
   in these cases not specifying the correct number of `volumes` will cause instance creation to fail.
-- hpe_morpheus_network switchId is not supported yet, prevents creating some network types, eg OVS Port Group
-- hpe_morpheus_user will force recreation if an attribute is updated
 - There are intermittent issues with the provider failing to authenticate, a 500 error is returned from the Morpheus API.
   If this happens please retry the operation.  This is being investigated.
+- `hpe_morpheus_datastore` when creating a datastore of type NFS the creation will silently fail if the NFS server is not reachable or the share is not accessible.
+  The datastore will remain in a `provisioning` state indefinitely. Ensure the Morpheus appliance can reach the NFS server
+  and that the share is accessible before creating.
+- `hpe_morpheus_datastore` delete is not guaranteed to succeed.  Alletra MP HVM and Alletra MP BM datastores will delete but NFS datastores
+  may fail to delete.  Always delete VMs and other resources using the datastore before deleting the datastore itself.
+- `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
+  the `volumes` block list

@@ -1,0 +1,137 @@
+service_plan:
+  templates:
+    provision_type_code:
+      string:
+        computed_optional_required: required
+        description: The provision type code of the Morpheus service plan
+    custom_cpu:
+      bool:
+        computed_optional_required: computed_optional
+        description: Can be used to enable / disable customizable cpu
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier
+            schema_definition: boolplanmodifier.UseStateForUnknown()
+    price_set_ids:
+      set:
+        computed_optional_required: computed_optional
+        element_type:
+          int64: {}
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
+            schema_definition: setplanmodifier.UseStateForUnknown()
+    config_ranges:
+      single_nested:
+        computed_optional_required: optional
+        description: The min and max ranges that instances using this service plan must conform to.
+        attributes:
+          - name: min_storage
+            int64: {computed_optional_required: optional, description: Custom min storage in GB}
+          - name: max_storage
+            int64: {computed_optional_required: optional, description: Custom max storage in GB}
+          - name: min_per_disk_size
+            int64: {computed_optional_required: optional, description: Custom min per disk size in GB}
+          - name: max_per_disk_size
+            int64: {computed_optional_required: optional, description: Custom max per disk size in GB}
+          - name: min_memory
+            int64: {computed_optional_required: optional, description: Custom min memory in bytes}
+          - name: max_memory
+            int64: {computed_optional_required: optional, description: Custom max memory in bytes}
+          - name: min_cores
+            int64: {computed_optional_required: optional, description: Custom min cores}
+          - name: max_cores
+            int64: {computed_optional_required: optional, description: Custom max cores}
+          - name: min_sockets
+            int64: {computed_optional_required: optional, description: Custom min sockets}
+          - name: max_sockets
+            int64: {computed_optional_required: optional, description: Custom max sockets}
+          - name: min_cores_per_socket
+            int64: {computed_optional_required: optional, description: Custom min cores allowed per socket}
+          - name: max_cores_per_socket
+            int64: {computed_optional_required: optional, description: Custom max cores allowed per socket}
+  includes:
+    - service_plan.id
+    - service_plan.name
+    - service_plan.code
+    - service_plan.description
+    - service_plan.max_memory
+    - service_plan.max_storage
+    - service_plan.add_volumes
+    - service_plan.custom_cores
+    - service_plan.custom_max_storage
+    - service_plan.custom_max_memory
+    - service_plan.cores_per_socket
+    - service_plan.max_cores
+    - service_plan.max_cpu
+    - service_plan.max_disks
+    - service_plan.sort_order
+    - service_plan.config.storage_size_type
+    - service_plan.config.memory_size_type
+  moves:
+    - service_plan: "" # unnest servicePlan wrapper to root
+    - config: "" # unnest config to root
+    - template-config_ranges: config_ranges
+    - template-price_set_ids: price_set_ids
+    - template-provision_type_code: provision_type_code
+    - template-custom_cpu: custom_cpu
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the role
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: Service plan name
+    code:
+      computed_optional_required: required
+      description: Service plan code, must be unique
+    description:
+      computed_optional_required: optional
+      description: Service plan description
+    max_memory:
+      computed_optional_required: required
+      description: Max memory size in bytes
+    max_storage:
+      computed_optional_required: required
+      description: Max storage size in bytes
+    add_volumes:
+      computed_optional_required: computed_optional
+      description: Can be used to enable / disable ability to add volumes
+    custom_cores:
+      computed_optional_required: computed_optional
+      description: Can be used to enable / disable customizable cores
+    custom_max_storage:
+      computed_optional_required: computed_optional
+      description: Can be used to enable / disable customizable storage
+    custom_max_memory:
+      computed_optional_required: computed_optional
+      description: Can be used to enable / disable customizable memory.
+    cores_per_socket:
+      computed_optional_required: required
+      description: Number of cores per CPU
+      state_for_unknown: true
+    max_cores:
+      computed_optional_required: computed_optional
+      description: Max number of total cores
+      state_for_unknown: true
+    max_cpu:
+      computed_optional_required: computed_optional
+      description: Max CPU's
+      state_for_unknown: true
+    max_disks:
+      computed_optional_required: computed_optional
+      description: Max disks allowed
+      state_for_unknown: true
+    sort_order:
+      computed_optional_required: computed_optional
+      description: Sort order
+      state_for_unknown: true
+    memory_size_type:
+      computed_optional_required: computed_optional
+      description: Specifies range min / max memory multiplier
+    storage_size_type:
+      computed_optional_required: computed_optional
+      description: Specifies range min / max storage multiplier

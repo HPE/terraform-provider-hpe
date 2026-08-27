@@ -1,0 +1,6 @@
+resource "hpe_morpheus_monitoring_group" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  min_happy   = {{.MinHappy}}
+  severity    = "{{.Severity}}"
+}

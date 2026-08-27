@@ -1,0 +1,44 @@
+resource "hpe_morpheus_cloud" "example" {
+  name      = "{{.Name}}"
+  tenant_id = {{.TenantId}}
+  group_id  = {{.GroupId}}
+
+  code             = "{{.Code}}"
+  external_id      = "{{.Code}}"
+  labels           = ["{{.Label}}1", "{{.Label}}2"]
+  data_center_name = "aDatacenter"
+  enabled          = true
+  location         = "somewhere"
+  visibility       = "public"
+
+  agent_install_mode       = "ssh"
+  appliance_url            = "{{.ApplianceUrl}}"
+  auto_recover_power_state = true
+  import_existing_vms      = "off"
+
+  costing_mode  = "costing"
+  guidance_mode = "off"
+
+  security_mode = "off"
+
+  keyboard_layout = "us"
+
+  # Inventory discovery defaults (applicable to Azure)
+  default_datastore_sync_active      = true
+  default_network_sync_active        = true
+  default_plan_sync_active           = true
+  default_pool_sync_active           = true
+  default_security_group_sync_active = true
+
+  config_azure = {
+    azure_region    = "{{.AzureRegion}}"
+    subscriber_id   = "{{.SubscriberId}}"
+    tenant_id       = "{{.AzureTenantId}}"
+    client_id       = "{{.ClientId}}"
+    client_secret   = "{{.ClientSecret}}"
+    resource_group  = "{{.ResourceGroup}}"
+    cloud_type      = "global"
+    import_existing = "on"
+    rpc_mode        = "guestExec"
+  }
+}

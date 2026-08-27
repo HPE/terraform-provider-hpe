@@ -1,0 +1,24 @@
+network_firewall_rule_group:
+  moves:
+    - rule_group: "" # unnest wrapper (components/schemas/networkFirewallRuleGroup.yaml)
+    - server_id: network_integration_id # (components/schemas/networkFirewallRuleGroup.yaml)
+  removes:
+    - success        # (components/schemas/networkFirewallRuleGroup.yaml)
+  overrides:
+    id:
+      description: Morpheus ID of the network firewall rule group
+      at_least_one_of: [id, name]
+      conflicts_with: [name]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the network firewall rule group
+      conflicts_with: [id]
+      computed_optional_required: computed_optional
+    description:
+      description: Network firewall rule group description
+    priority:
+      description: Network firewall rule group priority
+    group_layer:
+      description: The group layer of the firewall rule group
+    network_integration_id:
+      description: The ID of the network integration

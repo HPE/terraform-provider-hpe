@@ -1,0 +1,150 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package resources_test
+
+import (
+	"fmt"
+	"strings"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/opsramp/acctest"
+)
+
+func TestAccUserResource(t *testing.T) {
+	clientOverride := acctest.OptionalClientOverride(t)
+
+	t.Run("create", func(t *testing.T) {
+		loginName := acctest.RandomName("user")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			CheckDestroy:             testAccCheckUserDestroy(t),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccUserConfig(loginName, clientOverride),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccEnsureUserExists(t, "hpe_opsramp_user.test_user"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_user.test_user", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "login_name", loginName),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "first_name", "AccTest"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "last_name", "User"),
+						resource.TestCheckResourceAttr("hpe_opsramp_user.test_user", "country", "Spain"),
+					),
+				},
+			},
+		})
+	})
+}
+
+func testAccUserConfig(loginName string, clientOverride string) string {
+	return fmt.Sprintf(`
+%s
+resource "hpe_opsramp_user" "test_user" {
+	login_name = "%s"
+	password   = "AccTestP@ss1234!"
+	first_name = "AccTest"
+	last_name  = "User"
+	email      = "%s@example.com"
+	time_zone  = "Europe/Paris"
+	country    = "Spain"
+	%s
+
+	user_notifications = [
+		{
+			notify_type             = "Account Information"
+			notify_method           = "Email"
+			notify_input_type       = "Primary Email"
+			notify_recurring_report = false
+		},
+		{
+			notify_type             = "Alert Notification"
+			notify_method           = "No Notify"
+			notify_recurring_report = false
+		},
+		{
+			notify_type             = "Report Notification"
+			notify_method           = "No Notify"
+			notify_recurring_report = false
+		}
+	]
+
+	change_password = false
+}
+`, acctest.ProviderConfigHCL(), loginName, loginName, acctest.ClientAttrHCL(clientOverride))
+}
+
+func testAccEnsureUserExists(t *testing.T, resourceName string) resource.TestCheckFunc {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return fmt.Errorf("resource not found in state: %s", resourceName)
+		}
+
+		id := strings.TrimSpace(rs.Primary.ID)
+		if id == "" {
+			return fmt.Errorf("resource id is empty in state for %s", resourceName)
+		}
+
+		tenantID, _ := acctest.LookupProviderEnv("tenant")
+
+		if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
+			tenantID = clientID
+		}
+
+		apiClient, err := acctest.APIClient(t)
+		if err != nil {
+			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
+		}
+
+		_, err = apiClient.GetUser(tenantID, id)
+		if err != nil {
+			return fmt.Errorf("user %s (%s) was not found in opsramp api: %w", resourceName, id, err)
+		}
+
+		return nil
+	}
+}
+
+func testAccCheckUserDestroy(t *testing.T) resource.TestCheckFunc {
+	t.Helper()
+
+	return func(s *terraform.State) error {
+		apiClient, err := acctest.APIClient(t)
+		if err != nil {
+			return fmt.Errorf("failed to initialize opsramp api client: %w", err)
+		}
+
+		for _, rs := range s.RootModule().Resources {
+			if rs.Type != "hpe_opsramp_user" {
+				continue
+			}
+
+			tenantID, _ := acctest.LookupProviderEnv("tenant")
+
+			if clientID, ok := rs.Primary.Attributes["client"]; ok && strings.TrimSpace(clientID) != "" {
+				tenantID = clientID
+			}
+
+			user, err := apiClient.GetUser(tenantID, rs.Primary.ID)
+
+			if user != nil && user.Status != "terminate" {
+				return fmt.Errorf("user still exists: %s, object: %+v", rs.Primary.ID, user)
+			}
+
+			if err != nil {
+				errText := strings.ToLower(err.Error())
+				if !strings.Contains(errText, "404") && !strings.Contains(errText, "not found") {
+					return fmt.Errorf("unexpected error checking deleted user %s: %w", rs.Primary.ID, err)
+				}
+			}
+		}
+
+		return nil
+	}
+}

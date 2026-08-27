@@ -1,0 +1,34 @@
+resource "hpe_morpheus_cluster_layout" "example" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  version           = "{{.Version}}"
+  creatable         = {{.Creatable}}
+  minimum_memory    = {{.MinimumMemory}}
+  cluster_type_id   = {{.ClusterTypeId}}
+  provision_type_id = {{.ProvisionTypeId}}
+  enable_scaling    = {{.EnableScaling}}
+
+  evar {
+    name   = "{{.EvarName}}"
+    value  = "{{.EvarValue}}"
+    export = {{.EvarExport}}
+  }
+
+  master_node_pool {
+    count          = {{.MasterNodePoolCount}}
+    node_type_id   = {{.MasterNodePoolNodeTypeId}}
+    priority_order = {{.MasterNodePoolPriorityOrder}}
+  }
+
+  worker_node_pool {
+    count          = {{.WorkerNodePool1Count}}
+    node_type_id   = {{.WorkerNodePool1NodeTypeId}}
+    priority_order = {{.WorkerNodePool1PriorityOrder}}
+  }
+
+  worker_node_pool {
+    count          = {{.WorkerNodePool2Count}}
+    node_type_id   = {{.WorkerNodePool2NodeTypeId}}
+    priority_order = {{.WorkerNodePool2PriorityOrder}}
+  }
+}

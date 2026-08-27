@@ -1,0 +1,108 @@
+cluster_affinity_group:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed
+        description: |-
+          The compute servers currently in this affinity group, reported by the
+          API. Read-only: membership is managed with
+          hpe_morpheus_cluster_affinity_group_member, one resource per member, so
+          that servers added by other means -- an instance provisioned into the
+          group, or a node added to one -- are not evicted.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed_optional
+        description: "Deprecated: has no effect. The Morpheus API rejects tenant assignment on affinity groups and does not apply it, so the value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
+        deprecation_message: "tenant_ids has no effect: the Morpheus API rejects tenant assignment on affinity groups and does not apply it. The value is retained in Terraform state only and does not reflect the appliance. Tracked as MORPH-15806."
+        element_type:
+          int64: {}
+    pool:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the resource pool associated with the affinity group.
+    description:
+      string:
+        computed_optional_required: optional
+        description: "Deprecated: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
+        deprecation_message: "description is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release."
+
+
+  moves:
+    - affinity_group: ""                               # unnest wrapper (components/schemas/clusterAffinityGroupCreate.yaml)
+    - resource_permissions.sites: resource_permissions.groups  # (components/schemas/clusterAffinityGroupCreate.yaml) sites -> groups
+    - template-servers: servers                        # replace spec servers (array of objects in response) with set of int64
+    - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id}) with set of int64
+    - template-pool: pool_id                           # replace spec pool (nested {id}) with scalar int64
+    - template-description: description                # deprecated: not backed by API, state-only (v2.0.0)
+
+  removes:
+    - ref_type                                         # (components/schemas/clusterAffinityGroup.yaml) read-only
+    - ref_id                                           # (components/schemas/clusterAffinityGroup.yaml) read-only
+    - external_id                                      # (components/schemas/clusterAffinityGroup.yaml) read-only
+    - tenants                                          # (components/schemas/clusterAffinityGroup.yaml) replaced by tenant_ids
+    - pool                                             # (components/schemas/clusterAffinityGroup.yaml) replaced by pool_id
+    - success                                          # (response envelope) success flag
+    - tenant_permissions                               # (components/schemas) envelope field, not part of domain
+
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the cluster affinity group.
+      state_for_unknown: true
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the cluster.
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: The name of the affinity group.
+    affinity_type:
+      computed_optional_required: computed_optional
+      description: >-
+        The affinity type. Valid values are KEEP_TOGETHER and KEEP_SEPARATE.
+      requires_replace: true
+      state_for_unknown: true
+      # TODO: KEEP_TOGETHER_MUST and KEEP_SEPARATE_MUST exist upstream but are unreleased.
+      one_of: [KEEP_TOGETHER, KEEP_SEPARATE]
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the affinity group is active.
+      state_for_unknown: true
+    pool_id:
+      state_for_unknown: true
+    source:
+      computed_optional_required: computed
+      description: The source of the affinity group (e.g. user, sync).
+      state_for_unknown: true
+    resource_permissions:
+      computed_optional_required: computed_optional
+      description: Resource permissions for group access.
+      state_for_unknown: true
+    resource_permissions.all:
+      computed_optional_required: computed_optional
+      description: Pass true to allow access to all groups.
+    resource_permissions.groups:
+      description: Set of groups allowed access.
+      computed_optional_required: computed_optional
+    resource_permissions.groups.id:
+      description: Group ID.
+      # Required, matching the cloud resource. The spec leaves the id of a sites
+      # entry optional, which left this Optional+Computed: a practitioner could
+      # list a group without saying which, and the payload would carry id 0.
+      computed_optional_required: required
+    resource_permissions.groups.default:
+      description: Whether this is the default group.
+      computed_optional_required: computed_optional
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the affinity group (public or private).
+      state_for_unknown: true
+      one_of: [public, private]
+    tenant_ids:
+      state_for_unknown: true
+    # NOTE: servers deliberately does NOT get state_for_unknown.
+    # Affinity group membership mutates out-of-band (DRS sync, instance provisioning,
+    # ComputeServer deletion). Pinning a stale set causes "Provider produced
+    # inconsistent result after apply". A noisy plan is better than a broken apply.

@@ -1,0 +1,10 @@
+resource "hpe_morpheus_task_vro" "example" {
+  name               = "{{.Name}}"
+  code               = "{{.Code}}"
+  labels             = {{.Labels}}
+  vro_integration_id = {{.VroIntegrationId}}
+  vro_workflow_value = {{.VroWorkflowValue}}
+  body               = {{.Body}}
+  execute_target     = "{{.ExecuteTarget}}"
+  retryable          = {{.Retryable}}
+}

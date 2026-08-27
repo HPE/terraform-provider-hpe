@@ -1,0 +1,8 @@
+data "hpe_morpheus_load_balancer_virtual_server" "example" {
+  load_balancer_id = {{.LoadBalancerId}}
+  vip_name         = "{{.VipName}}"
+{{- if .DependsOn}}
+
+  depends_on = [{{.DependsOn}}]
+{{- end}}
+}

@@ -1,0 +1,8 @@
+data "hpe_morpheus_cluster_affinity_groups" "example" {
+  cluster_id = {{.ClusterId}}
+
+  filter {
+    name   = "affinity_type"
+    values = ["KEEP_TOGETHER"]
+  }
+}

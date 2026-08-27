@@ -1,0 +1,66 @@
+security_group_rule:
+  description: "Manages a Morpheus Security Group Rule resource."
+  templates:
+    security_group_id:
+      int64:
+        computed_optional_required: required
+        description: The security group ID.
+  moves:
+    - rule: ""
+    - template-security_group_id: security_group_id
+  removes:
+    - custom_rule
+    - destination_group
+    - destination_port_range
+    - destination_tier
+    - enabled
+    - external_id
+    - instance_type_id
+    - sg_id
+    - source_group
+    - source_port_range
+    - source_tier
+    - success
+  overrides:
+    destination:
+      computed_optional_required: optional
+      description: The destination for the rule.
+    destination_type:
+      computed_optional_required: computed_optional
+      description: The destination type for the rule.
+      state_for_unknown: true
+    direction:
+      computed_optional_required: computed_optional
+      description: The direction of the rule (ingress or egress).
+      default: "ingress"
+    id:
+      computed_optional_required: computed
+      description: The ID of the security group rule.
+      state_for_unknown: true
+    name:
+      computed_optional_required: optional
+      description: The name of the rule.
+    policy:
+      computed_optional_required: computed_optional
+      description: The policy (accept or deny).
+      default: "accept"
+    port_range:
+      computed_optional_required: optional
+      description: The port range for the rule.
+    protocol:
+      computed_optional_required: required
+      description: The protocol (tcp, udp, icmp, etc.).
+    rule_type:
+      computed_optional_required: required
+      description: The rule type.
+      remove_default: true
+    security_group_id:
+      computed_optional_required: required
+      description: The ID of the parent security group.
+    source:
+      computed_optional_required: optional
+      description: The source for the rule.
+    source_type:
+      computed_optional_required: computed_optional
+      description: The source type for the rule.
+      state_for_unknown: true

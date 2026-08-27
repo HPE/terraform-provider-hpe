@@ -1,0 +1,17 @@
+backup:
+  moves:
+    - backup: ""
+    - server: host
+  overrides:
+    id:
+      description: ID of the Backup
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: Name of the Backup
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    host.id:
+      description: Host (server) ID
+    host.name:
+      description: Host (server) name

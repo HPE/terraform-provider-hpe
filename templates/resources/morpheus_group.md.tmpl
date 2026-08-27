@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -10,6 +10,6 @@ description: |-
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/resources/group/example.tf" }}
+{{ tffile "examples/resources/morpheus_group/example.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

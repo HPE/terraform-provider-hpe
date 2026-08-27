@@ -1,0 +1,204 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+!> **Note:** Existing inputs or option types are not supported 
+and all inputs or option types must be defined in the form.
+
+## Example Usage
+- [Field Groups](#field-groups)
+
+#### Basic
+- [Checkbox (checkbox)](#checkbox-checkbox)
+- [Hidden (hidden)](#hidden-hidden)
+- [Number (number)](#number-number)
+- [Password (password)](#password-password)
+- [Radio (radio)](#radio-radio)
+- [Select List (select)](#select-select)
+- [Text (text)](#text-text)
+- [TextArea (textarea)](#textarea-textarea)
+
+#### Advanced
+- [Byte Size (byteSize)](#byte-size-bytesize)
+- [Code Editor (code-editor)](#code-editor-code-editor)
+- [File Content (fileContent)](#file-content-filecontent)
+- [Icon Picker (logoSelector)](#logo-selector-logoselector)
+- [Key Value (keyValue)](#key-value-keyvalue)
+- [Text Array (textArray)](#text-array-textarray)
+- [Typeahead (typeahead)](#typeahead-typeahead)
+
+#### Provisioning:
+- [Cloud (cloud)](#cloud-cloud)
+- [Disks (diskManager)](#disk-manager-diskmanager)
+- [Environment (environment)](#environment-environment)
+- [Exposed Ports (ports)](#ports-ports)
+- [Group (group)](#group-group)
+- [Instances (instances-input)](#instances-input-instances-input)
+- [Layout (layout)](#layout-layout)
+- [Networks (networkManager)](#network-manager-networkmanager)
+- [Plan (plan)](#plan-plan)
+- [Resource Pool (resourcePool)](#resource-pool-resourcepool)
+- [Security Groups (secGroup)](#security-group-secgroup)
+- [Servers (servers-input)](#servers-input-servers-input)
+- [Tags (tag)](#tag-tag)
+- [Virtual Image (virtual-image)](#virtual-image-virtual-image)
+- [VMWare Folders (vmwFolders)](#vmw-folders-vmwfolders)
+
+#### HTTP
+- [Headers (httpHeader)](#http-header-httpheader)
+
+### Key Value (keyValue)
+
+{{tffile "examples/resources/morpheus_form/resource_key_value.tf"}}
+
+### Virtual Image (virtual-image)
+
+{{tffile "examples/resources/morpheus_form/resource_virtual_image.tf"}}
+
+### VMW Folders (vmwFolders)
+
+{{tffile "examples/resources/morpheus_form/resource_vmw_folders.tf"}}
+
+### File Content (fileContent)
+
+{{tffile "examples/resources/morpheus_form/resource_file_content.tf"}}
+
+### Select (select)
+
+{{tffile "examples/resources/morpheus_form/resource_select.tf"}}
+
+### Radio (radio)
+
+{{tffile "examples/resources/morpheus_form/resource_radio.tf"}}
+
+### Text (text)
+
+{{tffile "examples/resources/morpheus_form/resource_text.tf"}}
+
+### Checkbox (checkbox)
+
+{{tffile "examples/resources/morpheus_form/resource_checkbox.tf"}}
+
+### Hidden (hidden)
+
+{{tffile "examples/resources/morpheus_form/resource_hidden.tf"}}
+
+### Logo Selector (logoSelector)
+
+{{tffile "examples/resources/morpheus_form/resource_logo_selector.tf"}}
+
+### HTTP Header (httpHeader)
+
+{{tffile "examples/resources/morpheus_form/resource_httpheader.tf"}}
+
+### Number (number)
+
+{{tffile "examples/resources/morpheus_form/resource_number.tf"}}
+
+### Network Manager (networkManager)
+
+{{tffile "examples/resources/morpheus_form/resource_network_manager.tf"}}
+
+### Cloud (cloud)
+
+~> **Note:** For the `cloud` option type, set `group_field` (with `group_field_type = "field"`)
+to the code of the upstream group form field that drives the group→cloud cascade. Morpheus's cloud
+input uses the plain `group` config key for this dependency; the provider maps `group_field` to it
+automatically.
+
+{{tffile "examples/resources/morpheus_form/resource_cloud.tf"}}
+
+#### Cloud with Group Cascade
+
+{{tffile "examples/resources/morpheus_form/resource_cloud_cascade.tf"}}
+
+### Layout (layout)
+
+{{tffile "examples/resources/morpheus_form/resource_layout.tf"}}
+
+### Group (group)
+
+{{tffile "examples/resources/morpheus_form/resource_group.tf"}}
+
+### Disk Manager (diskManager)
+
+{{tffile "examples/resources/morpheus_form/resource_disk_manager.tf"}}
+
+### Plan (plan)
+
+{{tffile "examples/resources/morpheus_form/resource_plan.tf"}}
+
+### Field Groups
+
+{{tffile "examples/resources/morpheus_form/resource_field_groups.tf"}}
+
+### Environment (environment)
+
+{{tffile "examples/resources/morpheus_form/resource_environment.tf"}}
+
+### Servers Input (servers-input)
+
+{{tffile "examples/resources/morpheus_form/resource_servers_input.tf"}}
+
+### Resource Pool (resourcePool)
+
+{{tffile "examples/resources/morpheus_form/resource_resource_pool.tf"}}
+
+### Security Group (secGroup)
+
+~> **Note:** The `secGroup` option type supports only cloud and resource-pool cascades:
+`cloud_field` / `cloud_field_type` / `cloud_id` and `pool_field`. Other cascade keys such as
+`group_field`, `group_field_type`, `pool_field_type`, and the layout/plan fields are not
+supported and will produce a validation error.
+
+{{tffile "examples/resources/morpheus_form/resource_sec_group.tf"}}
+
+### Tag (tag)
+
+{{tffile "examples/resources/morpheus_form/resource_tag.tf"}}
+
+### Ports (ports)
+
+{{tffile "examples/resources/morpheus_form/resource_ports.tf"}}
+
+### Instances Input (instances-input)
+
+{{tffile "examples/resources/morpheus_form/resource_instances_input.tf"}}
+
+### Byte Size (byteSize)
+
+{{tffile "examples/resources/morpheus_form/resource_bytesize.tf"}}
+
+### Code Editor (code-editor)
+
+{{tffile "examples/resources/morpheus_form/resource_code_editor.tf"}}
+
+### Password (password)
+
+{{tffile "examples/resources/morpheus_form/resource_password.tf"}}
+
+### Textarea (textarea)
+
+{{tffile "examples/resources/morpheus_form/resource_textarea.tf"}}
+
+### Text Array (textArray)
+
+{{tffile "examples/resources/morpheus_form/resource_text_array.tf"}}
+
+### Typeahead (typeahead)
+
+{{tffile "examples/resources/morpheus_form/resource_typeahead.tf"}}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" "examples/resources/morpheus_form/import.sh" }}

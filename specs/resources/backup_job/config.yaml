@@ -1,0 +1,41 @@
+backup_job:
+  description: "Manages a Morpheus Backup Job resource."
+  moves:
+    - job: ""
+    - schedule.id: schedule_id
+  removes:
+    - account
+    - backup_provider
+    - backup_respository
+    - backups
+    - cron_expression
+    - date_created
+    - external_id
+    - last_updated
+    - next_fire
+    - schedule
+    - source
+    - success
+    - visibility
+  overrides:
+    code:
+      computed_optional_required: optional
+      description: The code of the backup job.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the backup job is enabled.
+      default: true
+      state_for_unknown: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the backup job.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the backup job.
+    retention_count:
+      computed_optional_required: optional
+      description: The retention count.
+    schedule_id:
+      computed_optional_required: optional
+      description: The execute schedule ID.

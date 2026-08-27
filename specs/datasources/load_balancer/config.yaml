@@ -1,0 +1,86 @@
+load_balancer:
+  moves:
+    - load_balancer: ""          # unnest wrapper (components/schemas/loadBalancer.yaml)
+    - account_id: tenant_id      # (components/schemas/loadBalancer.yaml)
+    - resource_permission: permissions                               # (components/schemas/loadBalancer.yaml)
+    - permissions.account.id: permissions.tenant_id                    # (components/schemas/loadBalancer.yaml)
+    - permissions.sites: permissions.groups                            # (components/schemas/loadBalancer.yaml)
+  removes:
+    - load_balancer_id             # path parameter - redundant with id
+    - permissions.account  # (components/schemas/loadBalancer.yaml) empty after flattening to tenant_id
+  overrides:
+    id:
+      description: The ID of the load balancer
+      state_for_unknown: true
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the load balancer
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    tenant_id:
+      description: The ID of the tenant the load balancer belongs to
+    description:
+      description: The description of the load balancer
+    type:
+      description: The type of load balancer
+    cloud:
+      description: The cloud associated with the load balancer
+    owner:
+      description: The owner of the load balancer
+    visibility:
+      description: The visibility of the load balancer
+    enabled:
+      description: Whether the load balancer is enabled
+    host:
+      description: The hostname of the load balancer
+    port:
+      description: The port of the load balancer
+    username:
+      description: The username for the load balancer
+    password:
+      description: The password for the load balancer
+    password_hash:
+      description: The hashed password for the load balancer
+    ip:
+      description: The IP address of the load balancer
+    internal_ip:
+      description: The internal IP address of the load balancer
+    external_ip:
+      description: The external IP address of the load balancer
+    external_id:
+      description: The external ID of the load balancer
+    api_port:
+      description: The API port of the load balancer
+    admin_port:
+      description: The admin port of the load balancer
+    ssl_enabled:
+      description: Whether SSL is enabled on the load balancer
+    ssl_cert:
+      description: The SSL certificate of the load balancer
+    allow_vip_entry:
+      description: Whether VIP entry is allowed
+    vip_pools:
+      description: The VIP pools associated with the load balancer
+    virtual_service_name:
+      description: The virtual service name of the load balancer
+    pool_name:
+      description: The pool name of the load balancer
+    server_name:
+      description: The server name of the load balancer
+    config:
+      description: The configuration of the load balancer
+    date_created:
+      description: The date the load balancer was created
+    last_updated:
+      description: The date the load balancer was last updated
+    credential:
+      description: The credential associated with the load balancer
+    tenants:
+      description: The tenants associated with the load balancer
+    permissions:
+      description: The resource permissions of the load balancer
+    instance_price:
+      description: The instance price of the load balancer
+    uuid:
+      description: The UUID of the load balancer

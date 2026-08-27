@@ -1,0 +1,98 @@
+image:
+  templates:
+  #   file:
+  #     string:
+  #       computed_optional_required: optional
+  #       description:
+  #         "Path to a local image file to upload"
+    ssh_password_wo:
+      string:
+        computed_optional_required: optional
+        description: SSH password (Write Only)
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports: 
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    ssh_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: SSH password version. Used to determine if ssh_password_wo has been updated.
+  removes:
+    - console_keymap
+    - success
+    - date_created
+    - network_interfaces
+    - storage_controllers
+    - volumes
+    - config
+    - locations
+    - storage_provider
+    - user_defined
+    - user_uploaded
+    - last_updated
+    - status
+    - tenant
+    - ssh_password_hash
+    - ssh_password
+    - ssh_key
+    - min_disk_gb
+    - min_ram_gb
+    - raw_size_gb
+    - virtual_image_id
+  moves:
+    - virtual_image: ""
+    - accounts: tenant_ids
+    # - template-file: file
+    - config.azure_reference_virtual_image_configuration: config_azure
+    - os_type: os_type_id
+    - storage_provider.id: storage_provider_id
+    - is_auto_join_domain: auto_join_domain
+    - is_cloud_init: cloud_init
+    - is_force_customization: force_customization
+    - is_sysprep: sysprep
+    - template-ssh_password_wo: ssh_password_wo
+    - template-ssh_password_wo_version: ssh_password_wo_version
+  overrides:
+    description:
+      requires_replace: true
+    tenant_id:
+      computed_optional_required: computed_optional
+    os_type_id:
+      description: ID of the OS Type
+    name:
+      computed_optional_required: required
+    image_type:
+      requires_replace: true
+      computed_optional_required: required
+    storage_provider_id:
+      requires_replace: true
+      description: ID of the storage provider where the image will be uploaded
+    tenant_ids:
+      description: List of tenant IDs
+    config_azure.offer:
+      requires_replace: true
+    config_azure.publisher:
+      requires_replace: true
+    config_azure.sku:
+      requires_replace: true
+    config_azure.version:
+      requires_replace: true
+    url:
+      computed_optional_required: optional
+      requires_replace: true
+      # conflicts_with:
+      #   - "file"
+    owner_id:
+      description: ID of the user which created this image
+    raw_size:
+      description: Size of image in bytes
+    min_ram:
+      computed_optional_required: computed_optional
+      description: Minimal required amount of RAM for provisioning in GB
+    min_disk:
+      computed_optional_required: computed_optional
+      description: Minimal required amount of disk space for provisioning in GB

@@ -1,0 +1,149 @@
+subnet:
+  description: "Manages a Morpheus Subnet resource."
+  templates:
+    type_id:
+      int64:
+        computed_optional_required: required
+        description: The type ID of the subnet.
+    network_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the network this subnet belongs to.
+    pool_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the network pool.
+    cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the cloud the subnet belongs to.
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: Configuration object. Settings vary by subnet type. This attribute is write-only and not stored in state.
+        write_only: true
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+    config_version:
+      int64:
+        computed_optional_required: optional
+        description: Config version. Increment this value to trigger replacement of the subnet with updated config.
+    allow_static_override:
+      bool:
+        computed_optional_required: optional
+        description: Allow IP override.
+    tenant_ids:
+      set:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: Set of tenant IDs that are allowed access to the subnet.
+    resource_permission_groups_all:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether all groups have access to the subnet.
+    resource_permission_group_ids:
+      set:
+        computed_optional_required: optional
+        element_type:
+          int64: {}
+        description: Set of group IDs that have access to the subnet. Only applicable when resource_permission_groups_all is false.
+  moves:
+    - subnet: ""
+    - template-type_id: type_id
+    - template-network_id: network_id
+    - template-pool_id: pool_id
+    - template-cloud_id: cloud_id
+    - template-config: config
+    - template-config_version: config_version
+    - template-allow_static_override: allow_static_override
+    - template-tenant_ids: tenant_ids
+    - template-resource_permission_groups_all: resource_permission_groups_all
+    - template-resource_permission_group_ids: resource_permission_group_ids
+  removes:
+    - account
+    - address_prefix
+    - assign_public_ip
+    - boot_file
+    - code
+    - default_network
+    - dhcp_end
+    - dhcp_ip
+    - dhcp_range
+    - dhcp_start
+    - dns_primary
+    - dns_secondary
+    - external_id
+    - has_floating_ips
+    - network
+    - network_domain
+    - network_proxy
+    - pool
+    - resource_permission
+    - resource_permissions
+    - search_domains
+    - security_groups
+    - status
+    - tenants
+    - tftp_server
+    - type
+    - unique_id
+    - zone
+  overrides:
+    active:
+      computed_optional_required: computed_optional
+      description: Whether the subnet is active.
+      state_for_unknown: true
+    cidr:
+      computed_optional_required: computed_optional
+      description: The CIDR of the subnet. Used directly by subnet types with cidrEditable (e.g. Google). For Azure subnets, this is derived from config.subnetCidr.
+      state_for_unknown: true
+    description:
+      computed_optional_required: optional
+      description: The description of the subnet.
+    dhcp_server:
+      computed_optional_required: computed_optional
+      description: Whether DHCP server is enabled.
+      state_for_unknown: true
+    gateway:
+      computed_optional_required: computed
+      description: The gateway of the subnet.
+      state_for_unknown: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the subnet.
+      state_for_unknown: true
+    labels:
+      computed_optional_required: optional
+      description: Labels for the subnet.
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the subnet.
+      state_for_unknown: true
+    netmask:
+      computed_optional_required: computed
+      description: The netmask of the subnet.
+      state_for_unknown: true
+    subnet_address:
+      computed_optional_required: computed
+      description: The subnet address.
+      state_for_unknown: true
+    type_id:
+      computed_optional_required: required
+      description: The type ID of the subnet.
+      requires_replace: true
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the subnet.
+      default: "private"
+    cloud_id:
+      state_for_unknown: true
+    config_version:
+      requires_replace: true
+    network_id:
+      requires_replace: true
+    tenant_ids:
+      requires_replace: true

@@ -1,0 +1,341 @@
+network_router:
+  templates:
+    bool:
+      bool:
+        computed_optional_required: computed_optional
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: Generic configuration object for network routers.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                dynamicvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("config_nsxt_gateway_tier0"),
+                  path.MatchRoot("config_nsxt_gateway_tier1"),
+                }...)
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                dynamicvalidator.ExactlyOneOf(path.Expressions{
+                  path.MatchRoot("config"),
+                  path.MatchRoot("config_nsxt_gateway_tier0"),
+                  path.MatchRoot("config_nsxt_gateway_tier1"),
+                }...)
+    group_id:
+      int64:
+        computed_optional_required: required
+        description: Sets the group that this router is scoped to. Cannot be used when setting tenant permissions.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("shared_group_access"),
+                  path.MatchRoot("tenant_ids"),
+                  path.MatchRoot("visibility"),
+                }...)
+    shared_group_access:
+      bool:
+        computed_optional_required: optional
+        description: Used to enable shared group access. Conflicts with group_id. Cannot be used when setting tenant permissions.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                boolvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("group_id"),
+                  path.MatchRoot("tenant_ids"),
+                  path.MatchRoot("visibility"),
+                }...)
+    network_integration_id:
+      int64:
+        computed_optional_required: optional
+        description: Required when router type supports a network integration
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("cloud_id"),
+                }...)
+    type_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The network router type ID. Must be set if using generic config block. The provider will attempt to set this automatically if using a static config block.
+        validators:
+          - custom:
+              imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.AlsoRequires(path.Expressions{path.MatchRoot("config")}...)
+    cloud_id:
+      int64:
+        computed_optional_required: optional
+        description: Required when router type does not support a network integration
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("network_integration_id"),
+                }...)
+    edge_cluster:
+      string:
+        description: If set, also requires fail_over to be set.
+        computed_optional_required: optional
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.AlsoRequires(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("fail_over"),
+                }...)
+    fail_over:
+      string:
+        computed_optional_required: optional
+        description: Required with edge_cluster.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.OneOf(
+                  "NON_PREEMPTIVE",
+                  "PREEMPTIVE",
+                )
+  moves:
+    - network_router: ""
+    - permissions: ""
+    - tenant_permissions.accounts: tenant_ids
+    - zone: cloud
+    - site: group
+    - template-group_id: group_id
+    - template-shared: group.shared
+    - template-cloud_id: cloud_id
+    - template-network_integration_id: network_integration_id
+    - template-type_id: type_id
+    - config.anyof0.oneof0: config_nsxt_gateway_tier0
+    - config.anyof0.oneof1: config_nsxt_gateway_tier1
+    - config_nsxt_gateway_tier1.tier0gateway: config_nsxt_gateway_tier1.tier0_gateway
+    - template-config: config
+    - template-fail_over: config_nsxt_gateway_tier0.fail_over
+    - template-fail_over: config_nsxt_gateway_tier1.fail_over
+    - template-edge_cluster: config_nsxt_gateway_tier0.edge_cluster
+
+    # NSX Tier 0 Gateway Bools
+    - template-bool: config_nsxt_gateway_tier0.ecmp
+    - template-bool: config_nsxt_gateway_tier0.multipath_relax
+    - template-bool: config_nsxt_gateway_tier0.tier0_dns_forwarder_ip
+    - template-bool: config_nsxt_gateway_tier0.tier0_external_interface
+    - template-bool: config_nsxt_gateway_tier0.tier0_ipsec_local_ip
+    - template-bool: config_nsxt_gateway_tier0.tier0_loopback_interface
+    - template-bool: config_nsxt_gateway_tier0.tier0_nat
+    - template-bool: config_nsxt_gateway_tier0.tier0_segment
+    - template-bool: config_nsxt_gateway_tier0.tier0_service_interface
+    - template-bool: config_nsxt_gateway_tier0.tier0_static
+    - template-bool: config_nsxt_gateway_tier0.tier1_dns_forwarder_ip
+    - template-bool: config_nsxt_gateway_tier0.tier1_ipsec_local_endpoint
+    - template-bool: config_nsxt_gateway_tier0.tier1_lb_snat
+    - template-bool: config_nsxt_gateway_tier0.tier1_lb_vip
+    - template-bool: config_nsxt_gateway_tier0.tier1_nat
+    - template-bool: config_nsxt_gateway_tier0.tier1_segment
+    - template-bool: config_nsxt_gateway_tier0.tier1_service_interface
+    - template-bool: config_nsxt_gateway_tier0.tier1_static
+    - template-bool: config_nsxt_gateway_tier0.inter_sr_ibgp
+    # NSX Tier 1 Gateway Bools
+    - template-bool: config_nsxt_gateway_tier1.tier1_connected
+    - template-bool: config_nsxt_gateway_tier1.tier1_dns_forwarder_ip
+    - template-bool: config_nsxt_gateway_tier1.tier1_ipsec_local_endpoint
+    - template-bool: config_nsxt_gateway_tier1.tier1_lb_snat
+    - template-bool: config_nsxt_gateway_tier1.tier1_lb_vip
+    - template-bool: config_nsxt_gateway_tier1.tier1_nat
+    - template-bool: config_nsxt_gateway_tier1.tier1_static_routes
+    - template-edge_cluster: config_nsxt_gateway_tier1.edge_cluster
+    - template-shared_group_access: shared_group_access
+  removes:
+    - description # unused it seems
+    # complex comptued attributes
+    # we can use the data source for reading all this
+    - cloud
+    - firewall
+    - group
+    - interfaces
+    - nats
+    - network_server
+    - routes
+    - tenant_permissions
+    - type
+    # simple computed attributes
+    - category
+    - date_created
+    - external_id
+    - external_ip
+    - external_network
+    - instance
+    - last_updated
+    - router_type
+    - status
+    - success
+  overrides:
+    id:
+      state_for_unknown: true
+    code:
+      state_for_unknown: true
+    cloud_id:
+      requires_replace: true
+    group_id:
+      requires_replace: true
+    network_integration_id:
+      requires_replace: true
+    type_id:
+      requires_replace: true
+      state_for_unknown: true
+    enabled:
+      default: true
+    enable_bgp:
+      default: false
+      requires_replace: true
+
+    # config_nsxt_gateway_tier0
+    config_nsxt_gateway_tier0:
+      computed_optional_required: optional
+      requires_replace: true
+    config_nsxt_gateway_tier0.ha_mode:
+      computed_optional_required: required
+    config_nsxt_gateway_tier0.edge_cluster:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier0.ip_management_type:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier0.ip_server_id:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier0.tier0_nat:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_ipsec_local_ip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_dns_forwarder_ip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_service_interface:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_external_interface:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_loopback_interface:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_segment:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier0_static:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_dns_forwarder_ip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_static:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_lb_vip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_nat:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_lb_snat:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_ipsec_local_endpoint:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_service_interface:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.tier1_segment:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.local_as_num:
+      computed_optional_required: computed_optional
+      default: "65000"
+    config_nsxt_gateway_tier0.ecmp:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.multipath_relax:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.inter_sr_ibgp:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier0.restart_mode:
+      computed_optional_required: required
+    config_nsxt_gateway_tier0.restart_time:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier0.stale_route_time:
+      computed_optional_required: optional
+
+    # config_nsxt_gateway_tier1
+    config_nsxt_gateway_tier1:
+      computed_optional_required: optional
+      requires_replace: true
+    config_nsxt_gateway_tier1.tier0_gateway:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier1.edge_cluster:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier1.ip_management_type:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier1.ip_server_id:
+      computed_optional_required: optional
+    config_nsxt_gateway_tier1.tier1_connected:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_nat:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_static_routes:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_lb_vip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_lb_snat:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_dns_forwarder_ip:
+      computed_optional_required: computed_optional
+      default: false
+    config_nsxt_gateway_tier1.tier1_ipsec_local_endpoint:
+      computed_optional_required: computed_optional
+      default: false
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the network router (public or private).
+      one_of: [public, private]
+      state_for_unknown: true
+    tenant_ids:
+      computed_optional_required: computed_optional
+      description: List of tenant account IDs that are allowed access.
+      state_for_unknown: true

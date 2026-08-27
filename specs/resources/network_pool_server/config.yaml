@@ -1,0 +1,134 @@
+network_pool_server:
+  description: "Manages a Morpheus Network Pool Server (IPAM integration) resource."
+  templates:
+    type_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The pool server type ID.
+    type_code:
+      string:
+        computed_optional_required: computed_optional
+        description: The pool server type code.
+    inventory_existing:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether to inventory existing networks from the pool server.
+    credential_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of a stored credential to use for authentication.
+    service_password_wo:
+      string:
+        computed_optional_required: optional
+        description: The service password for authentication.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    service_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Service password version. Used to determine if service_password_wo has been updated.
+  moves:
+    - network_pool_server: ""
+    - template-type_id: type_id
+    - template-type_code: type_code
+    - template-inventory_existing: inventory_existing
+    - template-credential_id: credential_id
+    - template-service_password_wo: service_password_wo
+    - template-service_password_wo_version: service_password_wo_version
+  removes:
+    - account
+    - bluecat_network_pool_server
+    - config
+    - credential
+    - date_created
+    - infoblox_network_pool_server
+    - integration
+    - last_updated
+    - php_ipamnetwork_pool_server
+    - pools
+    - service_host
+    - service_password
+    - service_password_hash
+    - service_port
+    - solar_winds_network_pool_server
+    - status_date
+    - status_message
+    - success
+    - type
+  overrides:
+    credential_id:
+      computed_optional_required: optional
+      description: The ID of a stored credential to use for authentication. Conflicts with service_username and service_password_wo.
+      conflicts_with: [service_username, service_password_wo]
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the network pool server is enabled.
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the network pool server.
+      state_for_unknown: true
+    ignore_ssl:
+      computed_optional_required: computed_optional
+      description: Whether to ignore SSL certificate errors.
+      default: false
+    name:
+      computed_optional_required: required
+      description: The name of the network pool server.
+    service_password_wo:
+      computed_optional_required: optional
+      description: The service password for authentication. Conflicts with credential_id.
+      conflicts_with: [credential_id]
+    service_password_wo_version:
+      computed_optional_required: optional
+      description: Service password version. Used to determine if service_password_wo has been updated.
+    service_url:
+      computed_optional_required: optional
+      description: The service URL for the IPAM integration.
+    service_username:
+      computed_optional_required: optional
+      description: The service username for authentication. Conflicts with credential_id.
+      conflicts_with: [credential_id]
+    status:
+      computed_optional_required: computed
+      description: The current status of the network pool server.
+      state_for_unknown: true
+    network_filter:
+      computed_optional_required: optional
+      description: Filter expression for which networks to sync from the pool server.
+    service_mode:
+      computed_optional_required: optional
+      description: The service mode (e.g. "static" or "dhcp"). Applies to Infoblox.
+    service_throttle_rate:
+      computed_optional_required: computed_optional
+      description: Rate limit (in milliseconds) for API requests to the pool server.
+      default: 0
+    tenant_match:
+      computed_optional_required: optional
+      description: Tenant matching expression for multi-tenancy (Infoblox only).
+    type_id:
+      computed_optional_required: computed_optional
+      description: The ID of the network pool server type. Mutually exclusive with type_code.
+      requires_replace: true
+      state_for_unknown: true
+      at_least_one_of: [type_id, type_code]
+      conflicts_with: [type_code]
+    type_code:
+      computed_optional_required: computed_optional
+      description: 'The network pool server type code (e.g. "infoblox", "bluecat", "phpipam", "solarwindsipam", "solidserver"). Mutually exclusive with type_id.'
+      requires_replace: true
+      state_for_unknown: true
+      conflicts_with: [type_id]
+    inventory_existing:
+      computed_optional_required: computed_optional
+      description: Whether to inventory existing networks from the pool server. Applies to all pool server types.
+      default: false
+    zone_filter:
+      computed_optional_required: optional
+      description: Filter expression for which DNS zones to sync (Infoblox only).

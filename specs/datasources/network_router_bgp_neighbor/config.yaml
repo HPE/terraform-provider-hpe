@@ -1,0 +1,27 @@
+network_router_bgp_neighbor:
+  templates:
+    router_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the network router this BGP neighbor belongs to
+    config:
+      dynamic:
+        description: Generic BGP neighbor configuration object. Settings vary by router type.
+        computed_optional_required: computed
+  moves:
+    - network_router_bgp_neighbor: ""   # unnest wrapper
+    - template-router_id: router_id
+    - config.nsxtbgpneighbor_config: config_nsxt
+    - config.nsxvbgpneighbor_config: config_nsxv
+    - template-config: config
+  removes:
+    - password          # sensitive - don't expose in datasource
+    - password_hash     # sensitive
+    - config.generic_bgpneighbor_config  # covered by dynamic config
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the BGP neighbor
+    ip_address:
+      computed_optional_required: computed_optional
+      description: The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided.

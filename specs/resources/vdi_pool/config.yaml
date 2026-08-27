@@ -1,0 +1,123 @@
+vdi_pool:
+  description: "Manages a Morpheus VDI Pool resource."
+  templates:
+    idle_timeout:
+      int64:
+        computed_optional_required: computed_optional
+        description: The idle timeout in minutes.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(0)
+    max_idle:
+      int64:
+        computed_optional_required: computed_optional
+        description: Sets the maximum number of idle instances on standby in the pool. Must be greater than or equal to min_idle.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.GreaterThanOrEqual("min_idle")
+    max_session_timeout:
+      int64:
+        computed_optional_required: optional
+        description: "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
+        deprecation_message: "max_session_timeout is not backed by the Morpheus API and has no effect; the value is retained in Terraform state only and will be removed in a future release."
+    min_idle:
+      int64:
+        computed_optional_required: computed_optional
+        description: Sets the minimum number of idle instances on standby in the pool. When set, max_idle must also be set and be greater than or equal to this value.
+        validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              int64validator.AlsoRequires(path.Expressions{path.MatchRoot("max_idle")}...)
+  moves:
+    - vdi_pool: ""
+    - template-idle_timeout: idle_timeout
+    - template-max_idle: max_idle
+    - template-max_session_timeout: max_session_timeout
+    - template-min_idle: min_idle
+  removes:
+    - allocation_timeout_minutes
+    - anyof0
+    - anyof1
+    - apps
+    - cloud
+    - config
+    - date_created
+    - gateway
+    - group
+    - guest_console_jump_host
+    - guest_console_jump_keypair
+    - guest_console_jump_password
+    - guest_console_jump_port
+    - guest_console_jump_username
+    - icon_path
+    - idle_count
+    - last_updated
+    - logo
+    - oneof0
+    - oneof1
+    - owner
+    - preparing_count
+    - reserved_count
+    - status
+    - used_count
+  overrides:
+    allow_copy:
+      computed_optional_required: computed_optional
+      description: Whether to allow copy operations.
+    allow_fileshare:
+      computed_optional_required: computed_optional
+      description: Whether to allow file sharing.
+    allow_hypervisor_console:
+      computed_optional_required: computed_optional
+      description: Whether to allow hypervisor console access.
+    allow_printer:
+      computed_optional_required: computed_optional
+      description: Whether to allow printer access.
+    auto_create_local_user_on_reservation:
+      computed_optional_required: computed_optional
+      description: Whether to auto-create a local user on reservation.
+    description:
+      computed_optional_required: optional
+      description: The description of the VDI pool.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the VDI pool is enabled.
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the VDI pool.
+      state_for_unknown: true
+    idle_timeout:
+      computed_optional_required: computed_optional
+      description: The idle timeout in minutes.
+    initial_pool_size:
+      computed_optional_required: computed_optional
+      description: The initial size of the pool to be allocated on creation.
+    max_idle:
+      computed_optional_required: computed_optional
+      description: Sets the maximum number of idle instances on standby in the pool. Must be greater than or equal to min_idle.
+    max_pool_size:
+      computed_optional_required: required
+      description: Max limit on number of allocations and instances within the pool.
+    max_session_timeout:
+      computed_optional_required: optional
+      description: "Deprecated and non-functional: not backed by the Morpheus API. The value is retained in Terraform state only and will be removed in a future release."
+    min_idle:
+      computed_optional_required: computed_optional
+      description: Sets the minimum number of idle instances on standby in the pool. When set, max_idle must also be set and be greater than or equal to this value.
+    name:
+      computed_optional_required: required
+      description: The name of the VDI pool.
+    persistent_user:
+      computed_optional_required: computed_optional
+      description: Whether users are persistent across sessions.
+    recyclable:
+      computed_optional_required: computed_optional
+      description: Whether VDI pool instances are recyclable.

@@ -1,0 +1,15 @@
+resource "hpe_morpheus_setting_monitoring" "example" {
+  morpheus_auto_create_checks         = {{.MorpheusAutoCreateChecks}}
+  morpheus_availability_time_frame    = {{.MorpheusAvailabilityTimeFrame}}
+  morpheus_availability_precision     = {{.MorpheusAvailabilityPrecision}}
+  morpheus_default_check_interval     = {{.MorpheusDefaultCheckInterval}}
+  servicenow_monitoring_enabled       = {{.ServicenowMonitoringEnabled}}
+  servicenow_integration_id           = {{.ServicenowIntegrationId}}
+  servicenow_new_incident_action      = "{{.ServicenowNewIncidentAction}}"
+  servicenow_close_incident_action    = "{{.ServicenowCloseIncidentAction}}"
+  servicenow_severity_info_impact     = "{{.ServicenowSeverityInfoImpact}}"
+  servicenow_severity_warning_impact  = "{{.ServicenowSeverityWarningImpact}}"
+  servicenow_severity_critical_impact = "{{.ServicenowSeverityCriticalImpact}}"
+  new_relic_monitoring_enabled        = {{.NewRelicMonitoringEnabled}}
+  new_relic_license_key               = "{{.NewRelicLicenseKey}}"
+}
