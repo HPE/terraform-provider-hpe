@@ -1,0 +1,120 @@
+load_balancer_pool:
+  templates:
+    config:
+      dynamic:
+        description: Generic pool configuration object. Settings vary by load balancer type.
+        computed_optional_required: optional
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+    partition:
+      string:
+        computed_optional_required: optional
+        description: Partition identifier
+        write_only: true
+
+  moves:
+    - load_balancer_pool: ""                             # unnest wrapper
+    - config.nsxtload_balancer_pool_config_object: config_nsxt  # extract NSX-T config from anyOf
+    - template-partition: partition                              # inject write-only partition field
+    - template-config: config                            # replace anyOf shell with dynamic fallback (must be last)
+
+  removes:
+    # API response envelope fields
+    - success                                            # (components/schemas/successMessage.yaml)
+    - msg                                                # (components/schemas/successMessage.yaml)
+    # Sub-resource collections (managed via separate resources)
+    - nodes                                              # (components/schemas/loadBalancerPool.yaml)
+    - monitors                                           # (components/schemas/loadBalancerPool.yaml)
+    - members                                            # (components/schemas/loadBalancerPool.yaml)
+    # Read-only metadata
+    - created_by                                         # (components/schemas/loadBalancerPool.yaml)
+    - date_created                                       # (components/schemas/loadBalancerPool.yaml)
+
+  overrides:
+    id:
+      state_for_unknown: true
+    load_balancer_id:
+      description: The ID of the load balancer this pool belongs to
+      computed_optional_required: required
+      requires_replace: true
+    name:
+      description: The name of the load balancer pool
+      computed_optional_required: required
+    description:
+      description: A description of the load balancer pool
+      computed_optional_required: computed_optional
+    vip_balance:
+      description: The balance algorithm for the pool (e.g. ROUND_ROBIN, LEAST_CONNECTION, IP_HASH)
+      computed_optional_required: computed_optional
+    vip_sticky:
+      description: Session persistence mode for the pool
+      computed_optional_required: computed_optional
+    vip_client_ip_mode:
+      description: VIP client IP mode
+      computed_optional_required: computed_optional
+    min_active:
+      description: Minimum number of active pool members
+      computed_optional_required: computed_optional
+    port:
+      description: The port number for the pool
+      computed_optional_required: computed_optional
+    config:
+      conflicts_with: [config_nsxt]
+    config_nsxt:
+      conflicts_with: [config]
+    # Read-only computed fields (virtual server pattern — keep all API response fields)
+    allow_nat:
+      computed_optional_required: computed
+    allow_snat:
+      computed_optional_required: computed
+    category:
+      computed_optional_required: computed
+    down_action:
+      computed_optional_required: computed
+    enabled:
+      computed_optional_required: computed
+    error_penalty:
+      computed_optional_required: computed
+    external_id:
+      computed_optional_required: computed
+    health_penalty:
+      computed_optional_required: computed
+    health_score:
+      computed_optional_required: computed
+    internal_id:
+      computed_optional_required: computed
+    last_updated:
+      computed_optional_required: computed
+    load_balancer:
+      computed_optional_required: computed
+    max_queue_depth:
+      computed_optional_required: computed
+    max_queue_time:
+      computed_optional_required: computed
+    min_in_service:
+      computed_optional_required: computed
+    min_up_action:
+      computed_optional_required: computed
+    min_up_monitor:
+      computed_optional_required: computed
+    number_active:
+      computed_optional_required: computed
+    number_in_service:
+      computed_optional_required: computed
+    performance_score:
+      computed_optional_required: computed
+    port_type:
+      computed_optional_required: computed
+    ramp_time:
+      computed_optional_required: computed
+    security_penalty:
+      computed_optional_required: computed
+    status:
+      computed_optional_required: computed
+    vip_server_ip_mode:
+      computed_optional_required: computed
+    visibility:
+      computed_optional_required: computed

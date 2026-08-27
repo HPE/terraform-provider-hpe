@@ -1,0 +1,394 @@
+cluster:
+  enable_timeouts: true
+  templates:
+    config:
+      dynamic:
+        description: Generic Cluster Configuration
+        computed_optional_required: optional
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: dynamicvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config_hvm")}...)
+    create_user:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether to create a user on the cluster's workers. The default is 'false'.
+        default:
+          static: false
+        requires_replace: true
+    cluster_type_code:
+      string:
+        computed_optional_required: computed_optional
+        description: Code of type of cluster to be created. Automatically set to the appropriate code by the provider when using a static config.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              stringvalidator.AlsoRequires(path.Expressions{path.MatchRoot("config")}...)
+    network_id:
+      int64:
+        description: The ID of the network.
+        # required IF we specify a network_interface
+        computed_optional_required: required
+    service_plan_id:
+      int64:
+        description: ID of the cluster server service plan.
+        computed_optional_required: optional
+    user_group_id:
+      int64:
+        description: User Group ID for server host
+        computed_optional_required: optional
+    auto_datastore:
+      bool:
+        description: Whether to automatically select a data store.
+        computed_optional_required: optional
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: boolvalidator.ConflictsWith(path.Expressions{path.MatchRoot("datastore_id")}...)
+    ssh_key_pair_id:
+      int64:
+        description: SSH Key Pair ID.
+        computed_optional_required: optional
+    ssh_master_hosts:
+      set:
+        element_type:
+          string: {}
+        computed_optional_required: optional
+        description: IP addresses of the master hosts.
+    ssh_worker_hosts:
+      set:
+        element_type:
+          string: {}
+        computed_optional_required: optional
+        description: IP addresses of the worker hosts.
+    datastore_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the specific datastore.
+    datastore_auto_selection:
+      string:
+        computed_optional_required: optional
+        description: Auto selection can be specified as auto or autoCluster (for clusters).
+        validators:
+          - custom:
+              imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: |-
+                stringvalidator.OneOf(
+                "auto",
+                "autoCluster",
+                )
+          - custom:
+              imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.ConflictsWith(path.Expressions{path.MatchRelative().AtParent().AtName("datastore_id")}...)
+    node_count:
+      int64:
+        description: The number of worker nodes to be provisioned. Can be updated to resize the cluster.
+        computed_optional_required: required
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(3)
+    management_net_interface:
+      string:
+        description: The primary management interface name to establish a management bridge (i.e. eth0,ens192,bond0,etc)
+        computed_optional_required: optional
+    ssh_password_wo:
+      string:
+        computed_optional_required: optional
+        description: SSH password (Write Only)
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    ssh_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: SSH password version. Used to determine if ssh_password_wo has been updated.
+    dynamic_placement:
+      bool:
+        computed_optional_required: optional
+        description: When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
+  moves:
+    - cluster: "" # unnest cluster
+    - cluster_id: id
+    - workers_count: workers
+    - cloud.id: cloud_id
+    - group.id: group_id
+    - layout.id: layout_id
+    - task_set_id: workflow_id
+    - server.config.anyof0.oneof0: config_aks
+    - server.config.anyof0.oneof1: config_docker
+    - server.config.anyof0.oneof2: config_eks
+    - server.config.anyof0.oneof3: config_gke
+    - server.config.anyof0.oneof4: config_hks
+    - server.config.anyof0.oneof5: config_hks_hvm
+    - server.config.anyof0.oneof6: config_hvm
+    - server.config.anyof0.oneof7: config_vsphere
+    - server.config.default_repo_account: server.default_repo_account
+    - server.config.image_server: server.image_server
+    - server.volumes.storage_type: server.volumes.storage_type_id
+    - config.template_parameter: config_aks.template_parameters
+    # template stuff
+    - template-config: config
+    - template-create_user: config_hvm.create_user
+    - template-cluster_type_code: cluster_type_code
+    - template-service_plan_id: server.service_plan_id
+    - template-network_id: server.network_interfaces.network_id
+    - template-user_group_id: server.user_group_id
+    - template-ssh_key_pair_id: server.ssh_key_pair_id
+    - template-ssh_master_hosts: server.ssh_master_hosts
+    - template-ssh_worker_hosts: server.ssh_worker_hosts
+    - template-datastore_id: server.volumes.datastore_id
+    - template-datastore_auto_selection: server.volumes.datastore_auto_selection
+    - template-management_net_interface: server.management_net_interface
+    - template-ssh_password_wo: server.ssh_password_wo
+    - template-ssh_password_wo_version: server.ssh_password_wo_version
+    # HKS on HVM
+    - template-node_count: config_hks_hvm.node_count
+    # HVM
+    - template-dynamic_placement: config_hvm.dynamic_placement
+  removes:
+    - stats
+    - code # not used for cluster
+    - accounts
+    - auto_recover_power_state
+    - permissions
+    - category
+    - cloud
+    - containers_count
+    - created_by
+    - datacenter_id
+    - date_created
+    - deployments_count
+    - enable_internal_dns
+    - enabled
+    - external_id
+    - group
+    - integrations
+    - internal_id
+    - inventory_level
+    - jobs_count
+    - last_sync
+    - last_sync_duration
+    - last_updated
+    - layout
+    - location
+    - managed
+    - namespaces_count
+    - next_run_date
+    - owner
+    - pods_count
+    - provision_complete
+    - search_domains
+    - server.labels
+    - servers
+    - service_access
+    - service_access_hash
+    - service_cert
+    - service_cert_hash
+    - service_entry
+    - service_host
+    - service_hostname
+    - service_password
+    - service_password_hash
+    - service_path
+    - service_port
+    - service_token
+    - service_token_hash
+    - service_username
+    - service_version
+    - services_count
+    - site
+    - status
+    - status_date
+    - status_message
+    - success
+    - type
+    - use_agent
+    - user_group
+    - volumes_count
+    - worker_stats
+    - zone
+    - workers
+    - visibility
+    - server.config.anyof0
+    - server.node_count
+    - server.config # its properties were unnested
+    - server.config.generic_cluster_server_configuration # We're using a custom Dynamic config attribute for generic config
+    # Don't include these for now - until we decide to support these cluster types
+    - config_aks
+    - config_docker
+    - config_eks
+    - config_gke
+    - config_hks
+    - config_hks_hvm
+    - config_vsphere
+    # dont need most of these for create
+    - server.network # replaced with management_net_interface
+    - server.network_interfaces.network
+    - server.network_interfaces.ip_address
+    - server.network_interfaces.network_interface_type_id
+    - server.plan
+    - server.server_type
+    - server.user_group
+    - server.ssh_password # we have a write-only template
+    - server.ssh_key_pair
+    - server.ssh_master_hosts # server.ssh_hosts should take care of this for now
+    - server.ssh_worker_hosts # server.ssh_hosts should take care of this for now
+    - server.service_plan_options # don't support setting service plan options for now.
+    - config_hvm.dynamic_placement_mode # replaced with template dynamic_placement (bool)
+  overrides:
+    id:
+      computed_optional_required: computed
+      state_for_unknown: true
+    uuid:
+      state_for_unknown: true
+    service_url:
+      state_for_unknown: true
+    cluster_type_code:
+      state_for_unknown: true
+    cloud_id:
+      computed_optional_required: required
+      requires_replace: true
+    description:
+      computed_optional_required: optional
+    group_id:
+      computed_optional_required: required
+      requires_replace: true
+    layout_id:
+      computed_optional_required: required
+      requires_replace: true
+    labels:
+      description: Array of strings (keywords).
+      computed_optional_required: optional
+    visibility:
+      computed_optional_required: computed_optional
+    workflow_id:
+      computed_optional_required: optional
+      requires_replace: true
+
+    # Server config blocks
+    server:
+      description: Configuration options for the cluster's workers.
+      requires_replace: true
+    server.name:
+      computed_optional_required: optional
+      requires_replace: true
+    server.ssh_port:
+      computed_optional_required: optional
+      requires_replace: true
+    server.ssh_hosts:
+      computed_optional_required: optional
+      requires_replace: true
+    server.ssh_hosts.ip:
+      computed_optional_required: required
+    server.ssh_hosts.name:
+      computed_optional_required: required
+    server.hostname:
+      computed_optional_required: optional
+      requires_replace: true
+    server.network_domain:
+      computed_optional_required: optional
+      requires_replace: true
+    server.ssh_username:
+      computed_optional_required: optional
+      requires_replace: true
+    server.volumes:
+      state_for_unknown: true
+      computed_optional_required: optional
+    server.volumes.id:
+      state_for_unknown: true
+      computed_optional_required: computed
+    server.volumes.size_id:
+      computed_optional_required: optional
+    server.volumes.storage_type_id:
+      computed_optional_required: optional
+    server.network_interfaces:
+      computed_optional_required: optional
+    server.lvm_enabled:
+      computed_optional_required: optional
+      requires_replace: true
+    server.data_device:
+      computed_optional_required: optional
+      requires_replace: true
+    server.security_groups:
+      computed_optional_required: optional
+      requires_replace: true
+    server.tags:
+      computed_optional_required: optional
+      requires_replace: true
+
+    ### HVM
+    config_hvm:
+      computed_optional_required: optional
+    # optional
+    config_hvm.create_user:
+      requires_replace: true
+    config_hvm.default_repo_account:
+      computed_optional_required: optional
+    config_hvm.dynamic_placement_mode:
+      computed_optional_required: optional
+    config_hvm.image_server:
+      computed_optional_required: optional
+    config_hvm.compute_interface_name:
+      computed_optional_required: optional
+    config_hvm.compute_vlans:
+      computed_optional_required: optional
+      requires_replace: true
+    config_hvm.overlay_interface_name:
+      computed_optional_required: optional
+    config_hvm.storage_interface_name:
+      computed_optional_required: optional
+    config_hvm.vcpu_placement_mode:
+      computed_optional_required: optional
+    # required
+    config_hvm.cpu_arch:
+      computed_optional_required: required
+    config_hvm.cpu_model:
+      computed_optional_required: required
+    config_hvm.power_policy:
+      computed_optional_required: required
+
+
+    # TODO: Come back to this when we support hks_hvm
+    ### HKS_HVM
+    # config_hks_hvm:
+    #   computed_optional_required: optional
+    #   requires_replace: true
+    # config_hks_hvm.create_user:
+    #   computed_optional_required: computed_optional
+    #   requires_replace: true
+    #   default: false
+    # config_hks_hvm.node_count:
+    #   write_only: true
+    # config_hks_hvm.pod_cidr:
+    #   computed_optional_required: computed_optional
+    #   default: ""
+    # config_hks_hvm.service_cidr:
+    #   computed_optional_required: computed_optional
+    #   default: ""
+    # config_hks_hvm.resource_pool_id:
+    #   computed_optional_required: required
+    #   requires_replace: true
+    # config_hks_hvm.image_server:
+    #   computed_optional_required: optional
+    #   requires_replace: true
+    # config_hks_hvm.default_repo_account:
+    #   computed_optional_required: optional
+    #   requires_replace: true

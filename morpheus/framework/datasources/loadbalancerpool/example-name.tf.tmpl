@@ -1,0 +1,4 @@
+data "hpe_morpheus_load_balancer_pool" "example" {
+  load_balancer_id = {{.LoadBalancerId}}
+  name             = "{{.Name}}"
+}

@@ -1,0 +1,39 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_storage_servers/data-source.tf" }}
+
+## Supported `filter` keys
+
+Each `filter` block sets `name` to one of the keys below and `values` to one or
+more Go regular expressions. A storage server matches a block when the key's
+value matches **any** of the supplied `values`; multiple `filter` blocks are
+**ANDed** together.
+
+| Key | Matches |
+|-----|---------|
+| `name` | The storage server name. |
+| `type_id` | The storage server type id. |
+| `type_code` | The storage server type code (for example, `3par` or `hpealletramp-storage-provider`). |
+| `cloud_id` | The cloud (zone) id, when the server is scoped to a `ComputeZone`. |
+| `cloud_name` | The cloud (zone) name, when the server is scoped to a `ComputeZone`. |
+| `visibility` | The visibility, `public` or `private`. |
+| `enabled` | Whether the server is enabled, `true` or `false`. |
+| `status` | The storage server status. |
+
+Common `type_code` values: `nfs`, `3par` (HPE 3PAR / Primera), `isilon`, `ecs`,
+`hpealletramp-storage-provider` (HPE Alletra MP and Alletra 9000 9060/9080), and
+`hpealletramp-X10000-provider.storage` (HPE Alletra MP X10000). Run with no
+filter blocks and inspect `storage_servers[*].type_code` to discover the values
+present in your environment.
+
+{{ .SchemaMarkdown | trimspace }}

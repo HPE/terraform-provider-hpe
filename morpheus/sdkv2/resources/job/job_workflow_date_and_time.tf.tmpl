@@ -1,0 +1,11 @@
+resource "hpe_morpheus_job_workflow" "example" {
+  name                    = "{{.Name}}"
+  enabled                 = {{.Enabled}}
+  labels                  = {{.Labels}}
+  workflow_id             = {{.WorkflowId}}
+  schedule_mode           = "{{.ScheduleMode}}"
+  scheduled_date_and_time = "{{.ScheduledDateAndTime}}"
+  context_type            = "{{.ContextType}}"
+  instance_ids            = {{.InstanceIds}}
+  custom_options = {{.CustomOptions}}
+}

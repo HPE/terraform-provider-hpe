@@ -99,6 +99,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
   vlan_id                    = var.vlan_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]

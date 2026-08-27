@@ -1,0 +1,8 @@
+data "hpe_morpheus_images" "example" {
+  sort_ascending = {{.SortAscending}}
+  source         = "{{.Source}}"
+  filter {
+    name   = "{{.FilterName}}"
+    values = [{{.FilterValues}}]
+  }
+}

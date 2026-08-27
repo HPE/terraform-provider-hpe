@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_instance_type.tf_example_instance_type 1

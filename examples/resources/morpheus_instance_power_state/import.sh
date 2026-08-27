@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_instance_power_state.example 123

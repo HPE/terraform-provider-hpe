@@ -1,0 +1,29 @@
+resource "hpe_morpheus_form" "example" {
+  name        = "{{.Name}}"
+  code        = "{{.Code}}"
+  description = "{{.Description}}"
+  labels      = {{.Labels}}
+
+  option_type {
+    name                     = "{{.OptionTypeName}}"
+    code                     = "{{.OptionTypeCode}}"
+    description              = "{{.OptionTypeDescription}}"
+    type                     = "{{.OptionTypeType}}"
+    field_label              = "{{.OptionTypeFieldLabel}}"
+    field_name               = "{{.OptionTypeFieldName}}"
+    default_value            = "{{.OptionTypeDefaultValue}}"
+    help_block               = "{{.OptionTypeHelpBlock}}"
+    group_field_type         = "{{.OptionTypeGroupFieldType}}"
+    group_id                 = {{.OptionTypeGroupId}}
+    cloud_field_type         = "{{.OptionTypeCloudFieldType}}"
+    cloud_id                 = {{.OptionTypeCloudId}}
+    plan_field_type          = "{{.OptionTypePlanFieldType}}"
+    plan_id                  = {{.OptionTypePlanId}}
+    required                 = {{.OptionTypeRequired}}
+    export_meta              = {{.OptionTypeExportMeta}}
+    display_value_on_details = {{.OptionTypeDisplayValueOnDetails}}
+    locked                   = {{.OptionTypeLocked}}
+    hidden                   = {{.OptionTypeHidden}}
+    exclude_from_search      = {{.OptionTypeExcludeFromSearch}}
+  }
+}

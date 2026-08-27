@@ -1,0 +1,8 @@
+resource "hpe_morpheus_spec_template_cloud_formation" "tfexample_cloud_formation_spec_template_url" {
+  name                   = "{{.Name}}"
+  source_type            = "{{.SourceType}}"
+  spec_path              = "{{.SpecPath}}"
+  capability_iam         = {{.CapabilityIam}}
+  capability_named_iam   = {{.CapabilityNamedIam}}
+  capability_auto_expand = {{.CapabilityAutoExpand}}
+}

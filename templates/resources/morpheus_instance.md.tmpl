@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -8,15 +8,202 @@ description: |-
 
 {{ .Description | trimspace }}
 
-Instance is a virtual machine or container deployed and managed by HPE Morpheus.
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Attributes named `compute_server_id`, `compute_servers` or `servers`
+therefore refer to machine records, which in practice are usually guests; `parent_host_id`
+names the hypervisor a guest runs on.
+
+Instance is a virtual machine, bare metal machine or container deployed and managed by HPE Morpheus.
 Morpheus oversees its entire lifecycle, from initial provisioning to scaling, 
 monitoring, and eventual decommissioning.
 
--> Currently only HVM instances are supported. Updating is currently not 
-supported.
+-> Currently HVM, VMware, AWS, Azure and BMaaS instances are supported.  We have static `config` schema for the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Azure: `config_azure`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- AWS: `config_aws`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- HVM: `config_hvm`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- VMware: `config_vmware`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- BMaaS: `config_bmaas`<br><br>
+Some general issues<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br>
+These will be addressed in a future release.
 
-## Example Usage
+-> Some general notes:<br><br>
+When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
+`network_interfaces` and any `child_virtual_networks`.  A `terraform plan` will report that no changes
+will be made.  Eventually, when all IP addresses have been assigned (this can be seen in the UI) a [refresh-only](https://developer.hashicorp.com/terraform/tutorials/state/refresh)
+`terraform plan --refresh-only` will report that one or more `network_interfaces` have changed. A subsequent
+`terraform apply --refresh-only` will update the State with the missing IP addresses.<br><br>
+`layout_size` is optional and at the moment the only supported value is `1` which is also the default.
+In other words we only support the creation of one VM per instance.  We may relax this restriction in a future release.<br><br>
+We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+If the `timeouts` settings are changed in HCL an
+`Update` will be triggered.  If the only change detected is for `timeouts` then the State will be updated with
+the new settings but no `Morpheus` `Update` API calls will be made.  The default timeout for `create`, `delete`
+`read` and `update` is 45 minutes.<br><br>
+**Update** is supported but note the following:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- **Do not** change the order of volumes or network_interfaces in HCL<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- The addition and removal of volumes is supported<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Existing volumes can have their size increased but not decreased<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- For BMaaS (bare metal) instances only datastore-backed volumes (e.g. HPE Alletra MP)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  can be added or resized; local disk / RAID volumes such as the RAID1 boot volume<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  are fixed hardware and cannot be added, resized or removed via `Update`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Network interface update is supported for Morpheus versions >= 8.1.2, for earlier<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  versions network_interfaces changes will force a new instance to be created.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; are supported for Morpheus versions >= 8.1.2, for earlier versions updates<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; will force a new instance to be created<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields or `evars`<br><br>
+We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
+can be accessed<br><br>
+The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
+The `volumes` block manages the disks provisioned as part of the instance. To instead attach an existing
+standalone HPE Alletra MP volume to a BMaaS instance, create an `hpe_morpheus_storage_volume` and export it to the
+instance with `config_alletramp_bmaas.instance_ids` (multi-attach - every node of each listed instance, requires
+`shared = true`) or to a single host with `compute_server_id`. These externally-attached (SAN) volumes are owned by
+the `hpe_morpheus_storage_volume` resource and are intentionally **not** tracked in this resource's `volumes` list, so
+they do not appear here or cause perpetual diffs.<br><br>
+When creating an instance with network bonding and/or LAGs we cannot reconcile the created list of `network_interfaces`
+with the HCL supplied.  In these cases the `connection_info` section will contain IP address(es).  To access the full
+network configuration use the `hpe_morpheus_instance` `data-source` to read back the created instance.
 
-{{ tffile "internal/subproviders/morpheus/resources/instance/example.tf" }}
+-> Some of the examples below have the following settings in their `config` blocks:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `no_agent` in static config (equivalent to `noAgent` in dynamic config) is set to `true`<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `create_user` in static config (equivalent to `createUser` in dynamic config) is set to<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  `false`<br><br>
+These settings can be changed as required.
+
+-> `affinity_group_id`, in the `config_vmware` and `config_hvm` blocks, places the instance into an
+affinity group when it is provisioned. It is create-only: the value cannot be changed once the
+instance exists, and changing it in HCL replaces the instance. On VMware the placement rule is applied
+to the cluster before the virtual machine is powered on, so the instance is placed according to the
+rule from the outset.
+
+!> **Warning** On VMware the affinity group must already contain at least one member. A vSphere DRS
+rule requires two virtual machines, so provisioning the first machine into an empty group produces a
+one-machine rule that vCenter rejects. Provisioning then fails at power on with `Error running vm`,
+after every earlier stage has succeeded. The resulting instance cannot be removed with
+`terraform destroy` — it never powered on, so stopping it fails — and has to be deleted through the
+Morpheus UI or API. Seed the group with an existing server, or provision one instance without an
+affinity group and add it to the group first.
+
+!> **Warning** On HVM, an affinity group is enforced only when the cluster the instance is provisioned
+onto has Dynamic Placement enabled — `config_hvm.dynamic_placement = true` on `hpe_morpheus_cluster`.
+It is **off by default**. With it off, the membership is recorded but no placement action is ever
+taken: the instance is never placed or moved to satisfy the rule, and the apply still succeeds, so
+nothing indicates that the group is having no effect.
+
+~> **Note** On HVM, only a `KEEP_TOGETHER` group that already has members reliably changes where an
+instance lands at creation: the instance is placed on the same host as the existing members. This was
+confirmed by pinning a member to a host the scheduler would not otherwise have picked, and observing a
+new instance follow it there. An empty group cannot affect placement either way, since there are no
+members to be placed alongside or away from.
+
+~> **Note** A `KEEP_SEPARATE` group is **not reliably applied at creation** on HVM. Across repeated
+runs of an identical configuration, an instance was placed on the same host as the existing member
+more often than not. It converges shortly afterwards instead: the cluster's placement loop detects the
+violation and live-migrates the instance to another host, observed between two and six minutes after
+provisioning, recorded as a `Move Server` process on the instance. Allow for that delay rather than
+reading the placement immediately after `terraform apply` and concluding the group was ignored.
+
+~> **Note** On HVM, an empty affinity group is accepted at provision time — there is no DRS rule to
+build, so nothing rejects it — and membership is recorded. An apply against an empty group therefore
+succeeds while demonstrating nothing.
+
+~> **Note** A cluster will often place consecutive instances on the same host of its own accord, and
+will avoid a host that is already loaded. Both effects can imitate an affinity rule. Judge placement
+against the host the scheduler chooses with no group applied, rather than assuming the group caused
+what you see.
+
+-> `config_hvm.kvm_host_id` and `config_hvm.affinity_group_id` cannot both be set; the provider rejects
+such a configuration. An affinity group silently overrides an explicit host pin, so the instance would
+land on a host chosen by the group rather than the one named by `kvm_host_id`.
+
+-> `affinity_group_id` reflects what was requested when the instance was created, not its live
+membership. Morpheus returns the value but never updates it, so it does not follow membership changes
+made elsewhere. Actual membership is reported by the `servers` attribute of the
+[`hpe_morpheus_cloud_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cloud_affinity_group)
+and [`hpe_morpheus_cluster_affinity_group`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_cluster_affinity_group)
+resources, and by the corresponding
+[cloud](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cloud_affinity_group)
+and [cluster](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cluster_affinity_group)
+data sources.
+
+## HVM Instance
+
+{{ tffile "morpheus/framework/resources/instance/example.tf" }}
+
+## HVM Instance with two networks
+
+One of these networks has a `child_virtual_networks` entry.  Note that only some network types support `child_virtual_networks`.
+The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" can be used to see which options are available.
+
+{{ tffile "morpheus/framework/resources/instance/example_twonetworks.tf" }}
+
+## HVM Instance with timeouts
+
+We support `timeouts` using the Hashicorp Framework [timeouts package](https://developer.hashicorp.com/terraform/plugin/framework/resources/timeouts).
+The following example specifies `timeouts` for `create`, `delete`, `update` and `read`.
+If the `timeouts` settings are changed in HCL an `Update` will be triggered.  If the only change
+detected is for `timeouts` then the State will be updated with the new settings but no `Morpheus` `Update` API calls
+will be made.  The default timeout for `create`, `delete`, `read` and `update` is 45 minutes
+
+{{ tffile "morpheus/framework/resources/instance/example_timeouts.tf" }}
+
+## VMware VM Instance
+
+{{ tffile "morpheus/framework/resources/instance/example_vmware.tf" }}
+
+## VMware VM Instance with Service Plan Options and Network Domain
+
+Some Service Plans have options that must be set at the time of creation of the instance.
+
+{{ tffile "morpheus/framework/resources/instance/example_vmware_sp_options.tf" }}
+
+## AWS Instance
+
+{{ tffile "morpheus/framework/resources/instance/example_aws.tf" }}
+
+## Azure Instance
+
+-> Some clouds (such as Azure) provision onto a specific subnet rather than a network. Use
+`subnet_id` in a `network_interfaces` block (or in a `child_virtual_networks` block) to target a
+subnet. `subnet_id`, `network_id` and `network_group_id` are mutually exclusive. The subnet id is
+available from the Morpheus `/api/options/zoneNetworkOptions` endpoint. `subnet_id` is read back from
+the API on refresh. The one exception is `import`: the interface list used on import does not include
+the subnet, so an imported interface reports its resolved `network_id` instead of `subnet_id`.
+
+{{ tffile "morpheus/framework/resources/instance/example_azure.tf" }}
+
+## Azure Instance with subnet
+
+This example provisions onto a specific subnet by setting `subnet_id` in the `network_interfaces`
+block instead of `network_id`. `subnet_id`, `network_id` and `network_group_id` are mutually
+exclusive. The subnet id is available from the Morpheus `/api/options/zoneNetworkOptions` endpoint.
+
+{{ tffile "morpheus/framework/resources/instance/example_azure_subnet.tf" }}
+
+## BMaaS Instance
+
+-> Note that Morpheus version `8.0.13` or later is required for BMaaS instance support.
+
+For the `root` volume, to get the appropriate `storage_type_id` use the [Morpheus cli](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00006978en_us&page=GUID-F3726B48-FFF6-4AAE-ABA4-366F626A544F.html).<br>
+```bash
+$ morpheus login -u <username> -p <password> --remote-url <morpheus-url>
+$ morpheus storage-volume-types list hpeilo-raid1
+```
+Put that `id` in the `storage_type_id` field for the `root` volume below.  Leave the other fields unchanged.
+
+{{ tffile "morpheus/framework/resources/instance/example_metal.tf" }}
+
+
+-> The `compute_servers` attribute holds the IDs of the compute servers backing the instance.
+An instance has one compute server initially and gains more when it is scaled with
+`hpe_morpheus_instance_node`. These are the values to pass to the `servers` attribute on
+`hpe_morpheus_cloud_affinity_group` or `hpe_morpheus_cluster_affinity_group` resources.
 
 {{ .SchemaMarkdown | trimspace }}

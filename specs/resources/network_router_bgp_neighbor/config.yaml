@@ -1,0 +1,94 @@
+network_router_bgp_neighbor:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed_optional
+        description: Dynamic configuration
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+    router_id:
+      int64:
+        computed_optional_required: required
+        description: The ID of the network router
+    bfd_enabled:
+      bool:
+        computed_optional_required: computed_optional
+        description: Enable BFD (Bidirectional Forwarding Detection)
+        default:
+          static: false
+    allow_as_in:
+      bool:
+        computed_optional_required: computed_optional
+        description: Allow AS-in
+        default:
+          static: false
+    password_wo:
+      string:
+        computed_optional_required: optional
+        description: Password (Write Only)
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+          - custom:
+              imports:
+                - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+              schema_definition: |-
+                modifiers.NullableStringUpdateModifier{}
+    password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: Password version. Used to determine if password_wo has been updated.
+  moves:
+    - network_router_bgp_neighbor: "" # unnest
+    # Static config blocks
+    - config.nsxtbgpneighbor_config: config_nsxt
+    - config.nsxvbgpneighbor_config: config_nsxv
+    # Generic config (dynamic fallback)
+    - template-config: config
+    - template-router_id: router_id
+    - template-bfd_enabled: bfd_enabled
+    - template-allow_as_in: allow_as_in
+    - template-password_wo: password_wo
+    - template-password_wo_version: password_wo_version
+  removes:
+    - date_created
+    - last_updated
+    - password_hash
+    - sync_source
+    - internal_id
+    - external_id
+    - ref_type
+    - ref_id
+    - provider_id
+    - password
+    - success
+  overrides:
+    id:
+      description: The ID of the BGP neighbor
+      state_for_unknown: true
+    router_id:
+      requires_replace: true
+    ip_address:
+      computed_optional_required: required
+    config:
+      conflicts_with: [config_nsxt, config_nsxv]
+    config_nsxt:
+      conflicts_with: [config_nsxv]
+    weight:
+      default: 60
+    keep_alive:
+      default: 60
+    hold_down:
+      default: 180
+    hop_limit:
+      default: 1
+    restart_mode:
+      one_of: [HELPER_ONLY, GR_AND_HELPER, DISABLE]
+      default: HELPER_ONLY
+      description: Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)
+    route_filtering_type:
+      one_of: [IPV4, IPV6]
+      default: IPV4

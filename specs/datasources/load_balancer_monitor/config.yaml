@@ -1,0 +1,120 @@
+load_balancer_monitor:
+  templates:
+    config:
+      single_nested: {}
+      computed_optional_required: computed
+    monitor:
+      single_nested: {}
+      computed_optional_required: computed
+    monitor_id:
+      int64: {}
+      computed_optional_required: computed
+    monitor_config:
+      dynamic: {}
+      computed_optional_required: computed
+
+  moves:
+    - load_balancer_monitor: "" # unnest wrapper (components/schemas/loadBalancerMonitor.yaml)
+    - template-config: config
+    - template-monitor: config.monitor
+    - template-monitor_id: config.monitor.id
+    - template-monitor_config: config.monitor_config
+
+  removes:
+    # API response fields (components/schemas/successMessage.yaml)
+    - success
+    # Fields not returned by GET API
+    - extra_config
+    - partition
+    # Fields not useful in a data source context
+    - alias_address
+    - created_by
+    - date_created
+    - disabled_data
+    - last_updated
+    - load_balancer
+    - monitor_adaptive
+    - monitor_password
+    - monitor_password_hash
+    - monitor_reverse
+    - monitor_source
+    - monitor_transparent
+
+  overrides:
+    id:
+      description: The ID of the load balancer monitor
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+      at_least_one_of: [id, name]
+    load_balancer_id:
+      description: The ID of the load balancer associated with the monitor
+      computed_optional_required: required
+    name:
+      description: The name of the load balancer monitor
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    description:
+      description: A description of the load balancer monitor
+    monitor_type:
+      description: >-
+        The monitor protocol type. NSX-T values: http, https, icmp, passive,
+        tcp, udp (returned as profile names, e.g. LBHttpMonitorProfile).
+        NSX-V values: dns, http, https, ldap, mssql, tcp, udp.
+    code:
+      description: The internal code identifier for the monitor
+    category:
+      description: The category of the monitor
+    visibility:
+      description: The visibility of the monitor (e.g. public, private)
+    enabled:
+      description: Whether the monitor is enabled
+    status:
+      description: The current status of the monitor
+    status_message:
+      description: A message providing additional status details
+    status_date:
+      description: The date of the last status change
+    external_id:
+      description: The external identifier of the monitor in the load balancer provider
+    internal_id:
+      description: The internal identifier of the monitor
+    monitor_interval:
+      description: The interval in seconds at which the monitor checks target health
+    monitor_timeout:
+      description: The maximum time in seconds to wait for a health check response before marking as failed
+    send_data:
+      description: The request body sent to the target during health checks
+    send_version:
+      description: The HTTP protocol version used in health check requests (e.g. HTTP/1.0, HTTP/1.1)
+    send_type:
+      description: The HTTP method for the health check request (e.g. GET, POST, HEAD)
+    receive_data:
+      description: The expected response body string to validate in the health check response
+    receive_code:
+      description: The expected HTTP response status codes for a successful health check (e.g. 200,201,204)
+    monitor_username:
+      description: The username for authenticated health checks
+    monitor_destination:
+      description: The target path or URL for the health check (e.g. /health)
+    fall_count:
+      description: The number of consecutive failed health checks before marking the target as down
+    rise_count:
+      description: The number of consecutive successful health checks before marking the target as up
+    alias_port:
+      description: An alternative port used for health checks if different from the target port
+    data_length:
+      description: The length in bytes of the data payload for ICMP echo requests
+    max_retry:
+      description: The number of retries before the health check is considered failed
+    config:
+      description: Configuration object with parameters that vary by monitor type
+      computed_optional_required: computed
+    config.monitor:
+      description: Parent monitor reference
+      computed_optional_required: computed
+    config.monitor.id:
+      description: The ID of the parent monitor
+      computed_optional_required: computed
+    config.monitor_config:
+      description: Free-form monitor configuration content
+      computed_optional_required: computed

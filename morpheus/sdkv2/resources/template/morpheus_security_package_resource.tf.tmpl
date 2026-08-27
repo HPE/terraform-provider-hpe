@@ -1,0 +1,7 @@
+resource "hpe_morpheus_security_package" "tf_example_security_package" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  labels      = {{.Labels}}
+  enabled     = {{.Enabled}}
+  url         = "{{.Url}}"
+}

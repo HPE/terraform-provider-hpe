@@ -1,0 +1,106 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+//go:build sweep
+
+package sweep
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+)
+
+const sweeperName = "hpe_morpheus_security_group_rule"
+
+// securityGroupRuleSweepItem pairs a rule with its parent security group ID.
+// RemoveSecurityGroupRules takes the security group ID as float32 (SDK quirk).
+type securityGroupRuleSweepItem struct {
+	securityGroupID float32
+	id              int64
+	name            string
+}
+
+func init() {
+	testsweep.RegisterTypedAPISweeper(
+		sweeperName,
+		// List security group rule resources.
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]securityGroupRuleSweepItem,
+			*http.Response,
+			error,
+		) {
+			sgResp, hresp, err := client.SecurityGroupsAPI.ListSecurityGroups(ctx).Execute()
+			if err != nil {
+				return nil, hresp, err
+			}
+
+			var items []securityGroupRuleSweepItem
+
+			for _, sg := range sgResp.SecurityGroups {
+				sgID, ok := getsafe.GetOk(sg.Id)
+				if !ok || sgID == nil {
+					continue
+				}
+
+				ruleResp, _, err := client.SecurityGroupsAPI.
+					ListSecurityGroupRules(ctx, *sgID).Execute()
+				if err != nil || ruleResp == nil {
+					continue
+				}
+
+				for _, rule := range ruleResp.Rules {
+					id, ok := getsafe.GetOk(rule.Id)
+					if !ok || id == nil {
+						continue
+					}
+
+					if !rule.Name.IsSet() {
+						continue
+					}
+
+					name := rule.Name.Get()
+					if name == nil {
+						continue
+					}
+
+					items = append(items, securityGroupRuleSweepItem{
+						securityGroupID: float32(*sgID),
+						id:              *id,
+						name:            *name,
+					})
+				}
+			}
+
+			return items, hresp, nil
+		},
+		// Is this a test security group rule?
+		func(item securityGroupRuleSweepItem) bool {
+			return strings.HasPrefix(item.name, testsweep.TestResourcePrefix)
+		},
+		// Delete the test security group rule.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item securityGroupRuleSweepItem,
+		) (*http.Response, error) {
+			if item.id == 0 {
+				return nil, fmt.Errorf("could not get ID")
+			}
+
+			_, hresp, err := client.SecurityGroupsAPI.
+				RemoveSecurityGroupRules(ctx, item.id, item.securityGroupID).Execute()
+
+			return hresp, err
+		},
+		testsweep.WithIgnoreListStatuses[securityGroupRuleSweepItem](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
+	)
+}

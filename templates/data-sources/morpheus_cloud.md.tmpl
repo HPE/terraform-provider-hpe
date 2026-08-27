@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -12,8 +12,8 @@ Clouds are integrations or connections to public, private, hybrid clouds, or bar
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/datasources/cloud/example-id.tf" }}
+{{ tffile "examples/data-sources/morpheus_cloud/example-id.tf" }}
 
-{{ tffile "internal/subproviders/morpheus/datasources/cloud/example-name.tf" }}
+{{ tffile "examples/data-sources/morpheus_cloud/example-name.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

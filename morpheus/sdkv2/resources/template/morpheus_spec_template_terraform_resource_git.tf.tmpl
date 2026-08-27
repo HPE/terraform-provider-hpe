@@ -1,0 +1,7 @@
+resource "hpe_morpheus_spec_template_terraform" "tfexample_terraform_spec_terraform_git" {
+  name          = "{{.Name}}"
+  source_type   = "{{.SourceType}}"
+  repository_id = {{.RepositoryId}}
+  version_ref   = "{{.VersionRef}}"
+  spec_path     = "{{.SpecPath}}"
+}

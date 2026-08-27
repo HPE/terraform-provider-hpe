@@ -1,0 +1,6 @@
+resource "hpe_morpheus_setting_monitoring" "example" {
+  morpheus_auto_create_checks         = {{.MorpheusAutoCreateChecks}}
+  morpheus_availability_time_frame    = {{.MorpheusAvailabilityTimeFrame}}
+  morpheus_availability_precision     = {{.MorpheusAvailabilityPrecision}}
+  morpheus_default_check_interval     = {{.MorpheusDefaultCheckInterval}}
+}

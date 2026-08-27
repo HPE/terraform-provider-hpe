@@ -1,0 +1,17 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+-> The `cloud_id` and `type_id` filters are applied server-side. The `filter` block applies client-side filtering including `dynamic_placement_mode`, which is extracted from each cluster's config and exposed as a typed attribute for reliable filtering.
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_clusters/example.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

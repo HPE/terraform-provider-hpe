@@ -1,0 +1,7 @@
+data "hpe_morpheus_groups" "example" {
+  sort_ascending = {{.SortAscending}}
+  filter {
+    name   = "{{.Name}}"
+    values = {{.Values}}
+  }
+}

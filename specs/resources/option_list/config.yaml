@@ -1,0 +1,46 @@
+option_list:
+  description: "Manages a Morpheus Library Option Type List resource."
+  moves:
+    - option_type_list: ""           # unnest wrapper (components/schemas/optionTypeListCreate.yaml)
+  removes:
+    - config                         # (components/schemas/optionTypeListCreate.yaml)
+    - credential                     # (components/schemas/optionTypeListCreate.yaml)
+    - ignore_sslerrors               # (components/schemas/optionTypeListCreate.yaml)
+    - initial_dataset                # (components/schemas/optionTypeListCreate.yaml)
+    - labels                         # (components/schemas/optionTypeListCreate.yaml)
+    - option_types                   # (components/schemas/optionTypeList.yaml) read-only
+    - request_script                 # (components/schemas/optionTypeListCreate.yaml)
+    - service_password               # (components/schemas/optionTypeListCreate.yaml)
+    - service_username               # (components/schemas/optionTypeListCreate.yaml)
+    - source_method                  # (components/schemas/optionTypeListCreate.yaml)
+    - success                        # (components/schemas/successId.yaml)
+    - translation_script             # (components/schemas/optionTypeListCreate.yaml)
+  overrides:
+    api_type:
+      computed_optional_required: optional
+      description: The API type of the option list.
+    description:
+      computed_optional_required: optional
+      description: The description of the option type list.
+    id:
+      computed_optional_required: computed
+      description: The ID of the option type list.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the option type list.
+    real_time:
+      computed_optional_required: computed_optional
+      description: Whether the option list is fetched in real time.
+      default: false
+    source_url:
+      computed_optional_required: optional
+      description: The source URL for the option list.
+    type:
+      computed_optional_required: optional
+      description: The type of the option list (rest, manual, ldap, api).
+      remove_default: true
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the option type list.
+      default: "private"

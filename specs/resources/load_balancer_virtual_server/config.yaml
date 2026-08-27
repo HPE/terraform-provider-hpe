@@ -1,0 +1,204 @@
+load_balancer_virtual_server:
+  templates:
+    config:
+      dynamic:
+        description: Generic virtual server configuration object. Settings vary by load balancer type.
+        computed_optional_required: optional
+    int64_requires_replace:
+      int64:
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: |-
+                     int64planmodifier.RequiresReplace(), // force new
+    pool_id:
+      int64:
+        computed_optional_required: optional
+        description: The ID of the load balancer pool to assign to this virtual server.
+    config_nsxt:
+      single_nested:
+        computed_optional_required: optional
+        description: NSX-T virtual server configuration
+    config_nsxt_application_profile:
+      int64:
+        computed_optional_required: optional
+        description: The Load Balancer Application Profile ID (`NetworkLoadBalancerProfile`). Use `/api/options/nsxt/nsxtLBVirtualServerApplicationProfile?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options.
+    config_nsxt_persistence:
+      string:
+        computed_optional_required: optional
+        description: "Session persistence mode. Available values depend on protocol. For HTTP: `SOURCE_IP`, `COOKIE`, or empty string (disabled). For TCP/UDP: `SOURCE_IP` or empty string (disabled). Use `/api/options/nsxt/nsxtLBPersistence?loadBalancerId={id}&loadBalancerInstance.vipProtocol={protocol}` to list available options."
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: |-
+                stringvalidator.OneOf("SOURCE_IP", "COOKIE", "")
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: |-
+                validators.RequiresNonEmptyStringAlsoRequiresInt64At("persistence_profile")
+    config_nsxt_persistence_profile:
+      int64:
+        computed_optional_required: optional
+        description: The persistence profile ID (`NetworkLoadBalancerProfile`). Required when `persistence` is set to a non-empty value (`SOURCE_IP` or `COOKIE`). Use `/api/options/nsxt/nsxtLBPersistenceProfile?loadBalancerId={id}&config.persistence={value}` to list available options.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                int64validator.AlsoRequires(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("persistence"),
+                }...)
+    config_nsxt_ssl_client_profile:
+      int64:
+        computed_optional_required: optional
+        description: The SSL client profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBClientSSlProfiles?loadBalancerId={id}` to list available options.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: |-
+                validators.RequiresNonZeroInt64At("ssl_cert")
+    config_nsxt_ssl_server_profile:
+      int64:
+        computed_optional_required: optional
+        description: The SSL server profile ID (`NetworkLoadBalancerProfile`). Only applicable when `ssl_server_cert` is set to a non-zero value. Use `/api/options/nsxt/nsxtLBServerSSlProfiles?loadBalancerId={id}` to list available options.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: |-
+                validators.RequiresNonZeroInt64At("ssl_server_cert")
+  moves:
+    - load_balancer_instance: "" # unnest wrapper (components/schemas/loadBalancerInstance.yaml)
+    - template-config: config         # replace generic oneOf shell with dynamic type
+    - template-int64_requires_replace: load_balancer_id  # replace Number with Int64 + RequiresReplace
+    - template-pool_id: pool_id      # flat pool ID replaces nested pool object
+    - template-config_nsxt: config_nsxt  # NSX-T config as explicit template (supports validators)
+    - template-config_nsxt_application_profile: config_nsxt.application_profile
+    - template-config_nsxt_persistence: config_nsxt.persistence
+    - template-config_nsxt_persistence_profile: config_nsxt.persistence_profile
+    - template-config_nsxt_ssl_client_profile: config_nsxt.ssl_client_profile
+    - template-config_nsxt_ssl_server_profile: config_nsxt.ssl_server_profile
+  removes:
+    - success                # API response wrapper
+    - pool                   # replaced by pool_id
+  overrides:
+    id:
+      state_for_unknown: true
+    load_balancer_id:
+      computed_optional_required: required
+      description: The ID of the load balancer this virtual server belongs to
+    vip_name:
+      computed_optional_required: computed_optional
+      description: VIP Name
+    description:
+      computed_optional_required: optional
+      description: Description
+    vip_address:
+      computed_optional_required: computed_optional
+      description: VIP Address. Required when `vip_pool` is not set.
+    vip_port:
+      computed_optional_required: computed_optional
+      description: VIP Port
+    vip_protocol:
+      computed_optional_required: computed_optional
+      description: "VIP Protocol. For NSX-T load balancers, this is the virtual server type. Allowed values: `http`, `tcp`, `udp`."
+      one_of: [http, tcp, udp]
+    vip_hostname:
+      computed_optional_required: optional
+      description: VIP Hostname
+    vip_pool:
+      computed_optional_required: optional
+      description: Network Pool ID for automatic VIP address allocation. When set, a VIP address will be leased from this pool and `vip_address` does not need to be specified.
+    ssl_cert:
+      computed_optional_required: optional
+      description: SSL Client Certificate ID. Use `0` for none.
+    ssl_server_cert:
+      computed_optional_required: optional
+      description: SSL Server Certificate ID. Use `0` for none.
+    config:
+      computed_optional_required: optional
+      description: Generic virtual server configuration object. Settings vary by load balancer type.
+      requires_replace: true
+      conflicts_with: [config_nsxt] # mutually exclusive with NSX-T config
+    config_nsxt:
+      requires_replace: true
+      conflicts_with: [config] # mutually exclusive with generic config
+    # Read-only computed attributes (components/schemas/loadBalancerInstance.yaml)
+    load_balancer:
+      computed_optional_required: computed
+      description: The parent load balancer
+    instance:
+      computed_optional_required: computed
+    internal_id:
+      computed_optional_required: computed
+    external_id:
+      computed_optional_required: computed
+    date_created:
+      computed_optional_required: computed
+    last_updated:
+      computed_optional_required: computed
+    active:
+      computed_optional_required: computed
+    sticky:
+      computed_optional_required: computed
+    ssl_enabled:
+      computed_optional_required: computed
+    external_address:
+      computed_optional_required: computed
+    backend_port:
+      computed_optional_required: computed
+    vip_type:
+      computed_optional_required: computed_optional
+      state_for_unknown: true
+      description: >-
+        The VIP type. This is primarily used by NSX Advanced Load Balancer (AVI)
+        to distinguish between normal, parent (shared), and child VIPs. It has
+        no effect for NSX-T load balancers and will be null.
+      requires_replace: true
+    vip_scheme:
+      computed_optional_required: computed
+    vip_mode:
+      computed_optional_required: computed
+    vip_sticky:
+      computed_optional_required: computed
+    vip_balance:
+      computed_optional_required: computed
+    service_port:
+      computed_optional_required: computed
+    source_address:
+      computed_optional_required: computed
+    ssl_mode:
+      computed_optional_required: computed
+    ssl_redirect_mode:
+      computed_optional_required: computed
+    vip_shared:
+      computed_optional_required: computed
+    vip_direct_address:
+      computed_optional_required: computed
+    server_name:
+      computed_optional_required: computed
+    pool_name:
+      computed_optional_required: computed
+    removing:
+      computed_optional_required: computed
+    vip_source:
+      computed_optional_required: computed
+    extra_config:
+      computed_optional_required: computed
+    service_access:
+      computed_optional_required: computed
+    network_id:
+      computed_optional_required: computed
+    subnet_id:
+      computed_optional_required: computed
+    external_port_id:
+      computed_optional_required: computed
+    status:
+      computed_optional_required: computed
+    vip_status:
+      computed_optional_required: computed

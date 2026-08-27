@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -12,9 +12,13 @@ Service Plans in HPE Morpheus Enterprise determine the memory, storage, and core
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/datasources/serviceplan/example-id.tf" }}
+{{ tffile "examples/data-sources/morpheus_service_plan/example-id.tf" }}
 
-{{ tffile "internal/subproviders/morpheus/datasources/serviceplan/example-name-provision.tf" }}
+{{ tffile "examples/data-sources/morpheus_service_plan/example-name-provision.tf" }}
+
+When several service plans share a name across clouds or regions (e.g. Azure), set `cloud_id` to the cloud the plan must be available in to select it unambiguously:
+
+{{ tffile "examples/data-sources/morpheus_service_plan/example-name-provision-cloud.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 

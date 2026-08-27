@@ -1,0 +1,161 @@
+datastore:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: Generic configuration options for the datastore, varies based on the type of datastore.
+    configFromAPI:
+      dynamic:
+        computed_optional_required: computed
+        description: Configuration options for the datastore as returned from the API.
+    configAlletraRansomware:
+      bool:
+        computed_optional_required: computed_optional
+        description: Enable ransomware protection for this datastore.
+    datastoreTypeParent:
+      single_nested:
+        computed_optional_required: required
+        description: The type of datastore.
+    datastoreTypeId:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the datastore type. Optional - the code is preferred. When omitted it is resolved from the code and populated after apply.
+    datastoreTypeCode:
+      string:
+        computed_optional_required: required
+        description: The code of the datastore type.
+  moves:
+    - datastore: "" # unnest datastore
+    - account_id: tenant_id
+    - config.nfsdatastore_configuration: config_nfs
+    - config.gfs2datastore_configuration: config_gfs2
+    - config.generic_datastore_configuration: config
+    - config.alletra_mphvmdatastore_configuration: config_alletramp_hvm
+    - config.alletra_mpbmaasdatastore_configuration: config_alletramp_bmaas
+    - template-configAlletraRansomware: config_alletramp_hvm.enable_ransomware
+    - template-datastoreTypeParent: datastore_type
+    - template-datastoreTypeId: datastore_type.id
+    - template-datastoreTypeCode: datastore_type.code
+    - template-configFromAPI: config_from_api
+    - template-config: config
+    - ref_id: associated_resource_id
+    - ref_type: associated_resource_type
+    - zone: cloud
+    - zone_pool: resource_pool
+    - resource_permissions.sites: resource_permissions.groups
+    - resource_permissions.account: resource_permissions.tenant
+    - tenant_permissions.accounts: tenants
+    - ComputeZone: Cloud
+    - ComputeServerGroup: Cluster
+  removes:
+    - success
+    - tenant_permissions
+    - heartbeat_target
+    # Removing this for now since I can't successfully test it
+    - config_gfs2
+    - config_nfs.source_version.default
+    - resource_permissions.morpheus_resource_type
+    - resource_permissions.morpheus_resource_id
+    - resource_permissions.tenant
+    - config_alletramp_hvm.enableransomware
+  overrides:
+    # config_generic:
+    #   description: Generic configuration options for the datastore, varies based on the type of datastore.
+    # conflicts_with: [config_nfs, config_gfs2]
+    associated_resource_type:
+      one_of: [Cloud, Cluster]
+      description: Type of the resource this datastore is associated with, can be 'Cloud' or 'Cluster'
+      computed_optional_required: required
+      requires_replace: true
+    associated_resource_id:
+      description: The ID of the resource this datastore is associated with, e.g. Cloud, Cluster
+      computed_optional_required: required
+      requires_replace: true
+    cloud:
+      description: The Cloud this datastore is associated with
+      computed_optional_required: computed
+    resource_pool:
+      description: The resource pool the datastore is created in. Required for HPE Alletra MP Bare Metal (BMaaS) datastores.
+      computed_optional_required: computed_optional
+    resource_pool.id:
+      computed_optional_required: computed_optional
+    resource_permissions:
+      computed_optional_required: optional
+    resource_permissions.groups:
+      computed_optional_required: optional
+    resource_permissions.groups.id:
+      computed_optional_required: optional
+    resource_permissions.groups.name:
+      computed_optional_required: optional
+    resource_permissions.groups.code:
+      computed_optional_required: optional
+    resource_permissions.all:
+      computed_optional_required: optional
+    resource_permissions.default_target:
+      computed_optional_required: optional
+    resource_permissions.default_store:
+      computed_optional_required: optional
+    resource_permissions.all_groups:
+      computed_optional_required: optional
+    resource_permissions.can_manage:
+      computed_optional_required: optional
+    resource_permissions.plans:
+      computed_optional_required: optional
+    resource_permissions.plans.id:
+      computed_optional_required: optional
+    resource_permissions.plans.name:
+      computed_optional_required: optional
+    resource_permissions.plans.code:
+      computed_optional_required: optional
+    resource_permissions.all_plans:
+      computed_optional_required: optional
+    config_nfs:
+      conflicts_with: [config, config_alletramp_hvm, config_alletramp_bmaas]
+      computed_optional_required: optional
+      requires_replace: true
+    #config_gfs2:
+    #  conflicts_with: [config_nfs, config]
+    #  computed_optional_required: optional
+    #  requires_replace: true
+    #  at_least_one_of: [config_nfs, config_gfs2, config]
+    config_nfs.source_version:
+      one_of: [3, 4]
+      description: NFS version to use when mounting the export, either 3 or 4
+      computed_optional_required: optional
+    config:
+      conflicts_with: [config_nfs, config_alletramp_hvm, config_alletramp_bmaas]
+      computed_optional_required: optional
+      requires_replace: true
+      at_least_one_of: [config_nfs, config, config_alletramp_hvm, config_alletramp_bmaas]
+    config_alletramp_hvm:
+      description: Alletra MP HVM Datastore Configuration
+      conflicts_with: [config_nfs, config, config_alletramp_bmaas]
+      computed_optional_required: optional
+      requires_replace: true
+    config_alletramp_hvm.protocol_type:
+      one_of: [iSCSI, FC]
+      description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    config_alletramp_bmaas:
+      description: HPE Alletra MP Bare Metal (BMaaS) Datastore Configuration
+      conflicts_with: [config_nfs, config, config_alletramp_hvm]
+      computed_optional_required: optional
+      requires_replace: true
+    config_alletramp_bmaas.protocol_type:
+      one_of: [iSCSI, FC]
+      description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    locations:
+      computed_optional_required: computed
+    visibility:
+      computed_optional_required: computed_optional
+    default_store:
+      computed_optional_required: computed_optional
+    tenants:
+      computed_optional_required: optional
+    tenants.id:
+      computed_optional_required: optional
+    tenants.name:
+      computed_optional_required: optional
+    tenants.default_store:
+      computed_optional_required: optional
+    tenants.default_target:
+      computed_optional_required: optional

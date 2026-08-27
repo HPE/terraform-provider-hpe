@@ -1,0 +1,7 @@
+resource "hpe_morpheus_group" "example" {
+  name = "{{.Name}}"
+  location = "{{.Location}}"
+  code = "{{.Code}}"
+  labels = ["{{.Label}}1", "{{.Label}}2"]
+  cloud_ids = [{{.GroupId1}}]
+}

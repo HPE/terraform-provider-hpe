@@ -1,0 +1,7 @@
+resource "hpe_morpheus_instance_type_layout" "example" {
+  instance_type_id = {{.InstanceTypeId}}
+  name             = "{{.Name}}"
+  labels           = {{.Labels}}
+  version          = "{{.Version}}"
+  technology       = "{{.Technology}}"
+}

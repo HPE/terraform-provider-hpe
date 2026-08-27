@@ -1,0 +1,11 @@
+resource "hpe_morpheus_ip_pool_ipv4" "tf_example_ipv4_pool" {
+  name = {{.Name}}
+  ip_range {
+    starting_address = {{.StartingAddress1}}
+    ending_address   = {{.EndingAddress1}}
+  }
+  ip_range {
+    starting_address = {{.StartingAddress2}}
+    ending_address   = {{.EndingAddress2}}
+  }
+}

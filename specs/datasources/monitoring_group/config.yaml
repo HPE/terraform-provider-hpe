@@ -1,0 +1,53 @@
+monitoring_group:
+  moves:
+    - check_group: ""                # unnest wrapper (GET /api/monitoring/groups/{id})
+  removes:
+    - account                        # (checkGroup) read-only nested object (use tenant DS)
+    - availability                   # (checkGroup) transient runtime metric
+    - checks                         # (checkGroup) read-only nested array (use monitoring_check DS)
+    - create_incident                # (checkGroup) transient runtime state
+    - created_by                     # (checkGroup) read-only nested object
+    - health                         # (checkGroup) transient runtime metric
+    - history                        # (checkGroup) transient runtime metric
+    - instance                       # (checkGroup) read-only nested object
+    - last_check_status              # (checkGroup) transient runtime metric
+    - last_error                     # (checkGroup) transient runtime metric
+    - last_error_date                # (checkGroup) transient runtime metric
+    - last_metric                    # (checkGroup) transient runtime metric
+    - last_run_date                  # (checkGroup) transient runtime metric
+    - last_success_date              # (checkGroup) transient runtime metric
+    - last_timer                     # (checkGroup) transient runtime metric
+    - last_warning_date              # (checkGroup) transient runtime metric
+    - muted                          # (checkGroup) transient runtime state
+    - outage_time                    # (checkGroup) transient runtime metric
+  overrides:
+    id:
+      description: The ID of the monitoring group.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the monitoring group.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    check_type:
+      description: The check type object associated with the group.
+    check_type.code:
+      description: The code of the check type.
+    check_type.id:
+      description: The ID of the check type.
+    check_type.metric_name:
+      description: The metric name of the check type.
+    check_type.name:
+      description: The name of the check type.
+    date_created:
+      description: The date the monitoring group was created.
+    description:
+      description: The description of the monitoring group.
+    in_uptime:
+      description: Whether the group affects account-wide availability calculations.
+    last_updated:
+      description: The date the group was last updated.
+    min_happy:
+      description: Minimum number of checks that must be happy to keep the group healthy.
+    severity:
+      description: Maximum severity level this group can incur on an incident when failing.

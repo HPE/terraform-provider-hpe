@@ -1,12 +1,16 @@
 ---
 page_title: "hpe_morpheus_network Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
 # hpe_morpheus_network (Resource)
 
 
+
+### Networks vs Subnets
+
+For most network types in Morpheus, the network itself is the deployable unit -- there is no separate subnet creation step. Only Azure and Google support a two-level model where subnets can be created independently within a network using the [`hpe_morpheus_subnet`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/resources/morpheus_subnet) resource. For all other types (NSX-T, OpenStack, Amazon, OVS, VCD, ACI, etc.), use this resource to create the full network object including its addressing configuration.
 
 ~> **Note** Some network types (for example, Amazon) update the network `name`
 and some other attributes a few minutes after creation. This requires using a
@@ -36,108 +40,39 @@ resource "hpe_morpheus_network" "a" {
 ### AWS Network
 
 ```terraform
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-aws-test"
+data "hpe_morpheus_cloud" "example" {
+  name = "AWS Cloud"
 }
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "AWS subnet"
+data "hpe_morpheus_group" "example" {
+  name = "Example Group"
 }
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 207
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 36
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.200.99.0/24"
-}
-
-variable "zone_pool_id" {
-  description = "Zone pool id"
-  type        = number
-  default     = 12329
-}
-
-variable "config_assign_public_ip" {
-  description = "Assign public IP setting for network config"
-  type        = bool
-  default     = true
-}
-
-variable "config_availability_zone" {
-  description = "Availability zone setting for network config"
-  type        = string
-  default     = "us-west-1a"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = true
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
+data "hpe_morpheus_tenant" "example" {
+  name = "Master Tenant"
 }
 
 resource "hpe_morpheus_network" "aws" {
-  name        = var.name
-  description = var.description
-  cloud_id    = var.cloud_id
-  pool_id     = var.pool_id
-  group_id    = var.group_id
-  type_id     = var.type_id
+  name        = "example-terraform-aws"
+  description = "AWS subnet"
+  cloud_id    = data.hpe_morpheus_cloud.example.id
+  pool_id     = 1
+  group_id    = data.hpe_morpheus_group.example.id
+  type_id     = 36
   config = {
-    assignPublicIp   = var.config_assign_public_ip
-    availabilityZone = var.config_availability_zone
+    assignPublicIp   = true
+    availabilityZone = "us-west-1a"
   }
-  active                     = var.active
-  dhcp_server                = var.dhcp_server
-  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
-  tenant_ids                 = [1]
-  visibility                 = var.visibility
-  cidr                       = var.cidr
-  zone_pool_id               = var.zone_pool_id
+  active                     = true
+  dhcp_server                = true
+  appliance_url_proxy_bypass = true
+  tenant_ids = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+  visibility   = "private"
+  cidr         = "10.200.99.0/24"
+  zone_pool_id = 12329
+  labels       = ["terraform", "example"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]
@@ -147,424 +82,209 @@ resource "hpe_morpheus_network" "aws" {
 
 ### Azure Network
 
+The `config` block for Azure networks (VNets) accepts the following properties:
+
+| Config Key | Required | Description |
+|---|---|---|
+| `resourceGroupId` | Yes | The ID of the Azure Resource Group to deploy the VNet into |
+| `subnetName` | Yes | Name of the default subnet created with the VNet |
+| `subnetCidr` | Yes | CIDR for the default subnet (e.g. `192.168.1.0/24`). Must be contained within the VNet's `cidr` address space |
+
+~> **Note** The Azure region is automatically derived from the Cloud zone or Resource Group — it is not specified in the config block.
+
 ```terraform
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-network-all-attrs"
+data "hpe_morpheus_cloud" "example" {
+  name = "Azure Cloud"
 }
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "Network with all attributes set"
+data "hpe_morpheus_group" "example" {
+  name = "Example Group"
 }
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 4617
+data "hpe_morpheus_tenant" "example" {
+  name = "Master Tenant"
 }
 
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 35
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.100.0.0/16"
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "public"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = true
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = false
-}
-
-variable "config_resource_group_id" {
-  description = "Resource Group ID for network config"
-  type        = string
-  default     = "all-attrs-resource-group"
-}
-
-variable "config_subnet_name" {
-  description = "Subnet name for network config"
-  type        = string
-  default     = "all-attrs-subnet"
-}
-
-variable "config_subnet_cidr" {
-  description = "Subnet CIDR for network config"
-  type        = string
-  default     = "10.100.1.0/24"
-}
-
-variable "config_location" {
-  description = "Location for network config"
-  type        = string
-  default     = "eastus"
-}
-
-variable "config_additional_field" {
-  description = "Additional config field"
-  type        = string
-  default     = "test-value"
-}
-
-resource "hpe_morpheus_network" "all_attrs" {
-  name                       = var.name
-  description                = var.description
-  cloud_id                   = var.cloud_id
-  pool_id                    = var.pool_id
-  group_id                   = var.group_id
-  type_id                    = var.type_id
-  cidr                       = var.cidr
-  visibility                 = var.visibility
-  active                     = var.active
-  dhcp_server                = var.dhcp_server
-  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
+resource "hpe_morpheus_network" "azure" {
+  name                       = "example-terraform-azure"
+  description                = "Azure network"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = 1
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = 35
+  cidr                       = "10.100.0.0/16"
+  visibility                 = "public"
+  active                     = true
+  dhcp_server                = true
+  appliance_url_proxy_bypass = false
+  labels                     = ["terraform", "example"]
   config = {
-    "resourceGroupId" = var.config_resource_group_id
-    "subnetName"      = var.config_subnet_name
-    "subnetCidr"      = var.config_subnet_cidr
-    "location"        = var.config_location
-    "additionalField" = var.config_additional_field
+    "resourceGroupId" = all-attrs-resource-group
+    "subnetName"      = "all-attrs-subnet"
+    "subnetCidr"      = "10.100.1.0/24"
   }
-  tenant_ids = [1, 2, 3]
+  tenant_ids = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
 }
 ```
 
 ### GCP Network
 
 ```terraform
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "TestAccMorpheusNetworkResourceCreateGcp"
+data "hpe_morpheus_cloud" "example" {
+  name = "Google Cloud"
 }
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "GCP network"
+data "hpe_morpheus_group" "example" {
+  name = "Examle Group"
 }
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 6
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 8
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 38
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.0.0.0/8"
-}
-
-variable "zone_pool_id" {
-  description = "Zone pool id"
-  type        = number
-  default     = 85990
-}
-
-variable "config_mtu" {
-  description = "MTU setting for network config"
-  type        = string
-  default     = "1460"
-}
-
-variable "config_auto_create" {
-  description = "Auto create setting for network config"
-  type        = bool
-  default     = true
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = false
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
+data "hpe_morpheus_tenant" "example" {
+  name = "Master Tenant"
 }
 
 resource "hpe_morpheus_network" "gcp" {
-  name        = var.name
-  description = var.description
-  cloud_id    = var.cloud_id
-  pool_id     = var.pool_id
-  group_id    = var.group_id
-  type_id     = var.type_id
+  name        = "example-terraform-gcp"
+  description = "GCP network"
+  cloud_id    = data.hpe_morpheus_cloud.example.id
+  pool_id     = 1
+  group_id    = data.hpe_morpheus_group.example.id
+  type_id     = 38
   config = {
-    mtu        = var.config_mtu
-    autoCreate = var.config_auto_create
+    mtu        = "1460"
+    autoCreate = true
   }
-  active                     = var.active
-  dhcp_server                = var.dhcp_server
-  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
-  tenant_ids                 = [1]
-  visibility                 = var.visibility
-  cidr                       = var.cidr
-  zone_pool_id               = var.zone_pool_id
+  active                     = true
+  dhcp_server                = false
+  appliance_url_proxy_bypass = true
+  tenant_ids = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+  visibility   = "private"
+  cidr         = "10.0.0.0/8"
+  zone_pool_id = 85990
+  labels       = ["terraform", "example"]
+}
+```
+
+### NSX-T Segment
+
+NSX-T segments are created as networks in Morpheus (type code `nsxtLogicalSwitch`). The `config` block accepts the following properties:
+
+| Config Key | Required | Description |
+|---|---|---|
+| `connectedGateway` | Yes | Connectivity path to the Tier-1 gateway (e.g. `/infra/tier-1s/my-gw`) |
+| `vlanIDs` | No | Comma-separated VLAN IDs for VLAN-backed segments. Leave empty for overlay segments |
+| `subnetIpManagementType` | No | DHCP type: `dhcpLocal`, `gatewayDhcp`, `dhcpRelay`, or empty for no DHCP |
+| `subnetIpServerId` | No | Path to the DHCP server or relay (required when `subnetIpManagementType` is set) |
+| `subnetDhcpServerAddress` | No | DHCP server address in CIDR format (e.g. `172.16.10.2/24`). Required for `dhcpLocal` |
+| `dhcpRange` | No | DHCP IP range (e.g. `172.16.10.100-172.16.10.200`) |
+| `subnetDhcpLeaseTime` | No | DHCP lease time in seconds (default `86400`) |
+
+~> **Note** The top-level `cidr` and `gateway` fields define the segment's subnet addressing. NSX-T subnets are not created separately -- the segment itself is the network object in Morpheus.
+
+```terraform
+data "hpe_morpheus_cloud" "nsxt" {
+  name = "NSX-T Cloud"
+}
+
+data "hpe_morpheus_group" "example" {
+  name = "Example Group"
+}
+
+resource "hpe_morpheus_network" "nsxt_segment" {
+  name         = "example-terraform-nsxt-segment"
+  display_name = "Example NSX-T Segment"
+  description  = "NSX-T overlay segment managed by Terraform"
+  cloud_id     = data.hpe_morpheus_cloud.nsxt.id
+  group_id     = data.hpe_morpheus_group.example.id
+  type_id      = 7
+  cidr         = "172.16.10.0/24"
+  gateway      = "172.16.10.1"
+  active       = true
+  dhcp_server  = true
+  config = {
+    "connectedGateway"        = "/infra/tier-1s/my-tier1-gw"
+    "vlanIDs"                 = ""
+    "subnetIpManagementType"  = "dhcpLocal"
+    "subnetDhcpServerAddress" = "172.16.10.2/24"
+    "dhcpRange"               = "172.16.10.100-172.16.10.200"
+    "subnetDhcpLeaseTime"     = "86400"
+  }
 }
 ```
 
 ### Host Network
 
 ```terraform
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "terraform-host-network"
+data "hpe_morpheus_cloud" "example" {
+  name = "Standard Cloud"
 }
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "A test host network"
+data "hpe_morpheus_group" "example" {
+  name = "Example Group"
 }
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 17
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 1
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id"
-  type        = number
-  default     = 1
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.0.0.0/8"
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "private"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = false
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
+data "hpe_morpheus_tenant" "example" {
+  name = "Master Tenant"
 }
 
 resource "hpe_morpheus_network" "host" {
-  name                       = var.name
-  description                = var.description
-  cloud_id                   = var.cloud_id
-  pool_id                    = var.pool_id
-  group_id                   = var.group_id
-  type_id                    = var.type_id
+  name                       = "example-terraform-host"
+  description                = "A host network"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = 1
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = 1
   config                     = {}
-  active                     = var.active
-  dhcp_server                = var.dhcp_server
-  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
-  tenant_ids                 = [1]
-  visibility                 = var.visibility
-  cidr                       = var.cidr
+  active                     = true
+  dhcp_server                = false
+  appliance_url_proxy_bypass = true
+  tenant_ids = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+  visibility = "private"
+  cidr       = "10.0.0.0/8"
+  labels     = [terraform, example]
 }
 ```
 
 ### OVS Port Group Network
 
 ```terraform
-variable "name" {
-  description = "Network name"
-  type        = string
-  default     = "Terraform OVS Port Group"
+data "hpe_morpheus_cloud" "example" {
+  name = "Morpheus Standard Cloud"
 }
 
-variable "description" {
-  description = "Network description"
-  type        = string
-  default     = "OVS Port Group network"
+data "hpe_morpheus_group" "example" {
+  name = "ExampleGroup"
 }
 
-variable "cloud_id" {
-  description = "Cloud (zone) id"
-  type        = number
-  default     = 7714
-}
-
-variable "pool_id" {
-  description = "Network pool id"
-  type        = number
-  default     = 3251
-}
-
-variable "group_id" {
-  description = "Group (site) id"
-  type        = number
-  default     = 1
-}
-
-variable "type_id" {
-  description = "Network type id (OVS Port Group)"
-  type        = number
-  default     = 63
-}
-
-variable "cidr" {
-  description = "CIDR Network"
-  type        = string
-  default     = "10.32.148.0/22"
-}
-
-variable "zone_pool_id" {
-  description = "Zone pool id"
-  type        = number
-  default     = 62299
-}
-
-variable "vlan_id" {
-  description = "VLAN ID"
-  type        = number
-  default     = 43
-}
-
-variable "switch_id" {
-  description = "Switch ID for OVS network"
-  type        = string
-  default     = "Compute"
-}
-
-variable "active" {
-  description = "Whether network is active"
-  type        = bool
-  default     = true
-}
-
-variable "dhcp_server" {
-  description = "Whether DHCP server is enabled"
-  type        = bool
-  default     = false
-}
-
-variable "appliance_url_proxy_bypass" {
-  description = "Whether to bypass proxy for appliance URL"
-  type        = bool
-  default     = true
-}
-
-variable "visibility" {
-  description = "Network visibility"
-  type        = string
-  default     = "public"
+data "hpe_morpheus_tenant" "example" {
+  name = "Master Tenant"
 }
 
 resource "hpe_morpheus_network" "ovs_port_group" {
-  name                       = var.name
-  description                = var.description
-  cloud_id                   = var.cloud_id
-  pool_id                    = var.pool_id
-  group_id                   = var.group_id
-  type_id                    = var.type_id
-  switch_id                  = var.switch_id
+  name                       = "Terraform OVS Port Group"
+  description                = "OVS Port Group network"
+  cloud_id                   = data.hpe_morpheus_cloud.example.id
+  pool_id                    = 3251
+  group_id                   = data.hpe_morpheus_group.example.id
+  type_id                    = 63
+  switch_id                  = Compute
   config                     = {}
-  active                     = var.active
-  dhcp_server                = var.dhcp_server
-  appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
-  tenant_ids                 = [1]
-  visibility                 = var.visibility
-  cidr                       = var.cidr
-  zone_pool_id               = var.zone_pool_id
-  vlan_id                    = var.vlan_id
+  active                     = true
+  dhcp_server                = false
+  appliance_url_proxy_bypass = true
+  tenant_ids = [
+    data.hpe_morpheus_tenant.example.id,
+  ]
+  visibility   = "public"
+  cidr         = "10.32.148.0/22"
+  zone_pool_id = 62299
+  vlan_id      = 43
+  labels       = ["terraform", "example"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]
@@ -591,6 +311,7 @@ resource "hpe_morpheus_network" "ovs_port_group" {
 - `cidr` (String) Network CIDR.
 - `cidr_ipv6` (String) Network IPv6 CIDR.
 - `config` (Dynamic) Configuration object. Settings vary by type.
+- `connected_gateway` (String) Provider ID of the connected NSX-T Tier-1 gateway.
 - `description` (String) Description
 - `dhcp_server` (Boolean) DHCP Server enabled network
 - `dhcp_server_ipv6` (Boolean) IPv6 DHCP Server enabled network

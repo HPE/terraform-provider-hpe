@@ -1,0 +1,11 @@
+resource "hpe_morpheus_os_type" "example" {
+  name               = "{{.Name}}"
+  code               = "{{.Code}}"
+  platform           = "{{.Platform}}"
+  bit_count          = {{.BitCount}}
+  description        = "{{.Description}}"
+  os_family          = "{{.OsFamily}}"
+  os_version         = "{{.OsVersion}}"
+  install_agent      = {{.InstallAgent}}
+  cloud_init_version = "{{.CloudInitVersion}}"
+}

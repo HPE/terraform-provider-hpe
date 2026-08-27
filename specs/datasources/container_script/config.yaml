@@ -1,0 +1,50 @@
+container_script:
+  moves:
+    - container_script: ""           # unnest wrapper (GET /api/library/container-scripts/{id})
+  removes:
+    - run_as_password                # (script) sensitive credential
+  overrides:
+    id:
+      description: The ID of the library container script.
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+    name:
+      description: The name of the library container script.
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+    account:
+      description: The account associated with the script.
+    account.id:
+      description: The ID of the account.
+    account.name:
+      description: The name of the account.
+    category:
+      description: The category of the library container script.
+    code:
+      description: The internal code identifier for the script.
+    date_created:
+      description: The date the script was created.
+    fail_on_error:
+      description: Whether the script fails on error.
+    labels:
+      description: The labels of the library container script.
+    last_updated:
+      description: The date the script was last updated.
+    run_as_user:
+      description: The user to run the script as.
+    script:
+      description: The script content.
+    script_method:
+      description: The method used to run the script (e.g. write, static).
+    script_phase:
+      description: The phase of the script.
+    script_service:
+      description: The service type for the script.
+    script_type:
+      description: The type of the script.
+    script_version:
+      description: The version of the script.
+    sort_order:
+      description: The sort order of the script.
+    sudo_user:
+      description: Whether to run the script as sudo.

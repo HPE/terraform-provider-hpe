@@ -1,0 +1,31 @@
+os_type_image:
+  templates:
+    int64:
+      int64: {}
+  moves:
+    - os_type_image: "" # unnest wrapper (components/schemas/osTypeImage.yaml)
+    - zone: cloud_id # (components/schemas/osTypeImage.yaml)
+    - compute_zone_type: cloud_type_id # (components/schemas/osTypeImage.yaml)
+    - account: tenant_id # (components/schemas/osTypeImage.yaml)
+    - provision_type: provision_type_id # (components/schemas/osTypeImage.yaml)
+    - template-int64: os_type_id
+  overrides:
+    os_type_id:
+      description: The ID of the os type to search for the image
+      computed_optional_required: required
+    tenant_id:
+      description: The tenant associated with the os type image
+    id:
+      description: Morpheus ID of the os type image
+      computed_optional_required: computed
+    cloud_id:
+      description: The cloud that is attached to the os type image
+    cloud_type_id:
+      description: The cloud type of the os type image
+    provision_type_id:
+      description: The Provision Type of the os type image
+    virtual_image_id:
+      description: The id of the virtual image
+    virtual_image_name:
+      description: The name of the virtual image
+      computed_optional_required: required

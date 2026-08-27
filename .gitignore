@@ -4,9 +4,33 @@ bin/
 dist/
 terraform-provider-hpe
 build/
-docs-experimental/
 templates-combined-temp/
 *.tfstate*
 .terraform/
 .terraform.lock*
 .vscode/
+
+# Mocks (GreenLake providers)
+greenlake/sdk/token/mocks/
+
+# Hero (AI tooling - not part of project)
+.hero/
+
+# OpenCode config
+.opencode/
+opencode.json
+
+# AI tooling
+AGENTS.md
+.gitattributes
+tools/.hero-satellite
+tools/.opencode/
+
+# Schema generation: the per-resource config.yaml files under specs/ (and
+# specs/config-provider.yaml) are the source of truth. The split/merge
+# intermediates and any bundled OpenAPI spec are regenerated, not stored.
+specs/**/spec.yaml
+specs/provider.yaml
+specs/provider_code_spec.json
+specs/**/bundled.json
+specs/**/bundled.yaml

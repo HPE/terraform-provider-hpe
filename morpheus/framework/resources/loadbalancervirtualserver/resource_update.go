@@ -1,0 +1,213 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package loadbalancervirtualserver
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+)
+
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, currentState LoadBalancerVirtualServerModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &currentState)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("update load balancer virtual server", "failed to create client: "+err.Error())
+
+		return
+	}
+
+	lbID, err := loadBalancerIDFromInt64(plan.LoadBalancerId)
+	if err != nil {
+		resp.Diagnostics.AddError("update load balancer virtual server", err.Error())
+
+		return
+	}
+
+	currentLBID, err := loadBalancerIDFromInt64(currentState.LoadBalancerId)
+	if err != nil {
+		resp.Diagnostics.AddError("update load balancer virtual server", err.Error())
+
+		return
+	}
+
+	if lbID != currentLBID {
+		resp.Diagnostics.AddError(
+			"update load balancer virtual server",
+			"changing load_balancer_id is not supported; destroy and recreate the resource instead",
+		)
+
+		return
+	}
+
+	id := currentState.Id.ValueInt64()
+
+	instance := &sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance{}
+
+	if !plan.VipName.IsNull() && !plan.VipName.IsUnknown() {
+		instance.VipName = plan.VipName.ValueStringPointer()
+	}
+
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		instance.Description = plan.Description.ValueStringPointer()
+	}
+
+	if !plan.VipAddress.IsNull() && !plan.VipAddress.IsUnknown() {
+		instance.VipAddress = plan.VipAddress.ValueStringPointer()
+	}
+
+	if !plan.VipPort.IsNull() && !plan.VipPort.IsUnknown() {
+		instance.VipPort = plan.VipPort.ValueInt64Pointer()
+	}
+
+	if !plan.VipProtocol.IsNull() && !plan.VipProtocol.IsUnknown() {
+		instance.VipProtocol = plan.VipProtocol.ValueStringPointer()
+	}
+
+	if !plan.VipHostname.IsUnknown() {
+		if plan.VipHostname.IsNull() {
+			instance.VipHostname = sdk.PtrString("")
+		} else {
+			instance.VipHostname = plan.VipHostname.ValueStringPointer()
+		}
+	}
+
+	if !plan.VipPool.IsNull() && !plan.VipPool.IsUnknown() {
+		instance.VipPool.Set(plan.VipPool.ValueInt64Pointer())
+	}
+
+	if !plan.SslCert.IsNull() && !plan.SslCert.IsUnknown() {
+		instance.SslCert = plan.SslCert.ValueInt64Pointer()
+	}
+
+	if !plan.SslServerCert.IsNull() && !plan.SslServerCert.IsUnknown() {
+		instance.SslServerCert = plan.SslServerCert.ValueInt64Pointer()
+	}
+
+	if err := setUpdateConfig(ctx, instance, plan); err != nil {
+		resp.Diagnostics.AddError("update load balancer virtual server", err.Error())
+
+		return
+	}
+
+	updateReq := &sdk.UpdateLoadBalancerVirtualServerRequest{LoadBalancerInstance: instance}
+
+	_, hresp, err := client.LoadBalancersAPI.
+		UpdateLoadBalancerVirtualServer(ctx, lbID, id).
+		UpdateLoadBalancerVirtualServerRequest(*updateReq).
+		Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"error updating load balancer virtual server",
+			fmt.Sprintf("load balancer %d virtual server %d PUT failed: %s",
+				lbID, id, errfmt.ErrMsg(err, hresp)),
+		)
+
+		return
+	}
+
+	state, _, _, diags := getVirtualServerAsState(ctx, lbID, id, client)
+	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Preserve fields the API does not return in the expected schema type.
+	state.VipPool = plan.VipPool
+	state.Config = plan.Config
+	state.ConfigNsxt = plan.ConfigNsxt
+
+	// Pool ID: the API sends pool inside config for NSX-T but may not return
+	// a top-level pool object in the GET response. Preserve from plan if needed.
+	if state.PoolId.IsNull() && !plan.PoolId.IsNull() {
+		state.PoolId = plan.PoolId
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func setUpdateConfig(
+	ctx context.Context,
+	instance *sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstance,
+	plan LoadBalancerVirtualServerModel,
+) error {
+	if !plan.ConfigNsxt.IsNull() && !plan.ConfigNsxt.IsUnknown() {
+		nsxConfig := &sdk.NSXVirtualServerConfigObject1{}
+
+		if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
+			nsxConfig.Pool.Set(sdk.PtrString(strconv.FormatInt(plan.PoolId.ValueInt64(), 10)))
+		}
+
+		if !plan.ConfigNsxt.ApplicationProfile.IsNull() && !plan.ConfigNsxt.ApplicationProfile.IsUnknown() {
+			nsxConfig.ApplicationProfile.Set(plan.ConfigNsxt.ApplicationProfile.ValueInt64Pointer())
+		}
+
+		if !plan.ConfigNsxt.Persistence.IsNull() && !plan.ConfigNsxt.Persistence.IsUnknown() {
+			nsxConfig.Persistence.Set(plan.ConfigNsxt.Persistence.ValueStringPointer())
+		}
+
+		if !plan.ConfigNsxt.PersistenceProfile.IsNull() && !plan.ConfigNsxt.PersistenceProfile.IsUnknown() {
+			nsxConfig.PersistenceProfile.Set(plan.ConfigNsxt.PersistenceProfile.ValueInt64Pointer())
+		}
+
+		if !plan.ConfigNsxt.SslClientProfile.IsNull() && !plan.ConfigNsxt.SslClientProfile.IsUnknown() {
+			nsxConfig.SslClientProfile.Set(plan.ConfigNsxt.SslClientProfile.ValueInt64Pointer())
+		}
+
+		if !plan.ConfigNsxt.SslServerProfile.IsNull() && !plan.ConfigNsxt.SslServerProfile.IsUnknown() {
+			nsxConfig.SslServerProfile.Set(plan.ConfigNsxt.SslServerProfile.ValueInt64Pointer())
+		}
+
+		cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
+			NSXVirtualServerConfigObject1: nsxConfig,
+		}
+		instance.Config = &cfg
+
+		return nil
+	}
+
+	if plan.Config.IsNull() || plan.Config.IsUnknown() {
+		return nil
+	}
+
+	configValue := plan.Config.UnderlyingValue()
+
+	configMap, err := convert.ValueToAny(ctx, configValue)
+	if err != nil {
+		return fmt.Errorf("failed to convert config: %w", err)
+	}
+
+	configDataMap, ok := configMap.(map[string]any)
+	if !ok {
+		return fmt.Errorf("config must be a valid object/map")
+	}
+
+	cfg := sdk.UpdateLoadBalancerVirtualServerRequestLoadBalancerInstanceConfig{
+		MapmapOfStringAny: &configDataMap,
+	}
+	instance.Config = &cfg
+
+	return nil
+}

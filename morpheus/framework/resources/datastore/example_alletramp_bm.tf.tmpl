@@ -1,0 +1,39 @@
+data "hpe_morpheus_cloud" "metal" {
+  name = "{{.CloudName}}"
+}
+
+resource "hpe_morpheus_datastore" "example" {
+  name = "{{.Name}}"
+  datastore_type = {
+    code = "hpedatastore-alletra-mp-bmaas"
+  }
+  associated_resource_type = "Cloud"
+  visibility               = "private"
+  active                   = true
+  associated_resource_id   = data.hpe_morpheus_cloud.metal.id
+
+  config_alletramp_bmaas = {
+    protocol_type = "iSCSI"
+  }
+
+  storage_server = {
+    id = {{.StorageServerID}}
+  }
+
+  resource_pool = {
+    id = {{.ResourcePoolID}}
+  }
+
+  resource_permissions = {
+    groups = [
+      {
+        id = {{.GroupID}}
+      }
+    ]
+  }
+  tenants = [
+    {
+      id = {{.TenantID}}
+    }
+  ]
+}

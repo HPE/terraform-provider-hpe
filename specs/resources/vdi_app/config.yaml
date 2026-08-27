@@ -1,0 +1,26 @@
+vdi_app:
+  description: "Manages a Morpheus VDI App resource."
+  moves:
+    - vdi_app: ""
+  removes:
+    - anyof0
+    - anyof1
+    - date_created
+    - icon_path
+    - last_updated
+    - logo
+    - oneof0
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the VDI app.
+    id:
+      computed_optional_required: computed
+      description: The ID of the VDI app.
+      state_for_unknown: true
+    launch_prefix:
+      computed_optional_required: required
+      description: The RDS app name prefix.
+    name:
+      computed_optional_required: required
+      description: The name of the VDI app.

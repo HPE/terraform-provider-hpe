@@ -1,0 +1,375 @@
+cloud:
+  templates:
+    config:
+      dynamic:
+        description: Generic Cloud Configuration
+        computed_optional_required: optional
+    bool:
+      bool:
+        description: CHANGE ME
+        computed_optional_required: optional
+    azure-region:
+      string:
+        description: The Azure region associated with the cloud integration
+        computed_optional_required: required
+    string:
+      string:
+        description: CHANGE ME
+        computed_optional_required: optional
+    vmware_password_version:
+      int64:
+        computed_optional_required: optional
+        description: Password version. Used to determine if password has been updated.
+    azure_client_secret_version:
+      int64:
+        computed_optional_required: optional
+        description: Client secret version. Used to determine if client secret has been updated.
+  moves:
+    - zone: "" # unnest zone
+    - account_id: tenant_id
+    - agent_mode: agent_install_mode
+    - timezone: time_zone
+    - config.appliance_url: appliance_url
+    - config.datacenter_name: data_center_name
+    - config.external_id: external_id
+    - config.inventory_level: import_existing_vms
+    - config.console_keymap: keyboard_layout
+    - network_server.id: network_server_id
+    - zone_type.anyof1.code: cloud_type_code
+    # AWS static config
+    - config.anyof0: config_aws
+    - template-bool: config_aws.use_host_credentials
+    - template-bool: config_aws.bypass_proxy
+    - template-bool: config_aws.cmdb_discovery
+    - template-string: config_aws.credentials
+    - config_aws.sts_assume_role: config_aws.role_arn
+    - config_aws.backup_mode: config_aws.backup_provider
+    - config_aws.replication_mode: config_aws.replication_provider
+    - config_aws.user_data_linux: config_aws.user_data
+    # HVM static config
+    - config.anyof2: config_hvm
+    - template-bool: config_hvm.enable_network_type_selection
+    # VMware static config
+    - config.anyof3: config_vmware
+    - template-bool: config_vmware.enable_disk_type_selection
+    - template-bool: config_vmware.enable_network_type_selection
+    - template-bool: config_vmware.enable_storage_type_selection
+    - template-bool: config_vmware.enable_vnc
+    - template-bool: config_vmware.hide_host_selection
+    - template-vmware_password_version: config_vmware.password_version
+    - config_vmware.rpc_mode.oneof0: config_vmware.rpc_mode
+    # Azure static config
+    - config.anyof4: config_azure
+    - template-bool: config_azure.cmdb_discovery
+    - template-azure-region: config_azure.azure_region
+    - template-azure_client_secret_version: config_azure.client_secret_version
+    - config_azure.rpc_mode.oneof0: config_azure.rpc_mode
+    # Generic config
+    - template-config: config
+    # Move common items to top level
+    - config_hvm.appliance_url: appliance_url
+    - config_hvm.datacenter_name: data_center_name
+    - config_hvm.external_id: external_id
+    - config_hvm.inventory_level: import_existing_vms
+    - config_hvm.console_keymap: keyboard_layout
+  removes:
+    # Remove top level items from indented config
+    - config_aws.appliance_url
+    - config_aws.datacenter_name
+    - config_aws.external_id
+    - config_aws.inventory_level
+    - config_aws.console_keymap
+    - config_vmware.appliance_url
+    - config_vmware.datacenter_name
+    - config_vmware.external_id
+    - config_vmware.inventory_level
+    - config_vmware.console_keymap
+    - config_azure.appliance_url
+    - config_azure.datacenter_name
+    - config_azure.external_id
+    - config_azure.inventory_level
+    - config_azure.console_keymap
+    # More unwanted items
+    - config_aws.bypass_proxy_for_cloud
+    - config_aws.certificate_provider
+    - config_aws.config_cmdb_discovery
+    - config_aws.enable_network_type_selection
+    - config_aws.kube_url
+    - config_aws.network_server
+    - config_aws.network_serverid
+    - config_aws.replication_mode
+    - config_aws.security_server
+    - config_vmware.access_key
+    - config_vmware.backup_mode
+    - config_vmware.config_cmdb_discovery
+    - config_vmware.costing_access_key
+    - config_vmware.costing_bucket
+    - config_vmware.costing_bucket_name
+    - config_vmware.costing_folder
+    - config_vmware.costing_region
+    - config_vmware.costing_report
+    - config_vmware.costing_report_name
+    - config_vmware.costing_secret_key
+    - config_vmware.costing_secret_key_hash
+    - config_vmware.dns_integration_id
+    - config_vmware.ebs_encryption
+    - config_vmware.endpoint
+    - config_vmware.image_store_id
+    - config_vmware.is_vpc
+    - config_vmware.network_server
+    - config_vmware.network_serverid
+    - config_vmware.replication_mode
+    - config_vmware.secret_key
+    - config_vmware.secret_key_hash
+    - config_vmware.security_server
+    - config_vmware.service_registry_id
+    - config_vmware.sts_assume_role
+    - config_vmware.storage_type
+    - config_vmware.use_host_credentials
+    - config_vmware.vpc
+    # Azure internal/system fields
+    - config_azure.network_server
+    - config_azure.network_serverid
+    - config_azure.security_mode
+    - config_azure.certificate_provider
+    - config_azure.backup_mode
+    - config_azure.replication_mode
+    - config_azure.dns_integration_id
+    - config_azure.config_management_id
+    - config_azure.config_cmdb_id
+    - config_azure.security_server
+    - config_azure.account_type
+    - config_azure.service_registry_id
+    - config_azure.disk_encryption
+    - config_azure.encryption_set
+    - config_azure.csp_tenant_id
+    - config_azure.csp_client_id
+    - config_azure.csp_client_secret
+    - config_azure.csp_customer
+    - config_azure.config_cmdb_discovery
+    - config_azure.azure_costing_mode
+    - config_azure.client_secret_hash
+    - config_azure.csp_client_secret_hash
+    - account
+    - api_proxy
+    - config_aws.use_host_credentials
+    - console_keymap # added from GET examples?
+    - container_mode
+    - cost_last_sync
+    - cost_last_sync_duration
+    - cost_status
+    - cost_status_date
+    - cost_status_message
+    - credential
+    - credential_type
+    - dark_image_path
+    - date_created
+
+    - description
+    - domain_name
+    - groups
+    - image_path
+    - inventory_level # added from GET examples?
+    - last_sync
+    - last_sync_duration
+    - last_updated
+    - linked_account_id
+    - network_domain
+    - network_server
+    - network_server_id
+    - next_run_date
+    - owner
+    - provisioning_proxy
+    - region_code
+    - scale_priority
+    - security_server
+    - server_count
+    - service_version
+    - stats
+    - status
+    - status_date
+    - status_message
+    - storage_mode
+    - success
+    - user_data_linux
+    - user_data_windows
+    - uuid
+    - zone_type
+    - zone_type_id
+    - time_zone # Bug
+  overrides:
+    agent_install_mode:
+      description: The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
+      computed_optional_required: computed_optional
+    appliance_url:
+      computed_optional_required: optional
+    cloud_type_code:
+      description: Cloud (zone) type code
+      computed_optional_required: computed_optional
+    config:
+      at_least_one_of: [config, config_aws, config_azure, config_hvm, config_vmware]
+      conflicts_with: [config_aws, config_azure, config_hvm, config_vmware]
+    config_aws:
+      computed_optional_required: optional 
+    config_aws.backup_mode:
+      description: The backup mode for the cloud
+      computed_optional_required: computed_optional
+    config_aws.bypass_proxy:
+      description: Whether to bypass the proxy for cloud API calls
+      computed_optional_required: computed_optional
+    config_aws.cmdb_discovery:
+      description: Whether to enable CMDB discovery on the cloud
+      computed_optional_required: computed_optional
+    config_aws.credentials:
+      description: Stored AWS credentials
+      computed_optional_required: computed_optional
+      # conflicts_with: [config_aws.access_key, config_aws.secret_key]
+    config_aws.replication_provider:
+      description: The replication provider for the cloud
+      computed_optional_required: computed_optional
+    config_aws.backup_provider:
+      description: The backup provider for the cloud
+      computed_optional_required: computed_optional
+    config_hvm:
+      computed_optional_required: optional
+    config_hvm.enable_network_type_selection:
+      description: Whether to enable the user to select the network interface type during provisioning
+      computed_optional_required: computed_optional
+    config_azure:
+      computed_optional_required: optional
+    config_azure.azure_region:
+      description: The Azure region associated with the cloud integration
+      computed_optional_required: required
+    config_azure.subscriber_id:
+      description: The Azure subscription ID
+      computed_optional_required: required
+    config_azure.tenant_id:
+      description: The Azure Active Directory tenant ID
+      computed_optional_required: required
+    config_azure.client_id:
+      description: The Azure client (application) ID
+      computed_optional_required: required
+    config_azure.client_secret:
+      description: The Azure client secret
+      computed_optional_required: required
+      sensitive: true
+      write_only: true
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    config_azure.client_secret_version:
+      computed_optional_required: optional
+      description: Client secret version. Used to determine if client secret has been updated.
+    config_azure.resource_group:
+      description: The Azure resource group
+      computed_optional_required: required
+    config_azure.cloud_type:
+      description: The Azure cloud type (global, usgov, german, china)
+      computed_optional_required: computed_optional
+      one_of: [global, usgov, german, china]
+      default: global
+    config_azure.import_existing:
+      description: Whether to import existing resources from the cloud (on, off)
+      computed_optional_required: computed_optional
+      one_of: ["on", "off"]
+    config_azure.storage_account:
+      description: The Azure storage account to use
+      computed_optional_required: computed_optional
+    config_azure.rpc_mode:
+      description: The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
+      computed_optional_required: computed_optional
+    config_azure.cmdb_discovery:
+      description: Whether to enable CMDB discovery on the cloud
+      computed_optional_required: computed_optional
+    config_vmware:
+      computed_optional_required: optional
+    config_vmware.password:
+      computed_optional_required: optional
+      sensitive: true
+      write_only: true
+      plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+    config_vmware.password_version:
+      computed_optional_required: optional
+      description: Password version. Used to determine if password has been updated.
+    costing_mode:
+      description: Whether to enable costing on the cloud (off, costing, reservations, full)
+      one_of: [off, costing, reservations, full]
+      default: off
+      computed_optional_required: computed_optional
+    data_center_name:
+      computed_optional_required: optional
+    external_id:
+      computed_optional_required: optional
+    group_id:
+      computed_optional_required: optional
+    guidance_mode:
+      description: Whether to enable guidance recommendations on the cloud (manual, off)
+      computed_optional_required: computed_optional
+      one_of: [off, manual]
+      default: off
+    id:
+      description: The ID of the cloud
+      state_for_unknown: true
+    import_existing_vms:
+      description: Whether to import existing virtual machines (off, basic, full)
+      computed_optional_required: optional
+      one_of: [off, basic, full]
+    keyboard_layout:
+      computed_optional_required: optional
+    location:
+      computed_optional_required: optional
+    name:
+      computed_optional_required: required
+    tenant_id:
+      computed_optional_required: required
+      requires_replace: true
+    config_vmware.enable_disk_type_selection:
+      description: Whether to enable the user to select the disk type during provisioning.
+      computed_optional_required: computed_optional
+    config_vmware.enable_network_type_selection:
+      description: Whether to enable the user to select the network type during provisioning.
+      computed_optional_required: computed_optional
+    config_vmware.enable_storage_type_selection:
+      description: Whether to enable the user to select the storage type during provisioning.
+      computed_optional_required: computed_optional
+    config_vmware.enable_vnc:
+      description: Enable VNC access to the console.
+      computed_optional_required: computed_optional
+    config_vmware.hide_host_selection:
+      description: Whether to hide the ability to select the vSphere host from the user during provisioning.
+      computed_optional_required: computed_optional
+    config_vmware.rpc_mode:
+      description: The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
+      computed_optional_required: computed_optional
+    default_datastore_sync_active:
+      description: Sets the default active state during discovery of new datastores.
+      computed_optional_required: computed_optional
+      default: true
+    default_folder_sync_active:
+      description: Sets the default active state during discovery of new folders.
+      computed_optional_required: computed_optional
+      default: true
+    default_network_sync_active:
+      description: Sets the default active state during discovery of new networks.
+      computed_optional_required: computed_optional
+      default: true
+    default_plan_sync_active:
+      description: Sets the default active state during discovery of new plans.
+      computed_optional_required: computed_optional
+      default: true
+    default_pool_sync_active:
+      description: Sets the default active state during discovery of new resource pools.
+      computed_optional_required: computed_optional
+      default: true
+    default_security_group_sync_active:
+      description: Sets the default active state during discovery of new security groups.
+      computed_optional_required: computed_optional
+      default: true

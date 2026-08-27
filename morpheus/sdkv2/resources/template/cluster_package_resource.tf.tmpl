@@ -1,0 +1,11 @@
+resource "hpe_morpheus_cluster_package" "tf_example_cluster_package" {
+  name              = "{{.Name}}"
+  code              = "{{.Code}}"
+  description       = "{{.Description}}"
+  package_version   = "{{.PackageVersion}}"
+  type              = "{{.Type}}"
+  package_type      = "{{.PackageType}}"
+  enabled           = {{.Enabled}}
+  repeat_install    = {{.RepeatInstall}}
+  spec_template_ids = {{.SpecTemplateIds}}
+}

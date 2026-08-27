@@ -1,0 +1,51 @@
+monitoring_group:
+  description: "Manages a Morpheus Monitoring Group (Check Group) resource."
+  moves:
+    - check_group: ""
+  removes:
+    - account
+    - active
+    - availability
+    - check_type
+    - checks
+    - create_incident
+    - created_by
+    - date_created
+    - health
+    - history
+    - instance
+    - last_check_status
+    - last_error
+    - last_error_date
+    - last_metric
+    - last_run_date
+    - last_success_date
+    - last_timer
+    - last_updated
+    - last_warning_date
+    - muted
+    - outage_time
+    - success
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the monitoring group.
+    id:
+      computed_optional_required: computed
+      description: The ID of the monitoring group.
+      state_for_unknown: true
+    in_uptime:
+      computed_optional_required: computed_optional
+      description: Whether the group affects account-wide availability calculations.
+      default: true
+    min_happy:
+      computed_optional_required: computed_optional
+      description: Minimum number of checks that must be happy to keep the group healthy.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the monitoring group.
+    severity:
+      computed_optional_required: computed_optional
+      description: Maximum severity level this group can incur on an incident when failing.
+      state_for_unknown: true

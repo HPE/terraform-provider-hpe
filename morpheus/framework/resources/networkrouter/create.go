@@ -1,0 +1,348 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package networkrouter
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+)
+
+const createOperation = "create network router resource"
+
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	var plan, config NetworkRouterModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			createOperation,
+			"failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	name := plan.Name.ValueString()
+
+	// enable_bgp is only supported by NSX-T Tier0 gateways. Tier1 gateways
+	// inherit BGP from their parent Tier0 and have no BGP option server-side, so
+	// sending enable_bgp=true for a Tier1 router is silently dropped (causing an
+	// "inconsistent result after apply") or, on some appliance builds, an
+	// unhandled 500. Fail fast with a clear message instead.
+	if plan.EnableBgp.ValueBool() {
+		tier1, verr := usesTier1Gateway(ctx, client, plan)
+		if verr != nil {
+			resp.Diagnostics.AddError(createOperation, verr.Error())
+
+			return
+		}
+		if tier1 {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"enable_bgp is not supported for NSX-T Tier1 gateways. BGP is "+
+					"configured on the parent Tier0 gateway; remove enable_bgp or "+
+					"set it to false.",
+			)
+
+			return
+		}
+	}
+
+	router := &sdk.CreateNetworkRouterRequestNetworkRouter{}
+	router.Name = name
+
+	// Set type (required)
+	switch {
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: plan.TypeId.ValueInt64()}
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier0Gateway)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"failed to find network type: "+err.Error(),
+			)
+
+			return
+		}
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
+
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		typeId, err := typeIdFromCode(ctx, client, codeNSXTTier1Gateway)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				createOperation,
+				"failed to find network type: "+err.Error(),
+			)
+
+			return
+		}
+		router.Type = sdk.CreateNetworkRouterRequestNetworkRouterType{Id: *typeId}
+	}
+
+	// Set site (group_id)
+	groupID := plan.GroupId.ValueInt64()
+	router.Site = sdk.CreateNetworkRouterRequestNetworkRouterSite{
+		Id: sdk.CreateNetworkRouterRequestNetworkRouterSiteId{Int64: &groupID},
+	}
+
+	// Set enabled
+	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
+		router.Enabled = plan.Enabled.ValueBoolPointer()
+	}
+
+	// Set enable_bgp. The API stores this on the router (and syncs it from the
+	// gateway BGP config), so it must be sent at create time; otherwise the API
+	// defaults it to false and the GET read-back conflicts with a plan that set
+	// enable_bgp = true ("inconsistent result after apply").
+	if !plan.EnableBgp.IsNull() && !plan.EnableBgp.IsUnknown() {
+		router.EnableBgp = plan.EnableBgp.ValueBoolPointer()
+	}
+
+	// Set zone (cloud_id) if provided
+	if !plan.CloudId.IsNull() && !plan.CloudId.IsUnknown() {
+		router.Zone = &sdk.CreateNetworkRouterRequestNetworkRouterZone{
+			Id: plan.CloudId.ValueInt64(),
+		}
+	}
+
+	// Set networkServer (network_integration_id) if provided
+	if !plan.NetworkIntegrationId.IsNull() && !plan.NetworkIntegrationId.IsUnknown() {
+		router.NetworkServer = &sdk.CreateNetworkRouterRequestNetworkRouterNetworkServer{
+			Id: plan.NetworkIntegrationId.ValueInt64(),
+		}
+	}
+
+	// Set config from the dynamic config attribute or typed config blocks
+	routerConfig, diags := buildRouterConfig(ctx, plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if routerConfig != nil {
+		router.Config = routerConfig
+	}
+
+	createReq := &sdk.CreateNetworkRouterRequest{}
+	createReq.NetworkRouter = router
+
+	result, hresp, err := client.NetworksAPI.CreateNetworkRouter(ctx).
+		CreateNetworkRouterRequest(*createReq).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			createOperation,
+			fmt.Sprintf("network router %s POST failed: %s",
+				name, errfmt.ErrMsg(err, hresp)),
+		)
+
+		return
+	}
+
+	if !result.Id.IsSet() || result.Id.Get() == nil || *result.Id.Get() == 0 {
+		resp.Diagnostics.AddError(
+			createOperation,
+			"network router "+name+": id is nil or zero",
+		)
+
+		return
+	}
+
+	id := *result.Id.Get()
+	plan.Id = types.Int64Value(id)
+
+	taintResourceState := func(id int64) {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "network_router",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
+	// Apply permissions (visibility + tenant_ids) before the read-back so state reflects them.
+	// A 403 from applyRouterPermissions is an error; the resource will be tainted.
+	resp.Diagnostics.Append(applyRouterPermissions(ctx, id, plan, config, client)...)
+	if resp.Diagnostics.HasError() {
+		taintResourceState(id)
+
+		return
+	}
+
+	state, pdiags := getRouterAsState(ctx, id, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"failed to read network router state",
+			fmt.Sprintf("Network router %d was created but could not be read", id),
+		)
+		taintResourceState(id)
+
+		return
+	}
+
+	// Preserve user-specified config in state to avoid spurious diffs
+	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
+		state.Config = plan.Config
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set network router state",
+			fmt.Sprintf("Network router %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
+		return
+	}
+}
+
+func buildRouterConfig(
+	ctx context.Context,
+	plan NetworkRouterModel,
+) (*sdk.CreateNetworkRouterRequestNetworkRouterConfig, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	switch {
+	// Typed NSX Tier0 config
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		cfg := nsxTier0Config(plan.ConfigNsxtGatewayTier0)
+
+		return &cfg, diags
+	// Typed NSX Tier1 config
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		cfg := nsxTier1Config(plan.ConfigNsxtGatewayTier1)
+
+		return &cfg, diags
+
+	// Dynamic config is the fallback
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		configValue := plan.Config.UnderlyingValue()
+
+		configMap, err := convert.ValueToAny(ctx, configValue)
+		if err != nil {
+			diags.AddError(
+				createOperation,
+				"failed to convert config: "+err.Error(),
+			)
+
+			return nil, diags
+		}
+
+		configDataMap, ok := configMap.(map[string]any)
+		if !ok {
+			diags.AddError(
+				createOperation,
+				"config must be a valid object/map",
+			)
+
+			return nil, diags
+		}
+
+		routerConfig := sdk.CreateNetworkRouterRequestNetworkRouterConfig{}
+		routerConfig.MapmapOfStringAny = &configDataMap
+
+		return &routerConfig, diags
+
+	default:
+		return nil, diags
+	}
+}
+
+func typeIdFromCode(ctx context.Context, client *sdk.APIClient, code string) (*int64, error) {
+	res, hresp, err := client.NetworksAPI.ListNetworkRouterTypes(ctx).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf(
+			"network router types GET failed: %s",
+			errfmt.ErrMsg(err, hresp),
+		)
+	}
+
+	for _, t := range res.NetworkRouterTypes {
+		if t.Code != nil && *t.Code == code {
+			if t.Id != nil {
+				return t.Id, nil
+			}
+
+			return nil, fmt.Errorf("Network router type id for code %s is nil", code)
+		}
+	}
+
+	return nil, fmt.Errorf(
+		"Could not find network router type for code %s.\n"+
+			"The network integration for the type may not yet be configured on the Morpheus appliance.",
+		code,
+	)
+}
+
+// usesTier1Gateway reports whether the planned router is an NSX-T Tier1 gateway,
+// which does not support BGP. Typed config blocks are checked directly; a
+// generic config is resolved to its type code via the API.
+func usesTier1Gateway(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan NetworkRouterModel,
+) (bool, error) {
+	switch {
+	case !plan.ConfigNsxtGatewayTier1.IsNull() && !plan.ConfigNsxtGatewayTier1.IsUnknown():
+		return true, nil
+	case !plan.ConfigNsxtGatewayTier0.IsNull() && !plan.ConfigNsxtGatewayTier0.IsUnknown():
+		return false, nil
+	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
+		code, err := codeFromTypeId(ctx, client, plan.TypeId.ValueInt64())
+		if err != nil {
+			return false, err
+		}
+
+		return code == codeNSXTTier1Gateway, nil
+	default:
+		return false, nil
+	}
+}
+
+// codeFromTypeId resolves a network router type's code from its id. An unknown
+// id yields an empty code (rather than an error) so callers do not block on
+// types the API does not return.
+func codeFromTypeId(ctx context.Context, client *sdk.APIClient, id int64) (string, error) {
+	res, hresp, err := client.NetworksAPI.ListNetworkRouterTypes(ctx).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf(
+			"network router types GET failed: %s",
+			errfmt.ErrMsg(err, hresp),
+		)
+	}
+
+	for _, t := range res.NetworkRouterTypes {
+		if t.Id != nil && *t.Id == id && t.Code != nil {
+			return *t.Code, nil
+		}
+	}
+
+	return "", nil
+}

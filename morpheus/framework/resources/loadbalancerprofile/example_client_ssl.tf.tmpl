@@ -1,0 +1,16 @@
+resource "hpe_morpheus_load_balancer_profile" "client_ssl" {
+  load_balancer_id = {{.LoadBalancerId}}
+  name             = "{{.Name}}"
+  service_type     = "LBClientSslProfile"
+
+  config_client_ssl = {
+    ssl_suite              = "{{.SslSuite}}"
+    session_cache          = true
+    session_cache_timeout  = 300
+    prefer_server_cipher   = true
+{{- if eq .SslSuite "CUSTOM"}}
+    supported_ssl_ciphers  = ["TLS_RSA_WITH_AES_128_GCM_SHA256"]
+    supported_ssl_protocols = ["TLS_V1_2"]
+{{- end}}
+  }
+}

@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_service_plan Resource - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -16,13 +16,14 @@ Service Plans in HPE Morpheus Enterprise determine the memory, storage, and core
 
 ```terraform
 resource "hpe_morpheus_service_plan" "example_service_plan" {
-  name = "ExampleServicePlan"
-  code = "exampleserviceplan"
-  sort_order = 10000
-  max_memory = 4294967296
-  max_storage = 536870912
+  name                = "ExampleServicePlan"
+  code                = "exampleserviceplan"
+  sort_order          = 10000
+  max_memory          = 4294967296
+  max_storage         = 536870912
   provision_type_code = "arm"
-  custom_max_storage = true
+  custom_max_storage  = true
+  cores_per_socket    = 1
   config_ranges = {
     min_storage = 268435456
     max_storage = 536870912
@@ -36,6 +37,7 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 ### Required
 
 - `code` (String) Service plan code, must be unique
+- `cores_per_socket` (Number) Number of cores per CPU
 - `max_memory` (Number) Max memory size in bytes
 - `max_storage` (Number) Max storage size in bytes
 - `name` (String) Service plan name
@@ -45,7 +47,6 @@ resource "hpe_morpheus_service_plan" "example_service_plan" {
 
 - `add_volumes` (Boolean) Can be used to enable / disable ability to add volumes
 - `config_ranges` (Attributes) The min and max ranges that instances using this service plan must conform to. (see [below for nested schema](#nestedatt--config_ranges))
-- `cores_per_socket` (Number) Number of cores per CPU
 - `custom_cores` (Boolean) Can be used to enable / disable customizable cores
 - `custom_cpu` (Boolean) Can be used to enable / disable customizable cpu
 - `custom_max_memory` (Boolean) Can be used to enable / disable customizable memory.
@@ -86,8 +87,6 @@ Service Plans determine the memory, storage, and cores configuration during prov
 
 ## Memory and Storage Size Types
 The `memory_size_type` and `storage_size_type` attributes control the visual representation in the Morpheus UI of the storage unit used for the top-level `max_memory` and `max_storage` fields. The API has logic to resize the internal byte representation of `max_memory` and `max_storage` on performing a PUT to the Service Plans API.
-
-~>Until Update is supported in the Service Plan resource, if creating a Service Plan using the Terraform provider, it is recommended to set `memory_size_type` and `storage_size_type` to the desired units at Create using the provider and to not change them in the Morpheus UI afterwards, as this will update the byte count of the `max_memory` and `max_storage` fields on the API side.
 
 ## Custom Ranges
 The custom ranges found in the `config_ranges` attributes control the minimum and maximum ranges of various system properties when the Service Plan is applied to an Instance. For these to be set, the accompanying `custom` Boolean attribute must be set to `true`. For example, to set a maximum storage for the Service Plan, set `custom_max_storage` to `true` and set the `max_storage` attribute to the desired max storage.

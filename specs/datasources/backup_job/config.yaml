@@ -1,0 +1,36 @@
+backup_job:
+  moves:
+    - job: "" # unnest wrapper
+  removes:
+    - account # nested tenant object
+    - backup_provider # nested object
+    - backup_respository # nested object (API spelling)
+    - backups # nested array of backup objects
+    - schedule # nested execute-schedule object
+  overrides:
+    id:
+      description: The ID of the backup job
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the backup job
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    cron_expression:
+      description: The cron expression defining the backup job schedule
+    enabled:
+      description: Whether the backup job is enabled
+    external_id:
+      description: The external identifier of the backup job
+    next_fire:
+      description: The next scheduled execution time of the backup job
+    retention_count:
+      description: The number of backups to retain for this job
+    source:
+      description: The source of the backup job (e.g. user, provider)
+    visibility:
+      description: The visibility of the backup job (public or private)
+    date_created:
+      description: The date the backup job was created
+    last_updated:
+      description: The date the backup job was last updated

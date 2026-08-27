@@ -1,0 +1,19 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage - Name
+
+{{ tffile "examples/data-sources/morpheus_security_group_rule/example-name.tf" }}
+
+## Example Usage - Id
+
+{{ tffile "examples/data-sources/morpheus_security_group_rule/example-id.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}

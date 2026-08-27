@@ -1,0 +1,165 @@
+datastore:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+        description: Generic configuration options for the datastore, varies based on the type of datastore.
+    configFromAPI:
+      dynamic:
+        computed_optional_required: computed
+        description: Configuration options for the datastore as returned from the API.
+    configNfsSourceHostname:
+      string:
+        computed_optional_required: computed
+        description: Host name or IP address for target NFS instance
+    configNfsSourceDirPath:
+      string:
+        computed_optional_required: computed
+        description: Path to the target NFS export directory
+    configNfsParent:
+      single_nested:
+        computed_optional_required: computed
+        description: NFS datastore config
+    configAlletraMPHVMEnableRansomware:
+      bool:
+        computed_optional_required: computed
+        description: Enable ransomware protection for this datastore
+    configAlletraMPHVMProtocolType:
+      string:
+        computed_optional_required: computed
+        description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    configAlletraMPHVMParent:
+      single_nested:
+        computed_optional_required: computed
+        description: Alletra MP HVM configuration
+    configAlletraMPBMAASProtocolType:
+      string:
+        computed_optional_required: computed
+        description: Storage protocol type, either iSCSI or FC (Fibre Channel)
+    configAlletraMPBMAASParent:
+      single_nested:
+        computed_optional_required: computed
+        description: Alletra MP Bare Metal (BMaaS) configuration
+    configGFS2BlockDevice:
+      string:
+        computed_optional_required: computed
+        description: Block device for target GFS2
+    configGFS2Parent:
+      single_nested:
+        computed_optional_required: computed
+        description: GFS2 configuration
+    datastoreTypeParent:
+      single_nested:
+        computed_optional_required: computed
+        description: The type of datastore.
+    datastoreTypeId:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the datastore type.
+    datastoreTypeCode:
+      string:
+        computed_optional_required: required
+        description: The code of the datastore type.
+    tenantId:
+      int64:
+        computed_optional_required: computed
+        description: The tenant ID
+    tenantDefaultStore:
+      bool:
+        computed_optional_required: computed
+        description: If the datastore is the default store
+    tenantDefaultTarget:
+      bool:
+        computed_optional_required: computed
+        description: If the datastore is the default target
+    tenantParent:
+      set_nested:
+        computed_optional_required: computed
+    groupsId:
+      int64:
+        computed_optional_required: computed
+        description: The group id
+    groupsName:
+      string:
+        computed_optional_required: computed
+        description: The group name
+    groupsDefault:
+      bool:
+        computed_optional_required: computed
+        description: Is the datastore the group default
+    groupsParent:
+      set_nested:
+        computed_optional_required: computed
+    resourcePermissions:
+      single_nested:
+        computed_optional_required: computed
+  moves:
+    - datastore: "" # unnest datastore
+    - account_id: tenant_id
+    - template-configNfsParent: config_nfs
+    - template-configNfsSourceHostname: config_nfs.source_hostname
+    - template-configNfsSourceDirPath: config_nfs.source_dir_path
+    - template-configAlletraMPHVMParent: config_alletramp_hvm
+    - template-configAlletraMPHVMEnableRansomware: config_alletramp_hvm.enable_ransomware
+    - template-configAlletraMPHVMProtocolType: config_alletramp_hvm.protocol_type
+    - template-configAlletraMPBMAASParent: config_alletramp_bmaas
+    - template-configAlletraMPBMAASProtocolType: config_alletramp_bmaas.protocol_type
+    - template-configGFS2Parent: config_gfs2
+    - template-configGFS2BlockDevice: config_gfs2.block_device
+    - template-config: config
+    - template-configFromAPI: config_from_api
+    - template-datastoreTypeParent: datastore_type
+    - template-datastoreTypeId: datastore_type.id
+    - template-datastoreTypeCode: datastore_type.code
+    - template-tenantParent: tenants
+    - template-tenantId: tenants.id
+    - template-tenantDefaultTarget: tenants.default_target
+    - template-tenantDefaultStore: tenants.default_store
+    - template-groupsParent: groups
+    - template-groupsDefault: groups.default
+    - template-groupsId: groups.id
+    - template-groupsName: groups.name
+    - template-resourcePermissions: resource_permissions
+    - groups: resource_permissions.groups
+    - ref_id: associated_resource_id
+    - ref_type: associated_resource_type
+    - zone: cloud
+    - zone_pool: resource_pool
+    - ComputeZone: Cloud
+    - ComputeServerGroup: Cluster
+  removes:
+    # - success
+    # - tenant_permissions
+    # Removing this for now since I can't successfully test it
+    # - config_nfs.source_version.default
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the datastore
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the datastore
+    associated_resource_type:
+      description: Type of the resource this datastore is associated with, can be 'Cloud' or 'Cluster'
+      computed_optional_required: computed
+    associated_resource_id:
+      description: The ID of the resource this datastore is associated with, e.g. Cloud, Cluster
+      computed_optional_required: computed
+    cloud:
+      description: The Cloud this datastore is associated with
+      computed_optional_required: computed
+    resource_pool:
+      description: The resource pool this datastore is associated with (for some Cloud datastores)
+      computed_optional_required: computed
+    resource_pool.id:
+      computed_optional_required: computed
+    #  conflicts_with: [config_nfs, config]
+    #  computed_optional_required: optional
+    #  requires_replace: true
+    #  at_least_one_of: [config_nfs, config_gfs2, config]
+    # TODO we need to add support for dynamic attributes in data-sources
+    #config:
+    #  conflicts_with: [config_nfs, config_alletramp_hvm]
+    #  computed_optional_required: optional
+    #  requires_replace: true
+    #  at_least_one_of: [config_nfs, config, config_alletramp_hvm]

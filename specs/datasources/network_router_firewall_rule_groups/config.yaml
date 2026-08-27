@@ -1,0 +1,72 @@
+network_router_firewall_rule_groups:
+  removes:
+    - rule_groups.iac_id         # (inline response schema) - not needed for list
+    - rule_groups.zone           # (inline response schema) - nullable, not useful
+    - rule_groups.zone_pool      # (inline response schema) - nullable, not useful
+    - rule_groups.rules          # (inline response schema) - heavy nested array, use singular DS for details
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, id,
+                  external_id, status, priority, group_layer.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "id", "external_id", "status", "priority", "group_layer")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A rule group matches the block if the
+                  chosen field matches ANY value (Go regular expression).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+  overrides:
+    router_id:
+      computed_optional_required: required
+      description: The ID of the network router to list firewall rule groups for.
+    rule_groups:
+      computed_optional_required: computed
+      description: The list of firewall rule groups for the specified router.
+    rule_groups.id:
+      description: The ID of the firewall rule group.
+    rule_groups.name:
+      description: The name of the firewall rule group.
+    rule_groups.description:
+      description: The description of the firewall rule group.
+    rule_groups.external_id:
+      description: The external ID of the firewall rule group.
+    rule_groups.status:
+      description: The status of the firewall rule group.
+    rule_groups.priority:
+      description: The priority of the firewall rule group.
+    rule_groups.group_layer:
+      description: The group layer of the firewall rule group.
+    rule_groups.visibility:
+      description: >-
+        Visibility of the rule group, either 'private' or 'public'. Only
+        returned to master-tenant callers; null otherwise.
+    rule_groups.tenants:
+      description: >-
+        Tenants granted access to the rule group. Only returned to master-tenant
+        callers; empty otherwise.
+    rule_groups.tenants.id:
+      description: The ID of the tenant.
+    rule_groups.tenants.name:
+      description: The name of the tenant.

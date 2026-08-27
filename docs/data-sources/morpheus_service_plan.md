@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_service_plan Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -13,15 +13,28 @@ Service Plans in HPE Morpheus Enterprise determine the memory, storage, and core
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_service_plan" "test" {
+data "hpe_morpheus_service_plan" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_service_plan" "test" {
-    name = "Example name"
-    provision_type_code = "arm"
+data "hpe_morpheus_service_plan" "example" {
+  name                = "Example name"
+  provision_type_code = "arm"
+}
+```
+
+When several service plans share a name across clouds or regions (e.g. Azure), set `cloud_id` to the cloud the plan must be available in to select it unambiguously:
+
+```terraform
+data "hpe_morpheus_service_plan" "example" {
+  name                = "Example name"
+  provision_type_code = "arm"
+
+  # When plans share a name across clouds/regions (e.g. Azure), set cloud_id to
+  # the cloud the plan must be available in to select it unambiguously.
+  cloud_id = 5
 }
 ```
 
@@ -30,6 +43,7 @@ data "hpe_morpheus_service_plan" "test" {
 
 ### Optional
 
+- `cloud_id` (Number) ID of the cloud the service plan must be available in. Disambiguates plans that share a name across clouds/regions (e.g. Azure). Requires name and provision_type_code.
 - `id` (Number) Morpheus ID of the Object being referenced
 - `name` (String) The name of the Morpheus service plan
 - `provision_type_code` (String) The provision type code of the Morpheus service plan
