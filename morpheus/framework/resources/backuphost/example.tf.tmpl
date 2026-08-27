@@ -1,0 +1,9 @@
+resource "hpe_morpheus_backup_host" "example" {
+  name                = "{{.Name}}"
+  host_id             = {{.HostId}}
+  job_id              = {{.JobId}}
+  backup_type_code    = "{{.BackupTypeCode}}"
+  path                = "{{.Path}}"
+  storage_provider_id = {{.StorageProviderId}}
+  enabled             = {{.Enabled}}
+}

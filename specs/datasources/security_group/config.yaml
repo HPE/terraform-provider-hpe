@@ -1,0 +1,64 @@
+security_group:
+  templates:
+    cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The cloud (zone) ID for the security group.
+    tenant_ids:
+      set:
+        computed_optional_required: computed
+        element_type:
+          int64: {}
+        description: Set of tenant IDs that are allowed access to the security group.
+    resource_permission_groups_all:
+      bool:
+        computed_optional_required: computed
+        description: Whether all groups have access to the security group.
+    resource_permission_group_ids:
+      set:
+        computed_optional_required: computed
+        element_type:
+          int64: {}
+        description: Set of group IDs that have access to the security group.
+  moves:
+    - security_group: "" # unnest GET envelope
+    - template-cloud_id: cloud_id
+    - template-tenant_ids: tenant_ids
+    - template-resource_permission_groups_all: resource_permission_groups_all
+    - template-resource_permission_group_ids: resource_permission_group_ids
+  removes:
+    - custom_options
+    - locations
+    - resource_permission
+    - resource_permissions
+    - rules
+    - success
+    - tenant_permissions
+    - tenants
+    - zone
+    - zone_id
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      conflicts_with: ["name"]
+      description: The ID of the security group. Conflicts with name.
+    name:
+      computed_optional_required: computed_optional
+      conflicts_with: ["id"]
+      description: The name of the security group. Conflicts with id.
+    description:
+      description: The description of the security group.
+    active:
+      description: Whether the security group is active.
+    visibility:
+      description: The visibility of the security group.
+    account_id:
+      description: The tenant (account) ID that owns the security group.
+    external_id:
+      description: The external ID of the security group.
+    group_source:
+      description: The source of the security group.
+    sync_source:
+      description: The sync source of the security group.
+    enabled:
+      description: Whether the security group is enabled (on/off).

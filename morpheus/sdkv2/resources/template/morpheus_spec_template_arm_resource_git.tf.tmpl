@@ -1,0 +1,7 @@
+resource "hpe_morpheus_spec_template_arm" "tfexample_arm_spec_template_git" {
+  name          = "{{.Name}}"
+  source_type   = "{{.SourceType}}"
+  repository_id = {{.RepositoryId}}
+  version_ref   = "{{.VersionRef}}"
+  spec_path     = "{{.SpecPath}}"
+}

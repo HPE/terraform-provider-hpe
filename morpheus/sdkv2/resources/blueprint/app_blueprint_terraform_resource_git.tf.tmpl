@@ -1,0 +1,13 @@
+resource "hpe_morpheus_app_blueprint_terraform" "tfapp_blueprint_git" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  category          = "{{.Category}}"
+  source_type       = "{{.SourceType}}"
+  working_path      = "{{.WorkingPath}}"
+  integration_id    = {{.IntegrationId}}
+  repository_id     = {{.RepositoryId}}
+  version_ref       = "{{.VersionRef}}"
+  terraform_version = "{{.TerraformVersion}}"
+  terraform_options = "{{.TerraformOptions}}"
+  tfvar_secret      = "{{.TfvarSecret}}"
+}

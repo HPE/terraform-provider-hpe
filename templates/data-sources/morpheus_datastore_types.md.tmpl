@@ -1,0 +1,31 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+## Example Usage
+
+{{ tffile "examples/data-sources/morpheus_datastore_types/data-source.tf" }}
+
+## Supported `filter` keys
+
+Each `filter` block sets `name` to one of the keys below and `values` to one or
+more Go regular expressions. A datastore type matches a block when the key's
+value matches **any** of the supplied `values`; multiple `filter` blocks are
+**ANDed** together.
+
+| Key | Matches |
+|-----|---------|
+| `name` | The datastore type name. |
+| `code` | The datastore type code. |
+| `external_type` | The external type identifier. |
+| `disk_type` | The disk type (e.g. `ssd`, `hdd`). |
+| `creatable` | Whether the datastore type is creatable, `true` or `false`. |
+| `is_plugin` | Whether the datastore type is a plugin, `true` or `false`. |
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,0 +1,12 @@
+resource "hpe_morpheus_task_library_template" "example" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = {{.Labels}}
+  execute_target      = "{{.ExecuteTarget}}"
+  file_template       = "{{.FileTemplate}}"
+  file_template_id    = {{.FileTemplateId}}
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}

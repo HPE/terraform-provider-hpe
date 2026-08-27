@@ -1,0 +1,14 @@
+resource "hpe_morpheus_load_balancer_profile" "cookie" {
+  load_balancer_id = {{.LoadBalancerId}}
+  name             = "{{.Name}}"
+  service_type     = "LBCookiePersistenceProfile"
+
+  config_cookie_persistence = {
+    cookie_mode      = "{{.CookieMode}}"
+    cookie_type      = "{{.CookieType}}"
+    cookie_name      = "{{.CookieName}}"
+    cookie_fallback  = true
+    cookie_garbling  = true
+    share_persistence = false
+  }
+}

@@ -1,0 +1,507 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+package group
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/convert"
+)
+
+// Ensure provider defined types fully satisfy framework interfaces.
+var (
+	_ resource.Resource                = &Resource{}
+	_ resource.ResourceWithImportState = &Resource{}
+)
+
+func NewResource() resource.Resource {
+	return &Resource{}
+}
+
+// Resource defines the resource implementation.
+type Resource struct {
+	configure.ResourceWithMorpheusConfigure
+	resource.Resource
+}
+
+func (r *Resource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
+	resp.TypeName = req.ProviderTypeName + "_" + "group"
+}
+
+func (r *Resource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
+	resp.Schema = GroupResourceSchema(ctx)
+}
+
+// populate group resource model with current API values
+func getGroupAsState(
+	ctx context.Context,
+	id int64,
+	client *sdk.APIClient,
+	plan GroupModel,
+) (GroupModel, diag.Diagnostics) {
+	var state GroupModel
+	var diags diag.Diagnostics
+
+	g, hresp, err := client.GroupsAPI.GetGroups(ctx, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		diags.AddError(
+			"populate group resource",
+			fmt.Sprintf("group %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
+		)
+
+		return state, diags
+	}
+
+	if g.Group == nil {
+		diags.AddError("API returned nil", "Group is nil in the response")
+
+		return state, diags
+	}
+
+	state.Id = convert.Int64ToType(g.Group.Id)
+	state.Name = convert.StrToType(g.Group.Name)
+	state.Code = convert.StrToType(g.Group.Code.Get())
+	state.Location = convert.StrToType(g.Group.Location.Get())
+	state.Labels = convert.StrSliceToSet(g.Group.Labels)
+
+	// Use the plan to avoid sorting issues from the API
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		state.CloudIds = plan.CloudIds
+	} else {
+		// On import, use the API values
+		state.CloudIds = types.ListNull(types.Int64Type)
+
+		if len(g.Group.Zones) > 0 {
+			var cloudIds []int64
+			for _, zone := range g.Group.Zones {
+				if zone.Id != nil {
+					cloudIds = append(cloudIds, *zone.Id)
+				}
+			}
+
+			// Only set the state if cloud ids are returned
+			listVal, listDiags := types.ListValueFrom(ctx, types.Int64Type, cloudIds)
+			if listDiags.HasError() {
+				diags.Append(listDiags...)
+
+				return state, diags
+			}
+
+			state.CloudIds = listVal
+		}
+	}
+
+	return state, diags
+}
+
+func updateClouds(
+	ctx context.Context,
+	client *sdk.APIClient,
+	id int64,
+	plan GroupModel,
+) error {
+	var clouds []map[string]interface{}
+
+	for _, c := range plan.CloudIds.Elements() {
+		val, ok := c.(types.Int64)
+		if !ok {
+			continue
+		}
+
+		cloud := map[string]interface{}{"id": val.ValueInt64()}
+
+		clouds = append(clouds, cloud)
+	}
+
+	reqGrp := &sdk.UpdateGroupsZonesRequestGroup{
+		Zones: clouds,
+	}
+
+	req := &sdk.UpdateGroupsZonesRequest{
+		Group: *reqGrp,
+	}
+
+	_, hresp, err := client.GroupsAPI.UpdateGroupsZones(ctx, id).UpdateGroupsZonesRequest(*req).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return fmt.Errorf("group %d update clouds failed", id)
+	}
+
+	return nil
+}
+
+func (r *Resource) Create(
+	ctx context.Context,
+	req resource.CreateRequest,
+	resp *resource.CreateResponse,
+) {
+	var plan GroupModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	name := plan.Name.ValueString()
+	addGroup := &sdk.AddGroupsRequestGroup{
+		Name: name,
+	}
+
+	var config GroupModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !plan.Code.IsUnknown() {
+		addGroup.Code = plan.Code.ValueStringPointer()
+	}
+
+	if !plan.Location.IsUnknown() {
+		addGroup.Location = plan.Location.ValueStringPointer()
+	}
+
+	if !plan.Labels.IsUnknown() {
+		labels, err := convert.SetToStrSlice(plan.Labels)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+": failed to parse label: "+err.Error(),
+			)
+
+			return
+		}
+
+		addGroup.Labels = labels
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"create group resource",
+			"group "+name+": failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	addGroupReq := &sdk.AddGroupsRequest{
+		Group: *addGroup,
+	}
+
+	group, hresp, err := client.GroupsAPI.AddGroups(ctx).AddGroupsRequest(*addGroupReq).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"create group resource",
+			"group "+name+" POST failed: "+errfmt.ErrMsg(err, hresp),
+		)
+
+		return
+	}
+
+	if group.Group == nil {
+		resp.Diagnostics.AddError("API returned nil", "Group is nil in the response")
+
+		return
+	}
+
+	if group.Group.Id == nil {
+		resp.Diagnostics.AddError(
+			"create group resource",
+			"group "+name+": id is nil",
+		)
+
+		return
+	}
+
+	id := *group.Group.Id
+	plan.Id = types.Int64Value(id)
+
+	// Helper to taint the resource state on an error after the POST request
+	taintResourceState := func(id int64) {
+		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+			ResourceType: "group",
+			ResourceID:   id,
+			StateWriter:  &resp.State,
+			Diagnostics:  &resp.Diagnostics,
+		})
+	}
+
+	// write id as soon as possible
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		if err := updateClouds(ctx, client, id, plan); err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+" update clouds failed: "+err.Error(),
+			)
+
+			return
+		}
+	}
+
+	state, pdiags := getGroupAsState(ctx, id, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"create group resource",
+			fmt.Sprintf("group %d: failed to read from api", id),
+		)
+		taintResourceState(id)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to set group state",
+			fmt.Sprintf("Group %d was created but state could not be saved", id),
+		)
+		taintResourceState(id)
+
+		return
+	}
+}
+
+func (r *Resource) Update(
+	ctx context.Context,
+	req resource.UpdateRequest,
+	resp *resource.UpdateResponse,
+) {
+	var plan, state, config GroupModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	updateGroup := &sdk.UpdateGroupsRequestGroup{}
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	name := plan.Name.ValueString()
+
+	updateGroup.Name = name
+
+	if !plan.Code.IsNull() {
+		updateGroup.Code = plan.Code.ValueStringPointer()
+	}
+
+	if !plan.Location.IsNull() {
+		updateGroup.Location = plan.Location.ValueStringPointer()
+	}
+
+	if plan.Labels.IsNull() {
+		updateGroup.Labels = []string{}
+	} else {
+		labels, err := convert.SetToStrSlice(plan.Labels)
+		if err != nil {
+			resp.Diagnostics.AddError(
+				"update group resource",
+				"group "+name+": failed to parse labels: "+err.Error(),
+			)
+
+			return
+		}
+
+		updateGroup.Labels = labels
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"update group resource",
+			"group "+name+": failed to create client: "+err.Error(),
+		)
+
+		return
+	}
+
+	id := plan.Id.ValueInt64()
+
+	updateGroupReq := &sdk.UpdateGroupsRequest{
+		Group: *updateGroup,
+	}
+
+	group, hresp, err := client.GroupsAPI.UpdateGroups(ctx, id).
+		UpdateGroupsRequest(*updateGroupReq).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"update group resource",
+			"group "+name+" PUT failed: "+errfmt.ErrMsg(err, hresp),
+		)
+
+		return
+	}
+
+	if group.Group == nil {
+		resp.Diagnostics.AddError("API returned nil", "Group is nil in the response")
+
+		return
+	}
+
+	if group.Group.Id == nil {
+		resp.Diagnostics.AddError(
+			"update group resource",
+			"group "+name+": id is nil",
+		)
+
+		return
+	}
+
+	newid := *group.Group.Id
+	if newid != id {
+		resp.Diagnostics.AddError(
+			"update group resource",
+			"group "+name+": id mismatch "+fmt.Sprintf("%d != %d", id, newid),
+		)
+
+		return
+	}
+
+	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
+		if err := updateClouds(ctx, client, id, plan); err != nil {
+			resp.Diagnostics.AddError(
+				"create group resource",
+				"group "+name+" update clouds failed: "+err.Error(),
+			)
+
+			return
+		}
+	}
+
+	state, pdiags := getGroupAsState(ctx, newid, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"update group resource",
+			fmt.Sprintf("group %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+}
+
+func (r *Resource) Read(
+	ctx context.Context,
+	req resource.ReadRequest,
+	resp *resource.ReadResponse,
+) {
+	var plan GroupModel
+
+	diags := req.State.Get(ctx, &plan)
+	if diags.HasError() {
+		return
+	}
+
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"read group resource",
+			"new client call failed with "+err.Error(),
+		)
+
+		return
+	}
+
+	id := plan.Id.ValueInt64()
+	state, pdiags := getGroupAsState(ctx, id, client, plan)
+	if pdiags.HasError() {
+		resp.Diagnostics.Append(pdiags...)
+		resp.Diagnostics.AddError(
+			"read group resource",
+			fmt.Sprintf("group %d: failed to read from api", id),
+		)
+
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+}
+
+func (r *Resource) Delete(
+	ctx context.Context,
+	req resource.DeleteRequest,
+	resp *resource.DeleteResponse,
+) {
+	var data GroupModel
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := data.Id.ValueInt64()
+
+	client, _ := r.NewClient(ctx)
+
+	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		resp.Diagnostics.AddError(
+			"delete group resource",
+			fmt.Sprintf("group %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+		)
+
+		return
+	}
+}
+
+func (r *Resource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	id, err := strconv.Atoi(req.ID)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"import group resource",
+			"provided import ID '"+req.ID+"' is invalid (non-number)",
+		)
+
+		return
+	}
+
+	diags := resp.State.SetAttribute(
+		ctx, path.Root("id"), id,
+	)
+	resp.Diagnostics.Append(diags...)
+}

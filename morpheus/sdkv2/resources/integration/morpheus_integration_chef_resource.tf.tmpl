@@ -1,0 +1,12 @@
+resource "hpe_morpheus_integration_chef" "tf_example_chef_integration" {
+  name                       = "{{.Name}}"
+  enabled                    = {{.Enabled}}
+  url                        = "{{.Url}}"
+  version                    = "{{.Version}}"
+  windows_version            = "{{.WindowsVersion}}"
+  windows_msi_install_url    = "{{.WindowsMsiInstallUrl}}"
+  organization               = "{{.Organization}}"
+  username                   = "{{.Username}}"
+  private_key                = "{{.PrivateKey}}"
+  organization_validator_key = "{{.OrganizationValidatorKey}}"
+}

@@ -1,0 +1,8 @@
+resource "hpe_morpheus_budget" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  year        = {{.Year}}
+  interval    = "{{.Interval}}"
+  scope       = "{{.Scope}}"
+  enabled     = {{.Enabled}}
+}

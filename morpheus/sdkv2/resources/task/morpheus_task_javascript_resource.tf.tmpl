@@ -1,0 +1,12 @@
+resource "hpe_morpheus_task_javascript" "tfexample_javascript" {
+  name                = "{{.Name}}"
+  code                = "{{.Code}}"
+  labels              = {{.Labels}}
+  script_content      = <<EOF
+{{.ScriptContent}}
+EOF
+  retryable           = {{.Retryable}}
+  retry_count         = {{.RetryCount}}
+  retry_delay_seconds = {{.RetryDelaySeconds}}
+  allow_custom_config = {{.AllowCustomConfig}}
+}

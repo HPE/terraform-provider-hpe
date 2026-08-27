@@ -1,0 +1,86 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+//go:build sweep
+
+package sweep
+
+import (
+	"context"
+	"net/http"
+	"strings"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+)
+
+const sweeperName = "hpe_morpheus_network_router_bgp_neighbor"
+
+type bgpNeighborSweeperItem struct {
+	routerID int64
+	neighbor sdk.GetNetworkRoutersBgpNeighbors200ResponseNetworkRouterBgpNeighborsInner
+}
+
+func init() {
+	testsweep.RegisterTypedAPISweeper(
+		sweeperName,
+		// List network router BGP neighbor resources by iterating routers.
+		func(ctx context.Context, client *sdk.APIClient) ([]bgpNeighborSweeperItem, *http.Response, error) {
+			routersResp, routersHTTPResp, err := client.NetworksAPI.GetNetworkRouters(ctx).Execute()
+			if err != nil || routersResp == nil {
+				return nil, routersHTTPResp, err
+			}
+
+			items := make([]bgpNeighborSweeperItem, 0)
+
+			for _, router := range routersResp.NetworkRouters {
+				routerID, ok := getsafe.GetOk(router.Id)
+				if !ok || routerID == nil {
+					continue
+				}
+
+				neighborsResp, _, listErr := client.NetworksAPI.GetNetworkRoutersBgpNeighbors(ctx, *routerID).Execute()
+				if listErr != nil || neighborsResp == nil {
+					continue
+				}
+
+				for _, neighbor := range neighborsResp.NetworkRouterBgpNeighbors {
+					items = append(items, bgpNeighborSweeperItem{routerID: *routerID, neighbor: neighbor})
+				}
+			}
+
+			return items, routersHTTPResp, nil
+		},
+		// Is this a test network router BGP neighbor?
+		func(item bgpNeighborSweeperItem) bool {
+			return isTestBgpNeighbor(item.neighbor)
+		},
+		// Delete the test network router BGP neighbor.
+		func(ctx context.Context, client *sdk.APIClient, item bgpNeighborSweeperItem) (*http.Response, error) {
+			neighborID, ok := getsafe.GetOk(item.neighbor.Id)
+			if !ok || neighborID == nil {
+				return &http.Response{StatusCode: http.StatusOK}, nil
+			}
+
+			_, delResp, delErr := client.NetworksAPI.DeleteNetworkRouterBgpNeighbor(ctx, *neighborID, item.routerID).Execute()
+			if delErr != nil && delResp != nil && delResp.StatusCode == http.StatusNotFound {
+				return &http.Response{StatusCode: http.StatusOK}, nil
+			}
+
+			return delResp, delErr
+		},
+	)
+}
+
+func isTestBgpNeighbor(
+	neighbor sdk.GetNetworkRoutersBgpNeighbors200ResponseNetworkRouterBgpNeighborsInner,
+) bool {
+	if neighbor.Description.IsSet() {
+		if desc := neighbor.Description.Get(); desc != nil && strings.HasPrefix(*desc, "TestAcc") {
+			return true
+		}
+	}
+
+	return false
+}

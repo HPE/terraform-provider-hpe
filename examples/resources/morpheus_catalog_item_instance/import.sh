@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_catalog_item_instance.tf_example_instance_catalog_item 1

@@ -1,0 +1,39 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Note:** The service port defaults to 22 and cannot be changed via this resource.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_storage_server/resource.tf" }}
+
+### Storage server type
+
+The `type` argument is the storage server type code. Common values:
+
+| `type` | Storage server | Notes |
+|---|---|---|
+| `nfs` | NFS file share | |
+| `3par` | HPE 3PAR / Primera | block |
+| `isilon` | Dell EMC Isilon | |
+| `ecs` | Dell EMC ECS (S3) | |
+| `hpealletramp-storage-provider` | HPE Alletra MP and Alletra 9000 (9060/9080) | block; managed by the Alletra MP plugin |
+| `hpealletramp-X10000-provider.storage` | HPE Alletra Storage MP X10000 | discovery/sync only — not creatable via this resource |
+
+-> The available types depend on the storage plugins installed. Query the full
+set for your environment with `GET /api/storage-server-types`.
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Storage servers can be imported using the resource ID, e.g.
+
+{{ codefile "shell" "examples/resources/morpheus_storage_server/import.sh" }}

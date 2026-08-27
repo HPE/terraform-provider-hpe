@@ -1,0 +1,21 @@
+network:
+  includes:
+    - network.id
+    - network.name
+    - network.active
+    - network.cidr
+    - network.description
+    - network.display_name
+    - network.labels
+    - network.visibility
+  moves:
+    - network: "" # unnest network to root
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: Morpheus ID of the network being referenced
+      conflicts_with: [name]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the Morpheus network
+      conflicts_with: [id]

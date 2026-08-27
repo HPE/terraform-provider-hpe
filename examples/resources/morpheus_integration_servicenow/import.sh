@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_integration_servicenow.tf_example_servicenow_integration 1

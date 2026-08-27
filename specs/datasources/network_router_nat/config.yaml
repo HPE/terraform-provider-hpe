@@ -1,0 +1,57 @@
+network_router_nat:
+  moves:
+    - network_router_nat: ""             # unnest wrapper (components/schemas/networkRouterNat.yaml)
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the NAT rule.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the NAT rule.
+      conflicts_with: ["id"]
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router.
+    action:
+      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE).
+    date_created:
+      description: The date the NAT rule was created.
+    description:
+      description: The description of the NAT rule.
+    destination_network:
+      description: Destination network.
+    destination_ports:
+      description: The destination ports.
+    enabled:
+      description: Whether the NAT rule is enabled.
+    external_id:
+      description: The external ID of the NAT rule.
+    internal_id:
+      description: The internal ID of the NAT rule.
+    last_updated:
+      description: The date the NAT rule was last updated.
+    match_ipv6destination_prefix:
+      description: The IPv6 destination prefix to match.
+    priority:
+      description: Priority of the NAT rule.
+    protocol:
+      description: The protocol for the NAT rule.
+    provider_id:
+      description: The provider ID of the NAT rule.
+    ref_id:
+      description: The reference ID.
+    ref_type:
+      description: The reference type.
+    source_network:
+      description: Source network.
+    source_ports:
+      description: The source ports.
+    sync_source:
+      description: The synchronization source.
+    translated_ipv4source_prefix:
+      description: The translated IPv4 source prefix.
+    translated_network:
+      description: Translated network.
+    translated_ports:
+      description: The translated ports.

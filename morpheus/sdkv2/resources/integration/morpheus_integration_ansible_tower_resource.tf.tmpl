@@ -1,0 +1,7 @@
+resource "hpe_morpheus_integration_ansible_tower" "tf_example_ansible_tower_integration" {
+  name     = "{{.Name}}"
+  enabled  = {{.Enabled}}
+  url      = "{{.Url}}"
+  username = "{{.Username}}"
+  password = "{{.Password}}"
+}

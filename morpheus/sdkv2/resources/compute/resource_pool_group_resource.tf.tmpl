@@ -1,0 +1,13 @@
+resource "hpe_morpheus_resource_pool_group" "example" {
+  name              = "{{ .Name }}"
+  description       = "{{ .Description }}"
+  mode              = "{{ .Mode }}"
+  resource_pool_ids = {{ .ResourcePoolIds }}
+  all_group_access  = {{ .AllGroupAccess }}
+  group_access {
+    group_id = {{ .GroupAccessGroupId }}
+    default  = {{ .GroupAccessDefault }}
+  }
+  visibility = "{{ .Visibility }}"
+  tenant_ids = {{ .TenantIds }}
+}

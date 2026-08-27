@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_integration_docker_registry.tf_example_docker_registry_integration 1

@@ -1,0 +1,63 @@
+cluster_affinity_group:
+  templates:
+    servers:
+      set:
+        computed_optional_required: computed
+        description: Set of compute server IDs in the affinity group.
+        element_type:
+          int64: {}
+    tenantIds:
+      set:
+        computed_optional_required: computed
+        description: "Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806."
+        element_type:
+          int64: {}
+
+  moves:
+    - affinity_group: ""                               # unnest wrapper (components/schemas/clusterAffinityGroup.yaml)
+    - resource_permissions.sites: resource_permissions.groups  # (components/schemas/clusterAffinityGroup.yaml) sites -> groups
+    - template-servers: servers                        # replace spec servers (array of objects) with set of int64
+    - template-tenantIds: tenant_ids                   # replace spec tenants (array of {id,name}) with set of int64
+
+  removes:
+    - tenants                                          # (components/schemas/clusterAffinityGroup.yaml) replaced by tenant_ids
+    - external_id                                      # (components/schemas/clusterAffinityGroup.yaml) internal
+
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the cluster affinity group.
+      conflicts_with: ["name"]
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the cluster affinity group.
+      conflicts_with: ["id"]
+    cluster_id:
+      computed_optional_required: required
+      description: The ID of the parent cluster.
+    active:
+      description: Whether the affinity group is active.
+    affinity_type:
+      description: The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
+    pool:
+      description: The resource pool associated with the affinity group.
+    pool.id:
+      description: The ID of the resource pool.
+    ref_id:
+      description: The reference ID.
+    ref_type:
+      description: The reference type.
+    source:
+      description: The source of the affinity group (e.g. user, sync).
+    resource_permissions:
+      description: Resource permissions for group access.
+    resource_permissions.all:
+      description: Whether access is allowed to all groups.
+    resource_permissions.groups:
+      description: Set of groups allowed access.
+    resource_permissions.groups.id:
+      description: Group ID.
+    resource_permissions.groups.default:
+      description: Whether this is the default group.
+    visibility:
+      description: The visibility of the affinity group.

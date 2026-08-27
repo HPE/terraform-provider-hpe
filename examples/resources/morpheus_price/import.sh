@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_price.tf_example_price 1

@@ -1,0 +1,3 @@
+data "hpe_morpheus_certificate" "example" {
+  name = "Example name"
+}

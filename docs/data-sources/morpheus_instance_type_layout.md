@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_instance_type_layout Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -13,20 +13,20 @@ Instance type layouts are attached to instance types. An instance type layout ca
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_instance_type_layout" "test" {
+data "hpe_morpheus_instance_type_layout" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_instance_type_layout" "test" {
-  name = "Example name" 
+data "hpe_morpheus_instance_type_layout" "example" {
+  name = "Example name"
 }
 ```
 
 ```terraform
-data "hpe_morpheus_instance_type_layout" "test" {
-  name = "Example name" 
+data "hpe_morpheus_instance_type_layout" "example" {
+  name    = "Example name"
   version = "1.2.3"
 }
 ```

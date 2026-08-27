@@ -1,6 +1,6 @@
 ---
 page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
-subcategory: {{ $arr := split .Name "_" }}"{{ index $arr 1 }}"
+subcategory: "Morpheus"
 description: |-
 {{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
 ---
@@ -12,9 +12,9 @@ Roles in HPE Morpheus Enterprise control the access levels for Morpheus resource
 
 ## Example Usage
 
-{{ tffile "internal/subproviders/morpheus/datasources/role/example-id.tf" }}
+{{ tffile "examples/data-sources/morpheus_role/example-id.tf" }}
 
-{{ tffile "internal/subproviders/morpheus/datasources/role/example-name.tf" }}
+{{ tffile "examples/data-sources/morpheus_role/example-name.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}
 

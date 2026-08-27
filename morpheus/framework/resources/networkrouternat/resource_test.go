@@ -1,0 +1,190 @@
+package networkrouternat_test
+
+import (
+	"fmt"
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/networkrouternat"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
+)
+
+func TestMain(m *testing.M) {
+	code := testhelpers.TestMain(m)
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+// nsxtTier1RouterConfig renders a per-test NSX-T tier-1 gateway connected to an
+// existing tier-0 (router id 28), labelled hpe_morpheus_network_router.nat_tier1.
+// NSX-T NAT rules attach to the gateway's policy path, so they require a realized
+// tier-1 that is connected to a tier-0 and has an edge cluster. The tier-0's
+// provider_id/path is read via a data source.
+//
+// The tier-0, group, network server and edge cluster must already exist on the
+// appliance under test and are supplied via the environment; see
+// testhelpers.RequireNsxtFixture. The test skips when they are not configured.
+func nsxtTier1RouterConfig(t *testing.T, name string) string {
+	t.Helper()
+
+	fixture := testhelpers.RequireNsxtFixture(t)
+
+	return `
+data "hpe_morpheus_network_router" "nat_tier0" {
+  id = ` + fixture.Tier0RouterID + `
+}
+
+resource "hpe_morpheus_network_router" "nat_tier1" {
+  name                   = "` + name + `-tier1"
+  group_id               = ` + fixture.GroupID + `
+  network_integration_id = ` + fixture.NetworkServerID + `
+
+  config_nsxt_gateway_tier1 = {
+    ip_management_type = "dhcpLocal"
+    edge_cluster       = "` + fixture.EdgeCluster + `"
+    fail_over          = "NON_PREEMPTIVE"
+    tier0_gateway      = data.hpe_morpheus_network_router.nat_tier0.provider_id
+  }
+}
+`
+}
+
+func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_nat.example"
+
+	routerConfig := nsxtTier1RouterConfig(t, name)
+
+	resourceConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
+		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"Name":     name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + routerConfig + resourceConfig,
+				Check:  checks,
+			},
+			{
+				Config:             providerConfig + routerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      "hpe_morpheus_network_router_nat.example",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_nat.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
+			},
+		},
+	})
+}
+
+func TestAccMorpheusNetworkRouterNatResourceUpdateOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_nat.example"
+
+	routerConfig := nsxtTier1RouterConfig(t, name)
+
+	createConfig, err := networkrouternat.RenderNetworkRouterNatConfig(t, map[string]string{
+		"RouterId": "hpe_morpheus_network_router.nat_tier1.id",
+		"Name":     name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	updateConfig := `
+resource "hpe_morpheus_network_router_nat" "example" {
+  router_id          = hpe_morpheus_network_router.nat_tier1.id
+  name               = "` + name + `"
+  action             = "SNAT"
+  source_network     = "10.1.0.0/24"
+  translated_network = "192.168.1.1"
+  description        = "Updated SNAT rule"
+  protocol           = "tcp"
+}
+`
+
+	createChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source_network", "10.0.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Example SNAT rule"),
+	)
+
+	updateChecks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrPair(resourceName, "router_id", "hpe_morpheus_network_router.nat_tier1", "id"),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "source_network", "10.1.0.0/24"),
+		resource.TestCheckResourceAttr(resourceName, "description", "Updated SNAT rule"),
+		// protocol is deprecated and dropped by the API; verify the configured
+		// value still round-trips (regression guard for the inconsistent-result
+		// -after-apply defect).
+		resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
+	)
+
+	checkInPlaceUpdate := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
+			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
+			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}

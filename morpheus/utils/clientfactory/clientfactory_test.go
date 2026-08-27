@@ -1,0 +1,114 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+package clientfactory_test
+
+import (
+	"context"
+	"crypto/x509"
+	"errors"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/model"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clientfactory"
+)
+
+func TestMain(m *testing.M) {
+	code := m.Run()
+	testhelpers.WriteMergedResults()
+	os.Exit(code)
+}
+
+func TestSecureTLS(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	server := httptest.NewTLSServer(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			// Simulate a simple 200 OK response
+			w.WriteHeader(http.StatusOK)
+		}))
+	defer server.Close()
+
+	m := model.MorpheusProviderModel{
+		URL:             types.StringValue(server.URL),
+		Username:        types.StringValue("user"),
+		Password:        types.StringValue("secret"),
+		AccessToken:     types.StringValue("token"),
+		TenantSubdomain: types.StringValue("subdomain"),
+		Insecure:        types.BoolValue(false),
+	}
+	cf := clientfactory.New(m)
+	c, err := cf.NewClient(context.Background())
+	if err != nil {
+		t.Fatal("Failed to create client", err)
+	}
+	u := c.UsersAPI.GetUser(context.Background(), 1)
+	_, _, err = u.Execute()
+	if err == nil {
+		t.Fatal("Failed to raise error", err)
+	}
+	var certErr x509.UnknownAuthorityError
+	if !errors.As(err, &certErr) {
+		t.Fatalf("Expected UnknownAuthorityError, got: %v", err)
+	}
+}
+
+// TestNewClientTrimsTrailingSlashFromURL verifies the appliance URL is
+// normalized so the SDK builds single-slash request paths. A trailing slash
+// would otherwise yield "//oauth/token", which Morpheus 9.0's Spring
+// Authorization Server (mounted at servlet path "/oauth/*") fails to route,
+// breaking authentication with "undefined response type".
+func TestNewClientTrimsTrailingSlashFromURL(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	m := model.MorpheusProviderModel{
+		URL:      types.StringValue("https://morpheus.example.com/"),
+		Username: types.StringValue("user"),
+		Password: types.StringValue("secret"),
+		Insecure: types.BoolValue(false),
+	}
+	cf := clientfactory.New(m)
+	c, err := cf.NewClient(context.Background())
+	if err != nil {
+		t.Fatal("Failed to create client", err)
+	}
+
+	got := c.GetConfig().Servers[0].URL
+	want := "https://morpheus.example.com"
+	if got != want {
+		t.Fatalf("base URL = %q, want %q", got, want)
+	}
+}
+
+func TestInsecureTLS(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+	server := httptest.NewTLSServer(
+		http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			// Simulate a simple 200 OK response
+			w.WriteHeader(http.StatusOK)
+		}))
+	defer server.Close()
+
+	m := model.MorpheusProviderModel{
+		URL:             types.StringValue(server.URL),
+		Username:        types.StringValue("user"),
+		Password:        types.StringValue("secret"),
+		AccessToken:     types.StringValue("token"),
+		TenantSubdomain: types.StringValue("subdomain"),
+		Insecure:        types.BoolValue(true),
+	}
+	cf := clientfactory.New(m)
+	c, err := cf.NewClient(context.Background())
+	if err != nil {
+		t.Fatal("Failed to create client", err)
+	}
+	u := c.UsersAPI.GetUser(context.Background(), 1)
+	_, _, err = u.Execute()
+	if err != nil {
+		t.Fatal("Unexpected error", err)
+	}
+}

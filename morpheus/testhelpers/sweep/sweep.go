@@ -1,0 +1,221 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package sweep
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+	"slices"
+	"strings"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+)
+
+// EnvSweepPrefix optionally overrides the prefix the sweeper uses to identify
+// acceptance-test resources eligible for deletion. When unset or blank, the
+// sweeper falls back to defaultTestResourcePrefix.
+const EnvSweepPrefix = "TF_ACC_SWEEP_PREFIX"
+
+// defaultTestResourcePrefix matches resources created by acceptance tests,
+// which name resources after their Go test function (TestAccMorpheus*).
+const defaultTestResourcePrefix = "TestAccMorpheus"
+
+// ListPageSize is the page size sweepers should request when listing
+// resources.
+//
+// The Morpheus API applies a default of 25 records when the max query
+// parameter is omitted. A sweeper that lists without it therefore only ever
+// sees the first 25 resources, silently leaving older leaked resources on the
+// appliance and letting the leak grow without bound. Pass this to the list
+// call's Max builder, e.g. ListLoadBalancers(ctx).Max(ListPageSize).
+const ListPageSize int64 = 10000
+
+// TestResourcePrefix identifies acceptance test resources eligible for sweeping.
+// It is overridable via EnvSweepPrefix for targeted cleanup; unset or blank
+// keeps the default so a normal sweep still matches test-created resources.
+var TestResourcePrefix = resolveSweepPrefix(os.Getenv(EnvSweepPrefix))
+
+// resolveSweepPrefix returns the prefix the sweeper matches against. A non-blank
+// override is trimmed and used verbatim; anything else falls back to the
+// default. The empty-string guard is critical: an empty prefix would make
+// strings.HasPrefix match every resource and sweep the whole appliance.
+func resolveSweepPrefix(v string) string {
+	if v = strings.TrimSpace(v); v != "" {
+		log.Printf( //nolint:gosec // G706: operator-set env value, %q-escaped
+			"[INFO] Sweeper resource prefix overridden to %q via %s",
+			v, EnvSweepPrefix,
+		)
+
+		return v
+	}
+
+	return defaultTestResourcePrefix
+}
+
+// TypedSweepList returns all candidate resources that could be swept.
+type TypedSweepList[T any] func(ctx context.Context, client *sdk.APIClient) ([]T, *http.Response, error)
+
+// TypedResourceCheck decides whether a listed item is a test resource.
+type TypedResourceCheck[T any] func(item T) bool
+
+// TypedSweepDelete deletes a resource item selected for sweeping.
+type TypedSweepDelete[T any] func(ctx context.Context, client *sdk.APIClient, item T) (*http.Response, error)
+
+// TypedSweepOption configures optional sweep behavior.
+type TypedSweepOption[T any] func(*typedSweepConfig[T])
+
+// TypedSweepFilter applies additional checks before delete is attempted.
+type TypedSweepFilter[T any] func(ctx context.Context, client *sdk.APIClient, item T) (bool, string, error)
+
+type typedSweepConfig[T any] struct {
+	filter             TypedSweepFilter[T]
+	ignoreListStatuses []int
+	dependencies       []string
+}
+
+func registerSweeper(resourceName string, dependencies []string, sweep func(string) error) {
+	resource.AddTestSweepers(
+		resourceName,
+		&resource.Sweeper{
+			Name:         resourceName,
+			Dependencies: dependencies,
+			F: func(system string) (retErr error) {
+				defer recoverSweepPanic(resourceName, &retErr)
+
+				return sweep(system)
+			},
+		},
+	)
+}
+
+// RegisterTypedAPISweeper registers a typed sweeper with an explicit contract:
+//   - listResource: list all resources that could be swept.
+//   - isTestResource: decide if a listed item is a test resource.
+//   - deleteResource: delete a matched test resource.
+//
+// Optional behavior can be added via options (for example, additional filters or
+// ignored list status codes).
+func RegisterTypedAPISweeper[T any](
+	resourceName string,
+	listResource TypedSweepList[T],
+	isTestResource TypedResourceCheck[T],
+	deleteResource TypedSweepDelete[T],
+	options ...TypedSweepOption[T],
+) {
+	config := typedSweepConfig[T]{}
+
+	for _, option := range options {
+		option(&config)
+	}
+
+	registerSweeper(resourceName, config.dependencies, func(system string) error {
+		ctx := context.Background()
+
+		client, err := testhelpers.NewClientForServer(ctx, system)
+		if err != nil {
+			log.Printf("[WARN] Cannot create sweep client for %q: %v", system, err)
+
+			return nil
+		}
+
+		items, hresp, err := listResource(ctx, client)
+		if err != nil {
+			if hresp != nil && slices.Contains(config.ignoreListStatuses, hresp.StatusCode) {
+				log.Printf("[INFO] No %s found (status %d)", resourceName, hresp.StatusCode)
+
+				return nil
+			}
+
+			return fmt.Errorf("failed to list %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
+		}
+
+		if hresp == nil || hresp.StatusCode != http.StatusOK {
+			return fmt.Errorf("failed to list %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
+		}
+
+		var sweptCount int
+		var sweepErr error
+		errCount := 0
+
+		for _, item := range items {
+			if !isTestResource(item) {
+				continue
+			}
+
+			if config.filter != nil {
+				allowed, reason, err := config.filter(ctx, client, item)
+				if err != nil {
+					errMsg := fmt.Sprintf("failed to evaluate filter for %s: %s", resourceName, err)
+					log.Printf("[ERROR] %s", errMsg)
+					sweepErr = errors.Join(sweepErr, errors.New(errMsg))
+					errCount++
+
+					continue
+				}
+
+				if !allowed {
+					log.Printf("[INFO] Skipping %s (%s)", resourceName, reason)
+
+					continue
+				}
+			}
+
+			log.Printf("[INFO] Sweeping %s", resourceName)
+
+			hresp, err := deleteResource(ctx, client, item)
+			if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
+				errMsg := fmt.Sprintf("failed to delete %s: %s", resourceName, errfmt.ErrMsg(err, hresp))
+				log.Printf("[ERROR] %s", errMsg)
+				sweepErr = errors.Join(sweepErr, errors.New(errMsg))
+				errCount++
+
+				continue
+			}
+
+			sweptCount++
+		}
+
+		log.Printf("[INFO] %s sweep completed. Resources swept: %d, errors: %d", resourceName, sweptCount, errCount)
+
+		return sweepErr
+	})
+}
+
+// WithFilter adds an optional post-check before deleteResource is called.
+func WithFilter[T any](filter TypedSweepFilter[T]) TypedSweepOption[T] {
+	return func(config *typedSweepConfig[T]) {
+		config.filter = filter
+	}
+}
+
+// WithIgnoreListStatuses treats listed HTTP status codes from listResource as
+// non-fatal and returns success for the sweep.
+func WithIgnoreListStatuses[T any](statuses ...int) TypedSweepOption[T] {
+	return func(config *typedSweepConfig[T]) {
+		config.ignoreListStatuses = append(config.ignoreListStatuses, statuses...)
+	}
+}
+
+// WithDependencies declares sweeper names that must run before this sweeper.
+func WithDependencies[T any](deps ...string) TypedSweepOption[T] {
+	return func(config *typedSweepConfig[T]) {
+		config.dependencies = append(config.dependencies, deps...)
+	}
+}
+
+// RecoverSweepPanic recovers from panics during sweep execution and converts them to errors.
+func recoverSweepPanic(resourceName string, retErr *error) {
+	if r := recover(); r != nil {
+		*retErr = fmt.Errorf("panic during %s sweep: %v", resourceName, r)
+		log.Printf("[ERROR] %v", *retErr)
+	}
+}

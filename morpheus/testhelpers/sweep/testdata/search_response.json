@@ -1,0 +1,16 @@
+{
+  "hits": [
+    { "id": "402", "uuid": "6ac0357b-d675-4000-819a-fede5a5c940a", "name": "qatf-ttestacc-haproxy-lb-full", "description": null, "type": "Instance", "dateCreated": "2026-05-12T14:36:16+0000", "score": 33.20005 },
+    { "id": "403", "uuid": "b8bc0268-3796-4d88-820b-4cf5cea0fc26", "name": "qatf-ttestacc-haproxy-lb-generic", "description": null, "type": "Instance", "dateCreated": "2026-05-12T14:36:40+0000", "score": 26.81926 },
+    { "id": "404", "uuid": "8101caef-ce70-48d0-b824-52bdd5e6144e", "name": "qatf-ttestacc-haproxy-lb-update", "description": null, "type": "Instance", "dateCreated": "2026-05-12T14:37:02+0000", "score": 26.305344 },
+    { "id": "1206", "uuid": "e1a953a6-7181-43ab-b452-6280141835e1", "name": "qatf-ttestacc-haproxy-lb-basic", "description": null, "type": "Instance", "dateCreated": "2026-07-23T09:33:24+0000", "score": 23.017715 },
+    { "id": "1405", "uuid": "6f753c26-1952-42c5-a69c-ecce34dabb22", "name": "qatf-ttestacc-image-basic-1", "description": null, "type": "VirtualImage", "dateCreated": "2026-07-16T15:09:14+0000", "score": 4.705141 },
+    { "id": "66", "uuid": null, "name": "qatf-ttestacc-basic", "description": "Basic User basic@example.com", "type": "User", "dateCreated": "2026-01-22T06:58:54+0000", "score": 2.6880012 },
+    { "id": "357", "uuid": "bda7feef-8e82-4a19-bb7b-887909e6aaf6", "name": "qatf-ttestacc-haproxy-lb-basic", "description": "HAProxy load balancer", "type": "NetworkLoadBalancer", "dateCreated": "2026-07-23T09:33:24+0000", "score": 1.2945694 },
+    { "id": "142", "uuid": null, "name": "qatf-example_wiki_page_required", "description": null, "type": "Wikipage", "dateCreated": "2026-01-20T16:46:56+0000", "score": 1.0397208 },
+    { "id": "76", "uuid": "438b036e-2b6d-42da-9a25-6d216d2a270a", "name": "qatf-docker-1", "description": null, "type": "AccountIntegration", "dateCreated": null, "score": 0.48054332 }
+  ],
+  "query": "qatf-",
+  "took": 978,
+  "meta": { "offset": 0, "max": 1000, "size": 9, "total": 9 }
+}

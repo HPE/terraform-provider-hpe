@@ -4,7 +4,6 @@ run:
 linters:
   default: none
   enable:
-    - goconst
     - gosec
     - govet
     - ineffassign
@@ -27,12 +26,15 @@ linters:
       keywords:
         - OPTIMIZE
     lll:
-      line-length: 120
+      line-length: 132
     revive:
       rules:
         - name: var-naming
-          # Suppress warnings about Id "initialism" - i.e. make Id and ID valid
-          arguments: [ [ "ID", "URL", "API" ] ]
+          # Suppress warnings about "initialisms" - i.e. make both Id and ID
+          # valid, and likewise for the others. These names mirror the JSON of
+          # the APIs the clients wrap, so the lower-case forms are often the
+          # more faithful spelling.
+          arguments: [ [ "ID", "URL", "API", "IDS", "IP", "UUID", "UID", "JSON", "SSH" ] ]
   exclusions:
     generated: lax
     presets:
@@ -44,6 +46,12 @@ linters:
       - linters:
           - lll
         source: '^//go:generate '
+      # A line whose length is driven by a single long string literal cannot be
+      # usefully wrapped: schema descriptions read worse when split, and
+      # splitting a URL or format string risks silently altering it.
+      - linters:
+          - lll
+        source: '"[^"]{80,}"'
       - linters:
           - err113
           - funlen
@@ -61,6 +69,10 @@ linters:
           - staticcheck
         text: 'ST1005:'
     paths:
+      # Vendored Morpheus SDK (generated oapigen + hand-written legacy). It was
+      # an external module before being merged in-tree and is not subject to the
+      # provider's lint rules; exclude it from analysis (also keeps lint fast).
+      - internal/sdk
       - third_party$
       - builtin$
       - examples$
@@ -69,6 +81,7 @@ issues:
 formatters:
   enable:
     - gofumpt
+    - goimports
   settings:
     goimports:
       local-prefixes:
@@ -76,6 +89,7 @@ formatters:
   exclusions:
     generated: lax
     paths:
+      - internal/sdk
       - third_party$
       - builtin$
       - examples$

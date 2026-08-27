@@ -1,0 +1,41 @@
+resource "hpe_morpheus_cluster_hks_hvm" "example" {
+  name                    = "{{.Name}}"
+  resource_prefix         = "{{.ResourcePrefix}}"
+  hostname_prefix         = "{{.HostnamePrefix}}"
+  description             = "{{.Description}}"
+  cloud_id                = {{.CloudId}}
+  group_id                = {{.GroupId}}
+  cluster_layout_id       = {{.ClusterLayoutId}}
+  pod_cidr                = "{{.PodCidr}}"
+  service_cidr            = "{{.ServiceCidr}}"
+  workers                 = {{.WorkerCount}}
+
+  server {
+    plan_id          = {{.ServerPlanId}}
+    resource_pool_id = {{.ServerResourcePoolId}}
+
+    network_interface {
+      network_id = {{.ServerNetworkInterfaceNetworkId}}
+    }
+
+    storage_volume {
+      root         = {{.ServerStorageRootVolumeRoot}}
+      size         = {{.ServerStorageRootVolumeSize}}
+      name         = "{{.ServerStorageRootVolumeName}}"
+      storage_type = {{.ServerStorageRootVolumeStorageType}}
+      datastore_id = {{.ServerStorageRootVolumeDatastoreId}}
+    }
+
+    storage_volume {
+      root         = {{.ServerStorageDataVolumeRoot}}
+      size         = {{.ServerStorageDataVolumeSize}}
+      name         = "{{.ServerStorageDataVolumeName}}"
+      storage_type = {{.ServerStorageDataVolumeStorageType}}
+      datastore_id = {{.ServerStorageDataVolumeDatastoreId}}
+    }
+
+    tags = {
+      "app" = "{{.ServerTagsApp}}"
+    }
+  }
+}

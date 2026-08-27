@@ -1,0 +1,1 @@
+terraform import hpe_morpheus_option_type_radio_list.tf_example_radio_list_option_type 1

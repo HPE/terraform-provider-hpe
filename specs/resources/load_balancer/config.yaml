@@ -1,0 +1,216 @@
+load_balancer:
+  templates:
+    config:
+      dynamic:
+        computed_optional_required: computed_optional
+        description: Configuration object with parameters that vary by load balancer type.
+        validators:
+          - custom:
+              imports:
+                - path: github.com/HPE/terraform-provider-hpe/utils/validators
+              schema_definition: validators.ValidObjectMap()
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                dynamicvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRoot("config_haproxy"),
+                  path.MatchRoot("config_nsxt"),
+                }...)
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                dynamicvalidator.ExactlyOneOf(path.Expressions{
+                  path.MatchRoot("config"),
+                  path.MatchRoot("config_haproxy"),
+                  path.MatchRoot("config_nsxt"),
+                }...)
+    config_haproxy:
+      single_nested: {}
+    config_nsxt:
+      single_nested: {}
+    admin_state:
+      bool: {}
+    size:
+      string: {}
+    tier1_gateway:
+      string: {}
+    log_level:
+      string: {}
+    plan_id:
+      int64: {}
+    pool:
+      string: {}
+    type_code:
+      string: {}
+    group_id:
+      int64: {}
+    group_id_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only group_id attribute. Because group_id is write-only it
+          is never stored in state, so editing group_id on its own produces no plan diff. The
+          group is set only when the load balancer is created and the API provides no way to move
+          it afterwards, so increment this value when group_id changes to replace the load
+          balancer with one in the new group.
+    network_server_id_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only network_server_id attribute. Because
+          network_server_id is write-only it is never stored in state, so editing
+          network_server_id on its own produces no plan diff. The network server is set only when
+          the load balancer is created and the API provides no way to change it afterwards, so
+          increment this value when network_server_id changes to replace the load balancer with
+          one registered against the new network server.
+    permissions_all:
+      bool:
+        computed_optional_required: computed_optional
+        description: Pass true to allow access to all groups
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                boolvalidator.ConflictsWith(path.Expressions{
+                  path.MatchRelative().AtParent().AtName("groups"),
+                }...)
+    permissions_groups:
+      list:
+        computed_optional_required: computed_optional
+        description: Array of group IDs that are allowed access
+        element_type:
+          int64: {}
+
+  moves:
+    - load_balancer: "" # unnest wrapper (components/schemas/loadBalancerCreate.yaml)
+    - template-type_code: type_code # replace read-only type object with string for type code
+    - template-group_id: group_id # site.id from create payload (not in OpenAPI spec)
+    - template-group_id_version: group_id_version # write-only companion for group_id
+    - template-network_server_id_version: network_server_id_version # write-only companion for network_server_id
+    - zone.id: cloud_id # (components/schemas/loadBalancer.yaml)
+    - template-config_haproxy: config_haproxy
+    - template-config_nsxt: config_nsxt
+    - template-admin_state: config_nsxt.admin_state
+    - template-size: config_nsxt.size
+    - template-tier1_gateway: config_nsxt.tier1_gateway
+    - template-log_level: config_nsxt.log_level
+    - template-plan_id: config_haproxy.plan_id
+    - template-pool: config_haproxy.pool
+    - resource_permissions: permissions # (components/schemas/loadBalancerCreate.yaml)
+    - template-permissions_all: permissions.all
+    - template-permissions_groups: permissions.groups
+    - template-config: config
+
+  removes:
+    - account_id # (components/schemas/loadBalancer.yaml)
+    - admin_port # (components/schemas/loadBalancer.yaml)
+    - allow_vip_entry # (components/schemas/loadBalancer.yaml)
+    - api_port # (components/schemas/loadBalancer.yaml)
+    - cloud # (components/schemas/loadBalancer.yaml)
+    - zone # (components/schemas/loadBalancer.yaml)
+    - credential # (components/schemas/loadBalancer.yaml)
+    - date_created # (components/schemas/loadBalancer.yaml)
+    - external_id # (components/schemas/loadBalancer.yaml)
+    - external_ip # (components/schemas/loadBalancer.yaml)
+    - host # (components/schemas/loadBalancer.yaml)
+    - instance_price # (components/schemas/loadBalancer.yaml)
+    - internal_ip # (components/schemas/loadBalancer.yaml)
+    - ip # (components/schemas/loadBalancer.yaml)
+    - load_balancer_id # path parameter, redundant with id
+    - last_updated # (components/schemas/loadBalancer.yaml)
+    - owner # (components/schemas/loadBalancer.yaml)
+    - password # (components/schemas/loadBalancer.yaml)
+    - password_hash # (components/schemas/loadBalancer.yaml)
+    - pool_name # (components/schemas/loadBalancer.yaml)
+    - port # (components/schemas/loadBalancer.yaml)
+    - resource_permission # (components/schemas/loadBalancer.yaml)
+    - server_name # (components/schemas/loadBalancer.yaml)
+    - site # (components/schemas/loadBalancerCreate.yaml)
+    - ssl_cert # (components/schemas/loadBalancer.yaml)
+    - ssl_enabled # (components/schemas/loadBalancer.yaml)
+    - type # (components/schemas/loadBalancer.yaml)
+    - username # (components/schemas/loadBalancer.yaml)
+    - uuid # (components/schemas/loadBalancer.yaml)
+    - vip_pools # (components/schemas/loadBalancer.yaml)
+    - virtual_service_name # (components/schemas/loadBalancer.yaml)
+    - permissions.all_plans # (components/schemas/resourcePermissions.yaml)
+    - permissions.plans # (components/schemas/resourcePermissions.yaml)
+    - permissions.sites # replaced by template (components/schemas/resourcePermissions.yaml)
+
+  overrides:
+    id:
+      state_for_unknown: true
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the load balancer is enabled
+    cloud_id:
+      description: The ID of the cloud associated with the load balancer
+      computed_optional_required: optional
+      requires_replace: true # REVIEW: likely immutable after creation
+    config_haproxy:
+      description: Configuration for HAProxy container load balancer type
+      computed_optional_required: optional
+      conflicts_with: [type_code]
+    config_nsxt:
+      description: Configuration for NSX-T load balancer type
+      computed_optional_required: optional
+      conflicts_with: [config, config_haproxy]
+      requires_replace: true
+    config_nsxt.admin_state:
+      description: If true then Admin State will be active/enabled.
+      computed_optional_required: optional
+      requires_replace: true
+    config_nsxt.size:
+      description: Supported Values are "SMALL", "MEDIUM", "LARGE"
+      computed_optional_required: optional
+      one_of: [SMALL, MEDIUM, LARGE]
+      requires_replace: true
+    config_nsxt.tier1_gateway:
+      description: Provider ID of the Tier-1 Gateway. provider_id can be found in the hpe_morpheus_network_router datasource.
+      computed_optional_required: required
+      requires_replace: true
+    config_nsxt.log_level:
+      description: Supported Values are "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL", "ALERT", "EMERGENCY"
+      computed_optional_required: optional
+      one_of: [DEBUG, INFO, WARNING, ERROR, CRITICAL, ALERT, EMERGENCY]
+      requires_replace: true
+    config_haproxy.plan_id:
+      description: The ID of the service plan for the HAProxy load balancer
+      computed_optional_required: required
+    config_haproxy.pool:
+      description: The ID of the network pool for the HAProxy load balancer
+      computed_optional_required: required
+    description:
+      computed_optional_required: computed_optional
+    group_id:
+      description: The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.
+      computed_optional_required: optional
+      write_only: true # not returned in GET response
+    group_id_version:
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      string_length_at_most: 32
+    network_server_id:
+      computed_optional_required: optional
+      description: The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.
+      write_only: true # not returned in GET response
+    network_server_id_version:
+      requires_replace: true
+    permissions:
+      description: Resource permissions for the load balancer
+      computed_optional_required: computed_optional
+    type_code:
+      description: The type code of the load balancer (e.g. haproxyContainer)
+      computed_optional_required: optional
+      requires_replace: true
+    visibility:
+      computed_optional_required: computed_optional
+      one_of: [public, private]
+      default: public

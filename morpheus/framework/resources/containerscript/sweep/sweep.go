@@ -1,0 +1,66 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+//go:build sweep
+
+package sweep
+
+import (
+	"context"
+	"fmt"
+	"net/http"
+	"strings"
+
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
+	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+)
+
+const sweeperName = "hpe_morpheus_container_script"
+
+func init() {
+	testsweep.RegisterTypedAPISweeper(
+		sweeperName,
+		// List library container script resources.
+		func(ctx context.Context, client *sdk.APIClient) (
+			[]sdk.ListScripts200ResponseAllOfContainerScriptsInner,
+			*http.Response,
+			error,
+		) {
+			resp, hresp, err := client.LibraryAPI.ListScripts(ctx).Execute()
+			if resp == nil {
+				return nil, hresp, err
+			}
+
+			return getsafe.Get(&resp.ContainerScripts), hresp, err
+		},
+		// Is this a test library container script?
+		func(item sdk.ListScripts200ResponseAllOfContainerScriptsInner) bool {
+			name, ok := getsafe.GetOk(item.Name)
+			if !ok || name == nil {
+				return false
+			}
+
+			return strings.HasPrefix(*name, testsweep.TestResourcePrefix)
+		},
+		// Delete the test library container script.
+		func(
+			ctx context.Context,
+			client *sdk.APIClient,
+			item sdk.ListScripts200ResponseAllOfContainerScriptsInner,
+		) (*http.Response, error) {
+			id, ok := getsafe.GetOk(item.Id)
+			if !ok || id == nil {
+				return nil, fmt.Errorf("could not get ID")
+			}
+
+			_, hresp, err := client.LibraryAPI.DeleteScript(ctx, *id).Execute()
+
+			return hresp, err
+		},
+		testsweep.WithIgnoreListStatuses[sdk.ListScripts200ResponseAllOfContainerScriptsInner](
+			http.StatusNotFound,
+			http.StatusForbidden,
+		),
+	)
+}

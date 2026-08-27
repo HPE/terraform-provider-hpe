@@ -1,6 +1,6 @@
 ---
 page_title: "hpe_morpheus_group Data Source - terraform-provider-hpe"
-subcategory: "morpheus"
+subcategory: "Morpheus"
 description: |-
   
 ---
@@ -15,13 +15,13 @@ Policies applied to a Group will be enforced on all Instances provisioned or mov
 ## Example Usage
 
 ```terraform
-data "hpe_morpheus_group" "test" {
+data "hpe_morpheus_group" "example" {
   id = 99
 }
 ```
 
 ```terraform
-data "hpe_morpheus_group" "test" {
+data "hpe_morpheus_group" "example" {
   name = "Example name"
 }
 ```

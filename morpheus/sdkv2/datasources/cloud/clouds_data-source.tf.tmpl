@@ -1,0 +1,7 @@
+data "hpe_morpheus_clouds" "example" {
+  sort_ascending = {{.SortAscending}}
+  filter {
+    name   = "{{.FilterName}}"
+    values = [{{.FilterValues}}]
+  }
+}

@@ -1,0 +1,138 @@
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+
+package plan_test
+
+import (
+	"regexp"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
+	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/plan"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
+)
+
+func TestAccMorpheusPriceSetExampleOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	name := acctest.RandomWithPrefix(t.Name())
+
+	dependencyConfig, err := plan.RenderPriceConfig(t, map[string]string{
+		"Name": name,
+		"Code": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceConfig, err := plan.RenderPriceSetConfig(t, map[string]string{
+		"Name":     name,
+		"Code":     name,
+		"PriceIds": "[hpe_morpheus_price.example.id]",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_price_set.example",
+			"name",
+			name,
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_price_set.example",
+			"code",
+			name,
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_price_set.example",
+			"region_code",
+			"us-west-2",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_price_set.example",
+			"price_unit",
+			"minute",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_price_set.example",
+			"type",
+			"fixed",
+		),
+
+		resource.TestCheckResourceAttrSet(
+			"hpe_morpheus_price_set.example",
+			"price_ids.0",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			// Apply
+			{
+				Config:             providerConfig + dependencyConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				Check:              checkFn,
+			},
+			// Plan after apply
+			{
+				Config:             providerConfig + dependencyConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusPriceSetInvalidTypeRejected(t *testing.T) {
+	t.Parallel()
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// Use an invalid type that was previously accepted by the provider but
+	// rejected by the API (a price type, not a price-set type).
+	invalidConfig := `
+resource "hpe_morpheus_price_set" "bad" {
+  name        = "invalid-type-test"
+  code        = "invalid-type-test"
+  region_code = "us-west-2"
+  type        = "compute"
+  price_unit  = "hour"
+  price_ids   = [1]
+}
+`
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + invalidConfig,
+				ExpectError: regexp.MustCompile(`expected type to be one of`),
+			},
+		},
+	})
+}

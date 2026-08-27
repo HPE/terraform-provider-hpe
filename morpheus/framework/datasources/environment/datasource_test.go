@@ -1,0 +1,256 @@
+// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+
+package environment_test
+
+import (
+	"fmt"
+	"regexp"
+	"testing"
+
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
+	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/provider"
+	"github.com/HPE/terraform-provider-hpe/provider/adapter"
+)
+
+const providerConfigOffline = `
+provider "hpe" {
+  morpheus {
+    url          = ""
+    username     = ""
+    password     = ""
+  }
+}
+`
+
+func newProviderWithError() (tfprotov6.ProviderServer, error) {
+	providerInstance := provider.New("test", adapter.NewMorpheus())()
+
+	return providerserver.NewProtocol6WithError(providerInstance)()
+}
+
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"hpe": newProviderWithError,
+}
+
+func TestAccMorpheusFindEnvironmentById(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	environment, err := testhelpers.CreateEnvironment(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		testhelpers.DeleteEnvironment(t, environment.ID)
+	})
+
+	environmentID := fmt.Sprintf("%d", environment.ID)
+	environmentName := environment.Name
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-id.tf.tmpl", "Id", environmentID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_environment.example",
+			"name",
+			environmentName,
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_environment.example",
+			"id",
+			environmentID,
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindIdbyName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	environment, err := testhelpers.CreateEnvironment(t)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		testhelpers.DeleteEnvironment(t, environment.ID)
+	})
+
+	environmentID := fmt.Sprintf("%d", environment.ID)
+	environmentName := environment.Name
+
+	providerConfig := testhelpers.ProviderBlock()
+	dataSourceConfig, err := testhelpers.RenderExample(t,
+		"example-name.tf.tmpl",
+		"Name", environmentName)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_environment.example",
+			"name",
+			environmentName,
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_environment.example",
+			"id",
+			environmentID,
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindEnvironmentNotFound(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	config := providerConfig + `
+      data "hpe_morpheus_environment" "test" {
+        name = "______"
+      }`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_environment.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := environment.ErrorNoEnvironmentFound
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindEnvironmentNoSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
+      data "hpe_morpheus_environment" "test" {
+      }`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_environment.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := environment.ErrorNoValidSearchTerms
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}
+
+func TestAccMorpheusFindEnvironmentBothSearchAttrs(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	config := providerConfigOffline + `
+      data "hpe_morpheus_environment" "test" {
+        id = 1
+        name = "______" 
+      }`
+
+	checks := []resource.TestCheckFunc{
+		resource.TestCheckNoResourceAttr(
+			"data.hpe_morpheus_environment.test",
+			"id",
+		),
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+
+	expected := environment.ErrorRunningPreApply
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				Check:       checkFn,
+				ExpectError: regexp.MustCompile(expected),
+			},
+		},
+	})
+}

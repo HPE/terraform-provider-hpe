@@ -1,0 +1,40 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+~> **Terminology** Morpheus models these as separate things. An **instance** is the
+unit you provision and manage. A **compute server** is a machine record backing it, and
+may be either a guest virtual machine or a hypervisor host — both appear in the same
+collection. A **host** is a compute server that hosts others: it has guests of its own
+and no parent. Affinity group members are guests, not the hosts they run on.
+
+-> Use this resource rather than the affinity group's `servers` attribute when anything
+else may also add members to the group. The group's membership can only be written as a
+whole, so a resource that manages the whole set removes anything it does not list. This
+resource manages one membership and leaves the rest alone.
+
+## Example Usage
+
+{{ tffile "examples/resources/morpheus_cloud_affinity_group_member/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Import
+
+Import an existing membership using `cloud_id/affinity_group_id/server_id`.
+
+```bash
+terraform import hpe_morpheus_cloud_affinity_group_member.example 15056/6221/572308
+```
+
+-> A membership has no identifier of its own — it is the pairing that exists, not an
+object — so all three parts are required.
+
+~> An instance provisioned with `config_vmware.affinity_group_id` joins the group directly.
+That membership is not managed by this resource unless you import it.

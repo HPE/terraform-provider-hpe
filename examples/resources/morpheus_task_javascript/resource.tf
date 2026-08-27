@@ -1,0 +1,12 @@
+resource "hpe_morpheus_task_javascript" "tfexample_javascript" {
+  name                = "tfexample_javascript"
+  code                = "tfexample_javascript"
+  labels              = ["demo", "terraform"]
+  script_content      = <<EOF
+console.log("testing")
+EOF
+  retryable           = true
+  retry_count         = 1
+  retry_delay_seconds = 10
+  allow_custom_config = true
+}

@@ -1,0 +1,6 @@
+resource "hpe_morpheus_setting_whitelabel" "example" {
+  enabled         = {{.Enabled}}
+  appliance_name  = "{{.ApplianceName}}"
+  primary_color   = "{{.PrimaryColor}}"
+  secondary_color = "{{.SecondaryColor}}"
+}

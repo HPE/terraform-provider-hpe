@@ -1,0 +1,8 @@
+resource "hpe_morpheus_workflow_operational" "example" {
+  name                = "{{.Name}}"
+  description         = "{{.Description}}"
+  labels              = {{.Labels}}
+  platform            = "{{.Platform}}"
+  visibility          = "{{.Visibility}}"
+  allow_custom_config = {{.AllowCustomConfig}}
+}

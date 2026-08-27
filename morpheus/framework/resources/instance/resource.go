@@ -1,0 +1,229 @@
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
+
+package instance
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"slices"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+
+	"github.com/cenkalti/backoff/v5"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
+)
+
+var (
+	_ resource.Resource                     = &Resource{}
+	_ resource.ResourceWithImportState      = &Resource{}
+	_ resource.ResourceWithModifyPlan       = &Resource{}
+	_ resource.ResourceWithConfigValidators = &Resource{}
+)
+
+func NewResource() resource.Resource {
+	return &Resource{}
+}
+
+type Resource struct {
+	configure.ResourceWithMorpheusConfigure
+}
+
+// Metadata implements resource.Resource.
+func (g *Resource) Metadata(
+	_ context.Context,
+	req resource.MetadataRequest,
+	resp *resource.MetadataResponse,
+) {
+	resp.TypeName = req.ProviderTypeName + "_" + "instance"
+	resp.TypeName = req.ProviderTypeName + "_" + "instance"
+}
+
+// Schema implements resource.Resource.
+func (g *Resource) Schema(
+	ctx context.Context,
+	_ resource.SchemaRequest,
+	resp *resource.SchemaResponse,
+) {
+	resp.Schema = InstanceResourceSchema(ctx)
+}
+
+func checkStatusDone(status string, targetStatuses []string, errorStatuses []string) error {
+	switch {
+	case slices.Contains(errorStatuses, status):
+		return backoff.Permanent(errors.New("reached error status: " + status))
+	case slices.Contains(targetStatuses, status):
+		return nil
+	default:
+		return backoff.RetryAfter(5)
+	}
+}
+
+func (g *Resource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	// Only run validation if we have a plan and a state
+	if req.Plan.Raw.IsNull() || req.State.Raw.IsNull() {
+		return
+	}
+
+	// Put prior state back into the plan for computed attributes whose
+	// triggering configuration has not changed, so that an unrelated edit does
+	// not show them as "(known after apply)". Done before the checks below,
+	// which return early when the appliance version cannot be determined.
+	restoreUnchangedComputedAttributes(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	var plan, state InstanceModel
+
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Get API client - provider is configured at this point
+	client, err := g.NewClient(ctx)
+	if err != nil {
+		// If we can't get a client, skip validation
+		return
+	}
+
+	// Determine the appliance version to decide whether attribute-shape changes
+	// require a resource replacement. Skip the check (rather than block the plan)
+	// if the version cannot be determined.
+	morphVersion, err := versioncheck.Appliance(ctx, client)
+	if err != nil {
+		return
+	}
+
+	// Check for network updates that require a resource replacement
+	networkConstraint := &morpheusConstraint{
+		morphVersion: morphVersion,
+		planRaw:      resp.Plan.Raw,
+		stateRaw:     req.State.Raw,
+		constraint:   ">= 8.1.2",
+		hclAttribute: "network_interfaces",
+		mnemonic:     "network",
+	}
+	networkConstraint.checkForAttributeUpdate(resp)
+
+	// Check for service plan options updates that require a resource replacement
+	servicePlanOptionsConstraint := &morpheusConstraint{
+		morphVersion: morphVersion,
+		planRaw:      resp.Plan.Raw,
+		stateRaw:     req.State.Raw,
+		constraint:   ">= 8.1.2",
+		hclAttribute: "service_plan_options",
+		mnemonic:     "Service Plan Options",
+	}
+	servicePlanOptionsConstraint.checkForAttributeUpdate(resp)
+}
+
+type morpheusConstraint struct {
+	morphVersion *versioncheck.Version
+	planRaw      tftypes.Value
+	stateRaw     tftypes.Value
+	constraint   string
+	hclAttribute string
+	mnemonic     string
+}
+
+func (m *morpheusConstraint) checkForAttributeUpdate(
+	resp *resource.ModifyPlanResponse,
+) {
+	// Has the practitioner changed the shape of the attribute?
+	//
+	// Unknowns are filled from prior state before comparing, which is how
+	// restoreUnchangedComputedAttributes already decides whether a collection
+	// was touched. The two are now consistent.
+	//
+	// A strict comparison counted the framework's own "(known after apply)"
+	// placeholders as a change. The framework marks every null computed
+	// attribute unknown whenever anything in the resource differs, so editing
+	// an unrelated attribute left the interface and volume collections unknown
+	// and looked like a reconfiguration -- forcing a replacement, on appliances
+	// below the constraint, of an instance whose networking nobody had touched.
+	if !attributeChanged(m.planRaw, m.stateRaw, m.hclAttribute) {
+		return
+	}
+
+	// Build constraint
+	ok, err := versioncheck.Satisfies(m.morphVersion, m.constraint)
+	if err != nil || ok {
+		return
+	}
+
+	// Attribute shape changed on an older appliance version;
+	// force a new resource.
+	resp.RequiresReplace = append(
+		resp.RequiresReplace, path.Root(m.hclAttribute),
+	)
+	resp.Diagnostics.AddWarning(
+		fmt.Sprintf("%s change will trigger replace",
+			cases.Title(language.English, cases.NoLower).String(m.mnemonic)),
+		fmt.Sprintf("Morpheus version must be %s to allow %s updates without instance replacement",
+			m.constraint, m.mnemonic),
+	)
+}
+
+// ConfigValidators implements resource.ResourceWithConfigValidators.
+// server_uuid and server_uuids are mutually exclusive.
+func (g *Resource) ConfigValidators(
+	_ context.Context,
+) []resource.ConfigValidator {
+	return []resource.ConfigValidator{
+		serverUUIDConflictValidator{},
+		hvmHostAffinityConflictValidator{},
+	}
+}
+
+// serverUUIDConflictValidator rejects configs that set both server_uuid and
+// server_uuids. Only one may be used at a time.
+type serverUUIDConflictValidator struct{}
+
+func (v serverUUIDConflictValidator) Description(_ context.Context) string {
+	return "server_uuid and server_uuids are mutually exclusive"
+}
+
+func (v serverUUIDConflictValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v serverUUIDConflictValidator) ValidateResource(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config InstanceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	uuidSet := !config.ServerUuid.IsNull() && !config.ServerUuid.IsUnknown()
+	uuidsSet := !config.ServerUuids.IsNull() && !config.ServerUuids.IsUnknown()
+
+	if uuidSet && uuidsSet {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("server_uuid"),
+			"Conflicting attributes",
+			"server_uuid and server_uuids are mutually exclusive. "+
+				"Use server_uuid (server_uuids is deprecated and will be removed in a future major version).",
+		)
+	}
+}

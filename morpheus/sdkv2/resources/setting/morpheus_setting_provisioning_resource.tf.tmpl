@@ -1,0 +1,12 @@
+resource "hpe_morpheus_setting_provisioning" "tf_example_provisioning_setting" {
+  allow_zone_selection         = {{.AllowZoneSelection}}
+  allow_host_selection         = {{.AllowHostSelection}}
+  require_environments         = {{.RequireEnvironments}}
+  show_pricing                 = {{.ShowPricing}}
+  hide_datastore_stats         = {{.HideDatastoreStats}}
+  cross_tenant_naming_policies = {{.CrossTenantNamingPolicies}}
+  cloudinit_username           = "{{.CloudinitUsername}}"
+  cloudinit_password           = "{{.CloudinitPassword}}"
+  windows_password             = "{{.WindowsPassword}}"
+  pxe_root_password            = "{{.PxeRootPassword}}"
+}

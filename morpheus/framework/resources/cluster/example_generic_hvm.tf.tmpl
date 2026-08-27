@@ -1,0 +1,58 @@
+resource "hpe_morpheus_cluster" "example_generic_hvm" {
+  name              = "{{.Name}}"
+  description       = "{{.Description}}"
+  cloud_id          = {{.CloudId}}
+  group_id          = {{.GroupId}}
+  layout_id         = {{.LayoutId}}
+  cluster_type_code = "{{.ClusterTypeCode}}"
+
+  labels = [
+    "{{.Label1}}",
+    "{{.Label2}}",
+  ]
+
+  config = {
+    createUser = false
+    cpuArch = "x86_64"
+    cpuModel = "host-model"
+    dynamicPlacementMode = "off"
+    powerPolicy = "balanced"
+  }
+
+  server = {
+    service_plan_id = {{.ServicePlanId}}
+
+    ssh_port = {{.SshPort}}
+    ssh_username = "{{.SshUsername}}"
+    ssh_key_pair_id = {{.SshKeyPairId}}
+    management_net_interface = "{{.ManagementNetInterface}}"
+
+    ssh_hosts = [
+      {
+        name = "{{.SshHost1Name}}"
+        ip = "{{.SshHost1Ip}}"
+      },
+      {
+        name = "{{.SshHost2Name}}"
+        ip = "{{.SshHost2Ip}}"
+      },
+      {
+        name = "{{.SshHost3Name}}"
+        ip = "{{.SshHost3Ip}}"
+      }
+    ]
+
+    visibility = "{{.Visibility}}"
+
+    tags = [
+    {
+      name = "{{.Tag1Name}}"
+      value = "{{.Tag1Value}}"
+    },
+    {
+      name = "{{.Tag2Name}}"
+      value = "{{.Tag2Value}}"
+    },
+    ]
+  }
+}

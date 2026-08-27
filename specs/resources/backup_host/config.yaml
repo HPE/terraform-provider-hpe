@@ -1,0 +1,117 @@
+backup_host:
+  description: "Manages a Morpheus Backup resource for Hosts."
+  templates:
+    backup_type_str:
+      string:
+        computed_optional_required: required
+        description: The backup type code. For Host backups, this is either fileBackup or directoryBackup.
+        validators:
+          - custom:
+              imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+              schema_definition: |-
+                stringvalidator.OneOf(
+                "fileBackup",
+                "directoryBackup",
+                )
+    path_str:
+      string:
+        computed_optional_required: optional
+        description: The file or directory path on the target host to back up.
+    ssh_username:
+      string:
+        computed_optional_required: optional
+        description: SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.
+        # We won't use an AlsoRequires on ssh_username for ssh_password_wo as ssh_password_wo should be set in the config only on create and update time.
+        # We don't want to require the config to always have it as it's WriteOnly.
+    ssh_password_wo:
+      string:
+        computed_optional_required: optional
+        description: SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.
+        sensitive: true
+        write_only: true
+        plan_modifiers:
+        - custom:
+            imports:
+              - path: "github.com/HPE/terraform-provider-hpe/utils/modifiers"
+            schema_definition: |-
+              modifiers.NullableStringUpdateModifier{}
+        validators:
+          - custom:
+              imports:
+                - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                - path: github.com/hashicorp/terraform-plugin-framework/path
+              schema_definition: |-
+                stringvalidator.AlsoRequires(path.Expressions{
+                  path.MatchRoot("ssh_username"),
+                }...)
+    ssh_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: SSH password version. Used to determine if ssh_password_wo has been updated.
+  moves:
+    - backup: ""
+    - backup_server_host.server_id: host_id
+    - storage_provider.id: storage_provider_id
+    - job.id: job_id
+    - template-backup_type_str: backup_type_code
+    - template-path_str: path
+    - template-ssh_username: ssh_username
+    - template-ssh_password_wo: ssh_password_wo
+    - template-ssh_password_wo_version: ssh_password_wo_version
+  removes:
+    - backup_type
+    - container_id
+    - backup_instance
+    - backup_provider
+    - backup_repository
+    - backup_server_host
+    - backup_storage_provider
+    - retention_count
+    - cron_expression
+    - date_created
+    - instance
+    - job
+    - last_result
+    - last_status
+    - last_updated
+    - location_type
+    - next_fire
+    - schedule
+    - stats
+    - storage_provider
+    - success
+    - location
+    - server
+    - target_all
+    - target_host
+    - target_name
+    - target_password
+    - target_password_hash
+    - target_path
+    - target_port
+    - target_username
+    - volume_path
+  overrides:
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the backup is enabled.
+      default: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the backup.
+      state_for_unknown: true
+    host_id:
+      computed_optional_required: required
+      description: The ID of the host (server) to backup.
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: The name of the backup.
+    job_id:
+      computed_optional_required: required
+      description: The Backup Job that this Backup will use. If this is the only Backup referencing the Backup Job, deleting the Backup resource will also delete the Backup Job referenced by job_id.
+    storage_provider_id:
+      computed_optional_required: computed_optional
+      description: The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
+      state_for_unknown: true

@@ -1,0 +1,68 @@
+budget:
+  description: "Manages a Morpheus Budget resource."
+  moves:
+    - budget: ""
+  removes:
+    - account
+    - average_cost
+    - costs
+    - created_by_id
+    - created_by_name
+    - currency
+    - date_created
+    - external_id
+    - forecast_type
+    - internal_id
+    - is_fiscal
+    - last_updated
+    - over_limit
+    - period
+    - ref_id
+    - ref_name
+    - ref_scope
+    - ref_type
+    - resource_type
+    - rollover
+    - scope_cloud_id
+    - scope_group_id
+    - scope_tenant_id
+    - scope_user_id
+    - stats
+    - success
+    - timezone
+    - total_cost
+    - updated_by_id
+    - updated_by_name
+    - warning_limit
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the budget.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the budget is enabled.
+      default: true
+    end_date:
+      computed_optional_required: optional
+      description: The end date of the budget.
+    id:
+      computed_optional_required: computed
+      description: The ID of the budget.
+      state_for_unknown: true
+    interval:
+      computed_optional_required: computed_optional
+      description: The budget interval (year, quarter, month).
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the budget.
+    scope:
+      computed_optional_required: computed_optional
+      description: The scope of the budget.
+      state_for_unknown: true
+    start_date:
+      computed_optional_required: optional
+      description: The start date of the budget.
+    year:
+      computed_optional_required: optional
+      description: The year of the budget.

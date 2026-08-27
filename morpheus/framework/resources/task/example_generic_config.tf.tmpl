@@ -1,0 +1,12 @@
+resource "hpe_morpheus_task" "example_task" {
+    name = "{{ .Name }}"
+    task_type_code = "nestedWorkflow"
+
+    config = {
+        operationalWorkflowId = "{{.OperationalWorkflowId}}"
+        operationalWorkflowName = "{{.OperationalWorkflowName}}"
+    }
+
+    execute_target = "local"
+    retryable = false
+}

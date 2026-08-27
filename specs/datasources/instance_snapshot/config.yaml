@@ -1,0 +1,63 @@
+instance_snapshot:
+  templates:
+    cloud_id:
+      int64:
+        computed_optional_required: computed
+        description: The ID of the cloud (zone) the snapshot belongs to.
+  moves:
+    - snapshot: ""                          # unnest read wrapper (components/schemas/snapshot.yaml)
+    - template-cloud_id: cloud_id
+  removes:
+    - zone                                  # (components/schemas/snapshot.yaml) - exposed as cloud_id
+  overrides:
+    id:
+      computed_optional_required: required
+      description: The ID of the snapshot to look up.
+    name:
+      computed_optional_required: computed
+      description: The name of the snapshot.
+    description:
+      computed_optional_required: computed
+      description: A description of the snapshot.
+    status:
+      computed_optional_required: computed
+      description: The status of the snapshot.
+    external_id:
+      computed_optional_required: computed
+      description: The external (cloud-provider) identifier of the snapshot.
+    state:
+      computed_optional_required: computed
+      description: The lifecycle state of the snapshot.
+    snapshot_type:
+      computed_optional_required: computed
+      description: The type of the snapshot (cloud/provider specific).
+    snapshot_created:
+      computed_optional_required: computed
+      description: When the snapshot was taken on the underlying platform.
+    datastore:
+      computed_optional_required: computed
+      description: The datastore the snapshot resides on, if reported by the platform.
+    parent_snapshot:
+      computed_optional_required: computed
+      description: The ID of the parent snapshot in the snapshot lineage, if any.
+    currently_active:
+      computed_optional_required: computed
+      description: Whether this snapshot is the currently active snapshot for the instance.
+    memory_snapshot:
+      computed_optional_required: computed
+      description: Whether the snapshot includes the instance's memory.
+    for_export:
+      computed_optional_required: computed
+      description: Whether the snapshot was created in an exportable form (a full, standalone disk image).
+    for_backup:
+      computed_optional_required: computed
+      description: Whether the snapshot was created as part of a backup operation.
+    date_created:
+      computed_optional_required: computed
+      description: When the snapshot was created.
+    cloud_id:
+      computed_optional_required: computed
+      description: The ID of the cloud (zone) the snapshot belongs to.
+    snapshot_files:
+      computed_optional_required: computed
+      description: The files that make up the snapshot, as reported by the platform.

@@ -1,0 +1,71 @@
+backup_instance:
+  moves:
+    - backup: ""                           # (components/schemas/backup.yaml) unnest wrapper
+    - instance.id: instance_id             # (components/schemas/backup.yaml) flatten nested object
+    - storage_provider.id: storage_provider_id  # (components/schemas/backup.yaml) flatten nested object
+    - job.id: job_id                       # (components/schemas/backup.yaml) flatten nested object
+  removes:
+    - instance                             # (components/schemas/backup.yaml) flattened to instance_id
+    - job                                  # (components/schemas/backup.yaml) flattened to job_id
+    - last_result                          # (components/schemas/backup.yaml) transient runtime state object
+    - last_status                          # (components/schemas/backup.yaml) transient runtime state
+    - next_fire                            # (components/schemas/backup.yaml) transient runtime state
+    - server                               # (components/schemas/backup.yaml) host-oriented field, not instance
+    - stats                                # (components/schemas/backup.yaml) freeform runtime statistics object
+    - storage_provider                     # (components/schemas/backup.yaml) flattened to storage_provider_id
+    - success                              # (components/schemas/backup.yaml) transient runtime state
+    - target_password                      # (components/schemas/backup.yaml) SENSITIVE - password
+    - target_password_hash                 # (components/schemas/backup.yaml) SENSITIVE - password hash
+  overrides:
+    id:
+      description: ID of the Instance Backup
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: Name of the Instance Backup
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    backup_provider:
+      description: The backup provider object.
+    backup_repository:
+      description: The backup repository object.
+    backup_type:
+      description: The backup type object.
+    container_id:
+      description: The ID of the container (workload) being backed up
+    cron_expression:
+      description: The cron expression for the backup schedule.
+    date_created:
+      description: The date the backup was created.
+    enabled:
+      description: Whether the backup is enabled
+    instance_id:
+      description: The ID of the instance being backed up
+    job_id:
+      description: The ID of the Backup Job associated with this backup
+    last_updated:
+      description: The date the backup was last updated.
+    location:
+      description: The backup storage location.
+    location_type:
+      description: The backup storage location type.
+    retention_count:
+      description: The number of backups to retain.
+    schedule:
+      description: The backup schedule object.
+    storage_provider_id:
+      description: The ID of the storage provider (Bucket or File Share) used for this backup
+    target_all:
+      description: Whether to target all databases.
+    target_host:
+      description: The target database host.
+    target_name:
+      description: The target database name.
+    target_path:
+      description: The file or directory path being backed up.
+    target_port:
+      description: The target database port.
+    target_username:
+      description: The target database username.
+    volume_path:
+      description: The LVM volume path.

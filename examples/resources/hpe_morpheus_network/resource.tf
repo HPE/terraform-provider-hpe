@@ -19,7 +19,7 @@ variable "cloud_id" {
 variable "pool_id" {
   description = "Network pool id"
   type        = number
-  default     = 1
+  default     = 6446
 }
 
 variable "group_id" {
@@ -100,6 +100,7 @@ resource "hpe_morpheus_network" "aws" {
   visibility                 = var.visibility
   cidr                       = var.cidr
   zone_pool_id               = var.zone_pool_id
+  labels                     = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 
   lifecycle {
     ignore_changes = [name, display_name, description]

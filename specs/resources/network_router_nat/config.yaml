@@ -1,0 +1,122 @@
+network_router_nat:
+  # protocol/firewall/service are pinned via templates: protocol is deprecated
+  # (needs a deprecation_message, which only a template supports) and
+  # firewall/service are request config-context fields sent nested under config
+  # by the resource, so they are kept as plain top-level string attributes.
+  # action/firewall/service are write-only (the API never returns them), so each
+  # is paired with an <attr>_version companion template: write-only values are
+  # absent from state and cannot produce a plan diff on their own.
+  templates:
+    protocol:
+      string:
+        computed_optional_required: computed_optional
+        description: "Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility."
+        deprecation_message: "Deprecated: use service instead. protocol is retained for backward compatibility."
+    firewall:
+      string:
+        computed_optional_required: optional
+        description: The firewall match applied to the NAT rule (nested under config).
+    service:
+      string:
+        computed_optional_required: optional
+        description: The service (protocol) applied to the NAT rule (nested under config).
+    action_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only action attribute. Because action is write-only it is
+          never stored in state, so editing action on its own produces no plan diff. Increment
+          this value whenever action changes: the change to action_version is what produces the
+          plan diff, and the update then sends the current action value to the API.
+    firewall_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only firewall attribute. Because firewall is write-only it
+          is never stored in state, so editing firewall on its own produces no plan diff.
+          Increment this value whenever firewall changes: the change to firewall_version is what
+          produces the plan diff, and the update then sends the current firewall value to the API.
+          Leaving this value alone preserves the firewall setting currently held by the provider.
+    service_version:
+      int64:
+        computed_optional_required: optional
+        description: >-
+          Version marker for the write-only service attribute. Because service is write-only it is
+          never stored in state, so editing service on its own produces no plan diff. Increment
+          this value whenever service changes: the change to service_version is what produces the
+          plan diff, and the update then sends the current service value to the API. Leaving this
+          value alone preserves the service setting currently held by the provider.
+  moves:
+    - network_router_nat: ""          # unnest the API envelope (standard pattern)
+    - template-protocol: protocol     # pin deprecated protocol
+    - template-firewall: firewall     # pin config-context firewall
+    - template-service: service       # pin config-context service
+    - template-action_version: action_version      # write-only companion for action
+    - template-firewall_version: firewall_version  # write-only companion for firewall
+    - template-service_version: service_version    # write-only companion for service
+  removes:
+    - success
+    - config                          # request config wrapper; firewall/service pinned top-level via templates
+    - source_ports                    # (networkRouterNat.yaml) not exposed
+    - destination_ports               # (networkRouterNat.yaml) not exposed
+    - match_ipv6destination_prefix    # (networkRouterNat.yaml) not exposed
+    - translated_ipv4source_prefix    # (networkRouterNat.yaml) not exposed
+    - ref_type                        # (networkRouterNat.yaml) internal
+    - ref_id                          # (networkRouterNat.yaml) internal
+    - sync_source                     # (networkRouterNat.yaml) read-only
+    - internal_id                     # (networkRouterNat.yaml) read-only
+    - provider_id                     # (networkRouterNat.yaml) read-only
+    - date_created                    # (networkRouterNat.yaml) read-only
+    - last_updated                    # (networkRouterNat.yaml) read-only
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the NAT rule
+      state_for_unknown: true
+    external_id:
+      computed_optional_required: computed
+      description: The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
+      state_for_unknown: true
+    router_id:
+      computed_optional_required: required
+      description: The ID of the parent network router
+      requires_replace: true
+    name:
+      computed_optional_required: required
+      description: Name of the NAT rule
+    action:
+      computed_optional_required: required
+      description: The NAT action (e.g. SNAT, DNAT, REFLEXIVE). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment action_version to apply a change.
+      write_only: true
+    description:
+      computed_optional_required: computed_optional
+      description: Description of the NAT rule
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the NAT rule is enabled
+      default: true
+    priority:
+      computed_optional_required: computed_optional
+      description: Priority of the NAT rule
+      default: 100
+    source_network:
+      computed_optional_required: computed_optional
+      description: Source network
+    destination_network:
+      computed_optional_required: computed_optional
+      description: Destination network
+    translated_network:
+      computed_optional_required: computed_optional
+      description: Translated network
+    translated_ports:
+      computed_optional_required: computed_optional
+      description: Translated ports for the NAT rule
+    firewall:
+      computed_optional_required: optional
+      description: The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.
+      write_only: true
+      one_of: [MATCH_INTERNAL_ADDRESS, MATCH_EXTERNAL_ADDRESS, BYPASS]
+    service:
+      computed_optional_required: optional
+      description: The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.
+      write_only: true

@@ -1,0 +1,54 @@
+# Copyright 2025 Hewlett Packard Enterprise Development LP
+
+name: Test Installation Scripts
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - 'scripts/install-hpe-provider-*.sh'
+      - 'scripts/install-hpe-provider-*.ps1'
+      - 'scripts/test/**'
+      - '.github/workflows/test-install-scripts.yaml'
+
+jobs:
+  test-macos:
+    name: Test macOS Installation Script
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install BATS
+        run: brew install bats-core
+      
+      - name: Run BATS tests
+        run: bats scripts/test/install-hpe-provider-macos.bats
+
+  test-linux:
+    name: Test Linux Installation Script
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install BATS
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bats
+      
+      - name: Run BATS tests
+        run: bats scripts/test/install-hpe-provider-linux.bats
+
+  test-windows:
+    name: Test Windows Installation Script
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Pester tests
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -Force -SkipPublisherCheck -Scope CurrentUser
+          Import-Module Pester
+          Invoke-Pester -Path scripts/test/install-hpe-provider-windows.Tests.ps1 -Output Detailed

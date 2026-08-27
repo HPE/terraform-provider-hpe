@@ -1,0 +1,7 @@
+resource "hpe_morpheus_user_group" "example" {
+  name         = "{{.Name}}"
+  description  = "{{.Description}}"
+  sudo_access  = {{.SudoAccess}}
+  server_group = "{{.ServerGroup}}"
+  user_ids     = {{.UserIds}}
+}

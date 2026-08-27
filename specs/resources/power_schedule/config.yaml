@@ -1,0 +1,118 @@
+power_schedule:
+  description: "Manages a Morpheus Power Schedule resource."
+  templates:
+    totalMonthlyHoursSaved:
+      float64:
+        computed_optional_required: computed
+        description: The total monthly hours saved by the power schedule.
+  moves:
+    - schedule: ""
+    - template-totalMonthlyHoursSaved: total_monthly_hours_saved
+  removes:
+    - date_created
+    - friday_off
+    - friday_on
+    - instances
+    - last_updated
+    - monday_off
+    - monday_on
+    - saturday_off
+    - saturday_on
+    - servers
+    - success
+    - sunday_off
+    - sunday_on
+    - thursday_off
+    - thursday_on
+    - tuesday_off
+    - tuesday_on
+    - wednesday_off
+    - wednesday_on
+  overrides:
+    description:
+      computed_optional_required: optional
+      description: The description of the power schedule.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the power schedule is enabled.
+      default: true
+    friday_off_time:
+      computed_optional_required: computed_optional
+      description: The Friday off time for the power schedule.
+      state_for_unknown: true
+    friday_on_time:
+      computed_optional_required: computed_optional
+      description: The Friday on time for the power schedule.
+      state_for_unknown: true
+    id:
+      computed_optional_required: computed
+      description: The ID of the power schedule.
+      state_for_unknown: true
+    monday_off_time:
+      computed_optional_required: computed_optional
+      description: The Monday off time for the power schedule.
+      state_for_unknown: true
+    monday_on_time:
+      computed_optional_required: computed_optional
+      description: The Monday on time for the power schedule.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the power schedule.
+    saturday_off_time:
+      computed_optional_required: computed_optional
+      description: The Saturday off time for the power schedule.
+      state_for_unknown: true
+    saturday_on_time:
+      computed_optional_required: computed_optional
+      description: The Saturday on time for the power schedule.
+      state_for_unknown: true
+    schedule_timezone:
+      computed_optional_required: computed_optional
+      description: The timezone of the power schedule.
+      default: "UTC"
+    schedule_type:
+      computed_optional_required: computed_optional
+      description: The schedule type of the power schedule.
+      default: "power"
+    sunday_off_time:
+      computed_optional_required: computed_optional
+      description: The Sunday off time for the power schedule.
+      state_for_unknown: true
+    sunday_on_time:
+      computed_optional_required: computed_optional
+      description: The Sunday on time for the power schedule.
+      state_for_unknown: true
+    thursday_off_time:
+      computed_optional_required: computed_optional
+      description: The Thursday off time for the power schedule.
+      state_for_unknown: true
+    thursday_on_time:
+      computed_optional_required: computed_optional
+      description: The Thursday on time for the power schedule.
+      state_for_unknown: true
+    total_monthly_hours_saved:
+      computed_optional_required: computed
+      description: The total monthly hours saved by the power schedule.
+    tuesday_off_time:
+      computed_optional_required: computed_optional
+      description: The Tuesday off time for the power schedule.
+      state_for_unknown: true
+    tuesday_on_time:
+      computed_optional_required: computed_optional
+      description: The Tuesday on time for the power schedule.
+      state_for_unknown: true
+    wednesday_off_time:
+      computed_optional_required: computed_optional
+      description: The Wednesday off time for the power schedule.
+      state_for_unknown: true
+    wednesday_on_time:
+      computed_optional_required: computed_optional
+      description: The Wednesday on time for the power schedule.
+      state_for_unknown: true
+    visibility:
+      computed_optional_required: computed_optional
+      description: The visibility of the power schedule (public or private).
+      default: "private"
+      one_of: [public, private]
+      state_for_unknown: true

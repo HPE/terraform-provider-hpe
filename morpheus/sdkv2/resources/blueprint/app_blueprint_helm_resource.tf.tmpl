@@ -1,0 +1,9 @@
+resource "hpe_morpheus_app_blueprint_helm" "example" {
+  name           = "{{.Name}}"
+  description    = "{{.Description}}"
+  category       = "{{.Category}}"
+  integration_id = {{.IntegrationId}}
+  repository_id  = {{.RepositoryId}}
+  version_ref    = "{{.VersionRef}}"
+  working_path   = "{{.WorkingPath}}"
+}

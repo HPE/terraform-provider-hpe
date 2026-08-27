@@ -1,0 +1,28 @@
+group:
+  moves:
+    - group: "" # unnest group
+  removes:
+    - account # drop the residual account object (only name remained)
+    - account_id
+    - active
+    - config
+    - date_created
+    - labels
+    - last_updated
+    - server_count
+    - stats
+    - uuid
+    - zones
+  overrides:
+    id:
+      description: Morpheus ID of the Object being referenced
+      conflicts_with: ["name"]
+      computed_optional_required: computed_optional
+    name:
+      description: The name of the Morpheus group
+      conflicts_with: ["id"]
+      computed_optional_required: computed_optional
+    code:
+      description: Optional code for use with policies
+    location:
+      description: Optional location argument for your group

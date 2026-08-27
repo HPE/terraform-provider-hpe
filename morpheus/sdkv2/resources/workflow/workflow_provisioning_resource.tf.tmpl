@@ -1,0 +1,7 @@
+resource "hpe_morpheus_workflow_provisioning" "example" {
+  name        = "{{.Name}}"
+  description = "{{.Description}}"
+  labels      = {{.Labels}}
+  platform    = "{{.Platform}}"
+  visibility  = "{{.Visibility}}"
+}

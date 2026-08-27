@@ -1,0 +1,7 @@
+resource "hpe_morpheus_cypher_tfvars" "tf_example_cypher_tfvars" {
+  key   = "{{.Key}}"
+  value = <<EOT
+{{.Value}}
+EOT
+  ttl   = {{.Ttl}}
+}
