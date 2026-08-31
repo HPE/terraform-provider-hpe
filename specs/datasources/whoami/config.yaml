@@ -1,0 +1,15 @@
+whoami:
+  moves:
+    - user: ""                                            # unnest user envelope to root (paths/api@whoami.yaml)
+    - account: "tenant"                                   # (components/schemas/user.yaml) account object -> tenant
+    - account_id: "tenant_id"                             # (components/schemas/user.yaml) accountId -> tenant_id
+    - is_using2fa: "is_using_2fa"                          # (components/schemas/user.yaml) isUsing2FA -> is_using_2fa
+    - appliance.build_version: "appliance_build_version"  # (paths/api@whoami.yaml) flatten appliance
+  removes:
+    - access                                              # (components/schemas/user.yaml) never populated by /api/whoami
+    - linux_password                                      # (components/schemas/user.yaml) credential - never expose
+    - windows_password                                    # (components/schemas/user.yaml) credential - never expose
+    - appliance                                           # (paths/api@whoami.yaml) empty after build_version extracted
+  overrides:
+    id:
+      description: Morpheus ID of the authenticated user

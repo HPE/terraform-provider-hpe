@@ -1677,3 +1677,7 @@ data_sources:
     read:
       path: /api/networks/pool-servers/{id}
       method: GET
+  whoami:
+    read:
+      path: /api/whoami
+      method: GET
