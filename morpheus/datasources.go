@@ -58,6 +58,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/whoami"
 
 	// missing-data-sources — new data sources (Groups A/B/C)
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuphost"
@@ -135,6 +136,7 @@ func (p *MorpheusProvider) DataSources(
 		storagevolume.NewDataSource,
 		storagevolumes.NewDataSource,
 		user.NewDataSource,
+		whoami.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
 		networkedgecluster.NewDataSource,
