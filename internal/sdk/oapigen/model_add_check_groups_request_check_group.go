@@ -32,7 +32,7 @@ type AddCheckGroupsRequestCheckGroup struct {
 	Severity *string `json:"severity,omitempty"`
 	// Used to determine if check group is active
 	Active               *bool                  `json:"active,omitempty"`
-	Checks               []int32                `json:"checks,omitempty"`
+	Checks               []int64                `json:"checks,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

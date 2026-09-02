@@ -20,6 +20,8 @@ var _ MappedNullable = &HVMInstanceConfiguration3{}
 
 // HVMInstanceConfiguration3 struct for HVMInstanceConfiguration3
 type HVMInstanceConfiguration3 struct {
+	// The id of the virtual image to provision the instance from. Takes precedence over the image configured on the instance type layout.
+	ImageId *int64 `json:"imageId,omitempty"`
 	// Skipping Agent installation will result in a lack of logging and guest operating system statistics. Automation scripts may also be adversely affected.
 	NoAgent NullableBool `json:"noAgent,omitempty"`
 	// id of the resource group to be used, can be prefixed with `pool-`. A resource pool group can be specified instead by prefixing its ID with `poolGroup-`.
@@ -53,6 +55,9 @@ func (o HVMInstanceConfiguration3) MarshalJSON() ([]byte, error) {
 
 func (o HVMInstanceConfiguration3) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.ImageId) {
+		toSerialize["imageId"] = o.ImageId
+	}
 	if o.NoAgent.IsSet() {
 		toSerialize["noAgent"] = o.NoAgent.Get()
 	}

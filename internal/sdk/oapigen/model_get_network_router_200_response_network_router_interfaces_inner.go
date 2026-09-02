@@ -30,6 +30,7 @@ type GetNetworkRouter200ResponseNetworkRouterInterfacesInner struct {
 	ExternalLink         NullableString                                                  `json:"externalLink,omitempty"`
 	Enabled              *bool                                                           `json:"enabled,omitempty"`
 	Network              *GetNetworkRouter200ResponseNetworkRouterInterfacesInnerNetwork `json:"network,omitempty"`
+	Config               map[string]interface{}                                          `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                                          `json:",remain"`
 }
 
@@ -74,6 +75,9 @@ func (o GetNetworkRouter200ResponseNetworkRouterInterfacesInner) ToMap() (map[st
 	}
 	if !IsNil(o.Network) {
 		toSerialize["network"] = o.Network
+	}
+	if o.Config != nil {
+		toSerialize["config"] = o.Config
 	}
 
 	for key, value := range o.AdditionalProperties {

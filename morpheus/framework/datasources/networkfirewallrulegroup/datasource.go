@@ -210,6 +210,13 @@ func ruleGroupAsState(
 		return NetworkFirewallRuleGroupModel{}, allDiags
 	}
 
+	tenants, tdiags := convert.ToSetType(ctx, rg.Tenants, tenantValue)
+	allDiags.Append(tdiags...)
+
+	if allDiags.HasError() {
+		return NetworkFirewallRuleGroupModel{}, allDiags
+	}
+
 	return NetworkFirewallRuleGroupModel{
 		Description:          convert.StrToType(rg.Description.Get()),
 		GroupLayer:           convert.StrToType(rg.GroupLayer),
@@ -218,7 +225,22 @@ func ruleGroupAsState(
 		Priority:             convert.Int64ToType(rg.Priority),
 		Rules:                rules,
 		NetworkIntegrationId: types.Int64Value(integrationID),
+		Tenants:              tenants,
 	}, allDiags
+}
+
+// tenantValue is named rather than inline so the state is set explicitly.
+// A TenantsValue left at its zero ValueState lowers to a value that the set
+// type cannot distinguish, so two or more tenants fail with "Duplicate Set
+// Element" whether or not anything is actually duplicated (MORPH-16245).
+func tenantValue(
+	in sdk.GetNetworkFirewallRuleGroup200ResponseRuleGroupTenantsInner,
+) TenantsValue {
+	return TenantsValue{
+		Id:    convert.Int64ToType(in.Id),
+		Name:  convert.StrToType(in.Name),
+		state: attr.ValueStateKnown,
+	}
 }
 
 func mapRule(

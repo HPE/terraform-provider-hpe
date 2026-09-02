@@ -30,8 +30,8 @@ type UpdateCheckAppsRequestMonitorApp struct {
 	Severity *string `json:"severity,omitempty"`
 	// Used to determine if check app is active
 	Active               *bool                  `json:"active,omitempty"`
-	Checks               []int32                `json:"checks,omitempty"`
-	CheckGroups          []int32                `json:"checkGroups,omitempty"`
+	Checks               []int64                `json:"checks,omitempty"`
+	CheckGroups          []int64                `json:"checkGroups,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

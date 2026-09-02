@@ -44,6 +44,8 @@ data "hpe_morpheus_network_firewall_rule_group" "example" {
 - `group_layer` (String) The group layer of the firewall rule group
 - `priority` (Number) Network firewall rule group priority
 - `rules` (Attributes Set) (see [below for nested schema](#nestedatt--rules))
+- `tenants` (Attributes Set) (see [below for nested schema](#nestedatt--tenants))
+- `visibility` (String)
 
 <a id="nestedatt--rules"></a>
 ### Nested Schema for `rules`
@@ -127,4 +129,14 @@ Read-Only:
 Read-Only:
 
 - `id` (String)
+- `name` (String)
+
+
+
+<a id="nestedatt--tenants"></a>
+### Nested Schema for `tenants`
+
+Read-Only:
+
+- `id` (Number)
 - `name` (String)

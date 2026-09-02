@@ -257,6 +257,17 @@ func setInterfacesState(
 				"id":         types.Int64PointerValue(iface.Id),
 				"cidr":       types.StringPointerValue(iface.Cidr),
 				"ip_address": types.StringPointerValue(iface.IpAddress),
+				// The schema gained config when it was regenerated. The API
+				// returns a free-form map, but the generated ConfigValue has no
+				// attributes to hold it, so the only representable value is
+				// null. Omitting the key entirely makes NewInterfacesValue emit
+				// diagnostics and fails the read for any router that has
+				// interfaces. Carrying the contents needs the spec to describe
+				// the object rather than leaving it free-form.
+				// InterfacesValue declares config as a plain ObjectType, not
+				// ConfigType, and NewInterfacesValue rejects any value whose
+				// type is not Equal to that. A ConfigValue does not satisfy it.
+				"config": types.ObjectNull(ConfigValue{}.AttributeTypes(ctx)),
 			},
 		)
 		if diags.HasError() {

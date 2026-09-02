@@ -91,6 +91,8 @@ func natAsState(
 		Priority:           convert.Int64ToType(priorityPtr),
 		Protocol:           convert.StrToType(nat.Protocol.Get()),
 		ExternalId:         convert.StrToType(nat.ExternalId),
+		Firewall:           convert.StrToType(nat.Firewall),
+		Service:            convert.StrToType(nat.Service),
 		ProviderId:         convert.StrToType(nat.ProviderId),
 		SyncSource:         convert.StrToType(nat.SyncSource),
 		DateCreated:        convert.TimeToType(nat.DateCreated),
