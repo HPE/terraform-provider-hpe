@@ -8,13 +8,23 @@ permissions:
 
 on:
   push:
+    # dev-2.1 is this repository's default branch. The cache below is only
+    # written by a run, and a pull_request run's cache is scoped to that PR, so
+    # without a run on the default branch there is nothing for PRs to restore
+    # from and every PR lints cold (~7 minutes rather than seconds). main is
+    # retained for the published mirror.
     branches:
       - main
+      - dev-2.1
   pull_request:
 jobs:
   golangci:
     name: Lint
     runs-on: ubuntu-latest
+    # A cold run takes about seven minutes; a warm one takes seconds. This is
+    # headroom over cold, not a target, so that an over-running job reports a
+    # timeout rather than being killed and surfacing as an opaque exit 143.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-go@v6
