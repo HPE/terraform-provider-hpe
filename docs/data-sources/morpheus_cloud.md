@@ -35,6 +35,7 @@ data "hpe_morpheus_cloud" "example_by_name" {
 ### Read-Only
 
 - `code` (String) Optional code for use with policies
+- `config` (Dynamic) The cloud's configuration object as returned by the API. Contents vary by cloud type, and include values Morpheus discovers from the target system rather than ones supplied at creation.
 - `costing_mode` (String) The costing mode of the cloud
 - `external_id` (String) The external id of the cloud
 - `group_ids` (Set of Number) The ids of the groups granted access to the cloud

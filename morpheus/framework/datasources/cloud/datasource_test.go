@@ -116,6 +116,26 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 			"name",
 			name,
 		),
+		// config is read back from the API rather than echoed from the
+		// resource, so these assert the round trip: certificateProvider and
+		// enableNetworkTypeSelection come from the config_hvm block on the
+		// resource above, and applianceUrl from a top-level attribute the
+		// provider folds into the config object.
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.certificateProvider",
+			"internal",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.enableNetworkTypeSelection",
+			"off",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.applianceUrl",
+			"https://somewhere.com",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
