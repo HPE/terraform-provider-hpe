@@ -31,8 +31,13 @@ linter:
 # hand-written third-party code that is not subject to the provider's lint
 # rules. It is still type-checked as a dependency, but excluded from the lint
 # target set (linting ~9k generated files is both wrong and prohibitively slow).
+LINT_DIRS = $$(packages="$$(go list -f '{{.ImportPath}} {{.Dir}}' ./...)" && printf '%s\n' "$$packages" | awk 'NF && $$1 !~ /\/internal\/sdk(\/|$$)/ { print $$2 }' | tr '\n' ' ')
+
 lint:
-	golangci-lint run $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
+	set -e; \
+	dirs="$(LINT_DIRS)"; \
+	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
+	golangci-lint run $$dirs
 
 # The set CI runs (see .github/workflows/lint.yaml). The SSA/fact-based linters
 # (unused, staticcheck, govet) dominate golangci-lint's peak memory and pushed
@@ -42,7 +47,10 @@ lint:
 # locally; this target reproduces exactly what CI runs. Keep the --disable list
 # in sync with the lint workflow.
 lint-ci:
-	golangci-lint run --disable=unused,staticcheck,govet $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
+	set -e; \
+	dirs="$(LINT_DIRS)"; \
+	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
+	golangci-lint run --disable=unused,staticcheck,govet $$dirs
 
 test:
 	pkgs=$$(go list ./... | grep -v '/internal/sdk'); \

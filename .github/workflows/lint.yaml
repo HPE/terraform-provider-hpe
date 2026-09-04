@@ -44,10 +44,12 @@ jobs:
         id: pkgs
         run: |
           set -euo pipefail
-          # `|| true` stops grep's "no match" (exit 1) from tripping pipefail so
-          # the empty-target check below stays reachable; a `go list` error still
-          # aborts the step via pipefail.
-          dirs="$(go list -f '{{.Dir}}' ./... | { grep -v '/internal/sdk' || true; } | tr '\n' ' ')"
+          # Filter on ImportPath rather than filesystem paths so this matches the
+          # Makefile target selection precisely; the empty-target check prevents
+          # golangci-lint from silently falling back to the full repository.
+          dirs="$(go list -f '{{.ImportPath}} {{.Dir}}' ./... \
+            | awk 'NF && $1 !~ /\/internal\/sdk(\/|$)/ { print $2 }' \
+            | tr '\n' ' ')"
           if [ -z "$dirs" ]; then
             echo "no lint targets found (go list produced nothing)" >&2
             exit 1
