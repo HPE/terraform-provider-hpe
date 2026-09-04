@@ -39,13 +39,19 @@ lint:
 	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
 	golangci-lint run $$dirs
 
-# The set CI runs (see .github/workflows/lint.yaml). The SSA/fact-based linters
-# (unused, staticcheck, govet) dominate golangci-lint's peak memory and pushed
-# the ~7 GB CI runner into an OOM kill (exit 143) on the full package set. gosec
-# has been removed due to timeout issues. CI keeps the cheap AST linters and
-# drops those three and gosec, which cuts peak memory and runs ~3x faster.
-# `make lint` above keeps FULL coverage locally; this target reproduces exactly
-# what CI runs. Keep the --disable list in sync with the lint workflow.
+# The reduced set the Lint workflow runs (see .github/workflows/lint.yaml).
+#
+# NOTE: that workflow is currently DISABLED in CI (manual trigger only) --
+# golangci-lint is OOM-killed on a standard runner even with this reduced set,
+# and no larger runner is available. `make lint` above is therefore the real
+# gate: it keeps FULL coverage and is run locally before every commit.
+#
+# The SSA/fact-based linters (unused, staticcheck, govet) dominate
+# golangci-lint's peak memory and pushed the ~7 GB runner into an OOM kill
+# (exit 143) on the full package set; gosec was dropped for timeouts. This
+# target keeps the cheap AST linters and drops those four, which cuts peak
+# memory and runs ~3x faster. Keep the --disable list in sync with the lint
+# workflow.
 lint-ci:
 	set -e; \
 	dirs="$(LINT_DIRS)"; \

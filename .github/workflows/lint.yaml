@@ -6,16 +6,45 @@ permissions:
   contents: read
   pull-requests: read
 
+# DISABLED IN CI -- manual trigger only.
+#
+# golangci-lint cannot complete on a standard GitHub-hosted runner for this
+# repository: the job is OOM-killed part-way through analysis, surfacing as
+# "The runner has received a shutdown signal". That persists even with the
+# reduced linter set below, and no larger runner is available to us. Rather
+# than block every pull request on a check that cannot pass, the automatic
+# push/pull_request triggers are removed and the workflow is left runnable on
+# demand via workflow_dispatch.
+#
+# Lint coverage has NOT been dropped: `make lint` (the FULL linter set, and a
+# superset of what this workflow ran) is run locally as a pre-commit gate.
+# `make lint-ci` reproduces the reduced set below.
+#
+# `Lint` has also been removed from the required status checks on the
+# default-branch ruleset -- otherwise pull requests would block indefinitely
+# waiting for a status that is never reported.
+#
+# TO RE-ENABLE, once there is a solution (larger or self-hosted runner, a
+# further-reduced linter set, or sharding the package set across jobs):
+#
+#   1. Restore the triggers:
+#
+#        on:
+#          push:
+#            # A run on the default branch (dev-2.1) publishes the
+#            # golangci-lint analysis cache into the default-branch cache
+#            # scope -- the only scope pull requests can restore from. Without
+#            # a green run here there is nothing for PRs to warm-start from.
+#            # main is retained for the published mirror.
+#            branches:
+#              - main
+#              - dev-2.1
+#          pull_request:
+#
+#   2. Re-add the `Lint` required status check to the default-branch ruleset,
+#      or the job will run but stay advisory.
 on:
-  push:
-    # A run on the default branch (dev-2.1) publishes the golangci-lint analysis
-    # cache into the default-branch cache scope -- the only scope pull requests
-    # can restore from. Without a green run here there is nothing for PRs to
-    # warm-start from. main is retained for the published mirror.
-    branches:
-      - main
-      - dev-2.1
-  pull_request:
+  workflow_dispatch:
 jobs:
   golangci:
     name: Lint
@@ -39,7 +68,7 @@ jobs:
       # the runner's ~7 GB and killed the job (exit 143). Filtering them out of the
       # target set here keeps them as a cheap compiled dependency (loaded from
       # export data) rather than an analysis target. This mirrors the Makefile
-      # `lint` target so local and CI lint the same package set.
+      # `lint` target so this workflow and `make lint` cover the same packages.
       - name: Compute lint targets (exclude vendored SDK)
         id: pkgs
         run: |
@@ -56,20 +85,22 @@ jobs:
           fi
           echo "dirs=$dirs" >> "$GITHUB_OUTPUT"
 
-      # CI runs a *reduced* linter set. The SSA/fact-based linters dominate
-      # lint's memory: measured on the full package set, gosec + the cheap AST
-      # linters peak ~6 GiB, while adding unused/staticcheck/govet pushes it high
-      # enough to OOM-kill the runner's ~7 GB (exit 143). gosec has been removed
-      # due to timeout issues. We keep the cheap AST linters and drop
-      # unused/staticcheck/govet here, which cuts peak memory and runs ~3x faster.
-      # FULL coverage still runs locally via `make lint`; `make lint-ci`
-      # reproduces exactly this reduced set -- keep the two --disable lists in
-      # sync.
+      # This workflow runs a *reduced* linter set. The SSA/fact-based linters
+      # dominate lint's memory: measured on the full package set, gosec + the
+      # cheap AST linters peak ~6 GiB, while adding unused/staticcheck/govet
+      # pushes it high enough to OOM-kill the runner's ~7 GB (exit 143). gosec
+      # has been removed due to timeout issues. We keep the cheap AST linters
+      # and drop unused/staticcheck/govet here, which cuts peak memory and runs
+      # ~3x faster. Even so it still could not reliably finish, which is why the
+      # workflow is now manual-only (see the header). FULL coverage runs locally
+      # via `make lint`; `make lint-ci` reproduces exactly this reduced set --
+      # keep the two --disable lists in sync.
       #
       # The action installs a pinned *prebuilt* binary (no ~75 s `go install`
       # recompile every run) and manages the ~/.cache/golangci-lint analysis
-      # cache, seeding it from the default-branch scope for PRs to restore.
-      - name: golangci-lint (CI subset)
+      # cache. Note that with the push trigger removed nothing populates the
+      # default-branch cache scope, so manual runs start cold.
+      - name: golangci-lint (reduced set)
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.11.3
