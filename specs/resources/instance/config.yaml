@@ -539,6 +539,19 @@ instance:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
             schema_definition: int64planmodifier.RequiresReplace()
+    virtualImageId:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          The id of the virtual image to provision the instance from.
+          Overrides the image configured on the instance type layout, so it is
+          only needed when the layout default is not the wanted image.
+          Create-only: changing it replaces the instance.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
     vmwareFolderID:
       string:
         computed_optional_required: optional
@@ -573,6 +586,7 @@ instance:
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
     - template-affinityGroupId: config_hvm.affinity_group_id
+    - template-virtualImageId: config_hvm.image_id
     - template-configVMware: config_vmware
     - template-createUser: config_vmware.create_user
     - template-noAgent: config_vmware.no_agent
@@ -580,6 +594,7 @@ instance:
     - template-resourcePoolId: config_vmware.resource_pool_id
     - template-vmwareFolderID: config_vmware.vmware_folder_id
     - template-affinityGroupId: config_vmware.affinity_group_id
+    - template-virtualImageId: config_vmware.image_id
     - template-configAWS: config_aws
     - template-availabilityId: config_aws.availability_zone_id
     - template-instanceProfile: config_aws.instance_profile

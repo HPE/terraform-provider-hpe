@@ -172,6 +172,10 @@ func (g *Resource) Create(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
+		if !plan.ConfigHvm.ImageId.IsNull() && !plan.ConfigHvm.ImageId.IsUnknown() {
+			configHvm.ImageId = plan.ConfigHvm.ImageId.ValueInt64Pointer()
+		}
+
 		if !plan.ConfigHvm.AffinityGroupId.IsNull() &&
 			!plan.ConfigHvm.AffinityGroupId.IsUnknown() {
 			// The config.affinityGroup field records membership in the group, while host
@@ -202,6 +206,10 @@ func (g *Resource) Create(
 		if !config.ConfigVmware.CreateUser.IsNull() && !config.ConfigVmware.CreateUser.IsUnknown() {
 			createUser := plan.ConfigVmware.CreateUser.ValueBool()
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
+		}
+
+		if !plan.ConfigVmware.ImageId.IsNull() && !plan.ConfigVmware.ImageId.IsUnknown() {
+			configVMware.ImageId = plan.ConfigVmware.ImageId.ValueInt64Pointer()
 		}
 
 		if !plan.ConfigVmware.AffinityGroupId.IsNull() &&

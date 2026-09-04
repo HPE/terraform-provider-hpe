@@ -603,6 +603,8 @@ func getInstanceVMwareConfig(
 	// VMware sends only affinityGroup on create, so that is the field read back.
 	configVmware.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroup)
 
+	configVmware.ImageId = imageIDFromConfig(apiConfig)
+
 	configVmware.state = attr.ValueStateKnown
 
 	return configVmware, diag.Diagnostics{}
@@ -663,6 +665,8 @@ func getInstanceHVMConfig(
 	// resources and data sources, or parent_host_id on the compute server data
 	// sources to see where a guest actually landed.
 	configHvm.AffinityGroupId = convert.Int64ToType(apiConfig.AffinityGroupId)
+
+	configHvm.ImageId = imageIDFromConfig(apiConfig)
 
 	configHvm.state = attr.ValueStateKnown
 
@@ -889,6 +893,37 @@ func hostIDFromElement(elem interface{}) (int64, bool) {
 	}
 
 	return numberToInt64(elem)
+}
+
+// imageIDFromConfig recovers the provisioning image from the config the API
+// returns. The read response models config loosely, so the image is not a typed
+// field and has to be taken from AdditionalProperties, as configBmaas does.
+//
+// Morpheus resolves the image from config.imageId first and config.template
+// second (AbstractBoxProvisionService.getContainerVirtualImageId), so both are
+// accepted here in that order. template additionally has a map form, which is
+// what the UI typeahead submits, so its "value" member is unwrapped.
+//
+// Reading this back matters on import: the attribute forces replacement, so
+// leaving it null after an import would make the next plan propose destroying
+// and recreating the instance.
+func imageIDFromConfig(apiConfig *apiConfigType) basetypes.Int64Value {
+	if id, ok := numberToInt64(apiConfig.AdditionalProperties["imageId"]); ok {
+		return basetypes.NewInt64Value(id)
+	}
+
+	switch t := apiConfig.AdditionalProperties["template"].(type) {
+	case map[string]interface{}:
+		if id, ok := numberToInt64(t["value"]); ok {
+			return basetypes.NewInt64Value(id)
+		}
+	default:
+		if id, ok := numberToInt64(t); ok {
+			return basetypes.NewInt64Value(id)
+		}
+	}
+
+	return basetypes.NewInt64Null()
 }
 
 // numberToInt64 coerces the JSON-decoded representations of a number (float64 from

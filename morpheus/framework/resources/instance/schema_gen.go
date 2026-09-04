@@ -296,6 +296,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
 						Default:             booldefault.StaticBool(false),
 					},
+					"image_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						MarkdownDescription: "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
 					"kvm_host_id": schema.Int64Attribute{
 						Optional:            true,
 						Description:         "The id of the KVM host to use for provisioning.",
@@ -349,6 +357,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						Description:         "Whether to create a user when provisioning the instance.  The default is 'false'",
 						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
 						Default:             booldefault.StaticBool(false),
+					},
+					"image_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						MarkdownDescription: "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
 					},
 					"nested_virtualization": schema.StringAttribute{
 						Optional:            true,
@@ -3651,6 +3667,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return nil, diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
 
 	if !ok {
@@ -3730,6 +3764,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	return ConfigHvmValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -3837,6 +3872,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
 
 	if !ok {
@@ -3916,6 +3969,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	return ConfigHvmValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -3992,6 +4046,7 @@ var _ basetypes.ObjectValuable = ConfigHvmValue{}
 type ConfigHvmValue struct {
 	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	ImageId              basetypes.Int64Value  `tfsdk:"image_id"`
 	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
@@ -4000,13 +4055,14 @@ type ConfigHvmValue struct {
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -4016,7 +4072,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 7)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4031,6 +4087,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		}
 
 		vals["create_user"] = val
+
+		val, err = v.ImageId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["image_id"] = val
 
 		val, err = v.KvmHostId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4092,6 +4155,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	attributeTypes := map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
@@ -4111,6 +4175,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		map[string]attr.Value{
 			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
+			"image_id":              v.ImageId,
 			"kvm_host_id":           v.KvmHostId,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
@@ -4140,6 +4205,10 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.ImageId.Equal(other.ImageId) {
 		return false
 	}
 
@@ -4174,6 +4243,7 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	return map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
@@ -4248,6 +4318,24 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return nil, diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
 	}
 
 	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
@@ -4329,6 +4417,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	return ConfigVmwareValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
@@ -4436,6 +4525,24 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
 
 	if !ok {
@@ -4515,6 +4622,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	return ConfigVmwareValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
@@ -4591,6 +4699,7 @@ var _ basetypes.ObjectValuable = ConfigVmwareValue{}
 type ConfigVmwareValue struct {
 	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	ImageId              basetypes.Int64Value  `tfsdk:"image_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
@@ -4599,13 +4708,14 @@ type ConfigVmwareValue struct {
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
@@ -4615,7 +4725,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 7)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4630,6 +4740,13 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		}
 
 		vals["create_user"] = val
+
+		val, err = v.ImageId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["image_id"] = val
 
 		val, err = v.NestedVirtualization.ToTerraformValue(ctx)
 		if err != nil {
@@ -4691,6 +4808,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	attributeTypes := map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
@@ -4710,6 +4828,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		map[string]attr.Value{
 			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
+			"image_id":              v.ImageId,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
 			"resource_pool_id":      v.ResourcePoolId,
@@ -4739,6 +4858,10 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.ImageId.Equal(other.ImageId) {
 		return false
 	}
 
@@ -4773,6 +4896,7 @@ func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.T
 	return map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},

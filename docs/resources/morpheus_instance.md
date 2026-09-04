@@ -482,6 +482,11 @@ resource "hpe_morpheus_instance" "example" {
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
+
+    # image_id overrides the image configured on the layout. Omit it to take the
+    # layout default. Changing it replaces the instance, because the image is
+    # only applied at provision time.
+    # image_id = data.hpe_morpheus_image.vmware.id
   }
 
   timeouts = {
@@ -1168,6 +1173,10 @@ removed with terraform destroy because it never started.
 On HVM an empty group is accepted, but placement is only enforced
 when the cluster has dynamic placement enabled.
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `image_id` (Number) The id of the virtual image to provision the instance from.
+Overrides the image configured on the instance type layout, so it is
+only needed when the layout default is not the wanted image.
+Create-only: changing it replaces the instance.
 - `kvm_host_id` (Number) The id of the KVM host to use for provisioning.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
@@ -1195,6 +1204,10 @@ removed with terraform destroy because it never started.
 On HVM an empty group is accepted, but placement is only enforced
 when the cluster has dynamic placement enabled.
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `image_id` (Number) The id of the virtual image to provision the instance from.
+Overrides the image configured on the instance type layout, so it is
+only needed when the layout default is not the wanted image.
+Create-only: changing it replaces the instance.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
