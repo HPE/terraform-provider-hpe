@@ -245,11 +245,11 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	// protocol is deprecated (superseded by service) and the API no longer
-	// persists it, so it is omitted from the response. Fall back to the plan
-	// value when the API omits it (matching action/firewall/service) so the
-	// configured value round-trips and does not produce an inconsistent result
-	// after apply.
+	// protocol is a persisted domain field that the NAT GET renders
+	// (_networkRouterNAT.gson: networkRouterNAT.protocol). Read prefers the API
+	// value, falling back to the plan value only when the API omits it (avoids an
+	// inconsistent result after apply). Deprecated (superseded by service) but
+	// retained for backward compatibility.
 	if p := nat.Protocol.Get(); p != nil {
 		state.Protocol = types.StringValue(*p)
 	} else if !plan.Protocol.IsUnknown() {

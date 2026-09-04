@@ -129,6 +129,21 @@ func TestAccMorpheusCatalogItemWorkflowExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			// Import: verifies visibility round-trips on Read (MORPH-8850).
+			// visibility is set on Read by pre-existing code; this step adds
+			// import coverage for it. logo_image_path / dark_logo_image_path are
+			// write-only upload inputs (the GET returns a transformed storage
+			// URL, not the supplied file path), so they cannot round-trip and
+			// are ignored.
+			{
+				ResourceName:      "hpe_morpheus_catalog_item_workflow.example",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"logo_image_path",
+					"dark_logo_image_path",
+				},
+			},
 		},
 	})
 }

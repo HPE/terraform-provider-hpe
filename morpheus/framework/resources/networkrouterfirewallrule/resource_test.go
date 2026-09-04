@@ -113,7 +113,21 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_network_router_firewall_rule.example",
+				// parent_id is a Required + RequiresReplace, save-only config
+				// input: NetworkRoutersController resolves it but the firewall-
+				// rule GET never echoes it, so on import it comes back null.
+				// Ignoring it lets ImportStateVerify pass, but note the real
+				// consequence -- because it is Required + RequiresReplace, the
+				// first plan after a bare import would show a replacement until
+				// the value is re-supplied in config. This is an API limitation
+				// (the value is not returned), not a masked field (MORPH-16363).
+				// description is not set in this test's config, so it settles as
+				// null in state and round-trips without an ignore entry; the
+				// description lifecycle is exercised in the DescriptionOk test.
+				ImportStateVerifyIgnore: []string{
+					"parent_id",
+				},
+				ResourceName: "hpe_morpheus_network_router_firewall_rule.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_firewall_rule.example"]
 					if !ok {
@@ -253,6 +267,28 @@ resource "hpe_morpheus_network_router_firewall_rule" "example" {
 				Config:           providerConfig + routerConfig + ruleConfig("managed by terraform"),
 				Check:            resource.TestCheckResourceAttr(resourceName, "description", "managed by terraform"),
 				ConfigPlanChecks: checkInPlaceUpdate,
+			},
+			// Import while a description is set: this actually exercises the
+			// description ignore. description is accepted by the API but never
+			// rendered by the firewall-rule GET, so it comes back null on import
+			// and must be ignored; parent_id is likewise not returned (see
+			// MORPH-16363 / the ExampleOk test for the parent_id replace caveat).
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"description",
+					"parent_id",
+				},
+				ResourceName: resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
 			},
 			// Removing it again clears it on the appliance and returns state to
 			// null, leaving no residual diff.

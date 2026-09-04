@@ -550,6 +550,46 @@ func resourceClusterLayoutRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("spec_template_ids", stateSpecTemplates)
 	*/
 
+	// master_node_pool / worker_node_pool are returned by the GET as the merged
+	// computeServers array, but were previously not written to state, so the
+	// blocks were dropped on import (MORPH-8849). Each computeServer carries a
+	// nodeType of "master" or "worker" (ComputeTypeSet.nodeType in morpheus-ui),
+	// which is used to route it into the correct pool. node_type_id maps to
+	// containerType.id (the inverse of parseClusterLayoutNodePools on create).
+	//
+	// These are the only two nodeType values the API can return for this field:
+	// every layout definition, assignment and comparison in morpheus-ui restricts
+	// ComputeTypeSet.nodeType to "master"/"worker" (it is also nullable). We match
+	// each explicitly and skip anything else rather than defaulting unknown values
+	// into the worker pool, which would invent a pool the config never declared
+	// and break ImportStateVerify. The API returns computeServers as an ordered
+	// (index-preserving) collection, so per-pool insertion order round-trips.
+	//
+	// Only overwrite state when computeServers is actually present in the
+	// response: an empty/absent decode must not clobber the user's configured
+	// node pools with empty lists.
+	if len(clusterLayout.ClusterLayout.ComputeServers) > 0 {
+		var masterNodePools, workerNodePools []map[string]any
+		for _, cs := range clusterLayout.ClusterLayout.ComputeServers {
+			pool := map[string]any{
+				"count":          int(cs.NodeCount),
+				"node_type_id":   int(cs.ContainertType.ID),
+				"priority_order": int(cs.PriorityOrder),
+			}
+			switch {
+			case strings.EqualFold(cs.NodeType, "master"):
+				masterNodePools = append(masterNodePools, pool)
+			case strings.EqualFold(cs.NodeType, "worker"):
+				workerNodePools = append(workerNodePools, pool)
+			default:
+				// Unset/unexpected nodeType: skip rather than misfile as a worker.
+				continue
+			}
+		}
+		d.Set("master_node_pool", masterNodePools)
+		d.Set("worker_node_pool", workerNodePools)
+	}
+
 	return diags
 }
 
@@ -935,6 +975,6 @@ type ClusterLayoutPayload struct {
 			NameSuffix       string `json:"nameSuffix"`
 			ForceNameIndex   bool   `json:"forceNameIndex"`
 			LoadBalance      bool   `json:"loadBalance"`
-		}
+		} `json:"computeServers"`
 	} `json:"layout"`
 }

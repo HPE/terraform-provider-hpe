@@ -11,24 +11,28 @@ var (
 
 // OptionLists structures for use in request and response payloads
 type OptionList struct {
-	ID                  int64    `json:"id"`
-	Name                string   `json:"name"`
-	Labels              []string `json:"labels"`
-	Description         string   `json:"description"`
-	Type                string   `json:"type"`
-	SourceURL           string   `json:"sourceUrl"`
-	Visibility          string   `json:"visibility"`
-	SourceMethod        string   `json:"sourceMethod"`
-	APIType             string   `json:"apiType,omitempty"`
-	IgnoreSSLErrors     bool     `json:"ignoreSSLErrors"`
-	RealTime            bool     `json:"realTime"`
-	InitialDataset      string   `json:"initialDataset"`
-	TranslationScript   string   `json:"translationScript"`
-	RequestScript       string   `json:"requestScript"`
-	ServiceUsername     string   `json:"serviceUsername"`
-	ServicePassword     string   `json:"servicePassword"`
-	ServicePasswordHash string   `json:"servicePasswordHash"`
-	Config              struct {
+	ID              int64    `json:"id"`
+	Name            string   `json:"name"`
+	Labels          []string `json:"labels"`
+	Description     string   `json:"description"`
+	Type            string   `json:"type"`
+	SourceURL       string   `json:"sourceUrl"`
+	Visibility      string   `json:"visibility"`
+	SourceMethod    string   `json:"sourceMethod"`
+	APIType         string   `json:"apiType,omitempty"`
+	IgnoreSSLErrors bool     `json:"ignoreSSLErrors"`
+	// InjectExecutionLeaseAuth is the API field behind the Terraform
+	// inject_system_authorization_header attribute.
+	InjectExecutionLeaseAuth bool   `json:"injectExecutionLeaseAuth"`
+	UseOwnerAuth             bool   `json:"useOwnerAuth"`
+	RealTime                 bool   `json:"realTime"`
+	InitialDataset           string `json:"initialDataset"`
+	TranslationScript        string `json:"translationScript"`
+	RequestScript            string `json:"requestScript"`
+	ServiceUsername          string `json:"serviceUsername"`
+	ServicePassword          string `json:"servicePassword"`
+	ServicePasswordHash      string `json:"servicePasswordHash"`
+	Config                   struct {
 		SourceHeaders []SourceHeader `json:"sourceHeaders"`
 	} `json:"config"`
 	Credential struct {
