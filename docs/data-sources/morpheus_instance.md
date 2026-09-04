@@ -303,6 +303,7 @@ Read-Only:
 - `name` (String)
 - `resizeable` (Boolean)
 - `root_volume` (Boolean)
+- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 - `storage_server` (Attributes) (see [below for nested schema](#nestedatt--container_details--server--child_volumes--storage_server))
 - `type_id` (Number)
 - `unique_id` (String)
@@ -371,6 +372,7 @@ Read-Only:
 - `pool_assigned` (Boolean)
 - `primary_interface` (Boolean)
 - `public_ip_address` (String)
+- `subnet` (Attributes) (see [below for nested schema](#nestedatt--container_details--server--container_interfaces--subnet))
 - `unique_id` (String)
 
 <a id="nestedatt--container_details--server--container_interfaces--child_interfaces"></a>
@@ -402,6 +404,15 @@ Read-Only:
 
 <a id="nestedatt--container_details--server--container_interfaces--network_pool"></a>
 ### Nested Schema for `container_details.server.container_interfaces.network_pool`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--container_details--server--container_interfaces--subnet"></a>
+### Nested Schema for `container_details.server.container_interfaces.subnet`
 
 Read-Only:
 
@@ -665,6 +676,7 @@ Read-Only:
 
 - `controller_id` (Number)
 - `controller_mount_point` (String)
+- `create_for_multi_attach` (Boolean)
 - `datastore_id` (String)
 - `display_order` (Number)
 - `id` (Number)
@@ -676,6 +688,7 @@ Read-Only:
 - `root_volume` (Boolean)
 - `short_name` (String)
 - `size` (Number)
+- `storage_profile` (String) Storage Profile Code for the volume storage profile assignment. eg. `"kvm-cache-none"` or `"kvm-cache-directsync"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.
 - `storage_type` (Number)
 - `unit_number` (String)
 - `uuid` (String)

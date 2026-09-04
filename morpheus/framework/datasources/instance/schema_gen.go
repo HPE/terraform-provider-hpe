@@ -354,6 +354,11 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 											"root_volume": schema.BoolAttribute{
 												Computed: true,
 											},
+											"storage_profile": schema.StringAttribute{
+												Computed:            true,
+												Description:         "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+												MarkdownDescription: "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+											},
 											"storage_server": schema.SingleNestedAttribute{
 												Attributes: map[string]schema.Attribute{
 													"id": schema.Int64Attribute{
@@ -535,6 +540,22 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 												Computed: true,
 											},
 											"public_ip_address": schema.StringAttribute{
+												Computed: true,
+											},
+											"subnet": schema.SingleNestedAttribute{
+												Attributes: map[string]schema.Attribute{
+													"id": schema.Int64Attribute{
+														Computed: true,
+													},
+													"name": schema.StringAttribute{
+														Computed: true,
+													},
+												},
+												CustomType: SubnetType{
+													ObjectType: types.ObjectType{
+														AttrTypes: SubnetValue{}.AttributeTypes(ctx),
+													},
+												},
 												Computed: true,
 											},
 											"unique_id": schema.StringAttribute{
@@ -1274,6 +1295,9 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 						"controller_mount_point": schema.StringAttribute{
 							Computed: true,
 						},
+						"create_for_multi_attach": schema.BoolAttribute{
+							Computed: true,
+						},
 						"datastore_id": schema.StringAttribute{
 							Computed: true,
 						},
@@ -1306,6 +1330,11 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 						},
 						"size": schema.Int64Attribute{
 							Computed: true,
+						},
+						"storage_profile": schema.StringAttribute{
+							Computed:            true,
+							Description:         "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
+							MarkdownDescription: "Storage Profile Code for the volume storage profile assignment. eg. `\"kvm-cache-none\"` or `\"kvm-cache-directsync\"`. Use `/api/provision-types?code=kvm` to see the available `storageProfiles` for HVM and KVM.",
 						},
 						"storage_type": schema.Int64Attribute{
 							Computed: true,
@@ -9908,6 +9937,24 @@ func (t ChildVolumesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 			fmt.Sprintf(`root_volume expected to be basetypes.BoolValue, was: %T`, rootVolumeAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageServerAttribute, ok := attributes["storage_server"]
 
 	if !ok {
@@ -10057,6 +10104,7 @@ func (t ChildVolumesType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		Name:                 nameVal,
 		Resizeable:           resizeableVal,
 		RootVolume:           rootVolumeVal,
+		StorageProfile:       storageProfileVal,
 		StorageServer:        storageServerVal,
 		TypeId:               typeIdVal,
 		UniqueId:             uniqueIdVal,
@@ -10455,6 +10503,24 @@ func NewChildVolumesValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`root_volume expected to be basetypes.BoolValue, was: %T`, rootVolumeAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return NewChildVolumesValueUnknown(), diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageServerAttribute, ok := attributes["storage_server"]
 
 	if !ok {
@@ -10604,6 +10670,7 @@ func NewChildVolumesValue(attributeTypes map[string]attr.Type, attributes map[st
 		Name:                 nameVal,
 		Resizeable:           resizeableVal,
 		RootVolume:           rootVolumeVal,
+		StorageProfile:       storageProfileVal,
 		StorageServer:        storageServerVal,
 		TypeId:               typeIdVal,
 		UniqueId:             uniqueIdVal,
@@ -10699,6 +10766,7 @@ type ChildVolumesValue struct {
 	Name                 basetypes.StringValue `tfsdk:"name"`
 	Resizeable           basetypes.BoolValue   `tfsdk:"resizeable"`
 	RootVolume           basetypes.BoolValue   `tfsdk:"root_volume"`
+	StorageProfile       basetypes.StringValue `tfsdk:"storage_profile"`
 	StorageServer        basetypes.ObjectValue `tfsdk:"storage_server"`
 	TypeId               basetypes.Int64Value  `tfsdk:"type_id"`
 	UniqueId             basetypes.StringValue `tfsdk:"unique_id"`
@@ -10710,7 +10778,7 @@ type ChildVolumesValue struct {
 }
 
 func (v ChildVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 25)
+	attrTypes := make(map[string]tftypes.Type, 26)
 
 	var val tftypes.Value
 	var err error
@@ -10735,6 +10803,7 @@ func (v ChildVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["resizeable"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["root_volume"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["storage_profile"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_server"] = basetypes.ObjectType{
 		AttrTypes: StorageServerValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
@@ -10751,7 +10820,7 @@ func (v ChildVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 25)
+		vals := make(map[string]tftypes.Value, 26)
 
 		val, err = v.Category.ToTerraformValue(ctx)
 		if err != nil {
@@ -10878,6 +10947,13 @@ func (v ChildVolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		}
 
 		vals["root_volume"] = val
+
+		val, err = v.StorageProfile.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_profile"] = val
 
 		val, err = v.StorageServer.ToTerraformValue(ctx)
 		if err != nil {
@@ -11041,6 +11117,7 @@ func (v ChildVolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		"name":                basetypes.StringType{},
 		"resizeable":          basetypes.BoolType{},
 		"root_volume":         basetypes.BoolType{},
+		"storage_profile":     basetypes.StringType{},
 		"storage_server": basetypes.ObjectType{
 			AttrTypes: StorageServerValue{}.AttributeTypes(ctx),
 		},
@@ -11083,6 +11160,7 @@ func (v ChildVolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 			"name":                   v.Name,
 			"resizeable":             v.Resizeable,
 			"root_volume":            v.RootVolume,
+			"storage_profile":        v.StorageProfile,
 			"storage_server":         storageServerVal,
 			"type_id":                v.TypeId,
 			"unique_id":              v.UniqueId,
@@ -11182,6 +11260,10 @@ func (v ChildVolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.StorageProfile.Equal(other.StorageProfile) {
+		return false
+	}
+
 	if !v.StorageServer.Equal(other.StorageServer) {
 		return false
 	}
@@ -11243,6 +11325,7 @@ func (v ChildVolumesValue) AttributeTypes(ctx context.Context) map[string]attr.T
 		"name":                basetypes.StringType{},
 		"resizeable":          basetypes.BoolType{},
 		"root_volume":         basetypes.BoolType{},
+		"storage_profile":     basetypes.StringType{},
 		"storage_server": basetypes.ObjectType{
 			AttrTypes: StorageServerValue{}.AttributeTypes(ctx),
 		},
@@ -13290,6 +13373,24 @@ func (t ContainerInterfacesType) ValueFromObject(ctx context.Context, in basetyp
 			fmt.Sprintf(`public_ip_address expected to be basetypes.StringValue, was: %T`, publicIpAddressAttribute))
 	}
 
+	subnetAttribute, ok := attributes["subnet"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetVal, ok := subnetAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet expected to be basetypes.ObjectValue, was: %T`, subnetAttribute))
+	}
+
 	uniqueIdAttribute, ok := attributes["unique_id"]
 
 	if !ok {
@@ -13327,6 +13428,7 @@ func (t ContainerInterfacesType) ValueFromObject(ctx context.Context, in basetyp
 		PoolAssigned:     poolAssignedVal,
 		PrimaryInterface: primaryInterfaceVal,
 		PublicIpAddress:  publicIpAddressVal,
+		Subnet:           subnetVal,
 		UniqueId:         uniqueIdVal,
 		state:            attr.ValueStateKnown,
 	}, diags
@@ -13647,6 +13749,24 @@ func NewContainerInterfacesValue(attributeTypes map[string]attr.Type, attributes
 			fmt.Sprintf(`public_ip_address expected to be basetypes.StringValue, was: %T`, publicIpAddressAttribute))
 	}
 
+	subnetAttribute, ok := attributes["subnet"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet is missing from object`)
+
+		return NewContainerInterfacesValueUnknown(), diags
+	}
+
+	subnetVal, ok := subnetAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet expected to be basetypes.ObjectValue, was: %T`, subnetAttribute))
+	}
+
 	uniqueIdAttribute, ok := attributes["unique_id"]
 
 	if !ok {
@@ -13684,6 +13804,7 @@ func NewContainerInterfacesValue(attributeTypes map[string]attr.Type, attributes
 		PoolAssigned:     poolAssignedVal,
 		PrimaryInterface: primaryInterfaceVal,
 		PublicIpAddress:  publicIpAddressVal,
+		Subnet:           subnetVal,
 		UniqueId:         uniqueIdVal,
 		state:            attr.ValueStateKnown,
 	}, diags
@@ -13769,12 +13890,13 @@ type ContainerInterfacesValue struct {
 	PoolAssigned     basetypes.BoolValue   `tfsdk:"pool_assigned"`
 	PrimaryInterface basetypes.BoolValue   `tfsdk:"primary_interface"`
 	PublicIpAddress  basetypes.StringValue `tfsdk:"public_ip_address"`
+	Subnet           basetypes.ObjectValue `tfsdk:"subnet"`
 	UniqueId         basetypes.StringValue `tfsdk:"unique_id"`
 	state            attr.ValueState
 }
 
 func (v ContainerInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 15)
+	attrTypes := make(map[string]tftypes.Type, 16)
 
 	var val tftypes.Value
 	var err error
@@ -13801,13 +13923,16 @@ func (v ContainerInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes
 	attrTypes["pool_assigned"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["primary_interface"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["public_ip_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet"] = basetypes.ObjectType{
+		AttrTypes: SubnetValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["unique_id"] = basetypes.StringType{}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 15)
+		vals := make(map[string]tftypes.Value, 16)
 
 		val, err = v.Active.ToTerraformValue(ctx)
 		if err != nil {
@@ -13906,6 +14031,13 @@ func (v ContainerInterfacesValue) ToTerraformValue(ctx context.Context) (tftypes
 		}
 
 		vals["public_ip_address"] = val
+
+		val, err = v.Subnet.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet"] = val
 
 		val, err = v.UniqueId.ToTerraformValue(ctx)
 		if err != nil {
@@ -14035,6 +14167,27 @@ func (v ContainerInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.
 		)
 	}
 
+	var subnetVal basetypes.ObjectValue
+
+	if v.Subnet.IsNull() {
+		subnetVal = types.ObjectNull(
+			SubnetValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.Subnet.IsUnknown() {
+		subnetVal = types.ObjectUnknown(
+			SubnetValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.Subnet.IsNull() && !v.Subnet.IsUnknown() {
+		subnetVal = types.ObjectValueMust(
+			SubnetValue{}.AttributeTypes(ctx),
+			v.Subnet.Attributes(),
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
 		"active": basetypes.BoolType{},
 		"child_interfaces": basetypes.SetType{
@@ -14058,7 +14211,10 @@ func (v ContainerInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.
 		"pool_assigned":     basetypes.BoolType{},
 		"primary_interface": basetypes.BoolType{},
 		"public_ip_address": basetypes.StringType{},
-		"unique_id":         basetypes.StringType{},
+		"subnet": basetypes.ObjectType{
+			AttrTypes: SubnetValue{}.AttributeTypes(ctx),
+		},
+		"unique_id": basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -14086,6 +14242,7 @@ func (v ContainerInterfacesValue) ToObjectValue(ctx context.Context) (basetypes.
 			"pool_assigned":     v.PoolAssigned,
 			"primary_interface": v.PrimaryInterface,
 			"public_ip_address": v.PublicIpAddress,
+			"subnet":            subnetVal,
 			"unique_id":         v.UniqueId,
 		})
 
@@ -14163,6 +14320,10 @@ func (v ContainerInterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Subnet.Equal(other.Subnet) {
+		return false
+	}
+
 	if !v.UniqueId.Equal(other.UniqueId) {
 		return false
 	}
@@ -14202,7 +14363,10 @@ func (v ContainerInterfacesValue) AttributeTypes(ctx context.Context) map[string
 		"pool_assigned":     basetypes.BoolType{},
 		"primary_interface": basetypes.BoolType{},
 		"public_ip_address": basetypes.StringType{},
-		"unique_id":         basetypes.StringType{},
+		"subnet": basetypes.ObjectType{
+			AttrTypes: SubnetValue{}.AttributeTypes(ctx),
+		},
+		"unique_id": basetypes.StringType{},
 	}
 }
 
@@ -15732,6 +15896,389 @@ func (v NetworkPoolValue) Type(ctx context.Context) attr.Type {
 }
 
 func (v NetworkPoolValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = SubnetType{}
+
+type SubnetType struct {
+	basetypes.ObjectType
+}
+
+func (t SubnetType) Equal(o attr.Type) bool {
+	other, ok := o.(SubnetType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t SubnetType) String() string {
+	return "SubnetType"
+}
+
+func (t SubnetType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewSubnetValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSubnetValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return SubnetValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSubnetValueNull() SubnetValue {
+	return SubnetValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewSubnetValueUnknown() SubnetValue {
+	return SubnetValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewSubnetValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (SubnetValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing SubnetValue Attribute Value",
+				"While creating a SubnetValue value, a missing attribute value was detected. "+
+					"A SubnetValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SubnetValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid SubnetValue Attribute Type",
+				"While creating a SubnetValue value, an invalid attribute value was detected. "+
+					"A SubnetValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("SubnetValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("SubnetValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra SubnetValue Attribute Value",
+				"While creating a SubnetValue value, an extra attribute value was detected. "+
+					"A SubnetValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra SubnetValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewSubnetValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewSubnetValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewSubnetValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewSubnetValueUnknown(), diags
+	}
+
+	return SubnetValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewSubnetValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) SubnetValue {
+	object, diags := NewSubnetValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewSubnetValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t SubnetType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewSubnetValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewSubnetValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewSubnetValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewSubnetValueMust(SubnetValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t SubnetType) ValueType(ctx context.Context) attr.Value {
+	return SubnetValue{}
+}
+
+var _ basetypes.ObjectValuable = SubnetValue{}
+
+type SubnetValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v SubnetValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v SubnetValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v SubnetValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v SubnetValue) String() string {
+	return "SubnetValue"
+}
+
+func (v SubnetValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v SubnetValue) Equal(o attr.Value) bool {
+	other, ok := o.(SubnetValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v SubnetValue) Type(ctx context.Context) attr.Type {
+	return SubnetType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v SubnetValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"id":   basetypes.Int64Type{},
 		"name": basetypes.StringType{},
@@ -26892,6 +27439,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`controller_mount_point expected to be basetypes.StringValue, was: %T`, controllerMountPointAttribute))
 	}
 
+	createForMultiAttachAttribute, ok := attributes["create_for_multi_attach"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_for_multi_attach is missing from object`)
+
+		return nil, diags
+	}
+
+	createForMultiAttachVal, ok := createForMultiAttachAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_for_multi_attach expected to be basetypes.BoolValue, was: %T`, createForMultiAttachAttribute))
+	}
+
 	datastoreIdAttribute, ok := attributes["datastore_id"]
 
 	if !ok {
@@ -27090,6 +27655,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`size expected to be basetypes.Int64Value, was: %T`, sizeAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return nil, diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageTypeAttribute, ok := attributes["storage_type"]
 
 	if !ok {
@@ -27151,6 +27734,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	return VolumesValue{
 		ControllerId:         controllerIdVal,
 		ControllerMountPoint: controllerMountPointVal,
+		CreateForMultiAttach: createForMultiAttachVal,
 		DatastoreId:          datastoreIdVal,
 		DisplayOrder:         displayOrderVal,
 		Id:                   idVal,
@@ -27162,6 +27746,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		RootVolume:           rootVolumeVal,
 		ShortName:            shortNameVal,
 		Size:                 sizeVal,
+		StorageProfile:       storageProfileVal,
 		StorageType:          storageTypeVal,
 		UnitNumber:           unitNumberVal,
 		Uuid:                 uuidVal,
@@ -27268,6 +27853,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`controller_mount_point expected to be basetypes.StringValue, was: %T`, controllerMountPointAttribute))
 	}
 
+	createForMultiAttachAttribute, ok := attributes["create_for_multi_attach"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`create_for_multi_attach is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	createForMultiAttachVal, ok := createForMultiAttachAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`create_for_multi_attach expected to be basetypes.BoolValue, was: %T`, createForMultiAttachAttribute))
+	}
+
 	datastoreIdAttribute, ok := attributes["datastore_id"]
 
 	if !ok {
@@ -27466,6 +28069,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`size expected to be basetypes.Int64Value, was: %T`, sizeAttribute))
 	}
 
+	storageProfileAttribute, ok := attributes["storage_profile"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`storage_profile is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	storageProfileVal, ok := storageProfileAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`storage_profile expected to be basetypes.StringValue, was: %T`, storageProfileAttribute))
+	}
+
 	storageTypeAttribute, ok := attributes["storage_type"]
 
 	if !ok {
@@ -27527,6 +28148,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	return VolumesValue{
 		ControllerId:         controllerIdVal,
 		ControllerMountPoint: controllerMountPointVal,
+		CreateForMultiAttach: createForMultiAttachVal,
 		DatastoreId:          datastoreIdVal,
 		DisplayOrder:         displayOrderVal,
 		Id:                   idVal,
@@ -27538,6 +28160,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		RootVolume:           rootVolumeVal,
 		ShortName:            shortNameVal,
 		Size:                 sizeVal,
+		StorageProfile:       storageProfileVal,
 		StorageType:          storageTypeVal,
 		UnitNumber:           unitNumberVal,
 		Uuid:                 uuidVal,
@@ -27613,6 +28236,7 @@ var _ basetypes.ObjectValuable = VolumesValue{}
 type VolumesValue struct {
 	ControllerId         basetypes.Int64Value  `tfsdk:"controller_id"`
 	ControllerMountPoint basetypes.StringValue `tfsdk:"controller_mount_point"`
+	CreateForMultiAttach basetypes.BoolValue   `tfsdk:"create_for_multi_attach"`
 	DatastoreId          basetypes.StringValue `tfsdk:"datastore_id"`
 	DisplayOrder         basetypes.Int64Value  `tfsdk:"display_order"`
 	Id                   basetypes.Int64Value  `tfsdk:"id"`
@@ -27624,6 +28248,7 @@ type VolumesValue struct {
 	RootVolume           basetypes.BoolValue   `tfsdk:"root_volume"`
 	ShortName            basetypes.StringValue `tfsdk:"short_name"`
 	Size                 basetypes.Int64Value  `tfsdk:"size"`
+	StorageProfile       basetypes.StringValue `tfsdk:"storage_profile"`
 	StorageType          basetypes.Int64Value  `tfsdk:"storage_type"`
 	UnitNumber           basetypes.StringValue `tfsdk:"unit_number"`
 	Uuid                 basetypes.StringValue `tfsdk:"uuid"`
@@ -27631,13 +28256,14 @@ type VolumesValue struct {
 }
 
 func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 16)
+	attrTypes := make(map[string]tftypes.Type, 18)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["controller_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["controller_mount_point"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["create_for_multi_attach"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["datastore_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["display_order"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
@@ -27649,6 +28275,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["root_volume"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["short_name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["size"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["storage_profile"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["storage_type"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["unit_number"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["uuid"] = basetypes.StringType{}.TerraformType(ctx)
@@ -27657,7 +28284,7 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 16)
+		vals := make(map[string]tftypes.Value, 18)
 
 		val, err = v.ControllerId.ToTerraformValue(ctx)
 		if err != nil {
@@ -27672,6 +28299,13 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["controller_mount_point"] = val
+
+		val, err = v.CreateForMultiAttach.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["create_for_multi_attach"] = val
 
 		val, err = v.DatastoreId.ToTerraformValue(ctx)
 		if err != nil {
@@ -27750,6 +28384,13 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 		vals["size"] = val
 
+		val, err = v.StorageProfile.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["storage_profile"] = val
+
 		val, err = v.StorageType.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -27801,22 +28442,24 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"controller_id":          basetypes.Int64Type{},
-		"controller_mount_point": basetypes.StringType{},
-		"datastore_id":           basetypes.StringType{},
-		"display_order":          basetypes.Int64Type{},
-		"id":                     basetypes.Int64Type{},
-		"max_iops":               basetypes.StringType{},
-		"max_storage":            basetypes.Int64Type{},
-		"name":                   basetypes.StringType{},
-		"plan_resizable":         basetypes.BoolType{},
-		"resizeable":             basetypes.BoolType{},
-		"root_volume":            basetypes.BoolType{},
-		"short_name":             basetypes.StringType{},
-		"size":                   basetypes.Int64Type{},
-		"storage_type":           basetypes.Int64Type{},
-		"unit_number":            basetypes.StringType{},
-		"uuid":                   basetypes.StringType{},
+		"controller_id":           basetypes.Int64Type{},
+		"controller_mount_point":  basetypes.StringType{},
+		"create_for_multi_attach": basetypes.BoolType{},
+		"datastore_id":            basetypes.StringType{},
+		"display_order":           basetypes.Int64Type{},
+		"id":                      basetypes.Int64Type{},
+		"max_iops":                basetypes.StringType{},
+		"max_storage":             basetypes.Int64Type{},
+		"name":                    basetypes.StringType{},
+		"plan_resizable":          basetypes.BoolType{},
+		"resizeable":              basetypes.BoolType{},
+		"root_volume":             basetypes.BoolType{},
+		"short_name":              basetypes.StringType{},
+		"size":                    basetypes.Int64Type{},
+		"storage_profile":         basetypes.StringType{},
+		"storage_type":            basetypes.Int64Type{},
+		"unit_number":             basetypes.StringType{},
+		"uuid":                    basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -27830,22 +28473,24 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"controller_id":          v.ControllerId,
-			"controller_mount_point": v.ControllerMountPoint,
-			"datastore_id":           v.DatastoreId,
-			"display_order":          v.DisplayOrder,
-			"id":                     v.Id,
-			"max_iops":               v.MaxIops,
-			"max_storage":            v.MaxStorage,
-			"name":                   v.Name,
-			"plan_resizable":         v.PlanResizable,
-			"resizeable":             v.Resizeable,
-			"root_volume":            v.RootVolume,
-			"short_name":             v.ShortName,
-			"size":                   v.Size,
-			"storage_type":           v.StorageType,
-			"unit_number":            v.UnitNumber,
-			"uuid":                   v.Uuid,
+			"controller_id":           v.ControllerId,
+			"controller_mount_point":  v.ControllerMountPoint,
+			"create_for_multi_attach": v.CreateForMultiAttach,
+			"datastore_id":            v.DatastoreId,
+			"display_order":           v.DisplayOrder,
+			"id":                      v.Id,
+			"max_iops":                v.MaxIops,
+			"max_storage":             v.MaxStorage,
+			"name":                    v.Name,
+			"plan_resizable":          v.PlanResizable,
+			"resizeable":              v.Resizeable,
+			"root_volume":             v.RootVolume,
+			"short_name":              v.ShortName,
+			"size":                    v.Size,
+			"storage_profile":         v.StorageProfile,
+			"storage_type":            v.StorageType,
+			"unit_number":             v.UnitNumber,
+			"uuid":                    v.Uuid,
 		})
 
 	return objVal, diags
@@ -27871,6 +28516,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.ControllerMountPoint.Equal(other.ControllerMountPoint) {
+		return false
+	}
+
+	if !v.CreateForMultiAttach.Equal(other.CreateForMultiAttach) {
 		return false
 	}
 
@@ -27918,6 +28567,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.StorageProfile.Equal(other.StorageProfile) {
+		return false
+	}
+
 	if !v.StorageType.Equal(other.StorageType) {
 		return false
 	}
@@ -27943,21 +28596,23 @@ func (v VolumesValue) Type(ctx context.Context) attr.Type {
 
 func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"controller_id":          basetypes.Int64Type{},
-		"controller_mount_point": basetypes.StringType{},
-		"datastore_id":           basetypes.StringType{},
-		"display_order":          basetypes.Int64Type{},
-		"id":                     basetypes.Int64Type{},
-		"max_iops":               basetypes.StringType{},
-		"max_storage":            basetypes.Int64Type{},
-		"name":                   basetypes.StringType{},
-		"plan_resizable":         basetypes.BoolType{},
-		"resizeable":             basetypes.BoolType{},
-		"root_volume":            basetypes.BoolType{},
-		"short_name":             basetypes.StringType{},
-		"size":                   basetypes.Int64Type{},
-		"storage_type":           basetypes.Int64Type{},
-		"unit_number":            basetypes.StringType{},
-		"uuid":                   basetypes.StringType{},
+		"controller_id":           basetypes.Int64Type{},
+		"controller_mount_point":  basetypes.StringType{},
+		"create_for_multi_attach": basetypes.BoolType{},
+		"datastore_id":            basetypes.StringType{},
+		"display_order":           basetypes.Int64Type{},
+		"id":                      basetypes.Int64Type{},
+		"max_iops":                basetypes.StringType{},
+		"max_storage":             basetypes.Int64Type{},
+		"name":                    basetypes.StringType{},
+		"plan_resizable":          basetypes.BoolType{},
+		"resizeable":              basetypes.BoolType{},
+		"root_volume":             basetypes.BoolType{},
+		"short_name":              basetypes.StringType{},
+		"size":                    basetypes.Int64Type{},
+		"storage_profile":         basetypes.StringType{},
+		"storage_type":            basetypes.Int64Type{},
+		"unit_number":             basetypes.StringType{},
+		"uuid":                    basetypes.StringType{},
 	}
 }
