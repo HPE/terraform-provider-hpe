@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test test-json docs sweep build-render-tool
+.PHONY: build linter lint lint-ci test test-json docs sweep build-render-tool
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname SWEEP_PREFIX=prefix
 # SWEEP_PREFIX optionally overrides the resource-name prefix the sweeper matches
@@ -33,6 +33,16 @@ linter:
 # target set (linting ~9k generated files is both wrong and prohibitively slow).
 lint:
 	golangci-lint run $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
+
+# The set CI runs (see .github/workflows/lint.yaml). The SSA/fact-based linters
+# (unused, staticcheck, govet) dominate golangci-lint's peak memory and pushed
+# the ~7 GB CI runner into an OOM kill (exit 143) on the full package set. CI
+# keeps gosec (security) plus the cheap AST linters and drops those three, which
+# cuts peak memory and runs ~3x faster. `make lint` above keeps FULL coverage
+# locally; this target reproduces exactly what CI runs. Keep the --disable list
+# in sync with the lint workflow.
+lint-ci:
+	golangci-lint run --disable=unused,staticcheck,govet $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
 
 test:
 	pkgs=$$(go list ./... | grep -v '/internal/sdk'); \
