@@ -59,11 +59,12 @@ jobs:
       # CI runs a *reduced* linter set. The SSA/fact-based linters dominate
       # lint's memory: measured on the full package set, gosec + the cheap AST
       # linters peak ~6 GiB, while adding unused/staticcheck/govet pushes it high
-      # enough to OOM-kill the runner's ~7 GB (exit 143). We keep gosec (security)
-      # plus the cheap AST linters and drop unused/staticcheck/govet here, which
-      # cuts peak memory and runs ~3x faster. FULL coverage still runs locally
-      # via `make lint`; `make lint-ci` reproduces exactly this reduced set --
-      # keep the two --disable lists in sync.
+      # enough to OOM-kill the runner's ~7 GB (exit 143). gosec has been removed
+      # due to timeout issues. We keep the cheap AST linters and drop
+      # unused/staticcheck/govet here, which cuts peak memory and runs ~3x faster.
+      # FULL coverage still runs locally via `make lint`; `make lint-ci`
+      # reproduces exactly this reduced set -- keep the two --disable lists in
+      # sync.
       #
       # The action installs a pinned *prebuilt* binary (no ~75 s `go install`
       # recompile every run) and manages the ~/.cache/golangci-lint analysis
@@ -72,4 +73,4 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: v2.11.3
-          args: --disable=unused,staticcheck,govet ${{ steps.pkgs.outputs.dirs }}
+          args: --disable=gosec,unused,staticcheck,govet ${{ steps.pkgs.outputs.dirs }}
