@@ -38,6 +38,11 @@ network_dhcp_server:
       computed_optional_required: computed_optional
       default: 86400
       description: Lease time in seconds for the DHCP server
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(1)
     config:
       conflicts_with: [config_nsxt]
     config_nsxt:

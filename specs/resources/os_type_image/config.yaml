@@ -16,10 +16,20 @@ os_type_image:
       computed_optional_required: required
       requires_replace: true
       description: ID of the OS type
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(1)
     virtual_image_id:
       computed_optional_required: required
       requires_replace: true
       description: ID of the virtual image
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(1)
     provision_type_id:
       computed_optional_required: computed_optional
       requires_replace: true

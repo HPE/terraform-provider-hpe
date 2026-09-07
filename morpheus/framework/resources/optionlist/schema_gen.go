@@ -5,6 +5,7 @@ package optionlist
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -23,6 +24,9 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The API type of the option list.",
 				MarkdownDescription: "The API type of the option list.",
+				Validators: []validator.String{
+					validators.RequiredWhenSiblingEquals("type", "api"),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -53,6 +57,9 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The source URL for the option list.",
 				MarkdownDescription: "The source URL for the option list.",
+				Validators: []validator.String{
+					validators.RequiredWhenSiblingEqualsOrNull("type", "rest"),
+				},
 			},
 			"type": schema.StringAttribute{
 				Optional:            true,

@@ -93,6 +93,16 @@ image:
     min_ram:
       computed_optional_required: computed_optional
       description: Minimal required amount of RAM for provisioning in GB
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(0)
     min_disk:
       computed_optional_required: computed_optional
       description: Minimal required amount of disk space for provisioning in GB
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            schema_definition: int64validator.AtLeast(0)

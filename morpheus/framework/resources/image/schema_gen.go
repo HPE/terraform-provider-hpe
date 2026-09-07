@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -141,12 +142,18 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Minimal required amount of disk space for provisioning in GB",
 				MarkdownDescription: "Minimal required amount of disk space for provisioning in GB",
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"min_ram": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Minimal required amount of RAM for provisioning in GB",
 				MarkdownDescription: "Minimal required amount of RAM for provisioning in GB",
+				Validators: []validator.Int64{
+					int64validator.AtLeast(0),
+				},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,

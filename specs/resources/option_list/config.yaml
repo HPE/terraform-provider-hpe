@@ -19,6 +19,11 @@ option_list:
     api_type:
       computed_optional_required: optional
       description: The API type of the option list.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.RequiredWhenSiblingEquals("type", "api")
     description:
       computed_optional_required: optional
       description: The description of the option type list.
@@ -36,6 +41,11 @@ option_list:
     source_url:
       computed_optional_required: optional
       description: The source URL for the option list.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/HPE/terraform-provider-hpe/utils/validators
+            schema_definition: validators.RequiredWhenSiblingEqualsOrNull("type", "rest")
     type:
       computed_optional_required: optional
       description: The type of the option list (rest, manual, ldap, api).
