@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+#
+# (C) Copyright 2026 Hewlett Packard Enterprise Development LP
+#
+# pre-push: run the provider's lint gate before anything leaves the machine.
+#
+# WHY THIS EXISTS: the `Lint` GitHub Actions workflow is disabled (manual
+# dispatch only) because golangci-lint is OOM-killed on a standard runner --
+# see .github/workflows/lint.yaml. `make lint` run locally is therefore the
+# only gate on lint regressions; this hook is what makes it automatic.
+#
+# COST: the golangci-lint cache is content-addressed and user-global, so a
+# typical push costs seconds. The first run on a machine, or the first after a
+# golangci-lint or Go toolchain upgrade, rebuilds the cache and takes minutes.
+#
+# ACTIVATION: git does not run hooks from a tracked directory by default.
+# `init.sh` in the tooling workspace wires this up automatically; for a
+# standalone clone, run once:
+#
+#     git config core.hooksPath .githooks
+#
+# ESCAPE HATCHES:
+#     git push --no-verify     skip all pre-push hooks
+#     SKIP_LINT=1 git push     skip just this check
+
+set -euo pipefail
+
+if [ -n "${SKIP_LINT:-}" ]; then
+  echo "pre-push: SKIP_LINT set -- skipping lint gate" >&2
+  exit 0
+fi
+
+# Git feeds pre-push one "<local_ref> <local_sha> <remote_ref> <remote_sha>"
+# line per ref. A branch *deletion* carries an all-zero local sha and has no
+# content to lint, so a push consisting only of deletions is a no-op here.
+# Deriving the zero OID this way keeps it correct under both SHA-1 and SHA-256.
+# If stdin yields no refs at all we fall through and lint (fail safe).
+zero_oid="$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')"
+refs_seen=0
+content_refs=0
+while read -r _local_ref local_sha _rest; do
+  refs_seen=$((refs_seen + 1))
+  [ "$local_sha" = "$zero_oid" ] || content_refs=$((content_refs + 1))
+done
+if [ "$refs_seen" -gt 0 ] && [ "$content_refs" -eq 0 ]; then
+  echo "pre-push: only ref deletions in this push -- nothing to lint" >&2
+  exit 0
+fi
+
+# Hooks run from the working tree root already, but be explicit: `make lint`
+# shells out to `go list ./...` and must run against the module root.
+cd "$(git rev-parse --show-toplevel)"
+
+# GUI git clients often run hooks with a minimal PATH that omits the Go bin
+# directory `make linter` installs into. Append rather than prepend, so a
+# golangci-lint the user deliberately put on PATH still wins.
+if command -v go >/dev/null 2>&1; then
+  PATH="$PATH:$(go env GOPATH)/bin"
+  export PATH
+fi
+
+if ! command -v golangci-lint >/dev/null 2>&1; then
+  cat >&2 <<'EOF'
+pre-push: golangci-lint not found on PATH.
+
+Install the version this repository pins:
+
+    make linter
+
+Then retry the push. To bypass this check once:
+
+    git push --no-verify
+EOF
+  exit 1
+fi
+
+# Warn but do not fail on version drift: a different golangci-lint can report a
+# different issue set from what a colleague or a manual CI run sees, and it
+# cold-busts the analysis cache (turning a ~7s push into a multi-minute one).
+want="$(sed -n 's|.*golangci-lint@v\([0-9.]*\).*|\1|p' Makefile | head -1)"
+have="$(golangci-lint version --short 2>/dev/null || true)"
+if [ -n "$want" ] && [ -n "$have" ] && [ "$want" != "$have" ]; then
+  echo "pre-push: warning: golangci-lint v${have} on PATH, Makefile pins v${want} ('make linter' to align)" >&2
+fi
+
+echo "pre-push: running 'make lint' (cached: seconds; after a toolchain change: minutes)..." >&2
+if ! make lint; then
+  cat >&2 <<'EOF'
+
+pre-push: lint failed -- push aborted.
+
+The `Lint` CI workflow is disabled (see .github/workflows/lint.yaml), so this
+hook is the only gate. Fix the issues above and push again.
+
+To bypass once:
+
+    git push --no-verify
+EOF
+  exit 1
+fi
