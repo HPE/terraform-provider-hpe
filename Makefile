@@ -25,7 +25,7 @@ build:
 	go build
 
 linter:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.3
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 
 # The vendored Morpheus SDK (internal/sdk/{oapigen,legacy}) is generated /
 # hand-written third-party code that is not subject to the provider's lint

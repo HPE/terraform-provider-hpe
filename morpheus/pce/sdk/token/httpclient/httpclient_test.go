@@ -111,83 +111,86 @@ func createTestClient(
 }
 
 func setTestCase() ([]testCaseIssuer, []testCaseIdentity) {
-	return []testCaseIssuer{
-			{
-				name:       "success",
-				ctx:        context.Background(),
-				url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
-				statusCode: http.StatusOK,
-				token: issuertoken.TokenResponse{
-					AccessToken: "access-token",
-				},
+	issuers := []testCaseIssuer{
+		{
+			name:       "success",
+			ctx:        context.Background(),
+			url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
+			statusCode: http.StatusOK,
+			token: issuertoken.TokenResponse{
+				AccessToken: "access-token",
 			},
-			{
-				name:       "status code 404",
-				url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
-				ctx:        context.Background(),
-				statusCode: http.StatusNotFound,
-				err:        errors.New("Unexpected status code 404"),
+		},
+		{
+			name:       "status code 404",
+			url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
+			ctx:        context.Background(),
+			statusCode: http.StatusNotFound,
+			err:        errors.New("Unexpected status code 404"),
+		},
+		{
+			name:       "status code 400",
+			url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
+			ctx:        context.Background(),
+			statusCode: http.StatusBadRequest,
+			err:        errors.New("Bad request: {\"token_type\":\"\",\"expires_in\":0,\"access_token\":\"\",\"scope\":\"\"}"),
+		},
+		{
+			name:       "status code 401",
+			url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
+			ctx:        context.Background(),
+			statusCode: http.StatusUnauthorized,
+			err:        errors.New("Unauthorized access: "),
+		},
+		{
+			name:       "status code 403",
+			url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
+			ctx:        context.Background(),
+			statusCode: http.StatusForbidden,
+			err:        errors.New("Forbidden: "),
+		},
+	}
+	identities := []testCaseIdentity{
+		{
+			name:       "success",
+			ctx:        context.Background(),
+			url:        "https://client.greenlake.hpe.com/api/iam/identity",
+			statusCode: http.StatusOK,
+			token: identitytoken.TokenResponse{
+				AccessToken: "access-token",
 			},
-			{
-				name:       "status code 400",
-				url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
-				ctx:        context.Background(),
-				statusCode: http.StatusBadRequest,
-				err:        errors.New("Bad request: {\"token_type\":\"\",\"expires_in\":0,\"access_token\":\"\",\"scope\":\"\"}"),
-			},
-			{
-				name:       "status code 401",
-				url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
-				ctx:        context.Background(),
-				statusCode: http.StatusUnauthorized,
-				err:        errors.New("Unauthorized access: "),
-			},
-			{
-				name:       "status code 403",
-				url:        "https://hpe-greenlake-tenant.okta.com/oauth2/default",
-				ctx:        context.Background(),
-				statusCode: http.StatusForbidden,
-				err:        errors.New("Forbidden: "),
-			},
-		}, []testCaseIdentity{
-			{
-				name:       "success",
-				ctx:        context.Background(),
-				url:        "https://client.greenlake.hpe.com/api/iam/identity",
-				statusCode: http.StatusOK,
-				token: identitytoken.TokenResponse{
-					AccessToken: "access-token",
-				},
-			},
-			{
-				name:       "status code 404",
-				url:        "https://client.greenlake.hpe.com/api/iam/identity",
-				ctx:        context.Background(),
-				statusCode: http.StatusNotFound,
-				err:        errors.New("Unexpected status code 404"),
-			},
-			{
-				name:       "status code 400",
-				url:        "https://client.greenlake.hpe.com/api/iam/identity",
-				ctx:        context.Background(),
-				statusCode: http.StatusBadRequest,
-				err:        errors.New("Bad request: " + badRequestTokenBody),
-			},
-			{
-				name:       "status code 401",
-				url:        "https://client.greenlake.hpe.com/api/iam/identity",
-				ctx:        context.Background(),
-				statusCode: http.StatusUnauthorized,
-				err:        errors.New("Unauthorized access: "),
-			},
-			{
-				name:       "status code 403",
-				url:        "https://client.greenlake.hpe.com/api/iam/identity",
-				ctx:        context.Background(),
-				statusCode: http.StatusForbidden,
-				err:        errors.New("Forbidden: "),
-			},
-		}
+		},
+		{
+			name:       "status code 404",
+			url:        "https://client.greenlake.hpe.com/api/iam/identity",
+			ctx:        context.Background(),
+			statusCode: http.StatusNotFound,
+			err:        errors.New("Unexpected status code 404"),
+		},
+		{
+			name:       "status code 400",
+			url:        "https://client.greenlake.hpe.com/api/iam/identity",
+			ctx:        context.Background(),
+			statusCode: http.StatusBadRequest,
+			err:        errors.New("Bad request: " + badRequestTokenBody),
+		},
+		{
+			name:       "status code 401",
+			url:        "https://client.greenlake.hpe.com/api/iam/identity",
+			ctx:        context.Background(),
+			statusCode: http.StatusUnauthorized,
+			err:        errors.New("Unauthorized access: "),
+		},
+		{
+			name:       "status code 403",
+			url:        "https://client.greenlake.hpe.com/api/iam/identity",
+			ctx:        context.Background(),
+			statusCode: http.StatusForbidden,
+			err:        errors.New("Forbidden: "),
+		},
+	}
+
+	return issuers, identities
 }
 
 func TestGenerateToken(t *testing.T) {

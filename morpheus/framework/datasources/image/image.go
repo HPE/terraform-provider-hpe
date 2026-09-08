@@ -270,7 +270,7 @@ func getImageByName(
 	d := parseAsData(ctx, ma, data)
 	diags = append(diags, d...)
 
-	return nil
+	return diags
 }
 
 func parseAsData(
