@@ -1283,6 +1283,14 @@ Use /api/provision-types?code=vmware to see the available controllerTypes for vm
 - `name` (String) Name/type of the LV being created.
 - `root_volume` (Boolean) If set to false then a non-root LV will be created.
 - `size` (Number) Size of the LV to be created in GBs.  Uses default from service plan.
+
+This records the size that was *requested*. Morpheus rounds a request up
+when the image needs more room, in which case `actual_size` reports the
+volume that was really created and this attribute is left as the request;
+a difference between the two is normal and produces no plan diff. Note a
+request below the image's minimum disk is rejected rather than rounded.
+Lowering this below the size already provisioned has no effect, as the
+platform cannot shrink a disk in place.
 - `size_id` (Number) Can be used to select pre-existing LV choices from Morpheus.
 - `storage_profile` (String) Storage profile code for the volume. The available codes depend on the
 provision type; query `/api/provision-types` to list the `storageProfiles`
@@ -1292,4 +1300,14 @@ for a type. For example, KVM/HVM volumes use cache-mode profiles such as
 
 Read-Only:
 
+- `actual_size` (Number) The size in GB that Morpheus actually provisioned for this volume.
+
+This can exceed `size`. A request smaller than the image's minimum disk
+is rejected outright, but a request that clears the minimum while falling
+short of the image's own size is rounded up to fit — so asking for 10GB
+with an image occupying a little over 10GB yields an 11GB volume.
+`size` keeps the request; this reports what exists.
+
+This is also where an out-of-band resize becomes visible: a disk grown
+outside Terraform is reflected here on the next refresh.
 - `id` (Number) The id for the LV configuration being created.

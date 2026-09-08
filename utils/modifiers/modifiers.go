@@ -157,3 +157,81 @@ func (m int64UseStateForUnknownUnlessModifier) PlanModifyInt64(
 	// No trigger changed: carry the prior value forward.
 	resp.PlanValue = req.StateValue
 }
+
+// RetainWhenStateSatisfiesRequest returns an Int64 plan modifier for an
+// attribute that records a *request* which the platform may satisfy with a
+// larger value.
+//
+// Instance volume size is the motivating case. Morpheus rounds a requested size
+// up when the image needs more room than it allows — a request that clears the
+// image's minimum disk but falls short of the image's own size is grown to fit.
+// A request below the minimum is rejected outright rather than grown, so it is
+// the rounding, not the minimum, that produces a value larger than was asked
+// for.
+//
+// Where prior state already meets or exceeds the configured value, state is
+// retained rather than planning a reduction the platform would refuse. This
+// matters most after import: import reads the provisioned size, so without
+// this a freshly imported instance whose disk had been grown would plan a
+// shrink on every run.
+//
+// A configured value greater than state is a genuine request to grow and is
+// left alone, so the resize path picks it up. A configured value below state
+// is therefore a no-op while state exceeds it; Morpheus generally cannot
+// shrink a disk in place, and a server-grown volume cannot be told apart from
+// a deliberate reduction — both present as config < state, and Terraform
+// supplies prior state and current config but never prior config.
+//
+// The attribute must be Computed as well as Optional. Terraform requires the
+// planned value of a non-computed attribute to equal its configured value, so
+// this modifier cannot legally take effect otherwise.
+func RetainWhenStateSatisfiesRequest() planmodifier.Int64 {
+	return retainWhenStateSatisfiesRequestModifier{}
+}
+
+type retainWhenStateSatisfiesRequestModifier struct{}
+
+func (m retainWhenStateSatisfiesRequestModifier) Description(
+	_ context.Context,
+) string {
+	return "Retain the prior value when it already satisfies the configured request"
+}
+
+func (m retainWhenStateSatisfiesRequestModifier) MarkdownDescription(
+	ctx context.Context,
+) string {
+	return m.Description(ctx)
+}
+
+func (m retainWhenStateSatisfiesRequestModifier) PlanModifyInt64(
+	_ context.Context,
+	req planmodifier.Int64Request,
+	resp *planmodifier.Int64Response,
+) {
+	// Create (no prior state) or destroy (no plan): nothing to retain.
+	if req.State.Raw.IsNull() || req.Plan.Raw.IsNull() {
+		return
+	}
+
+	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+
+	// Configuration is silent, so the value is whatever the platform chose.
+	// Keep it rather than letting it go unknown on an unrelated change.
+	if req.ConfigValue.IsNull() {
+		resp.PlanValue = req.StateValue
+
+		return
+	}
+
+	if req.ConfigValue.IsUnknown() {
+		return
+	}
+
+	// State already satisfies the request; keep it. A larger configured value
+	// falls through untouched and is treated as a request to grow.
+	if req.ConfigValue.ValueInt64() <= req.StateValue.ValueInt64() {
+		resp.PlanValue = req.StateValue
+	}
+}

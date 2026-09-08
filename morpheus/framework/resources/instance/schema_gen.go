@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
@@ -852,6 +853,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"actual_size": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The size in GB that Morpheus actually provisioned for this volume.\n\nThis can exceed `size`. A request smaller than the image's minimum disk\nis rejected outright, but a request that clears the minimum while falling\nshort of the image's own size is rounded up to fit — so asking for 10GB\nwith an image occupying a little over 10GB yields an 11GB volume.\n`size` keeps the request; this reports what exists.\n\nThis is also where an out-of-band resize becomes visible: a disk grown\noutside Terraform is reflected here on the next refresh.",
+							MarkdownDescription: "The size in GB that Morpheus actually provisioned for this volume.\n\nThis can exceed `size`. A request smaller than the image's minimum disk\nis rejected outright, but a request that clears the minimum while falling\nshort of the image's own size is rounded up to fit — so asking for 10GB\nwith an image occupying a little over 10GB yields an 11GB volume.\n`size` keeps the request; this reports what exists.\n\nThis is also where an out-of-band resize becomes visible: a disk grown\noutside Terraform is reflected here on the next refresh.",
+						},
 						"controller_mount_point": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -894,8 +900,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"size": schema.Int64Attribute{
 							Optional:            true,
-							Description:         "Size of the LV to be created in GBs.  Uses default from service plan.",
-							MarkdownDescription: "Size of the LV to be created in GBs.  Uses default from service plan.",
+							Computed:            true,
+							Description:         "Size of the LV to be created in GBs.  Uses default from service plan.\n\nThis records the size that was *requested*. Morpheus rounds a request up\nwhen the image needs more room, in which case `actual_size` reports the\nvolume that was really created and this attribute is left as the request;\na difference between the two is normal and produces no plan diff. Note a\nrequest below the image's minimum disk is rejected rather than rounded.\nLowering this below the size already provisioned has no effect, as the\nplatform cannot shrink a disk in place.",
+							MarkdownDescription: "Size of the LV to be created in GBs.  Uses default from service plan.\n\nThis records the size that was *requested*. Morpheus rounds a request up\nwhen the image needs more room, in which case `actual_size` reports the\nvolume that was really created and this attribute is left as the request;\na difference between the two is normal and produces no plan diff. Note a\nrequest below the image's minimum disk is rejected rather than rounded.\nLowering this below the size already provisioned has no effect, as the\nplatform cannot shrink a disk in place.",
+							PlanModifiers: []planmodifier.Int64{
+								modifiers.RetainWhenStateSatisfiesRequest(),
+							},
 						},
 						"size_id": schema.Int64Attribute{
 							Optional:            true,
@@ -8296,6 +8306,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 
 	attributes := in.Attributes()
 
+	actualSizeAttribute, ok := attributes["actual_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`actual_size is missing from object`)
+
+		return nil, diags
+	}
+
+	actualSizeVal, ok := actualSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`actual_size expected to be basetypes.Int64Value, was: %T`, actualSizeAttribute))
+	}
+
 	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
 
 	if !ok {
@@ -8481,6 +8509,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	return VolumesValue{
+		ActualSize:             actualSizeVal,
 		ControllerMountPoint:   controllerMountPointVal,
 		DatastoreAutoSelection: datastoreAutoSelectionVal,
 		DatastoreId:            datastoreIdVal,
@@ -8558,6 +8587,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		return NewVolumesValueUnknown(), diags
 	}
 
+	actualSizeAttribute, ok := attributes["actual_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`actual_size is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	actualSizeVal, ok := actualSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`actual_size expected to be basetypes.Int64Value, was: %T`, actualSizeAttribute))
+	}
+
 	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
 
 	if !ok {
@@ -8743,6 +8790,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	return VolumesValue{
+		ActualSize:             actualSizeVal,
 		ControllerMountPoint:   controllerMountPointVal,
 		DatastoreAutoSelection: datastoreAutoSelectionVal,
 		DatastoreId:            datastoreIdVal,
@@ -8823,6 +8871,7 @@ func (t VolumesType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = VolumesValue{}
 
 type VolumesValue struct {
+	ActualSize             basetypes.Int64Value  `tfsdk:"actual_size"`
 	ControllerMountPoint   basetypes.StringValue `tfsdk:"controller_mount_point"`
 	DatastoreAutoSelection basetypes.StringValue `tfsdk:"datastore_auto_selection"`
 	DatastoreId            basetypes.Int64Value  `tfsdk:"datastore_id"`
@@ -8837,11 +8886,12 @@ type VolumesValue struct {
 }
 
 func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 11)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["actual_size"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["controller_mount_point"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["datastore_auto_selection"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["datastore_id"] = basetypes.Int64Type{}.TerraformType(ctx)
@@ -8857,7 +8907,14 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 11)
+
+		val, err = v.ActualSize.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["actual_size"] = val
 
 		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
 		if err != nil {
@@ -8959,6 +9016,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
+		"actual_size":              basetypes.Int64Type{},
 		"controller_mount_point":   basetypes.StringType{},
 		"datastore_auto_selection": basetypes.StringType{},
 		"datastore_id":             basetypes.Int64Type{},
@@ -8982,6 +9040,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"actual_size":              v.ActualSize,
 			"controller_mount_point":   v.ControllerMountPoint,
 			"datastore_auto_selection": v.DatastoreAutoSelection,
 			"datastore_id":             v.DatastoreId,
@@ -9010,6 +9069,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.ActualSize.Equal(other.ActualSize) {
+		return false
 	}
 
 	if !v.ControllerMountPoint.Equal(other.ControllerMountPoint) {
@@ -9065,6 +9128,7 @@ func (v VolumesValue) Type(ctx context.Context) attr.Type {
 
 func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"actual_size":              basetypes.Int64Type{},
 		"controller_mount_point":   basetypes.StringType{},
 		"datastore_auto_selection": basetypes.StringType{},
 		"datastore_id":             basetypes.Int64Type{},

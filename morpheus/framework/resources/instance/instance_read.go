@@ -1453,9 +1453,27 @@ func setDatastoreAutoSelectionAndSize(
 				apiVol.AdditionalProperties["DatastoreAutoSelection"] = planVol.DatastoreAutoSelection.ValueString()
 			}
 
-			apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
-			// We set this flag to indicate that Terraform set the MaxStorage value
-			apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
+			// Preserve the size the API actually reported before the plan
+			// value overwrites it below, so actual_size can report reality
+			// while size continues to report the request. MaxStorage is in
+			// bytes at this point; the conversion to GB happens when state
+			// is built, in convertAPIVolumesToStateVolumes.
+			if apiVol.MaxStorage != nil {
+				apiVol.AdditionalProperties["ActualMaxStorage"] = *apiVol.MaxStorage
+			}
+
+			// Only stand in for the API when the practitioner actually asked
+			// for a size. size is Optional and Computed, so omitting it means
+			// the platform chooses — and overwriting MaxStorage with a null
+			// plan value while still claiming Terraform set it would record
+			// size as null rather than as what was provisioned.
+			if !planVol.Size.IsNull() && !planVol.Size.IsUnknown() {
+				apiVol.MaxStorage = planVol.Size.ValueInt64Pointer()
+				// Signals that MaxStorage now holds a value in GB from the
+				// plan rather than the API's bytes, so it is not converted
+				// a second time.
+				apiVol.AdditionalProperties["TerraformSetMaxStorage"] = true
+			}
 
 			// storage_profile: on a post-apply read (create/update) prefer the
 			// configured value so the final state matches the plan, and an
@@ -1700,6 +1718,8 @@ func convertAPIVolumesToStateVolumes(
 			// TerraformSetMaxStorage flag indicates that MaxStorage was set from plan (already in GB)
 			// and should not be converted from bytes
 			terraformSetMaxStorage := false
+			var actualMaxStorage *int64
+
 			if in.AdditionalProperties != nil {
 				if dsAutoSel, ok := in.AdditionalProperties["DatastoreAutoSelection"]; ok {
 					if dsAutoSelStr, ok := dsAutoSel.(string); ok {
@@ -1712,6 +1732,14 @@ func convertAPIVolumesToStateVolumes(
 						terraformSetMaxStorage = tsmsBool
 					}
 				}
+
+				// Stashed by setDatastoreAutoSelectionAndSize before the plan
+				// value overwrote MaxStorage. Still in bytes.
+				if ams, ok := in.AdditionalProperties["ActualMaxStorage"]; ok {
+					if n, ok := numberToInt64(ams); ok {
+						actualMaxStorage = &n
+					}
+				}
 			}
 
 			// Set Size: if TerraformSetMaxStorage is true, MaxStorage is already in GB from plan
@@ -1720,6 +1748,23 @@ func convertAPIVolumesToStateVolumes(
 				v.Size = convert.Int64ToType(in.MaxStorage)
 			} else {
 				v.Size = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage))
+			}
+
+			// actual_size always reports what the platform provisioned, never
+			// the request. Where the plan value overwrote MaxStorage the
+			// original was stashed above; otherwise — a plain refresh, or an
+			// import, which never reaches setDatastoreAutoSelectionAndSize —
+			// MaxStorage still holds the API's own value.
+			switch {
+			case actualMaxStorage != nil:
+				v.ActualSize = convert.Int64ToType(convertBytesPtrToGBBytes(actualMaxStorage))
+			case !terraformSetMaxStorage:
+				v.ActualSize = convert.Int64ToType(convertBytesPtrToGBBytes(in.MaxStorage))
+			default:
+				// MaxStorage holds a GB plan value with no stashed original.
+				// Not reachable via setDatastoreAutoSelectionAndSize, which
+				// always sets both; retained so actual_size is never unknown.
+				v.ActualSize = convert.Int64ToType(in.MaxStorage)
 			}
 
 			v.state = attr.ValueStateKnown
