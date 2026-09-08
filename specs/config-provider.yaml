@@ -1629,6 +1629,10 @@ data_sources:
     read:
       path: /api/virtual-images/{virtualImageId}
       method: GET
+  images:
+    read:
+      path: /api/virtual-images
+      method: GET
   instance:
     read:
       path: /api/instances/{id}

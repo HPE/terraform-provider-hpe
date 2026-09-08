@@ -17,6 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/paging"
 )
 
 // Ensure the implementation satisfies the expected interfaces.
@@ -141,38 +142,76 @@ func getImageByName(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
-	imageListReq := client.LibraryAPI.ListVirtualImages(ctx)
-
 	name := data.Name.ValueString()
-	imageListReq = imageListReq.Name(name)
 
-	if !data.ImageType.IsNull() {
-		imageListReq = imageListReq.ImageType(data.ImageType.ValueString())
-	}
+	// Walk every page. The server matches the name with a SQL `like`, so a
+	// broad name can match more records than fit in one response, and the
+	// exact match below could otherwise fall beyond the last page fetched and
+	// be reported as not found.
+	images, err := paging.Collect(
+		ctx,
+		func(
+			ctx context.Context, offset, max int64,
+		) ([]sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner, int64, error) {
+			req := client.LibraryAPI.ListVirtualImages(ctx).
+				Name(name).
+				Max(max).
+				Offset(offset)
 
-	imageListResp, httpResp, err := imageListReq.Execute()
-	if imageListResp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
-		diags.AddError(
-			fmt.Sprintf("GET failed for image '%s'", name),
-			errfmt.ErrMsg(err, httpResp),
-		)
+			// An unknown value must not be sent: ValueString would render it as
+			// the empty string, which the API treats as a filter matching
+			// nothing rather than as no filter at all.
+			if !data.ImageType.IsNull() && !data.ImageType.IsUnknown() {
+				// imageType is repeatable server-side and so generates as a
+				// slice. This data source matches a single type.
+				req = req.ImageType([]string{data.ImageType.ValueString()})
+			}
+
+			resp, httpResp, err := req.Execute()
+			if resp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
+				return nil, 0, fmt.Errorf(
+					"GET failed for image '%s': %s", name, errfmt.ErrMsg(err, httpResp))
+			}
+
+			var total int64
+			if resp.Meta != nil && resp.Meta.Total != nil {
+				total = *resp.Meta.Total
+			}
+
+			return resp.VirtualImages, total, nil
+		},
+	)
+	if err != nil {
+		diags.AddError(fmt.Sprintf("GET failed for image '%s'", name), err.Error())
 
 		return diags
 	}
 
-	var images []sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner
+	var matched []sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner
 
-	for _, image := range imageListResp.VirtualImages {
+	for _, image := range images {
 		if image.Name != nil && *image.Name == name {
-			if !data.ImageType.IsNull() {
-				// skip if image type doesn't match
+			if !data.ImageType.IsNull() && !data.ImageType.IsUnknown() {
+				// image_type is matched exactly here, deliberately narrowing
+				// the server's result rather than echoing it.
+				//
+				// Server-side, some values are aliases: vmware also matches ovf
+				// and vmdk, virtualbox also matches vdi. This data source must
+				// resolve to exactly one image, so where several images share a
+				// name and differ only by type, that expansion would turn a
+				// working lookup into "multiple images were returned". Matching
+				// exactly keeps image_type usable as a tie-breaker.
+				//
+				// Use hpe_morpheus_images for alias-aware discovery.
 				if image.ImageType == nil || *image.ImageType != data.ImageType.ValueString() {
 					continue
 				}
 			}
-			images = append(images, image)
+			matched = append(matched, image)
 		}
 	}
+
+	images = matched
 
 	if len(images) > 1 {
 		diags.AddError(
@@ -380,7 +419,7 @@ func parseAsData(
 	data.UserUploaded = convert.BoolToType(image.UserUploaded)
 
 	// virtio_supported
-	data.UserData = convert.StrToType(image.UserData.Get())
+	data.VirtioSupported = convert.BoolToType(image.VirtioSupported)
 
 	// visibility
 	data.Visibility = convert.StrToType(image.Visibility)

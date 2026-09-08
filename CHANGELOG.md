@@ -1,3 +1,71 @@
+# v2.1.0 Release Notes
+
+## Breaking changes
+
+### `hpe_morpheus_images` reimplemented
+
+The `hpe_morpheus_images` data source has been rewritten on the plugin framework.  It previously
+returned only a list of ids and filtered a single unpaginated response, so it could neither report
+anything about an image nor see one that fell beyond the first page.
+
+It now returns the full record for every matching image, walks every page, and offers the endpoint's
+complete filter set.  Existing configurations need updating:
+
+| Before | Now |
+|---|---|
+| `ids` — a list of image ids | `images` — a set of full image objects |
+| `source` | `filter_type` |
+| `sort_ascending` | `sort` and `direction` |
+| `filter` blocks | unchanged, including their regular-expression semantics |
+
+Reading an id now means projecting it out of the set.  `images` is a set rather than a list, so it
+cannot be indexed; sort the ids where one in particular is wanted:
+
+```hcl
+data "hpe_morpheus_images" "ubuntu" {
+  image_type = ["qcow2", "raw"]
+
+  filter {
+    name   = "name"
+    values = ["^ubuntu"]
+  }
+}
+
+output "image_ids" {
+  value = sort([for image in data.hpe_morpheus_images.ubuntu.images : image.id])
+}
+```
+
+A set is used deliberately.  The API pages by name, names are not unique across clouds, and rows can
+therefore move between pages — so no stable order can be promised, and offering a list would imply
+one.  Results are de-duplicated by id for the same reason.
+
+`filter_type` defaults to `All`, which differs from the API's own default of `User`.  Left to itself
+the API returns only user-uploaded images, hiding the synced and system images most instances are
+provisioned from.  Set it to `User` to restore the previous scope.
+
+-> **This data source can be slow on a large image library.**  Every image the server-side filters
+admit is downloaded before `filter` blocks are applied, and Terraform reads a data source on refresh,
+plan and apply alike.  Narrow it with `image_type`, `image_id` or `phrase` wherever possible; the
+data source documentation has a table of which arguments reduce the download and which do not.
+
+## Enhancements to existing resources
+
+### `hpe_morpheus_image` no longer misses images beyond the first page
+
+The singular `hpe_morpheus_image` data source narrowed by name server-side, but that is a SQL `like`,
+so a broad name could match more images than one response holds.  An exact match falling beyond the
+last page fetched was reported as not found.  Every page is now walked.
+
+`virtio_supported` also always read null, because the field was never populated.  It now reports the
+image's value.
+
+### Test image sweeper no longer misses images
+
+The image sweeper requested no page size at all, so it saw only the first page and left any test
+image beyond it behind.  Which images those were depended on what else existed at the time, since the
+API sorts by name.
+
 # v2.0.0 Release Notes
 
 This is a major release.  Alongside the Morpheus support this provider already offered, it adds

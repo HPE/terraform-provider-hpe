@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/images"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
@@ -110,6 +111,7 @@ func (p *MorpheusProvider) DataSources(
 		instance.NewDataSource,
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,
+		images.NewDataSource,
 		loadbalancer.NewDataSource,
 		loadbalancermonitor.NewDataSource,
 		loadbalancerpool.NewDataSource,

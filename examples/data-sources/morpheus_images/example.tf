@@ -1,0 +1,46 @@
+# Narrow server-side wherever possible. Every image the filters admit is
+# fetched before the provider does anything with it, and a large estate makes
+# that expensive: on an appliance holding around 7000 images an unfiltered read
+# takes well over a minute, on every plan and every apply.
+#
+# image_type accepts several values and some are aliases: "vmware" also matches
+# ovf and vmdk, "virtualbox" also matches vdi. Anything else, such as "qcow2",
+# "raw" or "iso", is matched exactly.
+data "hpe_morpheus_images" "hvm_bootable" {
+  image_type = ["qcow2", "raw"]
+}
+
+# filter_type decides what is considered before any other filter. It defaults to
+# "All"; left to itself the API returns only images a user uploaded, hiding the
+# synced and system images most instances are actually provisioned from.
+data "hpe_morpheus_images" "user_uploaded" {
+  image_type  = ["qcow2", "raw"]
+  filter_type = "User"
+}
+
+# Filter blocks are applied by the provider once the matching images have been
+# fetched, so they can express patterns the API cannot. Values are Go regular
+# expressions and are unanchored, so anchor them when that is what you mean.
+#
+# Combine them with the server-side arguments rather than relying on them alone:
+# the arguments decide how much is fetched, the blocks only decide what survives.
+data "hpe_morpheus_images" "ubuntu_active" {
+  image_type = ["qcow2", "raw"]
+
+  filter {
+    name   = "name"
+    values = ["^ubuntu"]
+  }
+
+  filter {
+    name   = "status"
+    values = ["active"]
+  }
+}
+
+# The id of an image to provision from, for config_hvm.image_id or
+# config_vmware.image_id on hpe_morpheus_instance. images is a set, so it cannot
+# be indexed; sort the ids to pick one deterministically.
+output "ubuntu_image_ids" {
+  value = sort([for image in data.hpe_morpheus_images.ubuntu_active.images : image.id])
+}

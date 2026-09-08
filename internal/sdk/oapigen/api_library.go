@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -7779,18 +7780,24 @@ func (a *LibraryAPIService) ListVirtualImageLocationsExecute(r ApiListVirtualIma
 }
 
 type ApiListVirtualImagesRequest struct {
-	ctx         context.Context
-	ApiService  *LibraryAPIService
-	max         *int64
-	offset      *int64
-	name        *string
-	phrase      *string
-	lastUpdated *time.Time
-	filterType  *string
-	imageType   *string
-	tagsName    *string
-	labels      *string
-	allLabels   *string
+	ctx                context.Context
+	ApiService         *LibraryAPIService
+	max                *int64
+	offset             *int64
+	name               *string
+	phrase             *string
+	lastUpdated        *time.Time
+	filterType         *string
+	imageType          *[]string
+	id                 *[]int64
+	description        *[]string
+	systemImage        *bool
+	includeSystemImage *bool
+	sort               *string
+	direction          *string
+	tagsName           *string
+	labels             *string
+	allLabels          *string
 }
 
 // Maximum number of records to return
@@ -7829,9 +7836,45 @@ func (r ApiListVirtualImagesRequest) FilterType(filterType string) ApiListVirtua
 	return r
 }
 
-// Filter by image type code, \&quot;vmware\&quot;, \&quot;ami\&quot;, etc
-func (r ApiListVirtualImagesRequest) ImageType(imageType string) ApiListVirtualImagesRequest {
+// Filter by image type code. Repeatable — supply the parameter more than once to match any of several types, for example &#x60;?imageType&#x3D;qcow2&amp;imageType&#x3D;raw&#x60;.  Some values are aliases matching several underlying types rather than an exact code: &#x60;vmware&#x60; matches &#x60;vmware&#x60;, &#x60;ovf&#x60; and &#x60;vmdk&#x60;; &#x60;virtualbox&#x60; matches &#x60;vdi&#x60; and &#x60;virtualbox&#x60;. Any other value, such as &#x60;qcow2&#x60;, &#x60;raw&#x60; or &#x60;iso&#x60;, is matched exactly.
+func (r ApiListVirtualImagesRequest) ImageType(imageType []string) ApiListVirtualImagesRequest {
 	r.imageType = &imageType
+	return r
+}
+
+// Filter by virtual image ID. Repeatable — supply the parameter more than once to fetch several images in one request, for example &#x60;?id&#x3D;170332&amp;id&#x3D;127280&#x60;.
+func (r ApiListVirtualImagesRequest) Id(id []int64) ApiListVirtualImagesRequest {
+	r.id = &id
+	return r
+}
+
+// Filter by description. Repeatable — supply the parameter more than once to match any of several descriptions.  Matching is a case-insensitive SQL &#x60;like&#x60;, so &#x60;%&#x60; acts as a wildcard, for example &#x60;?description&#x3D;ubuntu%&#x60;. This is not a regular expression.
+func (r ApiListVirtualImagesRequest) Description(description []string) ApiListVirtualImagesRequest {
+	r.description = &description
+	return r
+}
+
+// Filter on whether an image is a system image. &#x60;true&#x60; returns only system images, &#x60;false&#x60; only non-system images.  Takes precedence over &#x60;filterType&#x60;: if this parameter is supplied, &#x60;filterType&#x60; is ignored entirely.
+func (r ApiListVirtualImagesRequest) SystemImage(systemImage bool) ApiListVirtualImagesRequest {
+	r.systemImage = &systemImage
+	return r
+}
+
+// Include system images alongside non-system images. System images are excluded unless this is &#x60;true&#x60;.  Takes precedence over &#x60;filterType&#x60;: if this parameter is supplied, &#x60;filterType&#x60; is ignored. &#x60;systemImage&#x60; in turn takes precedence over this parameter when both are supplied.
+func (r ApiListVirtualImagesRequest) IncludeSystemImage(includeSystemImage bool) ApiListVirtualImagesRequest {
+	r.includeSystemImage = &includeSystemImage
+	return r
+}
+
+// Sort order, the name of the property to sort by
+func (r ApiListVirtualImagesRequest) Sort(sort string) ApiListVirtualImagesRequest {
+	r.sort = &sort
+	return r
+}
+
+// Sort direction, use &#39;desc&#39; to reverse sort
+func (r ApiListVirtualImagesRequest) Direction(direction string) ApiListVirtualImagesRequest {
+	r.direction = &direction
 	return r
 }
 
@@ -7922,7 +7965,55 @@ func (a *LibraryAPIService) ListVirtualImagesExecute(r ApiListVirtualImagesReque
 		r.filterType = &defaultValue
 	}
 	if r.imageType != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "imageType", r.imageType, "form", "")
+		t := *r.imageType
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "imageType", s.Index(i).Interface(), "form", "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "imageType", t, "form", "multi")
+		}
+	}
+	if r.id != nil {
+		t := *r.id
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "id", s.Index(i).Interface(), "form", "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "id", t, "form", "multi")
+		}
+	}
+	if r.description != nil {
+		t := *r.description
+		if reflect.TypeOf(t).Kind() == reflect.Slice {
+			s := reflect.ValueOf(t)
+			for i := 0; i < s.Len(); i++ {
+				parameterAddToHeaderOrQuery(localVarQueryParams, "description", s.Index(i).Interface(), "form", "multi")
+			}
+		} else {
+			parameterAddToHeaderOrQuery(localVarQueryParams, "description", t, "form", "multi")
+		}
+	}
+	if r.systemImage != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "systemImage", r.systemImage, "form", "")
+	}
+	if r.includeSystemImage != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeSystemImage", r.includeSystemImage, "form", "")
+	}
+	if r.sort != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
+	} else {
+		var defaultValue string = "name"
+		r.sort = &defaultValue
+	}
+	if r.direction != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
+	} else {
+		var defaultValue string = "asc"
+		r.direction = &defaultValue
 	}
 	if r.tagsName != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "tags.name", r.tagsName, "form", "")

@@ -50,7 +50,6 @@ import (
 	cypherds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/cypher"
 	environmentds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/environment"
 	groupds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/group"
-	imageds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/image"
 	integrationds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/integration"
 	jobds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/job"
 	networkds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/network"
@@ -181,7 +180,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_execute_schedule":           automationds.DataSourceExecuteSchedule(),
 			"hpe_morpheus_file_template":              templateds.DataSourceFileTemplate(),
 			"hpe_morpheus_groups":                     groupds.DataSourceGroups(),
-			"hpe_morpheus_images":                     imageds.DataSourceImages(),
 			"hpe_morpheus_instance_type":              blueprintds.DataSourceInstanceType(),
 			"hpe_morpheus_integration":                integrationds.DataSourceIntegration(),
 			"hpe_morpheus_integration_git":            integrationds.DataSourceIntegrationGit(),
