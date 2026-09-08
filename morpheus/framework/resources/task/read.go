@@ -89,7 +89,7 @@ func getTaskAsState(
 	}
 	// config
 	state.Config = basetypes.NewDynamicNull()
-	if task.TaskOptions.MapmapOfStringAny != nil {
+	if task.TaskOptions != nil && task.TaskOptions.MapmapOfStringAny != nil {
 		o, err := convert.MapToDynamic(ctx, *task.TaskOptions.MapmapOfStringAny)
 		if err != nil {
 			diags.AddError("populate task resource", err.Error())
@@ -99,7 +99,7 @@ func getTaskAsState(
 	}
 
 	// config_conditional_workflow_task
-	if task.TaskOptions.ConditionalWorkflowTaskConfig2 != nil && typeCode == "conditionalWorkflow" {
+	if task.TaskOptions != nil && task.TaskOptions.ConditionalWorkflowTaskConfig2 != nil && typeCode == "conditionalWorkflow" {
 		config := task.TaskOptions.ConditionalWorkflowTaskConfig2
 
 		if config.ConditionalScript == nil {
@@ -173,21 +173,41 @@ func getTaskAsState(
 	state.RetryCount = convert.Int64ToType(task.RetryCount)
 
 	// retry_delay_seconds
-	retryDelaySeconds := plan.RetryDelaySeconds.ValueInt64()
-	if retryDelaySeconds != 0 && retryDelaySeconds != *task.RetryDelaySeconds {
-		state.RetryDelaySeconds = plan.RetryDelaySeconds
-	} else {
-		state.RetryDelaySeconds = convert.Int64ToType(task.RetryDelaySeconds)
-	}
+	state.RetryDelaySeconds = retryDelaySecondsToState(plan.RetryDelaySeconds, task.RetryDelaySeconds)
 
 	// retryable
 	state.Retryable = convert.BoolToType(task.Retryable)
 
 	// task_type_code
-	state.TaskTypeCode = convert.StrToType(task.TaskType.Code)
+	state.TaskTypeCode = taskTypeCodeToState(task.TaskType)
 
 	// visibility
 	state.Visibility = convert.StrToType(task.Visibility)
 
 	return state, diags
+}
+
+// retryDelaySecondsToState preserves a non-zero planned retry_delay_seconds when the
+// API omits the field or returns a different value, so this Optional+Computed attribute
+// does not drift to null on read of an out-of-band change. It falls back to the nil-safe
+// API value otherwise. A nil apiVal is safe: the guard short-circuits before the deref.
+func retryDelaySecondsToState(planned basetypes.Int64Value, apiVal *int64) basetypes.Int64Value {
+	seconds := planned.ValueInt64()
+	if seconds != 0 && (apiVal == nil || seconds != *apiVal) {
+		return planned
+	}
+
+	return convert.Int64ToType(apiVal)
+}
+
+// taskTypeCodeToState reads the task type code without dereferencing task.TaskType,
+// which the API may omit. The result is a null string when taskType (or its code) is
+// absent.
+func taskTypeCodeToState(taskType *sdk.GetTasks200ResponseAllOfTaskTaskType) basetypes.StringValue {
+	var code *string
+	if taskType != nil {
+		code = taskType.Code
+	}
+
+	return convert.StrToType(code)
 }

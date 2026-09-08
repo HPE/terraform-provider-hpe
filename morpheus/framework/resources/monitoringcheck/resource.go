@@ -315,8 +315,10 @@ func mapGetResponseToModel(model *MonitoringCheckModel, check *sdk.GetChecks200R
 	} else {
 		model.Description = types.StringNull()
 	}
-	if check.CheckInterval.IsSet() {
+	if check.CheckInterval.IsSet() && check.CheckInterval.Get() != nil {
 		model.CheckInterval = types.Int64Value(*check.CheckInterval.Get())
+	} else {
+		model.CheckInterval = types.Int64Null()
 	}
 	if check.InUptime != nil {
 		model.InUptime = types.BoolValue(*check.InUptime)

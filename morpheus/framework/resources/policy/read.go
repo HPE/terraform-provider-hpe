@@ -20,6 +20,17 @@ import (
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
+// motdTitleToState reads the optional MOTD title without dereferencing a nil pointer.
+// The API may send motd.title as an explicit JSON null (IsSet true, nil Get) or omit it
+// entirely; both map to a null string.
+func motdTitleToState(title sdk.NullableString) types.String {
+	if title.IsSet() && title.Get() != nil {
+		return types.StringValue(*title.Get())
+	}
+
+	return types.StringNull()
+}
+
 // mapPolicyConfigToState maps the API config structure to the resource schema structure
 func mapPolicyConfigToState(
 	ctx context.Context,
@@ -420,13 +431,8 @@ func mapPolicyConfigToState(
 		motdAttrs := map[string]attr.Value{
 			"motddate":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdDate),
 			"motdmessage": convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdMessage),
-			"motdtitle":   types.StringNull(),
+			"motdtitle":   motdTitleToState(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle),
 			"motdtype":    convert.StrToType(apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdType),
-		}
-
-		// Handle NullableString for MotdTitle
-		if apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.IsSet() {
-			motdAttrs["motdtitle"] = types.StringValue(*apiConfig.MessageOfTheDayPolicyTypeConfiguration3.MotdTitle.Get())
 		}
 
 		motdValue, motdDiags := NewConfigMotdValue(ConfigMotdValue{}.AttributeTypes(ctx), motdAttrs)
