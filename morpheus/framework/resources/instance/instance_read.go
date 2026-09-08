@@ -293,12 +293,7 @@ func getInstanceAsState(
 	state.LayoutId = convert.Int64ToType(instance.Layout.Id)
 
 	// layout_size - from Config
-	if instance.Config != nil {
-		state.LayoutSize = convert.Int64ToType(instance.Config.LayoutSize)
-	} else if !plan.LayoutSize.IsNull() && !plan.LayoutSize.IsUnknown() {
-		// fallback to instance.layoutSize
-		state.LayoutSize = plan.LayoutSize
-	}
+	state.LayoutSize = layoutSizeOrDefault(instance.Config, plan.LayoutSize)
 
 	// name
 	state.Name = convert.StrToType(instance.Name)
@@ -514,11 +509,6 @@ func getInstanceAzureConfig(
 ) (ConfigAzureValue, diag.Diagnostics) {
 	configAzure := ConfigAzureValue{}
 
-	createUser, cdiags := getCreateUser(id, apiConfig)
-	if cdiags.HasError() {
-		return configAzure, cdiags
-	}
-
 	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
 	if rdiags.HasError() {
 		return configAzure, rdiags
@@ -539,7 +529,7 @@ func getInstanceAzureConfig(
 	configAzure.AzurefloatingIp = getAdditionalPropertyString("azurefloatingIp")
 	configAzure.AzuresecurityGroupId = getAdditionalPropertyString("azuresecurityGroupId")
 	configAzure.BootDiagnostics = getAdditionalPropertyString("bootDiagnostics")
-	configAzure.CreateUser = convert.BoolToType(createUser)
+	configAzure.CreateUser = createUserOrDefault(apiConfig, true)
 	configAzure.DiagnosticsStorageAccount = getAdditionalPropertyString("diagnosticsStorageAccount")
 	configAzure.OsGuestDiagnostics = getAdditionalPropertyString("osGuestDiagnostics")
 	configAzure.ResourcePoolId = convert.StrToType(resourcePoolId)
@@ -556,18 +546,6 @@ func getInstanceVMwareConfig(
 ) (ConfigVmwareValue, diag.Diagnostics) {
 	configVmware := ConfigVmwareValue{}
 
-	// CreateUser
-	createUser, cdiags := getCreateUser(id, apiConfig)
-	if cdiags.HasError() {
-		return configVmware, cdiags
-	}
-
-	// NoAgent
-	noAgent, ndiags := getNoAgent(id, apiConfig)
-	if ndiags.HasError() {
-		return configVmware, ndiags
-	}
-
 	// NestedVirtualization
 	nestedVirtualization, ndiags := getNestedVirtualization(id, apiConfig)
 	if ndiags.HasError() {
@@ -583,8 +561,8 @@ func getInstanceVMwareConfig(
 	// VMwareFolderId
 	folderId := apiConfig.VmwareFolderId
 
-	configVmware.CreateUser = convert.BoolToType(createUser)
-	configVmware.NoAgent = convert.BoolToType(noAgent)
+	configVmware.CreateUser = createUserOrDefault(apiConfig, false)
+	configVmware.NoAgent = noAgentOrDefault(apiConfig.NoAgent, true)
 	configVmware.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configVmware.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configVmware.VmwareFolderId = convert.StrToType(folderId)
@@ -618,18 +596,6 @@ func getInstanceHVMConfig(
 ) (ConfigHvmValue, diag.Diagnostics) {
 	configHvm := ConfigHvmValue{}
 
-	// CreateUser
-	createUser, cdiags := getCreateUser(id, apiConfig)
-	if cdiags.HasError() {
-		return configHvm, cdiags
-	}
-
-	// NoAgent
-	noAgent, ndiags := getNoAgent(id, apiConfig)
-	if ndiags.HasError() {
-		return configHvm, ndiags
-	}
-
 	// NestedVirtualization
 	nestedVirtualization, ndiags := getNestedVirtualization(id, apiConfig)
 	if ndiags.HasError() {
@@ -648,8 +614,8 @@ func getInstanceHVMConfig(
 		kvmHostId = apiConfig.KvmHostId.Get()
 	}
 
-	configHvm.CreateUser = convert.BoolToType(createUser)
-	configHvm.NoAgent = convert.BoolToType(noAgent)
+	configHvm.CreateUser = createUserOrDefault(apiConfig, false)
+	configHvm.NoAgent = noAgentOrDefault(apiConfig.NoAgent, true)
 	configHvm.NestedVirtualization = convert.StrToType(nestedVirtualization)
 	configHvm.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configHvm.KvmHostId = convert.Int64ToType(kvmHostId)
@@ -680,18 +646,6 @@ func getInstanceAWSConfig(
 	apiConfig *apiConfigType,
 ) (ConfigAwsValue, diag.Diagnostics) {
 	configAws := ConfigAwsValue{}
-
-	// CreateUser
-	createUser, cdiags := getCreateUser(id, apiConfig)
-	if cdiags.HasError() {
-		return configAws, cdiags
-	}
-
-	// NoAgent
-	noAgent, ndiags := getNoAgent(id, apiConfig)
-	if ndiags.HasError() {
-		return configAws, ndiags
-	}
 
 	// ResourcePoolId
 	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
@@ -749,12 +703,12 @@ func getInstanceAWSConfig(
 		}
 	}
 
-	configAws.CreateUser = convert.BoolToType(createUser)
-	configAws.NoAgent = convert.BoolToType(noAgent)
+	configAws.CreateUser = createUserOrDefault(apiConfig, false)
+	configAws.NoAgent = noAgentOrDefault(apiConfig.NoAgent, true)
 	configAws.ResourcePoolId = convert.StrToType(resourcePoolId)
 	configAws.SecurityGroups = secGroupsList
-	configAws.IsEc2 = convert.StringToBool(ctx, *isEC2)
-	configAws.PublicIpType = convert.StrToType(publicIpType)
+	configAws.IsEc2 = isEc2OrDefault(isEC2)
+	configAws.PublicIpType = publicIpTypeOrDefault(publicIpType)
 	// These next three can have a value of "" which corresponds to null
 	configAws.KmsKeyId = basetypes.NewStringNull()
 	if kmsKeyId != nil && *kmsKeyId != "" {
@@ -773,6 +727,83 @@ func getInstanceAWSConfig(
 	return configAws, diag.Diagnostics{}
 }
 
+// isEc2Default and publicIpTypeDefault mirror the schema defaults for
+// config_aws.is_ec2 and config_aws.public_ip_type.
+const (
+	isEc2Default        = false
+	publicIpTypeDefault = "subnet"
+)
+
+// layoutSizeDefault mirrors the schema default for layout_size. The attribute
+// also carries a OneOf(1) validator, so 1 is the only value it may hold.
+const layoutSizeDefault int64 = 1
+
+// layoutSizeOrDefault resolves layout_size from the API config, falling back to
+// the prior value and then to the schema default.
+//
+// The API omits layoutSize from the config when it was never set, and on import
+// there is no prior value to fall back to, so both routes previously ended in
+// null. The attribute is Optional+Computed with a default of 1, so a
+// configuration that leaves it out plans 1, and null against 1 is a change
+// Terraform acts on.
+//
+// Precedence is API value, then prior state, then the default: a value already
+// in state should survive a response that omits the field. Note the previous
+// form stopped at the API branch whenever config was present, so an absent
+// layoutSize inside a present config never reached the prior-state fallback.
+func layoutSizeOrDefault(
+	apiConfig *sdk.GetInstance200ResponseInstanceConfig,
+	priorValue basetypes.Int64Value,
+) basetypes.Int64Value {
+	if apiConfig != nil && apiConfig.LayoutSize != nil {
+		return convert.Int64ToType(apiConfig.LayoutSize)
+	}
+
+	if !priorValue.IsNull() && !priorValue.IsUnknown() {
+		return priorValue
+	}
+
+	return types.Int64Value(layoutSizeDefault)
+}
+
+// isEc2OrDefault converts the API's isEC2 into state, substituting the schema
+// default for an absent or unrecognised value.
+//
+// Morpheus stores isEC2 as a string and omits it from the GET response when it
+// was never set, which arrives as a nil pointer. Dereferencing that pointer
+// panicked the provider outright, so the nil check is the point of this helper
+// as much as the default is.
+//
+// A present value is coerced by boolFromConfig, which handles the on/off/true/
+// false forms Morpheus uses and falls back to the default for anything it does
+// not recognise (including ""). Null against the schema default of false is a
+// change Terraform acts on, so both routes resolve to the default and an
+// imported instance plans clean.
+func isEc2OrDefault(apiValue *string) basetypes.BoolValue {
+	if apiValue == nil {
+		return types.BoolValue(isEc2Default)
+	}
+
+	return boolFromConfig(*apiValue, isEc2Default)
+}
+
+// publicIpTypeOrDefault converts the API's publicIpType into state, substituting
+// the schema default for an absent value.
+//
+// The attribute is Optional+Computed with a default of "subnet", so a
+// configuration that leaves it out plans "subnet". Morpheus omits publicIpType
+// from the GET response when it was never set, and can also return it as an
+// explicit JSON null; either produces null in state, and null against "subnet"
+// is a permanent diff on config_aws after import. Same reasoning as
+// ipModeOrDefault.
+func publicIpTypeOrDefault(apiValue *string) basetypes.StringValue {
+	if apiValue == nil {
+		return types.StringValue(publicIpTypeDefault)
+	}
+
+	return convert.StrToType(apiValue)
+}
+
 // getInstanceBmaasConfig builds the config_bmaas block from the API response for
 // HPE bare metal (BMaaS) instances. The baremetal plugin's option types are stored
 // in the generic instance config map, so the plugin-specific fields (enforce RAID
@@ -785,16 +816,6 @@ func getInstanceBmaasConfig(
 ) (ConfigBmaasValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	configBmaas := ConfigBmaasValue{}
-
-	noAgent, ndiags := getNoAgent(id, apiConfig)
-	if ndiags.HasError() {
-		return configBmaas, ndiags
-	}
-
-	createUser, cdiags := getCreateUser(id, apiConfig)
-	if cdiags.HasError() {
-		return configBmaas, cdiags
-	}
 
 	resourcePoolId, rdiags := getResourcePoolId(id, apiConfig)
 	if rdiags.HasError() {
@@ -815,9 +836,9 @@ func getInstanceBmaasConfig(
 		imageID = basetypes.NewInt64Value(id)
 	}
 
-	configBmaas.CreateUser = convert.BoolToType(createUser)
+	configBmaas.CreateUser = createUserOrDefault(apiConfig, false)
 	configBmaas.ImageId = imageID
-	configBmaas.NoAgent = convert.BoolToType(noAgent)
+	configBmaas.NoAgent = noAgentOrDefault(apiConfig.NoAgent, true)
 	configBmaas.ResourcePoolId = convert.StrToType(resourcePoolId)
 	// enforce_raid_boot_volume defaults to true in the schema; mirror that default
 	// when the value is absent from the config so an imported instance is stable.
@@ -948,61 +969,60 @@ func numberToInt64(v interface{}) (int64, bool) {
 	return 0, false
 }
 
-func getCreateUser(
-	id int64,
-	apiConfig *apiConfigType,
-) (*bool, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	createUser := apiConfig.CreateUser
-	if createUser == nil {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config createUser", id),
-		)
-
-		return nil, diags
+// createUserOrDefault resolves config createUser, substituting the per-block
+// schema default when the API omits it.
+//
+// createUser is Optional+Computed with a default that varies by config block
+// (true on Azure, false elsewhere). Morpheus omits it from the GET response, or
+// returns an explicit null, when it was never set; either arrives as a nil
+// pointer. Writing null then differs from the default the plan supplies, which
+// is a change Terraform acts on -- a permanent diff after import. Resolve to the
+// default instead, as getNestedVirtualization and ipModeOrDefault do.
+//
+// The value is modelled as a JSON boolean and the SDK decoder coerces the string
+// forms Morpheus uses -- on/off, true/false, 1/0 and "" -- to a bool, so a present
+// value in one of those forms never reaches here as nil; only absence or an
+// explicit null does. A string the decoder cannot parse (e.g. "yes") fails the
+// whole instance decode before reaching this helper, tracked as MORPH-16966.
+func createUserOrDefault(apiConfig *apiConfigType, def bool) basetypes.BoolValue {
+	if apiConfig.CreateUser == nil {
+		return types.BoolValue(def)
 	}
 
-	return createUser, nil
+	return convert.BoolToType(apiConfig.CreateUser)
 }
 
-func getNoAgent(
-	id int64,
-	apiConfig *apiConfigType,
-) (*bool, diag.Diagnostics) {
-	var diags diag.Diagnostics
-	noAgent := apiConfig.NoAgent
+// noAgentOrDefault resolves config noAgent, substituting the per-block schema
+// default when the API omits it or returns an unrecognised value.
+//
+// noAgent is Optional+Computed with a default of true on every block that has
+// it. The API models it as anyOf[boolean, string]: Morpheus stores a JSON
+// boolean, but some callers (e.g. hpegl) and some seed data store a string such
+// as "on"/"off". Resolve the boolean directly, parse the known string forms via
+// boolFromConfig, and fall back to the default for absence or an unrecognised
+// string.
+//
+// This previously failed the whole instance read on absence or an unparseable
+// string. Both now resolve to the default, so an imported instance whose config
+// omits noAgent -- or stores it in a form strconv.ParseBool rejected, such as
+// "on"/"off" -- reads cleanly instead of erroring or planning a change.
+func noAgentOrDefault(
+	noAgent *sdk.GetInstance200ResponseInstanceConfigNoAgent,
+	def bool,
+) basetypes.BoolValue {
 	if noAgent == nil {
-		diags.AddError(
-			"populate instance resource",
-			fmt.Sprintf("instance %d GET failed to get config noAgent", id),
-		)
-
-		return nil, diags
+		return types.BoolValue(def)
 	}
 
-	// Normal path: Morpheus returned noAgent as a JSON boolean.
 	if noAgent.Bool != nil {
-		return noAgent.Bool, diags
+		return types.BoolValue(*noAgent.Bool)
 	}
 
-	// Legacy-string path: some providers (e.g. hpegl) send noAgent as the
-	// string "true"/"false" to the Morpheus API, which stores and returns it
-	// as a JSON string rather than a boolean.  Parse it so that instances
-	// created by hpegl can be read without error.
 	if noAgent.String != nil {
-		b, err := strconv.ParseBool(*noAgent.String)
-		if err == nil {
-			return &b, diags
-		}
+		return boolFromConfig(*noAgent.String, def)
 	}
 
-	diags.AddError(
-		"populate instance resource",
-		fmt.Sprintf("instance %d GET failed to get config noAgent", id),
-	)
-
-	return nil, diags
+	return types.BoolValue(def)
 }
 
 // nestedVirtualizationDefault mirrors the schema default for
