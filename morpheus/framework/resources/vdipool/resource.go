@@ -15,6 +15,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
@@ -196,6 +197,12 @@ func (r *vdiPoolResource) Read(ctx context.Context, req resource.ReadRequest, re
 	model.MaxSessionTimeout = state.MaxSessionTimeout
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, model)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, VdiPoolResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 func (r *vdiPoolResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
