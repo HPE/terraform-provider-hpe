@@ -93,8 +93,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf, return on the first match
@@ -106,8 +113,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf1, return on the first match
@@ -119,8 +133,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf2, return on the first match
@@ -132,8 +153,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf3, return on the first match
@@ -145,8 +173,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf4, return on the first match
@@ -158,8 +193,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf5, return on the first match
@@ -171,8 +213,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf6, return on the first match
@@ -184,8 +233,15 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 	// try to unmarshal JSON data into UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7
 	err = json.Unmarshal(data, &dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)
 	if err == nil {
-		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7, _ := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)
-		if string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7) == "{}" { // empty struct
+		jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7, merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7 := json.Marshal(dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)
+		var zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7 UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7
+		jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7, _ := json.Marshal(&zeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7 != nil || string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7) == "{}" || (len(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7) > 0 && jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7[0] == '{' && string(jsonUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7) == string(jsonZeroUpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)) {
 			dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7 = nil
 		} else {
 			return nil // data stored in dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7, return on the first match
@@ -194,6 +250,12 @@ func (dst *UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) UnmarshalJS
 		dst.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(UpdateIdentitySourceSubdomains200ResponseAllOfUserSource)")
 }
 
@@ -231,7 +293,7 @@ func (src UpdateIdentitySourceSubdomains200ResponseAllOfUserSource) MarshalJSON(
 		return json.Marshal(&src.UpdateIdentitySourceSubdomains200ResponseAllOfUserSourceAnyOf7)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableUpdateIdentitySourceSubdomains200ResponseAllOfUserSource struct {

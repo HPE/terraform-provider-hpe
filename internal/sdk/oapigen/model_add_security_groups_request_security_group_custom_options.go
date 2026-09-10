@@ -58,8 +58,15 @@ func (dst *AddSecurityGroupsRequestSecurityGroupCustomOptions) UnmarshalJSON(dat
 	// try to unmarshal JSON data into CustomOptionsForAmazon
 	err = json.Unmarshal(data, &dst.CustomOptionsForAmazon)
 	if err == nil {
-		jsonCustomOptionsForAmazon, _ := json.Marshal(dst.CustomOptionsForAmazon)
-		if string(jsonCustomOptionsForAmazon) == "{}" { // empty struct
+		jsonCustomOptionsForAmazon, merrCustomOptionsForAmazon := json.Marshal(dst.CustomOptionsForAmazon)
+		var zeroCustomOptionsForAmazon CustomOptionsForAmazon
+		jsonZeroCustomOptionsForAmazon, _ := json.Marshal(&zeroCustomOptionsForAmazon)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrCustomOptionsForAmazon != nil || string(jsonCustomOptionsForAmazon) == "{}" || (len(jsonCustomOptionsForAmazon) > 0 && jsonCustomOptionsForAmazon[0] == '{' && string(jsonCustomOptionsForAmazon) == string(jsonZeroCustomOptionsForAmazon)) {
 			dst.CustomOptionsForAmazon = nil
 		} else {
 			return nil // data stored in dst.CustomOptionsForAmazon, return on the first match
@@ -71,8 +78,15 @@ func (dst *AddSecurityGroupsRequestSecurityGroupCustomOptions) UnmarshalJSON(dat
 	// try to unmarshal JSON data into CustomOptionsForAzure
 	err = json.Unmarshal(data, &dst.CustomOptionsForAzure)
 	if err == nil {
-		jsonCustomOptionsForAzure, _ := json.Marshal(dst.CustomOptionsForAzure)
-		if string(jsonCustomOptionsForAzure) == "{}" { // empty struct
+		jsonCustomOptionsForAzure, merrCustomOptionsForAzure := json.Marshal(dst.CustomOptionsForAzure)
+		var zeroCustomOptionsForAzure CustomOptionsForAzure
+		jsonZeroCustomOptionsForAzure, _ := json.Marshal(&zeroCustomOptionsForAzure)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrCustomOptionsForAzure != nil || string(jsonCustomOptionsForAzure) == "{}" || (len(jsonCustomOptionsForAzure) > 0 && jsonCustomOptionsForAzure[0] == '{' && string(jsonCustomOptionsForAzure) == string(jsonZeroCustomOptionsForAzure)) {
 			dst.CustomOptionsForAzure = nil
 		} else {
 			return nil // data stored in dst.CustomOptionsForAzure, return on the first match
@@ -84,8 +98,15 @@ func (dst *AddSecurityGroupsRequestSecurityGroupCustomOptions) UnmarshalJSON(dat
 	// try to unmarshal JSON data into CustomOptionsForOpenstackOpenTelekomHuawei
 	err = json.Unmarshal(data, &dst.CustomOptionsForOpenstackOpenTelekomHuawei)
 	if err == nil {
-		jsonCustomOptionsForOpenstackOpenTelekomHuawei, _ := json.Marshal(dst.CustomOptionsForOpenstackOpenTelekomHuawei)
-		if string(jsonCustomOptionsForOpenstackOpenTelekomHuawei) == "{}" { // empty struct
+		jsonCustomOptionsForOpenstackOpenTelekomHuawei, merrCustomOptionsForOpenstackOpenTelekomHuawei := json.Marshal(dst.CustomOptionsForOpenstackOpenTelekomHuawei)
+		var zeroCustomOptionsForOpenstackOpenTelekomHuawei CustomOptionsForOpenstackOpenTelekomHuawei
+		jsonZeroCustomOptionsForOpenstackOpenTelekomHuawei, _ := json.Marshal(&zeroCustomOptionsForOpenstackOpenTelekomHuawei)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrCustomOptionsForOpenstackOpenTelekomHuawei != nil || string(jsonCustomOptionsForOpenstackOpenTelekomHuawei) == "{}" || (len(jsonCustomOptionsForOpenstackOpenTelekomHuawei) > 0 && jsonCustomOptionsForOpenstackOpenTelekomHuawei[0] == '{' && string(jsonCustomOptionsForOpenstackOpenTelekomHuawei) == string(jsonZeroCustomOptionsForOpenstackOpenTelekomHuawei)) {
 			dst.CustomOptionsForOpenstackOpenTelekomHuawei = nil
 		} else {
 			return nil // data stored in dst.CustomOptionsForOpenstackOpenTelekomHuawei, return on the first match
@@ -94,6 +115,12 @@ func (dst *AddSecurityGroupsRequestSecurityGroupCustomOptions) UnmarshalJSON(dat
 		dst.CustomOptionsForOpenstackOpenTelekomHuawei = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddSecurityGroupsRequestSecurityGroupCustomOptions)")
 }
 
@@ -111,7 +138,7 @@ func (src AddSecurityGroupsRequestSecurityGroupCustomOptions) MarshalJSON() ([]b
 		return json.Marshal(&src.CustomOptionsForOpenstackOpenTelekomHuawei)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddSecurityGroupsRequestSecurityGroupCustomOptions struct {

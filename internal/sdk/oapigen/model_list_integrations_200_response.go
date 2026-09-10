@@ -51,8 +51,15 @@ func (dst *ListIntegrations200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOf
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOf)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOf, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOf)
-		if string(jsonListIntegrations200ResponseAnyOf) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOf, merrListIntegrations200ResponseAnyOf := json.Marshal(dst.ListIntegrations200ResponseAnyOf)
+		var zeroListIntegrations200ResponseAnyOf ListIntegrations200ResponseAnyOf
+		jsonZeroListIntegrations200ResponseAnyOf, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOf != nil || string(jsonListIntegrations200ResponseAnyOf) == "{}" || (len(jsonListIntegrations200ResponseAnyOf) > 0 && jsonListIntegrations200ResponseAnyOf[0] == '{' && string(jsonListIntegrations200ResponseAnyOf) == string(jsonZeroListIntegrations200ResponseAnyOf)) {
 			dst.ListIntegrations200ResponseAnyOf = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *ListIntegrations200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOf1
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOf1)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOf1, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOf1)
-		if string(jsonListIntegrations200ResponseAnyOf1) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOf1, merrListIntegrations200ResponseAnyOf1 := json.Marshal(dst.ListIntegrations200ResponseAnyOf1)
+		var zeroListIntegrations200ResponseAnyOf1 ListIntegrations200ResponseAnyOf1
+		jsonZeroListIntegrations200ResponseAnyOf1, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOf1 != nil || string(jsonListIntegrations200ResponseAnyOf1) == "{}" || (len(jsonListIntegrations200ResponseAnyOf1) > 0 && jsonListIntegrations200ResponseAnyOf1[0] == '{' && string(jsonListIntegrations200ResponseAnyOf1) == string(jsonZeroListIntegrations200ResponseAnyOf1)) {
 			dst.ListIntegrations200ResponseAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *ListIntegrations200Response) UnmarshalJSON(data []byte) error {
 		dst.ListIntegrations200ResponseAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(ListIntegrations200Response)")
 }
 
@@ -87,7 +107,7 @@ func (src ListIntegrations200Response) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.ListIntegrations200ResponseAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableListIntegrations200Response struct {

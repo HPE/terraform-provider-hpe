@@ -51,8 +51,15 @@ func (dst *AddCloudResourcePoolRequestResourcePoolConfig) UnmarshalJSON(data []b
 	// try to unmarshal JSON data into AddCloudResourcePoolRequestResourcePoolConfigAnyOf
 	err = json.Unmarshal(data, &dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf)
 	if err == nil {
-		jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf, _ := json.Marshal(dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf)
-		if string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf) == "{}" { // empty struct
+		jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf, merrAddCloudResourcePoolRequestResourcePoolConfigAnyOf := json.Marshal(dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf)
+		var zeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf AddCloudResourcePoolRequestResourcePoolConfigAnyOf
+		jsonZeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf, _ := json.Marshal(&zeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudResourcePoolRequestResourcePoolConfigAnyOf != nil || string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf) == "{}" || (len(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf) > 0 && jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf[0] == '{' && string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf) == string(jsonZeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf)) {
 			dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf = nil
 		} else {
 			return nil // data stored in dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *AddCloudResourcePoolRequestResourcePoolConfig) UnmarshalJSON(data []b
 	// try to unmarshal JSON data into AddCloudResourcePoolRequestResourcePoolConfigAnyOf1
 	err = json.Unmarshal(data, &dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1)
 	if err == nil {
-		jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1, _ := json.Marshal(dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1)
-		if string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1) == "{}" { // empty struct
+		jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1, merrAddCloudResourcePoolRequestResourcePoolConfigAnyOf1 := json.Marshal(dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1)
+		var zeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf1 AddCloudResourcePoolRequestResourcePoolConfigAnyOf1
+		jsonZeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf1, _ := json.Marshal(&zeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudResourcePoolRequestResourcePoolConfigAnyOf1 != nil || string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1) == "{}" || (len(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1) > 0 && jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1[0] == '{' && string(jsonAddCloudResourcePoolRequestResourcePoolConfigAnyOf1) == string(jsonZeroAddCloudResourcePoolRequestResourcePoolConfigAnyOf1)) {
 			dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *AddCloudResourcePoolRequestResourcePoolConfig) UnmarshalJSON(data []b
 		dst.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddCloudResourcePoolRequestResourcePoolConfig)")
 }
 
@@ -87,7 +107,7 @@ func (src AddCloudResourcePoolRequestResourcePoolConfig) MarshalJSON() ([]byte, 
 		return json.Marshal(&src.AddCloudResourcePoolRequestResourcePoolConfigAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddCloudResourcePoolRequestResourcePoolConfig struct {

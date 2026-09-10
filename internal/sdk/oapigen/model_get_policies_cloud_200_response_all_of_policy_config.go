@@ -949,7 +949,7 @@ func (src GetPoliciesCloud200ResponseAllOfPolicyConfig) MarshalJSON() ([]byte, e
 		return json.Marshal(&src.WorkflowPolicyTypeConfiguration12)
 	}
 
-	return nil, nil // no data in oneOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 // Get the actual instance

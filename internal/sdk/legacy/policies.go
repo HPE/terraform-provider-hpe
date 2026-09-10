@@ -32,7 +32,11 @@ type Policy struct {
 		ShutdownHideFixed                bool        `json:"shutdownHideFixed"`
 		Strict                           bool        `json:"strict"`
 		Key                              string      `json:"key"`
-		ValueListId                      string      `json:"valueListId"`
+		// valueListId is polymorphic: the API returns a number (an
+		// OptionTypeList id) when set, but an empty string when unset. Use
+		// interface{} (matching PowerScheduleHideFixed below) so listing
+		// policies does not fail to parse. It is not read by the provider.
+		ValueListId                      interface{} `json:"valueListId"`
 		Value                            string      `json:"value"`
 		PowerSchedule                    int64       `json:"powerSchedule"`
 		PowerScheduleType                string      `json:"powerScheduleType"`

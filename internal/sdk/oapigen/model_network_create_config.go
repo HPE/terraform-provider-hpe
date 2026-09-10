@@ -65,8 +65,15 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into NetworkCreateConfigAnyOf
 	err = json.Unmarshal(data, &dst.NetworkCreateConfigAnyOf)
 	if err == nil {
-		jsonNetworkCreateConfigAnyOf, _ := json.Marshal(dst.NetworkCreateConfigAnyOf)
-		if string(jsonNetworkCreateConfigAnyOf) == "{}" { // empty struct
+		jsonNetworkCreateConfigAnyOf, merrNetworkCreateConfigAnyOf := json.Marshal(dst.NetworkCreateConfigAnyOf)
+		var zeroNetworkCreateConfigAnyOf NetworkCreateConfigAnyOf
+		jsonZeroNetworkCreateConfigAnyOf, _ := json.Marshal(&zeroNetworkCreateConfigAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNetworkCreateConfigAnyOf != nil || string(jsonNetworkCreateConfigAnyOf) == "{}" || (len(jsonNetworkCreateConfigAnyOf) > 0 && jsonNetworkCreateConfigAnyOf[0] == '{' && string(jsonNetworkCreateConfigAnyOf) == string(jsonZeroNetworkCreateConfigAnyOf)) {
 			dst.NetworkCreateConfigAnyOf = nil
 		} else {
 			return nil // data stored in dst.NetworkCreateConfigAnyOf, return on the first match
@@ -78,8 +85,15 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into NetworkCreateConfigAnyOf1
 	err = json.Unmarshal(data, &dst.NetworkCreateConfigAnyOf1)
 	if err == nil {
-		jsonNetworkCreateConfigAnyOf1, _ := json.Marshal(dst.NetworkCreateConfigAnyOf1)
-		if string(jsonNetworkCreateConfigAnyOf1) == "{}" { // empty struct
+		jsonNetworkCreateConfigAnyOf1, merrNetworkCreateConfigAnyOf1 := json.Marshal(dst.NetworkCreateConfigAnyOf1)
+		var zeroNetworkCreateConfigAnyOf1 NetworkCreateConfigAnyOf1
+		jsonZeroNetworkCreateConfigAnyOf1, _ := json.Marshal(&zeroNetworkCreateConfigAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNetworkCreateConfigAnyOf1 != nil || string(jsonNetworkCreateConfigAnyOf1) == "{}" || (len(jsonNetworkCreateConfigAnyOf1) > 0 && jsonNetworkCreateConfigAnyOf1[0] == '{' && string(jsonNetworkCreateConfigAnyOf1) == string(jsonZeroNetworkCreateConfigAnyOf1)) {
 			dst.NetworkCreateConfigAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.NetworkCreateConfigAnyOf1, return on the first match
@@ -91,8 +105,15 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into NetworkCreateConfigAnyOf2
 	err = json.Unmarshal(data, &dst.NetworkCreateConfigAnyOf2)
 	if err == nil {
-		jsonNetworkCreateConfigAnyOf2, _ := json.Marshal(dst.NetworkCreateConfigAnyOf2)
-		if string(jsonNetworkCreateConfigAnyOf2) == "{}" { // empty struct
+		jsonNetworkCreateConfigAnyOf2, merrNetworkCreateConfigAnyOf2 := json.Marshal(dst.NetworkCreateConfigAnyOf2)
+		var zeroNetworkCreateConfigAnyOf2 NetworkCreateConfigAnyOf2
+		jsonZeroNetworkCreateConfigAnyOf2, _ := json.Marshal(&zeroNetworkCreateConfigAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNetworkCreateConfigAnyOf2 != nil || string(jsonNetworkCreateConfigAnyOf2) == "{}" || (len(jsonNetworkCreateConfigAnyOf2) > 0 && jsonNetworkCreateConfigAnyOf2[0] == '{' && string(jsonNetworkCreateConfigAnyOf2) == string(jsonZeroNetworkCreateConfigAnyOf2)) {
 			dst.NetworkCreateConfigAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.NetworkCreateConfigAnyOf2, return on the first match
@@ -104,8 +125,15 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -114,6 +142,12 @@ func (dst *NetworkCreateConfig) UnmarshalJSON(data []byte) error {
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(NetworkCreateConfig)")
 }
 
@@ -135,7 +169,7 @@ func (src NetworkCreateConfig) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableNetworkCreateConfig struct {

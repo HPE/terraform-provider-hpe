@@ -58,8 +58,15 @@ func (dst *CreateLoadBalancerRequestLoadBalancerConfig) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into HAProxyLoadBalancerConfigObject
 	err = json.Unmarshal(data, &dst.HAProxyLoadBalancerConfigObject)
 	if err == nil {
-		jsonHAProxyLoadBalancerConfigObject, _ := json.Marshal(dst.HAProxyLoadBalancerConfigObject)
-		if string(jsonHAProxyLoadBalancerConfigObject) == "{}" { // empty struct
+		jsonHAProxyLoadBalancerConfigObject, merrHAProxyLoadBalancerConfigObject := json.Marshal(dst.HAProxyLoadBalancerConfigObject)
+		var zeroHAProxyLoadBalancerConfigObject HAProxyLoadBalancerConfigObject
+		jsonZeroHAProxyLoadBalancerConfigObject, _ := json.Marshal(&zeroHAProxyLoadBalancerConfigObject)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHAProxyLoadBalancerConfigObject != nil || string(jsonHAProxyLoadBalancerConfigObject) == "{}" || (len(jsonHAProxyLoadBalancerConfigObject) > 0 && jsonHAProxyLoadBalancerConfigObject[0] == '{' && string(jsonHAProxyLoadBalancerConfigObject) == string(jsonZeroHAProxyLoadBalancerConfigObject)) {
 			dst.HAProxyLoadBalancerConfigObject = nil
 		} else {
 			return nil // data stored in dst.HAProxyLoadBalancerConfigObject, return on the first match
@@ -71,8 +78,15 @@ func (dst *CreateLoadBalancerRequestLoadBalancerConfig) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into NSXTLoadBalancerConfigObject
 	err = json.Unmarshal(data, &dst.NSXTLoadBalancerConfigObject)
 	if err == nil {
-		jsonNSXTLoadBalancerConfigObject, _ := json.Marshal(dst.NSXTLoadBalancerConfigObject)
-		if string(jsonNSXTLoadBalancerConfigObject) == "{}" { // empty struct
+		jsonNSXTLoadBalancerConfigObject, merrNSXTLoadBalancerConfigObject := json.Marshal(dst.NSXTLoadBalancerConfigObject)
+		var zeroNSXTLoadBalancerConfigObject NSXTLoadBalancerConfigObject
+		jsonZeroNSXTLoadBalancerConfigObject, _ := json.Marshal(&zeroNSXTLoadBalancerConfigObject)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXTLoadBalancerConfigObject != nil || string(jsonNSXTLoadBalancerConfigObject) == "{}" || (len(jsonNSXTLoadBalancerConfigObject) > 0 && jsonNSXTLoadBalancerConfigObject[0] == '{' && string(jsonNSXTLoadBalancerConfigObject) == string(jsonZeroNSXTLoadBalancerConfigObject)) {
 			dst.NSXTLoadBalancerConfigObject = nil
 		} else {
 			return nil // data stored in dst.NSXTLoadBalancerConfigObject, return on the first match
@@ -84,8 +98,15 @@ func (dst *CreateLoadBalancerRequestLoadBalancerConfig) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -94,6 +115,12 @@ func (dst *CreateLoadBalancerRequestLoadBalancerConfig) UnmarshalJSON(data []byt
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(CreateLoadBalancerRequestLoadBalancerConfig)")
 }
 
@@ -111,7 +138,7 @@ func (src CreateLoadBalancerRequestLoadBalancerConfig) MarshalJSON() ([]byte, er
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableCreateLoadBalancerRequestLoadBalancerConfig struct {

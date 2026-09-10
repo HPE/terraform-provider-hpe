@@ -51,8 +51,15 @@ func (dst *GetNetworkDhcpServer200ResponseNetworkDhcpServerConfig) UnmarshalJSON
 	// try to unmarshal JSON data into NSXDHCPServerConfiguration2
 	err = json.Unmarshal(data, &dst.NSXDHCPServerConfiguration2)
 	if err == nil {
-		jsonNSXDHCPServerConfiguration2, _ := json.Marshal(dst.NSXDHCPServerConfiguration2)
-		if string(jsonNSXDHCPServerConfiguration2) == "{}" { // empty struct
+		jsonNSXDHCPServerConfiguration2, merrNSXDHCPServerConfiguration2 := json.Marshal(dst.NSXDHCPServerConfiguration2)
+		var zeroNSXDHCPServerConfiguration2 NSXDHCPServerConfiguration2
+		jsonZeroNSXDHCPServerConfiguration2, _ := json.Marshal(&zeroNSXDHCPServerConfiguration2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXDHCPServerConfiguration2 != nil || string(jsonNSXDHCPServerConfiguration2) == "{}" || (len(jsonNSXDHCPServerConfiguration2) > 0 && jsonNSXDHCPServerConfiguration2[0] == '{' && string(jsonNSXDHCPServerConfiguration2) == string(jsonZeroNSXDHCPServerConfiguration2)) {
 			dst.NSXDHCPServerConfiguration2 = nil
 		} else {
 			return nil // data stored in dst.NSXDHCPServerConfiguration2, return on the first match
@@ -64,8 +71,15 @@ func (dst *GetNetworkDhcpServer200ResponseNetworkDhcpServerConfig) UnmarshalJSON
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -74,6 +88,12 @@ func (dst *GetNetworkDhcpServer200ResponseNetworkDhcpServerConfig) UnmarshalJSON
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(GetNetworkDhcpServer200ResponseNetworkDhcpServerConfig)")
 }
 
@@ -87,7 +107,7 @@ func (src GetNetworkDhcpServer200ResponseNetworkDhcpServerConfig) MarshalJSON() 
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerConfig struct {

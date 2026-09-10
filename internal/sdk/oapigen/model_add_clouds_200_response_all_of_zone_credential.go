@@ -51,8 +51,15 @@ func (dst *AddClouds200ResponseAllOfZoneCredential) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into AddClouds200ResponseAllOfZoneCredentialAnyOf
 	err = json.Unmarshal(data, &dst.AddClouds200ResponseAllOfZoneCredentialAnyOf)
 	if err == nil {
-		jsonAddClouds200ResponseAllOfZoneCredentialAnyOf, _ := json.Marshal(dst.AddClouds200ResponseAllOfZoneCredentialAnyOf)
-		if string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf) == "{}" { // empty struct
+		jsonAddClouds200ResponseAllOfZoneCredentialAnyOf, merrAddClouds200ResponseAllOfZoneCredentialAnyOf := json.Marshal(dst.AddClouds200ResponseAllOfZoneCredentialAnyOf)
+		var zeroAddClouds200ResponseAllOfZoneCredentialAnyOf AddClouds200ResponseAllOfZoneCredentialAnyOf
+		jsonZeroAddClouds200ResponseAllOfZoneCredentialAnyOf, _ := json.Marshal(&zeroAddClouds200ResponseAllOfZoneCredentialAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddClouds200ResponseAllOfZoneCredentialAnyOf != nil || string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf) == "{}" || (len(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf) > 0 && jsonAddClouds200ResponseAllOfZoneCredentialAnyOf[0] == '{' && string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf) == string(jsonZeroAddClouds200ResponseAllOfZoneCredentialAnyOf)) {
 			dst.AddClouds200ResponseAllOfZoneCredentialAnyOf = nil
 		} else {
 			return nil // data stored in dst.AddClouds200ResponseAllOfZoneCredentialAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *AddClouds200ResponseAllOfZoneCredential) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into AddClouds200ResponseAllOfZoneCredentialAnyOf1
 	err = json.Unmarshal(data, &dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1)
 	if err == nil {
-		jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1, _ := json.Marshal(dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1)
-		if string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1) == "{}" { // empty struct
+		jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1, merrAddClouds200ResponseAllOfZoneCredentialAnyOf1 := json.Marshal(dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1)
+		var zeroAddClouds200ResponseAllOfZoneCredentialAnyOf1 AddClouds200ResponseAllOfZoneCredentialAnyOf1
+		jsonZeroAddClouds200ResponseAllOfZoneCredentialAnyOf1, _ := json.Marshal(&zeroAddClouds200ResponseAllOfZoneCredentialAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddClouds200ResponseAllOfZoneCredentialAnyOf1 != nil || string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1) == "{}" || (len(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1) > 0 && jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1[0] == '{' && string(jsonAddClouds200ResponseAllOfZoneCredentialAnyOf1) == string(jsonZeroAddClouds200ResponseAllOfZoneCredentialAnyOf1)) {
 			dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *AddClouds200ResponseAllOfZoneCredential) UnmarshalJSON(data []byte) e
 		dst.AddClouds200ResponseAllOfZoneCredentialAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddClouds200ResponseAllOfZoneCredential)")
 }
 
@@ -87,7 +107,7 @@ func (src AddClouds200ResponseAllOfZoneCredential) MarshalJSON() ([]byte, error)
 		return json.Marshal(&src.AddClouds200ResponseAllOfZoneCredentialAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddClouds200ResponseAllOfZoneCredential struct {

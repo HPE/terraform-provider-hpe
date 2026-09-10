@@ -58,8 +58,15 @@ func (dst *AddBackupsRequestBackup) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BackupInstance
 	err = json.Unmarshal(data, &dst.BackupInstance)
 	if err == nil {
-		jsonBackupInstance, _ := json.Marshal(dst.BackupInstance)
-		if string(jsonBackupInstance) == "{}" { // empty struct
+		jsonBackupInstance, merrBackupInstance := json.Marshal(dst.BackupInstance)
+		var zeroBackupInstance BackupInstance
+		jsonZeroBackupInstance, _ := json.Marshal(&zeroBackupInstance)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBackupInstance != nil || string(jsonBackupInstance) == "{}" || (len(jsonBackupInstance) > 0 && jsonBackupInstance[0] == '{' && string(jsonBackupInstance) == string(jsonZeroBackupInstance)) {
 			dst.BackupInstance = nil
 		} else {
 			return nil // data stored in dst.BackupInstance, return on the first match
@@ -71,8 +78,15 @@ func (dst *AddBackupsRequestBackup) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BackupServerHost
 	err = json.Unmarshal(data, &dst.BackupServerHost)
 	if err == nil {
-		jsonBackupServerHost, _ := json.Marshal(dst.BackupServerHost)
-		if string(jsonBackupServerHost) == "{}" { // empty struct
+		jsonBackupServerHost, merrBackupServerHost := json.Marshal(dst.BackupServerHost)
+		var zeroBackupServerHost BackupServerHost
+		jsonZeroBackupServerHost, _ := json.Marshal(&zeroBackupServerHost)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBackupServerHost != nil || string(jsonBackupServerHost) == "{}" || (len(jsonBackupServerHost) > 0 && jsonBackupServerHost[0] == '{' && string(jsonBackupServerHost) == string(jsonZeroBackupServerHost)) {
 			dst.BackupServerHost = nil
 		} else {
 			return nil // data stored in dst.BackupServerHost, return on the first match
@@ -84,8 +98,15 @@ func (dst *AddBackupsRequestBackup) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BackupStorageProvider
 	err = json.Unmarshal(data, &dst.BackupStorageProvider)
 	if err == nil {
-		jsonBackupStorageProvider, _ := json.Marshal(dst.BackupStorageProvider)
-		if string(jsonBackupStorageProvider) == "{}" { // empty struct
+		jsonBackupStorageProvider, merrBackupStorageProvider := json.Marshal(dst.BackupStorageProvider)
+		var zeroBackupStorageProvider BackupStorageProvider
+		jsonZeroBackupStorageProvider, _ := json.Marshal(&zeroBackupStorageProvider)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBackupStorageProvider != nil || string(jsonBackupStorageProvider) == "{}" || (len(jsonBackupStorageProvider) > 0 && jsonBackupStorageProvider[0] == '{' && string(jsonBackupStorageProvider) == string(jsonZeroBackupStorageProvider)) {
 			dst.BackupStorageProvider = nil
 		} else {
 			return nil // data stored in dst.BackupStorageProvider, return on the first match
@@ -94,6 +115,12 @@ func (dst *AddBackupsRequestBackup) UnmarshalJSON(data []byte) error {
 		dst.BackupStorageProvider = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddBackupsRequestBackup)")
 }
 
@@ -111,7 +138,7 @@ func (src AddBackupsRequestBackup) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.BackupStorageProvider)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddBackupsRequestBackup struct {

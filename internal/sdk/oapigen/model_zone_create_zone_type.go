@@ -51,8 +51,15 @@ func (dst *ZoneCreateZoneType) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ZoneCreateZoneTypeAnyOf
 	err = json.Unmarshal(data, &dst.ZoneCreateZoneTypeAnyOf)
 	if err == nil {
-		jsonZoneCreateZoneTypeAnyOf, _ := json.Marshal(dst.ZoneCreateZoneTypeAnyOf)
-		if string(jsonZoneCreateZoneTypeAnyOf) == "{}" { // empty struct
+		jsonZoneCreateZoneTypeAnyOf, merrZoneCreateZoneTypeAnyOf := json.Marshal(dst.ZoneCreateZoneTypeAnyOf)
+		var zeroZoneCreateZoneTypeAnyOf ZoneCreateZoneTypeAnyOf
+		jsonZeroZoneCreateZoneTypeAnyOf, _ := json.Marshal(&zeroZoneCreateZoneTypeAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrZoneCreateZoneTypeAnyOf != nil || string(jsonZoneCreateZoneTypeAnyOf) == "{}" || (len(jsonZoneCreateZoneTypeAnyOf) > 0 && jsonZoneCreateZoneTypeAnyOf[0] == '{' && string(jsonZoneCreateZoneTypeAnyOf) == string(jsonZeroZoneCreateZoneTypeAnyOf)) {
 			dst.ZoneCreateZoneTypeAnyOf = nil
 		} else {
 			return nil // data stored in dst.ZoneCreateZoneTypeAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *ZoneCreateZoneType) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ZoneCreateZoneTypeAnyOf1
 	err = json.Unmarshal(data, &dst.ZoneCreateZoneTypeAnyOf1)
 	if err == nil {
-		jsonZoneCreateZoneTypeAnyOf1, _ := json.Marshal(dst.ZoneCreateZoneTypeAnyOf1)
-		if string(jsonZoneCreateZoneTypeAnyOf1) == "{}" { // empty struct
+		jsonZoneCreateZoneTypeAnyOf1, merrZoneCreateZoneTypeAnyOf1 := json.Marshal(dst.ZoneCreateZoneTypeAnyOf1)
+		var zeroZoneCreateZoneTypeAnyOf1 ZoneCreateZoneTypeAnyOf1
+		jsonZeroZoneCreateZoneTypeAnyOf1, _ := json.Marshal(&zeroZoneCreateZoneTypeAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrZoneCreateZoneTypeAnyOf1 != nil || string(jsonZoneCreateZoneTypeAnyOf1) == "{}" || (len(jsonZoneCreateZoneTypeAnyOf1) > 0 && jsonZoneCreateZoneTypeAnyOf1[0] == '{' && string(jsonZoneCreateZoneTypeAnyOf1) == string(jsonZeroZoneCreateZoneTypeAnyOf1)) {
 			dst.ZoneCreateZoneTypeAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.ZoneCreateZoneTypeAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *ZoneCreateZoneType) UnmarshalJSON(data []byte) error {
 		dst.ZoneCreateZoneTypeAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(ZoneCreateZoneType)")
 }
 
@@ -87,7 +107,7 @@ func (src ZoneCreateZoneType) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.ZoneCreateZoneTypeAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableZoneCreateZoneType struct {

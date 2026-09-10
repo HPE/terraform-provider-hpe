@@ -65,8 +65,15 @@ func (dst *SaveClusterDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte
 	// try to unmarshal JSON data into AlletraMPHVMDatastoreConfiguration
 	err = json.Unmarshal(data, &dst.AlletraMPHVMDatastoreConfiguration)
 	if err == nil {
-		jsonAlletraMPHVMDatastoreConfiguration, _ := json.Marshal(dst.AlletraMPHVMDatastoreConfiguration)
-		if string(jsonAlletraMPHVMDatastoreConfiguration) == "{}" { // empty struct
+		jsonAlletraMPHVMDatastoreConfiguration, merrAlletraMPHVMDatastoreConfiguration := json.Marshal(dst.AlletraMPHVMDatastoreConfiguration)
+		var zeroAlletraMPHVMDatastoreConfiguration AlletraMPHVMDatastoreConfiguration
+		jsonZeroAlletraMPHVMDatastoreConfiguration, _ := json.Marshal(&zeroAlletraMPHVMDatastoreConfiguration)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAlletraMPHVMDatastoreConfiguration != nil || string(jsonAlletraMPHVMDatastoreConfiguration) == "{}" || (len(jsonAlletraMPHVMDatastoreConfiguration) > 0 && jsonAlletraMPHVMDatastoreConfiguration[0] == '{' && string(jsonAlletraMPHVMDatastoreConfiguration) == string(jsonZeroAlletraMPHVMDatastoreConfiguration)) {
 			dst.AlletraMPHVMDatastoreConfiguration = nil
 		} else {
 			return nil // data stored in dst.AlletraMPHVMDatastoreConfiguration, return on the first match
@@ -78,8 +85,15 @@ func (dst *SaveClusterDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte
 	// try to unmarshal JSON data into GFS2DatastoreConfiguration
 	err = json.Unmarshal(data, &dst.GFS2DatastoreConfiguration)
 	if err == nil {
-		jsonGFS2DatastoreConfiguration, _ := json.Marshal(dst.GFS2DatastoreConfiguration)
-		if string(jsonGFS2DatastoreConfiguration) == "{}" { // empty struct
+		jsonGFS2DatastoreConfiguration, merrGFS2DatastoreConfiguration := json.Marshal(dst.GFS2DatastoreConfiguration)
+		var zeroGFS2DatastoreConfiguration GFS2DatastoreConfiguration
+		jsonZeroGFS2DatastoreConfiguration, _ := json.Marshal(&zeroGFS2DatastoreConfiguration)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGFS2DatastoreConfiguration != nil || string(jsonGFS2DatastoreConfiguration) == "{}" || (len(jsonGFS2DatastoreConfiguration) > 0 && jsonGFS2DatastoreConfiguration[0] == '{' && string(jsonGFS2DatastoreConfiguration) == string(jsonZeroGFS2DatastoreConfiguration)) {
 			dst.GFS2DatastoreConfiguration = nil
 		} else {
 			return nil // data stored in dst.GFS2DatastoreConfiguration, return on the first match
@@ -91,8 +105,15 @@ func (dst *SaveClusterDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte
 	// try to unmarshal JSON data into NFSDatastoreConfiguration
 	err = json.Unmarshal(data, &dst.NFSDatastoreConfiguration)
 	if err == nil {
-		jsonNFSDatastoreConfiguration, _ := json.Marshal(dst.NFSDatastoreConfiguration)
-		if string(jsonNFSDatastoreConfiguration) == "{}" { // empty struct
+		jsonNFSDatastoreConfiguration, merrNFSDatastoreConfiguration := json.Marshal(dst.NFSDatastoreConfiguration)
+		var zeroNFSDatastoreConfiguration NFSDatastoreConfiguration
+		jsonZeroNFSDatastoreConfiguration, _ := json.Marshal(&zeroNFSDatastoreConfiguration)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNFSDatastoreConfiguration != nil || string(jsonNFSDatastoreConfiguration) == "{}" || (len(jsonNFSDatastoreConfiguration) > 0 && jsonNFSDatastoreConfiguration[0] == '{' && string(jsonNFSDatastoreConfiguration) == string(jsonZeroNFSDatastoreConfiguration)) {
 			dst.NFSDatastoreConfiguration = nil
 		} else {
 			return nil // data stored in dst.NFSDatastoreConfiguration, return on the first match
@@ -104,8 +125,15 @@ func (dst *SaveClusterDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -114,6 +142,12 @@ func (dst *SaveClusterDatastoreRequestDatastoreConfig) UnmarshalJSON(data []byte
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(SaveClusterDatastoreRequestDatastoreConfig)")
 }
 
@@ -135,7 +169,7 @@ func (src SaveClusterDatastoreRequestDatastoreConfig) MarshalJSON() ([]byte, err
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableSaveClusterDatastoreRequestDatastoreConfig struct {

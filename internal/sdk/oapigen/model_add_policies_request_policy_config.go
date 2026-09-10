@@ -261,8 +261,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ApprovePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.ApprovePolicyTypeConfiguration1)
 	if err == nil {
-		jsonApprovePolicyTypeConfiguration1, _ := json.Marshal(dst.ApprovePolicyTypeConfiguration1)
-		if string(jsonApprovePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonApprovePolicyTypeConfiguration1, merrApprovePolicyTypeConfiguration1 := json.Marshal(dst.ApprovePolicyTypeConfiguration1)
+		var zeroApprovePolicyTypeConfiguration1 ApprovePolicyTypeConfiguration1
+		jsonZeroApprovePolicyTypeConfiguration1, _ := json.Marshal(&zeroApprovePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrApprovePolicyTypeConfiguration1 != nil || string(jsonApprovePolicyTypeConfiguration1) == "{}" || (len(jsonApprovePolicyTypeConfiguration1) > 0 && jsonApprovePolicyTypeConfiguration1[0] == '{' && string(jsonApprovePolicyTypeConfiguration1) == string(jsonZeroApprovePolicyTypeConfiguration1)) {
 			dst.ApprovePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.ApprovePolicyTypeConfiguration1, return on the first match
@@ -274,8 +281,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BackupCreationPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.BackupCreationPolicyTypeConfiguration1)
 	if err == nil {
-		jsonBackupCreationPolicyTypeConfiguration1, _ := json.Marshal(dst.BackupCreationPolicyTypeConfiguration1)
-		if string(jsonBackupCreationPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonBackupCreationPolicyTypeConfiguration1, merrBackupCreationPolicyTypeConfiguration1 := json.Marshal(dst.BackupCreationPolicyTypeConfiguration1)
+		var zeroBackupCreationPolicyTypeConfiguration1 BackupCreationPolicyTypeConfiguration1
+		jsonZeroBackupCreationPolicyTypeConfiguration1, _ := json.Marshal(&zeroBackupCreationPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBackupCreationPolicyTypeConfiguration1 != nil || string(jsonBackupCreationPolicyTypeConfiguration1) == "{}" || (len(jsonBackupCreationPolicyTypeConfiguration1) > 0 && jsonBackupCreationPolicyTypeConfiguration1[0] == '{' && string(jsonBackupCreationPolicyTypeConfiguration1) == string(jsonZeroBackupCreationPolicyTypeConfiguration1)) {
 			dst.BackupCreationPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.BackupCreationPolicyTypeConfiguration1, return on the first match
@@ -287,8 +301,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BackupTargetsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.BackupTargetsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonBackupTargetsPolicyTypeConfiguration1, _ := json.Marshal(dst.BackupTargetsPolicyTypeConfiguration1)
-		if string(jsonBackupTargetsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonBackupTargetsPolicyTypeConfiguration1, merrBackupTargetsPolicyTypeConfiguration1 := json.Marshal(dst.BackupTargetsPolicyTypeConfiguration1)
+		var zeroBackupTargetsPolicyTypeConfiguration1 BackupTargetsPolicyTypeConfiguration1
+		jsonZeroBackupTargetsPolicyTypeConfiguration1, _ := json.Marshal(&zeroBackupTargetsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBackupTargetsPolicyTypeConfiguration1 != nil || string(jsonBackupTargetsPolicyTypeConfiguration1) == "{}" || (len(jsonBackupTargetsPolicyTypeConfiguration1) > 0 && jsonBackupTargetsPolicyTypeConfiguration1[0] == '{' && string(jsonBackupTargetsPolicyTypeConfiguration1) == string(jsonZeroBackupTargetsPolicyTypeConfiguration1)) {
 			dst.BackupTargetsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.BackupTargetsPolicyTypeConfiguration1, return on the first match
@@ -300,8 +321,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BudgetPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.BudgetPolicyTypeConfiguration1)
 	if err == nil {
-		jsonBudgetPolicyTypeConfiguration1, _ := json.Marshal(dst.BudgetPolicyTypeConfiguration1)
-		if string(jsonBudgetPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonBudgetPolicyTypeConfiguration1, merrBudgetPolicyTypeConfiguration1 := json.Marshal(dst.BudgetPolicyTypeConfiguration1)
+		var zeroBudgetPolicyTypeConfiguration1 BudgetPolicyTypeConfiguration1
+		jsonZeroBudgetPolicyTypeConfiguration1, _ := json.Marshal(&zeroBudgetPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBudgetPolicyTypeConfiguration1 != nil || string(jsonBudgetPolicyTypeConfiguration1) == "{}" || (len(jsonBudgetPolicyTypeConfiguration1) > 0 && jsonBudgetPolicyTypeConfiguration1[0] == '{' && string(jsonBudgetPolicyTypeConfiguration1) == string(jsonZeroBudgetPolicyTypeConfiguration1)) {
 			dst.BudgetPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.BudgetPolicyTypeConfiguration1, return on the first match
@@ -313,8 +341,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ClusterResourceNamePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.ClusterResourceNamePolicyTypeConfiguration1)
 	if err == nil {
-		jsonClusterResourceNamePolicyTypeConfiguration1, _ := json.Marshal(dst.ClusterResourceNamePolicyTypeConfiguration1)
-		if string(jsonClusterResourceNamePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonClusterResourceNamePolicyTypeConfiguration1, merrClusterResourceNamePolicyTypeConfiguration1 := json.Marshal(dst.ClusterResourceNamePolicyTypeConfiguration1)
+		var zeroClusterResourceNamePolicyTypeConfiguration1 ClusterResourceNamePolicyTypeConfiguration1
+		jsonZeroClusterResourceNamePolicyTypeConfiguration1, _ := json.Marshal(&zeroClusterResourceNamePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrClusterResourceNamePolicyTypeConfiguration1 != nil || string(jsonClusterResourceNamePolicyTypeConfiguration1) == "{}" || (len(jsonClusterResourceNamePolicyTypeConfiguration1) > 0 && jsonClusterResourceNamePolicyTypeConfiguration1[0] == '{' && string(jsonClusterResourceNamePolicyTypeConfiguration1) == string(jsonZeroClusterResourceNamePolicyTypeConfiguration1)) {
 			dst.ClusterResourceNamePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.ClusterResourceNamePolicyTypeConfiguration1, return on the first match
@@ -326,8 +361,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into CypherAccessPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.CypherAccessPolicyTypeConfiguration1)
 	if err == nil {
-		jsonCypherAccessPolicyTypeConfiguration1, _ := json.Marshal(dst.CypherAccessPolicyTypeConfiguration1)
-		if string(jsonCypherAccessPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonCypherAccessPolicyTypeConfiguration1, merrCypherAccessPolicyTypeConfiguration1 := json.Marshal(dst.CypherAccessPolicyTypeConfiguration1)
+		var zeroCypherAccessPolicyTypeConfiguration1 CypherAccessPolicyTypeConfiguration1
+		jsonZeroCypherAccessPolicyTypeConfiguration1, _ := json.Marshal(&zeroCypherAccessPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrCypherAccessPolicyTypeConfiguration1 != nil || string(jsonCypherAccessPolicyTypeConfiguration1) == "{}" || (len(jsonCypherAccessPolicyTypeConfiguration1) > 0 && jsonCypherAccessPolicyTypeConfiguration1[0] == '{' && string(jsonCypherAccessPolicyTypeConfiguration1) == string(jsonZeroCypherAccessPolicyTypeConfiguration1)) {
 			dst.CypherAccessPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.CypherAccessPolicyTypeConfiguration1, return on the first match
@@ -339,8 +381,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into DelayedDeletePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.DelayedDeletePolicyTypeConfiguration1)
 	if err == nil {
-		jsonDelayedDeletePolicyTypeConfiguration1, _ := json.Marshal(dst.DelayedDeletePolicyTypeConfiguration1)
-		if string(jsonDelayedDeletePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonDelayedDeletePolicyTypeConfiguration1, merrDelayedDeletePolicyTypeConfiguration1 := json.Marshal(dst.DelayedDeletePolicyTypeConfiguration1)
+		var zeroDelayedDeletePolicyTypeConfiguration1 DelayedDeletePolicyTypeConfiguration1
+		jsonZeroDelayedDeletePolicyTypeConfiguration1, _ := json.Marshal(&zeroDelayedDeletePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrDelayedDeletePolicyTypeConfiguration1 != nil || string(jsonDelayedDeletePolicyTypeConfiguration1) == "{}" || (len(jsonDelayedDeletePolicyTypeConfiguration1) > 0 && jsonDelayedDeletePolicyTypeConfiguration1[0] == '{' && string(jsonDelayedDeletePolicyTypeConfiguration1) == string(jsonZeroDelayedDeletePolicyTypeConfiguration1)) {
 			dst.DelayedDeletePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.DelayedDeletePolicyTypeConfiguration1, return on the first match
@@ -352,8 +401,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ExpirationPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.ExpirationPolicyTypeConfiguration1)
 	if err == nil {
-		jsonExpirationPolicyTypeConfiguration1, _ := json.Marshal(dst.ExpirationPolicyTypeConfiguration1)
-		if string(jsonExpirationPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonExpirationPolicyTypeConfiguration1, merrExpirationPolicyTypeConfiguration1 := json.Marshal(dst.ExpirationPolicyTypeConfiguration1)
+		var zeroExpirationPolicyTypeConfiguration1 ExpirationPolicyTypeConfiguration1
+		jsonZeroExpirationPolicyTypeConfiguration1, _ := json.Marshal(&zeroExpirationPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrExpirationPolicyTypeConfiguration1 != nil || string(jsonExpirationPolicyTypeConfiguration1) == "{}" || (len(jsonExpirationPolicyTypeConfiguration1) > 0 && jsonExpirationPolicyTypeConfiguration1[0] == '{' && string(jsonExpirationPolicyTypeConfiguration1) == string(jsonZeroExpirationPolicyTypeConfiguration1)) {
 			dst.ExpirationPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.ExpirationPolicyTypeConfiguration1, return on the first match
@@ -365,8 +421,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into FileShareStorageQuotaPolicyTypeConfiguration
 	err = json.Unmarshal(data, &dst.FileShareStorageQuotaPolicyTypeConfiguration)
 	if err == nil {
-		jsonFileShareStorageQuotaPolicyTypeConfiguration, _ := json.Marshal(dst.FileShareStorageQuotaPolicyTypeConfiguration)
-		if string(jsonFileShareStorageQuotaPolicyTypeConfiguration) == "{}" { // empty struct
+		jsonFileShareStorageQuotaPolicyTypeConfiguration, merrFileShareStorageQuotaPolicyTypeConfiguration := json.Marshal(dst.FileShareStorageQuotaPolicyTypeConfiguration)
+		var zeroFileShareStorageQuotaPolicyTypeConfiguration FileShareStorageQuotaPolicyTypeConfiguration
+		jsonZeroFileShareStorageQuotaPolicyTypeConfiguration, _ := json.Marshal(&zeroFileShareStorageQuotaPolicyTypeConfiguration)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrFileShareStorageQuotaPolicyTypeConfiguration != nil || string(jsonFileShareStorageQuotaPolicyTypeConfiguration) == "{}" || (len(jsonFileShareStorageQuotaPolicyTypeConfiguration) > 0 && jsonFileShareStorageQuotaPolicyTypeConfiguration[0] == '{' && string(jsonFileShareStorageQuotaPolicyTypeConfiguration) == string(jsonZeroFileShareStorageQuotaPolicyTypeConfiguration)) {
 			dst.FileShareStorageQuotaPolicyTypeConfiguration = nil
 		} else {
 			return nil // data stored in dst.FileShareStorageQuotaPolicyTypeConfiguration, return on the first match
@@ -378,8 +441,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into HostnamePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.HostnamePolicyTypeConfiguration1)
 	if err == nil {
-		jsonHostnamePolicyTypeConfiguration1, _ := json.Marshal(dst.HostnamePolicyTypeConfiguration1)
-		if string(jsonHostnamePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonHostnamePolicyTypeConfiguration1, merrHostnamePolicyTypeConfiguration1 := json.Marshal(dst.HostnamePolicyTypeConfiguration1)
+		var zeroHostnamePolicyTypeConfiguration1 HostnamePolicyTypeConfiguration1
+		jsonZeroHostnamePolicyTypeConfiguration1, _ := json.Marshal(&zeroHostnamePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHostnamePolicyTypeConfiguration1 != nil || string(jsonHostnamePolicyTypeConfiguration1) == "{}" || (len(jsonHostnamePolicyTypeConfiguration1) > 0 && jsonHostnamePolicyTypeConfiguration1[0] == '{' && string(jsonHostnamePolicyTypeConfiguration1) == string(jsonZeroHostnamePolicyTypeConfiguration1)) {
 			dst.HostnamePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.HostnamePolicyTypeConfiguration1, return on the first match
@@ -391,8 +461,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into InstanceNamePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.InstanceNamePolicyTypeConfiguration1)
 	if err == nil {
-		jsonInstanceNamePolicyTypeConfiguration1, _ := json.Marshal(dst.InstanceNamePolicyTypeConfiguration1)
-		if string(jsonInstanceNamePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonInstanceNamePolicyTypeConfiguration1, merrInstanceNamePolicyTypeConfiguration1 := json.Marshal(dst.InstanceNamePolicyTypeConfiguration1)
+		var zeroInstanceNamePolicyTypeConfiguration1 InstanceNamePolicyTypeConfiguration1
+		jsonZeroInstanceNamePolicyTypeConfiguration1, _ := json.Marshal(&zeroInstanceNamePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrInstanceNamePolicyTypeConfiguration1 != nil || string(jsonInstanceNamePolicyTypeConfiguration1) == "{}" || (len(jsonInstanceNamePolicyTypeConfiguration1) > 0 && jsonInstanceNamePolicyTypeConfiguration1[0] == '{' && string(jsonInstanceNamePolicyTypeConfiguration1) == string(jsonZeroInstanceNamePolicyTypeConfiguration1)) {
 			dst.InstanceNamePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.InstanceNamePolicyTypeConfiguration1, return on the first match
@@ -404,8 +481,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxContainersPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxContainersPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxContainersPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxContainersPolicyTypeConfiguration1)
-		if string(jsonMaxContainersPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxContainersPolicyTypeConfiguration1, merrMaxContainersPolicyTypeConfiguration1 := json.Marshal(dst.MaxContainersPolicyTypeConfiguration1)
+		var zeroMaxContainersPolicyTypeConfiguration1 MaxContainersPolicyTypeConfiguration1
+		jsonZeroMaxContainersPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxContainersPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxContainersPolicyTypeConfiguration1 != nil || string(jsonMaxContainersPolicyTypeConfiguration1) == "{}" || (len(jsonMaxContainersPolicyTypeConfiguration1) > 0 && jsonMaxContainersPolicyTypeConfiguration1[0] == '{' && string(jsonMaxContainersPolicyTypeConfiguration1) == string(jsonZeroMaxContainersPolicyTypeConfiguration1)) {
 			dst.MaxContainersPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxContainersPolicyTypeConfiguration1, return on the first match
@@ -417,8 +501,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxCoresPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxCoresPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxCoresPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxCoresPolicyTypeConfiguration1)
-		if string(jsonMaxCoresPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxCoresPolicyTypeConfiguration1, merrMaxCoresPolicyTypeConfiguration1 := json.Marshal(dst.MaxCoresPolicyTypeConfiguration1)
+		var zeroMaxCoresPolicyTypeConfiguration1 MaxCoresPolicyTypeConfiguration1
+		jsonZeroMaxCoresPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxCoresPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxCoresPolicyTypeConfiguration1 != nil || string(jsonMaxCoresPolicyTypeConfiguration1) == "{}" || (len(jsonMaxCoresPolicyTypeConfiguration1) > 0 && jsonMaxCoresPolicyTypeConfiguration1[0] == '{' && string(jsonMaxCoresPolicyTypeConfiguration1) == string(jsonZeroMaxCoresPolicyTypeConfiguration1)) {
 			dst.MaxCoresPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxCoresPolicyTypeConfiguration1, return on the first match
@@ -430,8 +521,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxHostsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxHostsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxHostsPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxHostsPolicyTypeConfiguration1)
-		if string(jsonMaxHostsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxHostsPolicyTypeConfiguration1, merrMaxHostsPolicyTypeConfiguration1 := json.Marshal(dst.MaxHostsPolicyTypeConfiguration1)
+		var zeroMaxHostsPolicyTypeConfiguration1 MaxHostsPolicyTypeConfiguration1
+		jsonZeroMaxHostsPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxHostsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxHostsPolicyTypeConfiguration1 != nil || string(jsonMaxHostsPolicyTypeConfiguration1) == "{}" || (len(jsonMaxHostsPolicyTypeConfiguration1) > 0 && jsonMaxHostsPolicyTypeConfiguration1[0] == '{' && string(jsonMaxHostsPolicyTypeConfiguration1) == string(jsonZeroMaxHostsPolicyTypeConfiguration1)) {
 			dst.MaxHostsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxHostsPolicyTypeConfiguration1, return on the first match
@@ -443,8 +541,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxLoadBalancerPoolsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxLoadBalancerPoolsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxLoadBalancerPoolsPolicyTypeConfiguration1)
-		if string(jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1, merrMaxLoadBalancerPoolsPolicyTypeConfiguration1 := json.Marshal(dst.MaxLoadBalancerPoolsPolicyTypeConfiguration1)
+		var zeroMaxLoadBalancerPoolsPolicyTypeConfiguration1 MaxLoadBalancerPoolsPolicyTypeConfiguration1
+		jsonZeroMaxLoadBalancerPoolsPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxLoadBalancerPoolsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxLoadBalancerPoolsPolicyTypeConfiguration1 != nil || string(jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1) == "{}" || (len(jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1) > 0 && jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1[0] == '{' && string(jsonMaxLoadBalancerPoolsPolicyTypeConfiguration1) == string(jsonZeroMaxLoadBalancerPoolsPolicyTypeConfiguration1)) {
 			dst.MaxLoadBalancerPoolsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxLoadBalancerPoolsPolicyTypeConfiguration1, return on the first match
@@ -456,8 +561,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxMemoryPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxMemoryPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxMemoryPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxMemoryPolicyTypeConfiguration1)
-		if string(jsonMaxMemoryPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxMemoryPolicyTypeConfiguration1, merrMaxMemoryPolicyTypeConfiguration1 := json.Marshal(dst.MaxMemoryPolicyTypeConfiguration1)
+		var zeroMaxMemoryPolicyTypeConfiguration1 MaxMemoryPolicyTypeConfiguration1
+		jsonZeroMaxMemoryPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxMemoryPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxMemoryPolicyTypeConfiguration1 != nil || string(jsonMaxMemoryPolicyTypeConfiguration1) == "{}" || (len(jsonMaxMemoryPolicyTypeConfiguration1) > 0 && jsonMaxMemoryPolicyTypeConfiguration1[0] == '{' && string(jsonMaxMemoryPolicyTypeConfiguration1) == string(jsonZeroMaxMemoryPolicyTypeConfiguration1)) {
 			dst.MaxMemoryPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxMemoryPolicyTypeConfiguration1, return on the first match
@@ -469,8 +581,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxPoolMembersPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxPoolMembersPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxPoolMembersPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxPoolMembersPolicyTypeConfiguration1)
-		if string(jsonMaxPoolMembersPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxPoolMembersPolicyTypeConfiguration1, merrMaxPoolMembersPolicyTypeConfiguration1 := json.Marshal(dst.MaxPoolMembersPolicyTypeConfiguration1)
+		var zeroMaxPoolMembersPolicyTypeConfiguration1 MaxPoolMembersPolicyTypeConfiguration1
+		jsonZeroMaxPoolMembersPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxPoolMembersPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxPoolMembersPolicyTypeConfiguration1 != nil || string(jsonMaxPoolMembersPolicyTypeConfiguration1) == "{}" || (len(jsonMaxPoolMembersPolicyTypeConfiguration1) > 0 && jsonMaxPoolMembersPolicyTypeConfiguration1[0] == '{' && string(jsonMaxPoolMembersPolicyTypeConfiguration1) == string(jsonZeroMaxPoolMembersPolicyTypeConfiguration1)) {
 			dst.MaxPoolMembersPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxPoolMembersPolicyTypeConfiguration1, return on the first match
@@ -482,8 +601,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxSnapshotsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxSnapshotsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxSnapshotsPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxSnapshotsPolicyTypeConfiguration1)
-		if string(jsonMaxSnapshotsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxSnapshotsPolicyTypeConfiguration1, merrMaxSnapshotsPolicyTypeConfiguration1 := json.Marshal(dst.MaxSnapshotsPolicyTypeConfiguration1)
+		var zeroMaxSnapshotsPolicyTypeConfiguration1 MaxSnapshotsPolicyTypeConfiguration1
+		jsonZeroMaxSnapshotsPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxSnapshotsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxSnapshotsPolicyTypeConfiguration1 != nil || string(jsonMaxSnapshotsPolicyTypeConfiguration1) == "{}" || (len(jsonMaxSnapshotsPolicyTypeConfiguration1) > 0 && jsonMaxSnapshotsPolicyTypeConfiguration1[0] == '{' && string(jsonMaxSnapshotsPolicyTypeConfiguration1) == string(jsonZeroMaxSnapshotsPolicyTypeConfiguration1)) {
 			dst.MaxSnapshotsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxSnapshotsPolicyTypeConfiguration1, return on the first match
@@ -495,8 +621,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1)
-		if string(jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1, merrMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1 := json.Marshal(dst.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1)
+		var zeroMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1 MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1
+		jsonZeroMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1 != nil || string(jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1) == "{}" || (len(jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1) > 0 && jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1[0] == '{' && string(jsonMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1) == string(jsonZeroMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1)) {
 			dst.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration1, return on the first match
@@ -508,8 +641,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxVMsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxVMsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxVMsPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxVMsPolicyTypeConfiguration1)
-		if string(jsonMaxVMsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxVMsPolicyTypeConfiguration1, merrMaxVMsPolicyTypeConfiguration1 := json.Marshal(dst.MaxVMsPolicyTypeConfiguration1)
+		var zeroMaxVMsPolicyTypeConfiguration1 MaxVMsPolicyTypeConfiguration1
+		jsonZeroMaxVMsPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxVMsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxVMsPolicyTypeConfiguration1 != nil || string(jsonMaxVMsPolicyTypeConfiguration1) == "{}" || (len(jsonMaxVMsPolicyTypeConfiguration1) > 0 && jsonMaxVMsPolicyTypeConfiguration1[0] == '{' && string(jsonMaxVMsPolicyTypeConfiguration1) == string(jsonZeroMaxVMsPolicyTypeConfiguration1)) {
 			dst.MaxVMsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxVMsPolicyTypeConfiguration1, return on the first match
@@ -521,8 +661,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MaxVirtualServersPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MaxVirtualServersPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMaxVirtualServersPolicyTypeConfiguration1, _ := json.Marshal(dst.MaxVirtualServersPolicyTypeConfiguration1)
-		if string(jsonMaxVirtualServersPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMaxVirtualServersPolicyTypeConfiguration1, merrMaxVirtualServersPolicyTypeConfiguration1 := json.Marshal(dst.MaxVirtualServersPolicyTypeConfiguration1)
+		var zeroMaxVirtualServersPolicyTypeConfiguration1 MaxVirtualServersPolicyTypeConfiguration1
+		jsonZeroMaxVirtualServersPolicyTypeConfiguration1, _ := json.Marshal(&zeroMaxVirtualServersPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMaxVirtualServersPolicyTypeConfiguration1 != nil || string(jsonMaxVirtualServersPolicyTypeConfiguration1) == "{}" || (len(jsonMaxVirtualServersPolicyTypeConfiguration1) > 0 && jsonMaxVirtualServersPolicyTypeConfiguration1[0] == '{' && string(jsonMaxVirtualServersPolicyTypeConfiguration1) == string(jsonZeroMaxVirtualServersPolicyTypeConfiguration1)) {
 			dst.MaxVirtualServersPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MaxVirtualServersPolicyTypeConfiguration1, return on the first match
@@ -534,8 +681,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MessageOfTheDayPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.MessageOfTheDayPolicyTypeConfiguration1)
 	if err == nil {
-		jsonMessageOfTheDayPolicyTypeConfiguration1, _ := json.Marshal(dst.MessageOfTheDayPolicyTypeConfiguration1)
-		if string(jsonMessageOfTheDayPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonMessageOfTheDayPolicyTypeConfiguration1, merrMessageOfTheDayPolicyTypeConfiguration1 := json.Marshal(dst.MessageOfTheDayPolicyTypeConfiguration1)
+		var zeroMessageOfTheDayPolicyTypeConfiguration1 MessageOfTheDayPolicyTypeConfiguration1
+		jsonZeroMessageOfTheDayPolicyTypeConfiguration1, _ := json.Marshal(&zeroMessageOfTheDayPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMessageOfTheDayPolicyTypeConfiguration1 != nil || string(jsonMessageOfTheDayPolicyTypeConfiguration1) == "{}" || (len(jsonMessageOfTheDayPolicyTypeConfiguration1) > 0 && jsonMessageOfTheDayPolicyTypeConfiguration1[0] == '{' && string(jsonMessageOfTheDayPolicyTypeConfiguration1) == string(jsonZeroMessageOfTheDayPolicyTypeConfiguration1)) {
 			dst.MessageOfTheDayPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.MessageOfTheDayPolicyTypeConfiguration1, return on the first match
@@ -547,8 +701,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into NetworkQuotaPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.NetworkQuotaPolicyTypeConfiguration1)
 	if err == nil {
-		jsonNetworkQuotaPolicyTypeConfiguration1, _ := json.Marshal(dst.NetworkQuotaPolicyTypeConfiguration1)
-		if string(jsonNetworkQuotaPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonNetworkQuotaPolicyTypeConfiguration1, merrNetworkQuotaPolicyTypeConfiguration1 := json.Marshal(dst.NetworkQuotaPolicyTypeConfiguration1)
+		var zeroNetworkQuotaPolicyTypeConfiguration1 NetworkQuotaPolicyTypeConfiguration1
+		jsonZeroNetworkQuotaPolicyTypeConfiguration1, _ := json.Marshal(&zeroNetworkQuotaPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNetworkQuotaPolicyTypeConfiguration1 != nil || string(jsonNetworkQuotaPolicyTypeConfiguration1) == "{}" || (len(jsonNetworkQuotaPolicyTypeConfiguration1) > 0 && jsonNetworkQuotaPolicyTypeConfiguration1[0] == '{' && string(jsonNetworkQuotaPolicyTypeConfiguration1) == string(jsonZeroNetworkQuotaPolicyTypeConfiguration1)) {
 			dst.NetworkQuotaPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.NetworkQuotaPolicyTypeConfiguration1, return on the first match
@@ -560,8 +721,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into PowerSchedulePolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.PowerSchedulePolicyTypeConfiguration1)
 	if err == nil {
-		jsonPowerSchedulePolicyTypeConfiguration1, _ := json.Marshal(dst.PowerSchedulePolicyTypeConfiguration1)
-		if string(jsonPowerSchedulePolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonPowerSchedulePolicyTypeConfiguration1, merrPowerSchedulePolicyTypeConfiguration1 := json.Marshal(dst.PowerSchedulePolicyTypeConfiguration1)
+		var zeroPowerSchedulePolicyTypeConfiguration1 PowerSchedulePolicyTypeConfiguration1
+		jsonZeroPowerSchedulePolicyTypeConfiguration1, _ := json.Marshal(&zeroPowerSchedulePolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrPowerSchedulePolicyTypeConfiguration1 != nil || string(jsonPowerSchedulePolicyTypeConfiguration1) == "{}" || (len(jsonPowerSchedulePolicyTypeConfiguration1) > 0 && jsonPowerSchedulePolicyTypeConfiguration1[0] == '{' && string(jsonPowerSchedulePolicyTypeConfiguration1) == string(jsonZeroPowerSchedulePolicyTypeConfiguration1)) {
 			dst.PowerSchedulePolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.PowerSchedulePolicyTypeConfiguration1, return on the first match
@@ -573,8 +741,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into RequiredNetworkPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.RequiredNetworkPolicyTypeConfiguration1)
 	if err == nil {
-		jsonRequiredNetworkPolicyTypeConfiguration1, _ := json.Marshal(dst.RequiredNetworkPolicyTypeConfiguration1)
-		if string(jsonRequiredNetworkPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonRequiredNetworkPolicyTypeConfiguration1, merrRequiredNetworkPolicyTypeConfiguration1 := json.Marshal(dst.RequiredNetworkPolicyTypeConfiguration1)
+		var zeroRequiredNetworkPolicyTypeConfiguration1 RequiredNetworkPolicyTypeConfiguration1
+		jsonZeroRequiredNetworkPolicyTypeConfiguration1, _ := json.Marshal(&zeroRequiredNetworkPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrRequiredNetworkPolicyTypeConfiguration1 != nil || string(jsonRequiredNetworkPolicyTypeConfiguration1) == "{}" || (len(jsonRequiredNetworkPolicyTypeConfiguration1) > 0 && jsonRequiredNetworkPolicyTypeConfiguration1[0] == '{' && string(jsonRequiredNetworkPolicyTypeConfiguration1) == string(jsonZeroRequiredNetworkPolicyTypeConfiguration1)) {
 			dst.RequiredNetworkPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.RequiredNetworkPolicyTypeConfiguration1, return on the first match
@@ -586,8 +761,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into RouterQuotaPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.RouterQuotaPolicyTypeConfiguration1)
 	if err == nil {
-		jsonRouterQuotaPolicyTypeConfiguration1, _ := json.Marshal(dst.RouterQuotaPolicyTypeConfiguration1)
-		if string(jsonRouterQuotaPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonRouterQuotaPolicyTypeConfiguration1, merrRouterQuotaPolicyTypeConfiguration1 := json.Marshal(dst.RouterQuotaPolicyTypeConfiguration1)
+		var zeroRouterQuotaPolicyTypeConfiguration1 RouterQuotaPolicyTypeConfiguration1
+		jsonZeroRouterQuotaPolicyTypeConfiguration1, _ := json.Marshal(&zeroRouterQuotaPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrRouterQuotaPolicyTypeConfiguration1 != nil || string(jsonRouterQuotaPolicyTypeConfiguration1) == "{}" || (len(jsonRouterQuotaPolicyTypeConfiguration1) > 0 && jsonRouterQuotaPolicyTypeConfiguration1[0] == '{' && string(jsonRouterQuotaPolicyTypeConfiguration1) == string(jsonZeroRouterQuotaPolicyTypeConfiguration1)) {
 			dst.RouterQuotaPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.RouterQuotaPolicyTypeConfiguration1, return on the first match
@@ -599,8 +781,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ShutdownPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.ShutdownPolicyTypeConfiguration1)
 	if err == nil {
-		jsonShutdownPolicyTypeConfiguration1, _ := json.Marshal(dst.ShutdownPolicyTypeConfiguration1)
-		if string(jsonShutdownPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonShutdownPolicyTypeConfiguration1, merrShutdownPolicyTypeConfiguration1 := json.Marshal(dst.ShutdownPolicyTypeConfiguration1)
+		var zeroShutdownPolicyTypeConfiguration1 ShutdownPolicyTypeConfiguration1
+		jsonZeroShutdownPolicyTypeConfiguration1, _ := json.Marshal(&zeroShutdownPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrShutdownPolicyTypeConfiguration1 != nil || string(jsonShutdownPolicyTypeConfiguration1) == "{}" || (len(jsonShutdownPolicyTypeConfiguration1) > 0 && jsonShutdownPolicyTypeConfiguration1[0] == '{' && string(jsonShutdownPolicyTypeConfiguration1) == string(jsonZeroShutdownPolicyTypeConfiguration1)) {
 			dst.ShutdownPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.ShutdownPolicyTypeConfiguration1, return on the first match
@@ -612,8 +801,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into StorageServerStorageQuotaPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.StorageServerStorageQuotaPolicyTypeConfiguration1)
 	if err == nil {
-		jsonStorageServerStorageQuotaPolicyTypeConfiguration1, _ := json.Marshal(dst.StorageServerStorageQuotaPolicyTypeConfiguration1)
-		if string(jsonStorageServerStorageQuotaPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonStorageServerStorageQuotaPolicyTypeConfiguration1, merrStorageServerStorageQuotaPolicyTypeConfiguration1 := json.Marshal(dst.StorageServerStorageQuotaPolicyTypeConfiguration1)
+		var zeroStorageServerStorageQuotaPolicyTypeConfiguration1 StorageServerStorageQuotaPolicyTypeConfiguration1
+		jsonZeroStorageServerStorageQuotaPolicyTypeConfiguration1, _ := json.Marshal(&zeroStorageServerStorageQuotaPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrStorageServerStorageQuotaPolicyTypeConfiguration1 != nil || string(jsonStorageServerStorageQuotaPolicyTypeConfiguration1) == "{}" || (len(jsonStorageServerStorageQuotaPolicyTypeConfiguration1) > 0 && jsonStorageServerStorageQuotaPolicyTypeConfiguration1[0] == '{' && string(jsonStorageServerStorageQuotaPolicyTypeConfiguration1) == string(jsonZeroStorageServerStorageQuotaPolicyTypeConfiguration1)) {
 			dst.StorageServerStorageQuotaPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.StorageServerStorageQuotaPolicyTypeConfiguration1, return on the first match
@@ -625,8 +821,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into TagsPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.TagsPolicyTypeConfiguration1)
 	if err == nil {
-		jsonTagsPolicyTypeConfiguration1, _ := json.Marshal(dst.TagsPolicyTypeConfiguration1)
-		if string(jsonTagsPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonTagsPolicyTypeConfiguration1, merrTagsPolicyTypeConfiguration1 := json.Marshal(dst.TagsPolicyTypeConfiguration1)
+		var zeroTagsPolicyTypeConfiguration1 TagsPolicyTypeConfiguration1
+		jsonZeroTagsPolicyTypeConfiguration1, _ := json.Marshal(&zeroTagsPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrTagsPolicyTypeConfiguration1 != nil || string(jsonTagsPolicyTypeConfiguration1) == "{}" || (len(jsonTagsPolicyTypeConfiguration1) > 0 && jsonTagsPolicyTypeConfiguration1[0] == '{' && string(jsonTagsPolicyTypeConfiguration1) == string(jsonZeroTagsPolicyTypeConfiguration1)) {
 			dst.TagsPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.TagsPolicyTypeConfiguration1, return on the first match
@@ -638,8 +841,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into UserCreationPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.UserCreationPolicyTypeConfiguration1)
 	if err == nil {
-		jsonUserCreationPolicyTypeConfiguration1, _ := json.Marshal(dst.UserCreationPolicyTypeConfiguration1)
-		if string(jsonUserCreationPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonUserCreationPolicyTypeConfiguration1, merrUserCreationPolicyTypeConfiguration1 := json.Marshal(dst.UserCreationPolicyTypeConfiguration1)
+		var zeroUserCreationPolicyTypeConfiguration1 UserCreationPolicyTypeConfiguration1
+		jsonZeroUserCreationPolicyTypeConfiguration1, _ := json.Marshal(&zeroUserCreationPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUserCreationPolicyTypeConfiguration1 != nil || string(jsonUserCreationPolicyTypeConfiguration1) == "{}" || (len(jsonUserCreationPolicyTypeConfiguration1) > 0 && jsonUserCreationPolicyTypeConfiguration1[0] == '{' && string(jsonUserCreationPolicyTypeConfiguration1) == string(jsonZeroUserCreationPolicyTypeConfiguration1)) {
 			dst.UserCreationPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.UserCreationPolicyTypeConfiguration1, return on the first match
@@ -651,8 +861,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into UserGroupCreationPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.UserGroupCreationPolicyTypeConfiguration1)
 	if err == nil {
-		jsonUserGroupCreationPolicyTypeConfiguration1, _ := json.Marshal(dst.UserGroupCreationPolicyTypeConfiguration1)
-		if string(jsonUserGroupCreationPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonUserGroupCreationPolicyTypeConfiguration1, merrUserGroupCreationPolicyTypeConfiguration1 := json.Marshal(dst.UserGroupCreationPolicyTypeConfiguration1)
+		var zeroUserGroupCreationPolicyTypeConfiguration1 UserGroupCreationPolicyTypeConfiguration1
+		jsonZeroUserGroupCreationPolicyTypeConfiguration1, _ := json.Marshal(&zeroUserGroupCreationPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUserGroupCreationPolicyTypeConfiguration1 != nil || string(jsonUserGroupCreationPolicyTypeConfiguration1) == "{}" || (len(jsonUserGroupCreationPolicyTypeConfiguration1) > 0 && jsonUserGroupCreationPolicyTypeConfiguration1[0] == '{' && string(jsonUserGroupCreationPolicyTypeConfiguration1) == string(jsonZeroUserGroupCreationPolicyTypeConfiguration1)) {
 			dst.UserGroupCreationPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.UserGroupCreationPolicyTypeConfiguration1, return on the first match
@@ -664,8 +881,15 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into WorkflowPolicyTypeConfiguration1
 	err = json.Unmarshal(data, &dst.WorkflowPolicyTypeConfiguration1)
 	if err == nil {
-		jsonWorkflowPolicyTypeConfiguration1, _ := json.Marshal(dst.WorkflowPolicyTypeConfiguration1)
-		if string(jsonWorkflowPolicyTypeConfiguration1) == "{}" { // empty struct
+		jsonWorkflowPolicyTypeConfiguration1, merrWorkflowPolicyTypeConfiguration1 := json.Marshal(dst.WorkflowPolicyTypeConfiguration1)
+		var zeroWorkflowPolicyTypeConfiguration1 WorkflowPolicyTypeConfiguration1
+		jsonZeroWorkflowPolicyTypeConfiguration1, _ := json.Marshal(&zeroWorkflowPolicyTypeConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrWorkflowPolicyTypeConfiguration1 != nil || string(jsonWorkflowPolicyTypeConfiguration1) == "{}" || (len(jsonWorkflowPolicyTypeConfiguration1) > 0 && jsonWorkflowPolicyTypeConfiguration1[0] == '{' && string(jsonWorkflowPolicyTypeConfiguration1) == string(jsonZeroWorkflowPolicyTypeConfiguration1)) {
 			dst.WorkflowPolicyTypeConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.WorkflowPolicyTypeConfiguration1, return on the first match
@@ -674,6 +898,12 @@ func (dst *AddPoliciesRequestPolicyConfig) UnmarshalJSON(data []byte) error {
 		dst.WorkflowPolicyTypeConfiguration1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddPoliciesRequestPolicyConfig)")
 }
 
@@ -807,7 +1037,7 @@ func (src AddPoliciesRequestPolicyConfig) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.WorkflowPolicyTypeConfiguration1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddPoliciesRequestPolicyConfig struct {

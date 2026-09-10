@@ -51,8 +51,15 @@ func (dst *UpdateVDIGateways200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into UpdateVDIGateways200ResponseAnyOf
 	err = json.Unmarshal(data, &dst.UpdateVDIGateways200ResponseAnyOf)
 	if err == nil {
-		jsonUpdateVDIGateways200ResponseAnyOf, _ := json.Marshal(dst.UpdateVDIGateways200ResponseAnyOf)
-		if string(jsonUpdateVDIGateways200ResponseAnyOf) == "{}" { // empty struct
+		jsonUpdateVDIGateways200ResponseAnyOf, merrUpdateVDIGateways200ResponseAnyOf := json.Marshal(dst.UpdateVDIGateways200ResponseAnyOf)
+		var zeroUpdateVDIGateways200ResponseAnyOf UpdateVDIGateways200ResponseAnyOf
+		jsonZeroUpdateVDIGateways200ResponseAnyOf, _ := json.Marshal(&zeroUpdateVDIGateways200ResponseAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateVDIGateways200ResponseAnyOf != nil || string(jsonUpdateVDIGateways200ResponseAnyOf) == "{}" || (len(jsonUpdateVDIGateways200ResponseAnyOf) > 0 && jsonUpdateVDIGateways200ResponseAnyOf[0] == '{' && string(jsonUpdateVDIGateways200ResponseAnyOf) == string(jsonZeroUpdateVDIGateways200ResponseAnyOf)) {
 			dst.UpdateVDIGateways200ResponseAnyOf = nil
 		} else {
 			return nil // data stored in dst.UpdateVDIGateways200ResponseAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *UpdateVDIGateways200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into UpdateVDIGateways200ResponseAnyOf1
 	err = json.Unmarshal(data, &dst.UpdateVDIGateways200ResponseAnyOf1)
 	if err == nil {
-		jsonUpdateVDIGateways200ResponseAnyOf1, _ := json.Marshal(dst.UpdateVDIGateways200ResponseAnyOf1)
-		if string(jsonUpdateVDIGateways200ResponseAnyOf1) == "{}" { // empty struct
+		jsonUpdateVDIGateways200ResponseAnyOf1, merrUpdateVDIGateways200ResponseAnyOf1 := json.Marshal(dst.UpdateVDIGateways200ResponseAnyOf1)
+		var zeroUpdateVDIGateways200ResponseAnyOf1 UpdateVDIGateways200ResponseAnyOf1
+		jsonZeroUpdateVDIGateways200ResponseAnyOf1, _ := json.Marshal(&zeroUpdateVDIGateways200ResponseAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateVDIGateways200ResponseAnyOf1 != nil || string(jsonUpdateVDIGateways200ResponseAnyOf1) == "{}" || (len(jsonUpdateVDIGateways200ResponseAnyOf1) > 0 && jsonUpdateVDIGateways200ResponseAnyOf1[0] == '{' && string(jsonUpdateVDIGateways200ResponseAnyOf1) == string(jsonZeroUpdateVDIGateways200ResponseAnyOf1)) {
 			dst.UpdateVDIGateways200ResponseAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.UpdateVDIGateways200ResponseAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *UpdateVDIGateways200Response) UnmarshalJSON(data []byte) error {
 		dst.UpdateVDIGateways200ResponseAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(UpdateVDIGateways200Response)")
 }
 
@@ -87,7 +107,7 @@ func (src UpdateVDIGateways200Response) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.UpdateVDIGateways200ResponseAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableUpdateVDIGateways200Response struct {

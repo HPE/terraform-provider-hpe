@@ -93,8 +93,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into ClientSSLLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.ClientSSLLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonClientSSLLoadBalancerProfileConfig1, _ := json.Marshal(dst.ClientSSLLoadBalancerProfileConfig1)
-		if string(jsonClientSSLLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonClientSSLLoadBalancerProfileConfig1, merrClientSSLLoadBalancerProfileConfig1 := json.Marshal(dst.ClientSSLLoadBalancerProfileConfig1)
+		var zeroClientSSLLoadBalancerProfileConfig1 ClientSSLLoadBalancerProfileConfig1
+		jsonZeroClientSSLLoadBalancerProfileConfig1, _ := json.Marshal(&zeroClientSSLLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrClientSSLLoadBalancerProfileConfig1 != nil || string(jsonClientSSLLoadBalancerProfileConfig1) == "{}" || (len(jsonClientSSLLoadBalancerProfileConfig1) > 0 && jsonClientSSLLoadBalancerProfileConfig1[0] == '{' && string(jsonClientSSLLoadBalancerProfileConfig1) == string(jsonZeroClientSSLLoadBalancerProfileConfig1)) {
 			dst.ClientSSLLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.ClientSSLLoadBalancerProfileConfig1, return on the first match
@@ -106,8 +113,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into CookiePersistenceLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.CookiePersistenceLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonCookiePersistenceLoadBalancerProfileConfig1, _ := json.Marshal(dst.CookiePersistenceLoadBalancerProfileConfig1)
-		if string(jsonCookiePersistenceLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonCookiePersistenceLoadBalancerProfileConfig1, merrCookiePersistenceLoadBalancerProfileConfig1 := json.Marshal(dst.CookiePersistenceLoadBalancerProfileConfig1)
+		var zeroCookiePersistenceLoadBalancerProfileConfig1 CookiePersistenceLoadBalancerProfileConfig1
+		jsonZeroCookiePersistenceLoadBalancerProfileConfig1, _ := json.Marshal(&zeroCookiePersistenceLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrCookiePersistenceLoadBalancerProfileConfig1 != nil || string(jsonCookiePersistenceLoadBalancerProfileConfig1) == "{}" || (len(jsonCookiePersistenceLoadBalancerProfileConfig1) > 0 && jsonCookiePersistenceLoadBalancerProfileConfig1[0] == '{' && string(jsonCookiePersistenceLoadBalancerProfileConfig1) == string(jsonZeroCookiePersistenceLoadBalancerProfileConfig1)) {
 			dst.CookiePersistenceLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.CookiePersistenceLoadBalancerProfileConfig1, return on the first match
@@ -119,8 +133,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into FastTCPLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.FastTCPLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonFastTCPLoadBalancerProfileConfig1, _ := json.Marshal(dst.FastTCPLoadBalancerProfileConfig1)
-		if string(jsonFastTCPLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonFastTCPLoadBalancerProfileConfig1, merrFastTCPLoadBalancerProfileConfig1 := json.Marshal(dst.FastTCPLoadBalancerProfileConfig1)
+		var zeroFastTCPLoadBalancerProfileConfig1 FastTCPLoadBalancerProfileConfig1
+		jsonZeroFastTCPLoadBalancerProfileConfig1, _ := json.Marshal(&zeroFastTCPLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrFastTCPLoadBalancerProfileConfig1 != nil || string(jsonFastTCPLoadBalancerProfileConfig1) == "{}" || (len(jsonFastTCPLoadBalancerProfileConfig1) > 0 && jsonFastTCPLoadBalancerProfileConfig1[0] == '{' && string(jsonFastTCPLoadBalancerProfileConfig1) == string(jsonZeroFastTCPLoadBalancerProfileConfig1)) {
 			dst.FastTCPLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.FastTCPLoadBalancerProfileConfig1, return on the first match
@@ -132,8 +153,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into FastUDPLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.FastUDPLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonFastUDPLoadBalancerProfileConfig1, _ := json.Marshal(dst.FastUDPLoadBalancerProfileConfig1)
-		if string(jsonFastUDPLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonFastUDPLoadBalancerProfileConfig1, merrFastUDPLoadBalancerProfileConfig1 := json.Marshal(dst.FastUDPLoadBalancerProfileConfig1)
+		var zeroFastUDPLoadBalancerProfileConfig1 FastUDPLoadBalancerProfileConfig1
+		jsonZeroFastUDPLoadBalancerProfileConfig1, _ := json.Marshal(&zeroFastUDPLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrFastUDPLoadBalancerProfileConfig1 != nil || string(jsonFastUDPLoadBalancerProfileConfig1) == "{}" || (len(jsonFastUDPLoadBalancerProfileConfig1) > 0 && jsonFastUDPLoadBalancerProfileConfig1[0] == '{' && string(jsonFastUDPLoadBalancerProfileConfig1) == string(jsonZeroFastUDPLoadBalancerProfileConfig1)) {
 			dst.FastUDPLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.FastUDPLoadBalancerProfileConfig1, return on the first match
@@ -145,8 +173,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into GenericPersistenceLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.GenericPersistenceLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonGenericPersistenceLoadBalancerProfileConfig1, _ := json.Marshal(dst.GenericPersistenceLoadBalancerProfileConfig1)
-		if string(jsonGenericPersistenceLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonGenericPersistenceLoadBalancerProfileConfig1, merrGenericPersistenceLoadBalancerProfileConfig1 := json.Marshal(dst.GenericPersistenceLoadBalancerProfileConfig1)
+		var zeroGenericPersistenceLoadBalancerProfileConfig1 GenericPersistenceLoadBalancerProfileConfig1
+		jsonZeroGenericPersistenceLoadBalancerProfileConfig1, _ := json.Marshal(&zeroGenericPersistenceLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGenericPersistenceLoadBalancerProfileConfig1 != nil || string(jsonGenericPersistenceLoadBalancerProfileConfig1) == "{}" || (len(jsonGenericPersistenceLoadBalancerProfileConfig1) > 0 && jsonGenericPersistenceLoadBalancerProfileConfig1[0] == '{' && string(jsonGenericPersistenceLoadBalancerProfileConfig1) == string(jsonZeroGenericPersistenceLoadBalancerProfileConfig1)) {
 			dst.GenericPersistenceLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.GenericPersistenceLoadBalancerProfileConfig1, return on the first match
@@ -158,8 +193,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into HTTPLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.HTTPLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonHTTPLoadBalancerProfileConfig1, _ := json.Marshal(dst.HTTPLoadBalancerProfileConfig1)
-		if string(jsonHTTPLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonHTTPLoadBalancerProfileConfig1, merrHTTPLoadBalancerProfileConfig1 := json.Marshal(dst.HTTPLoadBalancerProfileConfig1)
+		var zeroHTTPLoadBalancerProfileConfig1 HTTPLoadBalancerProfileConfig1
+		jsonZeroHTTPLoadBalancerProfileConfig1, _ := json.Marshal(&zeroHTTPLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHTTPLoadBalancerProfileConfig1 != nil || string(jsonHTTPLoadBalancerProfileConfig1) == "{}" || (len(jsonHTTPLoadBalancerProfileConfig1) > 0 && jsonHTTPLoadBalancerProfileConfig1[0] == '{' && string(jsonHTTPLoadBalancerProfileConfig1) == string(jsonZeroHTTPLoadBalancerProfileConfig1)) {
 			dst.HTTPLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.HTTPLoadBalancerProfileConfig1, return on the first match
@@ -171,8 +213,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into ServerSSLLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.ServerSSLLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonServerSSLLoadBalancerProfileConfig1, _ := json.Marshal(dst.ServerSSLLoadBalancerProfileConfig1)
-		if string(jsonServerSSLLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonServerSSLLoadBalancerProfileConfig1, merrServerSSLLoadBalancerProfileConfig1 := json.Marshal(dst.ServerSSLLoadBalancerProfileConfig1)
+		var zeroServerSSLLoadBalancerProfileConfig1 ServerSSLLoadBalancerProfileConfig1
+		jsonZeroServerSSLLoadBalancerProfileConfig1, _ := json.Marshal(&zeroServerSSLLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrServerSSLLoadBalancerProfileConfig1 != nil || string(jsonServerSSLLoadBalancerProfileConfig1) == "{}" || (len(jsonServerSSLLoadBalancerProfileConfig1) > 0 && jsonServerSSLLoadBalancerProfileConfig1[0] == '{' && string(jsonServerSSLLoadBalancerProfileConfig1) == string(jsonZeroServerSSLLoadBalancerProfileConfig1)) {
 			dst.ServerSSLLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.ServerSSLLoadBalancerProfileConfig1, return on the first match
@@ -184,8 +233,15 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 	// try to unmarshal JSON data into SourceIPPersistenceLoadBalancerProfileConfig1
 	err = json.Unmarshal(data, &dst.SourceIPPersistenceLoadBalancerProfileConfig1)
 	if err == nil {
-		jsonSourceIPPersistenceLoadBalancerProfileConfig1, _ := json.Marshal(dst.SourceIPPersistenceLoadBalancerProfileConfig1)
-		if string(jsonSourceIPPersistenceLoadBalancerProfileConfig1) == "{}" { // empty struct
+		jsonSourceIPPersistenceLoadBalancerProfileConfig1, merrSourceIPPersistenceLoadBalancerProfileConfig1 := json.Marshal(dst.SourceIPPersistenceLoadBalancerProfileConfig1)
+		var zeroSourceIPPersistenceLoadBalancerProfileConfig1 SourceIPPersistenceLoadBalancerProfileConfig1
+		jsonZeroSourceIPPersistenceLoadBalancerProfileConfig1, _ := json.Marshal(&zeroSourceIPPersistenceLoadBalancerProfileConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrSourceIPPersistenceLoadBalancerProfileConfig1 != nil || string(jsonSourceIPPersistenceLoadBalancerProfileConfig1) == "{}" || (len(jsonSourceIPPersistenceLoadBalancerProfileConfig1) > 0 && jsonSourceIPPersistenceLoadBalancerProfileConfig1[0] == '{' && string(jsonSourceIPPersistenceLoadBalancerProfileConfig1) == string(jsonZeroSourceIPPersistenceLoadBalancerProfileConfig1)) {
 			dst.SourceIPPersistenceLoadBalancerProfileConfig1 = nil
 		} else {
 			return nil // data stored in dst.SourceIPPersistenceLoadBalancerProfileConfig1, return on the first match
@@ -194,6 +250,12 @@ func (dst *CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) UnmarshalJ
 		dst.SourceIPPersistenceLoadBalancerProfileConfig1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(CreateLoadBalancerProfileRequestLoadBalancerProfileConfig)")
 }
 
@@ -231,7 +293,7 @@ func (src CreateLoadBalancerProfileRequestLoadBalancerProfileConfig) MarshalJSON
 		return json.Marshal(&src.SourceIPPersistenceLoadBalancerProfileConfig1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableCreateLoadBalancerProfileRequestLoadBalancerProfileConfig struct {

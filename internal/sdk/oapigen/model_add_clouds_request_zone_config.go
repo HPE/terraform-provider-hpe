@@ -72,8 +72,15 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddCloudsRequestZoneConfigAnyOf
 	err = json.Unmarshal(data, &dst.AddCloudsRequestZoneConfigAnyOf)
 	if err == nil {
-		jsonAddCloudsRequestZoneConfigAnyOf, _ := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf)
-		if string(jsonAddCloudsRequestZoneConfigAnyOf) == "{}" { // empty struct
+		jsonAddCloudsRequestZoneConfigAnyOf, merrAddCloudsRequestZoneConfigAnyOf := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf)
+		var zeroAddCloudsRequestZoneConfigAnyOf AddCloudsRequestZoneConfigAnyOf
+		jsonZeroAddCloudsRequestZoneConfigAnyOf, _ := json.Marshal(&zeroAddCloudsRequestZoneConfigAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudsRequestZoneConfigAnyOf != nil || string(jsonAddCloudsRequestZoneConfigAnyOf) == "{}" || (len(jsonAddCloudsRequestZoneConfigAnyOf) > 0 && jsonAddCloudsRequestZoneConfigAnyOf[0] == '{' && string(jsonAddCloudsRequestZoneConfigAnyOf) == string(jsonZeroAddCloudsRequestZoneConfigAnyOf)) {
 			dst.AddCloudsRequestZoneConfigAnyOf = nil
 		} else {
 			return nil // data stored in dst.AddCloudsRequestZoneConfigAnyOf, return on the first match
@@ -85,8 +92,15 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddCloudsRequestZoneConfigAnyOf1
 	err = json.Unmarshal(data, &dst.AddCloudsRequestZoneConfigAnyOf1)
 	if err == nil {
-		jsonAddCloudsRequestZoneConfigAnyOf1, _ := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf1)
-		if string(jsonAddCloudsRequestZoneConfigAnyOf1) == "{}" { // empty struct
+		jsonAddCloudsRequestZoneConfigAnyOf1, merrAddCloudsRequestZoneConfigAnyOf1 := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf1)
+		var zeroAddCloudsRequestZoneConfigAnyOf1 AddCloudsRequestZoneConfigAnyOf1
+		jsonZeroAddCloudsRequestZoneConfigAnyOf1, _ := json.Marshal(&zeroAddCloudsRequestZoneConfigAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudsRequestZoneConfigAnyOf1 != nil || string(jsonAddCloudsRequestZoneConfigAnyOf1) == "{}" || (len(jsonAddCloudsRequestZoneConfigAnyOf1) > 0 && jsonAddCloudsRequestZoneConfigAnyOf1[0] == '{' && string(jsonAddCloudsRequestZoneConfigAnyOf1) == string(jsonZeroAddCloudsRequestZoneConfigAnyOf1)) {
 			dst.AddCloudsRequestZoneConfigAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.AddCloudsRequestZoneConfigAnyOf1, return on the first match
@@ -98,8 +112,15 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddCloudsRequestZoneConfigAnyOf2
 	err = json.Unmarshal(data, &dst.AddCloudsRequestZoneConfigAnyOf2)
 	if err == nil {
-		jsonAddCloudsRequestZoneConfigAnyOf2, _ := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf2)
-		if string(jsonAddCloudsRequestZoneConfigAnyOf2) == "{}" { // empty struct
+		jsonAddCloudsRequestZoneConfigAnyOf2, merrAddCloudsRequestZoneConfigAnyOf2 := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf2)
+		var zeroAddCloudsRequestZoneConfigAnyOf2 AddCloudsRequestZoneConfigAnyOf2
+		jsonZeroAddCloudsRequestZoneConfigAnyOf2, _ := json.Marshal(&zeroAddCloudsRequestZoneConfigAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudsRequestZoneConfigAnyOf2 != nil || string(jsonAddCloudsRequestZoneConfigAnyOf2) == "{}" || (len(jsonAddCloudsRequestZoneConfigAnyOf2) > 0 && jsonAddCloudsRequestZoneConfigAnyOf2[0] == '{' && string(jsonAddCloudsRequestZoneConfigAnyOf2) == string(jsonZeroAddCloudsRequestZoneConfigAnyOf2)) {
 			dst.AddCloudsRequestZoneConfigAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.AddCloudsRequestZoneConfigAnyOf2, return on the first match
@@ -111,8 +132,15 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddCloudsRequestZoneConfigAnyOf3
 	err = json.Unmarshal(data, &dst.AddCloudsRequestZoneConfigAnyOf3)
 	if err == nil {
-		jsonAddCloudsRequestZoneConfigAnyOf3, _ := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf3)
-		if string(jsonAddCloudsRequestZoneConfigAnyOf3) == "{}" { // empty struct
+		jsonAddCloudsRequestZoneConfigAnyOf3, merrAddCloudsRequestZoneConfigAnyOf3 := json.Marshal(dst.AddCloudsRequestZoneConfigAnyOf3)
+		var zeroAddCloudsRequestZoneConfigAnyOf3 AddCloudsRequestZoneConfigAnyOf3
+		jsonZeroAddCloudsRequestZoneConfigAnyOf3, _ := json.Marshal(&zeroAddCloudsRequestZoneConfigAnyOf3)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddCloudsRequestZoneConfigAnyOf3 != nil || string(jsonAddCloudsRequestZoneConfigAnyOf3) == "{}" || (len(jsonAddCloudsRequestZoneConfigAnyOf3) > 0 && jsonAddCloudsRequestZoneConfigAnyOf3[0] == '{' && string(jsonAddCloudsRequestZoneConfigAnyOf3) == string(jsonZeroAddCloudsRequestZoneConfigAnyOf3)) {
 			dst.AddCloudsRequestZoneConfigAnyOf3 = nil
 		} else {
 			return nil // data stored in dst.AddCloudsRequestZoneConfigAnyOf3, return on the first match
@@ -124,8 +152,15 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -134,6 +169,12 @@ func (dst *AddCloudsRequestZoneConfig) UnmarshalJSON(data []byte) error {
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddCloudsRequestZoneConfig)")
 }
 
@@ -159,7 +200,7 @@ func (src AddCloudsRequestZoneConfig) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddCloudsRequestZoneConfig struct {

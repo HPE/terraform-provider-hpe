@@ -51,8 +51,15 @@ func (dst *AddVDIPools200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddVDIPools200ResponseAnyOf
 	err = json.Unmarshal(data, &dst.AddVDIPools200ResponseAnyOf)
 	if err == nil {
-		jsonAddVDIPools200ResponseAnyOf, _ := json.Marshal(dst.AddVDIPools200ResponseAnyOf)
-		if string(jsonAddVDIPools200ResponseAnyOf) == "{}" { // empty struct
+		jsonAddVDIPools200ResponseAnyOf, merrAddVDIPools200ResponseAnyOf := json.Marshal(dst.AddVDIPools200ResponseAnyOf)
+		var zeroAddVDIPools200ResponseAnyOf AddVDIPools200ResponseAnyOf
+		jsonZeroAddVDIPools200ResponseAnyOf, _ := json.Marshal(&zeroAddVDIPools200ResponseAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddVDIPools200ResponseAnyOf != nil || string(jsonAddVDIPools200ResponseAnyOf) == "{}" || (len(jsonAddVDIPools200ResponseAnyOf) > 0 && jsonAddVDIPools200ResponseAnyOf[0] == '{' && string(jsonAddVDIPools200ResponseAnyOf) == string(jsonZeroAddVDIPools200ResponseAnyOf)) {
 			dst.AddVDIPools200ResponseAnyOf = nil
 		} else {
 			return nil // data stored in dst.AddVDIPools200ResponseAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *AddVDIPools200Response) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AddVDIPools200ResponseAnyOf1
 	err = json.Unmarshal(data, &dst.AddVDIPools200ResponseAnyOf1)
 	if err == nil {
-		jsonAddVDIPools200ResponseAnyOf1, _ := json.Marshal(dst.AddVDIPools200ResponseAnyOf1)
-		if string(jsonAddVDIPools200ResponseAnyOf1) == "{}" { // empty struct
+		jsonAddVDIPools200ResponseAnyOf1, merrAddVDIPools200ResponseAnyOf1 := json.Marshal(dst.AddVDIPools200ResponseAnyOf1)
+		var zeroAddVDIPools200ResponseAnyOf1 AddVDIPools200ResponseAnyOf1
+		jsonZeroAddVDIPools200ResponseAnyOf1, _ := json.Marshal(&zeroAddVDIPools200ResponseAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddVDIPools200ResponseAnyOf1 != nil || string(jsonAddVDIPools200ResponseAnyOf1) == "{}" || (len(jsonAddVDIPools200ResponseAnyOf1) > 0 && jsonAddVDIPools200ResponseAnyOf1[0] == '{' && string(jsonAddVDIPools200ResponseAnyOf1) == string(jsonZeroAddVDIPools200ResponseAnyOf1)) {
 			dst.AddVDIPools200ResponseAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.AddVDIPools200ResponseAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *AddVDIPools200Response) UnmarshalJSON(data []byte) error {
 		dst.AddVDIPools200ResponseAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddVDIPools200Response)")
 }
 
@@ -87,7 +107,7 @@ func (src AddVDIPools200Response) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.AddVDIPools200ResponseAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddVDIPools200Response struct {
