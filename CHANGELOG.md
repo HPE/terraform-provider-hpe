@@ -66,6 +66,19 @@ The image sweeper requested no page size at all, so it saw only the first page a
 image beyond it behind.  Which images those were depended on what else existed at the time, since the
 API sorts by name.
 
+### `hpe_morpheus_instance` no longer fails to read on an unexpected boolean value
+
+Some instance config fields are booleans that the API almost always returns as genuine JSON booleans,
+but occasionally as a string.  An unexpected string in one of these fields — for example `createUser`
+as `"yes"` — previously failed the decode of the entire `GET /api/instances/{id}` response, not just
+that one field, so the instance became unreadable: read, refresh and import all failed with a null
+`id` and `name`.
+
+The SDK's boolean decode now tolerates such values.  The common spellings (`yes`/`no`, `on`/`off`,
+`enabled`/`disabled`, and the like) are interpreted, and any other string resolves to `false` rather
+than losing the whole response.  This applies to every boolean field across the SDK, not only the
+instance.  No configuration change is required.
+
 # v2.0.0 Release Notes
 
 This is a major release.  Alongside the Morpheus support this provider already offered, it adds

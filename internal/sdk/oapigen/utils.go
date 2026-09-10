@@ -16,6 +16,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -454,9 +455,24 @@ func decodeUnmarshaler(src reflect.Type, tgt reflect.Type, data any) (any, error
 	return v.UnmarshalMapstructure(data)
 }
 
-// bools are sometimes returned as "on" or "off". This will only apply
-// to the types where the bool value is defined in the OpenAPI spec
-// only as a `boolean`.
+// decodeUIBools coerces a string in a JSON boolean field to a bool.
+//
+// The API returns these fields as genuine JSON booleans almost always, but
+// occasionally as a string — "on"/"off" from some UI-driven paths, and other
+// loose spellings such as "yes". mapstructure's WeaklyTypedInput already accepts
+// "true", "false", "1", "0" and "", but any other string assigned to a bool
+// field fails the decode of the *entire* response, not just that field, leaving
+// the caller with no object at all.
+//
+// This hook makes that decode resilient. It maps the common truthy spellings to
+// true, and resolves everything else — the falsy spellings and, crucially, any
+// unrecognised value — to false, rather than letting a stray value sink the
+// whole response. An unrecognised value is data the caller cannot act on in any
+// case; degrading it to false keeps the rest of the object usable.
+//
+// A field that is genuinely absent is left untouched (the hook only sees values
+// that were sent), so a caller's own default still applies where nothing came
+// back.
 func decodeUIBools(src reflect.Type, tgt reflect.Type, data any) (any, error) {
 	if tgt.Kind() != reflect.Bool {
 		return data, nil
@@ -466,17 +482,15 @@ func decodeUIBools(src reflect.Type, tgt reflect.Type, data any) (any, error) {
 		return data, nil
 	}
 
-	s := data.(string)
-	if s == "on" {
+	switch strings.ToLower(strings.TrimSpace(data.(string))) {
+	case "true", "t", "yes", "y", "on", "enabled", "1":
 		return true, nil
-	}
-
-	if s == "off" {
+	default:
+		// The falsy spellings ("false", "no", "off", "disabled", "0", "") and
+		// every unrecognised string resolve here. The unrecognised case is the
+		// point: before this, such a value failed the whole response.
 		return false, nil
 	}
-
-	// pass the data on
-	return data, nil
 }
 
 func decodeTime(src reflect.Type, tgt reflect.Type, data any) (any, error) {
