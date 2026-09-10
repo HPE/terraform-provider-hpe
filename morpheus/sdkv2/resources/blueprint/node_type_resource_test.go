@@ -3,6 +3,7 @@
 package blueprint_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -32,8 +33,18 @@ func TestAccMorpheusNodeTypeExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// Unique per-run labels. This test and the data-source example test both render
+	// this resource with t.Parallel(); with the example's static labels, concurrent
+	// node type creates race Morpheus's find-or-create of the shared org-labels and
+	// intermittently fail with "labels[N].name must be unique" (or a 500). Deriving
+	// the labels from a per-run token keeps them distinct across tests and re-runs.
+	// See MORPH-16400.
+	labelSuffix := acctest.RandString(8)
+	labels := fmt.Sprintf(`["demo-%s", "node-%s", "tf-%s"]`, labelSuffix, labelSuffix, labelSuffix)
+
 	resourceConfig, err := blueprint.RenderNodeTypeConfig(t, map[string]string{
-		"Name": name,
+		"Name":   name,
+		"Labels": labels,
 	})
 	if err != nil {
 		t.Fatal(err)
