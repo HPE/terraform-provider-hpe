@@ -58,6 +58,11 @@ cluster_affinity_group:
     name:
       computed_optional_required: required
       description: The name of the affinity group.
+      validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: stringvalidator.LengthAtLeast(1)
     affinity_type:
       computed_optional_required: computed_optional
       description: >-

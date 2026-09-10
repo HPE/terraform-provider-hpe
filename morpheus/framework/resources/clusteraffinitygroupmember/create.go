@@ -4,6 +4,7 @@ package clusteraffinitygroupmember
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -49,6 +50,20 @@ func (r *Resource) Create(
 
 	servers, ok := readMembership(ctx, client, clusterID, groupID, &resp.Diagnostics)
 	if !ok {
+		// readMembership swallows a not-found parent without a diagnostic so Read
+		// can treat it as drift. During Create a missing cluster / affinity group
+		// is a hard error, not silent success — otherwise Terraform reports
+		// "Missing Resource State After Create".
+		if !resp.Diagnostics.HasError() {
+			resp.Diagnostics.AddError(
+				"cluster or affinity group not found",
+				fmt.Sprintf(
+					"Cannot add a member: cluster %d / affinity group %d was not found.",
+					clusterID, groupID,
+				),
+			)
+		}
+
 		return
 	}
 

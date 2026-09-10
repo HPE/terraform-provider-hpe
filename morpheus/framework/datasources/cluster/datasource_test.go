@@ -128,6 +128,43 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 	})
 }
 
+func TestAccMorpheusFindClusterByNameCaseInsensitive(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	t.Parallel()
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	// The appliance-seeded cluster is named "Duck". Search for it with a
+	// lowercase "duck": the API matches case-insensitively, and the data source
+	// must not undo that with a case-sensitive client-side re-check
+	// (MORPH-16822).
+	dataSourceConfig, err := testhelpers.RenderExample(t, "example-name.tf.tmpl", "Name", `"duck"`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checkFn := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_cluster.example", "name", "Duck"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + dataSourceConfig,
+				Check:  checkFn,
+			},
+		},
+	})
+}
+
 func TestAccMorpheusFindClusterNotFound(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
