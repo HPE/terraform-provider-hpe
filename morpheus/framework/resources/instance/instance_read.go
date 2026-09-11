@@ -1796,30 +1796,29 @@ func convertAPIVolumesToStateVolumes(
 	return volumes, d
 }
 
-// getConnectionInfo builds the connection_info list
+// getConnectionInfo builds the connection_info list from the instance response.
+//
+// connectionInfo is an optional field on the instance (JSON omitempty): it is
+// absent for instances with no connection addresses -- stopped, failed or
+// not-yet-provisioned instances, or types that do not populate it. An absent
+// (nil), empty, or IP-less connectionInfo therefore means "no connection
+// addresses" -- a valid state that maps to a null list, not a failure. It is a
+// field on the already-fetched instance, not a separate call, so its absence is
+// never a fetch failure and must not fail read or import.
 func getConnectionInfo(
 	instance sdk.GetInstance200ResponseInstance,
 ) (types.List, diag.Diagnostics) {
 	diags := diag.Diagnostics{}
-	cInfo := instance.ConnectionInfo
-	if cInfo == nil {
-		diags.AddError(
-			"cannot get instance connectionInfo",
-			fmt.Sprintf("instance %d GET connectionInfo failed", instanceIDValue(instance)),
-		)
-
-		return types.ListNull(types.StringType), diags
-	}
-
-	if len(cInfo) == 0 {
-		return types.ListNull(types.StringType), diags
-	}
 
 	var vals []attr.Value
-	for _, c := range cInfo {
+	for _, c := range instance.ConnectionInfo {
 		if c.Ip != nil {
 			vals = append(vals, types.StringValue(*c.Ip))
 		}
+	}
+
+	if len(vals) == 0 {
+		return types.ListNull(types.StringType), diags
 	}
 
 	cList, dl := types.ListValue(types.StringType, vals)
