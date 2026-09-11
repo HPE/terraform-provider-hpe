@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint lint-ci test test-json docs sweep build-render-tool
+.PHONY: build linter lint lint-ci value-state-check test test-json docs sweep build-render-tool
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname SWEEP_PREFIX=prefix
 # SWEEP_PREFIX optionally overrides the resource-name prefix the sweeper matches
@@ -33,7 +33,13 @@ linter:
 # target set (linting ~9k generated files is both wrong and prohibitively slow).
 LINT_DIRS = $$(packages="$$(go list -f '{{.ImportPath}} {{.Dir}}' ./...)" && printf '%s\n' "$$packages" | awk 'NF && $$1 !~ /\/internal\/sdk(\/|$$)/ { print $$2 }' | tr '\n' ' ')
 
-lint:
+# Fail the build when a generated framework *Value type is constructed without
+# setting `state` (MORPH-16289): such a value lowers to a null tftypes value and
+# silently discards its attributes. Cheap stdlib AST check; part of every lint.
+value-state-check:
+	go run ./cmd/valuestatecheck ./morpheus/framework
+
+lint: value-state-check
 	set -e; \
 	dirs="$(LINT_DIRS)"; \
 	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
@@ -52,7 +58,7 @@ lint:
 # target keeps the cheap AST linters and drops those four, which cuts peak
 # memory and runs ~3x faster. Keep the --disable list in sync with the lint
 # workflow.
-lint-ci:
+lint-ci: value-state-check
 	set -e; \
 	dirs="$(LINT_DIRS)"; \
 	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \

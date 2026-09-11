@@ -382,19 +382,7 @@ func parseAsData(
 	data.SystemImage = convert.BoolToType(image.SystemImage)
 
 	// tags
-	tags, d := convert.ToSetType(
-		ctx,
-		image.Tags,
-		func(
-			in sdk.GetVirtualImage200ResponseVirtualImageTagsInner,
-		) TagsValue {
-			return TagsValue{
-				Name:  convert.StrToType(in.Name),
-				Value: convert.StrToType(in.Value),
-				state: attr.ValueStateKnown,
-			}
-		},
-	)
+	tags, d := convert.ToSetType(ctx, image.Tags, tagValue)
 	diags.Append(d...)
 	data.Tags = tags
 
@@ -448,6 +436,23 @@ func tenantValue(
 	return TenantsValue{
 		Name:  convert.StrToType(in.Name),
 		Id:    convert.Int64ToType(in.Id),
+		state: attr.ValueStateKnown,
+	}
+}
+
+// tagValue maps an image tag onto the schema's tag object.
+//
+// As with tenantValue, state must be set explicitly. A zero ValueState is
+// ValueStateNull, and a null object lowers to a null tftypes value whatever
+// attributes were set on it -- so Name and Value would be discarded and tags
+// would collide as duplicates. Named rather than inline so the mapping can be
+// tested directly at the tftypes layer, where the fault is visible.
+func tagValue(
+	in sdk.GetVirtualImage200ResponseVirtualImageTagsInner,
+) TagsValue {
+	return TagsValue{
+		Name:  convert.StrToType(in.Name),
+		Value: convert.StrToType(in.Value),
 		state: attr.ValueStateKnown,
 	}
 }
