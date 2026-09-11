@@ -11,7 +11,7 @@ import (
 
 // ApplianceVersionAtLeast reports whether the target Morpheus appliance's build
 // version satisfies the given constraint (for example ">= 9.0.2"). It delegates
-// to the shared morpheus/utils/version library and fails the test if the
+// to the shared morpheus/utils/versioncheck library and fails the test if the
 // appliance version cannot be determined.
 func ApplianceVersionAtLeast(ctx context.Context, t *testing.T, constraint string) bool {
 	t.Helper()

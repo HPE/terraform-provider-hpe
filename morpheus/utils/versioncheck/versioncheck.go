@@ -22,20 +22,27 @@ import (
 // Version so callers do not need to import go-version directly.
 type Version = goversion.Version
 
-// Appliance fetches the target Morpheus appliance's build version via the health
-// API and parses it. An error is returned if the version cannot be retrieved or
-// parsed; callers that treat the version as best-effort (for example plan-time
-// checks) should skip their logic on error rather than fail.
+// Appliance fetches the target Morpheus appliance's build version and parses
+// it. An error is returned if the version cannot be retrieved or parsed;
+// callers that treat the version as best-effort (for example plan-time checks)
+// should skip their logic on error rather than fail.
+//
+// The version is read from GET /api/whoami, which reports the current user
+// alongside the appliance build version and is served to any authenticated
+// caller. GET /api/health also carries the build version, but it is guarded by
+// the admin-health permission, which a token able to manage every gated
+// resource may still lack. The two values come from the same source on the
+// appliance, so whoami is used to make the check independent of permissions.
 func Appliance(ctx context.Context, client *sdk.APIClient) (*Version, error) {
-	resp, hresp, err := client.HealthAPI.ListHealth(ctx).Execute()
+	resp, hresp, err := client.AuthenticationAPI.Whoami(ctx).Execute()
 	if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("query appliance version: %s", errfmt.ErrMsg(err, hresp))
 	}
-	if resp.Health == nil || resp.Health.BuildVersion == nil {
-		return nil, fmt.Errorf("appliance health response did not include a build version")
+	if resp == nil || resp.Appliance == nil || resp.Appliance.BuildVersion == nil {
+		return nil, fmt.Errorf("whoami response did not include an appliance build version")
 	}
 
-	return Parse(*resp.Health.BuildVersion)
+	return Parse(*resp.Appliance.BuildVersion)
 }
 
 // Parse parses a Morpheus build version (for example "9.0.2.18") into a

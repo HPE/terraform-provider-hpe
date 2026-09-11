@@ -54,14 +54,13 @@ func Require(
 //
 // FAIL OPEN when the version cannot be determined.
 //
-// The version comes from GET /api/health, which is permission-guarded: the API
-// only serves it to callers holding the `admin-health` permission at read or
-// full access. A user with every permission needed to manage the gated resource
-// can still be refused the health endpoint, and a reverse proxy or a transient
-// outage can hide it too. Failing closed would turn any of those into a total,
-// unworkaroundable failure against a perfectly healthy 8.0.10+ appliance — the
-// practitioner would have to go and get an unrelated permission granted before
-// Terraform would run at all.
+// The version comes from GET /api/whoami, which any authenticated caller can
+// read, so a permission shortfall is not a reason it goes missing. But a
+// reverse proxy or WAF can still block the path, a transient outage can hide
+// it, and an unexpected response shape can defeat the decode. Failing closed
+// would turn any of those into a total, unworkaroundable failure against a
+// perfectly healthy 8.0.10+ appliance, over an endpoint the operation itself
+// does not need.
 //
 // Failing open is strictly no worse than the pre-gate behaviour: the operation
 // proceeds and, if the appliance really is too old, the API returns the same

@@ -99,9 +99,9 @@ func TestDecideAllowsAtOrAboveConstraint(t *testing.T) {
 }
 
 // TestDecideFailsOpenWhenVersionUnknown is the deliberate policy choice: if the
-// appliance version cannot be read — most plausibly because the API token lacks
-// the admin-health permission that GET /api/health requires — the gate steps
-// aside rather than blocking a possibly healthy appliance.
+// appliance version cannot be read — a proxy blocking GET /api/whoami, a
+// transient outage, or a response the SDK cannot decode — the gate steps aside
+// rather than blocking a possibly healthy appliance.
 func TestDecideFailsOpenWhenVersionUnknown(t *testing.T) {
 	ctx := context.Background()
 
