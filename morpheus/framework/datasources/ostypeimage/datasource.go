@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,51 +73,84 @@ func (d *DataSource) Read(
 	}
 
 	osTypeID := data.OsTypeId.ValueInt64()
-
-	osTypeResp, httpResp, err := client.LibraryAPI.GetOsType(ctx, osTypeID).Execute()
-	if osTypeResp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			summary,
-			fmt.Sprintf("GET os_type %d failed: %s", osTypeID, errfmt.ErrMsg(err, httpResp)),
-		)
-
-		return
-	}
-
-	osType := osTypeResp.OsType
-
 	virtualImageName := data.VirtualImageName.ValueString()
 
-	// Prefer images with a tenant_id (custom images) over system images,
-	// if multiple images have the same virtual_image_name
+	// MORPH-16360: eventual-consistency mitigation. An image created moments
+	// before this read may not yet appear in osType.Images due to read-after-
+	// write timing / 2nd-level cache staleness. Retry the GetOsType + image
+	// match a bounded number of times with an exponential backoff before giving
+	// up. This is a mitigation, not a guaranteed root-cause fix (the staleness
+	// may be API/cache-side).
+	const maxAttempts = 5
+	// Backoff doubles each attempt (500ms, 1s, 2s, 4s), capped at maxBackoff.
+	// This keeps roughly the original ~8s total window while responding faster
+	// when the image appears quickly.
+	const baseBackoff = 500 * time.Millisecond
+	const maxBackoff = 4 * time.Second
+
 	var matchedSystemImageID int64
 	var matchedTenantImageID int64
-	for _, img := range osType.Images {
-		if img.VirtualImageName == nil || img.Id == nil || *img.VirtualImageName != virtualImageName {
-			continue
+
+	for attempt := 1; ; attempt++ {
+		osTypeResp, httpResp, err := client.LibraryAPI.GetOsType(ctx, osTypeID).Execute()
+		if osTypeResp == nil || err != nil || httpResp.StatusCode != http.StatusOK {
+			resp.Diagnostics.AddError(
+				summary,
+				fmt.Sprintf("GET os_type %d failed: %s", osTypeID, errfmt.ErrMsg(err, httpResp)),
+			)
+
+			return
 		}
 
-		if account := img.Account.Get(); account != nil && *account > 0 {
-			matchedTenantImageID = *img.Id
+		osType := osTypeResp.OsType
 
+		// Prefer images with a tenant_id (custom images) over system images,
+		// if multiple images have the same virtual_image_name
+		matchedSystemImageID = 0
+		matchedTenantImageID = 0
+		for _, img := range osType.Images {
+			if img.VirtualImageName == nil || img.Id == nil || *img.VirtualImageName != virtualImageName {
+				continue
+			}
+
+			if account := img.Account.Get(); account != nil && *account > 0 {
+				matchedTenantImageID = *img.Id
+
+				break
+			}
+
+			matchedSystemImageID = *img.Id
+		}
+
+		if matchedSystemImageID != 0 || matchedTenantImageID != 0 {
 			break
 		}
 
-		matchedSystemImageID = *img.Id
+		if attempt >= maxAttempts {
+			resp.Diagnostics.AddError(
+				summary,
+				fmt.Sprintf(
+					"no image with name '%s' found on os_type %d",
+					virtualImageName, osTypeID,
+				),
+			)
+
+			return
+		}
+
+		backoff := baseBackoff << (attempt - 1)
+		if backoff > maxBackoff || backoff <= 0 {
+			backoff = maxBackoff
+		}
+
+		select {
+		case <-ctx.Done():
+			resp.Diagnostics.AddError(summary, ctx.Err().Error())
+
+			return
+		case <-time.After(backoff):
+		}
 	}
-
-	if matchedSystemImageID == 0 && matchedTenantImageID == 0 {
-		resp.Diagnostics.AddError(
-			summary,
-			fmt.Sprintf(
-				"no image with name '%s' found on os_type %d",
-				virtualImageName, osTypeID,
-			),
-		)
-
-		return
-	}
-
 	preferredImageID := matchedSystemImageID
 	if matchedTenantImageID > 0 {
 		preferredImageID = matchedTenantImageID
@@ -127,7 +161,7 @@ func (d *DataSource) Read(
 		resp.Diagnostics.AddError(
 			summary,
 			fmt.Sprintf("GET os_type_image %d failed: %s",
-				matchedSystemImageID, errfmt.ErrMsg(imgErr, imgHTTPResp)),
+				preferredImageID, errfmt.ErrMsg(imgErr, imgHTTPResp)),
 		)
 
 		return

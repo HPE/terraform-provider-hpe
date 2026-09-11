@@ -79,6 +79,27 @@ The SDK's boolean decode now tolerates such values.  The common spellings (`yes`
 than losing the whole response.  This applies to every boolean field across the SDK, not only the
 instance.  No configuration change is required.
 
+### Morpheus data source lookups no longer fail silently or truncate results
+
+`hpe_morpheus_policies` now walks every page before applying its filters.  It previously fetched only
+the first hundred policies, so on a busy appliance a newly created policy could fall beyond the first
+page and never match.  The underlying policy config is also decoded leniently, so listing no longer
+fails when the API returns a field such as `maxCores` as a number in one policy and a string in
+another.
+
+`hpe_morpheus_key_pair` now looks the key pair up by its `id` argument.  It previously read the
+internal resource id, which is empty during a data source read, so an `id`-only lookup fell through to
+the "cannot be read without name or id" path.
+
+`hpe_morpheus_os_type_image` retries the lookup briefly (an exponential backoff over roughly eight
+seconds) to tolerate the read-after-write staleness of an image created moments earlier.
+
+**Behavior change.**  `hpe_morpheus_instance_type` and `hpe_morpheus_storage_volume_type` now return
+an error when the requested instance type or storage volume type does not exist, instead of silently
+returning empty state.  A data source is expected to describe something that exists; the previous
+silent-empty result left downstream references reading zero values.  Configurations that relied on the
+old behavior will now surface an error.
+
 # v2.0.0 Release Notes
 
 This is a major release.  Alongside the Morpheus support this provider already offered, it adds

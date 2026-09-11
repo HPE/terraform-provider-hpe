@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package storage
 
@@ -104,7 +104,9 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-16205: a non-existent id/name must surface an error rather
+			// than silently returning no state.
+			return diag.Errorf("storage volume type not found (id=%d, name=%q)", id, name)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)
