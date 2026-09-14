@@ -9,9 +9,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/tenant"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	dstenant "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/tenant"
-	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/tenant"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
@@ -31,34 +31,31 @@ func TestAccMorpheusDataSourceTenantExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	subdomain := "tf" + acctest.RandStringFromCharSet(12, acctest.CharSetAlpha)
 
-	var dependenciesConfig string
-
-	// Need a role to create a tenant.
-	// Although they're guarantted to exist,
-	// we want to avoid using the admin roles provided by the Morpheus appliance.
-	if currentDependency, err := role.RenderRoleTenantConfig(t, map[string]string{
+	// Create a tenant (and its base role) as a dependency so we can test
+	// searching by name. The name of the master tenant is not guaranteed across
+	// appliances, so we prefer to create one.
+	roleConfig, err := role.RenderRoleTenantConfig(t, map[string]string{
 		"Name": name,
-	}); err != nil {
+	})
+	if err != nil {
 		t.Fatal(err)
-	} else {
-		dependenciesConfig += currentDependency
 	}
 
-	// Create a tenant as a dependency so we can test searching by name.
-	// The name of the master tenant is not guaranteed to be the same across
-	// different Morpheus appliances, so we prefer to create one for testing.
-	if currentDependency, err := tenant.RenderTenantConfig(t, map[string]string{
+	tenantConfig, err := tenant.RenderTenantConfig(t, map[string]string{
 		"Name":       name,
-		"BaseRoleId": "resource.hpe_morpheus_role.example.id",
-	}); err != nil {
+		"Subdomain":  subdomain,
+		"BaseRoleId": "hpe_morpheus_role.example.id",
+	})
+	if err != nil {
 		t.Fatal(err)
-	} else {
-		dependenciesConfig += currentDependency
 	}
+
+	dependenciesConfig := roleConfig + tenantConfig
 
 	datasourceConfig, err := dstenant.RenderTenantConfig(t, map[string]string{
-		"Name": "resource.hpe_morpheus_tenant.tf_example_tenant.name",
+		"Name": "resource.hpe_morpheus_tenant.example.name",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -75,25 +72,25 @@ func TestAccMorpheusDataSourceTenantExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_tenant.example",
 			"id",
-			"hpe_morpheus_tenant.tf_example_tenant",
+			"hpe_morpheus_tenant.example",
 			"id",
 		),
 		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_tenant.example",
 			"account_number",
-			"hpe_morpheus_tenant.tf_example_tenant",
+			"hpe_morpheus_tenant.example",
 			"account_number",
 		),
 		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_tenant.example",
 			"account_name",
-			"hpe_morpheus_tenant.tf_example_tenant",
+			"hpe_morpheus_tenant.example",
 			"account_name",
 		),
 		resource.TestCheckResourceAttrPair(
 			"data.hpe_morpheus_tenant.example",
 			"customer_number",
-			"hpe_morpheus_tenant.tf_example_tenant",
+			"hpe_morpheus_tenant.example",
 			"customer_number",
 		),
 	}

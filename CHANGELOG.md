@@ -139,6 +139,42 @@ is preserved rather than overwritten.
 `hpe_morpheus_instance_clone` no longer recovers `source_instance_id` from `config.cloneInstanceId`,
 as a write-only attribute must be null in state.
 
+### hpe_morpheus_tenant ported to the plugin framework
+
+`hpe_morpheus_tenant` has been reimplemented on the Terraform plugin framework (previously
+terraform-plugin-sdk/v2). The cutover is automatic: existing state is upgraded in place on the next
+`terraform plan`/`apply`, with no manual `state rm` or re-import required.
+
+The resource `id` changes type from **string to number**. State is migrated automatically by a schema
+upgrade, but any configuration that consumed `hpe_morpheus_tenant.<name>.id` as a string (for example
+in string interpolation) may need adjusting.
+
+New capabilities: `parent_id` creates a tenant under a nominated parent when authenticated as
+the master tenant (changing it forces replacement); `remove_resources` de-provisions the tenant's
+managed instances on destroy when set to `true` (default `false`); `destroy` now waits for the
+asynchronous tenant deletion to complete. Additional read-only attributes are now populated:
+`master`, `parent_name`, `parent_subdomain`, `external_id`, `base_role_name`, `instance_count`,
+`user_count`, `date_created`, and `last_updated`. `currency` is validated at plan time against the
+appliance's live currency list, and `subdomain` is validated for format and the not-all-numeric rule.
+
+`parent_id` requires Morpheus 8.1.0 or later, which introduced the tenant hierarchy. On earlier
+appliances — which silently ignore a nominated parent — the provider now refuses a configuration
+that sets `parent_id` at plan time with a diagnostic naming the required version, rather than
+applying it and then forcing a replacement on every subsequent plan. On those appliances
+`parent_id`, `parent_name` and `parent_subdomain` are `null`. All other tenant functionality is
+unchanged across supported Morpheus versions.
+
+Tenant validation failures that older appliances report as HTTP 200 with `success: false` (for
+example an invalid `base_role_id`) are now surfaced with the API's own message instead of a
+generic "Account ID is nil" error.
+
+The master tenant may now be updated when authenticated as the master tenant, matching what
+Morpheus allows; only disabling it (`enabled = false`), assigning it a `base_role_id`, and
+destroying it are refused, each with a diagnostic naming the restriction.
+
+`description` can now be cleared by removing it from the configuration. The SDKv2 resource carried
+the previous description forward when it was omitted, so it could never be unset.
+
 ### tfmigrator release artifacts renamed
 
 The migration tool's release artifacts are now published as `tfmigrator_*` rather than

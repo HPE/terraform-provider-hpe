@@ -1,5 +1,10 @@
-resource "hpe_morpheus_tenant" "tf_example_tenant" {
-  name            = "tftenant"
+# Look up the base role by name using the role data source.
+data "hpe_morpheus_role" "example" {
+  name = "Tenant Admin"
+}
+
+resource "hpe_morpheus_tenant" "example" {
+  name            = "Example Tenant"
   description     = "Terraform example tenant"
   enabled         = true
   subdomain       = "tfexample"

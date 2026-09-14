@@ -23,3 +23,15 @@ const NetworkDeleteTimeout = 5 * time.Minute
 // whose behaviour the provider can rely on, so that — not 8.0.8 — is the gate.
 // (MORPH-15506.)
 const AffinityGroupMinVersion = ">= 8.0.10"
+
+// TenantParentMinVersion is the minimum Morpheus appliance version on which
+// the tenant resource's parent_id attribute is honoured.
+//
+// Nominating a parent tenant on create (parentAccount.id) and the parent
+// object in the tenant response both arrived with the tenant-hierarchy feature
+// ("Tenants of Tenants") in 8.1.0 and were never backported to 8.0.x. Before
+// 8.1.0 the API silently ignores parentAccount and returns no parent, so a
+// configured parent_id can never be reflected in state: the apply fails with
+// an inconsistent-result error and every subsequent plan forces a replacement.
+// The gate turns that loop into a single, named diagnostic.
+const TenantParentMinVersion = ">= 8.1.0"

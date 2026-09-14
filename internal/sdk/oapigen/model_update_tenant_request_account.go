@@ -27,8 +27,16 @@ type UpdateTenantRequestAccount struct {
 	Role        *UpdateTenantRequestAccountRole `json:"role,omitempty"`
 	// The subdomain. This will be part of the login URL and username for sub tenant users.
 	Subdomain NullableString `json:"subdomain,omitempty"`
-	// Currency Code (ISO 4217)
-	Currency             *string                `json:"currency,omitempty"`
+	// Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP). Must be a currency enabled on the target appliance; see the `currencies` option source (GET /api/options/currencies) for the live set. See CurrencyCode for the canonical ISO 4217 list.
+	Currency *string `json:"currency,omitempty"`
+	// Whether the tenant is enabled. Disabled tenants cannot be logged into.
+	Active *bool `json:"active,omitempty"`
+	// An optional field that can be used for billing and accounting.
+	AccountNumber NullableString `json:"accountNumber,omitempty"`
+	// An optional field that can be used for billing and accounting.
+	AccountName NullableString `json:"accountName,omitempty"`
+	// An optional field that can be used for billing and accounting.
+	CustomerNumber       NullableString         `json:"customerNumber,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -58,6 +66,18 @@ func (o UpdateTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Currency) {
 		toSerialize["currency"] = o.Currency
+	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
+	}
+	if o.AccountNumber.IsSet() {
+		toSerialize["accountNumber"] = o.AccountNumber.Get()
+	}
+	if o.AccountName.IsSet() {
+		toSerialize["accountName"] = o.AccountName.Get()
+	}
+	if o.CustomerNumber.IsSet() {
+		toSerialize["customerNumber"] = o.CustomerNumber.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

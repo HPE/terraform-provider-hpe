@@ -62,5 +62,12 @@ func init() {
 			http.StatusNotFound,
 			http.StatusForbidden,
 		),
+		// Morpheus refuses to delete a role that is any tenant's base role
+		// ("Role is already in use"), and the tenant tests create tenants
+		// whose base role is a test role. Sweep tenants first so their roles
+		// can go in the same run.
+		testsweep.WithDependencies[sdk.ListRoles200ResponseAllOfRolesInner](
+			"hpe_morpheus_tenant",
+		),
 	)
 }

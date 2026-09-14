@@ -1,9 +1,21 @@
-resource "hpe_morpheus_tenant" "tf_example_tenant" {
+{{- if .RoleName -}}
+# Look up the base role by name using the role data source.
+data "hpe_morpheus_role" "example" {
+  name = "{{.RoleName}}"
+}
+
+{{ end -}}
+resource "hpe_morpheus_tenant" "{{.ResourceLabel}}" {
   name            = "{{.Name}}"
+{{- if .Description }}
   description     = "{{.Description}}"
+{{- end }}
   enabled         = {{.Enabled}}
   subdomain       = "{{.Subdomain}}"
   base_role_id    = {{.BaseRoleId}}
+{{- if .ParentId }}
+  parent_id = {{ .ParentId }}
+{{- end }}
   currency        = "{{.Currency}}"
   account_number  = "{{.AccountNumber}}"
   account_name    = "{{.AccountName}}"

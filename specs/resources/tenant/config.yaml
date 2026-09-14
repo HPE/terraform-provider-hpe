@@ -1,0 +1,143 @@
+tenant:
+  description: |-
+    Manages a Morpheus tenant (account). A tenant is an isolated administrative
+    boundary with its own users, roles, groups and resources.
+
+    Creating a tenant has significant side effects: Morpheus generates a Cypher
+    master key for the tenant, creates its initial groups, and clones every
+    multitenant user role into the new tenant. Changing base_role_id propagates
+    the base role across the tenant's derived roles, and changing currency
+    restarts account usage calculation asynchronously.
+  templates:
+    remove_resources:
+      bool:
+        computed_optional_required: optional
+        description: |-
+          Delete-time only. When true, destroying this resource also
+          de-provisions the tenant's managed instances (removing the underlying
+          VMs). When false (the default), the tenant is removed from Morpheus but
+          its provisioned resources are left running. Has no effect on create or
+          update.
+  moves:
+    - account: ""                       # unnest the request/response wrapper
+    - active: enabled                   # rename to match the existing attribute name
+    - role.id: base_role_id             # flatten role{} -> scalar
+    - role.authority: base_role_name
+    - parent_account.id: parent_id
+    - parent.name: parent_name          # flatten parent{} read object
+    - parent.subdomain: parent_subdomain
+    - stats.instance_count: instance_count
+    - stats.user_count: user_count
+    - template-remove_resources: remove_resources
+  removes:
+    - success                           # top-level API envelope flag
+    - role                              # leftover container (role.description unused)
+    - parent                            # leftover container (parent.id not exposed)
+    - parent_account                    # leftover container after id extracted
+    - stats                             # leftover container after counts extracted
+  overrides:
+    id:
+      computed_optional_required: computed
+      description: The ID of the tenant.
+      state_for_unknown: true
+    name:
+      computed_optional_required: required
+      description: The name of the tenant.
+    description:
+      computed_optional_required: optional
+      description: The description of the tenant.
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the tenant is enabled. Disabled tenants cannot be logged into.
+      default: true
+    subdomain:
+      computed_optional_required: computed_optional
+      description: The custom login subdomain (login URL prefix) for sub-tenant users. May contain only letters, numbers, and hyphens, must not start or end with a hyphen, must be 1-63 characters long, cannot be entirely numeric, and must be globally unique across all tenants.
+      state_for_unknown: true
+      regex_matches:
+        regex: '^(?:[A-Za-z0-9][A-Za-z0-9-]{0,61}[A-Za-z0-9]|[A-Za-z0-9])$'
+        message: 'must be 1-63 characters of letters, numbers, and hyphens, and must not start or end with a hyphen'
+      validators:
+        # RegexMatches is unanchored, so requiring a single non-digit (\D)
+        # enforces "not entirely numeric" (RE2 has no lookahead to AND this into
+        # the format pattern above; both validators must pass).
+        - custom:
+            imports:
+              - path: regexp
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: |-
+              stringvalidator.RegexMatches(
+                regexp.MustCompile(`\D`),
+                "must not be entirely numeric",
+              )
+    currency:
+      computed_optional_required: computed_optional
+      description: Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP). Must be a currency enabled on the target appliance; validated at plan time against the live currency list.
+      default: USD
+      state_for_unknown: true
+    base_role_id:
+      computed_optional_required: computed_optional
+      description: >-
+        The ID of the tenant's base role, which restricts the access available
+        to this tenant's roles and users. The role must be one of the parent
+        tenant's available account roles (the parent is parent_id, or the
+        authenticated user's tenant when that is omitted); supplying an ID that
+        is not available to the parent fails with an "Invalid role id" error.
+        When omitted, Morpheus assigns the master tenant's default account role
+        if the parent is the master tenant -- so base_role_id can be computed to
+        a role you did not set -- and otherwise fails with a "Role is required"
+        error. (Morpheus versions before 8.1.0 have no tenant hierarchy and
+        always assign the default account role when base_role_id is omitted.)
+      state_for_unknown: true
+    base_role_name:
+      computed_optional_required: computed
+      description: The authority (name) of the tenant's base role.
+    parent_id:
+      computed_optional_required: computed_optional
+      description: >-
+        The ID of the parent tenant. When set on create, the new tenant is
+        created under this parent; this is only permitted when authenticated as
+        the master tenant, and base_role_id must be a base role valid for the
+        nominated parent. When omitted, it defaults to (and is computed as) the
+        tenant of the authenticated user. Bound on create only, so changing it
+        forces a new resource. Requires Morpheus 8.1.0 or later: earlier
+        appliances have no tenant hierarchy, so setting parent_id is refused at
+        plan time and, when omitted, it is computed as null.
+      requires_replace: true
+      state_for_unknown: true
+    account_number:
+      computed_optional_required: computed_optional
+      description: An optional field that can be used for billing and accounting.
+      state_for_unknown: true
+    account_name:
+      computed_optional_required: computed_optional
+      description: An optional field that can be used for billing and accounting.
+      state_for_unknown: true
+    customer_number:
+      computed_optional_required: computed_optional
+      description: An optional field that can be used for billing and accounting.
+      state_for_unknown: true
+    master:
+      computed_optional_required: computed
+      description: Whether this is the master tenant.
+    parent_name:
+      computed_optional_required: computed
+      description: The name of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+    parent_subdomain:
+      computed_optional_required: computed
+      description: The subdomain of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+    external_id:
+      computed_optional_required: computed
+      description: The external ID of the tenant.
+    instance_count:
+      computed_optional_required: computed
+      description: The number of instances in the tenant.
+    user_count:
+      computed_optional_required: computed
+      description: The number of users in the tenant.
+    date_created:
+      computed_optional_required: computed
+      description: The date the tenant was created.
+    last_updated:
+      computed_optional_required: computed
+      description: The date the tenant was last updated.
