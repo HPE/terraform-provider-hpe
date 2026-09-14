@@ -7836,31 +7836,31 @@ func (r ApiListVirtualImagesRequest) FilterType(filterType string) ApiListVirtua
 	return r
 }
 
-// Filter by image type code. Repeatable — supply the parameter more than once to match any of several types, for example &#x60;?imageType&#x3D;qcow2&amp;imageType&#x3D;raw&#x60;.  Some values are aliases matching several underlying types rather than an exact code: &#x60;vmware&#x60; matches &#x60;vmware&#x60;, &#x60;ovf&#x60; and &#x60;vmdk&#x60;; &#x60;virtualbox&#x60; matches &#x60;vdi&#x60; and &#x60;virtualbox&#x60;. Any other value, such as &#x60;qcow2&#x60;, &#x60;raw&#x60; or &#x60;iso&#x60;, is matched exactly.
+// Filter by image type code. Repeatable — supply the parameter more than once to match any of several types, for example &#x60;?imageType&#x3D;qcow2&amp;imageType&#x3D;raw&#x60;.  Some values are aliases matching several underlying types rather than an exact code: &#x60;vmware&#x60; matches &#x60;vmware&#x60;, &#x60;ovf&#x60; and &#x60;vmdk&#x60;; &#x60;virtualbox&#x60; matches &#x60;vdi&#x60; and &#x60;virtualbox&#x60;. Any other value, such as &#x60;qcow2&#x60;, &#x60;raw&#x60; or &#x60;iso&#x60;, is matched exactly.  Optional. When omitted, images of every type are returned.
 func (r ApiListVirtualImagesRequest) ImageType(imageType []string) ApiListVirtualImagesRequest {
 	r.imageType = &imageType
 	return r
 }
 
-// Filter by virtual image ID. Repeatable — supply the parameter more than once to fetch several images in one request, for example &#x60;?id&#x3D;170332&amp;id&#x3D;127280&#x60;.
+// Filter by virtual image ID. Repeatable — supply the parameter more than once to fetch several images in one request, for example &#x60;?id&#x3D;170332&amp;id&#x3D;127280&#x60;.  Optional. When omitted, images are not restricted by ID and all images matching the other filters are returned; an absent &#x60;id&#x60; is not an error.
 func (r ApiListVirtualImagesRequest) Id(id []int64) ApiListVirtualImagesRequest {
 	r.id = &id
 	return r
 }
 
-// Filter by description. Repeatable — supply the parameter more than once to match any of several descriptions.  Matching is a case-insensitive SQL &#x60;like&#x60;, so &#x60;%&#x60; acts as a wildcard, for example &#x60;?description&#x3D;ubuntu%&#x60;. This is not a regular expression.
+// Filter by description. Repeatable — supply the parameter more than once to match any of several descriptions.  Matching is a case-insensitive SQL &#x60;like&#x60;, so &#x60;%&#x60; acts as a wildcard, for example &#x60;?description&#x3D;ubuntu%&#x60;. This is not a regular expression.  Optional. When omitted, no description filter is applied.
 func (r ApiListVirtualImagesRequest) Description(description []string) ApiListVirtualImagesRequest {
 	r.description = &description
 	return r
 }
 
-// Filter on whether an image is a system image. &#x60;true&#x60; returns only system images, &#x60;false&#x60; only non-system images.  Takes precedence over &#x60;filterType&#x60;: if this parameter is supplied, &#x60;filterType&#x60; is ignored entirely.
+// Filter on whether an image is a system image. &#x60;true&#x60; returns only system images, &#x60;false&#x60; only non-system images.  Optional. When omitted, this filter is not applied and the images considered are decided by &#x60;includeSystemImage&#x60; if supplied, otherwise by &#x60;filterType&#x60;. When supplied, whether &#x60;true&#x60; or &#x60;false&#x60;, it takes precedence over both &#x60;includeSystemImage&#x60; and &#x60;filterType&#x60;, which are then ignored.
 func (r ApiListVirtualImagesRequest) SystemImage(systemImage bool) ApiListVirtualImagesRequest {
 	r.systemImage = &systemImage
 	return r
 }
 
-// Include system images alongside non-system images. System images are excluded unless this is &#x60;true&#x60;.  Takes precedence over &#x60;filterType&#x60;: if this parameter is supplied, &#x60;filterType&#x60; is ignored. &#x60;systemImage&#x60; in turn takes precedence over this parameter when both are supplied.
+// Include system images alongside non-system images. &#x60;true&#x60; includes them; &#x60;false&#x60; excludes them.  Optional. Note that omitting this parameter is not the same as setting it to &#x60;false&#x60;. When it is omitted (and &#x60;systemImage&#x60; is also omitted), the &#x60;filterType&#x60; parameter decides which images are considered — see &#x60;filterType&#x60;. When it is supplied, whether &#x60;true&#x60; or &#x60;false&#x60;, it takes precedence over &#x60;filterType&#x60;, which is then ignored. &#x60;systemImage&#x60; in turn takes precedence over this parameter when both are supplied.
 func (r ApiListVirtualImagesRequest) IncludeSystemImage(includeSystemImage bool) ApiListVirtualImagesRequest {
 	r.includeSystemImage = &includeSystemImage
 	return r
