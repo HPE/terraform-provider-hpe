@@ -45,10 +45,37 @@ func TestAccMorpheusNodeTypeExampleOk(t *testing.T) {
 	resourceConfig, err := blueprint.RenderNodeTypeConfig(t, map[string]string{
 		"Name":   name,
 		"Labels": labels,
+		// MORPH-11006 regression: exercise file_template_ids (and
+		// script_template_ids) with a known element count via self-contained
+		// fixtures. Before the shared read-merge fix these lists read back
+		// zero-padded (e.g. [0, x]) producing a fake, never-converging drift.
+		"FileTemplateIds":   "[hpe_morpheus_file_template.regression.id]",
+		"ScriptTemplateIds": "[hpe_morpheus_script_template.regression.id]",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Self-contained template fixtures, salted per run to avoid unique-name
+	// collisions across parallel runs (see MORPH-16400).
+	resourceConfig += fmt.Sprintf(`
+	resource "hpe_morpheus_file_template" "regression" {
+	  name         = "tf-node-file-%[1]s"
+	  file_name    = "regression.cnf"
+	  phase        = "provision"
+	  file_content = "regression"
+	}
+
+	resource "hpe_morpheus_script_template" "regression" {
+	  name           = "tf-node-script-%[1]s"
+	  script_type    = "bash"
+	  script_phase   = "provision"
+	  script_content = <<EOF
+#!/bin/bash
+echo regression
+EOF
+	}
+	`, labelSuffix)
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -91,6 +118,20 @@ func TestAccMorpheusNodeTypeExampleOk(t *testing.T) {
 			"hpe_morpheus_node_type.example",
 			"virtual_image_id",
 			"10",
+		),
+
+		// MORPH-11006 regression: file_template_ids / script_template_ids must
+		// read back exactly as declared (no zero-pad, no doubling). Combined with
+		// the PlanOnly step below this proves convergence.
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_node_type.example",
+			"file_template_ids.#",
+			"1",
+		),
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_node_type.example",
+			"script_template_ids.#",
+			"1",
 		),
 	}
 

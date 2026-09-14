@@ -97,6 +97,7 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 			"visibility",
 			"public",
 		),
+		// MORPH-8207 regression: tenants must round-trip (apply then plan-empty).
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_resource_pool_group.example",
 			"tenant_ids.0",
