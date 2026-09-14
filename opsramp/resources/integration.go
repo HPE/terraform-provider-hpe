@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
 
@@ -20,6 +21,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+)
+
+const (
+	IntegrationDeletionPoolTime = 15  // seconds
+	IntegrationDeletionMaxTime  = 180 // seconds
 )
 
 // Ensure implementation satisfies the expected interfaces
@@ -44,6 +50,10 @@ type IntegrationModel struct {
 	Client                       types.String `tfsdk:"client"`
 	Status                       types.String `tfsdk:"status"`
 	BypassResourceReconciliation types.Bool   `tfsdk:"bypass_resource_reconciliation"`
+
+	IPAddress         types.String                       `tfsdk:"ip_address"`
+	CredentialSet     types.String                       `tfsdk:"credential_set"`
+	DiscoveryProfiles []IntegrationDiscoveryProfileModel `tfsdk:"discovery_profiles"`
 
 	// Alert source for event integrations (CUSTOM-EVENT)
 	AlertSourceID types.Int64 `tfsdk:"alert_source_id"`
@@ -115,6 +125,36 @@ type IntegrationOutboundModel struct {
 	MapAttributes []IntegrationMapAttributes `tfsdk:"map_attributes"`
 }
 
+type IntegrationDiscoveryProfileModel struct {
+	Name            types.String                       `tfsdk:"name"`
+	ScanNow         types.Bool                         `tfsdk:"scan_now"`
+	MgmtProfileUUID types.String                       `tfsdk:"mgmt_profile_uuid"`
+	Schedule        *IntegrationDiscoveryScheduleModel `tfsdk:"schedule"`
+	Policy          *IntegrationDiscoveryPolicyModel   `tfsdk:"policy"`
+}
+
+type IntegrationDiscoveryScheduleModel struct {
+	PatternType types.String `tfsdk:"pattern_type"`
+	Pattern     types.String `tfsdk:"pattern"`
+	StartTime   types.String `tfsdk:"start_time"`
+}
+
+type IntegrationDiscoveryPolicyModel struct {
+	EntityType types.String                      `tfsdk:"entity_type"`
+	MatchType  types.String                      `tfsdk:"match_type"`
+	Rules      []IntegrationDiscoveryRuleModel   `tfsdk:"rules"`
+	Actions    []IntegrationDiscoveryActionModel `tfsdk:"actions"`
+}
+
+type IntegrationDiscoveryRuleModel struct {
+	FilterType   types.String   `tfsdk:"filter_type"`
+	ResourceType []types.String `tfsdk:"resource_type"`
+}
+
+type IntegrationDiscoveryActionModel struct {
+	Action types.String `tfsdk:"action"`
+}
+
 // NewIntegration creates a new instance of the resource.
 func NewIntegration() resource.Resource {
 	return &IntegrationResource{}
@@ -181,6 +221,100 @@ func (r *IntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 			"bypass_resource_reconciliation": schema.BoolAttribute{
 				Optional:            true,
 				MarkdownDescription: "Whether to bypass resource reconciliation for this integration.",
+			},
+			"ip_address": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "The target endpoint IP address for configuration-based integrations (for example, VMWARE).",
+			},
+			"credential_set": schema.StringAttribute{
+				Optional:            true,
+				MarkdownDescription: "The credential set name used by configuration-based integrations (for example, VMWARE).",
+			},
+			"discovery_profiles": schema.ListNestedAttribute{
+				Optional:            true,
+				MarkdownDescription: "Discovery profiles for configuration-based integrations. These are sent in the install/update payload under discoveryProfiles.",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"name": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "Display name of the discovery profile.",
+						},
+						"scan_now": schema.BoolAttribute{
+							Optional:            true,
+							Computed:            true,
+							Default:             booldefault.StaticBool(false),
+							MarkdownDescription: "Whether to run discovery immediately after creating/updating the profile.",
+						},
+						"mgmt_profile_uuid": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "Management profile UUID used for discovery.",
+						},
+						"schedule": schema.SingleNestedAttribute{
+							Optional:            true,
+							MarkdownDescription: "Discovery schedule configuration.",
+							Attributes: map[string]schema.Attribute{
+								"pattern_type": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "Schedule pattern type (for example, MONTHLY, DAILY, HOURLY).",
+								},
+								"pattern": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "Schedule pattern value used by pattern_type.",
+								},
+								"start_time": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "Discovery start time as expected by OpsRamp (for example, 18).",
+								},
+							},
+						},
+						"policy": schema.SingleNestedAttribute{
+							Optional:            true,
+							MarkdownDescription: "Discovery policy for deciding which discovered entities are managed.",
+							Attributes: map[string]schema.Attribute{
+								"entity_type": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "Entity type targeted by the policy (for example, `ALL`, `ANY`).",
+									Validators: []validator.String{
+										stringvalidator.OneOf("ALL", "ANY"),
+									},
+								},
+								"match_type": schema.StringAttribute{
+									Required:            true,
+									MarkdownDescription: "Rule match type (for example, ANY or ALL).",
+								},
+								"rules": schema.ListNestedAttribute{
+									Optional:            true,
+									MarkdownDescription: "Discovery filter rules.",
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"filter_type": schema.StringAttribute{
+												Optional:            true,
+												MarkdownDescription: "Filter type (for example, ANY_CLOUD_RESOURCE).",
+											},
+											"resource_type": schema.ListAttribute{
+												Optional:            true,
+												ElementType:         types.StringType,
+												MarkdownDescription: "Optional resource types used by the filter.",
+											},
+										},
+									},
+								},
+								"actions": schema.ListNestedAttribute{
+									Optional:            true,
+									MarkdownDescription: "Discovery actions applied when rules match.",
+									NestedObject: schema.NestedAttributeObject{
+										Attributes: map[string]schema.Attribute{
+											"action": schema.StringAttribute{
+												Required:            true,
+												MarkdownDescription: "Action value to apply (for example, `MANAGE DEVICE`).",
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 			"inbound": schema.SingleNestedAttribute{
 				Optional:            true,
@@ -375,6 +509,9 @@ func (r *IntegrationResource) Schema(_ context.Context, _ resource.SchemaRequest
 									Computed:            true,
 									Default:             stringdefault.StaticString("ALERT"),
 									MarkdownDescription: "The OpsRamp entity type this mapping applies to (e.g. `ALERT`, `INCIDENT`, `SERVICEREQUEST`, `PROBLEM`, `CHANGE`, `TASK`). Defaults to `ALERT`.",
+									Validators: []validator.String{
+										stringvalidator.OneOf("ALERT", "INCIDENT", "SERVICEREQUEST", "PROBLEM", "CHANGE", "TASK"),
+									},
 								},
 								"attribute_values": schema.MapAttribute{
 									Optional:            true,
@@ -477,6 +614,9 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 		Category:                  plan.Category.ValueString(),
 		Profile:                   &profile,
 		MultiAppsDiscoveryEnabled: plan.BypassResourceReconciliation.ValueBool(),
+		IPAddress:                 plan.IPAddress.ValueString(),
+		CredentialSet:             plan.CredentialSet.ValueString(),
+		DiscoveryProfiles:         integrationDiscoveryProfilesToAPI(plan.DiscoveryProfiles),
 	}
 
 	// For CUSTOM-EVENT integrations, include alertSource
@@ -517,7 +657,8 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 	if plan.Inbound != nil {
 		if err := r.configureInbound(tenantId, installed.ID, application, plan.Inbound, installed); err != nil {
 			resp.Diagnostics.AddError("Inbound Configuration Error", err.Error())
-			resp.State.Set(ctx, &plan)
+			diags = resp.State.Set(ctx, &plan)
+			resp.Diagnostics.Append(diags...)
 
 			return
 		}
@@ -538,7 +679,8 @@ func (r *IntegrationResource) Create(ctx context.Context, req resource.CreateReq
 	if plan.Outbound != nil {
 		if err := r.configureOutbound(tenantId, installed.ID, plan.Outbound); err != nil {
 			resp.Diagnostics.AddError("Outbound Configuration Error", err.Error())
-			resp.State.Set(ctx, &plan)
+			diags = resp.State.Set(ctx, &plan)
+			resp.Diagnostics.Append(diags...)
 
 			return
 		}
@@ -849,6 +991,193 @@ func (r *IntegrationResource) buildMappingAttributes(
 	return client.MappingAttributesRequest{InboundConfig: mapAttrs}, nil
 }
 
+func integrationDiscoveryProfilesToAPI(models []IntegrationDiscoveryProfileModel) []client.DiscoveryProfile {
+	if len(models) == 0 {
+		return nil
+	}
+
+	profiles := make([]client.DiscoveryProfile, 0, len(models))
+	for _, m := range models {
+		profile := client.DiscoveryProfile{
+			Name:            m.Name.ValueString(),
+			MgmtProfileUUID: m.MgmtProfileUUID.ValueString(),
+			ScanNow:         m.ScanNow.ValueBool(),
+		}
+
+		if m.Schedule != nil {
+			profile.Schedule = &client.DiscoverySchedule{
+				PatternType: m.Schedule.PatternType.ValueString(),
+				Pattern:     m.Schedule.Pattern.ValueString(),
+				StartTime:   m.Schedule.StartTime.ValueString(),
+			}
+		}
+
+		if m.Policy != nil {
+			policy := &client.DiscoveryPolicy{
+				EntityType: m.Policy.EntityType.ValueString(),
+				MatchType:  m.Policy.MatchType.ValueString(),
+			}
+
+			if len(m.Policy.Rules) > 0 {
+				rules := make([]client.DiscoveryRule, 0, len(m.Policy.Rules))
+				for _, rule := range m.Policy.Rules {
+					apiRule := client.DiscoveryRule{
+						FilterType: rule.FilterType.ValueString(),
+					}
+					if len(rule.ResourceType) > 0 {
+						resourceTypes := make([]string, 0, len(rule.ResourceType))
+						for _, v := range rule.ResourceType {
+							resourceTypes = append(resourceTypes, v.ValueString())
+						}
+						apiRule.ResourceType = resourceTypes
+					}
+					rules = append(rules, apiRule)
+				}
+				policy.Rules = rules
+			}
+
+			if len(m.Policy.Actions) > 0 {
+				actions := make([]client.DiscoveryAction, 0, len(m.Policy.Actions))
+				for _, action := range m.Policy.Actions {
+					actions = append(actions, client.DiscoveryAction{Action: action.Action.ValueString()})
+				}
+				policy.Actions = actions
+			}
+
+			profile.Policy = policy
+		}
+
+		profiles = append(profiles, profile)
+	}
+
+	return profiles
+}
+
+func integrationDiscoveryProfilesToModel(profiles []client.DiscoveryProfile) []IntegrationDiscoveryProfileModel {
+	if len(profiles) == 0 {
+		return nil
+	}
+
+	models := make([]IntegrationDiscoveryProfileModel, 0, len(profiles))
+	for _, p := range profiles {
+		model := IntegrationDiscoveryProfileModel{
+			Name:            types.StringValue(p.Name),
+			ScanNow:         types.BoolValue(p.ScanNow),
+			MgmtProfileUUID: types.StringValue(p.MgmtProfileUUID),
+		}
+
+		if p.Schedule != nil {
+			model.Schedule = &IntegrationDiscoveryScheduleModel{
+				PatternType: types.StringValue(p.Schedule.PatternType),
+				Pattern:     types.StringValue(p.Schedule.Pattern),
+				StartTime:   types.StringValue(p.Schedule.StartTime),
+			}
+		}
+
+		if p.Policy != nil {
+			policy := &IntegrationDiscoveryPolicyModel{
+				EntityType: types.StringValue(p.Policy.EntityType),
+				MatchType:  types.StringValue(p.Policy.MatchType),
+			}
+
+			if len(p.Policy.Rules) > 0 {
+				rules := make([]IntegrationDiscoveryRuleModel, 0, len(p.Policy.Rules))
+				for _, rule := range p.Policy.Rules {
+					modelRule := IntegrationDiscoveryRuleModel{
+						FilterType: types.StringValue(rule.FilterType),
+					}
+					if len(rule.ResourceType) > 0 {
+						resourceTypes := make([]types.String, 0, len(rule.ResourceType))
+						for _, resourceType := range rule.ResourceType {
+							resourceTypes = append(resourceTypes, types.StringValue(resourceType))
+						}
+						modelRule.ResourceType = resourceTypes
+					}
+					rules = append(rules, modelRule)
+				}
+				policy.Rules = rules
+			}
+
+			if len(p.Policy.Actions) > 0 {
+				actions := make([]IntegrationDiscoveryActionModel, 0, len(p.Policy.Actions))
+				for _, action := range p.Policy.Actions {
+					actions = append(actions, IntegrationDiscoveryActionModel{Action: types.StringValue(action.Action)})
+				}
+				policy.Actions = actions
+			}
+
+			model.Policy = policy
+		}
+
+		models = append(models, model)
+	}
+
+	return models
+}
+
+func equalDiscoveryProfiles(a, b []IntegrationDiscoveryProfileModel) bool {
+	if len(a) != len(b) {
+		return false
+	}
+
+	for i := range a {
+		if a[i].Name.ValueString() != b[i].Name.ValueString() ||
+			a[i].ScanNow.ValueBool() != b[i].ScanNow.ValueBool() ||
+			a[i].MgmtProfileUUID.ValueString() != b[i].MgmtProfileUUID.ValueString() {
+			return false
+		}
+
+		if (a[i].Schedule == nil) != (b[i].Schedule == nil) {
+			return false
+		}
+		if a[i].Schedule != nil {
+			if a[i].Schedule.PatternType.ValueString() != b[i].Schedule.PatternType.ValueString() ||
+				a[i].Schedule.Pattern.ValueString() != b[i].Schedule.Pattern.ValueString() ||
+				a[i].Schedule.StartTime.ValueString() != b[i].Schedule.StartTime.ValueString() {
+				return false
+			}
+		}
+
+		if (a[i].Policy == nil) != (b[i].Policy == nil) {
+			return false
+		}
+		if a[i].Policy != nil {
+			if a[i].Policy.EntityType.ValueString() != b[i].Policy.EntityType.ValueString() ||
+				a[i].Policy.MatchType.ValueString() != b[i].Policy.MatchType.ValueString() {
+				return false
+			}
+
+			if len(a[i].Policy.Rules) != len(b[i].Policy.Rules) {
+				return false
+			}
+			for j := range a[i].Policy.Rules {
+				if a[i].Policy.Rules[j].FilterType.ValueString() != b[i].Policy.Rules[j].FilterType.ValueString() {
+					return false
+				}
+				if len(a[i].Policy.Rules[j].ResourceType) != len(b[i].Policy.Rules[j].ResourceType) {
+					return false
+				}
+				for k := range a[i].Policy.Rules[j].ResourceType {
+					if a[i].Policy.Rules[j].ResourceType[k].ValueString() != b[i].Policy.Rules[j].ResourceType[k].ValueString() {
+						return false
+					}
+				}
+			}
+
+			if len(a[i].Policy.Actions) != len(b[i].Policy.Actions) {
+				return false
+			}
+			for j := range a[i].Policy.Actions {
+				if a[i].Policy.Actions[j].Action.ValueString() != b[i].Policy.Actions[j].Action.ValueString() {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
+}
+
 // installedMappingsToModel converts the API response for installed mappings into the Terraform model slice.
 // The API returns one row per attribute-value pair; we group them back into a single model entry per
 // (entityType, opsrampAttribute, thirdPartyAttribute) key and collect the attribute values.
@@ -968,6 +1297,23 @@ func (r *IntegrationResource) Read(ctx context.Context, req resource.ReadRequest
 		state.BypassResourceReconciliation = types.BoolValue(existing.MultiAppsDiscoveryEnabled)
 	}
 
+	if existing.IPAddress != "" {
+		state.IPAddress = types.StringValue(existing.IPAddress)
+	} else {
+		state.IPAddress = types.StringNull()
+	}
+
+	if existing.CredentialSet != "" {
+		state.CredentialSet = types.StringValue(existing.CredentialSet)
+	} else {
+		state.CredentialSet = types.StringNull()
+	}
+
+	// Preserve configured discovery profiles when the API omits this field in read responses.
+	if existing.DiscoveryProfiles != nil {
+		state.DiscoveryProfiles = integrationDiscoveryProfilesToModel(existing.DiscoveryProfiles)
+	}
+
 	// Preserve inbound sensitive values (token, webhook_url) from state
 	// as they may not always be returned in GET responses
 	if state.Inbound != nil && existing.InboundConfig != nil && existing.InboundConfig.Authentication != nil {
@@ -1029,14 +1375,20 @@ func (r *IntegrationResource) Update(ctx context.Context, req resource.UpdateReq
 	if plan.DisplayName.ValueString() != state.DisplayName.ValueString() ||
 		plan.Description.ValueString() != state.Description.ValueString() ||
 		plan.AlertSourceID.ValueInt64() != state.AlertSourceID.ValueInt64() ||
-		plan.BypassResourceReconciliation.ValueBool() != state.BypassResourceReconciliation.ValueBool() {
+		plan.BypassResourceReconciliation.ValueBool() != state.BypassResourceReconciliation.ValueBool() ||
+		plan.IPAddress.ValueString() != state.IPAddress.ValueString() ||
+		plan.CredentialSet.ValueString() != state.CredentialSet.ValueString() ||
+		!equalDiscoveryProfiles(plan.DiscoveryProfiles, state.DiscoveryProfiles) {
 		updateReq := client.InstallIntegrationRequest{
-			DisplayName: plan.DisplayName.ValueString(),
-			Description: plan.Description.ValueString(),
-			AlertSource: &client.AlertSource{
-				ID: int(plan.AlertSourceID.ValueInt64()),
-			},
+			DisplayName:               plan.DisplayName.ValueString(),
+			Description:               plan.Description.ValueString(),
 			MultiAppsDiscoveryEnabled: plan.BypassResourceReconciliation.ValueBool(),
+			IPAddress:                 plan.IPAddress.ValueString(),
+			CredentialSet:             plan.CredentialSet.ValueString(),
+			DiscoveryProfiles:         integrationDiscoveryProfilesToAPI(plan.DiscoveryProfiles),
+		}
+		if !plan.AlertSourceID.IsNull() {
+			updateReq.AlertSource = &client.AlertSource{ID: int(plan.AlertSourceID.ValueInt64())}
 		}
 		_, err := r.apiClient.UpdateIntegration(tenantId, integrationId, updateReq)
 		if err != nil {
@@ -1179,6 +1531,13 @@ func (r *IntegrationResource) reconcileWebhookHandshake(
 	}
 }
 
+func checkIntegrationNotFoundError(err error) bool {
+	errorString := strings.ToLower(err.Error())
+	return strings.Contains(errorString, "status: 404") ||
+		strings.Contains(errorString, "not found") ||
+		strings.Contains(errorString, "no installed integration found")
+}
+
 // Delete handles deleting the resource.
 func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state IntegrationModel
@@ -1192,10 +1551,59 @@ func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	err := r.apiClient.DeleteIntegration(tenantId, state.Id.ValueString(), "Terraform - Resource destroyed")
 	if err != nil {
-		if !strings.Contains(err.Error(), "404") && !strings.Contains(err.Error(), "not found") {
+		if !checkIntegrationNotFoundError(err) {
+			// Ignore "not found" errors as the resource is already deleted
+			// Notify if any other error occurs that might prevent deletion
 			resp.Diagnostics.AddError("Delete Error", err.Error())
-
 			return
+		}
+	}
+
+	err = r.waitForIntegrationDeletion(ctx, tenantId, state.Id.ValueString(), IntegrationDeletionMaxTime*time.Second, IntegrationDeletionPoolTime*time.Second)
+	if err != nil {
+		resp.Diagnostics.AddError("Delete Error", err.Error())
+		return
+	}
+}
+
+func (r *IntegrationResource) waitForIntegrationDeletion(
+	ctx context.Context,
+	tenantId string,
+	integrationId string,
+	timeout time.Duration,
+	interval time.Duration,
+) error {
+	deadline := time.Now().Add(timeout)
+	var lastErr error
+
+	for {
+		_, err := r.apiClient.GetIntegration(tenantId, integrationId)
+		if err != nil {
+			if checkIntegrationNotFoundError(err) {
+				return nil
+			}
+			lastErr = err
+		} else {
+			lastErr = fmt.Errorf("integration %s is still present", integrationId)
+		}
+
+		if time.Now().After(deadline) {
+			if lastErr != nil {
+				return fmt.Errorf(
+					"timed out waiting for integration '%s' deletion after %s: %w",
+					integrationId,
+					timeout,
+					lastErr,
+				)
+			}
+
+			return fmt.Errorf("timed out waiting for integration '%s' deletion after %s", integrationId, timeout)
+		}
+
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-time.After(interval):
 		}
 	}
 }

@@ -86,11 +86,11 @@ resource "hpe_opsramp_site" "site_root" {
 resource "hpe_opsramp_site" "site_valencia" {
 	parent_id = hpe_opsramp_site.site_root.id
 	name      = "%s"
-	address   = "Av. del General Avilés, 35-37, Benicalap"
+	address   = "Av. del General Aviles, 35-37, Benicalap"
 	country   = "Spain"
 	zip       = "46035"
 	state     = "Comunitat Valenciana"
-	city      = "València"
+	city      = "Valencia"
 	resources = [hpe_opsramp_resource.resource1.uuid]
 	%s
 }
@@ -110,11 +110,11 @@ resource "hpe_opsramp_site" "site_madrid" {
 resource "hpe_opsramp_site" "site_barcelona" {
 	parent_id    = hpe_opsramp_site.site_root.id
 	name         = "%s"
-	address      = "Carrer de Tànger, 66"
+	address      = "Carrer de Tanger, 66"
 	country      = "Spain"
 	zip          = "08018"
 	state        = "Barcelona"
-	city         = "Sant Martí"
+	city         = "Sant Marti"
 	search_query = format("uuid = \"%%s\"", hpe_opsramp_resource.resource2.uuid)
 	resources    = [hpe_opsramp_resource.resource3.uuid]
 	%s

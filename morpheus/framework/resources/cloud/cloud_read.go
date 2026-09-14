@@ -98,6 +98,7 @@ func getCloudAsState(
 	state.Labels = convert.StrSliceToSet(cloud.Labels)
 	state.Location = convert.StrToType(cloud.Location.Get())
 	state.Name = convert.StrToType(cloud.Name)
+	state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
 	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
 	state.TenantId = convert.Int64ToType(cloud.AccountId)
 	state.Visibility = convert.StrToType(cloud.Visibility)
@@ -440,6 +441,15 @@ func getCloudAsState(
 		// password is write-only: it must never be persisted to state.
 		attrValues["password"] = types.StringNull()
 
+		// password_version is not returned by the API, but it is required by
+		// the ConfigVmware object type. Preserve current state value when
+		// available so plans remain stable; otherwise use null.
+		if !plan.ConfigVmware.IsNull() && !plan.ConfigVmware.IsUnknown() {
+			attrValues["password_version"] = plan.ConfigVmware.PasswordVersion
+		} else {
+			attrValues["password_version"] = types.Int64Null()
+		}
+
 		if cfg.ResourcePool != nil {
 			attrValues["resource_pool"] = convert.StrToType(cfg.ResourcePool)
 		} else {
@@ -558,8 +568,6 @@ func getCloudAsState(
 
 		state.ConfigAzure = configAzure
 	case !plan.Config.IsNull() || importing:
-		state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
-
 		state.Config = types.DynamicNull()
 
 		cfg := cloud.Config.MapmapOfStringAny

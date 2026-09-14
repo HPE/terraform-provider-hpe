@@ -34,7 +34,7 @@ func TestAccScriptResource(t *testing.T) {
 						resource.TestCheckResourceAttr("hpe_opsramp_script.test_script", "execution_type", "SHELL"),
 					),
 				},
-				// ImportState testing — import ID is <category_id>:<script_uuid>
+				// ImportState testing - import ID is <category_id>:<script_uuid>
 				{
 					ResourceName:                         "hpe_opsramp_script.test_script",
 					ImportState:                          true,

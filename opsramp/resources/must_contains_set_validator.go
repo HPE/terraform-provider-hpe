@@ -39,14 +39,14 @@ func (v setMustContainAndAllowValidator) ValidateSet(
 		return
 	}
 
-	// Convert set → map[string]bool
+	// Convert set - map[string]bool
 	values := map[string]bool{}
 	for _, elem := range req.ConfigValue.Elements() {
 		str := elem.(types.String).ValueString()
 		values[str] = true
 	}
 
-	// ✅ Check required values
+	// Check required values
 	for _, r := range v.required {
 		if !values[r] {
 			resp.Diagnostics.AddAttributeError(
@@ -57,7 +57,7 @@ func (v setMustContainAndAllowValidator) ValidateSet(
 		}
 	}
 
-	// ✅ Check allowed values
+	// Check allowed values
 	for val := range values {
 		if !contains(v.allowed, val) {
 			resp.Diagnostics.AddAttributeError(

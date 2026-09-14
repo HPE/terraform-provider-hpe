@@ -14,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration_config – SNMP integration with schedule
+// hpe_opsramp_integration_config - SNMP integration with schedule
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
@@ -40,7 +40,7 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_config.test", "schedule.pattern", "1"),
 				),
 			},
-			// Update – rename and change schedule
+			// Update - rename and change schedule
 			{
 				Config: testAccIntegrationConfigWithScheduleConfig(configNameUpdated, "HOURLY", 2, "3", clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -54,7 +54,7 @@ func TestAccIntegrationConfigResource_WithSchedule(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration_config – config without schedule (all_resources)
+// hpe_opsramp_integration_config - config without schedule (all_resources)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationConfigResource_NoSchedule(t *testing.T) {

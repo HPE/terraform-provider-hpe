@@ -53,7 +53,7 @@ Optional:
 
 - `continuous_learning` (Boolean) Whether continuous learning is enabled.
 - `insights` (Attributes) Insights settings for attribute actions. (see [below for nested schema](#nestedatt--attribute_actions--insights))
-- `run_process` (Attributes) Insights settings for attribute actions. (see [below for nested schema](#nestedatt--attribute_actions--run_process))
+- `run_process` (Attributes) Run Process settings for attribute actions. (see [below for nested schema](#nestedatt--attribute_actions--run_process))
 - `suppress` (Attributes) Suppress settings for attribute actions. (see [below for nested schema](#nestedatt--attribute_actions--suppress))
 
 <a id="nestedatt--attribute_actions--insights"></a>
@@ -67,29 +67,35 @@ Optional:
 <a id="nestedatt--attribute_actions--run_process"></a>
 ### Nested Schema for `attribute_actions.run_process`
 
+Required:
+
+- `process_ids` (List of String) List of process IDs to run when the policy matches.
+
 Optional:
 
-- `learned_configuration` (Boolean) Whether to create PRC insights.
-- `process_ids` (List of String) List of process IDs to run when the policy matches.
-- `run_immediately` (Boolean) Whether to create PRC insights.
+- `learned_configuration` (Boolean) Enables learned configuration from file for the run process action.
+- `run_immediately` (Boolean) Run immediately and do not wait until Suppress action time ends.
 
 
 <a id="nestedatt--attribute_actions--suppress"></a>
 ### Nested Schema for `attribute_actions.suppress`
 
+Required:
+
+- `suppress_duration` (Number) Duration in minutes to suppress alerts. Use -1 for indefinite.
+
 Optional:
 
-- `learned_configuration` (Boolean) Whether to use learned configuration for suppression.
-- `suppress_duration` (Number) Duration in minutes to suppress alerts. Use -1 for indefinite.
+- `learned_configuration` (Boolean) Enables learned configuration from file for the suppression action.
 
 
 
 <a id="nestedatt--pattern_actions"></a>
 ### Nested Schema for `pattern_actions`
 
-Optional:
+Required:
 
-- `seasonality_time_frame` (String) The seasonality time frame (e.g., `10D`, `60D`).
+- `seasonality_time_frame` (String) Learning based on the data for last N days. Valid values: `7D`, `10D`, `30D`, `60D`, `90D`.
 - `suppress` (Attributes) Suppress settings for pattern actions. (see [below for nested schema](#nestedatt--pattern_actions--suppress))
 
 <a id="nestedatt--pattern_actions--suppress"></a>
@@ -97,6 +103,6 @@ Optional:
 
 Optional:
 
-- `seasonal_alerts` (Boolean) Whether to suppress seasonal alerts.
+- `seasonal_alerts` (Boolean) Supress alerts based on seasonality patterns
 
 

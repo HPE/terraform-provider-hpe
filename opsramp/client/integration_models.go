@@ -37,6 +37,7 @@ type AlertSource struct {
 // DiscoveryProfile represents a discovery scan profile for configuration integrations
 type DiscoveryProfile struct {
 	ID               int                `json:"id,omitempty"`
+	Name             string             `json:"name,omitempty"`
 	MgmtProfileUUID  string             `json:"mgmtProfileUuid,omitempty"`
 	CustomAttributes map[string]string  `json:"customAttributes,omitempty"`
 	ScanNow          bool               `json:"scanNow,omitempty"`

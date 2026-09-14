@@ -14,10 +14,15 @@ resource "hpe_opsramp_metric_alert_definition" "example_dynamic_threshold_alert"
   subject     = "$$__name__ alert for $$resource.name$$ - $$component.name$$ - $$metric.value$$ ($$threshold)"
   description = "This is an example metric alert definition created for testing purposes."
 
-  entity_type = ["RESOURCE"]
-  component   = ["$$__name__"]
+  entity_type = "RESOURCE"
+  component   = "$$__name__"
   status      = true
 
-  labels     = []
-  attributes = []
+  labels = []
+  attributes = [
+    {
+      name  = "host"
+      value = "$$__name__"
+    }
+  ]
 }

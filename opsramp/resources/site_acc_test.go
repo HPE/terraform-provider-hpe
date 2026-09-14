@@ -30,9 +30,9 @@ func TestAccSiteResource(t *testing.T) {
 					Config: testAccSiteConfig(
 						siteNameOne,
 						"Initial site description",
-						"Av. del General Avilés, 35-37, Benicalap,  València, Valencia",
+						"Av. del General Aviles, 35-37, Benicalap,  Valencia, Valencia",
 						"Valencia",
-						"València",
+						"Valencia",
 						"Spain",
 						"46035",
 						"902027020",
@@ -44,7 +44,7 @@ func TestAccSiteResource(t *testing.T) {
 						testAccEnsureSiteExists(t, "hpe_opsramp_site.test_site"),
 						resource.TestCheckResourceAttrSet("hpe_opsramp_site.test_site", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "name", siteNameOne),
-						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "state", "València"),
+						resource.TestCheckResourceAttr("hpe_opsramp_site.test_site", "state", "Valencia"),
 					),
 				},
 				{

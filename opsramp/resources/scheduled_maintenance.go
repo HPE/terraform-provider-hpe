@@ -582,7 +582,7 @@ func (r *ScheduledMaintenanceResource) ImportState(
 	state.CorrelateAlerts = types.BoolUnknown()
 	state.RunEscalateAction = types.BoolUnknown()
 
-	// Initialize Schedule with Unknown values — Read will populate the real values.
+	// Initialize Schedule with Unknown values - Read will populate the real values.
 	state.Schedule = &ScheduledMaintenanceScheduleModel{
 		Type:      types.StringUnknown(),
 		StartTime: types.StringUnknown(),

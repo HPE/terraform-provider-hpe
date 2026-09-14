@@ -156,7 +156,6 @@ resource "hpe_opsramp_alert_escalation_policy" "default_alert_escalation_policy"
         business_impact_id    = hpe_opsramp_servicedesk_business_impact.business_impact1.id
         urgency_id            = hpe_opsramp_servicedesk_urgency.urgency1.id
         knowledge_article_ids = [hpe_opsramp_kb_article.kb_article_default.id]
-        cc                    = "enrique.larriba@hpe.com"
       }
       update_incident = {
         update_incident_mode                = "UpdateWhenAlertStateChange"

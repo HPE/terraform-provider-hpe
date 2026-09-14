@@ -129,7 +129,7 @@ func (r *BaseResource) ParseImportID(importID string, expectedParts int) (*Impor
 	// MSP scope: optionally has a client prefix
 	switch len(parts) {
 	case expectedParts:
-		// No client prefix — resource at MSP level
+		// No client prefix - resource at MSP level
 		result.Parts = parts
 	case expectedParts + 1:
 		// First segment is client_id
