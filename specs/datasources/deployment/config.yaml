@@ -11,9 +11,14 @@ deployment:
       computed_optional_required: computed_optional
       conflicts_with: ["name"]
     name:
-      description: The name of the deployment.
+      description: The name of the deployment. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
+      # MORPH-16725: reject an empty name at plan time. Without this, name = ""
+      # is non-null and flows into the by-name lookup, where the API returns an
+      # empty list -- indistinguishable from a legitimate lookup that matched no
+      # deployment. Failing here keeps invalid input distinct from "not found".
+      string_length_at_least: 1
     account_id:
       description: The account ID that owns the deployment.
     date_created:

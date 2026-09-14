@@ -52,6 +52,7 @@ var emptyLookupKeyCases = []emptyLookupKeyCase{
 	{"hpe_morpheus_compute_server", "name", ""},
 	{"hpe_morpheus_container_script", "name", ""},
 	{"hpe_morpheus_datastore", "name", ""},
+	{"hpe_morpheus_deployment", "name", ""},
 	{"hpe_morpheus_environment", "name", ""},
 	{"hpe_morpheus_group", "name", ""},
 	{"hpe_morpheus_image", "name", ""},
