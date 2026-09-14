@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // nsxtTier1RouterConfig renders an NSX-T tier-1 gateway required for NAT rules.
 //
 // The tier-0, group, network server and edge cluster must already exist on the
@@ -196,7 +186,11 @@ func TestAccMorpheusFindNetworkRouterNatNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_network_router_nat" "test" {
         router_id = 1
       }`

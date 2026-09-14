@@ -19,16 +19,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 func TestMain(m *testing.M) {
 	code := m.Run()
 	testhelpers.WriteMergedResults()
@@ -202,7 +192,11 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
 	data "hpe_morpheus_service_plan" "test" {
 	}`
 
@@ -215,8 +209,13 @@ func TestAccMorpheusFindServicePlanNoSearchAttrs(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
-	// ExpectError only matches on ErrorRunningPreApply, not on serviceplan.ErrorNoValidSearchTerms
-	expected := serviceplan.ErrorRunningPreApply
+	// The message contains "(name and provision_type_code)". ExpectError is a
+	// regular expression, so those parentheses would form a capture group and
+	// match the words without their brackets — which the real message has. Quote
+	// the literal so the assertion matches what the data source actually emits.
+	// This is very likely why the test once fell back to the generic
+	// ErrorRunningPreApply: the tight pattern "didn't match" for this reason.
+	expected := regexp.QuoteMeta(serviceplan.ErrorNoValidSearchTerms)
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),

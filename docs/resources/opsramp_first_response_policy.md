@@ -103,6 +103,6 @@ Required:
 
 Optional:
 
-- `seasonal_alerts` (Boolean) Supress alerts based on seasonality patterns
+- `seasonal_alerts` (Boolean) Suppress alerts based on seasonality patterns
 
 

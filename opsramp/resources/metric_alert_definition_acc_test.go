@@ -31,7 +31,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 					Check: resource.ComposeAggregateTestCheckFunc(
 						resource.TestCheckResourceAttrSet("hpe_opsramp_metric_alert_definition.test", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "name", name),
-						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_type", "DYNAMIC_CHANGE_DETECTION"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_type", "DYNAMIC_CHANGE_DETECTION"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "entity_type", "RESOURCE"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "component", "$$__name__"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "attributes.0.name", "host"),
@@ -66,7 +67,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_type", "STATIC_THRESHOLD"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "no_data_condition", "NO_DATA_ALERT"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.warning_condition", "50000"),
-						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "30000"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "30000"),
 					),
 				},
 				{
@@ -76,7 +78,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "name", name),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "description", "description two"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.warning_condition", "40000"),
-						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "20000"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "20000"),
 					),
 				},
 			},
@@ -159,7 +162,13 @@ resource "hpe_opsramp_metric_alert_definition" "test" {
 `, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride), description)
 }
 
-func testAccMetricAlertDefinitionStaticThresholdConfig(name string, warningCondition string, criticalCondition string, description string, clientOverride string) string {
+func testAccMetricAlertDefinitionStaticThresholdConfig(
+	name string,
+	warningCondition string,
+	criticalCondition string,
+	description string,
+	clientOverride string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_metric_alert_definition" "test" {
@@ -202,7 +211,13 @@ resource "hpe_opsramp_metric_alert_definition" "test" {
 `, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride), warningCondition, criticalCondition, description)
 }
 
-func testAccMetricAlertDefinitionDynamicThresholdConfig(name string, limit int, noDataCondition string, description string, clientOverride string) string {
+func testAccMetricAlertDefinitionDynamicThresholdConfig(
+	name string,
+	limit int,
+	noDataCondition string,
+	description string,
+	clientOverride string,
+) string {
 	return fmt.Sprintf(`
 %s
 resource "hpe_opsramp_metric_alert_definition" "test" {

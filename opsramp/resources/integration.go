@@ -1533,6 +1533,7 @@ func (r *IntegrationResource) reconcileWebhookHandshake(
 
 func checkIntegrationNotFoundError(err error) bool {
 	errorString := strings.ToLower(err.Error())
+
 	return strings.Contains(errorString, "status: 404") ||
 		strings.Contains(errorString, "not found") ||
 		strings.Contains(errorString, "no installed integration found")
@@ -1555,13 +1556,21 @@ func (r *IntegrationResource) Delete(ctx context.Context, req resource.DeleteReq
 			// Ignore "not found" errors as the resource is already deleted
 			// Notify if any other error occurs that might prevent deletion
 			resp.Diagnostics.AddError("Delete Error", err.Error())
+
 			return
 		}
 	}
 
-	err = r.waitForIntegrationDeletion(ctx, tenantId, state.Id.ValueString(), IntegrationDeletionMaxTime*time.Second, IntegrationDeletionPoolTime*time.Second)
+	err = r.waitForIntegrationDeletion(
+		ctx,
+		tenantId,
+		state.Id.ValueString(),
+		IntegrationDeletionMaxTime*time.Second,
+		IntegrationDeletionPoolTime*time.Second,
+	)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
+
 		return
 	}
 }

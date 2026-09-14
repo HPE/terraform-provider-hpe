@@ -481,7 +481,10 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 			)
 		}
 
-		if hasConfig && !config.NoDataCondition.IsNull() && !config.NoDataCondition.IsUnknown() && config.NoDataCondition.ValueString() != "" {
+		if hasConfig &&
+			!config.NoDataCondition.IsNull() &&
+			!config.NoDataCondition.IsUnknown() &&
+			config.NoDataCondition.ValueString() != "" {
 			resp.Diagnostics.AddError(
 				"No Data Condition Not Supported",
 				"no_data_condition is not supported when alert_threshold_type is DYNAMIC_CHANGE_DETECTION",
@@ -501,7 +504,10 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 			)
 		}
 
-		if hasConfig && !config.NoDataCondition.IsNull() && !config.NoDataCondition.IsUnknown() && config.NoDataCondition.ValueString() != "" {
+		if hasConfig &&
+			!config.NoDataCondition.IsNull() &&
+			!config.NoDataCondition.IsUnknown() &&
+			config.NoDataCondition.ValueString() != "" {
 			resp.Diagnostics.AddError(
 				"No Data Condition Not Supported",
 				"no_data_condition is not supported when alert_threshold_type is FORECAST",

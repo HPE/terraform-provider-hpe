@@ -114,7 +114,13 @@ func TestUnitMapFirstResponsePolicyToStateLeavesOmittedNestedBlocksNull(t *testi
 func TestUnitFirstResponsePolicyModifyPlanRequiresAction(t *testing.T) {
 	t.Parallel()
 
-	makeAttributeActions := func(suppressDuration *int64, suppressLearning bool, runProcessIDs []string, runProcessLearning bool, createPrcInsights bool) types.Object {
+	makeAttributeActions := func(
+		suppressDuration *int64,
+		suppressLearning bool,
+		runProcessIDs []string,
+		runProcessLearning bool,
+		createPrcInsights bool,
+	) types.Object {
 		suppressValue := types.ObjectNull(attrSuppressAttrTypes)
 		if suppressDuration != nil || suppressLearning {
 			learnedConfiguration := types.BoolNull()

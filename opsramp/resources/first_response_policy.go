@@ -248,7 +248,7 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 								Optional:            true,
 								Computed:            true,
 								Default:             booldefault.StaticBool(false),
-								MarkdownDescription: "Supress alerts based on seasonality patterns",
+								MarkdownDescription: "Suppress alerts based on seasonality patterns",
 							},
 						},
 					},
@@ -378,6 +378,7 @@ func hasSuppressEnabled(object types.Object) bool {
 	if ok && !learnedConfigurationValue.IsNull() && !learnedConfigurationValue.IsUnknown() &&
 		func() bool {
 			learnedConfiguration, isBool := learnedConfigurationValue.(types.Bool)
+
 			return isBool && learnedConfiguration.ValueBool()
 		}() {
 		return true
@@ -440,6 +441,7 @@ func hasRunProcessEnabled(object types.Object) bool {
 	if ok && !learnedConfigurationValue.IsNull() && !learnedConfigurationValue.IsUnknown() &&
 		func() bool {
 			learnedConfiguration, isBool := learnedConfigurationValue.(types.Bool)
+
 			return isBool && learnedConfiguration.ValueBool()
 		}() {
 		return true
@@ -677,12 +679,12 @@ func (r *FirstResponsePolicyResource) ModifyPlan(
 
 	resp.Diagnostics.AddError(
 		"Action Required",
-		"At least one first response action must be enabled: " +
-			"set pattern_actions.suppress.seasonal_alerts = true, " +
-			"set attribute_actions.suppress.suppress_duration or " +
-			"attribute_actions.suppress.learned_configuration = true, " +
-			"assign attribute_actions.run_process.process_ids or " +
-			"set attribute_actions.run_process.learned_configuration = true, " +
+		"At least one first response action must be enabled: "+
+			"set pattern_actions.suppress.seasonal_alerts = true, "+
+			"set attribute_actions.suppress.suppress_duration or "+
+			"attribute_actions.suppress.learned_configuration = true, "+
+			"assign attribute_actions.run_process.process_ids or "+
+			"set attribute_actions.run_process.learned_configuration = true, "+
 			"or set attribute_actions.insights.create_prc_insights = true.",
 	)
 }

@@ -24,16 +24,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // poolServerFixture renders a minimal infoblox network pool server resource
 // labelled hpe_morpheus_network_pool_server.example.
 func poolServerFixture(t *testing.T, name string) string {
@@ -162,7 +152,11 @@ func TestAccMorpheusFindNetworkPoolServerNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_network_pool_server" "test" {
       }`
 

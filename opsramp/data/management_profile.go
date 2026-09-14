@@ -89,7 +89,10 @@ func (d *managementProfileDataSource) Read(ctx context.Context, req datasource.R
 	tenantID := resolveLookupTenantID(d.apiClient, data.Client)
 	profile, err := d.apiClient.FindManagementProfileByName(tenantID, data.Name.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Management profile lookup failed", fmt.Sprintf("Could not find management profile '%s': %s", data.Name.ValueString(), err.Error()))
+		resp.Diagnostics.AddError(
+			"Management profile lookup failed",
+			fmt.Sprintf("Could not find management profile '%s': %s", data.Name.ValueString(), err.Error()),
+		)
 
 		return
 	}

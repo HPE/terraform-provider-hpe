@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url      = ""
-    username = ""
-    password = ""
-  }
-}
-`
-
 // nsxtTier1RouterConfig renders a self-contained NSX-T Tier-1 gateway router.
 // QA constants: group_id 3, network_integration_id 5.
 func nsxtTier1RouterConfig(name string) string {
@@ -178,7 +168,11 @@ func TestAccMorpheusFindNetworkRouterFirewallRuleGroupNoSearchAttrs(t *testing.T
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
 data "hpe_morpheus_network_router_firewall_rule_group" "test" {
   router_id = 1
 }`
