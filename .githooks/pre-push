@@ -2,39 +2,57 @@
 #
 # (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 #
-# pre-push: run the provider's lint gate before anything leaves the machine.
+# pre-push: run the provider's quality gates before anything leaves the
+# machine. Three gates, cheapest first:
 #
-# WHY THIS EXISTS: the `Lint` GitHub Actions workflow is disabled (manual
-# dispatch only) because golangci-lint is OOM-killed on a standard runner --
-# see .github/workflows/lint.yaml. `make lint` run locally is therefore the
-# only gate on lint regressions; this hook is what makes it automatic.
+#   1. lint        make lint        The `Lint` CI workflow is disabled
+#                                   (manual dispatch only): golangci-lint is
+#                                   OOM-killed on a standard runner -- see
+#                                   .github/workflows/lint.yaml. This hook is
+#                                   therefore the ONLY lint gate.
+#   2. docs        make docs        The `Docs` CI workflow is disabled in
+#                                   favour of this hook, catching failures
+#                                   before the push instead of a CI round
+#                                   later -- see .github/workflows/docs.yaml.
+#                                   `DocsDiff` STILL runs in CI and fails PRs
+#                                   whose regenerated docs are not committed;
+#                                   after a successful build this gate warns
+#                                   (does not fail) about such drift.
+#   3. unit tests  make unit-tests  The `Test` CI workflow is disabled in
+#                                   favour of this hook, same rationale --
+#                                   see .github/workflows/test.yaml. This hook
+#                                   is therefore the ONLY unit-test gate.
 #
-# COST: the golangci-lint cache is content-addressed and user-global, so a
-# typical push costs seconds. The first run on a machine, or the first after a
-# golangci-lint or Go toolchain upgrade, rebuilds the cache and takes minutes.
+# COST: with warm caches a push costs two to three minutes: lint is seconds
+# (the golangci-lint cache is content-addressed and user-global), docs is
+# about a minute (builds bin/render, runs go generate + tfplugindocs), and
+# the unit tests are a minute or two. The first run on a machine, or the
+# first after a toolchain upgrade, rebuilds caches and takes longer.
 #
 # ACTIVATION: git does not run hooks from a tracked directory by default.
 # `init.sh` in the tooling workspace wires this up automatically; for a
 # standalone clone, run once:
 #
-#     git config core.hooksPath .githooks
+#     make hooks
 #
 # ESCAPE HATCHES:
-#     git push --no-verify     skip all pre-push hooks
-#     SKIP_LINT=1 git push     skip just this check
+#     git push --no-verify      skip all pre-push hooks
+#     SKIP_LINT=1  git push     skip just the lint gate
+#     SKIP_DOCS=1  git push     skip just the docs gate
+#     SKIP_TESTS=1 git push     skip just the unit-test gate
+#
+# CAVEAT: gates run against the WORKING TREE, not the commits being pushed --
+# uncommitted changes are checked, stashed ones are not. `make docs` also
+# regenerates docs/ and examples/ in place, so pre-existing drift there
+# surfaces (as a warning) during the push.
 
 set -euo pipefail
 
-if [ -n "${SKIP_LINT:-}" ]; then
-  echo "pre-push: SKIP_LINT set -- skipping lint gate" >&2
-  exit 0
-fi
-
 # Git feeds pre-push one "<local_ref> <local_sha> <remote_ref> <remote_sha>"
 # line per ref. A branch *deletion* carries an all-zero local sha and has no
-# content to lint, so a push consisting only of deletions is a no-op here.
+# content to check, so a push consisting only of deletions is a no-op here.
 # Deriving the zero OID this way keeps it correct under both SHA-1 and SHA-256.
-# If stdin yields no refs at all we fall through and lint (fail safe).
+# If stdin yields no refs at all we fall through and run the gates (fail safe).
 zero_oid="$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')"
 refs_seen=0
 content_refs=0
@@ -43,12 +61,13 @@ while read -r _local_ref local_sha _rest; do
   [ "$local_sha" = "$zero_oid" ] || content_refs=$((content_refs + 1))
 done
 if [ "$refs_seen" -gt 0 ] && [ "$content_refs" -eq 0 ]; then
-  echo "pre-push: only ref deletions in this push -- nothing to lint" >&2
+  echo "pre-push: only ref deletions in this push -- nothing to check" >&2
   exit 0
 fi
 
-# Hooks run from the working tree root already, but be explicit: `make lint`
-# shells out to `go list ./...` and must run against the module root.
+# Hooks run from the working tree root already, but be explicit: the make
+# targets below shell out to `go list ./...` and must run against the module
+# root.
 cd "$(git rev-parse --show-toplevel)"
 
 # GUI git clients often run hooks with a minimal PATH that omits the Go bin
@@ -59,42 +78,128 @@ if command -v go >/dev/null 2>&1; then
   export PATH
 fi
 
-if ! command -v golangci-lint >/dev/null 2>&1; then
-  cat >&2 <<'EOF'
+# --------------------------------------------------------------------------
+# Gate 1: lint
+# --------------------------------------------------------------------------
+if [ -n "${SKIP_LINT:-}" ]; then
+  echo "pre-push: SKIP_LINT set -- skipping lint gate" >&2
+else
+  if ! command -v golangci-lint >/dev/null 2>&1; then
+    cat >&2 <<'EOF'
 pre-push: golangci-lint not found on PATH.
 
 Install the version this repository pins:
 
     make linter
 
-Then retry the push. To bypass this check once:
+Then retry the push. To bypass just this gate once:
 
-    git push --no-verify
+    SKIP_LINT=1 git push
 EOF
-  exit 1
-fi
+    exit 1
+  fi
 
-# Warn but do not fail on version drift: a different golangci-lint can report a
-# different issue set from what a colleague or a manual CI run sees, and it
-# cold-busts the analysis cache (turning a ~7s push into a multi-minute one).
-want="$(sed -n 's|.*golangci-lint@v\([0-9.]*\).*|\1|p' Makefile | head -1)"
-have="$(golangci-lint version --short 2>/dev/null || true)"
-if [ -n "$want" ] && [ -n "$have" ] && [ "$want" != "$have" ]; then
-  echo "pre-push: warning: golangci-lint v${have} on PATH, Makefile pins v${want} ('make linter' to align)" >&2
-fi
+  # Warn but do not fail on version drift: a different golangci-lint can
+  # report a different issue set from what a colleague or a manual CI run
+  # sees, and it cold-busts the analysis cache (turning a ~7s lint into a
+  # multi-minute one).
+  want="$(sed -n 's|.*golangci-lint@v\([0-9.]*\).*|\1|p' Makefile | head -1)"
+  have="$(golangci-lint version --short 2>/dev/null || true)"
+  if [ -n "$want" ] && [ -n "$have" ] && [ "$want" != "$have" ]; then
+    echo "pre-push: warning: golangci-lint v${have} on PATH, Makefile pins v${want} ('make linter' to align)" >&2
+  fi
 
-echo "pre-push: running 'make lint' (cached: seconds; after a toolchain change: minutes)..." >&2
-if ! make lint; then
-  cat >&2 <<'EOF'
+  echo "pre-push: running 'make lint' (cached: seconds; after a toolchain change: minutes)..." >&2
+  if ! make lint; then
+    cat >&2 <<'EOF'
 
 pre-push: lint failed -- push aborted.
 
 The `Lint` CI workflow is disabled (see .github/workflows/lint.yaml), so this
 hook is the only gate. Fix the issues above and push again.
 
-To bypass once:
+To bypass just this gate once:
 
-    git push --no-verify
+    SKIP_LINT=1 git push
 EOF
-  exit 1
+    exit 1
+  fi
 fi
+
+# --------------------------------------------------------------------------
+# Gate 2: docs
+# --------------------------------------------------------------------------
+if [ -n "${SKIP_DOCS:-}" ]; then
+  echo "pre-push: SKIP_DOCS set -- skipping docs gate" >&2
+else
+  # `make docs` runs `terraform fmt` and tfplugindocs, both of which need the
+  # terraform CLI.
+  if ! command -v terraform >/dev/null 2>&1; then
+    cat >&2 <<'EOF'
+pre-push: terraform not found on PATH -- `make docs` needs the terraform CLI.
+
+Install it (https://developer.hashicorp.com/terraform/install), then retry
+the push. To bypass just this gate once:
+
+    SKIP_DOCS=1 git push
+EOF
+    exit 1
+  fi
+
+  echo "pre-push: running 'make docs' (about a minute)..." >&2
+  if ! make docs; then
+    cat >&2 <<'EOF'
+
+pre-push: docs generation failed -- push aborted.
+
+The `Docs` CI workflow is disabled (see .github/workflows/docs.yaml), so this
+hook is the gate. Fix the issues above and push again.
+
+To bypass just this gate once:
+
+    SKIP_DOCS=1 git push
+EOF
+    exit 1
+  fi
+
+  # Drift heads-up only: `DocsDiff` in CI remains the enforcing gate for
+  # regenerated docs being committed, so do not double-gate here -- but a
+  # dirty docs/ or examples/ tree after `make docs` means that check WILL
+  # fail the PR, and pushing now just defers the failure to a CI round.
+  drift="$(git status --porcelain -- docs examples)"
+  if [ -n "$drift" ]; then
+    {
+      echo
+      echo "pre-push: warning: 'make docs' left uncommitted changes under docs/ or examples/:"
+      echo
+      echo "$drift"
+      echo
+      echo "The DocsDiff CI check will fail the PR until these are committed."
+    } >&2
+  fi
+fi
+
+# --------------------------------------------------------------------------
+# Gate 3: unit tests
+# --------------------------------------------------------------------------
+if [ -n "${SKIP_TESTS:-}" ]; then
+  echo "pre-push: SKIP_TESTS set -- skipping unit-test gate" >&2
+else
+  echo "pre-push: running 'make unit-tests' (a minute or two)..." >&2
+  if ! make unit-tests; then
+    cat >&2 <<'EOF'
+
+pre-push: unit tests failed -- push aborted.
+
+The `Test` CI workflow is disabled (see .github/workflows/test.yaml), so this
+hook is the only gate. Fix the failures above and push again.
+
+To bypass just this gate once:
+
+    SKIP_TESTS=1 git push
+EOF
+    exit 1
+  fi
+fi
+
+echo "pre-push: all gates passed" >&2

@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint lint-ci value-state-check test test-json docs sweep build-render-tool
+.PHONY: build hooks linter lint lint-ci value-state-check test test-json docs sweep build-render-tool
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname SWEEP_PREFIX=prefix
 # SWEEP_PREFIX optionally overrides the resource-name prefix the sweeper matches
@@ -23,6 +23,15 @@ TEST_TIMEOUT ?= 120m
 
 build:
 	go build
+
+# Install the tracked git hooks (.githooks/pre-push): lint, docs and unit-test
+# gates run before every push because the Lint/Test/Docs CI workflows are
+# disabled (see .github/workflows/{lint,test,docs}.yaml). init.sh in the
+# tooling workspace runs this automatically; for a standalone clone, run once:
+#     make hooks
+hooks:
+	git config core.hooksPath .githooks
+	@echo "pre-push hook enabled (core.hooksPath=.githooks)"
 
 linter:
 	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
