@@ -107,7 +107,9 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 				// action/firewall/service are WriteOnly and Read hard-sets them
 				// to null, so they are never in state and cannot produce an
 				// ImportStateVerify diff -- not ignored here. protocol is not set
-				// in the example config, so it round-trips as null. No ignores.
+				// in the example config; the rule persists as null and Read also
+				// normalizes an empty persisted value to null, so it round-trips
+				// as null on both sides. No ignores.
 				ResourceName: "hpe_morpheus_network_router_nat.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_nat.example"]
@@ -191,10 +193,10 @@ resource "hpe_morpheus_network_router_nat" "example" {
 			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
 			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
 			// Import after update: action/firewall/service are WriteOnly and
-			// never in state. protocol is set to "tcp" by updateConfig and is
-			// returned by the NAT GET, so Read prefers the API value and it must
-			// round-trip -- this step asserts that (no ignore) and is the
-			// primary MORPH-14702 guard.
+			// never in state. protocol is set to "tcp" by updateConfig; no
+			// server-side path rewrites it (verified against the NSX-T create
+			// and sync layers), so the configured value round-trips on import
+			// and is verified here rather than ignored.
 			{
 				ImportState:       true,
 				ImportStateVerify: true,

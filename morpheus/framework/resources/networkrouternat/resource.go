@@ -246,14 +246,17 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	// protocol is a persisted domain field that the NAT GET renders
-	// (_networkRouterNAT.gson: networkRouterNAT.protocol). Read prefers the API
-	// value, falling back to the plan value only when the API omits it (avoids an
-	// inconsistent result after apply). Deprecated (superseded by service) but
-	// retained for backward compatibility.
-	if p := nat.Protocol.Get(); p != nil {
+	// protocol is a deprecated field (superseded by service). It is nullable
+	// with no default in the domain and is rendered by the NAT read view, so an
+	// unset rule reads back as null. No server-side path writes protocol (the
+	// NSX-T create and sync layers never set it), so a configured value is
+	// preserved end to end. Normalize an empty API value to null defensively so
+	// the create and import representations always agree; a non-empty API value
+	// is honored, and the plan value is preserved only when it is a real
+	// (non-null) value.
+	if p := nat.Protocol.Get(); p != nil && *p != "" {
 		state.Protocol = types.StringValue(*p)
-	} else if !plan.Protocol.IsUnknown() {
+	} else if !plan.Protocol.IsUnknown() && !plan.Protocol.IsNull() {
 		state.Protocol = plan.Protocol
 	} else {
 		state.Protocol = types.StringNull()
