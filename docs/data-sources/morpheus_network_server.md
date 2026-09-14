@@ -28,7 +28,7 @@ data "hpe_morpheus_network_server" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network server (integration)
-- `name` (String) The name of the network server (integration)
+- `name` (String) The name of the network server (integration). Must not be empty.
 
 ### Read-Only
 

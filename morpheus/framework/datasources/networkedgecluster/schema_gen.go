@@ -64,10 +64,11 @@ func NetworkEdgeClusterDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network edge cluster",
-				MarkdownDescription: "The name of the network edge cluster",
+				Description:         "The name of the network edge cluster. Must not be empty.",
+				MarkdownDescription: "The name of the network edge cluster. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_server_id": schema.Int64Attribute{

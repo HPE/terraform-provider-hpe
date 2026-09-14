@@ -34,7 +34,7 @@ data "hpe_morpheus_network_firewall_rule" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network firewall rule
-- `name` (String) The name of the network firewall rule
+- `name` (String) The name of the network firewall rule. Must not be empty.
 
 ### Read-Only
 

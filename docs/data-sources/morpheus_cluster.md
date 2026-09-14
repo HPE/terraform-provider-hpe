@@ -38,7 +38,7 @@ data "hpe_morpheus_cluster" "example" {
 ### Optional
 
 - `id` (Number) The ID of the cluster
-- `name` (String) The name of the cluster.
+- `name` (String) The name of the cluster. Must not be empty.
 
 ### Read-Only
 

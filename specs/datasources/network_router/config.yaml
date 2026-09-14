@@ -44,8 +44,9 @@ network_router:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
+      string_length_at_least: 1
       conflicts_with: ["id"]
-      description: The name of the network router.
+      description: The name of the network router. Must not be empty.
       computed_optional_required: computed_optional
     interfaces.ip_address:
       description: Equivalent to interfaces.source_addresses in the HPE-GL Provider.

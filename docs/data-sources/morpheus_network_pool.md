@@ -28,7 +28,7 @@ data "hpe_morpheus_network_pool" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network pool
-- `name` (String) The name of the network pool
+- `name` (String) The name of the network pool. Must not be empty.
 
 ### Read-Only
 

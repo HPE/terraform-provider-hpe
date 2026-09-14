@@ -38,7 +38,7 @@ data "hpe_morpheus_storage_server" "example" {
 ### Optional
 
 - `id` (Number) The ID of the storage server. Conflicts with name.
-- `name` (String) The name of the storage server. Conflicts with id.
+- `name` (String) The name of the storage server. Conflicts with id. Must not be empty.
 
 ### Read-Only
 

@@ -253,10 +253,11 @@ func LoadBalancerPoolDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the load balancer pool",
-				MarkdownDescription: "The name of the load balancer pool",
+				Description:         "The name of the load balancer pool. Must not be empty.",
+				MarkdownDescription: "The name of the load balancer pool. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"nodes": schema.SetNestedAttribute{

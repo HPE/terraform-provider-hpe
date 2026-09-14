@@ -28,7 +28,7 @@ data "hpe_morpheus_vdi_gateway" "example" {
 ### Optional
 
 - `id` (Number) The ID of the VDI gateway.
-- `name` (String) The name of the VDI gateway.
+- `name` (String) The name of the VDI gateway. Must not be empty.
 
 ### Read-Only
 

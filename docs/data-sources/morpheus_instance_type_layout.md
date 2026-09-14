@@ -37,7 +37,7 @@ data "hpe_morpheus_instance_type_layout" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the instance layout
-- `name` (String) The name of the Morpheus instance layout
+- `name` (String) The name of the Morpheus instance layout. Must not be empty.
 - `version` (String) The version of the instance layout
 
 ### Read-Only

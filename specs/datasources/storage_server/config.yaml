@@ -47,9 +47,10 @@ storage_server:
       conflicts_with: ["name"]
       description: The ID of the storage server. Conflicts with name.
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
-      description: The name of the storage server. Conflicts with id.
+      description: The name of the storage server. Conflicts with id. Must not be empty.
     description:
       description: The description of the storage server.
     visibility:

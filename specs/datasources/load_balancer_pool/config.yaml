@@ -88,7 +88,8 @@ load_balancer_pool:
       description: The ID of the load balancer this pool belongs to
       computed_optional_required: required
     name:
-      description: The name of the load balancer pool
+      string_length_at_least: 1
+      description: The name of the load balancer pool. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
     description:

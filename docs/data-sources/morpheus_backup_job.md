@@ -28,7 +28,7 @@ data "hpe_morpheus_backup_job" "example" {
 ### Optional
 
 - `id` (Number) The ID of the backup job
-- `name` (String) The name of the backup job
+- `name` (String) The name of the backup job. Must not be empty.
 
 ### Read-Only
 

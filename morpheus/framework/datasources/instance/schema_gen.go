@@ -1166,6 +1166,7 @@ func InstanceDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed: true,
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_level": schema.StringAttribute{

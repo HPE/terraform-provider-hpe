@@ -98,6 +98,7 @@ func BackupTypeDataSourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Display name of the backup type",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"provider_code": schema.StringAttribute{

@@ -128,6 +128,9 @@ func ImageDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "A name for the virtual image",
 				MarkdownDescription: "A name for the virtual image",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"os_type_id": schema.Int64Attribute{
 				Computed:            true,

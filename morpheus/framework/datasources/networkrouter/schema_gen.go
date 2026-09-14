@@ -114,10 +114,11 @@ func NetworkRouterDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network router.",
-				MarkdownDescription: "The name of the network router.",
+				Description:         "The name of the network router. Must not be empty.",
+				MarkdownDescription: "The name of the network router. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_integration": schema.SingleNestedAttribute{

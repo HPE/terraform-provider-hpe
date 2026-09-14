@@ -23,7 +23,8 @@ network_firewall_rule:
       at_least_one_of: ["id", "name"]
       computed_optional_required: computed_optional
     name:
-      description: The name of the network firewall rule
+      string_length_at_least: 1
+      description: The name of the network firewall rule. Must not be empty.
       conflicts_with: ["id"]
       at_least_one_of: ["id", "name"]
       computed_optional_required: computed_optional

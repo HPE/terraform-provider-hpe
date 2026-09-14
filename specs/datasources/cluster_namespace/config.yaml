@@ -10,8 +10,9 @@ cluster_namespace:
       description: The ID of the cluster namespace.
       conflicts_with: ["name"]
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the cluster namespace.
+      description: The name of the cluster namespace. Must not be empty.
       conflicts_with: ["id"]
     cluster_id:
       computed_optional_required: required

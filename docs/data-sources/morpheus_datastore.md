@@ -36,7 +36,7 @@ data "hpe_morpheus_datastore" "test" {
 ### Optional
 
 - `id` (Number) The ID of the datastore
-- `name` (String) The name of the datastore
+- `name` (String) The name of the datastore. Must not be empty.
 
 ### Read-Only
 

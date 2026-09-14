@@ -106,11 +106,12 @@ func NetworkFirewallRuleDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network firewall rule",
-				MarkdownDescription: "The name of the network firewall rule",
+				Description:         "The name of the network firewall rule. Must not be empty.",
+				MarkdownDescription: "The name of the network firewall rule. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.AtLeastOneOf(path.Expressions{path.MatchRoot("id"), path.MatchRoot("name")}...),
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_integration_id": schema.Int64Attribute{

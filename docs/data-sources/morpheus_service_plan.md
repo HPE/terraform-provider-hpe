@@ -45,7 +45,7 @@ data "hpe_morpheus_service_plan" "example" {
 
 - `cloud_id` (Number) ID of the cloud the service plan must be available in. Disambiguates plans that share a name across clouds/regions (e.g. Azure). Requires name and provision_type_code.
 - `id` (Number) Morpheus ID of the Object being referenced
-- `name` (String) The name of the Morpheus service plan
+- `name` (String) The name of the Morpheus service plan. Must not be empty.
 - `provision_type_code` (String) The provision type code of the Morpheus service plan
 
 ### Read-Only

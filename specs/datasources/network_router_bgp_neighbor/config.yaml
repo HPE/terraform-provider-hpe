@@ -23,5 +23,6 @@ network_router_bgp_neighbor:
       computed_optional_required: computed_optional
       description: The ID of the BGP neighbor
     ip_address:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided.
+      description: The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided. Must not be empty.

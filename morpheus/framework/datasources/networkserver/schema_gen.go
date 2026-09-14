@@ -58,10 +58,11 @@ func NetworkServerDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network server (integration)",
-				MarkdownDescription: "The name of the network server (integration)",
+				Description:         "The name of the network server (integration). Must not be empty.",
+				MarkdownDescription: "The name of the network server (integration). Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_filter": schema.StringAttribute{

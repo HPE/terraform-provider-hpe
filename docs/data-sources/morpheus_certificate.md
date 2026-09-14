@@ -28,7 +28,7 @@ data "hpe_morpheus_certificate" "example" {
 ### Optional
 
 - `id` (Number) The ID of the certificate.
-- `name` (String) The name of the certificate.
+- `name` (String) The name of the certificate. Must not be empty.
 
 ### Read-Only
 

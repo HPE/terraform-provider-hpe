@@ -31,7 +31,7 @@ data "hpe_morpheus_network_domain" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the network domain
-- `name` (String) The name of the network domain
+- `name` (String) The name of the network domain. Must not be empty.
 
 ### Read-Only
 

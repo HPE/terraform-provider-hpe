@@ -84,10 +84,11 @@ func NetworkDomainDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network domain",
-				MarkdownDescription: "The name of the network domain",
+				Description:         "The name of the network domain. Must not be empty.",
+				MarkdownDescription: "The name of the network domain. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"ou_path": schema.StringAttribute{

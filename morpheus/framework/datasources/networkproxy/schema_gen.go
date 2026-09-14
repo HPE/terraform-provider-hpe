@@ -34,10 +34,11 @@ func NetworkProxyDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network proxy",
-				MarkdownDescription: "The name of the network proxy",
+				Description:         "The name of the network proxy. Must not be empty.",
+				MarkdownDescription: "The name of the network proxy. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"owner_id": schema.Int64Attribute{

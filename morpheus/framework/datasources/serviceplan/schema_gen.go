@@ -178,10 +178,11 @@ func ServicePlanDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus service plan",
-				MarkdownDescription: "The name of the Morpheus service plan",
+				Description:         "The name of the Morpheus service plan. Must not be empty.",
+				MarkdownDescription: "The name of the Morpheus service plan. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(path.Expressions{path.MatchRoot("provision_type_code")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"price_set_ids": schema.SetAttribute{

@@ -234,10 +234,11 @@ func BackupDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Name of the Backup",
-				MarkdownDescription: "Name of the Backup",
+				Description:         "Name of the Backup. Must not be empty.",
+				MarkdownDescription: "Name of the Backup. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"next_fire": schema.StringAttribute{

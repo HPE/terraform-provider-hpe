@@ -106,6 +106,7 @@ policy:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
+      string_length_at_least: 1
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
 

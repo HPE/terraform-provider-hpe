@@ -64,10 +64,11 @@ func SecurityGroupDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the security group. Conflicts with id.",
-				MarkdownDescription: "The name of the security group. Conflicts with id.",
+				Description:         "The name of the security group. Conflicts with id. Must not be empty.",
+				MarkdownDescription: "The name of the security group. Conflicts with id. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"resource_permission_group_ids": schema.SetAttribute{

@@ -40,7 +40,7 @@ data "hpe_morpheus_load_balancer_pool" "example" {
 ### Optional
 
 - `id` (Number) The ID of the load balancer pool
-- `name` (String) The name of the load balancer pool
+- `name` (String) The name of the load balancer pool. Must not be empty.
 
 ### Read-Only
 

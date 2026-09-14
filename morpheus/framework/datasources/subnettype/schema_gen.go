@@ -59,10 +59,11 @@ func SubnetTypeDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the subnet type",
-				MarkdownDescription: "The name of the subnet type",
+				Description:         "The name of the subnet type. Must not be empty.",
+				MarkdownDescription: "The name of the subnet type. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 		},

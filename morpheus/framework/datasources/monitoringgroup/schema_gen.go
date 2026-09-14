@@ -92,10 +92,11 @@ func MonitoringGroupDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the monitoring group.",
-				MarkdownDescription: "The name of the monitoring group.",
+				Description:         "The name of the monitoring group. Must not be empty.",
+				MarkdownDescription: "The name of the monitoring group. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"severity": schema.StringAttribute{

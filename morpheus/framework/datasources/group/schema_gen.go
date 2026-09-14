@@ -39,10 +39,11 @@ func GroupDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus group",
-				MarkdownDescription: "The name of the Morpheus group",
+				Description:         "The name of the Morpheus group. Must not be empty.",
+				MarkdownDescription: "The name of the Morpheus group. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 		},

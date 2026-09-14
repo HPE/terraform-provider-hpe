@@ -50,7 +50,8 @@ load_balancer_monitor:
       description: The ID of the load balancer associated with the monitor
       computed_optional_required: required
     name:
-      description: The name of the load balancer monitor
+      string_length_at_least: 1
+      description: The name of the load balancer monitor. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
     description:

@@ -26,6 +26,7 @@ cluster:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
+      string_length_at_least: 1
       conflicts_with: ["id"]
-      description: The name of the cluster.
+      description: The name of the cluster. Must not be empty.
       computed_optional_required: computed_optional

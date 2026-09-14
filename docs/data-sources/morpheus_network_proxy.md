@@ -45,7 +45,7 @@ data "hpe_morpheus_network_proxy" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network proxy
-- `name` (String) The name of the network proxy
+- `name` (String) The name of the network proxy. Must not be empty.
 
 ### Read-Only
 

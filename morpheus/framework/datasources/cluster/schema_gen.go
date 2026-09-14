@@ -189,10 +189,11 @@ func ClusterDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the cluster.",
-				MarkdownDescription: "The name of the cluster.",
+				Description:         "The name of the cluster. Must not be empty.",
+				MarkdownDescription: "The name of the cluster. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"namespaces_count": schema.Int64Attribute{

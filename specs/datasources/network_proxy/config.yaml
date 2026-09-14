@@ -15,7 +15,8 @@ network_proxy:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
-      description: The name of the network proxy
+      string_length_at_least: 1
+      description: The name of the network proxy. Must not be empty.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     proxy_host:

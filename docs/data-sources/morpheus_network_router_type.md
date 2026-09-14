@@ -28,7 +28,7 @@ data "hpe_morpheus_network_router_type" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network router type
-- `name` (String) The name of the network router type
+- `name` (String) The name of the network router type. Must not be empty.
 
 ### Read-Only
 

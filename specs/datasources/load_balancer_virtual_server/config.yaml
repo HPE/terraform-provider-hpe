@@ -52,5 +52,6 @@ load_balancer_virtual_server:
       computed_optional_required: required
       description: The ID of the load balancer this virtual server belongs to
     vip_name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: VIP Name
+      description: VIP Name. Must not be empty.

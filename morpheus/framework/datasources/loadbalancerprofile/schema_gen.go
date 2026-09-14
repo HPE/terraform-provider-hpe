@@ -414,10 +414,11 @@ func LoadBalancerProfileDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the load balancer profile. One of id or name is required.",
-				MarkdownDescription: "The name of the load balancer profile. One of id or name is required.",
+				Description:         "The name of the load balancer profile. One of id or name is required. Must not be empty.",
+				MarkdownDescription: "The name of the load balancer profile. One of id or name is required. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"persistence_cookie_name": schema.StringAttribute{

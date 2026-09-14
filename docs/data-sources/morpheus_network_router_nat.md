@@ -36,7 +36,7 @@ data "hpe_morpheus_network_router_nat" "example" {
 ### Optional
 
 - `id` (Number) The ID of the NAT rule.
-- `name` (String) The name of the NAT rule.
+- `name` (String) The name of the NAT rule. Must not be empty.
 
 ### Read-Only
 

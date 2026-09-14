@@ -50,10 +50,11 @@ func NetworkRouterFirewallRuleGroupDataSourceSchema(ctx context.Context) schema.
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the firewall rule group.",
-				MarkdownDescription: "The name of the firewall rule group.",
+				Description:         "The name of the firewall rule group. Must not be empty.",
+				MarkdownDescription: "The name of the firewall rule group. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"priority": schema.Int64Attribute{

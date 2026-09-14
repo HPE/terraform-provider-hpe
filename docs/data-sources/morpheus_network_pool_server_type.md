@@ -28,7 +28,7 @@ data "hpe_morpheus_network_pool_server_type" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network pool server type
-- `name` (String) The name of the network pool server type
+- `name` (String) The name of the network pool server type. Must not be empty.
 
 ### Read-Only
 

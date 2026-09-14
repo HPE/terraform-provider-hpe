@@ -38,7 +38,7 @@ data "hpe_morpheus_storage_volume" "example" {
 ### Optional
 
 - `id` (Number) The ID of the storage volume. Conflicts with name.
-- `name` (String) The name of the storage volume. Conflicts with id.
+- `name` (String) The name of the storage volume. Conflicts with id. Must not be empty.
 
 ### Read-Only
 

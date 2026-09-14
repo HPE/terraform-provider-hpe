@@ -72,10 +72,11 @@ func NetworkDhcpServerDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network DHCP server",
-				MarkdownDescription: "The name of the network DHCP server",
+				Description:         "The name of the network DHCP server. Must not be empty.",
+				MarkdownDescription: "The name of the network DHCP server. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_integration_id": schema.Int64Attribute{

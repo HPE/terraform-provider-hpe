@@ -26,7 +26,8 @@ monitoring_group:
       computed_optional_required: computed_optional
       conflicts_with: ["name"]
     name:
-      description: The name of the monitoring group.
+      string_length_at_least: 1
+      description: The name of the monitoring group. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
     check_type:

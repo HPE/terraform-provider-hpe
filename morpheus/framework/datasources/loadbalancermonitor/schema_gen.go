@@ -150,10 +150,11 @@ func LoadBalancerMonitorDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the load balancer monitor",
-				MarkdownDescription: "The name of the load balancer monitor",
+				Description:         "The name of the load balancer monitor. Must not be empty.",
+				MarkdownDescription: "The name of the load balancer monitor. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"receive_code": schema.StringAttribute{

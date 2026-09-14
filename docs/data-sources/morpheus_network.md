@@ -28,7 +28,7 @@ data "hpe_morpheus_network" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the network being referenced
-- `name` (String) The name of the Morpheus network
+- `name` (String) The name of the Morpheus network. Must not be empty.
 
 ### Read-Only
 

@@ -28,7 +28,7 @@ data "hpe_morpheus_network_type" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network type
-- `name` (String) The name of the network type
+- `name` (String) The name of the network type. Must not be empty.
 
 ### Read-Only
 

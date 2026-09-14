@@ -28,7 +28,7 @@ data "hpe_morpheus_os_type" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the OS type
-- `name` (String) The name of the OS type
+- `name` (String) The name of the OS type. Must not be empty.
 
 ### Read-Only
 

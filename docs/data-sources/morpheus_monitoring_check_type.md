@@ -28,7 +28,7 @@ data "hpe_morpheus_monitoring_check_type" "example" {
 ### Optional
 
 - `id` (Number) The ID of the monitoring check type
-- `name` (String) The name of the monitoring check type
+- `name` (String) The name of the monitoring check type. Must not be empty.
 
 ### Read-Only
 

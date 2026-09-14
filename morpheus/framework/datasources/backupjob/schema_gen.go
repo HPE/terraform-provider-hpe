@@ -54,10 +54,11 @@ func BackupJobDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the backup job",
-				MarkdownDescription: "The name of the backup job",
+				Description:         "The name of the backup job. Must not be empty.",
+				MarkdownDescription: "The name of the backup job. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"next_fire": schema.StringAttribute{

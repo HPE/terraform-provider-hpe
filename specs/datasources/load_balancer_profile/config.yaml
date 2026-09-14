@@ -66,8 +66,9 @@ load_balancer_profile:
       computed_optional_required: required
       description: The ID of the load balancer this profile belongs to.
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the load balancer profile. One of id or name is required.
+      description: The name of the load balancer profile. One of id or name is required. Must not be empty.
       conflicts_with: [id]
     tags:
       computed_optional_required: computed

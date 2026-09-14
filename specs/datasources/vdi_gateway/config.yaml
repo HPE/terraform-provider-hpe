@@ -9,7 +9,8 @@ vdi_gateway:
       computed_optional_required: computed_optional
       conflicts_with: ["name"]
     name:
-      description: The name of the VDI gateway.
+      string_length_at_least: 1
+      description: The name of the VDI gateway. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
     date_created:

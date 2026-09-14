@@ -76,10 +76,11 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus cloud",
-				MarkdownDescription: "The name of the Morpheus cloud",
+				Description:         "The name of the Morpheus cloud. Must not be empty.",
+				MarkdownDescription: "The name of the Morpheus cloud. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"time_zone": schema.StringAttribute{

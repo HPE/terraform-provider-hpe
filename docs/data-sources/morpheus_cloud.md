@@ -30,7 +30,7 @@ data "hpe_morpheus_cloud" "example_by_name" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the Object being referenced
-- `name` (String) The name of the Morpheus cloud
+- `name` (String) The name of the Morpheus cloud. Must not be empty.
 
 ### Read-Only
 
