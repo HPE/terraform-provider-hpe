@@ -301,14 +301,14 @@ func tenantTreeStateChecks(
 // which removes trees children-first.
 //
 // Nominating a parent is only permitted for the master tenant, so this test
-// requires master-tenant credentials; gate it on the master-tenant capability
-// once MORPH-16401 lands. The tenant hierarchy only exists on Morpheus 8.1.0
+// requires master-tenant credentials and is gated on the master_tenant
+// capability (MORPH-16401). The tenant hierarchy only exists on Morpheus 8.1.0
 // and later (constants.TenantParentMinVersion), so it is skipped on older
 // appliances.
 func TestAccMorpheusTenantTreeOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All, capabilities.MasterTenant)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
