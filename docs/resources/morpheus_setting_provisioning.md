@@ -39,7 +39,7 @@ resource "hpe_morpheus_setting_provisioning" "tf_example_provisioning_setting" {
 - `pxe_root_password` (String, Sensitive) Password to be set for Root during PXE Boots.
 - `require_environments` (Boolean) Forces users to select and Environment during provisioning
 - `reuse_sequence` (Boolean) When enabled, sequence numbers can be reused when Instances are removed. Deselect this option and Morpheus will track issued sequence numbers and use the next available number each time.
-- `show_console_keyboard_settings` (Boolean)
+- `show_console_keyboard_settings` (Boolean) Displays the keyboard layout selection when opening a guest console (VNC/RDP) so users can pick the keyboard mapping for their session.
 - `show_pricing` (Boolean) Displays or hides Pricing in Provisioning wizard and Instance and Host detail pages.
 - `windows_password` (String, Sensitive) Password to be set for the Windows Administrator User during provisioning.
 
