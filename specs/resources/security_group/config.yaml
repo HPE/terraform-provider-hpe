@@ -65,13 +65,10 @@ security_group:
       default: "private"
     resource_permission_groups_all:
       state_for_unknown: true
-      validators:
-        - custom:
-            imports:
-              - path: github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator
-              - path: github.com/hashicorp/terraform-plugin-framework/path
-            schema_definition: |-
-              boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids"))
+      # MORPH-16355: no ConflictsWith against resource_permission_group_ids. The
+      # two are designed to be used together -- `false` plus a list of group ids
+      # is the only way to express "specific groups", and is the documented and
+      # shipped-example usage. The API accepts and honours the combination.
     tenant_ids:
       computed_optional_required: computed_optional
       state_for_unknown: true

@@ -5,9 +5,7 @@ package securitygroup
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/boolvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -66,9 +64,6 @@ func SecurityGroupResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Whether all groups have access to the security group.",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.UseStateForUnknown(),
-				},
-				Validators: []validator.Bool{
-					boolvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("resource_permission_group_ids")),
 				},
 			},
 			"tenant_ids": schema.SetAttribute{

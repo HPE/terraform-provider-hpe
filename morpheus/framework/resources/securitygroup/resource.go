@@ -96,24 +96,20 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	}
 
 	// Resource permissions
-	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
-		rp := &sdk.AddSecurityGroupsRequestSecurityGroupResourcePermissions{
-			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+	//
+	// These are also sent here for completeness, but the create endpoint does not
+	// act on them (see applyPlanAfterCreate below), so the authoritative write
+	// happens in the follow-up update after the create.
+	rp, diags := resourcePermissionsFromPlan(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if rp != nil {
+		body.ResourcePermissions = &sdk.AddSecurityGroupsRequestSecurityGroupResourcePermissions{
+			All:   rp.All,
+			Sites: rp.Sites,
 		}
-		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
-			var groupIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
-			for i, gid := range groupIDs {
-				id := gid
-				sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
-			}
-			rp.Sites = sites
-		}
-		body.ResourcePermissions = rp
 	}
 
 	result, httpResp, err := client.SecurityGroupsAPI.AddSecurityGroups(ctx).
@@ -138,6 +134,30 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
+	// The create endpoint ignores resourcePermissions (it parses them from the
+	// request and then never applies them), so a group created with
+	// resource_permission_groups_all = false and a list of group ids would come
+	// back as "all groups" and fail the apply with an inconsistent result. The
+	// update endpoint does honour them, so apply them with a follow-up update.
+	//
+	// The follow-up carries the FULL planned body, not just the permissions:
+	// the update endpoint coerces an absent `active` to false and an absent
+	// `visibility` to "private", so a permissions-only update would silently
+	// deactivate the group. MORPH-16355.
+	if rp != nil {
+		if err := applyPlanAfterCreate(ctx, client, *sg.Id, &plan); err != nil {
+			errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "security_group", plan.Name.ValueString(), err, nil)
+			cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
+				ResourceType: "security_group",
+				ResourceID:   *sg.Id,
+				StateWriter:  &resp.State,
+				Diagnostics:  &resp.Diagnostics,
+			})
+
+			return
+		}
+	}
+
 	state, diags := r.getSecurityGroupAsState(ctx, *sg.Id)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -150,6 +170,8 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 
 		return
 	}
+
+	preservePlannedPermissions(state, &plan)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -197,53 +219,10 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
-	body := &sdk.UpdateSecurityGroupsRequestSecurityGroup{}
-	body.Name = plan.Name.ValueStringPointer()
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
-	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
-		body.Active = plan.Active.ValueBoolPointer()
-	}
-	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
-		body.Visibility = plan.Visibility.ValueStringPointer()
-	}
-
-	// Tenant permissions — always send to avoid perpetual diff when user removes tenant_ids from config.
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []int64
-		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
-			Accounts: tenantIDs,
-		}
-	} else {
-		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
-			Accounts: []int64{},
-		}
-	}
-
-	// Resource permissions
-	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
-		rp := &sdk.UpdateSecurityGroupsRequestSecurityGroupResourcePermissions{
-			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
-		}
-		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
-			var groupIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
-			if resp.Diagnostics.HasError() {
-				return
-			}
-			sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
-			for i, gid := range groupIDs {
-				id := gid
-				sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
-			}
-			rp.Sites = sites
-		}
-		body.ResourcePermissions = rp
+	body, diags := updateBodyFromPlan(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	_, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
@@ -262,17 +241,7 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	// The GET after update may not return resourcePermission or tenants.
-	// Preserve plan values when the API doesn't return them.
-	if state.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsNull() {
-		state.ResourcePermissionGroupsAll = plan.ResourcePermissionGroupsAll
-	}
-	if state.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsNull() {
-		state.ResourcePermissionGroupIds = plan.ResourcePermissionGroupIds
-	}
-	if state.TenantIds.IsNull() && !plan.TenantIds.IsNull() {
-		state.TenantIds = plan.TenantIds
-	}
+	preservePlannedPermissions(state, &plan)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -419,4 +388,150 @@ func extractGroupIDsFromCreateSites(
 	result, _ := types.SetValue(types.Int64Type, groupValues)
 
 	return result
+}
+
+// preservePlannedPermissions carries planned permission values into the state
+// read back after a create or update when the API omits them.
+//
+// The GET may not return resourcePermission or tenants -- a known quirk of the
+// endpoint. Without this, a value the practitioner configured would land in
+// state as null, and every subsequent plan would propose to set it again. Only
+// null state values are filled, so a value the API does return always wins.
+// Shared by Create and Update so the two paths cannot drift.
+func preservePlannedPermissions(state, plan *SecurityGroupModel) {
+	if state.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsNull() {
+		state.ResourcePermissionGroupsAll = plan.ResourcePermissionGroupsAll
+	}
+	if state.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsNull() {
+		state.ResourcePermissionGroupIds = plan.ResourcePermissionGroupIds
+	}
+	if state.TenantIds.IsNull() && !plan.TenantIds.IsNull() {
+		state.TenantIds = plan.TenantIds
+	}
+}
+
+// resourcePermissionsFromPlan builds the resourcePermissions payload from the
+// plan, or returns nil when resource_permission_groups_all is not configured.
+//
+// The two attributes are designed to be used together: `all = false` plus a
+// list of group ids is the only way to express "specific groups have access",
+// and the ids are only meaningful inside the permissions object. The update
+// request type is returned because it is the one the API actually honours (see
+// applyPlanAfterCreate); the create body adapts it.
+func resourcePermissionsFromPlan(
+	ctx context.Context,
+	plan *SecurityGroupModel,
+) (*sdk.UpdateSecurityGroupsRequestSecurityGroupResourcePermissions, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if plan.ResourcePermissionGroupsAll.IsNull() || plan.ResourcePermissionGroupsAll.IsUnknown() {
+		return nil, diags
+	}
+
+	rp := &sdk.UpdateSecurityGroupsRequestSecurityGroupResourcePermissions{
+		All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
+	}
+
+	if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
+		var groupIDs []int64
+		diags.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
+		for i, gid := range groupIDs {
+			id := gid
+			sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
+		}
+		rp.Sites = sites
+	}
+
+	return rp, diags
+}
+
+// updateBodyFromPlan builds the full update request body from the plan. It is
+// shared by Update and by the follow-up update Create issues.
+//
+// Every field is sent explicitly, because the update endpoint does not treat
+// absent fields as "leave unchanged" for all attributes: it coerces an absent
+// `active` to false and an absent `visibility` to "private". Sending the whole
+// planned body makes the request idempotent with respect to the plan.
+func updateBodyFromPlan(
+	ctx context.Context,
+	plan *SecurityGroupModel,
+) (*sdk.UpdateSecurityGroupsRequestSecurityGroup, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	body := &sdk.UpdateSecurityGroupsRequestSecurityGroup{}
+	body.Name = plan.Name.ValueStringPointer()
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		body.Description = plan.Description.ValueStringPointer()
+	}
+	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
+		body.Active = plan.Active.ValueBoolPointer()
+	}
+	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
+		body.Visibility = plan.Visibility.ValueStringPointer()
+	}
+
+	// Tenant permissions: send only when tenant_ids is explicitly configured.
+	//
+	// Do NOT send an empty tenantPermissions to "clear" tenants. Tenant and
+	// group (resource) permissions share one server-side table keyed by
+	// account, and an empty accounts list makes the API delete every row it
+	// holds -- including the owner account's own row that carries
+	// resource_permission_groups_all / resource_permission_group_ids. The GET
+	// then stops returning resourcePermission at all. Omitting the field leaves
+	// permissions untouched, which is the intended "unchanged" semantics;
+	// tenant_ids is Computed, so the API's own value is carried in state.
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []int64
+		diags.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+		if diags.HasError() {
+			return nil, diags
+		}
+		body.TenantPermissions = &sdk.UpdateSecurityGroupsRequestSecurityGroupTenantPermissions{
+			Accounts: tenantIDs,
+		}
+	}
+
+	rp, rpDiags := resourcePermissionsFromPlan(ctx, plan)
+	diags.Append(rpDiags...)
+	if diags.HasError() {
+		return nil, diags
+	}
+	body.ResourcePermissions = rp
+
+	return body, diags
+}
+
+// applyPlanAfterCreate re-sends the full planned body as an update immediately
+// after a create.
+//
+// The create endpoint accepts a resourcePermissions object but does not act on
+// it -- the API parses it from the request and then never applies it, so a
+// group created with `all = false` and a list of group ids is stored as "all
+// groups" with no sites. The update endpoint does apply it, so the plan is
+// applied a second time through that path. See updateBodyFromPlan for why the
+// whole body, rather than just the permissions, is sent.
+func applyPlanAfterCreate(
+	ctx context.Context,
+	client *sdk.APIClient,
+	id int64,
+	plan *SecurityGroupModel,
+) error {
+	body, diags := updateBodyFromPlan(ctx, plan)
+	if diags.HasError() {
+		return fmt.Errorf("building follow-up update after create: %s", diags.Errors()[0].Detail())
+	}
+
+	_, httpResp, err := client.SecurityGroupsAPI.UpdateSecurityGroups(ctx, id).
+		UpdateSecurityGroupsRequest(sdk.UpdateSecurityGroupsRequest{
+			SecurityGroup: *body,
+		}).Execute()
+	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+		return fmt.Errorf("applying resource permissions after create: %w", err)
+	}
+
+	return nil
 }
