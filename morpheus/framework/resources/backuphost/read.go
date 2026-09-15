@@ -90,6 +90,12 @@ func getBackupAsState(
 		state.JobId = convert.Int64ToType(b.Job.Id)
 	}
 
+	// The GET response does not echo storageProvider for server/host (directory)
+	// backups even though it was associated on create (from the "target" field).
+	// Preserve the planned/prior value when the API omits it, otherwise a
+	// configured storage_provider_id would read back null and cause an
+	// "inconsistent result after apply" error. MORPH-14631.
+	state.StorageProviderId = plan.StorageProviderId
 	if b.StorageProvider != nil {
 		state.StorageProviderId = convert.Int64ToType(b.StorageProvider.Id)
 	}

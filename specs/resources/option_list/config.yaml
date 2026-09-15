@@ -47,9 +47,9 @@ option_list:
               - path: github.com/HPE/terraform-provider-hpe/utils/validators
             schema_definition: validators.RequiredWhenSiblingEqualsOrNull("type", "rest")
     type:
-      computed_optional_required: optional
+      computed_optional_required: computed_optional
       description: The type of the option list (rest, manual, ldap, api).
-      remove_default: true
+      default: "rest"
     visibility:
       computed_optional_required: computed_optional
       description: The visibility of the option type list.

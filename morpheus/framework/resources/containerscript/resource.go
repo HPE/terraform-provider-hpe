@@ -366,8 +366,14 @@ func mapGetResponseToModel(
 	// Preserve the prior state value when the API omits the script body (nil) or
 	// masks it for a global script owned by another account (maskedScriptSentinel).
 	// Overwriting would clobber the configured value and cause a perpetual diff.
+	// However, only preserve when the current value is already known: on create
+	// with no script configured the Computed value is still unknown, and leaving
+	// it unknown yields "unknown value after apply". Set null in that case so the
+	// attribute is known after apply. MORPH-14689.
 	if script.Script != nil && *script.Script != maskedScriptSentinel {
 		model.Script = customtypes.NewNormalizedLineEndingsStringValue(*script.Script)
+	} else if model.Script.IsUnknown() {
+		model.Script = customtypes.NewNormalizedLineEndingsStringNull()
 	}
 	if script.RunAsUser.IsSet() && script.RunAsUser.Get() != nil {
 		model.RunAsUser = types.StringValue(*script.RunAsUser.Get())
@@ -475,9 +481,13 @@ func mapGenericScriptToModel(
 	if v, ok := m["scriptType"].(string); ok {
 		model.ScriptType = types.StringValue(v)
 	}
-	// Preserve prior state when the API omits (absent) or masks the script body.
+	// Preserve prior state when the API omits (absent) or masks the script body,
+	// but set null when the current value is still unknown (create with no
+	// script) so it is known after apply. MORPH-14689.
 	if v, ok := m["script"].(string); ok && v != maskedScriptSentinel {
 		model.Script = customtypes.NewNormalizedLineEndingsStringValue(v)
+	} else if model.Script.IsUnknown() {
+		model.Script = customtypes.NewNormalizedLineEndingsStringNull()
 	}
 	if v, ok := m["runAsUser"].(string); ok && v != "" {
 		model.RunAsUser = types.StringValue(v)

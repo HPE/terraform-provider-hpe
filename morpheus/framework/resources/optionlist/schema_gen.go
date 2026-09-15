@@ -63,6 +63,7 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"type": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The type of the option list (rest, manual, ldap, api).",
 				MarkdownDescription: "The type of the option list (rest, manual, ldap, api).",
 				Validators: []validator.String{
@@ -73,6 +74,7 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 						"manual",
 					),
 				},
+				Default: stringdefault.StaticString("rest"),
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
