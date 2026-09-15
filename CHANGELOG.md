@@ -49,6 +49,47 @@ admit is downloaded before `filter` blocks are applied, and Terraform reads a da
 plan and apply alike.  Narrow it with `image_type`, `image_id` or `phrase` wherever possible; the
 data source documentation has a table of which arguments reduce the download and which do not.
 
+### `hpe_morpheus_tenant` and `hpe_morpheus_tenants` data sources reimplemented
+
+Both tenant data sources have been rewritten on the plugin framework (previously
+terraform-plugin-sdk/v2), completing the port begun with the `hpe_morpheus_tenant` resource in
+v2.0.0. Attribute names are unchanged, but one type changes:
+
+The elements of `hpe_morpheus_tenants.ids` change type from **string to number**, matching the
+tenant resource's `id`. Terraform converts numbers to strings implicitly in most contexts, so plain
+interpolation keeps working, but contexts that require strings must now convert explicitly — most
+commonly `for_each`:
+
+```hcl
+# Before
+for_each = toset(data.hpe_morpheus_tenants.all.ids)
+
+# Now
+for_each = toset([for id in data.hpe_morpheus_tenants.all.ids : tostring(id)])
+```
+
+`ids` remains a list ordered by id, ascending unless `sort_ascending = false`, and `filter` blocks
+are unchanged, including their regular-expression semantics.
+
+Both data sources also report more, and fail honestly where they previously returned nothing:
+
+- `hpe_morpheus_tenant` now populates the full tenant read model — `description`, `enabled`,
+  `subdomain`, `currency`, `external_id`, `master`, `base_role_id`, `base_role_name`, `parent_id`,
+  `parent_name`, `parent_subdomain`, `instance_count`, `user_count`, `date_created` and
+  `last_updated` — alongside the existing `account_name`, `account_number` and `customer_number`.
+  For the master tenant, which has no parent and no base role, the `parent_*` and `base_role_*`
+  attributes are `null`.
+- `hpe_morpheus_tenants` gains a `tenants` attribute: a list of full tenant objects with the same
+  attributes as the singular data source, in the same order as `ids`. `filter` blocks may now also
+  match on `subdomain`, `currency`, `external_id`, `enabled`, `master`, `account_name`,
+  `account_number` and `customer_number` in addition to `name`.
+- A lookup that matches no tenant is now an error naming the problem. The SDKv2 data sources
+  returned success with empty attributes, so the failure only surfaced later wherever the empty
+  value was consumed. Setting neither `id` nor `name`, or an empty `name`, is likewise rejected —
+  at plan time.
+- `hpe_morpheus_tenants` previously fetched at most 100 tenants and silently ignored the rest; the
+  cap is now 10000.
+
 ## Enhancements to existing resources
 
 ### `hpe_morpheus_image` no longer misses images beyond the first page

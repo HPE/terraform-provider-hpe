@@ -58,6 +58,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/tenant"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/tenants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/whoami"
 
@@ -137,6 +139,9 @@ func (p *MorpheusProvider) DataSources(
 		storageservers.NewDataSource,
 		storagevolume.NewDataSource,
 		storagevolumes.NewDataSource,
+		// tenant data sources ported from sdkv2 (MORPH-16405 / MORPH-17438)
+		tenant.NewDataSource,
+		tenants.NewDataSource,
 		user.NewDataSource,
 		whoami.NewDataSource,
 		// hpegl VMaaS parity data sources

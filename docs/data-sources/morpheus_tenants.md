@@ -2,20 +2,19 @@
 page_title: "hpe_morpheus_tenants Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus tenants data source.
+  
 ---
 # hpe_morpheus_tenants (Data Source)
 
-Provides a Morpheus tenants data source.
+
 
 ## Example Usage
 
 ```terraform
 data "hpe_morpheus_tenants" "example" {
-  sort_ascending = true
   filter {
     name   = "name"
-    values = [".*"]
+    values = ["example.*"]
   }
 }
 ```
@@ -25,18 +24,45 @@ data "hpe_morpheus_tenants" "example" {
 
 ### Optional
 
-- `filter` (Block Set) Custom filter block as described below. (see [below for nested schema](#nestedblock--filter))
-- `sort_ascending` (Boolean) Whether to sort the IDs in ascending order. Defaults to true
+- `filter` (Block Set) Filter block. Repeat to apply multiple filters (all ANDed together). Filter values are case-sensitive and support Go regular expressions (https://regex101.com/). (see [below for nested schema](#nestedblock--filter))
+- `sort_ascending` (Boolean) Whether to sort the ids and tenants lists by id in ascending order. Defaults to true.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
-- `ids` (List of String)
+- `ids` (List of Number) The IDs of the matching tenants, ordered by id.
+- `tenants` (Attributes List) The list of tenants matching the supplied filters. (see [below for nested schema](#nestedatt--tenants))
 
 <a id="nestedblock--filter"></a>
 ### Nested Schema for `filter`
 
 Required:
 
-- `name` (String) The name of the filter. Filter names are case-sensitive. Valid names are (name)
-- `values` (Set of String) The filter values. Filter values are case-sensitive. Filters values support the use of Golang regex and can be tested at https://regex101.com/
+- `name` (String) The field to filter on. Valid names are: name, subdomain, currency, external_id, enabled, master, account_name, account_number, customer_number.
+- `values` (Set of String) The filter values. A tenant matches the block if the chosen field matches ANY value (case-sensitive Go regular expression, https://regex101.com/).
+
+
+<a id="nestedatt--tenants"></a>
+### Nested Schema for `tenants`
+
+Read-Only:
+
+- `account_name` (String) An optional field that can be used for billing and accounting.
+- `account_number` (String) An optional field that can be used for billing and accounting.
+- `base_role_id` (Number) The ID of the tenant's base role, which restricts the access available to this tenant's roles and users.
+- `base_role_name` (String) The authority (name) of the tenant's base role.
+- `currency` (String) Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP).
+- `customer_number` (String) An optional field that can be used for billing and accounting.
+- `date_created` (String) The date the tenant was created.
+- `description` (String) The description of the tenant.
+- `enabled` (Boolean) Whether the tenant is enabled. Disabled tenants cannot be logged into.
+- `external_id` (String) The external ID of the tenant.
+- `id` (Number) The ID of the tenant.
+- `instance_count` (Number) The number of instances in the tenant.
+- `last_updated` (String) The date the tenant was last updated.
+- `master` (Boolean) Whether this is the master tenant.
+- `name` (String) The name of the tenant.
+- `parent_id` (Number) The ID of the parent tenant.
+- `parent_name` (String) The name of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+- `parent_subdomain` (String) The subdomain of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+- `subdomain` (String) The custom login subdomain (login URL prefix) for sub-tenant users. May contain only letters, numbers, and hyphens, must not start or end with a hyphen, must be 1-63 characters long, cannot be entirely numeric, and must be globally unique across all tenants.
+- `user_count` (Number) The number of users in the tenant.

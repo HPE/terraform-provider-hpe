@@ -98,6 +98,7 @@ var emptyLookupKeyCases = []emptyLookupKeyCase{
 	{"hpe_morpheus_storage_server", "name", ""},
 	{"hpe_morpheus_storage_volume", "name", ""},
 	{"hpe_morpheus_subnet_type", "name", ""},
+	{"hpe_morpheus_tenant", "name", ""},
 	{"hpe_morpheus_vdi_app", "name", ""},
 	{"hpe_morpheus_vdi_gateway", "name", ""},
 }

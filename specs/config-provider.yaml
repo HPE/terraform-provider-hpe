@@ -1609,6 +1609,10 @@ data_sources:
     read:
       path: /api/accounts/{id}
       method: GET
+  tenants:
+    read:
+      path: /api/accounts
+      method: GET
   user:
     read:
       path: /api/users/{id}
