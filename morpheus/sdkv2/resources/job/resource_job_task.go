@@ -82,7 +82,7 @@ func resourceJobTask() *schema.Resource {
 				Type: schema.TypeString,
 				//nolint:lll
 				ValidateFunc: validation.StringInSlice([]string{"appliance", "server", "instance", "instance-label", "server-label"}, false),
-				Description:  "The context that the job should run as (appliance, server, instance, instance-label, server-label)",
+				Description:  "The context the job runs in: appliance (run on the Morpheus appliance with no server or instance target), server, instance, instance-label, or server-label. Note: appliance is not valid when the task's Execute Target is Resource; use server or instance instead.",
 				Required:     true,
 			},
 			"server_ids": {

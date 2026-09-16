@@ -64,7 +64,7 @@ resource "hpe_morpheus_job_workflow" "example" {
 
 ### Required
 
-- `context_type` (String) The context that the job should run as (appliance, server, instance, instance-label, server-label)
+- `context_type` (String) The context the job runs in: appliance (run on the Morpheus appliance with no server or instance target), server, instance, instance-label, or server-label. Note: appliance is not valid when a task in the workflow has Execute Target = Resource; use server or instance instead.
 - `name` (String) The name of the workflow job
 - `schedule_mode` (String) The job scheduling type (manual, date_and_time, scheduled)
 - `workflow_id` (Number) The id of the workflow associated with the job

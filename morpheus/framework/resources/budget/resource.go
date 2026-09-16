@@ -18,9 +18,10 @@ import (
 )
 
 var (
-	_ resource.Resource                = &budgetResource{}
-	_ resource.ResourceWithConfigure   = &budgetResource{}
-	_ resource.ResourceWithImportState = &budgetResource{}
+	_ resource.Resource                   = &budgetResource{}
+	_ resource.ResourceWithConfigure      = &budgetResource{}
+	_ resource.ResourceWithImportState    = &budgetResource{}
+	_ resource.ResourceWithValidateConfig = &budgetResource{}
 )
 
 type budgetResource struct {
@@ -37,6 +38,60 @@ func (r *budgetResource) Metadata(_ context.Context, req resource.MetadataReques
 
 func (r *budgetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = BudgetResourceSchema(ctx)
+}
+
+// ValidateConfig enforces the scope/associated_resource_id pairing: every scope
+// other than "account" targets a specific entity and therefore requires an
+// associated_resource_id, while the "account" scope targets the whole tenant and
+// must not carry one.
+func (r *budgetResource) ValidateConfig(
+	ctx context.Context,
+	req resource.ValidateConfigRequest,
+	resp *resource.ValidateConfigResponse,
+) {
+	var config BudgetModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Scope may be unknown (e.g. computed from another resource); skip until known.
+	if config.Scope.IsUnknown() {
+		return
+	}
+	// Scope is Optional+Computed with a schema default of "account" that is not
+	// applied at ValidateConfig time; treat an omitted scope as that default so
+	// the account guard still fires when only associated_resource_id is set.
+	scope := "account"
+	if !config.Scope.IsNull() {
+		scope = config.Scope.ValueString()
+	}
+
+	if scope == "account" {
+		if !config.AssociatedResourceId.IsNull() && !config.AssociatedResourceId.IsUnknown() {
+			resp.Diagnostics.AddAttributeError(
+				path.Root("associated_resource_id"),
+				"Invalid attribute combination",
+				"associated_resource_id must not be set when scope is 'account'. "+
+					"The account scope targets the whole tenant. Remove associated_resource_id "+
+					"or choose a group, cloud, or user scope.",
+			)
+		}
+
+		return
+	}
+
+	if config.AssociatedResourceId.IsNull() {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("associated_resource_id"),
+			"Missing required attribute",
+			fmt.Sprintf(
+				"associated_resource_id is required when scope is '%s'. "+
+					"Set it to the ID of the %s to scope the budget to.",
+				scope, scope,
+			),
+		)
+	}
 }
 
 func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -67,6 +122,17 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 	if !plan.Scope.IsNull() {
 		body.Scope = plan.Scope.ValueStringPointer()
+	}
+	if !plan.AssociatedResourceId.IsNull() {
+		refID := plan.AssociatedResourceId.ValueInt64Pointer()
+		switch plan.Scope.ValueString() {
+		case "cloud":
+			body.ScopeCloudId = refID
+		case "group":
+			body.ScopeGroupId = refID
+		case "user":
+			body.ScopeUserId = refID
+		}
 	}
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
@@ -188,6 +254,17 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !plan.Scope.IsNull() {
 		body.Scope = plan.Scope.ValueStringPointer()
 	}
+	if !plan.AssociatedResourceId.IsNull() {
+		refID := plan.AssociatedResourceId.ValueInt64Pointer()
+		switch plan.Scope.ValueString() {
+		case "cloud":
+			body.ScopeCloudId = refID
+		case "group":
+			body.ScopeGroupId = refID
+		case "user":
+			body.ScopeUserId = refID
+		}
+	}
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
@@ -273,6 +350,15 @@ func mapGetResponseToModel(model *BudgetModel, b *sdk.GetBudgets200ResponseAllOf
 	}
 	if b.RefScope != nil {
 		model.Scope = types.StringValue(*b.RefScope)
+	}
+	// The API round-trips the scoped entity as a single refScope/refId pair;
+	// map the id back onto associated_resource_id. Account scope has no id.
+	model.AssociatedResourceId = types.Int64Null()
+	if b.RefScope != nil && b.RefId != nil {
+		switch *b.RefScope {
+		case "cloud", "group", "user":
+			model.AssociatedResourceId = types.Int64Value(*b.RefId)
+		}
 	}
 	if b.Enabled != nil {
 		model.Enabled = types.BoolValue(*b.Enabled)

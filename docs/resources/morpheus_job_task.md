@@ -62,7 +62,7 @@ resource "hpe_morpheus_job_task" "example" {
 
 ### Required
 
-- `context_type` (String) The context that the job should run as (appliance, server, instance, instance-label, server-label)
+- `context_type` (String) The context the job runs in: appliance (run on the Morpheus appliance with no server or instance target), server, instance, instance-label, or server-label. Note: appliance is not valid when the task's Execute Target is Resource; use server or instance instead.
 - `name` (String) The name of the task job
 - `schedule_mode` (String) The job scheduling type (manual, date_and_time, scheduled)
 - `task_id` (Number) The id of the task associated with the job

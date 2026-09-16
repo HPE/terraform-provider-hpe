@@ -90,6 +90,18 @@ Both data sources also report more, and fail honestly where they previously retu
 - `hpe_morpheus_tenants` previously fetched at most 100 tenants and silently ignored the rest; the
   cap is now 10000.
 
+### `hpe_morpheus_task_nested_workflow` requires `operational_workflow_id`
+
+The `operational_workflow_id` attribute on `hpe_morpheus_task_nested_workflow` is now **required**,
+where it was previously optional and computed.  The Morpheus API rejects a nested workflow task that
+does not reference an operational workflow, so the attribute never had a meaningful computed value —
+omitting it produced a task the API would not accept.  Making it required surfaces the mistake at
+`terraform plan` rather than as an apply-time API error.
+
+Any configuration that already creates a working nested workflow task is unaffected, since a valid
+task must always have supplied the workflow id.  A configuration that omitted `operational_workflow_id`
+was already non-functional and must now set it explicitly.
+
 ## Enhancements to existing resources
 
 ### `hpe_morpheus_image` no longer misses images beyond the first page
@@ -140,6 +152,18 @@ an error when the requested instance type or storage volume type does not exist,
 returning empty state.  A data source is expected to describe something that exists; the previous
 silent-empty result left downstream references reading zero values.  Configurations that relied on the
 old behavior will now surface an error.
+
+## Resolved issues
+
+### `hpe_morpheus_budget` can be scoped to a specific group, cloud, or user
+
+The budget resource exposed a `scope` but no way to point a non-account scope at a particular
+entity, so a `group`, `cloud`, or `user` budget could not be expressed.  A single
+`associated_resource_id` now carries that target, and the scope/id pairing is validated at plan
+time: it is required when `scope` is `group`, `cloud`, or `user`, and rejected when `scope` is
+`account` (which targets the whole tenant).  Omitting `scope` is treated as the `account` default,
+so setting `associated_resource_id` without a scope is caught during planning rather than failing
+during apply.
 
 # v2.0.0 Release Notes
 

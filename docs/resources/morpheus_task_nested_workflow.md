@@ -26,13 +26,13 @@ resource "hpe_morpheus_task_nested_workflow" "example" {
 ### Required
 
 - `name` (String) The name of the nested workflow task
+- `operational_workflow_id` (String) The ID of the operational workflow
 
 ### Optional
 
 - `allow_custom_config` (Boolean) Custom configuration data to pass during the execution of the shell script
 - `code` (String) The code of the nested workflow task
 - `labels` (Set of String) The organization labels associated with the task (Only supported on Morpheus 5.5.3 or higher)
-- `operational_workflow_id` (String) The ID of the operational workflow
 - `operational_workflow_name` (String) The name of the operational workflow
 - `retry_count` (Number) The number of times to retry the task if there is a failure
 - `retry_delay_seconds` (Number) The number of seconds to wait between retry attempts

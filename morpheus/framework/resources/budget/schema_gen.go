@@ -20,6 +20,12 @@ import (
 func BudgetResourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"associated_resource_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "The ID of the resource the budget is scoped to (the group, cloud, or user matching scope). Leave unset when scope is account.",
+				MarkdownDescription: "The ID of the resource the budget is scoped to (the group, cloud, or user matching scope). Leave unset when scope is account.",
+			},
 			"description": schema.StringAttribute{
 				Optional:            true,
 				Description:         "The description of the budget.",
@@ -102,13 +108,14 @@ func BudgetResourceSchema(ctx context.Context) schema.Schema {
 }
 
 type BudgetModel struct {
-	Description types.String `tfsdk:"description"`
-	Enabled     types.Bool   `tfsdk:"enabled"`
-	EndDate     types.String `tfsdk:"end_date"`
-	Id          types.Int64  `tfsdk:"id"`
-	Interval    types.String `tfsdk:"interval"`
-	Name        types.String `tfsdk:"name"`
-	Scope       types.String `tfsdk:"scope"`
-	StartDate   types.String `tfsdk:"start_date"`
-	Year        types.Int64  `tfsdk:"year"`
+	AssociatedResourceId types.Int64  `tfsdk:"associated_resource_id"`
+	Description          types.String `tfsdk:"description"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	EndDate              types.String `tfsdk:"end_date"`
+	Id                   types.Int64  `tfsdk:"id"`
+	Interval             types.String `tfsdk:"interval"`
+	Name                 types.String `tfsdk:"name"`
+	Scope                types.String `tfsdk:"scope"`
+	StartDate            types.String `tfsdk:"start_date"`
+	Year                 types.Int64  `tfsdk:"year"`
 }
