@@ -115,6 +115,11 @@ func TestAccMorpheusFindClusterByName(t *testing.T) {
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.cpuModel"),
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.dynamicPlacementMode"),
 		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "config.powerPolicy"),
+		// The cluster's own resource pool: the one to provision into, and the one
+		// hpe_morpheus_resource_pool cannot find by name (it is attached to the
+		// cluster, not the cloud). Duck's pool is named after the cluster.
+		resource.TestCheckResourceAttrSet("data.hpe_morpheus_cluster.example", "permissions.resource_pool.id"),
+		resource.TestCheckResourceAttr("data.hpe_morpheus_cluster.example", "permissions.resource_pool.name", "Duck"),
 	)
 
 	resource.Test(t, resource.TestCase{

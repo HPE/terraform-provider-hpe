@@ -283,13 +283,19 @@ func ClusterDataSourceSchema(ctx context.Context) schema.Schema {
 					"resource_pool": schema.SingleNestedAttribute{
 						Attributes: map[string]schema.Attribute{
 							"id": schema.Int64Attribute{
-								Computed: true,
+								Computed:            true,
+								Description:         "The id of the cluster's resource pool. Use `\"pool-<id>\"` as the instance `resource_pool_id`.",
+								MarkdownDescription: "The id of the cluster's resource pool. Use `\"pool-<id>\"` as the instance `resource_pool_id`.",
 							},
 							"name": schema.StringAttribute{
-								Computed: true,
+								Computed:            true,
+								Description:         "The name of the cluster's resource pool. Usually the cluster name.",
+								MarkdownDescription: "The name of the cluster's resource pool. Usually the cluster name.",
 							},
 							"visibility": schema.StringAttribute{
-								Computed: true,
+								Computed:            true,
+								Description:         "The visibility of the cluster's resource pool, `public` or `private`.",
+								MarkdownDescription: "The visibility of the cluster's resource pool, `public` or `private`.",
 							},
 						},
 						CustomType: ResourcePoolType{
@@ -297,7 +303,9 @@ func ClusterDataSourceSchema(ctx context.Context) schema.Schema {
 								AttrTypes: ResourcePoolValue{}.AttributeTypes(ctx),
 							},
 						},
-						Computed: true,
+						Computed:            true,
+						Description:         "The resource pool Morpheus created for this cluster. This is the pool to\nprovision into when targeting the cluster: pass its `id` as\n`config_hvm.resource_pool_id` (`\"pool-<id>\"`) on `hpe_morpheus_instance`.\nThe pool is attached to the cluster rather than to the cloud, so the\ncloud's resource-pool listing does not include it and\n`hpe_morpheus_resource_pool` cannot find it by name.",
+						MarkdownDescription: "The resource pool Morpheus created for this cluster. This is the pool to\nprovision into when targeting the cluster: pass its `id` as\n`config_hvm.resource_pool_id` (`\"pool-<id>\"`) on `hpe_morpheus_instance`.\nThe pool is attached to the cluster rather than to the cloud, so the\ncloud's resource-pool listing does not include it and\n`hpe_morpheus_resource_pool` cannot find it by name.",
 					},
 				},
 				CustomType: PermissionsType{

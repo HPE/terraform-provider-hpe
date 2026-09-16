@@ -109,8 +109,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
 					},
 					"security_groups": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -329,8 +329,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
+						MarkdownDescription: "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 					},
 				},
 				CustomType: ConfigHvmType{
@@ -386,8 +386,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
 					},
 					"vmware_folder_id": schema.StringAttribute{
 						Optional:            true,

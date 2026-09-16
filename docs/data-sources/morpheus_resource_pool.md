@@ -3,10 +3,13 @@ page_title: "hpe_morpheus_resource_pool Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
   Provides a Morpheus resource pool data source.
+  Looks a pool up by id or by name within a cloud. A lookup by name uses the cloud's resource-pool listing, which returns cloud-level pools only: the pool Morpheus creates for an HVM cluster is attached to the cluster rather than to the cloud and is not listed, so it must be looked up here by id, or read from the hpe_morpheus_cluster data source as permissions.resource_pool.id.
 ---
 # hpe_morpheus_resource_pool (Data Source)
 
 Provides a Morpheus resource pool data source.
+
+Looks a pool up by `id` or by `name` within a cloud. A lookup by name uses the cloud's resource-pool listing, which returns cloud-level pools only: the pool Morpheus creates for an HVM cluster is attached to the cluster rather than to the cloud and is not listed, so it must be looked up here by `id`, or read from the `hpe_morpheus_cluster` data source as `permissions.resource_pool.id`.
 
 ## Example Usage
 
@@ -14,6 +17,22 @@ Provides a Morpheus resource pool data source.
 data "hpe_morpheus_resource_pool" "example" {
   name     = "morpheuspool"
   cloud_id = data.hpe_morpheus_cloud.vspherecloud.id
+}
+```
+
+### Looking up an HVM cluster's pool
+
+The pool Morpheus creates for an HVM cluster is attached to the cluster rather than to the
+cloud, so a lookup by `name` does not find it. Read its id from the `hpe_morpheus_cluster`
+data source and look it up by `id`, or use that id directly as the instance `resource_pool_id`:
+
+```terraform
+# Look a pool up by id. This is the way to reach a pool that the cloud's listing
+# does not include, such as the pool Morpheus creates for an HVM cluster; read
+# that id from the hpe_morpheus_cluster data source (permissions.resource_pool.id).
+data "hpe_morpheus_resource_pool" "by_id" {
+  id       = data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id
+  cloud_id = data.hpe_morpheus_cloud.hvmcloud.id
 }
 ```
 
@@ -27,10 +46,10 @@ data "hpe_morpheus_resource_pool" "example" {
 ### Optional
 
 - `id` (Number) The id of the resource pool
-- `name` (String) The name of the Morpheus resource pool.
+- `name` (String) The name of the Morpheus resource pool. Matches cloud-level pools only; an HVM cluster's own pool is not found by name (see the data source description).
 
 ### Read-Only
 
 - `active` (Boolean) Whether the resource pool is enabled or not
 - `description` (String) The description of the resource pool
-- `type` (String) Optional code for use with policies
+- `type` (String) The kind of pool, as reported by Morpheus. `default` for a pool created in the cloud; `namespace` for the pool Morpheus creates for an HVM cluster; `cluster` for a vSphere cluster; `vpc` for an AWS VPC; `resourceGroup` for an Azure resource group.

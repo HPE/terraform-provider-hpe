@@ -104,6 +104,29 @@ was already non-functional and must now set it explicitly.
 
 ## Enhancements to existing resources
 
+### Finding the resource pool of an HVM cluster
+
+Morpheus creates a resource pool for every HVM cluster and binds the cluster's networks to it.
+That pool is the one to provision into, but it is attached to the cluster rather than to the
+cloud, so the cloud's resource-pool listing does not include it.  `hpe_morpheus_resource_pool`
+resolves `name` through that listing and so could not find it, reporting only
+`found 0 resourcePools`.  A user who took that at face value and created a pool by hand would
+then see instance creation fail with `Invalid network`, since the networks belong to the
+cluster's pool.
+
+- `hpe_morpheus_resource_pool` now explains this when a name lookup finds nothing, and, when a
+  cluster of that name exists in the cloud, gives the id of the cluster's pool in the error.  A
+  lookup by `id` that does not exist reports that plainly rather than as a raw HTTP error, and
+  `type` is now documented with the values Morpheus uses (`namespace` is a cluster's pool).
+- `hpe_morpheus_cluster` documents `permissions.resource_pool` as the pool to provision into,
+  with an example feeding it to `config_hvm.resource_pool_id`.
+- `hpe_morpheus_instance` and `hpe_morpheus_instance_clone` explain an `Invalid network`
+  rejection instead of passing it through bare: the error now names each requested network,
+  the resource pool it belongs to and the pool the instance asked for, and points at the
+  cluster's pool when they differ.  The explanation is added only on that failure and never
+  replaces the API's own message.  `config_hvm.resource_pool_id` is documented as the cluster's
+  pool, and the shared `resource_pool_id` description no longer says "resource group".
+
 ### `hpe_morpheus_image` no longer misses images beyond the first page
 
 The singular `hpe_morpheus_image` data source narrowed by name server-side, but that is a SQL `like`,

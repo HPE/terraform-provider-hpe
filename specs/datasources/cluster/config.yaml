@@ -30,3 +30,17 @@ cluster:
       conflicts_with: ["id"]
       description: The name of the cluster. Must not be empty.
       computed_optional_required: computed_optional
+    permissions.resource_pool:
+      description: |-
+        The resource pool Morpheus created for this cluster. This is the pool to
+        provision into when targeting the cluster: pass its `id` as
+        `config_hvm.resource_pool_id` (`"pool-<id>"`) on `hpe_morpheus_instance`.
+        The pool is attached to the cluster rather than to the cloud, so the
+        cloud's resource-pool listing does not include it and
+        `hpe_morpheus_resource_pool` cannot find it by name.
+    permissions.resource_pool.id:
+      description: The id of the cluster's resource pool. Use `"pool-<id>"` as the instance `resource_pool_id`.
+    permissions.resource_pool.name:
+      description: The name of the cluster's resource pool. Usually the cluster name.
+    permissions.resource_pool.visibility:
+      description: The visibility of the cluster's resource pool, `public` or `private`.

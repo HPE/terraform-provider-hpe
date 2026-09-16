@@ -439,7 +439,7 @@ Read-Only:
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
 - `security_groups` (Attributes List) a list of objects containing the ids of the AWS security groups to assign the clone to. (see [below for nested schema](#nestedatt--config_aws--security_groups))
 
 Optional:
@@ -487,7 +487,12 @@ Optional:
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The resource pool to provision the clone into, as `pool-<id>`. For an HVM cluster this is the
+pool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source
+as `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the
+cloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`
+cannot find it by name. A network belongs to the pool of the cluster it was discovered on; a
+pool that does not contain the requested network fails with `Invalid network`.
 
 Optional:
 
@@ -503,7 +508,7 @@ Optional:
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
 
 Optional:
 

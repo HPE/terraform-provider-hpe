@@ -97,6 +97,16 @@ type Cluster struct {
 	WorkersCount     int64                  `json:"workersCount"`
 	ServicesCount    int64                  `json:"servicesCount"`
 	Config           map[string]interface{} `json:"config"`
+	// Permissions is only populated by GET /api/clusters/{id}; the list
+	// endpoint omits it. ResourcePool is the pool Morpheus created for the
+	// cluster, which is the pool to provision into.
+	Permissions struct {
+		ResourcePool *struct {
+			ID         int64  `json:"id"`
+			Name       string `json:"name"`
+			Visibility string `json:"visibility"`
+		} `json:"resourcePool"`
+	} `json:"permissions"`
 }
 
 type Server struct {

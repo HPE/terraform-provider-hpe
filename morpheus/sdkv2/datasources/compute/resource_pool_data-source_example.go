@@ -12,6 +12,36 @@ import (
 )
 
 //go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_resource_pool/data-source.tf resource_pool_data-source.tf.tmpl CloudId 'data.hpe_morpheus_cloud.vspherecloud.id' Name '\"morpheuspool\"'"
+//go:generate sh -c "../../../../bin/render -out examples/data-sources/morpheus_resource_pool/data-source-by-id.tf resource_pool_by_id_data-source.tf.tmpl CloudId 'data.hpe_morpheus_cloud.hvmcloud.id' Id 'data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id'"
+
+// RenderResourcePoolByIDConfig generates a Terraform configuration that looks a
+// resource pool up by id. It accepts optional overrides for field values.
+func RenderResourcePoolByIDConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"CloudId": "1",
+		"Id":      "1",
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+
+	templatePath := filepath.Join(filepath.Dir(filename), "resource_pool_by_id_data-source.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
 
 // RenderResourcePoolConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.

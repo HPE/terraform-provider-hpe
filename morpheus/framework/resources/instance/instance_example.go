@@ -225,3 +225,42 @@ func RenderInstanceHVMConfig(t *testing.T, overrides map[string]string) (string,
 		args...,
 	)
 }
+
+// RenderInstanceHVMWrongPoolConfig renders a test fixture (not an example) in
+// which the requested network belongs to a different resource pool than
+// config_hvm.resource_pool_id, so that Morpheus rejects the create during
+// validation with "Invalid network" before anything is provisioned. The
+// defaults target the HVM cluster on the shared acceptance appliance: network 1
+// belongs to cluster "Duck" (pool 1); pool 1702 is a different cluster.
+func RenderInstanceHVMWrongPoolConfig(t *testing.T, overrides map[string]string) (string, error) {
+	t.Helper()
+
+	defaults := map[string]string{
+		"Name":           `"tfacc-wrong-pool"`,
+		"CloudId":        "1",
+		"GroupId":        "265",
+		"InstanceTypeId": "4",
+		"LayoutId":       "1193",
+		"PlanId":         "19",
+		"NetworkId":      "1",
+		"ResourcePoolId": `"pool-1702"`,
+	}
+
+	for key, value := range overrides {
+		defaults[key] = value
+	}
+
+	var args []string
+	for key, value := range defaults {
+		args = append(args, key, value)
+	}
+
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return "", fmt.Errorf("unable to get current file path")
+	}
+
+	templatePath := filepath.Join(filepath.Dir(filename), "example_hvm_wrong_pool.tf.tmpl")
+
+	return testhelpers.RenderExample(t, templatePath, args...)
+}
