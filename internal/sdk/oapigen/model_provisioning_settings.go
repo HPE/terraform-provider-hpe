@@ -20,21 +20,29 @@ var _ MappedNullable = &ProvisioningSettings{}
 
 // ProvisioningSettings struct for ProvisioningSettings
 type ProvisioningSettings struct {
-	AllowZoneSelection        *bool                                      `json:"allowZoneSelection,omitempty"`
-	AllowServerSelection      *bool                                      `json:"allowServerSelection,omitempty"`
-	RequireEnvironments       *bool                                      `json:"requireEnvironments,omitempty"`
-	ShowPricing               *bool                                      `json:"showPricing,omitempty"`
-	HideDatastoreStats        *bool                                      `json:"hideDatastoreStats,omitempty"`
-	CrossTenantNamingPolicies *bool                                      `json:"crossTenantNamingPolicies,omitempty"`
-	ReuseSequence             *bool                                      `json:"reuseSequence,omitempty"`
-	CloudInitUsername         *string                                    `json:"cloudInitUsername,omitempty"`
-	CloudInitPassword         *string                                    `json:"cloudInitPassword,omitempty"`
-	CloudInitKeyPair          *ProvisioningSettingsCloudInitKeyPair      `json:"cloudInitKeyPair,omitempty"`
-	WindowsPassword           NullableString                             `json:"windowsPassword,omitempty"`
-	PxeRootPassword           NullableString                             `json:"pxeRootPassword,omitempty"`
-	DefaultTemplateType       *ProvisioningSettingsDefaultTemplateType   `json:"defaultTemplateType,omitempty"`
-	DeployStorageProvider     *ProvisioningSettingsDeployStorageProvider `json:"deployStorageProvider,omitempty"`
-	AdditionalProperties      map[string]interface{}                     `json:",remain"`
+	AllowZoneSelection        *bool `json:"allowZoneSelection,omitempty"`
+	AllowServerSelection      *bool `json:"allowServerSelection,omitempty"`
+	RequireEnvironments       *bool `json:"requireEnvironments,omitempty"`
+	ShowPricing               *bool `json:"showPricing,omitempty"`
+	HideDatastoreStats        *bool `json:"hideDatastoreStats,omitempty"`
+	CrossTenantNamingPolicies *bool `json:"crossTenantNamingPolicies,omitempty"`
+	ReuseSequence             *bool `json:"reuseSequence,omitempty"`
+	// Whether console keyboard layout settings are shown for applicable clouds and remote protocols. Note that the corresponding property on update is named `consoleKeyboardSettings`.
+	ShowConsoleKeyboardSettings *bool   `json:"showConsoleKeyboardSettings,omitempty"`
+	CloudInitUsername           *string `json:"cloudInitUsername,omitempty"`
+	CloudInitPassword           *string `json:"cloudInitPassword,omitempty"`
+	// SHA-256 hash of the cloud-init password, or null if no password is set. `cloudInitPassword` itself is returned masked, so this hash is the only way to detect whether a locally held password matches the stored one.
+	CloudInitPasswordHash NullableString                        `json:"cloudInitPasswordHash,omitempty"`
+	CloudInitKeyPair      *ProvisioningSettingsCloudInitKeyPair `json:"cloudInitKeyPair,omitempty"`
+	WindowsPassword       NullableString                        `json:"windowsPassword,omitempty"`
+	// SHA-256 hash of the Windows administrator password, or null if no password is set. `windowsPassword` itself is returned masked.
+	WindowsPasswordHash NullableString `json:"windowsPasswordHash,omitempty"`
+	PxeRootPassword     NullableString `json:"pxeRootPassword,omitempty"`
+	// SHA-256 hash of the PXE boot root password, or null if no password is set. `pxeRootPassword` itself is returned masked.
+	PxeRootPasswordHash   NullableString                             `json:"pxeRootPasswordHash,omitempty"`
+	DefaultTemplateType   *ProvisioningSettingsDefaultTemplateType   `json:"defaultTemplateType,omitempty"`
+	DeployStorageProvider *ProvisioningSettingsDeployStorageProvider `json:"deployStorageProvider,omitempty"`
+	AdditionalProperties  map[string]interface{}                     `json:",remain"`
 }
 
 type _ProvisioningSettings ProvisioningSettings
@@ -70,11 +78,17 @@ func (o ProvisioningSettings) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ReuseSequence) {
 		toSerialize["reuseSequence"] = o.ReuseSequence
 	}
+	if !IsNil(o.ShowConsoleKeyboardSettings) {
+		toSerialize["showConsoleKeyboardSettings"] = o.ShowConsoleKeyboardSettings
+	}
 	if !IsNil(o.CloudInitUsername) {
 		toSerialize["cloudInitUsername"] = o.CloudInitUsername
 	}
 	if !IsNil(o.CloudInitPassword) {
 		toSerialize["cloudInitPassword"] = o.CloudInitPassword
+	}
+	if o.CloudInitPasswordHash.IsSet() {
+		toSerialize["cloudInitPasswordHash"] = o.CloudInitPasswordHash.Get()
 	}
 	if !IsNil(o.CloudInitKeyPair) {
 		toSerialize["cloudInitKeyPair"] = o.CloudInitKeyPair
@@ -82,8 +96,14 @@ func (o ProvisioningSettings) ToMap() (map[string]interface{}, error) {
 	if o.WindowsPassword.IsSet() {
 		toSerialize["windowsPassword"] = o.WindowsPassword.Get()
 	}
+	if o.WindowsPasswordHash.IsSet() {
+		toSerialize["windowsPasswordHash"] = o.WindowsPasswordHash.Get()
+	}
 	if o.PxeRootPassword.IsSet() {
 		toSerialize["pxeRootPassword"] = o.PxeRootPassword.Get()
+	}
+	if o.PxeRootPasswordHash.IsSet() {
+		toSerialize["pxeRootPasswordHash"] = o.PxeRootPasswordHash.Get()
 	}
 	if !IsNil(o.DefaultTemplateType) {
 		toSerialize["defaultTemplateType"] = o.DefaultTemplateType
