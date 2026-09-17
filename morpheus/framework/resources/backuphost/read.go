@@ -94,11 +94,14 @@ func getBackupAsState(
 	// backups even though it was associated on create (from the "target" field).
 	// Preserve the planned/prior value when the API omits it, otherwise a
 	// configured storage_provider_id would read back null and cause an
-	// "inconsistent result after apply" error. MORPH-14631.
-	state.StorageProviderId = plan.StorageProviderId
+	// "inconsistent result after apply" error. The IsUnknown guard (via
+	// Int64OrPlan) matters because storage_provider_id is Optional+Computed.
+	// MORPH-14631, MORPH-16232.
+	var storageProviderID *int64
 	if b.StorageProvider != nil {
-		state.StorageProviderId = convert.Int64ToType(b.StorageProvider.Id)
+		storageProviderID = b.StorageProvider.Id
 	}
+	state.StorageProviderId = convert.Int64OrPlan(storageProviderID, plan.StorageProviderId)
 
 	// host_id and path are not present on every backup type, so fall back to the
 	// planned value when the API omits them.

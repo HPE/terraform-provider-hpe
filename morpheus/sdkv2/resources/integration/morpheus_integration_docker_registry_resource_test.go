@@ -78,7 +78,9 @@ func TestAccMorpheusIntegrationDockerRegistryExampleOk(t *testing.T) {
 				Config: providerConfig + resourceConfig,
 				Check:  checkFn,
 			},
-			// Plan after apply
+			// Plan after apply. MORPH-11602: password is write-only, so an empty
+			// post-apply plan is the regression guard against the historical
+			// perpetual password diff.
 			{
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,

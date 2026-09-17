@@ -1,4 +1,7 @@
 resource "hpe_morpheus_cluster_namespace" "example" {
   cluster_id = {{.ClusterId}}
   name = "{{.Name}}"
+{{- if .Active }}
+  active = {{.Active}}
+{{- end }}
 }

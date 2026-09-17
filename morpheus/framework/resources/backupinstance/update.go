@@ -55,7 +55,7 @@ func (r *backupInstanceResource) Update(
 		return
 	}
 
-	state, diags := getBackupAsState(ctx, id, client)
+	state, diags := getBackupAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

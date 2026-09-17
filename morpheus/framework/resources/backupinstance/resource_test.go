@@ -64,6 +64,8 @@ func TestAccMorpheusBackupInstanceResourceExampleOk(t *testing.T) {
 			resourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
 		),
+		// MORPH-16232: storage_provider_id must survive apply even though the
+		// API may return a null storage provider.
 		resource.TestCheckResourceAttr(resourceName, "storage_provider_id", "1"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 		resource.TestCheckResourceAttrSet(resourceName, "backup_type_code"),
@@ -152,6 +154,7 @@ resource "hpe_morpheus_backup_instance" "example" {
 			resourceName, "job_id",
 			"hpe_morpheus_backup_job.example", "id",
 		),
+		// MORPH-16232: storage_provider_id must survive apply/update.
 		resource.TestCheckResourceAttr(resourceName, "storage_provider_id", "1"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
 	)

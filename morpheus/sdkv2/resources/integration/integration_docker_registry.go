@@ -4,10 +4,7 @@ package integration
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,14 +57,6 @@ func ResourceIntegrationDockerRegistry() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 				Sensitive:   true,
-				DiffSuppressFunc: func(k, old, new string, d *schema.ResourceData) bool {
-					h := sha256.New()
-					h.Write([]byte(new))
-					sha256Hash := hex.EncodeToString(h.Sum(nil))
-
-					return strings.EqualFold(old, sha256Hash)
-				},
-				DiffSuppressOnRefresh: true,
 			},
 		},
 		Importer: &schema.ResourceImporter{
@@ -222,9 +211,10 @@ func resourceIntegrationDockerRegistryRead(ctx context.Context, d *schema.Resour
 	d.Set("enabled", integration.Enabled)
 	d.Set("url", integration.URL)
 	d.Set("username", integration.Username)
-	// password is write-only: the API returns only a salted hash that cannot be
-	// reproduced from the configured plaintext, so reading it back would cause a
-	// permanent diff. Leave it as the value already held in state.
+	// password is write-only: the API returns the password only masked, plus a
+	// keyed hash that cannot be recomputed from the configured value, so it
+	// cannot be read back and compared. Leave it as the value already held in
+	// state (MORPH-11602).
 
 	return diags
 }

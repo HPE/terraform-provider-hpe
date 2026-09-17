@@ -25,15 +25,15 @@ func (r *backupInstanceResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	var state BackupInstanceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	var priorState BackupInstanceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	id := state.Id.ValueInt64()
+	id := priorState.Id.ValueInt64()
 
-	state, diags := getBackupAsState(ctx, id, client)
+	state, diags := getBackupAsState(ctx, id, client, priorState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -56,6 +56,7 @@ func getBackupAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	plan BackupInstanceModel,
 ) (BackupInstanceModel, diag.Diagnostics) {
 	var state BackupInstanceModel
 	var diags diag.Diagnostics
@@ -77,6 +78,19 @@ func getBackupAsState(
 		return state, diags
 	}
 
+	return mapBackupToState(b, plan), diags
+}
+
+// mapBackupToState maps an SDK backup struct onto resource state, preserving
+// planned/prior values for optional fields the API does not reliably return.
+// It is split from getBackupAsState so the null-safety of those optional fields
+// can be unit-tested without a live API.
+func mapBackupToState(
+	b *sdk.GetBackups200ResponseBackup,
+	plan BackupInstanceModel,
+) BackupInstanceModel {
+	var state BackupInstanceModel
+
 	state.Id = convert.Int64ToType(b.Id)
 	state.Name = convert.StrToType(b.Name)
 	state.Enabled = convert.BoolToType(b.Enabled)
@@ -97,9 +111,14 @@ func getBackupAsState(
 		state.JobId = convert.Int64ToType(b.Job.Id)
 	}
 
+	// The API may return a null storage provider even when one was requested
+	// (it can fall back to the system default), so preserve the configured
+	// value rather than nulling it out after apply.
+	var storageProviderID *int64
 	if b.StorageProvider != nil {
-		state.StorageProviderId = convert.Int64ToType(b.StorageProvider.Id)
+		storageProviderID = b.StorageProvider.Id
 	}
+	state.StorageProviderId = convert.Int64OrPlan(storageProviderID, plan.StorageProviderId)
 
-	return state, diags
+	return state
 }

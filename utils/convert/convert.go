@@ -152,6 +152,54 @@ func Int64ToType(i *int64) types.Int64 {
 	return types.Int64Value(*i)
 }
 
+// StrOrPlan returns the API value when present; otherwise it preserves the
+// planned/prior value, unless that value is unknown, in which case it returns
+// null. Use for Optional+Computed attributes the API accepts but does not
+// reliably echo back. Never writes an unknown into state.
+func StrOrPlan(api *string, plan types.String) types.String {
+	if api != nil {
+		return types.StringValue(*api)
+	}
+
+	if plan.IsUnknown() {
+		return types.StringNull()
+	}
+
+	return plan
+}
+
+// Int64OrPlan returns the API value when present; otherwise it preserves the
+// planned/prior value, unless that value is unknown, in which case it returns
+// null. Use for Optional+Computed attributes the API accepts but does not
+// reliably echo back. Never writes an unknown into state.
+func Int64OrPlan(api *int64, plan types.Int64) types.Int64 {
+	if api != nil {
+		return types.Int64Value(*api)
+	}
+
+	if plan.IsUnknown() {
+		return types.Int64Null()
+	}
+
+	return plan
+}
+
+// BoolOrPlan returns the API value when present; otherwise it preserves the
+// planned/prior value, unless that value is unknown, in which case it returns
+// null. Use for Optional+Computed attributes the API accepts but does not
+// reliably echo back. Never writes an unknown into state.
+func BoolOrPlan(api *bool, plan types.Bool) types.Bool {
+	if api != nil {
+		return types.BoolValue(*api)
+	}
+
+	if plan.IsUnknown() {
+		return types.BoolNull()
+	}
+
+	return plan
+}
+
 // Int32ToType converts an optional int32 to a Terraform Int64 value, preserving
 // null. Terraform has no 32-bit number type, so int32 fields (which the
 // generated SDK uses for several models) widen to Int64.

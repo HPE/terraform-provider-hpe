@@ -141,6 +141,81 @@ func TestAccMorpheusNetworkRouterFirewallRuleResourceExampleOk(t *testing.T) {
 	})
 }
 
+// TestAccMorpheusNetworkRouterFirewallRuleResourceProtocolPortOk covers
+// MORPH-16362: protocol and port_range are accepted on create but not reliably
+// returned by the API, so the configured value must be preserved in state and
+// must not produce a perpetual diff.
+func TestAccMorpheusNetworkRouterFirewallRuleResourceProtocolPortOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.NetworkRouter, capabilities.NetworkFirewall)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	resourceName := "hpe_morpheus_network_router_firewall_rule.example"
+
+	routerConfig := firewallRuleFixture(t, name)
+
+	resourceConfig, err := networkrouterfirewallrule.RenderNetworkRouterFirewallRuleConfig(t, map[string]string{
+		"RouterId":  "hpe_morpheus_network_router.fw_tier1.id",
+		"Name":      name,
+		"Protocol":  "tcp",
+		"PortRange": "80",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
+		resource.TestCheckResourceAttr(resourceName, "port_range", "80"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + routerConfig + resourceConfig,
+				Check:  checks,
+			},
+			{
+				Config:             providerConfig + routerConfig + resourceConfig,
+				ExpectNonEmptyPlan: false,
+				PlanOnly:           true,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				// protocol, port_range, description and parent_id are not
+				// reliably returned by the firewall-rule GET, so they come back
+				// null on a bare import and are preserved from config elsewhere.
+				ImportStateVerifyIgnore: []string{
+					"protocol",
+					"port_range",
+					"description",
+					"parent_id",
+				},
+				ResourceName: "hpe_morpheus_network_router_firewall_rule.example",
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_firewall_rule.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
+			},
+		},
+	})
+}
+
 func TestAccMorpheusNetworkRouterFirewallRuleResourceUpdateOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 

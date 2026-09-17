@@ -79,8 +79,8 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			"port_range": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Port range",
-				MarkdownDescription: "Port range",
+				Description:         "Port range (for example \"80\" or \"8000-8080\"). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.",
+				MarkdownDescription: "Port range (for example \"80\" or \"8000-8080\"). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.",
 			},
 			"priority": schema.Int64Attribute{
 				Optional:            true,
@@ -91,8 +91,8 @@ func NetworkRouterFirewallRuleResourceSchema(ctx context.Context) schema.Schema 
 			"protocol": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Protocol",
-				MarkdownDescription: "Protocol",
+				Description:         "Protocol (for example tcp, udp, icmp). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.",
+				MarkdownDescription: "Protocol (for example tcp, udp, icmp). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.",
 			},
 			"router_id": schema.Int64Attribute{
 				Required:            true,
