@@ -47,6 +47,46 @@ func DataSourceStorageVolumeType() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "The description of the storage volume type",
+				Computed:    true,
+			},
+			"enabled": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type is enabled",
+				Computed:    true,
+			},
+			"default_type": {
+				Type:        schema.TypeBool,
+				Description: "Whether this is a default storage volume type",
+				Computed:    true,
+			},
+			"has_datastore": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type is backed by a datastore",
+				Computed:    true,
+			},
+			"configurable_iops": {
+				Type:        schema.TypeBool,
+				Description: "Whether IOPS are configurable for the storage volume type",
+				Computed:    true,
+			},
+			"custom_size": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type supports a custom size",
+				Computed:    true,
+			},
+			"custom_label": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type supports a custom label",
+				Computed:    true,
+			},
+			"display_order": {
+				Type:        schema.TypeInt,
+				Description: "The display order of the storage volume type",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -135,6 +175,14 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	d.Set("name", storageVolumeType.Name)
 	d.Set("code", storageVolumeType.Code)
 	d.Set("category", storageVolumeType.Category)
+	d.Set("description", storageVolumeType.Description)
+	d.Set("enabled", storageVolumeType.Enabled)
+	d.Set("default_type", storageVolumeType.DefaultType)
+	d.Set("has_datastore", storageVolumeType.HasDatastore)
+	d.Set("configurable_iops", storageVolumeType.ConfigurableIOPS)
+	d.Set("custom_size", storageVolumeType.CustomSize)
+	d.Set("custom_label", storageVolumeType.CustomLabel)
+	d.Set("display_order", storageVolumeType.DisplayOrder)
 
 	return diags
 }

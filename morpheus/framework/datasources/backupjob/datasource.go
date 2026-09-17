@@ -66,7 +66,6 @@ func backupJobAsState(
 		Id:          convert.Int64ToType(j.Id),
 		Name:        convert.StrToType(j.Name),
 		DateCreated: convert.TimeToType(j.DateCreated),
-		Enabled:     convert.BoolToType(j.Enabled),
 		LastUpdated: convert.TimeToType(j.LastUpdated),
 		Source:      convert.StrToType(j.Source),
 		Visibility:  convert.StrToType(j.Visibility),

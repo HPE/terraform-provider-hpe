@@ -34,7 +34,6 @@ data "hpe_morpheus_backup_job" "example" {
 
 - `cron_expression` (String) The cron expression defining the backup job schedule
 - `date_created` (String) The date the backup job was created
-- `enabled` (Boolean) Whether the backup job is enabled
 - `external_id` (String) The external identifier of the backup job
 - `last_updated` (String) The date the backup job was last updated
 - `next_fire` (String) The next scheduled execution time of the backup job

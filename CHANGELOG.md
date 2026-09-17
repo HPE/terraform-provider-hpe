@@ -102,6 +102,15 @@ Any configuration that already creates a working nested workflow task is unaffec
 task must always have supplied the workflow id.  A configuration that omitted `operational_workflow_id`
 was already non-functional and must now set it explicitly.
 
+### `hpe_morpheus_backup_job` data source no longer exposes `enabled`
+
+The `enabled` attribute has been removed from the `hpe_morpheus_backup_job` **data source**.  The
+backup jobs API does not return an `enabled` field, so the attribute was always null and could never
+convey a job's real state — reading it was misleading.
+
+Any configuration that referenced `data.hpe_morpheus_backup_job.<name>.enabled` must remove that
+reference.  The `hpe_morpheus_backup_job` **resource** is unaffected and still accepts `enabled`.
+
 ## Enhancements to existing resources
 
 ### Finding the resource pool of an HVM cluster
@@ -187,6 +196,13 @@ time: it is required when `scope` is `group`, `cloud`, or `user`, and rejected w
 `account` (which targets the whole tenant).  Omitting `scope` is treated as the `account` default,
 so setting `associated_resource_id` without a scope is caught during planning rather than failing
 during apply.
+
+### `hpe_morpheus_storage_volume_type` data source exposes more attributes
+
+The `hpe_morpheus_storage_volume_type` data source previously surfaced only `id`, `name`, `code`, and
+`category`.  It now also exposes eight further scalar attributes the API returns: `description`,
+`enabled`, `default_type`, `has_datastore`, `configurable_iops`, `custom_size`, `custom_label`, and
+`display_order`.  The change is additive; existing configurations are unaffected.
 
 # v2.0.0 Release Notes
 

@@ -7,6 +7,9 @@ backup_job:
     - backup_respository # nested object (API spelling)
     - backups # nested array of backup objects
     - schedule # nested execute-schedule object
+    - enabled # MORPH-15753: API never returns `enabled` (commented out in the
+      # backup jobs GSON renderer), so a computed attribute here is perpetually
+      # null. Removed from the data source schema to avoid a misleading attribute.
   overrides:
     id:
       description: The ID of the backup job
@@ -19,8 +22,6 @@ backup_job:
       computed_optional_required: computed_optional
     cron_expression:
       description: The cron expression defining the backup job schedule
-    enabled:
-      description: Whether the backup job is enabled
     external_id:
       description: The external identifier of the backup job
     next_fire:

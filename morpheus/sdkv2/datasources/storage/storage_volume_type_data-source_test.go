@@ -41,6 +41,15 @@ func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
 			"name",
 			"Kubernetes Volume",
 		),
+		// Exact-value check rather than TestCheckResourceAttrSet:
+		// AttrSet treats an empty string as "not set", so it is unsafe
+		// for description (system types may have an empty description).
+		// "Kubernetes Volume" has a known, non-empty description.
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"description",
+			"Kubernetes Volume",
+		),
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_storage_volume_type.example",
 			"id",
@@ -52,6 +61,34 @@ func TestAccMorpheusDataSourceStorageVolumeTypeExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_storage_volume_type.example",
 			"category",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"enabled",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"default_type",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"has_datastore",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"configurable_iops",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"custom_size",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"custom_label",
+		),
+		resource.TestCheckResourceAttrSet(
+			"data.hpe_morpheus_storage_volume_type.example",
+			"display_order",
 		),
 	}
 
