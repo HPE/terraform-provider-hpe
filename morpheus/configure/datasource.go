@@ -59,11 +59,3 @@ func (r *DataSourceWithMorpheusConfigure) NewClient(
 ) (*sdk.APIClient, error) {
 	return r.cf.NewClient(ctx)
 }
-
-// CallerIsMaster reports whether the configured caller is the master tenant.
-// It delegates to the shared, pointer-held tenancy cache on the factory.
-func (r *DataSourceWithMorpheusConfigure) CallerIsMaster(
-	ctx context.Context,
-) (bool, error) {
-	return r.cf.CallerIsMaster(ctx)
-}

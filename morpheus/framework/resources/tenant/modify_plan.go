@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 )
 
@@ -65,7 +66,13 @@ func (r *Resource) ModifyPlan(
 			return
 		}
 
-		isMaster, err := r.callerIsMaster(ctx)
+		client, err := r.NewClient(ctx)
+
+		var isMaster bool
+		if err == nil {
+			isMaster, err = tenancy.CallerIsMaster(ctx, client)
+		}
+
 		if err != nil {
 			resp.Diagnostics.AddAttributeWarning(
 				path.Root("parent_id"),

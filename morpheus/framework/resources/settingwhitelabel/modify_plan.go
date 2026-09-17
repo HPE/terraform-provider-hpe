@@ -30,6 +30,18 @@ func (r *settingWhitelabelResource) ModifyPlan(
 		return
 	}
 
+	// Surface a client construction failure immediately as a diagnostic. The
+	// guard's whoami call still fails open on a tenancy-determination error.
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create Morpheus client",
+			err.Error(),
+		)
+
+		return
+	}
+
 	tenancy.GuardMasterOnlyAttribute(
-		ctx, r, req.Plan, path.Root("appliance_name"), &resp.Diagnostics)
+		ctx, client, req.Plan, path.Root("appliance_name"), &resp.Diagnostics)
 }

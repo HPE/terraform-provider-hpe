@@ -29,5 +29,17 @@ func (r *networkGroupResource) ModifyPlan(
 		return
 	}
 
-	tenancy.GuardVisibilityPublic(ctx, r, req.Plan, &resp.Diagnostics)
+	// Surface a client construction failure immediately as a diagnostic. The
+	// guard's whoami call still fails open on a tenancy-determination error.
+	client, err := r.NewClient(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError(
+			"Unable to create Morpheus client",
+			err.Error(),
+		)
+
+		return
+	}
+
+	tenancy.GuardVisibilityPublic(ctx, client, req.Plan, &resp.Diagnostics)
 }

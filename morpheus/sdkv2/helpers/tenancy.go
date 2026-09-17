@@ -13,20 +13,35 @@ import (
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 )
 
-// masterTenantCache caches, per legacy client pointer, whether that client's
-// caller is the master tenant. Only successful determinations are cached.
-var masterTenantCache sync.Map // map[*morpheus.Client]bool
+// The tenancy determination is cached once per provider process, mirroring
+// morpheus/utils/tenancy (the two muxed stacks keep separate globals so they
+// stay uncoupled). A provider process serves exactly one provider
+// configuration, so one set of credentials means one answer per process. Only a
+// successful determination is cached; the mutex is held across the whoami call
+// (single flight), so concurrent callers on a cold cache wait for the first
+// determination and retry in turn on failure.
+var (
+	cacheMu  sync.Mutex
+	resolved bool
+	isMaster bool
+)
 
 // CallerIsMaster reports whether the legacy client's caller is the master
 // tenant, via whoami. whoami introspects the current user, so it is reachable
-// by any authenticated caller including a subtenant. Successful results are
-// cached keyed by the client pointer.
+// by any authenticated caller including a subtenant.
 //
 // The legacy WhoamiResult.IsMasterAccount is a non-pointer bool, so an omitted
 // isMasterAccount decodes to false (non-master), which is correct.
 func CallerIsMaster(client *morpheus.Client) (bool, error) {
-	if v, ok := masterTenantCache.Load(client); ok {
-		return v.(bool), nil
+	if client == nil {
+		return false, fmt.Errorf("no client available to determine tenancy")
+	}
+
+	cacheMu.Lock()
+	defer cacheMu.Unlock()
+
+	if resolved {
+		return isMaster, nil
 	}
 
 	resp, err := client.Whoami()
@@ -39,9 +54,10 @@ func CallerIsMaster(client *morpheus.Client) (bool, error) {
 		return false, fmt.Errorf("whoami returned an unexpected response")
 	}
 
-	masterTenantCache.Store(client, who.IsMasterAccount)
+	isMaster = who.IsMasterAccount
+	resolved = true
 
-	return who.IsMasterAccount, nil
+	return isMaster, nil
 }
 
 // VisibilityCustomizeDiff rejects, at plan time, visibility = "public" set by a

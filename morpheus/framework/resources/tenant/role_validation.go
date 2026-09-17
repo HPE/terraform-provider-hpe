@@ -16,22 +16,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
-// callerIsMaster reports whether the authenticated tenant is the master tenant,
-// via whoami. whoami introspects the current user (not an arbitrary account), so
-// it is reachable by any authenticated caller including a subtenant. It returns
-// an error when the status could not be determined so the caller can surface it
-// as a diagnostic.
-//
-// The whoami response omits isMasterAccount unless it is true (see
-// views/morpheus_api/whoami/index.gson), so a nil value means non-master, not
-// "unknown".
-// callerIsMaster reports whether the authenticated tenant is the master tenant.
-// It delegates to the shared tenancy helper on the embedded configure struct so
-// the whoami determination is cached and shared across the provider.
-func (r *Resource) callerIsMaster(ctx context.Context) (bool, error) {
-	return r.CallerIsMaster(ctx)
-}
-
 // validateParentIdRequiresMaster warns, at plan time, when parent_id is set by a
 // non-master caller. The tenant create endpoint only binds a nominated parent
 // for master callers; for everyone else it silently forces the parent to the

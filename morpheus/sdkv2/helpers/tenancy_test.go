@@ -18,8 +18,8 @@ import (
 )
 
 // newTestClient builds a legacy client (token auth, login skipped) pointed at a
-// whoami test server. Each call constructs a fresh client pointer so the
-// per-pointer master-tenant cache does not leak across cases.
+// whoami test server. The master-tenant determination is cached process-wide,
+// so each case resets it via helpers.ResetTenancyCache.
 func newTestClient(t *testing.T, url string) *sdklegacy.Client {
 	t.Helper()
 
@@ -71,6 +71,11 @@ func TestUnitVisibilityCustomizeDiff_MORPH16419(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
+			// The tenancy determination is cached once per process; reset it so
+			// each case exercises its own whoami answer.
+			helpers.ResetTenancyCache()
+			t.Cleanup(helpers.ResetTenancyCache)
+
 			var called bool
 			srv := httptest.NewServer(http.HandlerFunc(
 				func(w http.ResponseWriter, _ *http.Request) {
