@@ -136,6 +136,21 @@ cluster's pool.
   replaces the API's own message.  `config_hvm.resource_pool_id` is documented as the cluster's
   pool, and the shared `resource_pool_id` description no longer says "resource group".
 
+### `hpe_morpheus_instance` destroy detects a failed removal and reports the reason
+
+After deleting an instance the provider waits for it to disappear.  It treated `stopped` and
+`suspended` as failures, but Morpheus writes both onto an instance that is being removed while its
+servers are stopped, so they are transient during a normal teardown; on older provider versions
+this occasionally failed a destroy with `reached error status: stopped`.  Meanwhile `warning`, the
+status Morpheus actually sets when a removal fails, was not recognised, so a real failure was only
+reported as a timeout after 45 minutes.
+
+The wait now ignores `stopped` and `suspended`, stops on `warning`, and includes Morpheus's own
+reason in the error, for example
+`instance 119675: DELETE failed reached error status: warning (Unable to remove instance: ...)`.
+The instance id in these messages, and in the `hpe_morpheus_image` and `hpe_morpheus_task` destroy
+messages, previously printed as `{2 119675}`; it now prints as the number.
+
 ### `hpe_morpheus_image` no longer misses images beyond the first page
 
 The singular `hpe_morpheus_image` data source narrowed by name server-side, but that is a SQL `like`,

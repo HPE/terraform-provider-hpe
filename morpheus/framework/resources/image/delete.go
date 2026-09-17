@@ -24,7 +24,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	id := data.Id
+	id := data.Id.ValueInt64()
 	client, err := r.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -32,7 +32,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 		return
 	}
 
-	deleteReq := client.LibraryAPI.RemoveVirtualImage(ctx, id.ValueInt64())
+	deleteReq := client.LibraryAPI.RemoveVirtualImage(ctx, id)
 	_, hresp, err := deleteReq.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		resp.Diagnostics.AddError(
@@ -44,7 +44,7 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
-		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id.ValueInt64()).Execute()
+		_, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
 		// 404 status code counts as a successful delete
 		if err != nil {
 			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
