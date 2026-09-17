@@ -36,7 +36,7 @@ resource "hpe_morpheus_workflow_operational" "example" {
 - `option_types` (List of Number) The option types associated with the operational workflow
 - `platform` (String) The operating system platforms the operational workflow is supported to run on
 - `task_ids` (List of Number) A list of tasks ids associated with the operational workflow
-- `visibility` (String) Whether the operational workflow is visible in sub-tenants or not
+- `visibility` (String) Whether the operational workflow is visible in sub-tenants or not. Setting "public" requires the master tenant.
 
 ### Read-Only
 

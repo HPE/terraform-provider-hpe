@@ -44,7 +44,7 @@ func TestAccMorpheusDataSourceWorkflowExampleOk(t *testing.T) {
 
 	if currentDependency, err := workflow.RenderWorkflowOperationalConfig(t, map[string]string{
 		"Name":       name,
-		"Visibility": "public",
+		"Visibility": testhelpers.TenantVisibility(t),
 	}); err != nil {
 		t.Fatal(err)
 	} else {

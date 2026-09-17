@@ -52,7 +52,7 @@ resource "hpe_morpheus_policy" "update_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -77,7 +77,7 @@ resource "hpe_morpheus_policy" "update_test" {
     maxMemory = 16
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -100,12 +100,12 @@ resource "hpe_morpheus_policy" "update_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + initialConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + initialConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              initialCheckFn,
 			},
 			{
-				Config:             providerConfig + updatedConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + updatedConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              updatedCheckFn,
 			},
@@ -150,7 +150,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -178,7 +178,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -189,7 +189,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create resource with initial associated_resource_id
-				Config: providerConfig + initialConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
@@ -210,7 +210,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 			},
 			{
 				// Step 2: Change associated_resource_id and verify resource is replaced (new ID)
-				Config: providerConfig + updatedConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
@@ -275,7 +275,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -297,7 +297,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -308,7 +308,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create resource with Group associated_resource_type
-				Config: providerConfig + initialConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
@@ -329,7 +329,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 			},
 			{
 				// Step 2: Change associated_resource_type to Global and verify resource is replaced
-				Config: providerConfig + updatedConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Global"),
@@ -393,7 +393,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -416,7 +416,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxStorage = 10
   }
   
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
 }
 `
 
@@ -427,7 +427,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 		Steps: []resource.TestStep{
 			{
 				// Step 1: Create resource with maxMemory policy type
-				Config: providerConfig + initialConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + initialConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),
@@ -448,7 +448,7 @@ resource "hpe_morpheus_policy" "replace_test" {
 			},
 			{
 				// Step 2: Change policy_type.code to maxStorage and verify resource is replaced
-				Config: providerConfig + updatedConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + updatedConfig,
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", policyName),
 					resource.TestCheckResourceAttr(resourceName, "associated_resource_type", "Group"),

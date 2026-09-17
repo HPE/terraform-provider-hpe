@@ -4,6 +4,7 @@ package workflow_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -103,6 +104,46 @@ func TestAccMorpheusWorkflowOperationalExampleOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusWorkflowOperationalVisibilityPublicRequiresMasterTenant_MORPH16419
+// verifies that a sub-tenant caller setting visibility = "public" is rejected
+// at plan time with a clear message. It skips on the master tenant.
+func TestAccMorpheusWorkflowOperationalVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := workflow.RenderWorkflowOperationalConfig(t, map[string]string{
+		"Name":       name,
+		"Visibility": "public",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, nil, sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

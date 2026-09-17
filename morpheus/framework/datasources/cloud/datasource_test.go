@@ -63,12 +63,14 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
   # Required fields
   name      = "` + name + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id  = 1
 
 
@@ -78,7 +80,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "` + visibility + `"
 
   # Agent and provisioning settings
   agent_install_mode       = "ssh"
@@ -144,7 +146,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -168,12 +170,14 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
   # Required fields
   name      = "` + name + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id  = 1
 
 
@@ -183,7 +187,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "` + visibility + `"
 
   # Agent and provisioning settings
   agent_install_mode       = "ssh"
@@ -229,7 +233,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},

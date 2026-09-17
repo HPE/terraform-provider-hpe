@@ -31,6 +31,7 @@ func resourceCatalogItemWorkflow() *schema.Resource {
 		ReadContext:   resourceCatalogItemWorkflowRead,
 		UpdateContext: resourceCatalogItemWorkflowUpdate,
 		DeleteContext: resourceCatalogItemWorkflowDelete,
+		CustomizeDiff: helpers.VisibilityCustomizeDiff,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -143,7 +144,7 @@ func resourceCatalogItemWorkflow() *schema.Resource {
 			},
 			"visibility": {
 				Type:         schema.TypeString,
-				Description:  "The visibility of the workflow catalog item (public or private)",
+				Description:  "The visibility of the workflow catalog item (public or private). Setting \"public\" requires the master tenant.",
 				Required:     true,
 				ValidateFunc: validation.StringInSlice([]string{"public", "private"}, false),
 			},
@@ -380,6 +381,19 @@ func resourceCatalogItemWorkflowCreate(ctx context.Context, d *schema.ResourceDa
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
 	diags = append(diags, resourceCatalogItemWorkflowRead(ctx, d, meta)...)
+
+	// Apply-time fallback for the sub-tenant visibility coercion (MORPH-16419):
+	// if "public" was requested but the API stored "private", surface a clear
+	// error instead of a silent, never-converging diff.
+	if visibility == "public" {
+		if actual, ok := d.Get("visibility").(string); ok && actual == "private" {
+			diags = append(diags, diag.Errorf(
+				"visibility = \"public\" requires the master tenant: Morpheus "+
+					"silently stores \"private\" for objects created or updated by "+
+					"sub-tenant users; set visibility = \"private\" or run as a "+
+					"master-tenant user")...)
+		}
+	}
 
 	return diags
 }
@@ -733,7 +747,20 @@ func resourceCatalogItemWorkflowUpdate(ctx context.Context, d *schema.ResourceDa
 	// err, it should not have changed though..
 	d.SetId(convert.Int64ToString(catalogItemResult.ID))
 
-	return resourceCatalogItemWorkflowRead(ctx, d, meta)
+	diags := resourceCatalogItemWorkflowRead(ctx, d, meta)
+
+	// Apply-time fallback for the sub-tenant visibility coercion (MORPH-16419).
+	if visibility == "public" {
+		if actual, ok := d.Get("visibility").(string); ok && actual == "private" {
+			diags = append(diags, diag.Errorf(
+				"visibility = \"public\" requires the master tenant: Morpheus "+
+					"silently stores \"private\" for objects created or updated by "+
+					"sub-tenant users; set visibility = \"private\" or run as a "+
+					"master-tenant user")...)
+		}
+	}
+
+	return diags
 }
 
 func resourceCatalogItemWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

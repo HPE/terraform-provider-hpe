@@ -529,7 +529,7 @@ resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
 resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
-  visibility = "public"
+  visibility = "` + testhelpers.TenantVisibility(t) + `"
   category = "cloud"
 }
 
@@ -800,11 +800,11 @@ func TestAccMorpheusRoleResourceTenantAllPermissionsOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	dependencyResourceConfig := `
+	dependencyResourceConfig := testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_cloud" "testacc_cloud" {
   name = "` + name + `"
-  tenant_id = 1
-  visibility = "public" # cloud must be visible to the client for the zone permissions to be set
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
+  visibility = "` + testhelpers.TenantVisibility(t) + `" # cloud must be visible to the client for the zone permissions to be set
   config_hvm = {
     "enable_network_type_selection" = true
   }
@@ -818,7 +818,7 @@ resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
 resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
-  visibility = "public"
+  visibility = "` + testhelpers.TenantVisibility(t) + `"
   category = "cloud"
 }
 

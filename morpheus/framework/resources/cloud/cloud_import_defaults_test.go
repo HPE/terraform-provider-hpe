@@ -53,10 +53,10 @@ func TestAccMorpheusCloudResourceImportOutOfBandFillsDefaults(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
-	config := testhelpers.ProviderBlock() + `
+	config := testhelpers.ProviderBlock() + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_cloud" "example" {
   name      = "` + name + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id  = 1
   code      = "` + code + `"
 

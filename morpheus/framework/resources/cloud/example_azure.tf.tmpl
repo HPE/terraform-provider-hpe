@@ -9,7 +9,7 @@ resource "hpe_morpheus_cloud" "example" {
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "{{.Visibility}}"
 
   agent_install_mode       = "ssh"
   appliance_url            = "{{.ApplianceUrl}}"

@@ -57,6 +57,8 @@ image:
     - template-ssh_password_wo: ssh_password_wo
     - template-ssh_password_wo_version: ssh_password_wo_version
   overrides:
+    visibility:
+      description: private or public. Setting "public" requires the master tenant.
     description:
       requires_replace: true
     tenant_id:

@@ -56,6 +56,9 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
+
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
@@ -63,10 +66,11 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 		t, "example.tf.tmpl",
 		"Name", name,
 		"Code", code,
-		"TenantId", "1",
+		"TenantId", testhelpers.WhoamiTenantIDRef,
 		"GroupId", "1",
 		"Label", "aLabel",
 		"ApplianceUrl", "https://somewhere.com",
+		"Visibility", visibility,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -161,7 +165,7 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
@@ -181,7 +185,7 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -209,13 +213,15 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	dependenciesConfig := testhelpers.WhoamiBlock()
+
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
 	resourceConfig, err := cloud.RenderCloudAzureConfig(t, map[string]string{
 		"Name":          name,
 		"Code":          code,
-		"TenantId":      "1",
+		"TenantId":      testhelpers.WhoamiTenantIDRef,
 		"GroupId":       "1",
 		"Label":         "aLabel",
 		"ApplianceUrl":  "https://somewhere.com",
@@ -273,7 +279,7 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
 				ConfigPlanChecks:   planChecks,
@@ -296,6 +302,9 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
+
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
@@ -303,10 +312,11 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 		t, "example_generic.tf.tmpl",
 		"Name", name,
 		"Code", code,
-		"TenantId", "1",
+		"TenantId", testhelpers.WhoamiTenantIDRef,
 		"GroupId", "1",
 		"Label", "aLabel",
 		"ApplianceUrl", "https://somewhere.com",
+		"Visibility", visibility,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -406,7 +416,7 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
@@ -426,7 +436,7 @@ func TestAccMorpheusCloudResourceExampleGenericOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -455,6 +465,8 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 	name := acctest.RandomWithPrefix(t.Name())
 	code := strings.ToLower(name)
 
@@ -547,7 +559,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_cloud.example",
@@ -565,14 +577,17 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 		checks...,
 	)
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
+	var visibilityFlipSteps []resource.TestStep
+	if testhelpers.IsMasterTenant(t) {
+		// The private<->public flip is only meaningful for the master tenant;
+		// sub-tenants cannot set visibility = "public" (MORPH-16419).
+		visibilityFlipSteps = []resource.TestStep{
 			{
-				Config: providerConfig + `
+				// checks plan detects visibility change
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -589,8 +604,44 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
+						visibility               = "private"
 
+						config_hvm = {
+							certificate_provider          = "internal"
+							enable_network_type_selection = false
+						}
+					}`,
+				ExpectNonEmptyPlan: true,
+				PlanOnly:           true,
+			},
+		}
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: append([]resource.TestStep{
+			{
+				Config: providerConfig + dependenciesConfig + `
+					resource "hpe_morpheus_cloud" "example" {
+						name      = "` + name + `"
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
+						group_id  = 1
+
+						code                     = "` + code + `"
+						external_id              = "` + code + `"
+						labels                   = ["Label1", "Label2"]
+						agent_install_mode       = "ssh"
+						appliance_url            = "https://somewhere.com"
+						auto_recover_power_state = true
+						costing_mode             = "costing"
+						data_center_name         = "aDatacenter"
+						enabled                  = true
+						guidance_mode            = "off"
+						import_existing_vms      = "off"
+						keyboard_layout          = "us"
+						location                 = "somewhere"
+						security_mode            = "off"
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -601,10 +652,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan has no effect
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -621,8 +672,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -633,10 +683,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects name change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "changed"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -653,8 +703,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -665,10 +714,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects code change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "changed"
@@ -685,8 +734,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -697,10 +745,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects external_id change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -717,8 +765,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -729,10 +776,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects agent_install_mode change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -749,8 +796,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -761,10 +807,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects appliance_url change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -781,8 +827,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -793,10 +838,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects auto_recover_power_state change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -813,8 +858,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -825,10 +869,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects costing_mode change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -845,8 +889,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -857,10 +900,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects data_center_name change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -877,8 +920,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -889,10 +931,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects enabled change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -909,8 +951,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -921,10 +962,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects guidance_mode change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -941,8 +982,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -953,10 +993,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects import_existing_vms change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -973,8 +1013,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -985,10 +1024,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects keyboard_layout change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1005,8 +1044,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "uk"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -1017,10 +1055,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects labels change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1037,8 +1075,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "uk"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -1073,10 +1110,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects location change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1093,8 +1130,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "changed"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -1105,10 +1141,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects security_mode change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1125,40 +1161,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "internal"
-						visibility               = "public"
-
-						config_hvm = {
-							certificate_provider          = "internal"
-							enable_network_type_selection = false
-						}
-					}`,
-				ExpectNonEmptyPlan: true,
-				PlanOnly:           true,
-			},
-			{
-				// checks plan detects visibility change
-				Config: providerConfig + `
-					resource "hpe_morpheus_cloud" "example" {
-						name      = "` + name + `"
-						tenant_id = 1
-						group_id  = 1
-
-						code                     = "` + code + `"
-						external_id              = "` + code + `"
-						labels                   = ["Label1", "Label2"]
-						agent_install_mode       = "ssh"
-						appliance_url            = "https://somewhere.com"
-						auto_recover_power_state = true
-						costing_mode             = "costing"
-						data_center_name         = "aDatacenter"
-						enabled                  = true
-						guidance_mode            = "off"
-						import_existing_vms      = "off"
-						keyboard_layout          = "us"
-						location                 = "somewhere"
-						security_mode            = "off"
-						visibility               = "private"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = false
@@ -1169,10 +1172,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects certificate_provider change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1189,8 +1192,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "manual"
 							enable_network_type_selection = false
@@ -1201,10 +1203,10 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 			},
 			{
 				// checks plan detects enable_network_type_selection change
-				Config: providerConfig + `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "` + name + `"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						code                     = "` + code + `"
@@ -1221,8 +1223,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 						keyboard_layout          = "us"
 						location                 = "somewhere"
 						security_mode            = "off"
-						visibility               = "public"
-
+` + "\t\t\t\t\t\tvisibility               = \"" + visibility + "\"\n" + `
 						config_hvm = {
 							certificate_provider          = "internal"
 							enable_network_type_selection = true
@@ -1231,7 +1232,7 @@ func TestAccMorpheusCloudResourceUpdate(t *testing.T) {
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
 			},
-		},
+		}, visibilityFlipSteps...),
 	})
 }
 
@@ -1242,15 +1243,18 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 
 	t.Parallel()
 
+	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				// checks plan fails when agent_install_mode has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						agent_install_mode       = "invalid"
@@ -1259,10 +1263,10 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 			},
 			{
 				// checks plan fails when costing_mode has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						costing_mode             = "invalid"
@@ -1271,10 +1275,10 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 			},
 			{
 				// checks plan fails when guidance_mode has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						guidance_mode            = "invalid"
@@ -1283,10 +1287,10 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 			},
 			{
 				// checks plan fails when import_existing_vms has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						import_existing_vms      = "invalid"
@@ -1295,10 +1299,10 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 			},
 			{
 				// checks plan fails when security_mode has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						security_mode            = "invalid"
@@ -1307,10 +1311,10 @@ func TestAccMorpheusCloudResourceValidationOneOf(t *testing.T) {
 			},
 			{
 				// checks plan fails when visibility has invalid value
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "TestCloud"
-						tenant_id = 1
+						tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 						group_id  = 1
 
 						visibility               = "invalid"
@@ -1328,12 +1332,15 @@ func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 
 	t.Parallel()
 
+	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				// checks plan fails when TenantId is removed
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
 						name      = "cloud9"
 					}`,
@@ -1341,11 +1348,61 @@ func TestAccMorpheusCloudResourceValidationRequiredAttrs(t *testing.T) {
 			},
 			{
 				// checks plan fails when Name is removed
-				Config: `
+				Config: providerConfig + dependenciesConfig + `
 					resource "hpe_morpheus_cloud" "example" {
-						tenant_id  = 1
+						tenant_id  = data.hpe_morpheus_whoami.current.tenant_id
 					}`,
 				ExpectError: regexp.MustCompile(`The argument "name" is required`),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusCloudVisibilityPublicRequiresMasterTenant_MORPH16419 verifies
+// that a sub-tenant caller setting visibility = "public" is rejected at plan
+// time with a clear message. It skips on the master tenant.
+func TestAccMorpheusCloudVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	code := strings.ToLower(name)
+
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
+		"Name", name,
+		"Code", code,
+		"TenantId", testhelpers.WhoamiTenantIDRef,
+		"GroupId", "1",
+		"Label", "aLabel",
+		"ApplianceUrl", "https://somewhere.com",
+		"Visibility", "public",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + dependenciesConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

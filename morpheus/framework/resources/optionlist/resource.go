@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -131,6 +132,7 @@ func (r *optionListResource) Create(
 		return
 	}
 
+	plannedVisibility := plan.Visibility
 	if !applyGetOptionListResponse(readResult, &plan) {
 		resp.Diagnostics.AddError(
 			"Not Found After Create",
@@ -138,6 +140,12 @@ func (r *optionListResource) Create(
 				"The resource may exist in Morpheus. Import manually if needed: "+
 				"'terraform import <resource_type>.<name> <id>'",
 		)
+
+		return
+	}
+
+	if d := tenancy.CheckVisibilityApplied(plannedVisibility, plan.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
 
 		return
 	}
@@ -252,11 +260,18 @@ func (r *optionListResource) Update(
 		return
 	}
 
+	plannedVisibility := plan.Visibility
 	if !applyGetOptionListResponse(readResult, &plan) {
 		resp.Diagnostics.AddError(
 			"Read Error After Update",
 			"Option type list was updated successfully but could not be read back by ID.",
 		)
+
+		return
+	}
+
+	if d := tenancy.CheckVisibilityApplied(plannedVisibility, plan.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
 
 		return
 	}

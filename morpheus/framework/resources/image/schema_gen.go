@@ -283,8 +283,8 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "private or public",
-				MarkdownDescription: "private or public",
+				Description:         "private or public. Setting \"public\" requires the master tenant.",
+				MarkdownDescription: "private or public. Setting \"public\" requires the master tenant.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"private",

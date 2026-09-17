@@ -34,7 +34,7 @@ func TestAccMorpheusDataSourceUserGroupsExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	var dependenciesConfig string
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	if currentDependency, err := role.RenderRoleUserConfig(t, map[string]string{
 		"Name": name,

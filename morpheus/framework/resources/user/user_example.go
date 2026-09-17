@@ -16,7 +16,7 @@ func RenderUserConfig(t *testing.T, overrides map[string]string) (string, error)
 	t.Helper()
 
 	defaults := map[string]string{
-		"TenantId":       "1",
+		"TenantId":       testhelpers.WhoamiTenantIDRef,
 		"Username":       "example-user",
 		"RoleIds":        "1",
 		"LinuxKeyPairId": "100",

@@ -61,7 +61,7 @@ network_group:
       description: The name of the network group.
     visibility:
       computed_optional_required: computed_optional
-      description: The visibility of the network group (public or private).
+      description: The visibility of the network group (public or private). Setting "public" requires the master tenant.
       default: "private"
       one_of: [public, private]
       state_for_unknown: true

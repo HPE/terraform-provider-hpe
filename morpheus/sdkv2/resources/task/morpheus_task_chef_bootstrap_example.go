@@ -33,7 +33,7 @@ func RenderChefBootstrapConfig(t *testing.T, overrides map[string]string) (strin
 		"RetryCount":        "1",
 		"RetryDelaySeconds": "10",
 		"AllowCustomConfig": "true",
-		"Visibility":        "public",
+		"Visibility":        "private",
 	}
 
 	for key, value := range overrides {

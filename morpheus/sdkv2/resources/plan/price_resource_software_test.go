@@ -28,6 +28,7 @@ func TestAccMorpheusPriceSoftwareExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -88,10 +89,9 @@ func TestAccMorpheusPriceSoftwareExampleOk(t *testing.T) {
 			"visio",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_price.example",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_price.example", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 	}
 
@@ -101,13 +101,13 @@ func TestAccMorpheusPriceSoftwareExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

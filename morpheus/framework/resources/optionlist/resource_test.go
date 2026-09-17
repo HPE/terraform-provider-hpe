@@ -2,6 +2,7 @@ package optionlist_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -33,9 +34,11 @@ func TestAccMorpheusOptionListResourceExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	resourceConfig, err := optionlist.RenderOptionListConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -45,7 +48,7 @@ func TestAccMorpheusOptionListResourceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "name", name),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "description", "List of available regions"),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "type", "manual"),
-		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "visibility", "public"),
+		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "visibility", visibility),
 		resource.TestCheckResourceAttr("hpe_morpheus_option_list.example", "real_time", "false"),
 		resource.TestCheckResourceAttrSet("hpe_morpheus_option_list.example", "id"),
 	)
@@ -84,9 +87,11 @@ func TestAccMorpheusOptionListResourceUpdateOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	createConfig, err := optionlist.RenderOptionListConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +113,7 @@ resource "hpe_morpheus_option_list" "example" {
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "List of available regions"),
 		resource.TestCheckResourceAttr(resourceName, "type", "manual"),
-		resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
+		resource.TestCheckResourceAttr(resourceName, "visibility", visibility),
 		resource.TestCheckResourceAttr(resourceName, "real_time", "false"),
 	)
 
@@ -142,6 +147,49 @@ resource "hpe_morpheus_option_list" "example" {
 				Config:             providerConfig + updateConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusOptionListVisibilityPublicRequiresMasterTenant_MORPH16419
+// verifies that a sub-tenant caller setting visibility = "public" is rejected
+// at plan time with a clear message. It skips on the master tenant (where
+// "public" is allowed).
+func TestAccMorpheusOptionListVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := optionlist.RenderOptionListConfig(t, map[string]string{
+		"Name":       name,
+		"Visibility": "public",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

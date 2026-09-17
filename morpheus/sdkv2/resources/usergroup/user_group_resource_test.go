@@ -42,6 +42,8 @@ func TestAccMorpheusUserGroupExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	dependenciesConfig := testhelpers.WhoamiBlock()
+
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := usergroup.RenderUserGroupConfig(t, map[string]string{
@@ -81,6 +83,13 @@ func TestAccMorpheusUserGroupExampleOk(t *testing.T) {
 			"user_ids.#",
 			"1",
 		),
+
+		// MORPH-16495: the fixture must reference the caller's own user id
+		// (via the whoami data source), not the hardcoded master user id.
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_user_group.example", "user_ids.0",
+			"data.hpe_morpheus_whoami.current", "id",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -89,13 +98,13 @@ func TestAccMorpheusUserGroupExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

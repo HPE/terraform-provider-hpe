@@ -116,7 +116,7 @@ resource "hpe_morpheus_network" "net1" {
 	search_domains = null
 	appliance_url_proxy_bypass = true
 	no_proxy = null
-	tenant_ids = [1,2]
+	tenant_ids = [data.hpe_morpheus_whoami.current.tenant_id, 2]
 	visibility = var.visibility
 	cidr = var.cidr
 	labels = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
@@ -204,10 +204,11 @@ destroy = false
 			"tenant_ids.#",
 			"2",
 		),
-		resource.TestCheckTypeSetElemAttr(
+		resource.TestCheckTypeSetElemAttrPair(
 			"hpe_morpheus_network.net1",
 			"tenant_ids.*",
-			"1",
+			"data.hpe_morpheus_whoami.current",
+			"tenant_id",
 		),
 		resource.TestCheckTypeSetElemAttr(
 			"hpe_morpheus_network.net1",
@@ -263,7 +264,7 @@ destroy = false
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + resourceCfg,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceCfg,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
 					// All other values use defaults
@@ -315,7 +316,7 @@ import {
 			},
 			{
 				// check that a plan after import detects no changes
-				Config: providerConfig + resourceCfg,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceCfg,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
 					// All other values use defaults

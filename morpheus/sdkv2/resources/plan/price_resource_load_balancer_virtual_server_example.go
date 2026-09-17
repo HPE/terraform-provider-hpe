@@ -26,7 +26,7 @@ func RenderPriceLoadBalancerVirtualServerConfig(t *testing.T, overrides map[stri
 		"Name":         "terraform-test",
 		"PriceType":    "fixed",
 		"PriceUnit":    "minute",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 	}
 
 	// Apply overrides to defaults

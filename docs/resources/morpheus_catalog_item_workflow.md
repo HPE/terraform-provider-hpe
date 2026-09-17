@@ -34,7 +34,7 @@ resource "hpe_morpheus_catalog_item_workflow" "example" {
 ### Required
 
 - `name` (String) The name of the workflow catalog item
-- `visibility` (String) The visibility of the workflow catalog item (public or private)
+- `visibility` (String) The visibility of the workflow catalog item (public or private). Setting "public" requires the master tenant.
 - `workflow_id` (Number) The id of the workflow associated with the workflow catalog item
 
 ### Optional

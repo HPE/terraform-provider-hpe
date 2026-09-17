@@ -21,7 +21,7 @@ func RenderDatastoreAlletraMPHVMConfig(t *testing.T, overrides map[string]string
 		"AssociatedResourceID": "1",
 		"StorageServerID":      "1",
 		"GroupID":              "1",
-		"TenantID":             "1",
+		"TenantID":             testhelpers.WhoamiTenantIDRef,
 	}
 
 	for key, value := range overrides {

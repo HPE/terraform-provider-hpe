@@ -52,5 +52,5 @@ option_list:
       default: "rest"
     visibility:
       computed_optional_required: computed_optional
-      description: The visibility of the option type list.
+      description: The visibility of the option type list. Setting "public" requires the master tenant.
       default: "private"

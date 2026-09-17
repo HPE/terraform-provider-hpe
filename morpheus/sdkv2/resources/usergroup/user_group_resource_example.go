@@ -23,7 +23,9 @@ func RenderUserGroupConfig(t *testing.T, overrides map[string]string) (string, e
 		"Name":        "tftest",
 		"ServerGroup": "test",
 		"SudoAccess":  "true",
-		"UserIds":     "[1]",
+		// Default to the caller's own user id (resolved via the whoami data
+		// source) instead of the master user id (MORPH-16495).
+		"UserIds": "[" + testhelpers.WhoamiUserIDRef + "]",
 	}
 
 	// Apply overrides to defaults

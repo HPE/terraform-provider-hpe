@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -344,6 +345,12 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
 		)
 		taintResourceState(plan.Id.ValueInt64())
+
+		return
+	}
+
+	if d := tenancy.CheckVisibilityApplied(plan.Visibility, state.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
 
 		return
 	}

@@ -32,7 +32,7 @@ func TestAccMorpheusDataSourcePriceExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	var dependenciesConfig string
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	if currentDependency, err := plan.RenderPriceConfig(t, map[string]string{
 		"Name": name,

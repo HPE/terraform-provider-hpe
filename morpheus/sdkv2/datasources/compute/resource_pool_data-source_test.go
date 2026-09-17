@@ -42,7 +42,7 @@ func TestAccMorpheusDataSourceResourcePoolExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	var dependenciesConfig string
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	if currentDependency, err := compute.RenderResourcePoolGroupConfig(t, map[string]string{
 		"Name": name,

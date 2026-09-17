@@ -82,7 +82,7 @@ resource "hpe_morpheus_policy" "required" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 				PlanOnly:           false,
@@ -139,7 +139,7 @@ resource "hpe_morpheus_group" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -199,7 +199,7 @@ resource "hpe_morpheus_group" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -240,7 +240,7 @@ resource "hpe_morpheus_policy" "test" {
 		Steps: []resource.TestStep{
 			// Step 1: Approve Delete
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-deleteApproval"),
 					"policy_description": config.StringVariable("Delete approval policy"),
@@ -257,7 +257,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 2: Approve Provision
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-provisionApproval"),
 					"policy_description": config.StringVariable("Provision approval policy"),
@@ -274,7 +274,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 3: Approve Reconfigure
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-reconfigureApproval"),
 					"policy_description": config.StringVariable("Reconfigure approval policy"),
@@ -291,7 +291,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 4: Approve Workflow Execute
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-workflowApproval"),
 					"policy_description": config.StringVariable("Workflow approval policy"),
@@ -308,7 +308,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 5: Delayed Delete
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-delayedRemoval"),
 					"policy_description": config.StringVariable("Delayed removal policy"),
@@ -325,7 +325,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 6: Instance Naming
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-naming"),
 					"policy_description": config.StringVariable("Naming policy"),
@@ -344,7 +344,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 7: Instance Networks
 			{
-				Config: providerConfig + resourceConfigCloud,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfigCloud,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-requiredNetwork"),
 					"policy_description": config.StringVariable("Required network policy"),
@@ -363,7 +363,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 8: Max Memory
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxMemory"),
 					"policy_description": config.StringVariable("Max memory policy"),
@@ -380,7 +380,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 9: Max Pool Members
 			{
-				Config: providerConfig + resourceConfigCloud,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfigCloud,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxPoolMembers"),
 					"policy_description": config.StringVariable("Max pool members policy"),
@@ -397,7 +397,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 10: Max Snapshots
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxSnapshots"),
 					"policy_description": config.StringVariable("Max snapshots policy"),
@@ -414,7 +414,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 11: Max Storage
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxStorage"),
 					"policy_description": config.StringVariable("Max storage policy"),
@@ -432,7 +432,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 12: Max VMs
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxVms"),
 					"policy_description": config.StringVariable("Max VMs policy"),
@@ -449,7 +449,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 13: Max Networks
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-maxNetworks"),
 					"policy_description": config.StringVariable("Max networks policy"),
@@ -466,7 +466,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			/* // Step 14: Storage Server Quota - Commented out, requires Global scope which impacts other users
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-storageServerQuota"),
 					"policy_description": config.StringVariable("Storage server quota policy"),
@@ -484,7 +484,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			*/ // Step 15: Tags
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-tags"),
 					"policy_description": config.StringVariable("Tags policy"),
@@ -503,7 +503,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 16: User Creation
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-createUser"),
 					"policy_description": config.StringVariable("Create user policy"),
@@ -521,7 +521,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 17: User Group Creation
 			{
-				Config: providerConfig + resourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ConfigVariables: config.Variables{
 					"policy_name":        config.StringVariable(namePrefix + "-createUserGroup"),
 					"policy_description": config.StringVariable("Create user group policy"),
@@ -538,7 +538,7 @@ resource "hpe_morpheus_policy" "test" {
 			},
 			// Step 18: Workflow
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_group" "test" {
   name = "` + groupName + `"
   location = "test"
@@ -610,7 +610,7 @@ resource "hpe_morpheus_group" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -658,7 +658,7 @@ resource "hpe_morpheus_network" "test" {
   active = true
   dhcp_server = false
   appliance_url_proxy_bypass = true
-  tenant_ids = [1]
+  tenant_ids = [data.hpe_morpheus_whoami.current.tenant_id]
   visibility = "private"
   cidr = "10.0.0.0/24"
   labels = ["terraform", "test"]
@@ -811,7 +811,7 @@ resource "hpe_morpheus_network" "test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + dependencyConfig + resourceConfig +
+				Config: providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + resourceConfig +
 					cloudResourceConfig + roleResourceConfig +
 					userResourceConfig + planResourceConfig +
 					networkResourceConfig,
@@ -869,7 +869,7 @@ resource "hpe_morpheus_workflow_operational" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -890,7 +890,7 @@ data "hpe_morpheus_workflow" "test" {
 		Steps: []resource.TestStep{
 			// Step 1: Approve Delete (using config_approval)
 			{
-				Config: providerConfig + dependencyConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + `
 			resource "hpe_morpheus_policy" "test" {
 			  name = "` + namePrefix + `-deleteApproval"
 			  description = "Delete approval policy using static schema"
@@ -915,7 +915,7 @@ data "hpe_morpheus_workflow" "test" {
 			},
 			// Step 2: Backup Creation (using config_create_backup)
 			{
-				Config: providerConfig + dependencyConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + `
 			resource "hpe_morpheus_policy" "test" {
 			  name = "` + namePrefix + `-createBackup"
 			  description = "Create backup policy using static schema"

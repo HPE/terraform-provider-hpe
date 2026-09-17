@@ -4,6 +4,7 @@ package image_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -36,6 +37,7 @@ func TestAccMorpheusImageResourceExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	datasourceConfig := `
 data "hpe_morpheus_os_type" "test" {
@@ -52,6 +54,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 		"Name", name,
 		"StorageProviderId", "data.hpe_morpheus_storage_bucket.test.id",
 		"OsTypeId", "data.hpe_morpheus_os_type.test.id",
+		"Visibility", visibility,
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -111,6 +114,55 @@ apk add --no-cache bash`,
 				// ignore these fields as they are not available from the API
 				ImportStateVerifyIgnore: []string{"url", "ssh_password_wo_version", "ssh_key_wo_version"},
 				Check:                   checkFn,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusImageVisibilityPublicRequiresMasterTenant_MORPH16419 verifies
+// that a sub-tenant caller setting visibility = "public" is rejected at plan
+// time with a clear message. It skips on the master tenant.
+func TestAccMorpheusImageVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	// Literal placeholder ids: the step is PlanOnly and the master-tenant
+	// guard rejects the plan before anything is created or resolved, so the
+	// ids never need to exist. Data-source lookups (os type, storage bucket)
+	// must be avoided here -- they are read at plan time and a sub-tenant
+	// cannot see the master's "Local Storage" bucket, which would fail the
+	// plan with an unrelated error before the guard's message can match.
+	resourceConfig, err := testhelpers.RenderExample(
+		t, "example.tf.tmpl",
+		"Name", name,
+		"StorageProviderId", "1",
+		"OsTypeId", "1",
+		"Visibility", "public",
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

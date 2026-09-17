@@ -27,7 +27,7 @@ func RenderPriceSoftwareConfig(t *testing.T, overrides map[string]string) (strin
 		"PriceType":    "software",
 		"PriceUnit":    "minute",
 		"Software":     "visio",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 	}
 
 	// Apply overrides to defaults

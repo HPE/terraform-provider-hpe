@@ -32,7 +32,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables and defaults for required fields only
-	configText := providerConfig + `
+	configText := providerConfig + testhelpers.WhoamiBlock() + `
 variable "name" {
   description = "Network name"
   type        = string
@@ -84,7 +84,7 @@ variable "cidr" {
 resource "hpe_morpheus_network" "foo" {
   active   = true
   pool_id     = 6446
-  tenant_ids = [1,2]
+  tenant_ids = [data.hpe_morpheus_whoami.current.tenant_id, 2]
   name     = var.name
   cloud_id = var.cloud_id
   group_id = var.group_id

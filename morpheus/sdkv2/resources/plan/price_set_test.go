@@ -91,13 +91,13 @@ func TestAccMorpheusPriceSetExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

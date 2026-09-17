@@ -137,7 +137,7 @@ resource "hpe_morpheus_network" "test" {
   active                     = var.active
   dhcp_server                = var.dhcp_server
   appliance_url_proxy_bypass = var.appliance_url_proxy_bypass
-  tenant_ids                 = [1]
+  tenant_ids                 = [data.hpe_morpheus_whoami.current.tenant_id]
   visibility                 = var.visibility
   cidr                       = var.cidr
 }
@@ -151,7 +151,7 @@ data "hpe_morpheus_network" "example" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + networkResourceConfig,
+				Config: providerConfig + testhelpers.WhoamiBlock() + networkResourceConfig,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
 				},

@@ -25,22 +25,11 @@ import (
 // The whoami response omits isMasterAccount unless it is true (see
 // views/morpheus_api/whoami/index.gson), so a nil value means non-master, not
 // "unknown".
+// callerIsMaster reports whether the authenticated tenant is the master tenant.
+// It delegates to the shared tenancy helper on the embedded configure struct so
+// the whoami determination is cached and shared across the provider.
 func (r *Resource) callerIsMaster(ctx context.Context) (bool, error) {
-	client, err := r.NewClient(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	who, hresp, err := client.AuthenticationAPI.Whoami(ctx).Execute()
-	if err := errfmt.CheckResponse(err, hresp); err != nil {
-		return false, err
-	}
-	if who == nil {
-		return false, fmt.Errorf("whoami returned an empty response")
-	}
-
-	// isMasterAccount is only serialized when true; absence means non-master.
-	return who.IsMasterAccount != nil && *who.IsMasterAccount, nil
+	return r.CallerIsMaster(ctx)
 }
 
 // validateParentIdRequiresMaster warns, at plan time, when parent_id is set by a

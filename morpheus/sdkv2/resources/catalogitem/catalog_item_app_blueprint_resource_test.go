@@ -27,11 +27,13 @@ func TestAccMorpheusCatalogItemAppBlueprintExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := catalogitem.RenderCatalogItemAppBlueprintConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +121,7 @@ func TestAccMorpheusCatalogItemAppBlueprintExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_catalog_item_app_blueprint.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 	}
 

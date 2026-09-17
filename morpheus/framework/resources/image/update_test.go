@@ -31,6 +31,7 @@ func TestAccMorpheusImageResourceUpdate(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	datasourceConfig := `
 data "hpe_morpheus_os_type" "test" {
@@ -145,8 +146,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 							}
 						]
 						virtio_supported = true
-						visibility = "public"
-					}`,
+` + "\t\t\t\t\t\tvisibility = \"" + visibility + "\"\n" + `					}`,
 				Check:            checkFn,
 				PlanOnly:         false,
 				ConfigPlanChecks: checkInPlaceUpdate,
@@ -212,8 +212,7 @@ data "hpe_morpheus_storage_bucket" "test" {
 						}
 						]
 						virtio_supported = true
-						visibility = "public"
-					}`,
+` + "\t\t\t\t\t\tvisibility = \"" + visibility + "\"\n" + `					}`,
 				Check:            checkFn,
 				PlanOnly:         false,
 				ConfigPlanChecks: checkReplace,

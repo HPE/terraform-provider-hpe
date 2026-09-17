@@ -28,6 +28,7 @@ func TestAccMorpheusInstanceTypeLayoutExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -88,7 +89,7 @@ EOF
 	resource "hpe_morpheus_price" "regression" {
 	  name          = "tf-layout-price-%[1]s"
 	  code          = "tf-layout-price-%[1]s"
-	  tenant_id     = 1
+	  tenant_id     = data.hpe_morpheus_whoami.current.tenant_id
 	  price_type    = "fixed"
 	  price_unit    = "minute"
 	  incur_charges = "always"
@@ -175,13 +176,13 @@ EOF
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply -- MORPH-11007 convergence: no perpetual diff.
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

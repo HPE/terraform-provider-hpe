@@ -33,7 +33,7 @@ func RenderTaskAnsibleTowerConfig(t *testing.T, overrides map[string]string) (st
 		"RetryDelaySeconds":         "10",
 		"Retryable":                 "true",
 		"ScmOverride":               "main",
-		"Visibility":                "public",
+		"Visibility":                "private",
 	}
 
 	// Apply overrides to defaults

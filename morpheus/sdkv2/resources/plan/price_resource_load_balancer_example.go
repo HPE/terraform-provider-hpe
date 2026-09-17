@@ -26,7 +26,7 @@ func RenderPriceLoadBalancerConfig(t *testing.T, overrides map[string]string) (s
 		"Name":         "terraform-test",
 		"PriceType":    "fixed",
 		"PriceUnit":    "minute",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 	}
 
 	// Apply overrides to defaults

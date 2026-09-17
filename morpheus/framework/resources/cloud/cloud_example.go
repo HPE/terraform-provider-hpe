@@ -11,20 +11,21 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example.tf example.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example_generic.tf example_generic.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com"
-//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example_azure.tf example_azure.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com" AzureRegion "eastus" SubscriberId "sub-12345" AzureTenantId "tenant-67890" ClientId "client-abc" ClientSecret "secret-xyz" ResourceGroup "my-rg"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example.tf example.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com" Visibility "public"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example_generic.tf example_generic.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com" Visibility "public"
+//go:generate ../../../../bin/render -out examples/resources/morpheus_cloud/example_azure.tf example_azure.tf.tmpl Name "TestCloud" TenantId "1" GroupId "1" Code "aCode" Label "aLabel" ApplianceUrl "https://somewhere.com" AzureRegion "eastus" SubscriberId "sub-12345" AzureTenantId "tenant-67890" ClientId "client-abc" ClientSecret "secret-xyz" ResourceGroup "my-rg" Visibility "public"
 
 func RenderCloudConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
 		"Name":         "TestCloud",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 		"GroupId":      "1",
 		"Code":         "testcloud",
 		"Label":        "aLabel",
 		"ApplianceUrl": "https://somewhere.com",
+		"Visibility":   "private",
 	}
 
 	for key, value := range overrides {
@@ -56,11 +57,12 @@ func RenderCloudGenericConfig(t *testing.T, overrides map[string]string) (string
 
 	defaults := map[string]string{
 		"Name":         "TestCloud",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 		"GroupId":      "1",
 		"Code":         "testcloud",
 		"Label":        "aLabel",
 		"ApplianceUrl": "https://somewhere.com",
+		"Visibility":   "private",
 	}
 
 	for key, value := range overrides {
@@ -92,11 +94,12 @@ func RenderCloudAzureConfig(t *testing.T, overrides map[string]string) (string, 
 
 	defaults := map[string]string{
 		"Name":          "TestCloud",
-		"TenantId":      "1",
+		"TenantId":      testhelpers.WhoamiTenantIDRef,
 		"GroupId":       "1",
 		"Code":          "testcloud",
 		"Label":         "aLabel",
 		"ApplianceUrl":  "https://somewhere.com",
+		"Visibility":    "private",
 		"AzureRegion":   "eastus",
 		"SubscriberId":  "sub-12345",
 		"AzureTenantId": "tenant-67890",

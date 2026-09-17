@@ -27,6 +27,7 @@ func TestAccMorpheusPriceLoadBalancerExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -80,10 +81,9 @@ func TestAccMorpheusPriceLoadBalancerExampleOk(t *testing.T) {
 			"minute",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_price.example",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_price.example", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 	}
 
@@ -93,13 +93,13 @@ func TestAccMorpheusPriceLoadBalancerExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

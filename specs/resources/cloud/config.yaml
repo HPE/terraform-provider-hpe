@@ -198,6 +198,8 @@ cloud:
     - zone_type_id
     - time_zone # Bug
   overrides:
+    visibility:
+      description: The visibility of the cloud (private or public). Setting "public" requires the master tenant.
     agent_install_mode:
       description: The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
       computed_optional_required: computed_optional

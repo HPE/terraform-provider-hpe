@@ -79,8 +79,8 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the option type list.",
-				MarkdownDescription: "The visibility of the option type list.",
+				Description:         "The visibility of the option type list. Setting \"public\" requires the master tenant.",
+				MarkdownDescription: "The visibility of the option type list. Setting \"public\" requires the master tenant.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"private",

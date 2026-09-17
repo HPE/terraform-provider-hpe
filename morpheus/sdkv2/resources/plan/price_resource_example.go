@@ -26,7 +26,7 @@ func RenderPriceConfig(t *testing.T, overrides map[string]string) (string, error
 		"Name":         "terraform-test",
 		"PriceType":    "fixed",
 		"PriceUnit":    "minute",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 	}
 
 	// Apply overrides to defaults
