@@ -42,7 +42,6 @@ func (g *Resource) Metadata(
 	resp *resource.MetadataResponse,
 ) {
 	resp.TypeName = req.ProviderTypeName + "_" + "instance"
-	resp.TypeName = req.ProviderTypeName + "_" + "instance"
 }
 
 // Schema implements resource.Resource.

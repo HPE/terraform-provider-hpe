@@ -79,6 +79,15 @@ func (g *Resource) Update(
 		}
 	}
 
+	// Environment variables are not part of the instance update request; they
+	// have their own add/update and delete operations. Apply any difference
+	// between state and plan through those, independently of the main update
+	// call above. MORPH-612.
+	resp.Diagnostics.Append(applyEvarsUpdate(ctx, client, state.Id.ValueInt64(), plan, state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	tflog.Info(ctx, fmt.Sprintf("Instance update state: %v", state.Volumes.Elements()))
 	tflog.Info(ctx, fmt.Sprintf("Instance update plan: %v", plan.Volumes.Elements()))
 

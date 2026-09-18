@@ -41,6 +41,10 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		"MaxMemory": "",
 		// SingleVolume omits the non-root volume, for volume add/remove coverage.
 		"SingleVolume": "",
+		// Evars and Ports take a pre-rendered HCL fragment (the list elements),
+		// so a test can express add/modify/remove scenarios exactly.
+		"Evars": "",
+		"Ports": "",
 	}
 
 	for key, value := range overrides {

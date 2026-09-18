@@ -28,9 +28,6 @@ monitoring, and eventual decommissioning.
 &nbsp;&nbsp;&nbsp;&nbsp;- BMaaS: `config_bmaas`<br><br>
 Some general issues<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- With Morpheus versions prior to 8.0.11, make sure the root volume is the first defined.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing `evars`.<br>
-These will be addressed in a future release.
 
 -> Some general notes:<br><br>
 When an instance is created, it is marked as "ready" before DHCP has assigned IP addresses to all
@@ -57,7 +54,9 @@ the new settings but no `Morpheus` `Update` API calls will be made.  The default
 &nbsp;&nbsp;&nbsp;&nbsp;- Updates to `service_plan_options` for service plans that support the setting of options<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; are supported for Morpheus versions >= 8.1.2, for earlier versions updates<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; will force a new instance to be created<br>
-&nbsp;&nbsp;&nbsp;&nbsp;- Updates fail when removing optional fields or `evars`<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `evars` can be added, changed and removed in place.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- `ports` can only be set when the instance is created; changing or removing them<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; forces a new instance to be created.<br><br>
 We've added a `connection_info` section (read-only) which contains the IP address(es) by which the instance
 can be accessed<br><br>
 The `datastore_auto_selection` attribute is not supported for BMaaS instances.<br><br>
@@ -991,7 +990,9 @@ hostname, so changing it forces replacement.
 - `network_domain_id` (Number) The Network Domain ID to provision the instance into.
 - `ports` (Attributes Set) The ports parameter is for port configuration.
 
-The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened. (see [below for nested schema](#nestedatt--ports))
+The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.
+
+Ports can only be set when the instance is created. Changing or removing them forces a new instance to be created. (see [below for nested schema](#nestedatt--ports))
 - `server_uuid` (String) UUID to assign to the single server provisioned for this instance.
 Morpheus assigns UUIDs strictly by position; an instance provisions
 exactly one server (layout_size is always 1), so this is the only UUID

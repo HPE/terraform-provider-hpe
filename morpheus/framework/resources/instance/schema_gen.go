@@ -440,12 +440,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Computed:            true,
 				Description:         "Environment Variables, an array of objects that have name and value.",
 				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.UseStateForUnknown(),
-				},
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
@@ -745,8 +741,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
-				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n",
+				Description:         "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n\nPorts can only be set when the instance is created. Changing or removing them forces a new instance to be created.\n",
+				MarkdownDescription: "The ports parameter is for port configuration.\n\nThe layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.\n\nPorts can only be set when the instance is created. Changing or removing them forces a new instance to be created.\n",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.RequiresReplace(),
+				},
 			},
 			"server_uuid": schema.StringAttribute{
 				Optional:            true,

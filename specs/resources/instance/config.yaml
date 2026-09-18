@@ -767,7 +767,15 @@ instance:
       description: Whether to create a user when provisioning the bare metal instance.
       computed_optional_required: computed_optional
     evars:
-      state_for_unknown: true
+      # MORPH-612: plain Optional, like tags. As Optional+Computed with
+      # UseStateForUnknown, omitting the block planned the PRIOR state back in,
+      # so "remove all evars" could never be expressed -- the plan always equalled
+      # the state and nothing was deleted. Optional-only makes an omitted block
+      # null, which the update path applies as remove-all. Computed is not needed:
+      # the read maps only the user-defined variables, so the API never adds
+      # values the practitioner did not set.
+      computed_optional_required: optional
+      state_for_unknown: false
     network_domain_id:
       requires_replace: true
     user_group:
@@ -776,6 +784,18 @@ instance:
       computed_optional_required: optional
     ports:
       computed_optional_required: optional
+      # MORPH-612: ports are create-only in Morpheus. The instance update API
+      # does not read them and there is no post-provisioning ports endpoint, so
+      # an in-place change cannot be applied. Replacing the instance is the only
+      # way to honour a changed or removed ports block; previously the change
+      # was accepted and silently never applied.
+      requires_replace: true
+      description: |
+        The ports parameter is for port configuration.
+
+        The layout may have default ports, which are defined in node types, that are always configured. This parameter will be for additional custom ports to be opened.
+
+        Ports can only be set when the instance is created. Changing or removing them forces a new instance to be created.
     evars.name:
       computed_optional_required: required
     evars.value:

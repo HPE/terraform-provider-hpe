@@ -395,11 +395,14 @@ func getInstanceAsState(
 	state.PlanId = convert.Int64ToType(instance.Plan.Id)
 
 	// ports
-	// assume ports always match the plan. Ports are a bit complicated in the
-	// API. They are a part of container_details, which is an array which may
-	// be of arbitrary size. The ports are contained within every element of the
-	// array. The array of ports also may contain non-user controlled ports.
-	// This should probably be replaced by a plan modifier.
+	// Ports are carried from the plan rather than read from the API. They are
+	// part of container_details, an array of arbitrary size whose every element
+	// carries a ports list that also includes non-user-controlled ports, so the
+	// user's set cannot be recovered from the response. This is safe because
+	// ports are create-only in Morpheus (the update API does not read them and
+	// there is no post-provisioning ports endpoint) and the attribute requires
+	// replacement on change, so the plan value is by construction the value the
+	// instance was created with. MORPH-612.
 	state.Ports = plan.Ports
 
 	// timeouts

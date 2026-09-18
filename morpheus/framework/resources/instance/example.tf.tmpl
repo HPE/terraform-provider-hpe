@@ -17,6 +17,18 @@ resource "hpe_morpheus_instance" "example" {
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
   instance_context = "{{.InstanceContext}}"
+{{- if .Evars}}
+
+  evars = [
+{{.Evars}}
+  ]
+{{- end}}
+{{- if .Ports}}
+
+  ports = [
+{{.Ports}}
+  ]
+{{- end}}
 {{- if .UserGroup}}
   user_group = {{.UserGroup}}
 {{- end}}
