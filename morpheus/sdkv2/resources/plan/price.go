@@ -5,7 +5,10 @@ package plan
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -43,10 +46,13 @@ func ResourcePrice() *schema.Resource {
 				Required:    true,
 			},
 			"code": {
-				Type:        schema.TypeString,
-				Description: "The code of the price",
-				Required:    true,
-				ForceNew:    true,
+				Type: schema.TypeString,
+				Description: "The code of the price. The code must be unique within the " +
+					"tenant scope. Destroying a price deactivates it on the appliance " +
+					"(a soft delete), so re-creating a price with the code of a " +
+					"previously deactivated price re-activates that existing price.",
+				Required: true,
+				ForceNew: true,
 			},
 			"tenant_id": {
 				Type:        schema.TypeInt,
@@ -253,12 +259,12 @@ func resourcePriceCreate(ctx context.Context, d *schema.ResourceData, meta any) 
 		price["customPrice"] = d.Get("custom_price")
 	}
 
-	if d.Get("tenant_id") != nil {
+	if v, ok := d.GetOk("tenant_id"); ok {
 		var tenantID int
-		if v, ok := d.Get("tenant_id").(int); ok {
-			tenantID = v
+		if tv, ok := v.(int); ok {
+			tenantID = tv
 		} else {
-			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", d.Get("tenant_id")))
+			return diag.FromErr(helpers.TypeAssertFailError("tenant_id", v))
 		}
 		price["account"] = map[string]any{
 			"id": tenantID,
@@ -321,6 +327,99 @@ func resourcePriceCreate(ctx context.Context, d *schema.ResourceData, meta any) 
 			"price": price,
 		},
 	}
+
+	// Determine the configured tenant scope for pre-flight matching. When
+	// tenant_id is unset we match rows whose account is null; when set we match
+	// rows whose account.id equals the configured tenant.
+	tenantID, hasTenant := 0, false
+	if v, ok := d.GetOk("tenant_id"); ok {
+		if tv, ok := v.(int); ok {
+			tenantID, hasTenant = tv, true
+		}
+	}
+
+	// Pre-flight: destroying a price soft-deletes it (deactivate), leaving the
+	// code row in place. Look for existing rows with the same code and tenant
+	// scope so we can reject active duplicates and re-activate deactivated ones
+	// instead of creating a duplicate row (MORPH-13247, MORPH-15915) or setting
+	// an invalid id (MORPH-15913).
+	matches, err := listPricesByCodeScope(client, code, tenantID, hasTenant, true)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	var inactive []morpheus.Price
+	for _, p := range matches {
+		if p.Active {
+			return diag.Errorf(
+				"price code %q already exists (id %d); import it with "+
+					"'terraform import hpe_morpheus_price.<name> %d' or choose a "+
+					"different code",
+				code, p.ID, p.ID)
+		}
+		inactive = append(inactive, p)
+	}
+
+	if len(inactive) > 0 {
+		// Adopt-and-reactivate a deactivated price. The appliance's update
+		// endpoint only uses the addressed id to derive the code and account; it
+		// then selects the row to update by that code and account itself
+		// (preferring an active row, otherwise an arbitrary inactive one) and
+		// re-activates it. Any in-scope inactive row therefore works as the
+		// target, and the id of the row that actually became active is
+		// re-resolved afterwards.
+		target := inactive[0]
+		log.Printf("PRICE CREATE: re-activating deactivated price for code %q via id %d", code, target.ID)
+
+		updateResp, err := client.UpdatePrice(target.ID, req)
+		if err != nil {
+			log.Printf("API FAILURE: %s - %s", updateResp, err)
+
+			return diag.FromErr(err)
+		}
+		if updateResp.Result == nil {
+			return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+		}
+		updateResult, ok := updateResp.Result.(*morpheus.UpdatePriceResult)
+		if !ok {
+			return diag.FromErr(helpers.TypeAssertFailError("Result", updateResp.Result))
+		}
+		if diags := priceResultGuard(updateResult.CreatePriceResult, "re-activate"); diags != nil {
+			return diags
+		}
+
+		// Resolve the row that is now active for this code and tenant scope: the
+		// appliance chooses which same-code row it re-activates, so it need not
+		// be the one addressed above. Only active rows are listed here, which
+		// keeps the lookup exact and small even when many deactivated rows share
+		// the code.
+		reactivated, err := listPricesByCodeScope(client, code, tenantID, hasTenant, false)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		switch len(reactivated) {
+		case 1:
+			d.SetId(convert.Int64ToString(reactivated[0].ID))
+		case 0:
+			return diag.Errorf("re-activated price for code %q but no active row was found", code)
+		default:
+			ids := make([]string, 0, len(reactivated))
+			for _, p := range reactivated {
+				ids = append(ids, convert.Int64ToString(p.ID))
+			}
+
+			return diag.Errorf(
+				"re-activated price for code %q but found %d active rows (ids %s); "+
+					"import the intended price with 'terraform import hpe_morpheus_price.<name> <id>'",
+				code, len(reactivated), strings.Join(ids, ", "))
+		}
+
+		diags = append(diags, resourcePriceRead(ctx, d, meta)...)
+
+		return diags
+	}
+
+	log.Printf("PRICE CREATE: creating new price for code %q", code)
 	resp, err := client.CreatePrice(req)
 	if err != nil {
 		log.Printf("API FAILURE: %s - %s", resp, err)
@@ -340,11 +439,107 @@ func resourcePriceCreate(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
+	if diags := priceResultGuard(*result, "create"); diags != nil {
+		return diags
+	}
+
 	// Successfully created resource, now set id
 	d.SetId(convert.Int64ToString(result.ID))
 	diags = append(diags, resourcePriceRead(ctx, d, meta)...)
 
 	return diags
+}
+
+// pricePageSize is the page size requested from the prices list endpoint, which
+// otherwise defaults to 25 rows per page.
+const pricePageSize = 500
+
+// listPricesByCodeScope lists prices matching the exact code and tenant scope,
+// walking every page of the list endpoint. When hasTenant is false, only rows
+// with no account are returned; when true, only rows whose account id equals
+// tenantID. Deactivated rows are included only when includeInactive is set;
+// they can accumulate in large numbers because destroying a price only
+// deactivates it.
+func listPricesByCodeScope(
+	client *morpheus.Client, code string, tenantID int, hasTenant bool, includeInactive bool,
+) ([]morpheus.Price, error) {
+	var matches []morpheus.Price
+
+	for offset := 0; ; {
+		queryParams := map[string]string{
+			"code":   code,
+			"max":    strconv.Itoa(pricePageSize),
+			"offset": strconv.Itoa(offset),
+		}
+		if includeInactive {
+			queryParams["includeInactive"] = "true"
+		}
+
+		resp, err := client.ListPrices(&morpheus.Request{QueryParams: queryParams})
+		if err != nil {
+			return nil, err
+		}
+
+		listResult, ok := resp.Result.(*morpheus.ListPricesResult)
+		if !ok {
+			return nil, helpers.TypeAssertFailError("Result", resp.Result)
+		}
+		if listResult.Prices == nil || len(*listResult.Prices) == 0 {
+			break
+		}
+		page := *listResult.Prices
+
+		for _, p := range page {
+			if p.Code != code {
+				continue
+			}
+			acctID, hasAcct := p.AccountID()
+			if hasTenant {
+				if !hasAcct || acctID != int64(tenantID) {
+					continue
+				}
+			} else if hasAcct {
+				continue
+			}
+			matches = append(matches, p)
+		}
+
+		// Advance by the rows actually returned so a server-side cap on "max"
+		// cannot skip rows, and stop once the reported total has been read (or,
+		// without metadata, on the first short page).
+		offset += len(page)
+		if listResult.Meta != nil {
+			if int64(offset) >= listResult.Meta.Total {
+				break
+			}
+		} else if len(page) < pricePageSize {
+			break
+		}
+	}
+
+	return matches, nil
+}
+
+// priceResultGuard inspects a create/update price result for the API's
+// HTTP-200-with-success:false validation-failure pattern and returns a
+// diagnostic when the operation did not actually succeed (MORPH-15913). The id
+// is only required for the create action; updates may return success without an
+// id in the body.
+func priceResultGuard(result morpheus.CreatePriceResult, action string) diag.Diagnostics {
+	idOK := action != "create" || result.ID != 0
+	if result.Success && idOK && len(result.Errors) == 0 {
+		return nil
+	}
+
+	errMsg := fmt.Sprintf("API reported success but failed to %s price", action)
+	if result.Message != "" {
+		errMsg = result.Message
+	}
+	for field, msg := range result.Errors {
+		errMsg += fmt.Sprintf("; %s: %s", field, msg)
+	}
+
+	return diag.Errorf("%s", errMsg)
 }
 
 func resourcePriceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -394,7 +589,9 @@ func resourcePriceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	// store resource data
 	var price MorpheusPrice
-	json.Unmarshal(resp.Body, &price)
+	if err := json.Unmarshal(resp.Body, &price); err != nil {
+		return diag.FromErr(err)
+	}
 
 	if !price.Price.Active {
 		d.SetId("")
@@ -604,9 +801,15 @@ func resourcePriceUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 	log.Printf("API RESPONSE: %s", resp)
 
-	var result map[string]any
-	if err := json.Unmarshal(resp.Body, &result); err != nil {
-		log.Fatal(err)
+	if resp.Result == nil {
+		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
+	}
+	result, ok := resp.Result.(*morpheus.UpdatePriceResult)
+	if !ok {
+		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
+	}
+	if diags := priceResultGuard(result.CreatePriceResult, "update"); diags != nil {
+		return diags
 	}
 
 	d.SetId(id)

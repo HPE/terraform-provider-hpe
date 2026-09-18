@@ -141,7 +141,7 @@ resource "hpe_morpheus_price" "example" {
 
 ### Required
 
-- `code` (String) The code of the price
+- `code` (String) The code of the price. The code must be unique within the tenant scope. Destroying a price deactivates it on the appliance (a soft delete), so re-creating a price with the code of a previously deactivated price re-activates that existing price.
 - `cost` (Number) The cost of the price
 - `currency` (String) The currency of the price
 - `incur_charges` (String) When charges will be incurred (running, stopped, always)
