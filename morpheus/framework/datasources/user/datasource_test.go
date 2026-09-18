@@ -40,10 +40,18 @@ func TestAccMorpheusUserDataSourceFindByUsername(t *testing.T) {
 	username := acctest.RandomWithPrefix(t.Name())
 	providerConfig := testhelpers.ProviderBlock()
 
+	// MORPH-16460: create the role per-run instead of using master-tenant id 1.
 	userResourceConfig := `
+resource "hpe_morpheus_role" "test_role" {
+	name        = "` + username + `"
+	multitenant = false
+	description = "An example user role"
+	role_type   = "user"
+}
+
 resource "hpe_morpheus_user" "test_user" {
 	username = "` + username + `"
-	role_ids = [1]
+	role_ids = [hpe_morpheus_role.test_role.id]
 	email    = "foo@testacc.com"
 	password_wo = "Test123!!"
 }
@@ -105,9 +113,16 @@ func TestAccMorpheusUserDataSourceFindById(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	userResourceConfig := `
+resource "hpe_morpheus_role" "test_role" {
+	name        = "` + username + `"
+	multitenant = false
+	description = "An example user role"
+	role_type   = "user"
+}
+
 resource "hpe_morpheus_user" "test_user" {
 	username = "` + username + `"
-	role_ids = [1]
+	role_ids = [hpe_morpheus_role.test_role.id]
 	email    = "foo@testacc.com"
 	password_wo = "Test123!!"
 }
@@ -280,13 +295,21 @@ func TestAccMorpheusUserDataSourceVerifyAttributes(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
+	// MORPH-16460: create the role per-run instead of using master-tenant id 1.
 	resourceConfig := `
+resource "hpe_morpheus_role" "test_role" {
+  name        = "` + username + `"
+  multitenant = false
+  description = "An example user role"
+  role_type   = "user"
+}
+
 resource "hpe_morpheus_user" "test_all" {
   username     = "` + username + `"
   email        = "` + email + `"
   first_name   = "` + firstName + `"
   last_name    = "` + lastName + `"
-  role_ids     = [1]
+  role_ids     = [hpe_morpheus_role.test_role.id]
   password_wo  = "Test123!!"
   receive_notifications = true
   linux_username = "` + username + `"

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -61,6 +62,44 @@ func checkStrayRoles(
 	}
 }
 
+// MORPH-16460: roleResourceConfig returns HCL for a per-run user role with the
+// given resource label and name, replacing the previously hardcoded
+// master-tenant role ids (1/3). Two-role fixtures use two labels so the
+// created role ids can be correlated against the user's role_ids set.
+func roleResourceConfig(label, name string) string {
+	return `
+resource "hpe_morpheus_role" "` + label + `" {
+  name        = "` + name + `"
+  multitenant = false
+  description = "An example user role"
+  role_type   = "user"
+}
+`
+}
+
+// captureRoleIDs populates the expected-role set with the actual ids of the
+// created role resources so the set-correlation checks (checkRole /
+// checkStrayRoles) can run without hardcoded ids. It preserves the
+// post-apply role_ids set-correlation behaviour (MORPH-13857).
+func captureRoleIDs(
+	expectedRoles *map[string]struct{},
+	roleResources ...string,
+) func(*terraform.State) error {
+	return func(s *terraform.State) error {
+		m := map[string]struct{}{}
+		for _, r := range roleResources {
+			rs := s.RootModule().Resources[r]
+			if rs == nil {
+				return fmt.Errorf("role resource not found: %s", r)
+			}
+			m[rs.Primary.ID] = struct{}{}
+		}
+		*expectedRoles = m
+
+		return nil
+	}
+}
+
 func newProviderWithError() (tfprotov6.ProviderServer, error) {
 	providerInstance := provider.New("test", adapter.NewMorpheus())()
 
@@ -89,6 +128,17 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: the user fixtures previously hardcoded master-tenant role ids
+	// (1/3), which fail as a sub-tenant. Create the role per-run and reference
+	// it so the user is self-contained.
+	roleConfig, err := role.RenderRoleUserConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	dependenciesConfig += roleConfig
+
 	resourceConfig, err := user.RenderUserConfig(t, map[string]string{
 		"Username": name,
 	})
@@ -112,10 +162,11 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 			"role_ids.#",
 			"1",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_user.example",
 			"role_ids.0",
-			"1",
+			"hpe_morpheus_role.example",
+			"id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.example",
@@ -217,16 +268,24 @@ func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: create the role per-run instead of using master-tenant id 3.
+	roleConfig, err := role.RenderRoleUserConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + roleConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 }`,
 				Check: resource.TestCheckResourceAttrPair(
@@ -235,12 +294,12 @@ resource "hpe_morpheus_user" "foo" {
 				),
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + roleConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	# changed
 	tenant_id = 2
 }`,
@@ -266,21 +325,29 @@ func TestAccMorpheusUserResourceRequiredAttrsOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: create the role per-run instead of using master-tenant id 3.
+	roleConfig, err := role.RenderRoleUserConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	// nolint: goconst
-	resourceConfig := `
+	resourceConfig := roleConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 }
 `
-	resourceConfigPostImport := `
+	resourceConfigPostImport := roleConfig + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	# password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 }
 `
 	checks := []resource.TestCheckFunc{
@@ -299,10 +366,11 @@ resource "hpe_morpheus_user" "foo" {
 			"role_ids.#",
 			"1",
 		),
-		resource.TestCheckResourceAttr(
+		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_user.foo",
 			"role_ids.0",
-			"3",
+			"hpe_morpheus_role.example",
+			"id",
 		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -382,11 +450,22 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
-	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedRoles := map[string]struct{}{}
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: create two roles per-run instead of master-tenant ids 3 and
+	// 1. hpe_morpheus_role.example stands in for the former id 3 and
+	// hpe_morpheus_role.example2 for the former id 1.
+	rolesConfig := roleResourceConfig("example", name+"-a") +
+		roleResourceConfig("example2", name+"-b")
+
 	baseChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_user.foo", "tenant_id",
 			"data.hpe_morpheus_whoami.current", "tenant_id",
@@ -491,8 +570,12 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 		append(baseChecks, passwordWoCheck)...,
 	)
 
-	expectedUpdateRoles := map[string]struct{}{"1": {}}
+	expectedUpdateRoles := map[string]struct{}{}
 	updateChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedUpdateRoles,
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_user.foo", "tenant_id",
 			"data.hpe_morpheus_whoami.current", "tenant_id",
@@ -587,7 +670,7 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -595,7 +678,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -611,7 +694,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -619,7 +702,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -636,7 +719,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -644,7 +727,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	# changed
 	# first_name = "foo"
 	last_name = "bar"
@@ -661,7 +744,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects first_name change
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -669,7 +752,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	# changed
 	first_name = "newfoo"
 	last_name = "bar"
@@ -686,7 +769,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects last_name change to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -694,7 +777,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	# changed
 	# last_name = "bar"
@@ -711,7 +794,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects last_name change
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -719,7 +802,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	# changed
 	last_name = "newbar"
@@ -736,7 +819,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects password_wo_version to null
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -745,7 +828,7 @@ resource "hpe_morpheus_user" "foo" {
 	password_wo = "Secret123!"
 	# changed
 	# password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -761,7 +844,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects no change if only password_wo is changed
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -770,7 +853,7 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	# password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -786,7 +869,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed role_ids
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -795,7 +878,7 @@ resource "hpe_morpheus_user" "foo" {
 	password_wo = "Secret123!"
 	password_wo_version = 1
 	# changed
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -811,7 +894,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed username
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -820,7 +903,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -836,7 +919,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed windows username
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -844,7 +927,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -861,7 +944,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed linux username
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -869,7 +952,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	# changed
@@ -886,7 +969,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed linux password version
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -894,7 +977,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -911,7 +994,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed windows password version
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -919,7 +1002,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -936,7 +1019,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed linux key pair id
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -944,7 +1027,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -961,7 +1044,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects changed receive_notifications
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -969,7 +1052,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -986,7 +1069,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks apply of changes to all changeable fields
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -999,7 +1082,7 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	password_wo_version = 2
 	# changed
-	role_ids = [1]
+	role_ids = [hpe_morpheus_role.example2.id]
 	# changed
 	# first_name = ""
 	# changed - explicitly null
@@ -1025,7 +1108,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -1038,7 +1121,7 @@ resource "hpe_morpheus_user" "foo" {
 	# changed
 	password_wo_version = 2
 	# changed
-	role_ids = [1]
+	role_ids = [hpe_morpheus_role.example2.id]
 	# changed
 	# first_name = ""
 	# changed - explicitly null
@@ -1078,11 +1161,20 @@ func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
-	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedRoles := map[string]struct{}{}
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: create two roles per-run instead of master-tenant ids 3 and 1.
+	rolesConfig := roleResourceConfig("example", name+"-a") +
+		roleResourceConfig("example2", name+"-b")
+
 	baseChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
@@ -1183,8 +1275,13 @@ func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 		append(baseChecks, passwordWoCheck)...,
 	)
 
-	expectedUpdateRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedUpdateRoles := map[string]struct{}{}
 	updateChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedUpdateRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"username",
@@ -1277,14 +1374,14 @@ func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# create
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1300,14 +1397,14 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# post create plan
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1324,7 +1421,7 @@ resource "hpe_morpheus_user" "foo" {
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	# update 1
@@ -1332,7 +1429,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	# changed
 	last_name = "bar2"
@@ -1348,7 +1445,7 @@ resource "hpe_morpheus_user" "foo" {
 				Check: checkUpdateFn,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
 	# post update 1 plan
@@ -1356,7 +1453,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar2"
 	linux_username = "linus"
@@ -1372,14 +1469,14 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# update 2
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1391,25 +1488,18 @@ resource "hpe_morpheus_user" "foo" {
 	windows_password_wo = "Windows123!"
 	windows_password_wo_version = 1
 }`,
-				Check: resource.ComposeTestCheckFunc(
-					func(_ *terraform.State) error {
-						expectedRoles = map[string]struct{}{"3": {}, "1": {}}
-
-						return nil
-					},
-					checkFn,
-				),
+				Check:    checkFn,
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + testhelpers.WhoamiBlock() + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# post update 2 plan
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1441,7 +1531,11 @@ func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceCfg := `
+	// MORPH-16460: create two roles per-run instead of master-tenant ids 3 and 1.
+	rolesConfig := roleResourceConfig("example", name+"-a") +
+		roleResourceConfig("example2", name+"-b")
+
+	resourceCfg := rolesConfig + `
 # Role id 0 causes a test failure because it is ignored by
 # the server and only the other two roles are created
 #resource "hpe_morpheus_user" "bar" {
@@ -1457,7 +1551,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1470,9 +1564,14 @@ resource "hpe_morpheus_user" "foo" {
 	windows_password_wo_version = 1
 }
 `
-	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedRoles := map[string]struct{}{}
 
 	baseChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttrPair(
 			"hpe_morpheus_user.foo", "tenant_id",
 			"data.hpe_morpheus_whoami.current", "tenant_id",
@@ -1804,8 +1903,15 @@ func TestAccMorpheusUserResourceImportOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
+	// MORPH-16460: create two roles per-run instead of master-tenant ids 3 and
+	// 1. The roles must persist across both TestCases (create then import), so
+	// TestCase 1 removes them from state without deleting them and TestCase 2
+	// re-imports them alongside the user.
+	rolesConfig := roleResourceConfig("example", name+"-a") +
+		roleResourceConfig("example2", name+"-b")
+
 	// nolint: gosec
-	resourceCfgWithPassword := `
+	resourceCfgWithPassword := rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -1813,7 +1919,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1823,7 +1929,7 @@ resource "hpe_morpheus_user" "foo" {
 }
 `
 	// nolint: gosec
-	resourceCfgNoPassword := `
+	resourceCfgNoPassword := rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
@@ -1831,7 +1937,7 @@ resource "hpe_morpheus_user" "foo" {
 	email = "foo@testacc.com"
         #password_wo = "Secret123!"
         #password_wo_version = 1
-	role_ids = [3,1]
+	role_ids = [hpe_morpheus_role.example.id, hpe_morpheus_role.example2.id]
 	first_name = "foo"
 	last_name = "bar"
 	linux_username = "linus"
@@ -1856,8 +1962,28 @@ resource "hpe_morpheus_user" "foo" {
 # This avoids both triggering two deletes for the same resource,
 # and the dreaded "resource is already under terraform control"
 # error when running the follow on import test.
+#
+# MORPH-16460: the per-run roles are removed from state (destroy = false)
+# as well, so they survive for the import TestCase below, which re-imports
+# them alongside the user.
 removed {
 from = hpe_morpheus_user.foo
+
+lifecycle {
+destroy = false
+}
+}
+
+removed {
+from = hpe_morpheus_role.example
+
+lifecycle {
+destroy = false
+}
+}
+
+removed {
+from = hpe_morpheus_role.example2
 
 lifecycle {
 destroy = false
@@ -1915,8 +2041,13 @@ destroy = false
 		),
 	}
 
-	expectedCreateRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedCreateRoles := map[string]struct{}{}
 	createChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedCreateRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
 			"password_wo_version",
@@ -1935,6 +2066,7 @@ destroy = false
 	)
 
 	var cachedID string
+	var cachedRoleID0, cachedRoleID1 string
 
 	// This is a new TestCase - we know for sure
 	// we inherit no state from the TestCase above
@@ -1951,6 +2083,16 @@ destroy = false
 							return fmt.Errorf("resource not found")
 						}
 						cachedID = rs.Primary.ID
+
+						// MORPH-16460: cache the per-run role ids so the import
+						// TestCase can re-import the same roles.
+						r0 := s.RootModule().Resources["hpe_morpheus_role.example"]
+						r1 := s.RootModule().Resources["hpe_morpheus_role.example2"]
+						if r0 == nil || r1 == nil {
+							return fmt.Errorf("role resource not found")
+						}
+						cachedRoleID0 = r0.Primary.ID
+						cachedRoleID1 = r1.Primary.ID
 
 						return nil
 					},
@@ -1971,9 +2113,22 @@ destroy = false
 	  to = hpe_morpheus_user.foo
 	  id = ` + cachedID + `
 	}
+	import {
+	  to = hpe_morpheus_role.example
+	  id = ` + cachedRoleID0 + `
+	}
+	import {
+	  to = hpe_morpheus_role.example2
+	  id = ` + cachedRoleID1 + `
+	}
 	`
-	expectedImportRoles := map[string]struct{}{"3": {}, "1": {}}
+	expectedImportRoles := map[string]struct{}{}
 	importChecks := []resource.TestCheckFunc{
+		captureRoleIDs(
+			&expectedImportRoles,
+			"hpe_morpheus_role.example",
+			"hpe_morpheus_role.example2",
+		),
 		resource.TestCheckNoResourceAttr(
 			"hpe_morpheus_user.foo",
 			"password_wo_version",
@@ -2026,19 +2181,22 @@ func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	var userID string
 
+	// MORPH-16460: create the role per-run instead of using master-tenant id 3.
+	rolesConfig := roleResourceConfig("example", name)
+
 	resource.Test(
 		t,
 		resource.TestCase{
 			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
-					Config: providerConfig + testhelpers.WhoamiBlock() + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is NOT set - uses "state for unknown"
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	first_name = "John"
 	last_name = "Doe"
 	linux_key_pair_id = 100
@@ -2079,10 +2237,11 @@ resource "hpe_morpheus_user" "foo" {
 							"role_ids.#",
 							"1",
 						),
-						resource.TestCheckResourceAttr(
+						resource.TestCheckResourceAttrPair(
 							"hpe_morpheus_user.foo",
 							"role_ids.0",
-							"3",
+							"hpe_morpheus_role.example",
+							"id",
 						),
 						// tenant_id should be computed from state (not set in config)
 						resource.TestCheckResourceAttrSet(
@@ -2092,13 +2251,13 @@ resource "hpe_morpheus_user" "foo" {
 					),
 				},
 				{
-					Config: providerConfig + testhelpers.WhoamiBlock() + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	first_name = "John"
 	# Changed: update last_name
 	last_name = "Smith"
@@ -2147,10 +2306,11 @@ resource "hpe_morpheus_user" "foo" {
 							"role_ids.#",
 							"1",
 						),
-						resource.TestCheckResourceAttr(
+						resource.TestCheckResourceAttrPair(
 							"hpe_morpheus_user.foo",
 							"role_ids.0",
-							"3",
+							"hpe_morpheus_role.example",
+							"id",
 						),
 						// tenant_id should still be computed from state
 						resource.TestCheckResourceAttrSet(
@@ -2164,13 +2324,13 @@ resource "hpe_morpheus_user" "foo" {
 				},
 				{
 					// Verify the plan shows no changes after the update
-					Config: providerConfig + testhelpers.WhoamiBlock() + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
-	role_ids = [3]
+	role_ids = [hpe_morpheus_role.example.id]
 	first_name = "John"
 	last_name = "Smith"
 	linux_key_pair_id = 100

@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/credential"
+	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/trust"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 )
@@ -28,12 +29,25 @@ func TestAccMorpheusCredentialResourceEmailPrivateKeyExampleOk(t *testing.T) {
 
 	name := acctest.RandomWithPrefix(t.Name())
 
-	resourceConfig, err := credential.RenderCredentialEmailPrivateKeyConfig(t, map[string]string{
+	// MORPH-16494: the credential fixtures previously pinned the master-tenant
+	// key pair id "2", which does not exist as a sub-tenant. Create a key pair
+	// per-run and reference its id so the credential is self-contained.
+	dependenciesConfig, err := trust.RenderKeyPairConfig(t, map[string]string{
 		"Name": name,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	resourceConfig, err := credential.RenderCredentialEmailPrivateKeyConfig(t, map[string]string{
+		"Name":      name,
+		"KeyPairId": "hpe_morpheus_key_pair.example.id",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	config := providerConfig + dependenciesConfig + resourceConfig
 
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttr(
@@ -61,31 +75,35 @@ func TestAccMorpheusCredentialResourceEmailPrivateKeyExampleOk(t *testing.T) {
 			"email",
 			"test@example.local",
 		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_credential.tf_example_credential_email_private_key",
-			"key_pair_id",
-			"2",
-		),
 	}
 
+	appliedChecks := append([]resource.TestCheckFunc{}, checks...)
+	appliedChecks = append(appliedChecks, resource.TestCheckResourceAttrPair(
+		"hpe_morpheus_credential.tf_example_credential_email_private_key",
+		"key_pair_id",
+		"hpe_morpheus_key_pair.example",
+		"id",
+	))
+
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
+	appliedCheckFn := resource.ComposeAggregateTestCheckFunc(appliedChecks...)
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             config,
 				ExpectNonEmptyPlan: true,
 				Check:              checkFn,
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + resourceConfig,
-				Check:  checkFn,
+				Config: config,
+				Check:  appliedCheckFn,
 			},
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             config,
 				ExpectNonEmptyPlan: false,
-				Check:              checkFn,
+				Check:              appliedCheckFn,
 				PlanOnly:           true,
 			},
 		},
