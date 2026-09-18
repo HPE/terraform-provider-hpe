@@ -229,7 +229,7 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 		"SubscriberId":  "sub-12345-67890",
 		"AzureTenantId": "tenant-12345-67890",
 		"ClientId":      "client-abc-123",
-		"ClientSecret":  "secret-xyz-789",
+		"ClientSecret":  "example",
 		"ResourceGroup": "my-resource-group",
 	})
 	if err != nil {
@@ -259,7 +259,7 @@ func TestAccMorpheusCloudResourceExampleAzureOk(t *testing.T) {
 				knownvalue.StringExact("client-abc-123")),
 			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
 				azureCfg.AtMapKey("client_secret"),
-				knownvalue.StringExact("secret-xyz-789")),
+				knownvalue.StringExact("example")),
 			plancheck.ExpectKnownValue("hpe_morpheus_cloud.example",
 				azureCfg.AtMapKey("resource_group"),
 				knownvalue.StringExact("my-resource-group")),

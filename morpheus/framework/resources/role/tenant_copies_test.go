@@ -42,6 +42,13 @@ func TestAccMorpheusRoleResourceTenantCopiesOk(t *testing.T) {
 		context.Background(), t, ">= 9.0.2",
 	)
 
+	// This scenario is inherently master-tenant only: it creates a multitenant
+	// master role, which Morpheus ignores for sub-tenant callers (and the
+	// provider now guards against, MORPH-17516). Skip on a sub-tenant caller.
+	if !testhelpers.IsMasterTenant(t) {
+		t.Skip("multitenant master roles require the master tenant; skipping on sub-tenant")
+	}
+
 	t.Parallel()
 
 	providerConfig := testhelpers.ProviderBlock()

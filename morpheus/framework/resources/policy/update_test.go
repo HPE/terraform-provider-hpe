@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package policy_test
 
@@ -279,6 +279,16 @@ resource "hpe_morpheus_policy" "replace_test" {
 }
 `
 
+	// MORPH-17518: tenant scoping via `tenants` is only honored for
+	// master-tenant callers except on Group-scoped policies. Step 2 is a Global
+	// scope, so a sub-tenant caller must not set tenants (the provider guards
+	// against it, and the API would silently drop it). The Group-scoped step 1
+	// keeps tenants unconditionally (it round-trips for sub-tenants).
+	globalTenantsLine := ""
+	if testhelpers.IsMasterTenant(t) {
+		globalTenantsLine = "  tenants = [data.hpe_morpheus_whoami.current.tenant_id]\n"
+	}
+
 	updatedConfig := `
 resource "hpe_morpheus_group" "test" {
   name = "` + groupName + `"
@@ -297,8 +307,7 @@ resource "hpe_morpheus_policy" "replace_test" {
     maxMemory = 8
   }
   
-  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
-}
+` + globalTenantsLine + `}
 `
 
 	var initialResourceID string

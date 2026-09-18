@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 
 package policy_test
 
@@ -595,6 +595,61 @@ resource "hpe_morpheus_policy" "validation_test" {
 			{
 				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Attribute \"config_max_memory\" cannot be specified when"),
+			},
+		},
+	})
+}
+
+// TestAccMorpheusPolicyTenantsRequiresMasterTenantForNonGroupScope_MORPH17518
+// asserts that a sub-tenant caller setting `tenants` on a non-Group-scoped
+// policy (here Global) is rejected at plan time with a clear message, instead
+// of Morpheus silently dropping tenants and the apply failing with "Provider
+// produced inconsistent result after apply" (.tenants: was cty.SetVal([...]),
+// but now null). It only runs as a sub-tenant; on the master tenant it skips
+// (master callers may scope any policy via tenants).
+func TestAccMorpheusPolicyTenantsRequiresMasterTenantForNonGroupScope_MORPH17518(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("tenants scoping on non-Group policies is allowed for the master " +
+			"tenant; this negative test only applies to sub-tenant callers")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	policyName := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig := `
+resource "hpe_morpheus_policy" "tenants_guard" {
+  name = "` + policyName + `"
+  associated_resource_type = "Global"
+
+  policy_type = {
+    code = "maxMemory"
+  }
+
+  config = {
+    maxMemory = 8
+  }
+
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

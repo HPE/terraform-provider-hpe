@@ -177,6 +177,62 @@ func GuardMasterOnlyAttribute(
 	}
 }
 
+// GuardMasterOnlyBoolAttribute rejects, at plan time, a planned true value for
+// a boolean attr set by a non-master caller. It is the Bool analogue of
+// GuardMasterOnlyAttribute (which reads types.String and would type-error on a
+// Bool attribute).
+//
+// Unlike the string guard, a false value is never a problem, so the guard fires
+// only when the planned value is a known true. This matters because the role's
+// multitenant / multitenant_locked attributes are Optional+Computed with a
+// booldefault.StaticBool(false): at plan time they are always known and
+// non-null, so a null/false short-circuit is essential to avoid rejecting the
+// (default) false case. On an error determining tenancy (including a nil
+// client) it fails open with a warning. (MORPH-17516)
+func GuardMasterOnlyBoolAttribute(
+	ctx context.Context,
+	client *sdk.APIClient,
+	plan tfsdk.Plan,
+	attr path.Path,
+	diags *diag.Diagnostics,
+) {
+	var value types.Bool
+	diags.Append(plan.GetAttribute(ctx, attr, &value)...)
+	if diags.HasError() {
+		return
+	}
+
+	if value.IsNull() || value.IsUnknown() {
+		return
+	}
+	// Only a planned true is master-only; false (including the default) is fine.
+	if !value.ValueBool() {
+		return
+	}
+
+	isMaster, err := CallerIsMaster(ctx, client)
+	if err != nil {
+		diags.AddAttributeWarning(
+			attr,
+			"Could not validate a master-tenant-only attribute at plan time",
+			"Unable to determine whether the authenticated tenant is the master "+
+				"tenant, so this attribute was not validated; Morpheus will enforce "+
+				"it on apply. Error: "+err.Error(),
+		)
+
+		return
+	}
+
+	if !isMaster {
+		diags.AddAttributeError(
+			attr,
+			attr.String()+" can only be set by the master tenant",
+			attr.String()+" can only be set by the master tenant; Morpheus "+
+				"silently discards it for sub-tenant users.",
+		)
+	}
+}
+
 // CheckVisibilityApplied is the apply-time fallback for visibility. When the
 // plan asked for a known "public" value but the API stored "private" (the
 // sub-tenant coercion), it returns a blocking error diagnostic with the same

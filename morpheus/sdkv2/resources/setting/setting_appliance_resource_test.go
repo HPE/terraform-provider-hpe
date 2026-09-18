@@ -161,7 +161,7 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_setting_appliance.example",
 			"currency_provider_api_key",
-			"5a4b220e-6f9f-43da-a572-390c8f6afed8",
+			"example",
 		),
 
 		resource.TestCheckResourceAttr(

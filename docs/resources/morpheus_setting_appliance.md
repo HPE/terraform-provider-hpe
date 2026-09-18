@@ -33,7 +33,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
   proxy_domain              = "test.local"
   proxy_workstation         = "work123"
   currency_provider         = "fixer"
-  currency_provider_api_key = "5a4b220e-6f9f-43da-a572-390c8f6afed8"
+  currency_provider_api_key = "example"
 }
 ```
 
