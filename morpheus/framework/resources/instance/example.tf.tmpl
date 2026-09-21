@@ -3,7 +3,7 @@ data "hpe_morpheus_cloud" "vme_cloud" {
 }
 
 data "hpe_morpheus_service_plan" "vme_512mb" {
-  name                = "1 CPU, 1GB Memory"
+  name                = "{{if .PlanName}}{{.PlanName}}{{else}}1 CPU, 1GB Memory{{end}}"
   provision_type_code = "kvm"
 }
 
@@ -21,6 +21,12 @@ resource "hpe_morpheus_instance" "example" {
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
   instance_context = "{{.InstanceContext}}"
+{{- if .CreateTimeout}}
+
+  timeouts = {
+    create = "{{.CreateTimeout}}"
+  }
+{{- end}}
 {{- if .Evars}}
 
   evars = [

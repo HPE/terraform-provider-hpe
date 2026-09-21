@@ -53,6 +53,10 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		// so a test can express add/modify/remove scenarios exactly.
 		"Evars": "",
 		"Ports": "",
+		// PlanName overrides the service plan looked up by name; CreateTimeout adds a
+		// timeouts block with that create value.
+		"PlanName":      "",
+		"CreateTimeout": "",
 	}
 
 	for key, value := range overrides {
