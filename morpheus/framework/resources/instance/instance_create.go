@@ -721,6 +721,17 @@ func (g *Resource) Create(
 		}
 	}
 
+	// The create request carries each evar's name and value only; the API drops
+	// export and masked. Apply any variable whose export or masked differs from
+	// the appliance default through the environment-variable add-or-update
+	// operation, so a create with those options set is honoured. MORPH-17657.
+	if d := applyEvarOptionsAfterCreate(ctx, client, instanceId, plan); d.HasError() {
+		resp.Diagnostics.Append(d...)
+		taintResourceState(instanceId)
+
+		return
+	}
+
 	// Read the instance state
 	state, found, d := getInstanceAsState(ctx, instanceId, client, plan, false)
 	if d.HasError() || !found {

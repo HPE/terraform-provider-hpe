@@ -14,6 +14,7 @@ import (
 //go:generate ../../../../bin/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-700" CloudName "MyCloud" NetworkId "755" LayoutId "644" DatastoreId "555" InstanceContext "dev" MultipleTags "true"
 //go:generate ../../../../bin/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 //go:generate ../../../../bin/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate ../../../../bin/render example_evars.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 //go:generate ../../../../bin/render example_vmware.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
 //go:generate ../../../../bin/render example_vmware_sp_options.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
 //go:generate ../../../../bin/render example_hvm.tf.tmpl Name "TestInstance" CloudName "hvm" PlanName "1 CPU, 512MB Memory" InstanceTypeLayout "Single KVM VM" LayoutVersion "11" ImageName "morpheus-central" InstanceType "34" GroupId "1" NetworkId "1" ResourcePool "pool-1"

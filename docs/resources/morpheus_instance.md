@@ -393,6 +393,94 @@ resource "hpe_morpheus_instance" "example" {
 }
 ```
 
+## Environment Variables and Ports
+
+`evars` sets the instance's user-defined environment variables. Each variable has a `name` and
+`value`, plus two optional display options: `export` (whether the variable is exported to the
+instance environment, default `true`) and `masked` (whether the value is hidden in the Morpheus UI
+and API, default `false`). Environment variables can be added, changed and removed in place --
+removing the `evars` block removes every variable from the instance.
+
+`ports` opens additional custom ports beyond the layout's defaults. Ports can only be set when the
+instance is created; changing or removing them forces a new instance to be created.
+
+```terraform
+data "hpe_morpheus_cloud" "vme_cloud" {
+  name = "HPE Alletra VME"
+}
+
+data "hpe_morpheus_service_plan" "vme_512mb" {
+  name                = "1 CPU, 1GB Memory"
+  provision_type_code = "kvm"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  name             = "TestInstance"
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id # HPE Alletra VME
+  layout_id        = 5385                                 # Single KVM VM
+  instance_type_id = 9                  # (HVM) mvm-cluster
+
+  group_id = 1
+  plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+
+  instance_context = "dev"
+
+  # Environment variables can be added, changed and removed in place. Each
+  # variable takes a name and value; export and masked are optional and default
+  # to true and false respectively when omitted.
+  evars = [
+    {
+      name  = "APP_ENV"
+      value = "production"
+    },
+    {
+      # Hidden in the Morpheus UI and API.
+      name   = "DB_PASSWORD"
+      value  = "s3cr3t"
+      masked = true
+    },
+    {
+      # Kept on the instance record but not exported to the environment.
+      name   = "BUILD_NOTE"
+      value  = "internal"
+      export = false
+    }
+  ]
+
+  # Ports can only be set when the instance is created. Changing or removing
+  # them forces a new instance to be created.
+  ports = [
+    {
+      name = "http"
+      port = 8080
+    }
+  ]
+
+  network_interfaces = [
+    {
+      network_id = 103481
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume     = true
+      name            = "root"
+      size            = 10
+      storage_type_id = 1
+      datastore_id    = 38658
+    }
+  ]
+
+  config_hvm = {
+    resource_pool_id      = "pool-62299"
+    nested_virtualization = "off"
+    no_agent              = true
+    create_user           = false
+  }
+}
+```
+
 ## VMware VM Instance
 
 ```terraform
@@ -979,7 +1067,9 @@ The Options API "/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10" ca
 - `config_hvm` (Attributes) Configuration options for HVM instances. (see [below for nested schema](#nestedatt--config_hvm))
 - `config_vmware` (Attributes) Configuration options for VMware instances. (see [below for nested schema](#nestedatt--config_vmware))
 - `description` (String) A description of the instance.
-- `evars` (Attributes Set) Environment Variables, an array of objects that have name and value. (see [below for nested schema](#nestedatt--evars))
+- `evars` (Attributes Set) Environment variables for the instance. Each has a name and value, plus optional export
+(default true) and masked (default false). Variables can be added, changed and removed in
+place. (see [below for nested schema](#nestedatt--evars))
 - `host_name` (String) The hostname of the instance. When not set, Morpheus derives the hostname
 from the instance name, so this value is also computed. Set it to make the
 instance name and hostname differ. The instance update API cannot modify the
@@ -1227,6 +1317,11 @@ Required:
 
 - `name` (String)
 - `value` (String)
+
+Optional:
+
+- `export` (Boolean) Whether the variable is exported to the instance environment. Defaults to true when omitted.
+- `masked` (Boolean) Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.
 
 
 <a id="nestedatt--ports"></a>

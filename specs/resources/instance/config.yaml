@@ -584,12 +584,28 @@ instance:
       string:
         computed_optional_required: optional
         description: VMware folder external ID.
+    # MORPH-17657. Plain Optional, deliberately without a schema Default: a
+    # Default on an attribute INSIDE a set element makes the framework fill the
+    # element with the default, which then no longer correlates with the
+    # configured element and plans a change on every run. The appliance
+    # defaults (export true, masked false) are applied in the provider when the
+    # attribute is omitted, and the read keeps an omitted attribute null.
+    evar_export:
+      bool:
+        computed_optional_required: optional
+        description: Whether the variable is exported to the instance environment. Defaults to true when omitted.
+    evar_masked:
+      bool:
+        computed_optional_required: optional
+        description: Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.
     interfaceName:
       string:
         computed_optional_required: computed
         description: The name of the interface, e.g. 'eth0', 'eth1'
   moves:
     - instance: "" # unnest instance wrapper to root
+    - template-evar_export: evars.export
+    - template-evar_masked: evars.masked
     - template-id: id
     - template-host_name: host_name
     - template-labels: labels
@@ -767,6 +783,10 @@ instance:
       description: Whether to create a user when provisioning the bare metal instance.
       computed_optional_required: computed_optional
     evars:
+      description: |-
+        Environment variables for the instance. Each has a name and value, plus optional export
+        (default true) and masked (default false). Variables can be added, changed and removed in
+        place.
       # MORPH-612: plain Optional, like tags. As Optional+Computed with
       # UseStateForUnknown, omitting the block planned the PRIOR state back in,
       # so "remove all evars" could never be expressed -- the plan always equalled

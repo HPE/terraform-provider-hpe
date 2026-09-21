@@ -71,7 +71,15 @@ func (g *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
-	var servicePlanOptions ServicePlanOptionsValue
+	// service_plan_options is not returned by the API, so it is carried forward:
+	// the update path returns the value to keep. Start from the current state so
+	// that if the instance update call is skipped (nothing it carries changed --
+	// e.g. an evars-only change, applied below through its own operations) the
+	// configured value survives rather than being replaced by the zero value,
+	// which is null. In practice the call is rarely skipped today, because
+	// volumes has Computed children that plan as unknown and make the gate fire;
+	// this keeps the skip path correct regardless.
+	servicePlanOptions := state.ServicePlanOptions
 	if isAPIUpdateNeeded(plan, state) {
 		servicePlanOptions = makeUpdateAPIcalls(ctx, client, plan, state, updateTimeout, resp)
 		if resp.Diagnostics.HasError() {

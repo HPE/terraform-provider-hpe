@@ -237,3 +237,237 @@ func TestAccMorpheusInstanceResourcePortsRequireReplace(t *testing.T) {
 		},
 	})
 }
+
+// evarOpt is one environment variable with its display options, for the
+// MORPH-17657 tests. Export/Masked are rendered only when non-nil so a test can
+// also exercise the "omitted -> default" path.
+type evarOpt struct {
+	name, value    string
+	export, masked *bool
+}
+
+func boolp(b bool) *bool { return &b }
+
+func evarsOptHCL(vars ...evarOpt) string {
+	out := ""
+	for _, v := range vars {
+		out += "    {\n      name  = \"" + v.name + "\"\n      value = \"" + v.value + "\"\n"
+		if v.export != nil {
+			out += "      export = " + map[bool]string{true: "true", false: "false"}[*v.export] + "\n"
+		}
+		if v.masked != nil {
+			out += "      masked = " + map[bool]string{true: "true", false: "false"}[*v.masked] + "\n"
+		}
+		out += "    },\n"
+	}
+
+	return out
+}
+
+// TestAccMorpheusInstanceResourceEvarsOptionsOnCreate covers MORPH-17657's
+// create path: the create request drops export/masked, so the provider applies
+// them with a follow-up add-or-update. A variable created masked and one
+// created non-exported must read back with those options set, alongside a
+// defaults-only variable, and the steady-state plan must be empty.
+func TestAccMorpheusInstanceResourceEvarsOptionsOnCreate(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	config, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+		"Evars": evarsOptHCL(
+			evarOpt{name: "SECRET", value: "s3cr3t", masked: boolp(true)},
+			evarOpt{name: "LOCAL_ONLY", value: "v", export: boolp(false)},
+			evarOpt{name: "PLAIN", value: "p"},
+		),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + config,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(instanceResourceName, "evars.#", "3"),
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "SECRET", "value": "s3cr3t", "masked": "true"}),
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "LOCAL_ONLY", "value": "v", "export": "false"}),
+					// Omitted options stay unset in state (the appliance applies its
+					// defaults); the element is still present with its name and value.
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "PLAIN", "value": "p"}),
+				),
+			},
+			{
+				Config:             providerConfig + config,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusInstanceResourceEvarsOptionsUpdate covers MORPH-17657's update
+// path: toggling masked on and export off for existing variables, with the
+// values unchanged, must apply in place and read back, with an empty plan after.
+func TestAccMorpheusInstanceResourceEvarsOptionsUpdate(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	initial, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+		"Evars": evarsOptHCL(
+			evarOpt{name: "TOKEN", value: "t0k3n"},
+			evarOpt{name: "REGION", value: "eu"},
+		),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	toggled, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name": name,
+		"Evars": evarsOptHCL(
+			evarOpt{name: "TOKEN", value: "t0k3n", masked: boolp(true)},
+			evarOpt{name: "REGION", value: "eu", export: boolp(false)},
+		),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	inPlace := resource.ConfigPlanChecks{
+		PreApply: []plancheck.PlanCheck{
+			plancheck.ExpectResourceAction(instanceResourceName, plancheck.ResourceActionUpdate),
+		},
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + initial,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "TOKEN", "value": "t0k3n"}),
+				),
+			},
+			{
+				Config:           providerConfig + toggled,
+				ConfigPlanChecks: inPlace,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(instanceResourceName, "evars.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "TOKEN", "value": "t0k3n", "masked": "true"}),
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "REGION", "value": "eu", "export": "false"}),
+				),
+			},
+			{
+				Config:             providerConfig + toggled,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusInstanceResourceEvarsOnlyUpdateKeepsServicePlanOptions guards
+// the interaction between the evars update path and the instance update gate.
+//
+// service_plan_options is not returned by the API and is carried forward
+// through state. An evars-only change is applied through the environment
+// variable operations, outside the instance update call, so whichever way the
+// gate resolves for that update, the configured service_plan_options must
+// survive it and the following plan must be empty. This pins that contract
+// against both the update path and the skip path.
+func TestAccMorpheusInstanceResourceEvarsOnlyUpdateKeepsServicePlanOptions(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	initial, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":      name,
+		"MaxMemory": "2048",
+		"Evars":     evarsHCL("STAGE", "one"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Only the evar value changes; service_plan_options is untouched.
+	evarsOnly, err := instance.RenderInstanceConfig(t, map[string]string{
+		"Name":      name,
+		"MaxMemory": "2048",
+		"Evars":     evarsHCL("STAGE", "two"),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + initial,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(instanceResourceName, "service_plan_options.max_memory", "2048"),
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "STAGE", "value": "one"}),
+				),
+			},
+			{
+				Config: providerConfig + evarsOnly,
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction(instanceResourceName, plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckTypeSetElemNestedAttrs(instanceResourceName, "evars.*",
+						map[string]string{"name": "STAGE", "value": "two"}),
+					// The carried-forward value must survive the evars-only update.
+					resource.TestCheckResourceAttr(instanceResourceName, "service_plan_options.max_memory", "2048"),
+				),
+			},
+			{
+				Config:             providerConfig + evarsOnly,
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
+}

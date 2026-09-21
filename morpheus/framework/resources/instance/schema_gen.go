@@ -426,6 +426,16 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"evars": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"export": schema.BoolAttribute{
+							Optional:            true,
+							Description:         "Whether the variable is exported to the instance environment. Defaults to true when omitted.",
+							MarkdownDescription: "Whether the variable is exported to the instance environment. Defaults to true when omitted.",
+						},
+						"masked": schema.BoolAttribute{
+							Optional:            true,
+							Description:         "Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.",
+							MarkdownDescription: "Whether the value is masked in the Morpheus UI and API. Defaults to false when omitted.",
+						},
 						"name": schema.StringAttribute{
 							Required: true,
 						},
@@ -440,8 +450,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 				},
 				Optional:            true,
-				Description:         "Environment Variables, an array of objects that have name and value.",
-				MarkdownDescription: "Environment Variables, an array of objects that have name and value.",
+				Description:         "Environment variables for the instance. Each has a name and value, plus optional export\n(default true) and masked (default false). Variables can be added, changed and removed in\nplace.",
+				MarkdownDescription: "Environment variables for the instance. Each has a name and value, plus optional export\n(default true) and masked (default false). Variables can be added, changed and removed in\nplace.",
 			},
 			"group_id": schema.Int64Attribute{
 				Required:            true,
@@ -4946,6 +4956,42 @@ func (t EvarsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 
 	attributes := in.Attributes()
 
+	exportAttribute, ok := attributes["export"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`export is missing from object`)
+
+		return nil, diags
+	}
+
+	exportVal, ok := exportAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`export expected to be basetypes.BoolValue, was: %T`, exportAttribute))
+	}
+
+	maskedAttribute, ok := attributes["masked"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`masked is missing from object`)
+
+		return nil, diags
+	}
+
+	maskedVal, ok := maskedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`masked expected to be basetypes.BoolValue, was: %T`, maskedAttribute))
+	}
+
 	nameAttribute, ok := attributes["name"]
 
 	if !ok {
@@ -4987,9 +5033,11 @@ func (t EvarsType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue
 	}
 
 	return EvarsValue{
-		Name:  nameVal,
-		Value: valueVal,
-		state: attr.ValueStateKnown,
+		Export: exportVal,
+		Masked: maskedVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -5056,6 +5104,42 @@ func NewEvarsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 		return NewEvarsValueUnknown(), diags
 	}
 
+	exportAttribute, ok := attributes["export"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`export is missing from object`)
+
+		return NewEvarsValueUnknown(), diags
+	}
+
+	exportVal, ok := exportAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`export expected to be basetypes.BoolValue, was: %T`, exportAttribute))
+	}
+
+	maskedAttribute, ok := attributes["masked"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`masked is missing from object`)
+
+		return NewEvarsValueUnknown(), diags
+	}
+
+	maskedVal, ok := maskedAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`masked expected to be basetypes.BoolValue, was: %T`, maskedAttribute))
+	}
+
 	nameAttribute, ok := attributes["name"]
 
 	if !ok {
@@ -5097,9 +5181,11 @@ func NewEvarsValue(attributeTypes map[string]attr.Type, attributes map[string]at
 	}
 
 	return EvarsValue{
-		Name:  nameVal,
-		Value: valueVal,
-		state: attr.ValueStateKnown,
+		Export: exportVal,
+		Masked: maskedVal,
+		Name:   nameVal,
+		Value:  valueVal,
+		state:  attr.ValueStateKnown,
 	}, diags
 }
 
@@ -5169,17 +5255,21 @@ func (t EvarsType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = EvarsValue{}
 
 type EvarsValue struct {
-	Name  basetypes.StringValue `tfsdk:"name"`
-	Value basetypes.StringValue `tfsdk:"value"`
-	state attr.ValueState
+	Export basetypes.BoolValue   `tfsdk:"export"`
+	Masked basetypes.BoolValue   `tfsdk:"masked"`
+	Name   basetypes.StringValue `tfsdk:"name"`
+	Value  basetypes.StringValue `tfsdk:"value"`
+	state  attr.ValueState
 }
 
 func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 2)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["export"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["masked"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["value"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -5187,7 +5277,21 @@ func (v EvarsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error)
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 2)
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.Export.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["export"] = val
+
+		val, err = v.Masked.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["masked"] = val
 
 		val, err = v.Name.ToTerraformValue(ctx)
 		if err != nil {
@@ -5233,8 +5337,10 @@ func (v EvarsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
-		"name":  basetypes.StringType{},
-		"value": basetypes.StringType{},
+		"export": basetypes.BoolType{},
+		"masked": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value":  basetypes.StringType{},
 	}
 
 	if v.IsNull() {
@@ -5248,8 +5354,10 @@ func (v EvarsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, d
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
-			"name":  v.Name,
-			"value": v.Value,
+			"export": v.Export,
+			"masked": v.Masked,
+			"name":   v.Name,
+			"value":  v.Value,
 		})
 
 	return objVal, diags
@@ -5268,6 +5376,14 @@ func (v EvarsValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.Export.Equal(other.Export) {
+		return false
+	}
+
+	if !v.Masked.Equal(other.Masked) {
+		return false
 	}
 
 	if !v.Name.Equal(other.Name) {
@@ -5291,8 +5407,10 @@ func (v EvarsValue) Type(ctx context.Context) attr.Type {
 
 func (v EvarsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"name":  basetypes.StringType{},
-		"value": basetypes.StringType{},
+		"export": basetypes.BoolType{},
+		"masked": basetypes.BoolType{},
+		"name":   basetypes.StringType{},
+		"value":  basetypes.StringType{},
 	}
 }
 

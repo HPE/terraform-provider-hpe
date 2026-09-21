@@ -153,6 +153,19 @@ will be made.  The default timeout for `create`, `delete`, `read` and `update` i
 
 {{ tffile "morpheus/framework/resources/instance/example_timeouts.tf" }}
 
+## Environment Variables and Ports
+
+`evars` sets the instance's user-defined environment variables. Each variable has a `name` and
+`value`, plus two optional display options: `export` (whether the variable is exported to the
+instance environment, default `true`) and `masked` (whether the value is hidden in the Morpheus UI
+and API, default `false`). Environment variables can be added, changed and removed in place --
+removing the `evars` block removes every variable from the instance.
+
+`ports` opens additional custom ports beyond the layout's defaults. Ports can only be set when the
+instance is created; changing or removing them forces a new instance to be created.
+
+{{ tffile "morpheus/framework/resources/instance/example_evars.tf" }}
+
 ## VMware VM Instance
 
 {{ tffile "morpheus/framework/resources/instance/example_vmware.tf" }}

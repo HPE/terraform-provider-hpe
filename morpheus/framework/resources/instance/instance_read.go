@@ -256,16 +256,45 @@ func getInstanceAsState(
 		return state, false, diags
 	}
 
+	// export / masked are plain Optional (no schema default -- see the spec for
+	// why a Default inside a set element is a problem), so an option the
+	// practitioner omitted is null in the plan and must stay null in state, or
+	// every apply would report an inconsistent result. Look up the planned
+	// element by name: when the plan sets the option, take the API's value
+	// (that is real drift detection); when it does not, keep it null. On a plain
+	// refresh with no plan the API value is used, which is what import needs.
+	plannedEvarOpts := map[string]EvarsValue{}
+	if !plan.Evars.IsNull() && !plan.Evars.IsUnknown() {
+		for _, e := range plan.Evars.Elements() {
+			if ev, ok := e.(EvarsValue); ok {
+				plannedEvarOpts[ev.Name.ValueString()] = ev
+			}
+		}
+	}
+
 	evars, d := convert.ToSetType(
 		ctx,
 		envVars,
 		func(
 			in sdk.GetEnvVariables200ResponseEnvsInner,
 		) EvarsValue {
+			export := types.BoolValue(in.Export)
+			masked := types.BoolValue(in.Masked)
+			if p, ok := plannedEvarOpts[in.Name]; ok {
+				if p.Export.IsNull() {
+					export = types.BoolNull()
+				}
+				if p.Masked.IsNull() {
+					masked = types.BoolNull()
+				}
+			}
+
 			return EvarsValue{
-				Name:  types.StringValue(in.Name),
-				Value: types.StringValue(in.Value),
-				state: attr.ValueStateKnown,
+				Name:   types.StringValue(in.Name),
+				Value:  types.StringValue(in.Value),
+				Export: export,
+				Masked: masked,
+				state:  attr.ValueStateKnown,
 			}
 		},
 	)
