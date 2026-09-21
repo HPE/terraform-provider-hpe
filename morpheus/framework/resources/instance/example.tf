@@ -7,13 +7,17 @@ data "hpe_morpheus_service_plan" "vme_512mb" {
   provision_type_code = "kvm"
 }
 
+data "hpe_morpheus_group" "example" {
+  name = "TestGroup"
+}
+
 resource "hpe_morpheus_instance" "example" {
   name             = "TestInstance"
   cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id 
   layout_id        = 644 # Single KVM VM
   instance_type_id = 9 # (HVM) mvm-cluster
 
-  group_id = 1
+  group_id = data.hpe_morpheus_group.example.id
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
   instance_context = "dev"

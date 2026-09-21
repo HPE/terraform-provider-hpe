@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -41,7 +42,12 @@ func TestAccMorpheusTenantExampleOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
-	subdomain := name
+	// MORPH-16545: subdomains are globally unique across all tenants, so a
+	// fixed "tfexample" collides between runs. Reuse the per-run random name,
+	// lowercased to satisfy the subdomain validators (the test name contains
+	// only letters, and RandomWithPrefix appends "-<digits>", so the value
+	// stays within the letters/digits/hyphens rule).
+	subdomain := strings.ToLower(name)
 	resourceName := "hpe_morpheus_tenant.example"
 
 	// parent_id is computed to the authenticated user's tenant when omitted —

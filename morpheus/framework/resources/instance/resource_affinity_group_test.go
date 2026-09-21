@@ -283,12 +283,19 @@ data "hpe_morpheus_cloud" "hvm_cloud" {
   name = "QA HVM"
 }
 
+# MORPH-16458: create a per-run group in the current tenant instead of pinning
+# group_id = 1 (the master group), which a sub-tenant cannot use (403).
+resource "hpe_morpheus_group" "test" {
+  name      = "%[1]s-grp"
+  cloud_ids = [data.hpe_morpheus_cloud.hvm_cloud.id]
+}
+
 resource "hpe_morpheus_instance" "affinity_hvm" {
   name             = "%[1]s"
   cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
   layout_id        = 5385
   instance_type_id = 9
-  group_id         = 1
+  group_id         = hpe_morpheus_group.test.id
   plan_id          = 176
 
   instance_context = "dev"
@@ -390,12 +397,19 @@ data "hpe_morpheus_cloud" "hvm_cloud" {
   name = "QA HVM"
 }
 
+# MORPH-16458: create a per-run group in the current tenant instead of pinning
+# group_id = 1 (the master group), which a sub-tenant cannot use (403).
+resource "hpe_morpheus_group" "test" {
+  name      = "%[1]s-grp"
+  cloud_ids = [data.hpe_morpheus_cloud.hvm_cloud.id]
+}
+
 resource "hpe_morpheus_instance" "replace_test" {
   name             = "%[1]s"
   cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
   layout_id        = 5385
   instance_type_id = 9
-  group_id         = 1
+  group_id         = hpe_morpheus_group.test.id
   plan_id          = 176
 
   instance_context = "dev"
@@ -499,12 +513,19 @@ data "hpe_morpheus_cloud" "hvm_cloud" {
   name = "QA HVM"
 }
 
+# MORPH-16458: create a per-run group in the current tenant instead of pinning
+# group_id = 1 (the master group), which a sub-tenant cannot use (403).
+resource "hpe_morpheus_group" "test" {
+  name      = "%[1]s-grp"
+  cloud_ids = [data.hpe_morpheus_cloud.hvm_cloud.id]
+}
+
 resource "hpe_morpheus_instance" "import_test" {
   name             = "%[1]s"
   cloud_id         = data.hpe_morpheus_cloud.hvm_cloud.id
   layout_id        = 5385
   instance_type_id = 9
-  group_id         = 1
+  group_id         = hpe_morpheus_group.test.id
   plan_id          = 176
 
   instance_context = "dev"

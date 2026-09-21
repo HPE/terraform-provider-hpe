@@ -9,8 +9,8 @@ resource "hpe_morpheus_task" "example_task" {
 
         return false;
         EOT
-        if_operational_workflow_id   = "{{.IfOperationalWorkflowId}}"
-        if_operational_workflow_name = "{{.IfOperationalWorkflowName}}"
+        if_operational_workflow_id   = {{.IfOperationalWorkflowId}}
+        if_operational_workflow_name = {{.IfOperationalWorkflowName}}
 
         else_operational_workflow_id   = null
         else_operational_workflow_name = null

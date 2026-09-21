@@ -505,13 +505,16 @@ func TestAccMorpheusInstanceResourceWaitForIPAddress(t *testing.T) {
 
 	// Append wait_for_ip_address to the rendered config by replacing the closing brace.
 	// The template generates hpe_morpheus_instance.example, so we add the attribute.
+	// MORPH-16458: reuse the per-run group resolved by the rendered config's
+	// hpe_morpheus_group data source instead of the master group_id = 1
+	// (403 for a sub-tenant).
 	resourceConfig += `
 resource "hpe_morpheus_instance" "wait_ip" {
   name             = "` + name + `-waitip"
   cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id
   layout_id        = 77
   instance_type_id = 34
-  group_id         = 1
+  group_id         = data.hpe_morpheus_group.example.id
   plan_id          = data.hpe_morpheus_service_plan.vme_512mb.id
 
   instance_context = "dev"

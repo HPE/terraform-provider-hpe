@@ -6,14 +6,16 @@ import (
 	"fmt"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate ../../../../bin/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-700" CloudName "MyCloud" NetworkId "755" LayoutId "644" DatastoreId "555" InstanceContext "dev" MultipleTags "true"
-//go:generate ../../../../bin/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
-//go:generate ../../../../bin/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
+//go:generate ../../../../bin/render example.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-700" CloudName "MyCloud" NetworkId "755" LayoutId "644" DatastoreId "555" InstanceContext "dev" MultipleTags "true" GroupName "\"TestGroup\""
+//go:generate ../../../../bin/render example_twonetworks.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299" GroupName "\"TestGroup\""
+//go:generate ../../../../bin/render example_timeouts.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299" GroupName "\"TestGroup\""
 //go:generate ../../../../bin/render example_evars.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-62299"
 //go:generate ../../../../bin/render example_vmware.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
 //go:generate ../../../../bin/render example_vmware_sp_options.tf.tmpl Name "TestInstance" InstanceType "9" ResourcePool "pool-1"
@@ -38,6 +40,11 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		"MultipleTags":    "",
 		"UserGroup":       "",
 		"StorageProfile":  "",
+		// MORPH-16458: GroupName is the value rendered into the config's
+		// hpe_morpheus_group data source lookup. Tests replace it below with a
+		// reference to a per-run group resource, so no fixture code appears in
+		// the published example (which renders a plain quoted literal).
+		"GroupName": `"TestGroup"`,
 		// MaxMemory renders a service_plan_options block, for resize coverage.
 		"MaxMemory": "",
 		// SingleVolume omits the non-root volume, for volume add/remove coverage.
@@ -52,6 +59,32 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 		defaults[key] = value
 	}
 
+	// MORPH-16458: tests create a per-run group instead of relying on the
+	// master tenant's seeded group (which a sub-tenant cannot use). The group's
+	// name defaults to the instance name — tests pass a unique, randomized
+	// Name, so the group is likewise unique per run (group names must be
+	// unique per account, so a fixed name would collide on the second run).
+	// The go:generate directives render the template directly, so the
+	// published examples carry only the data-source lookup.
+	groupName, ok := overrides["GroupName"]
+	if !ok {
+		groupName = defaults["Name"]
+	}
+
+	groupConfig, err := group.RenderGroupConfig(t, map[string]string{
+		"Name":     groupName,
+		"Code":     strings.ToLower(groupName),
+		"GroupId1": "data.hpe_morpheus_cloud.vme_cloud.id",
+	})
+	if err != nil {
+		return "", err
+	}
+
+	// The instance config's data source reads the group by referencing the
+	// resource's name, so Terraform's dependency graph orders the read after
+	// the group is created within the same apply.
+	defaults["GroupName"] = "hpe_morpheus_group.example.name"
+
 	var args []string
 	for key, value := range defaults {
 		args = append(args, key, value)
@@ -65,11 +98,16 @@ func RenderInstanceConfig(t *testing.T, overrides map[string]string) (string, er
 	dir := filepath.Dir(filename)
 	templatePath := filepath.Join(dir, "example.tf.tmpl")
 
-	return testhelpers.RenderExample(
+	instanceConfig, err := testhelpers.RenderExample(
 		t,
 		templatePath,
 		args...,
 	)
+	if err != nil {
+		return "", err
+	}
+
+	return groupConfig + instanceConfig, nil
 }
 
 func RenderInstanceAzureConfig(t *testing.T, overrides map[string]string) (string, error) {
