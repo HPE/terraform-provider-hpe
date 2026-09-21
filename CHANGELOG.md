@@ -38,6 +38,26 @@ sent, so there is no tenant attribute, and passing one in `parameters` warns rat
 answering for the wrong tenant. Raw credentials must not be passed in `parameters`; sources that
 authenticate to a target system take a stored credential via `credential_id`.
 
+## Improvements
+
+### `Invalid network` on instance create and clone now says which networks would have been accepted (MORPH-17643)
+
+Version 2.1 made `hpe_morpheus_instance` and `hpe_morpheus_instance_clone` explain an `Invalid
+network` rejection — which network, which resource pool it belongs to, which pool the instance asked
+for. The explanation now also answers the question that follows: which networks *would* Morpheus
+have accepted? It asks the appliance's own selectability check (the `zoneNetworkOptions` option
+source, run for the same cloud, group, layout and resource pool the validation used) and lists the
+result, naming the scope so it can be reproduced with `hpe_morpheus_option_source_values`. When the
+answer is empty — a resource pool with no selectable network at all, which is what the incident that
+motivated 2.1's change turned out to be — the error says so as a fact rather than inviting the user
+to choose another network. A clone reads the cloud, group and layout it inherits from its source
+instance. The list is added only on that failure, is capped at fifteen networks, and a failed
+lookup leaves the rest of the explanation as it was.
+
+One line of 2.1's text is corrected: a network that belongs to no resource pool passes Morpheus's
+pool filter for every pool, so the explanation no longer says such a network was excluded by the
+requested pool; it points at the network's type and its group and tenant visibility instead.
+
 # v2.1.0 Release Notes
 
 This release hardens the provider for day-two use. It completes the move of the tenant resource and

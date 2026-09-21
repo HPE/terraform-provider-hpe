@@ -32,7 +32,8 @@ When an instance is created, Morpheus checks that each requested network is sele
 instance's cloud, group and resource pool, and rejects the request with a bare `Invalid network`
 when one is not. The usual cause is a mismatch between the network and the resource pool — for
 example a pool created by hand on an HVM cloud, whose networks all belong to the cluster's own pool.
-The provider now explains that error when it happens; this data source lets a configuration avoid it.
+The provider explains that error when it happens — and lists the networks that would have been
+accepted, from this very source; this data source lets a configuration avoid it altogether.
 
 The `zoneNetworkOptions` option source is the very check Morpheus applies, exposed for reading: it
 lists the networks that are selectable for a cloud, layout and pool. Reading it into a `precondition`

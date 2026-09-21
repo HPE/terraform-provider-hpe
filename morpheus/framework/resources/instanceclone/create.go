@@ -121,16 +121,15 @@ func (r *Resource) Create(
 		// ErrorBody takes the body from the SDK error, or reads hresp.Body and
 		// puts it back, so ErrMsg below still sees the full response. When
 		// Morpheus rejected a network as "Invalid network", say which network,
-		// which pool it belongs to and which pool was requested. A clone
-		// carries no cloud of its own, so the cloud check is skipped. Any
-		// failure to explain leaves the API's error as it is.
+		// which pool it belongs to and which pool was requested, and which
+		// networks would have been accepted. A clone inherits the cloud, group
+		// and layout it does not set from its source, so the source is named
+		// for the explanation to read them. Any failure to explain leaves the
+		// API's error as it is.
 		body := provisionhint.ErrorBody(err, hresp)
 		msg := fmt.Sprintf("clone request failed for instance %d: %s", sourceID, errfmt.ErrMsg(err, hresp))
 
-		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
-			Config:     cloneReq.Config,
-			Interfaces: cloneReq.NetworkInterfaces,
-		}); hint != "" {
+		if hint := provisionhint.InvalidNetwork(ctx, client, body, cloneHintRequest(cloneReq, sourceID)); hint != "" {
 			msg += "\n\n" + hint
 		}
 
@@ -191,10 +190,8 @@ func (r *Resource) Create(
 			// not select is reported here, by the failed process, not by the
 			// request. Explain it the same way; on failure to explain, the
 			// process's own text stands.
-			if hint := provisionhint.InvalidNetworkReason(ctx, client, failure, provisionhint.Request{
-				Config:     cloneReq.Config,
-				Interfaces: cloneReq.NetworkInterfaces,
-			}); hint != "" {
+			if hint := provisionhint.InvalidNetworkReason(ctx, client, failure,
+				cloneHintRequest(cloneReq, sourceID)); hint != "" {
 				failure += "\n\n" + hint
 			}
 
@@ -820,4 +817,24 @@ func cloneProcessStatus(
 	}
 
 	return *p.Status
+}
+
+// cloneHintRequest describes a clone request to provisionhint: what it set
+// itself, and the source instance for whatever it did not.
+func cloneHintRequest(cloneReq sdk.CloneInstanceRequest, sourceID int64) provisionhint.Request {
+	req := provisionhint.Request{
+		SourceInstanceID: sourceID,
+		Config:           cloneReq.Config,
+		Interfaces:       cloneReq.NetworkInterfaces,
+	}
+
+	if cloneReq.Cloud != nil && cloneReq.Cloud.Id != nil {
+		req.CloudID = *cloneReq.Cloud.Id
+	}
+
+	if cloneReq.Group != nil && cloneReq.Group.Id != nil {
+		req.GroupID = *cloneReq.Group.Id
+	}
+
+	return req
 }

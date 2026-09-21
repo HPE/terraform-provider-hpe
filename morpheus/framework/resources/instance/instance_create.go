@@ -560,14 +560,17 @@ func (g *Resource) Create(
 		// ErrorBody takes the body from the SDK error, or reads httpResp.Body
 		// and puts it back, so ErrMsg below still sees the full response. When
 		// Morpheus rejected a network as "Invalid network", say which network,
-		// which pool it belongs to and which pool was requested — the response
-		// itself says none of that. Any failure to explain leaves the API's
-		// error as it is.
+		// which pool it belongs to and which pool was requested, and which
+		// networks it would have accepted for this cloud, group, layout and
+		// pool — the response itself says none of that. Any failure to explain
+		// leaves the API's error as it is.
 		body := provisionhint.ErrorBody(err, httpResp)
 		msg := errfmt.ErrMsg(err, httpResp)
 
 		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
 			CloudID:    getsafe.Get(reqInstance.ZoneId),
+			GroupID:    reqInstance.Instance.Site.Id,
+			LayoutID:   reqInstance.Instance.Layout.Id,
 			Config:     reqInstance.Config,
 			Interfaces: reqInstance.NetworkInterfaces,
 		}); hint != "" {
