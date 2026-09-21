@@ -1,0 +1,33 @@
+# Reading any source: by name alone, with extra parameters under the names the
+# API uses, and the source's own attributes visible under attributes.
+
+data "hpe_morpheus_option_source_values" "groups" {
+  source = "groups"
+}
+
+output "groups" {
+  value = { for v in data.hpe_morpheus_option_source_values.groups.values : v.name => v.value }
+}
+
+# Another list from the object-shaped zoneNetworkOptions: the network interface
+# types the wizard offers for a cloud and layout. Items here have an id but no
+# value, so value is the id; code arrives under attributes.
+data "hpe_morpheus_option_source_values" "network_types" {
+  source     = "zoneNetworkOptions"
+  cloud_id    = 1
+  layout_id  = 32
+  collection = "networkTypes"
+}
+
+output "network_types" {
+  value = { for v in data.hpe_morpheus_option_source_values.network_types.values : v.name => v.attributes["code"] }
+}
+
+# A parameter the typed attributes do not cover goes in parameters, under the
+# name the API uses. By default it is sent both in the query string and as
+# config[<key>], because the server ignores a parameter in the wrong place.
+data "hpe_morpheus_option_source_values" "plans_for_layout" {
+  source     = "servicePlans"
+  cloud_id    = 1
+  parameters = { layoutId = "32", provisionTypeCode = "kvm" }
+}

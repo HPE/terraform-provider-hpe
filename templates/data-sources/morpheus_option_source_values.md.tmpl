@@ -1,0 +1,227 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+Use this data source to see **everything** a source offers, to iterate over it, or to check a value
+against it in a `precondition`. To require exactly one value — and fail the plan otherwise — use
+[`hpe_morpheus_option_source_value`](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_option_source_value).
+
+## What an option source is
+
+Every dropdown in the Morpheus UI that is not a fixed list is populated by an *option source*: a
+named server-side lookup that returns `{name, value}` pairs for the current context. Some read the
+Morpheus database (groups, service plans); some compute a provisioning context (the resource pools
+and networks a wizard step may choose from, given a cloud, layout and pool); some ask an external
+system (the library shares on an SCVMM server, given credentials). They are served over the API at
+`GET /api/options/{source}` and `GET /api/options/{service_type}/{source}`, take their parameters
+from the query string, and return a list of options.
+
+Until now nothing in the provider could read them. This data source reads the same lookup the UI
+uses and returns every option, with the source's own attributes alongside, so a configuration can
+discover, iterate and verify without a value ever being looked up by hand.
+
+## Use case: checking a network before provisioning
+
+When an instance is created, Morpheus checks that each requested network is selectable for the
+instance's cloud, group and resource pool, and rejects the request with a bare `Invalid network`
+when one is not. The usual cause is a mismatch between the network and the resource pool — for
+example a pool created by hand on an HVM cloud, whose networks all belong to the cluster's own pool.
+The provider now explains that error when it happens; this data source lets a configuration avoid it.
+
+The `zoneNetworkOptions` option source is the very check Morpheus applies, exposed for reading: it
+lists the networks that are selectable for a cloud, layout and pool. Reading it into a `precondition`
+turns a runtime rejection into a plan-time message that says what would have worked:
+
+{{ tffile "examples/data-sources/morpheus_option_source_values/example-eligible-networks.tf" }}
+
+`zoneNetworkOptions` returns an object of lists rather than a single list, so `collection` names
+the one to read — `networks` here; `networkGroups`, `networkSubnets` and `networkTypes` are the
+others. Its items carry the network id in the form the API takes on input, `network-<id>`, so the
+comparison is against `"network-${var.network_id}"`.
+
+## Filtering
+
+Filter blocks narrow the list client-side after the source has been read. Blocks are ANDed; the
+values within one block are ORed; values are Go regular expressions and are case-sensitive unless the
+pattern says otherwise (`(?i)`). A block's `name` is the field to match: `name`, `value`, or
+`attributes.<key>` for a source-specific attribute — a value that does not carry the attribute does
+not match, so filtering on an attribute is also a way to keep only the values that have it.
+
+{{ tffile "examples/data-sources/morpheus_option_source_values/example-filter.tf" }}
+
+For narrowing to a single value, prefer `hpe_morpheus_option_source_value` with `name` or `value`:
+it fails the plan when the selection is not unique, where a filter that happens to match one value
+today will silently match two tomorrow.
+
+## Use case: discovering what a source offers
+
+An SCVMM cloud needs `libraryShare`, a UNC path that only the VMM server can supply. Before a
+configuration commits to one with the singular data source, the plural lists what there is — and the
+same list drives `for_each` when one resource per value is wanted. The credentials are stored once in
+Morpheus and referenced by id; they do not pass through the data source.
+
+{{ tffile "examples/data-sources/morpheus_option_source_values/example-scvmm-library-shares.tf" }}
+
+## Reading any source
+
+Any source can be read with no more than its name. Parameters the typed attributes do not cover go
+in `parameters`, under the name the API uses; the full objects come back, so a source's own
+attributes are visible under `attributes` (as strings — numbers and booleans in their textual form,
+nested objects as JSON).
+
+{{ tffile "examples/data-sources/morpheus_option_source_values/example-discovery.tf" }}
+
+## Finding a source and its parameters
+
+The sources above are the ones most configurations need. For any other dropdown, the Morpheus UI
+itself shows the source and parameters it uses: open the browser's developer tools on the Network tab,
+operate the dropdown, and look for the request to `/options/<source>?...`. The path gives `source`
+(and, in the two-segment form `/options/<service_type>/<source>`, the `service_type`); the query string
+gives the parameters, under the names to use in `parameters` or the typed attributes below. The UI and
+the API call the same server-side lookup with the same parameters.
+
+The provider carries a catalogue of the sources known for a Morpheus release. A `source` not in it
+produces a **warning**, not an error — plugins and newer appliances add sources — and the warning
+names the release the catalogue was built from.
+
+## Parameters
+
+Morpheus reads a source's parameters from two places, the query string (`zoneId=1`) and a
+`config[<key>]` form (`config[zoneId]=1`), and different sources read different places. A parameter
+sent in the wrong place is **silently ignored** — the source runs as if it had not been given, which
+for a filter means an unfiltered list. By default (`parameter_style = "auto"`) the provider therefore
+sends every parameter in both places; every source tested tolerates this. `parameter_style` is the
+escape hatch for a source that does not: `top_level` and `config` send each parameter in one place
+only.
+
+The typed attributes are shortcuts for the common parameters, named as the rest of this provider
+names things rather than as the API does: the API says *zone* where the provider says *cloud*, so the
+attribute is `cloud_id` and the translation to `zoneId` happens here. Each attribute sets the key(s)
+the sources read, so `cloud_id` is written once whether a source reads `zoneId`, `cloudId` or
+`config[zoneId]`, and the attributes that Morpheus reads under more than one name are sent under
+every name:
+
+| Attribute | Sent as | Notes |
+|---|---|---|
+| `cloud_id` | `zoneId`, `cloudId` | the cloud; newer sources read the second name |
+| `group_id` | `groupId`, `siteId` | sources read one or the other |
+| `layout_id` | `layoutId` | the provisioning context for the wizard's sources |
+| `provision_type_code` | `provisionTypeCode`, `provisionType` | alternative to `layout_id`; sources read one or the other |
+| `provision_type_id` | `provisionTypeId` | the same thing by id, for the sources that read the id rather than the code |
+| `pool_id` | `poolId` | `pool-<id>` or a bare id — the form `zonePools` returns |
+| `plan_id` | `planId` | the service plan, for plan-scoped options |
+| `server_group_id` | `serverGroupId` | the cluster, for sources scoped to one — its VMs, hosts, affinity groups, datastores |
+| `provider_id` | `providerId` | the backup provider, for the backup and replication sources |
+| `phrase` | `phrase` | server-side name search, where a source supports it |
+| `parent_id` | `parentId`, `parentid` | for dependent sources — the load balancer for its pools, the network server for its objects; sources read one spelling or the other |
+| `credential_id` | `credential.type` | a stored `hpe_morpheus_credential` |
+
+**The tenant is always the caller's.** Morpheus sets `accountId` to the authenticated user's tenant on
+every option-source call and discards any value supplied, in the query string or under `config`. A
+source is therefore always evaluated for the tenant the provider authenticated as; to read it as
+another tenant, authenticate as a user of that tenant. Passing `accountId` in `parameters` produces a
+warning saying so rather than a silently different answer.
+
+These are the parameters read by many sources; around two hundred distinct keys are read across the
+catalogue, and anything else goes in `parameters`, keyed as the API names it. A key given both ways is
+an error rather than a silent precedence rule, since the two spellings mean the same thing.
+
+Not every parameter a source reads can be supplied from Terraform. Some sources read the record
+currently open in the UI — the router whose rule is being edited, the load balancer pool being
+configured — as a server-side object (`domain`, or a bare `parent`) that only the UI can pass. Such
+a source cannot be given that context over the API, and reading it will return the list a fresh UI
+form would show.
+
+## What narrows the read
+
+An option source is read in **one request** — the endpoint does not page, and does not honour
+`max` — so the cost of a read is the time the server takes to compute the list plus the time to
+transfer it, and both scale with how many rows the source returns. Only the parameters the server
+understands reduce that; everything the provider applies afterwards works on what was already
+fetched.
+
+| Argument | Applied | Effect on the read |
+|---|---|---|
+| the typed attributes (`cloud_id`, `layout_id`, `provision_type_code`, `pool_id`, `server_group_id`, …) | server-side | Narrow the list — where the source reads them. The provisioning sources read the first four; which parameters any other source reads is that source's own business (see *Finding a source and its parameters*). |
+| `phrase` | server-side, **some sources only** | A name search where the source implements one (`users` does); ignored by many (`networks`, `servicePlans` and `instanceTypes` do not). Harmless where ignored. |
+| `parameters` | server-side | Whatever the source reads; anything else is ignored. |
+| `collection` | client-side | Selects a list within an object-shaped response. The whole object is fetched. |
+| `filter` blocks | **client-side** | **No effect on the read.** They take regular expressions, which the server cannot, so they are the way to express a match — not a way to fetch less. Where a source honours `phrase`, a literal from the pattern set there narrows the fetch as well. |
+
+To give a sense of scale: on an appliance with several hundred networks and over a thousand service
+plans, reading `networks` or `servicePlans` unnarrowed took a few seconds and returned around a
+megabyte, while the same sources narrowed by `cloud_id` or `provision_type_code` returned a dozen rows
+in under a second. Every other source tried — groups, clouds, instance types, users, the provisioning
+sources — answered in under a second. Below a few hundred rows the round trip dominates and the
+row count makes no measurable difference.
+
+Two things differ from the paginated list data sources such as `hpe_morpheus_images`:
+
+- There is no page cost to avoid. The largest read observed is a few seconds, not tens of seconds,
+  and a broad read is a bandwidth cost more than a time cost. Prefer the server-side context
+  parameters when a source is large and they apply, but a read that fetches a few hundred rows to
+  filter is not a problem to engineer around.
+- **A source that reaches an external system is priced by that system, not by row count.**
+  `scvmmLibraryShares` runs a query on the VMM server for every read, and no parameter makes it
+  cheaper. Data sources are read on every plan and refresh, so such a source is queried on every
+  plan; keep it in a configuration that is planned when the value is needed rather than one that is
+  planned often.
+
+Each data-source block is one request. Several blocks reading the same source with different filters
+make several identical reads; read once and narrow in HCL, or put the filters on one block, when that
+matters.
+
+## Sources that return an object
+
+Most sources return a list. A few return an object of lists — `zoneNetworkOptions` returns
+`networks`, `networkGroups`, `networkSubnets` and `networkTypes` (plus a few scalars) — and for those
+`collection` names the list to read. Without it the plan fails naming the lists available, so an
+object-shaped source can never quietly yield nothing; with it on a source that returns a plain list,
+the plan fails too, so the attribute is never silently ignored.
+
+Within an option, `value` is the source's `value`, or its `id` when it has no `value` (the
+`zoneNetworkOptions` items are `{id: "network-79", name: ...}`). Either way it is already in the form
+the API takes on input — `pool-2`, `network-79` — so it can be used directly. The UI's group-heading
+rows (`isGroup: true`, which carry no value) are not returned.
+
+## Empty results
+
+An empty `values` list is a legitimate answer for most sources and is not an error. Some sources,
+though, answer an *incomplete* request with an empty list rather than an error: the provisioning
+wizard's `zonePools` and `zoneNetworkOptions` return nothing without a `layout_id` or
+`provision_type_code`. When such a source returns nothing and the context parameter is absent, the
+data source raises a warning naming it:
+
+```
+Warning: option source "zonePools" returned no values
+
+zonePools requires a provisioning context: set layout_id or provision_type_code in addition to
+cloud_id. Without one the server returns an empty list rather than an error.
+```
+
+## Errors and warnings
+
+| Diagnostic | Meaning | What to do |
+|---|---|---|
+| Warning *option source not in the catalogue* | The `source` is not among the sources known for the catalogue's Morpheus release, or it is defined only under a `service_type` that is not set | Check the spelling; set `service_type` if the warning names one; otherwise proceed — a plugin or newer appliance may serve it |
+| Warning *option source … returned no values* | A wizard source was read without its provisioning context | Set `layout_id` or `provision_type_code` |
+| Error *returned HTTP 500 (Looks like the server threw a gasket)* | Morpheus's generic failure. It is returned alike for an unknown source and for a known source given missing or malformed parameters; the message says which the catalogue thinks more likely, and shows the request | Fix the name or `service_type` if indicated; otherwise compare the parameters sent against what the UI sends for the same dropdown |
+| Error *returns an object, not a list; set collection to one of …* | The source is object-shaped | Set `collection` to one of the listed names |
+| Error *returns a list, so collection … does not apply* | `collection` was set for a list-shaped source | Remove `collection` |
+| Error *conflicting parameters* | A key was set both by a typed attribute and in `parameters` | Use one |
+| Error *invalid regular expression … for filter …* | A filter value does not compile as a Go regular expression | Fix the pattern; literal dots and brackets need escaping |
+
+## Secrets
+
+Never pass a raw credential in `parameters`. Data sources cannot have write-only arguments, so
+anything in `parameters` is recorded in state. The sources that need to authenticate to a target
+system (SCVMM, Amazon, OpenStack, …) accept a stored credential: create it with
+`hpe_morpheus_credential` and pass its id as `credential_id`.
+
+{{ .SchemaMarkdown | trimspace }}

@@ -1,3 +1,43 @@
+# v2.2.0 Release Notes
+
+## New data sources
+
+### `hpe_morpheus_option_source_value` and `hpe_morpheus_option_source_values` (MORPH-17643)
+
+Morpheus option sources are the enumerations behind the UI's dropdowns: values Morpheus discovers
+from a cloud or computes for a provisioning context, such as the resource pools and networks the
+provisioning wizard offers, an SCVMM library share, or the members of a select list. They were not
+reachable from Terraform, so a configuration that needed one — an SCVMM cloud's `libraryShare`, or
+the resource pool Morpheus creates for an HVM cluster — had to be written from a value obtained by
+hand.
+
+Two data sources now read any option source. `hpe_morpheus_option_source_values` returns the full
+list, with a repeatable `filter` block on `name`, `value` or a source-specific attribute;
+`hpe_morpheus_option_source_value` returns exactly one and fails the plan when the source returns
+none or several, naming the candidates. Both take the source name, an optional `service_type` for
+sources defined on a cloud-specific service, a `parameters` map, and typed shortcuts for the common
+parameters (`cloud_id`, `layout_id`, `provision_type_code`, `pool_id`, `group_id`, `credential_id`,
+...), named as this provider names things — the translation to the API's `zoneId` is the data
+source's job. Values come back in the form the API takes on input (`pool-2`, `network-79`), with
+every other key the source returned under `attributes`.
+
+The two sources behind the provisioning wizard are the motivating case. `zonePools` lists the pools
+selectable for a cloud and layout — including an HVM cluster's own pool, which the cloud's
+resource-pool listing omits — with `providerType` alongside; `zoneNetworkOptions` lists the networks
+selectable for a pool, which is the check Morpheus applies when an instance is created, so a
+`lifecycle.precondition` can turn a runtime `Invalid network` into a plan-time message.
+
+Three server behaviours are handled so they do not become silent mistakes: a parameter sent in the
+wrong position is ignored rather than rejected, so each parameter is sent in both positions by
+default; sources that need a provisioning context return an empty list rather than an error without
+one, and the provider says so; and the server returns one generic error for an unknown source and
+for bad parameters alike, so the provider carries a catalogue of the sources known for a Morpheus
+release, warns on a name outside it, and says which cause is more likely. A fourth is documented and
+warned about: the server evaluates every source for the caller's tenant and discards any `accountId`
+sent, so there is no tenant attribute, and passing one in `parameters` warns rather than silently
+answering for the wrong tenant. Raw credentials must not be passed in `parameters`; sources that
+authenticate to a target system take a stored credential via `credential_id`.
+
 # v2.1.0 Release Notes
 
 This release hardens the provider for day-two use. It completes the move of the tenant resource and
