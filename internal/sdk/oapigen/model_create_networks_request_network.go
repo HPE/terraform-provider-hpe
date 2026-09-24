@@ -52,7 +52,15 @@ type CreateNetworksRequestNetwork struct {
 	CidrIPv6 *string `json:"cidrIPv6,omitempty"`
 	VlanId   *int64  `json:"vlanId,omitempty"`
 	// Network switch identifier
-	SwitchId *string `json:"switchId,omitempty"`
+	SwitchId      *string                                    `json:"switchId,omitempty"`
+	NetworkServer *CreateNetworksRequestNetworkNetworkServer `json:"networkServer,omitempty"`
+	// Transport zone of an NSX-T segment (type `nsxtLogicalSwitch`) on NSX-T 2.x. Not editable after create and not returned by the API.
+	ScopeId *string `json:"scopeId,omitempty"`
+	// VXLAN ID of an OVS overlay network (type `ovsOverlay`). Not editable after create and not returned by the API.
+	VxlanId       *int64                                     `json:"vxlanId,omitempty"`
+	ParentNetwork *CreateNetworksRequestNetworkParentNetwork `json:"parentNetwork,omitempty"`
+	// Availability zone of an Amazon subnet (type `amazonSubnet`), e.g. `us-west-1a`. Set on create only.
+	AvailabilityZone *string `json:"availabilityZone,omitempty"`
 	// Network Pool ID
 	Pool NullableInt64 `json:"pool,omitempty"`
 	// IPv6 Network Pool ID
@@ -150,6 +158,21 @@ func (o CreateNetworksRequestNetwork) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.SwitchId) {
 		toSerialize["switchId"] = o.SwitchId
+	}
+	if !IsNil(o.NetworkServer) {
+		toSerialize["networkServer"] = o.NetworkServer
+	}
+	if !IsNil(o.ScopeId) {
+		toSerialize["scopeId"] = o.ScopeId
+	}
+	if !IsNil(o.VxlanId) {
+		toSerialize["vxlanId"] = o.VxlanId
+	}
+	if !IsNil(o.ParentNetwork) {
+		toSerialize["parentNetwork"] = o.ParentNetwork
+	}
+	if !IsNil(o.AvailabilityZone) {
+		toSerialize["availabilityZone"] = o.AvailabilityZone
 	}
 	if o.Pool.IsSet() {
 		toSerialize["pool"] = o.Pool.Get()

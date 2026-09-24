@@ -16,11 +16,11 @@ resource "hpe_morpheus_network" "aws" {
   cloud_id    = data.hpe_morpheus_cloud.example.id
   pool_id     = 1
   group_id    = data.hpe_morpheus_group.example.id
-  type_id     = 36
-  config = {
-    assignPublicIp   = true
-    availabilityZone = "us-west-1a"
-  }
+  type_code   = "amazonSubnet"
+  # An Amazon subnet has no config block: its fields are attributes of the
+  # network itself.
+  assign_public_ip           = true
+  availability_zone          = "us-west-1a"
   active                     = true
   dhcp_server                = true
   appliance_url_proxy_bypass = true

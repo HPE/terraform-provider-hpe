@@ -16,10 +16,10 @@ resource "hpe_morpheus_network" "gcp" {
   cloud_id    = data.hpe_morpheus_cloud.example.id
   pool_id     = 1
   group_id    = data.hpe_morpheus_group.example.id
-  type_id     = 38
-  config = {
-    mtu        = "1460"
-    autoCreate = true
+  type_code   = "googleNetwork"
+  config_gcp = {
+    mtu         = 1460
+    auto_create = true
   }
   active                     = true
   dhcp_server                = false

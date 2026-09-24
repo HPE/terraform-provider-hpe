@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
-	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
 func (r *Resource) Update(
@@ -21,22 +21,82 @@ func (r *Resource) Update(
 	req resource.UpdateRequest,
 	resp *resource.UpdateResponse,
 ) {
-	var plan, state NetworkModel
+	var plan, state, config NetworkModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	// The write-only configuration is only present in the configuration.
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Routed for the network's type — the type cannot change in place, and
+	// this is what ModifyPlan routed for when it compared the digests.
+	inputs, idiags := resolveConfigInputs(ctx, config, r.planTypeSpec(ctx, config, state))
+	resp.Diagnostics.Append(idiags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	id := state.Id.ValueInt64()
-	name := plan.Name.ValueString()
 
 	network := &sdk.UpdateNetworkRequestNetwork{}
 
-	// Set all updateable fields from plan
+	// Set all updateable fields from plan. Whether Morpheus applies a change
+	// to name, cidr, gateway, vlanId, dhcpServer or dns depends on the network
+	// type's flags; ModifyPlan has already planned a replacement where it
+	// would not, so what reaches here is applied.
+	// name only when it changes: the API sets a null displayName to the name it
+	// is sent, so sending an unchanged name would alter display_name behind
+	// the plan's back.
+	if !plan.Name.IsNull() && !plan.Name.IsUnknown() && plan.Name.ValueString() != state.Name.ValueString() {
+		network.Name = plan.Name.ValueStringPointer()
+	}
+
 	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
 		network.DisplayName = plan.DisplayName.ValueStringPointer()
+	}
+
+	if !plan.Ipv4enabled.IsNull() && !plan.Ipv4enabled.IsUnknown() {
+		network.Ipv4Enabled = plan.Ipv4enabled.ValueBoolPointer()
+	}
+
+	if !plan.Ipv6enabled.IsNull() && !plan.Ipv6enabled.IsUnknown() {
+		network.Ipv6Enabled = plan.Ipv6enabled.ValueBoolPointer()
+	}
+
+	if !plan.CidrIpv6.IsNull() && !plan.CidrIpv6.IsUnknown() {
+		network.CidrIPv6 = plan.CidrIpv6.ValueStringPointer()
+	}
+
+	if !plan.GatewayIpv6.IsNull() && !plan.GatewayIpv6.IsUnknown() {
+		gatewayIpv6 := plan.GatewayIpv6.ValueString()
+		network.GatewayIPv6.Set(&gatewayIpv6)
+	}
+
+	if !plan.NetmaskIpv6.IsNull() && !plan.NetmaskIpv6.IsUnknown() {
+		netmaskIpv6 := plan.NetmaskIpv6.ValueString()
+		network.NetmaskIPv6.Set(&netmaskIpv6)
+	}
+
+	if !plan.DnsPrimaryIpv6.IsNull() && !plan.DnsPrimaryIpv6.IsUnknown() {
+		dnsPrimaryIpv6 := plan.DnsPrimaryIpv6.ValueString()
+		network.DnsPrimaryIPv6.Set(&dnsPrimaryIpv6)
+	}
+
+	if !plan.DnsSecondaryIpv6.IsNull() && !plan.DnsSecondaryIpv6.IsUnknown() {
+		dnsSecondaryIpv6 := plan.DnsSecondaryIpv6.ValueString()
+		network.DnsSecondaryIPv6.Set(&dnsSecondaryIpv6)
+	}
+
+	if !plan.DhcpServerIpv6.IsNull() && !plan.DhcpServerIpv6.IsUnknown() {
+		network.DhcpServerIPv6 = plan.DhcpServerIpv6.ValueBoolPointer()
+	}
+
+	if !plan.PoolIpv6Id.IsNull() && !plan.PoolIpv6Id.IsUnknown() {
+		poolIpv6ID := plan.PoolIpv6Id.ValueInt64()
+		network.PoolIPv6.Set(&poolIpv6ID)
 	}
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
@@ -128,39 +188,10 @@ func (r *Resource) Update(
 		network.Labels = labelStrings
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		configValue := plan.Config.UnderlyingValue()
-		configMap, err := convert.ValueToAny(ctx, configValue)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update network resource",
-				"network "+name+": failed to convert config: "+
-					err.Error(),
-			)
-
-			return
-		}
-
-		configDataMap, ok := configMap.(map[string]any)
-		if ok {
-			if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() {
-				configDataMap["connectedGateway"] = plan.ConnectedGateway.ValueString()
-			}
-			network.Config = configDataMap
-		} else {
-			resp.Diagnostics.AddError(
-				"update network resource",
-				"network "+name+": config must be a valid object/map",
-			)
-
-			return
-		}
-	}
-
-	if !plan.ConnectedGateway.IsNull() && !plan.ConnectedGateway.IsUnknown() && network.Config == nil {
-		network.Config = map[string]any{
-			"connectedGateway": plan.ConnectedGateway.ValueString(),
-		}
+	// Type-specific configuration, resolved from the write-only inputs. Morpheus
+	// merges it into the network's existing config map: keys not sent are kept.
+	if inputs.all != nil {
+		network.Config = inputs.all
 	}
 
 	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
@@ -185,6 +216,17 @@ func (r *Resource) Update(
 	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
 		networkDomainID := plan.NetworkDomainId.ValueInt64()
 		network.NetworkDomain = &sdk.UpdateNetworkRequestNetworkNetworkDomain{Id: &networkDomainID}
+	}
+
+	// The network server and a child network's parent; the type-specific
+	// fields Morpheus does not edit after create (scopeId, vxlanId) are not
+	// sent, since a change to them is planned as a replacement.
+	if v := knownInt64(plan.NetworkServerId); v != 0 {
+		network.NetworkServer = &sdk.UpdateNetworkRequestNetworkNetworkServer{Id: &v}
+	}
+
+	if v := knownInt64(plan.ParentNetworkId); v != 0 {
+		network.ParentNetwork = &sdk.UpdateNetworkRequestNetworkParentNetwork{Id: &v}
 	}
 
 	if !plan.NetworkProxyId.IsNull() && !plan.NetworkProxyId.IsUnknown() {
@@ -227,9 +269,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
-		networkState.Config = plan.Config
-	}
+	resp.Diagnostics.Append(networkconfig.Store(ctx, resp.Private, inputs.digests)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &networkState)...)
 }

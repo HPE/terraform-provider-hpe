@@ -1,0 +1,11 @@
+# A network that two clouds see — here a cloud scoped to one resource group and
+# a second cloud covering the whole subscription — has a record in each, under
+# the same name. cloud_id selects the record of the cloud you manage it through.
+data "hpe_morpheus_cloud" "scoped" {
+  name = "Azure Cloud"
+}
+
+data "hpe_morpheus_network" "example" {
+  name     = "Example name"
+  cloud_id = data.hpe_morpheus_cloud.scoped.id
+}

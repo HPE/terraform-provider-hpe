@@ -45,6 +45,7 @@ var (
 	cacheMu  sync.Mutex
 	resolved bool
 	isMaster bool
+	tenantID int64
 )
 
 // CallerIsMaster reports whether the authenticated caller behind client is the
@@ -55,30 +56,59 @@ var (
 // The whoami response omits isMasterAccount unless it is true, so a nil value
 // means non-master, not "unknown".
 func CallerIsMaster(ctx context.Context, client *sdk.APIClient) (bool, error) {
+	if err := resolve(ctx, client); err != nil {
+		return false, err
+	}
+
+	return isMaster, nil
+}
+
+// CallerTenantID returns the id of the authenticated caller's tenant
+// (account), via the same cached whoami call as CallerIsMaster. For a master
+// caller this is the master tenant's id.
+func CallerTenantID(ctx context.Context, client *sdk.APIClient) (int64, error) {
+	if err := resolve(ctx, client); err != nil {
+		return 0, err
+	}
+
+	if tenantID == 0 {
+		return 0, fmt.Errorf("whoami did not report the caller's tenant")
+	}
+
+	return tenantID, nil
+}
+
+// resolve fills the cache from whoami, once.
+func resolve(ctx context.Context, client *sdk.APIClient) error {
 	if client == nil {
-		return false, fmt.Errorf("no client available to determine tenancy")
+		return fmt.Errorf("no client available to determine tenancy")
 	}
 
 	cacheMu.Lock()
 	defer cacheMu.Unlock()
 
 	if resolved {
-		return isMaster, nil
+		return nil
 	}
 
 	who, hresp, err := client.AuthenticationAPI.Whoami(ctx).Execute()
 	if err := errfmt.CheckResponse(err, hresp); err != nil {
-		return false, err
+		return err
 	}
 	if who == nil {
-		return false, fmt.Errorf("whoami returned an empty response")
+		return fmt.Errorf("whoami returned an empty response")
 	}
 
 	// isMasterAccount is only serialized when true; absence means non-master.
 	isMaster = who.IsMasterAccount != nil && *who.IsMasterAccount
+
+	if who.User != nil && who.User.Account != nil && who.User.Account.Id != nil {
+		tenantID = *who.User.Account.Id
+	}
+
 	resolved = true
 
-	return isMaster, nil
+	return nil
 }
 
 // visibilityPublicDetail is the shared explanation appended to the visibility

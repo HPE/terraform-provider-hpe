@@ -2,40 +2,416 @@ network:
   templates:
     config:
       dynamic:
-        computed_optional_required: computed_optional
-        description: Configuration object. Settings vary by type.
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Type-specific configuration for network types that have no typed `config_*` block, as a map of the
+          keys the type's option types read (for example `{ hvmVlanTrunks = "100,200" }`). Write-only: sent to
+          Morpheus on create and update, never stored in state; a change is detected from a digest kept in the
+          resource's private state, so no version attribute is needed. The server's view of the configuration
+          is available read-only in `config_from_api`. Requires Terraform or OpenTofu 1.11 or later.
         validators:
         - custom:
             imports:
             - path: github.com/HPE/terraform-provider-hpe/utils/validators
             schema_definition: validators.ValidObjectMap()
+    config_from_api:
+      dynamic:
+        computed_optional_required: computed
+        description: >-
+          The type-specific configuration as Morpheus returns it, read-only. Includes keys the server adds
+          itself and masks secrets; a change here is visible but never enforced.
+    config_ovs_port_group:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an OVS port group network (type `ovsPortGroup`), typed. Write-only, like `config`;
+          the two are mutually exclusive. The port group's virtual switch, VLAN and resource pool are the
+          top-level `switch_id`, `vlan_id` and `zone_pool_id`.
+        attributes:
+        - name: vlan_trunks
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: VLAN IDs to trunk on the port group, comma-separated (Morpheus `hvmVlanTrunks`).
+        - name: trunk_only
+          bool:
+            computed_optional_required: optional
+            write_only: true
+            description: Whether the port group carries trunked VLANs only (Morpheus `hvmTrunkOnly`).
+    config_nsxt:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an NSX-T segment (type `nsxtLogicalSwitch`), typed. Write-only, like `config`; the
+          two are mutually exclusive, and a network takes at most one typed block, which must match its type.
+          Attributes marked "cannot be changed after create" replace the network when changed; the others are
+          applied in place.
+        attributes:
+        - name: connected_gateway
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Path of the Tier-0 or Tier-1 gateway the segment connects to, e.g. `/infra/tier-1s/<id>` (Morpheus
+              `connectedGateway`). Supersedes the top-level `connected_gateway`.
+        - name: vlan_ids
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).
+        - name: subnet_ip_management_type
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              How addresses on the segment's subnet are managed: DHCP type as NSX-T names it, e.g. `dhcpLocal`,
+              `dhcpRelay` (Morpheus `subnetIpManagementType`).
+        - name: subnet_ip_server_id
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).
+        - name: subnet_dhcp_server_address
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).
+        - name: dhcp_range
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP address ranges, one per line or comma-separated (Morpheus `dhcpRange`).
+        - name: subnet_dhcp_lease_time
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP lease time in seconds; NSX-T defaults to 86400 (Morpheus `subnetDhcpLeaseTime`).
+        - name: subnet_dhcp_server_address_ipv6
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              IPv6 address of the segment's DHCP server, in CIDR notation (Morpheus
+              `subnetDhcpServerAddressIPv6`).
+        - name: dhcp_range_ipv6
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              IPv6 DHCP address ranges (Morpheus `dhcpRangeIPv6`).
+        - name: dhcp_excluded_ranges_ipv6
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              IPv6 address ranges excluded from DHCP (Morpheus `dhcpExcludedRangesIPv6`).
+        - name: subnet_dhcp_lease_time_ipv6
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              IPv6 DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTimeIPv6`).
+        - name: dhcp_domain_names_ipv6
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Domain names handed out by IPv6 DHCP (Morpheus `dhcpDomainNamesIPv6`).
+        - name: dhcp_preferred_time_ipv6
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              IPv6 DHCP preferred time in seconds (Morpheus `dhcpPreferredTimeIPv6`).
+        - name: dhcp_sntp_servers_ipv6
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              SNTP servers handed out by IPv6 DHCP (Morpheus `dhcpSntpServersIPv6`).
+    config_nsx_cloud:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an NSX Cloud segment (type `nsxCloudLogicalSwitch`), typed. Write-only, like
+          `config`; the two are mutually exclusive, and a network takes at most one typed block, which must
+          match its type. Attributes marked "cannot be changed after create" replace the network when changed;
+          the others are applied in place.
+        attributes:
+        - name: connected_gateway
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Path of the Tier-1 gateway the segment connects to (Morpheus `connectedGateway`). Supersedes the
+              top-level `connected_gateway`.
+        - name: vlan_ids
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).
+        - name: subnet_ip_management_type
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP type as NSX names it, e.g. `dhcpLocal`, `dhcpRelay` (Morpheus `subnetIpManagementType`).
+        - name: subnet_ip_server_id
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).
+        - name: subnet_dhcp_server_address
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).
+        - name: dhcp_range
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP address ranges (Morpheus `dhcpRange`).
+        - name: subnet_dhcp_lease_time
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTime`).
+    config_hvm_data:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an HVM data network (type `hvmPortGroupDataNetwork`), typed. Write-only, like
+          `config`; the two are mutually exclusive, and a network takes at most one typed block, which must
+          match its type. Attributes marked "cannot be changed after create" replace the network when changed;
+          the others are applied in place.
+        attributes:
+        - name: cluster_network_layout
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              How the network attaches to the cluster: `HOST_INTERFACE` (a VLAN on a host interface; the default)
+              or `VSWITCH` (a virtual switch segment) (Morpheus `hvmClusterNetworkLayout`). Cannot be changed
+              after create.
+        - name: host_network_interface
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Host interface VMs send data traffic out of, e.g. `bond0`, for the `HOST_INTERFACE` layout (Morpheus
+              `hvmHostNetworkInterface`). Cannot be changed after create.
+        - name: virtual_switch_segment_id
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Id of a data-eligible virtual switch segment, for the `VSWITCH` layout; the segment determines the
+              VLAN and MTU (Morpheus `virtualSwitchSegmentId`). Cannot be changed after create.
+        - name: mtu
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Maximum transmission unit: 1500 as the standard default or 9000 for jumbo frames (Morpheus
+              `hvmMtu`).
+    config_hvm_overlay:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an HVM overlay network (type `hvmPortGroupOverlayNetwork`), typed. Write-only,
+          like `config`; the two are mutually exclusive, and a network takes at most one typed block, which
+          must match its type. Attributes marked "cannot be changed after create" replace the network when
+          changed; the others are applied in place.
+        attributes:
+        - name: overlay_network_interface
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Host interface that carries the overlay's VXLAN tunnels (Morpheus `hvmOverlayNetworkInterface`).
+              Cannot be changed after create.
+        - name: overlay_port
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              UDP port for VXLAN tunnel encapsulation between hosts; 4789 is the IANA-assigned port (Morpheus
+              `hvmOverlayPort`). Cannot be changed after create.
+        - name: overlay_id
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              VXLAN network identifier (VNI) between 1 and 16777215, unique across the infrastructure (Morpheus
+              `hvmOverlayId`). Cannot be changed after create.
+    config_hvm_private:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an HVM private network (type `hvmPortGroupPrivateNetwork`), typed. Write-only,
+          like `config`; the two are mutually exclusive, and a network takes at most one typed block, which
+          must match its type. Attributes marked "cannot be changed after create" replace the network when
+          changed; the others are applied in place.
+        attributes:
+        - name: cluster_network_layout
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              How the network attaches to the cluster: `HOST_INTERFACE` (the default) or `VSWITCH` (Morpheus
+              `hvmClusterNetworkLayout`). Cannot be changed after create.
+        - name: host_network_interface
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Host interface whose MacVTAP device isolates the VMs, for the `HOST_INTERFACE` layout (Morpheus
+              `hvmHostNetworkInterface`). Cannot be changed after create.
+        - name: virtual_switch_id
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Id of the virtual switch for the private network, for the `VSWITCH` layout (Morpheus
+              `virtualSwitchId`). Cannot be changed after create.
+    config_hvm_sriov:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an HVM SR-IOV network (type `hvmPortGroupSriovNetwork`), typed. Write-only, like
+          `config`; the two are mutually exclusive, and a network takes at most one typed block, which must
+          match its type. Attributes marked "cannot be changed after create" replace the network when changed;
+          the others are applied in place.
+        attributes:
+        - name: physical_function
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              SR-IOV capable physical function (PF) that virtual functions are allocated from (Morpheus
+              `hvmPhysicalFunction`). Cannot be changed after create.
+    config_azure:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an Azure virtual network (type `azureNetwork`), typed. Write-only, like `config`;
+          the two are mutually exclusive, and a network takes at most one typed block, which must match its
+          type. Attributes marked "cannot be changed after create" replace the network when changed; the
+          others are applied in place.
+        attributes:
+        - name: resource_group_id
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Resource group the virtual network is created in (Morpheus `resourceGroupId`). Cannot be changed
+              after create.
+        - name: subnet_name
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Name of a subnet created along with the virtual network; later subnet changes are not reflected here
+              (Morpheus `subnetName`). Cannot be changed after create.
+        - name: subnet_cidr
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              The subnet's address range in CIDR notation, contained by the virtual network's `cidr` (Morpheus
+              `subnetCidr`). Cannot be changed after create.
+    config_gcp:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for a Google Cloud VPC network (type `googleNetwork`), typed. Write-only, like
+          `config`; the two are mutually exclusive, and a network takes at most one typed block, which must
+          match its type. Attributes marked "cannot be changed after create" replace the network when changed;
+          the others are applied in place.
+        attributes:
+        - name: auto_create
+          bool:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Whether the VPC creates a subnet in each region automatically (Morpheus `autoCreate`). Cannot be
+              changed after create.
+        - name: mtu
+          int64:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Maximum transmission unit, e.g. 1460 (the Google default) or 1500 (Morpheus `mtu`).
+    config_openstack:
+      single_nested:
+        computed_optional_required: optional
+        write_only: true
+        description: >-
+          Configuration for an OpenStack-family private network (types `openstackPrivate`, `huaweiPrivate`,
+          `opentelekomPrivate`), typed. Write-only, like `config`; the two are mutually exclusive, and a
+          network takes at most one typed block, which must match its type. Attributes marked "cannot be
+          changed after create" replace the network when changed; the others are applied in place.
+        attributes:
+        - name: dhcp_range
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              DHCP allocation pool for the subnet, as `start,end` (Morpheus `dhcpRange`).
+        - name: host_routes
+          string:
+            computed_optional_required: optional
+            write_only: true
+            description: >-
+              Static host routes handed out by the subnet's DHCP (Morpheus `hostRoutes`). Cannot be changed after
+              create.
     name:
       string:
         computed_optional_required: required
-        description: Network name.
-        plan_modifiers:
-        - custom:
-            imports:
-            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
-            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+        description: >-
+          Network name. Whether a change is applied in place or replaces the network depends on the network
+          type: Morpheus ignores a new name on types whose `nameEditable` flag is off, so the provider plans a
+          replacement for those.
     cidr:
       string:
         computed_optional_required: optional
-        description: Network CIDR.
-        plan_modifiers:
-        - custom:
-            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+        description: >-
+          Network CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the
+          network otherwise.
     cidr_ipv6:
       string:
         computed_optional_required: optional
-        description: Network IPv6 CIDR.
-        plan_modifiers:
-        - custom:
-            schema_definition: stringplanmodifier.RequiresReplace(), // force new
+        description: >-
+          Network IPv6 CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the
+          network otherwise.
     connected_gateway:
       string:
         computed_optional_required: computed_optional
-        description: Provider ID of the connected NSX-T Tier-1 gateway.
+        description: >-
+          Path of the connected NSX-T gateway. Deprecated: set `connected_gateway` inside `config_nsxt` or
+          `config_nsx_cloud` instead; this attribute is kept for existing configurations and is read back from
+          the network's configuration.
+        deprecation_message: "Set connected_gateway inside the config_nsxt or config_nsx_cloud block instead."
     id:
       int64:
         computed_optional_required: computed
@@ -57,10 +433,80 @@ network:
       int64:
         computed_optional_required: computed_optional
         description: Network proxy id
+    network_server_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          Network server (integration) id. Required by network types that a network plugin manages
+          (`hasNetworkServer`), such as the HVM port group types, whose network server is the cluster's
+          hidden "HVM Network Server" — list it with `GET /api/networks/servers?showHidden=true`.
+        plan_modifiers:
+        - custom:
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    scope_id:
+      string:
+        computed_optional_required: computed_optional
+        description: >-
+          NSX-T transport zone id for a segment on NSX-T 2.x (Morpheus `scopeId`). Morpheus accepts it on create
+          and never returns it, so the configured value is kept in state; a change replaces the network.
+        plan_modifiers:
+        - custom:
+            schema_definition: stringplanmodifier.UseStateForUnknown()
+    vxlan_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          VXLAN id of an OVS overlay network (type `ovsOverlay`; Morpheus `vxlanId`). Accepted on create and
+          never returned, so the configured value is kept in state; a change replaces the network.
+        plan_modifiers:
+        - custom:
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    parent_network_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: >-
+          Parent network of a custom child network (type `childNetwork`; Morpheus `parentNetwork.id`). Never
+          returned by the API, so the configured value is kept in state.
+        plan_modifiers:
+        - custom:
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    availability_zone:
+      string:
+        computed_optional_required: computed_optional
+        description: >-
+          Availability zone of an Amazon subnet, e.g. `us-west-1a` (Morpheus `availabilityZone`). Set on create
+          only; a change replaces the network.
     type_id:
       int64:
-        computed_optional_required: required
-        description: Network type id
+        computed_optional_required: computed_optional
+        description: >-
+          Network type id. Set either `type_id` or `type_code`; the other is computed. Changing the type
+          replaces the network.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/int64validator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: int64validator.ExactlyOneOf(path.MatchRoot("type_id"), path.MatchRoot("type_code"))
+        plan_modifiers:
+        - custom:
+            schema_definition: int64planmodifier.RequiresReplaceIfConfigured()
+        - custom:
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    type_code:
+      string:
+        computed_optional_required: computed_optional
+        description: >-
+          Network type code, e.g. `ovsPortGroup`, `nsxtLogicalSwitch`, `azureNetwork`; the codes are stable
+          across appliances where ids are not. Set either `type_code` or `type_id`; the other is computed.
+          Changing the type replaces the network.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier
+            schema_definition: stringplanmodifier.RequiresReplaceIfConfigured()
+        - custom:
+            schema_definition: stringplanmodifier.UseStateForUnknown()
     pool_id:
       int64:
         computed_optional_required: computed_optional
@@ -83,14 +529,16 @@ network:
     tenant_ids:
       set:
         computed_optional_required: computed_optional
-        description: List of tenant account ids that are allowed access
+        description: >-
+          Tenant account ids allowed access to the network; updated in place. A network is only `public`
+          when this includes the master tenant — Morpheus makes it `private` otherwise.
         element_type:
           int64: {}
         plan_modifiers:
         - custom:
             imports:
             - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier
-            schema_definition: setplanmodifier.RequiresReplace(), // force new
+            schema_definition: setplanmodifier.UseStateForUnknown()
     resource_permissions:
       single_nested:
         computed_optional_required: computed
@@ -132,6 +580,17 @@ network:
   moves:
     - network: "" # unnest network wrapper to root
     - template-config: config
+    - template-config_from_api: config_from_api
+    - template-config_ovs_port_group: config_ovs_port_group
+    - template-config_nsxt: config_nsxt
+    - template-config_nsx_cloud: config_nsx_cloud
+    - template-config_hvm_data: config_hvm_data
+    - template-config_hvm_overlay: config_hvm_overlay
+    - template-config_hvm_private: config_hvm_private
+    - template-config_hvm_sriov: config_hvm_sriov
+    - template-config_azure: config_azure
+    - template-config_gcp: config_gcp
+    - template-config_openstack: config_openstack
     - template-name: name
     - template-cidr: cidr
     - template-cidr_ipv6: cidr_ipv6
@@ -139,7 +598,13 @@ network:
     - template-network_domain_id: network_domain_id
     - template-zone_pool_id: zone_pool_id
     - template-network_proxy_id: network_proxy_id
+    - template-network_server_id: network_server_id
+    - template-scope_id: scope_id
+    - template-vxlan_id: vxlan_id
+    - template-parent_network_id: parent_network_id
+    - template-availability_zone: availability_zone
     - template-type_id: type_id
+    - template-type_code: type_code
     - template-pool_id: pool_id
     - template-pool_ipv6_id: pool_ipv6_id
     - template-group_id: group_id
@@ -147,3 +612,24 @@ network:
     - template-tenant_ids: tenant_ids
     - template-resource_permissions: resource_permissions
     - template-connected_gateway: connected_gateway
+  overrides:
+    config_ovs_port_group:
+      conflicts_with: [config]
+    config_nsxt:
+      conflicts_with: [config]
+    config_nsx_cloud:
+      conflicts_with: [config]
+    config_hvm_data:
+      conflicts_with: [config]
+    config_hvm_overlay:
+      conflicts_with: [config]
+    config_hvm_private:
+      conflicts_with: [config]
+    config_hvm_sriov:
+      conflicts_with: [config]
+    config_azure:
+      conflicts_with: [config]
+    config_gcp:
+      conflicts_with: [config]
+    config_openstack:
+      conflicts_with: [config]

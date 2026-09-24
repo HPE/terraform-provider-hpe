@@ -304,7 +304,7 @@ import {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + importCfg,
+				Config: providerConfig + testhelpers.WhoamiBlock() + importCfg,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
 					// All other values use defaults

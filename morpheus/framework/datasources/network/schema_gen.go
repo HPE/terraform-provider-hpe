@@ -25,6 +25,12 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network CIDR",
 				MarkdownDescription: "Network CIDR",
 			},
+			"cloud_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Cloud (zone) the network belongs to. Morpheus keeps one network record per cloud, so when two clouds cover the same account — one scoped to a resource group or region and one to the whole account, say — a network exists as a separate record in each, under the same name, and a lookup by `name` alone finds both. Set `cloud_id` to select the record of one cloud; with `id`, the network must belong to that cloud. Always returned.",
+				MarkdownDescription: "Cloud (zone) the network belongs to. Morpheus keeps one network record per cloud, so when two clouds cover the same account — one scoped to a resource group or region and one to the whole account, say — a network exists as a separate record in each, under the same name, and a lookup by `name` alone finds both. Set `cloud_id` to select the record of one cloud; with `id`, the network must belong to that cloud. Always returned.",
+			},
 			"description": schema.StringAttribute{
 				Computed:            true,
 				Description:         "Description",
@@ -51,8 +57,8 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus network. Must not be empty.",
-				MarkdownDescription: "The name of the Morpheus network. Must not be empty.",
+				Description:         "The name of the Morpheus network. Must not be empty. Names are unique within a cloud, not across clouds; see `cloud_id`.",
+				MarkdownDescription: "The name of the Morpheus network. Must not be empty. Names are unique within a cloud, not across clouds; see `cloud_id`.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
 					stringvalidator.LengthAtLeast(1),
@@ -68,6 +74,7 @@ func NetworkDataSourceSchema(ctx context.Context) schema.Schema {
 type NetworkModel struct {
 	Active      types.Bool   `tfsdk:"active"`
 	Cidr        types.String `tfsdk:"cidr"`
+	CloudId     types.Int64  `tfsdk:"cloud_id"`
 	Description types.String `tfsdk:"description"`
 	DisplayName types.String `tfsdk:"display_name"`
 	Id          types.Int64  `tfsdk:"id"`

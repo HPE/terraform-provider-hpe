@@ -22,25 +22,43 @@ var _ MappedNullable = &UpdateNetworkRequestNetwork{}
 
 // UpdateNetworkRequestNetwork struct for UpdateNetworkRequestNetwork
 type UpdateNetworkRequestNetwork struct {
+	// Name. Applied when the network type's `nameEditable` flag is set; otherwise ignored.
+	Name *string `json:"name,omitempty"`
 	// Display Name
 	DisplayName *string `json:"displayName,omitempty"`
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
 	// Description
 	Description NullableString `json:"description,omitempty"`
-	// CIDR Network
+	Ipv4Enabled *bool          `json:"ipv4Enabled,omitempty"`
+	Ipv6Enabled *bool          `json:"ipv6Enabled,omitempty"`
+	// CIDR Network. Applied when the network type's `cidrEditable` flag is set; otherwise ignored.
 	Cidr *string `json:"cidr,omitempty"`
-	// Network Gateway
+	// Network Gateway. Applied when the network type's `gatewayEditable` flag is set; otherwise ignored.
 	Gateway *string `json:"gateway,omitempty"`
-	// Primary DNS Server
+	// Primary DNS Server. Applied when the network type's `dnsEditable` flag is set; otherwise ignored.
 	DnsPrimary *string `json:"dnsPrimary,omitempty"`
-	// Secondary DNS Server
+	// Secondary DNS Server. Applied when the network type's `dnsEditable` flag is set; otherwise ignored.
 	DnsSecondary *string `json:"dnsSecondary,omitempty"`
-	VlanId       *int64  `json:"vlanId,omitempty"`
+	// IPv6 Network Gateway
+	GatewayIPv6 NullableString `json:"gatewayIPv6,omitempty"`
+	NetmaskIPv6 NullableString `json:"netmaskIPv6,omitempty"`
+	// Primary IPv6 DNS Server
+	DnsPrimaryIPv6 NullableString `json:"dnsPrimaryIPv6,omitempty"`
+	// Secondary IPv6 DNS Server
+	DnsSecondaryIPv6 NullableString `json:"dnsSecondaryIPv6,omitempty"`
+	// IPv6 Network CIDR
+	CidrIPv6 *string `json:"cidrIPv6,omitempty"`
+	// VLAN ID. Applied when the network type's `vlanIdEditable` flag is set; otherwise ignored.
+	VlanId *int64 `json:"vlanId,omitempty"`
 	// Network switch identifier
-	SwitchId *string `json:"switchId,omitempty"`
+	SwitchId      *string                                   `json:"switchId,omitempty"`
+	NetworkServer *UpdateNetworkRequestNetworkNetworkServer `json:"networkServer,omitempty"`
+	ParentNetwork *UpdateNetworkRequestNetworkParentNetwork `json:"parentNetwork,omitempty"`
 	// Network Pool ID
-	Pool     NullableInt64                        `json:"pool,omitempty"`
+	Pool NullableInt64 `json:"pool,omitempty"`
+	// IPv6 Network Pool ID
+	PoolIPv6 NullableInt64                        `json:"poolIPv6,omitempty"`
 	ZonePool *UpdateNetworkRequestNetworkZonePool `json:"zonePool,omitempty"`
 	// Allow IP Override
 	AllowStaticOverride *bool `json:"allowStaticOverride,omitempty"`
@@ -48,9 +66,11 @@ type UpdateNetworkRequestNetwork struct {
 	AssignPublicIp *bool `json:"assignPublicIp,omitempty"`
 	// Activate (true) or disable (false) the network
 	Active *bool `json:"active,omitempty"`
-	// DHCP Server enabled network
-	DhcpServer    *bool                                     `json:"dhcpServer,omitempty"`
-	NetworkDomain *UpdateNetworkRequestNetworkNetworkDomain `json:"networkDomain,omitempty"`
+	// DHCP Server enabled network. Applied when the network type's `dhcpServerEditable` flag is set; otherwise ignored.
+	DhcpServer *bool `json:"dhcpServer,omitempty"`
+	// IPv6 DHCP Server enabled network
+	DhcpServerIPv6 *bool                                     `json:"dhcpServerIPv6,omitempty"`
+	NetworkDomain  *UpdateNetworkRequestNetworkNetworkDomain `json:"networkDomain,omitempty"`
 	// Search Domains
 	SearchDomains *string                                  `json:"searchDomains,omitempty"`
 	NetworkProxy  *UpdateNetworkRequestNetworkNetworkProxy `json:"networkProxy,omitempty"`
@@ -80,6 +100,9 @@ func (o UpdateNetworkRequestNetwork) MarshalJSON() ([]byte, error) {
 
 func (o UpdateNetworkRequestNetwork) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
 	if !IsNil(o.DisplayName) {
 		toSerialize["displayName"] = o.DisplayName
 	}
@@ -88,6 +111,12 @@ func (o UpdateNetworkRequestNetwork) ToMap() (map[string]interface{}, error) {
 	}
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
+	}
+	if !IsNil(o.Ipv4Enabled) {
+		toSerialize["ipv4Enabled"] = o.Ipv4Enabled
+	}
+	if !IsNil(o.Ipv6Enabled) {
+		toSerialize["ipv6Enabled"] = o.Ipv6Enabled
 	}
 	if !IsNil(o.Cidr) {
 		toSerialize["cidr"] = o.Cidr
@@ -101,14 +130,38 @@ func (o UpdateNetworkRequestNetwork) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.DnsSecondary) {
 		toSerialize["dnsSecondary"] = o.DnsSecondary
 	}
+	if o.GatewayIPv6.IsSet() {
+		toSerialize["gatewayIPv6"] = o.GatewayIPv6.Get()
+	}
+	if o.NetmaskIPv6.IsSet() {
+		toSerialize["netmaskIPv6"] = o.NetmaskIPv6.Get()
+	}
+	if o.DnsPrimaryIPv6.IsSet() {
+		toSerialize["dnsPrimaryIPv6"] = o.DnsPrimaryIPv6.Get()
+	}
+	if o.DnsSecondaryIPv6.IsSet() {
+		toSerialize["dnsSecondaryIPv6"] = o.DnsSecondaryIPv6.Get()
+	}
+	if !IsNil(o.CidrIPv6) {
+		toSerialize["cidrIPv6"] = o.CidrIPv6
+	}
 	if !IsNil(o.VlanId) {
 		toSerialize["vlanId"] = o.VlanId
 	}
 	if !IsNil(o.SwitchId) {
 		toSerialize["switchId"] = o.SwitchId
 	}
+	if !IsNil(o.NetworkServer) {
+		toSerialize["networkServer"] = o.NetworkServer
+	}
+	if !IsNil(o.ParentNetwork) {
+		toSerialize["parentNetwork"] = o.ParentNetwork
+	}
 	if o.Pool.IsSet() {
 		toSerialize["pool"] = o.Pool.Get()
+	}
+	if o.PoolIPv6.IsSet() {
+		toSerialize["poolIPv6"] = o.PoolIPv6.Get()
 	}
 	if !IsNil(o.ZonePool) {
 		toSerialize["zonePool"] = o.ZonePool
@@ -124,6 +177,9 @@ func (o UpdateNetworkRequestNetwork) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.DhcpServer) {
 		toSerialize["dhcpServer"] = o.DhcpServer
+	}
+	if !IsNil(o.DhcpServerIPv6) {
+		toSerialize["dhcpServerIPv6"] = o.DhcpServerIPv6
 	}
 	if !IsNil(o.NetworkDomain) {
 		toSerialize["networkDomain"] = o.NetworkDomain

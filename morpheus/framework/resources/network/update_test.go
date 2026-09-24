@@ -103,7 +103,7 @@ variable "appliance_url_proxy_bypass" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "initial-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {
@@ -211,17 +211,17 @@ resource "hpe_morpheus_network" "foo" {
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.foo",
-			"config.resourceGroupId",
-			"initial-resource-group",
+			"config_from_api.resourceGroupId",
+			"morph-qa",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.foo",
-			"config.subnetName",
+			"config_from_api.subnetName",
 			"initial-subnet",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_network.foo",
-			"config.subnetCidr",
+			"config_from_api.subnetCidr",
 			"10.50.1.0/24",
 		),
 		resource.TestCheckResourceAttr(
@@ -336,9 +336,8 @@ resource "hpe_morpheus_network" "foo" {
 					"active":                     config.BoolVariable(false),
 					"dhcp_server":                config.BoolVariable(true),
 					"appliance_url_proxy_bypass": config.BoolVariable(false),
-					"config_resource_group_id":   config.StringVariable("updated-resource-group"),
 					"config_subnet_name":         config.StringVariable("updated-subnet"),
-					"config_subnet_cidr":         config.StringVariable("10.99.1.0/24"),
+					"config_subnet_cidr":         config.StringVariable("10.50.2.0/24"),
 				},
 				Check: resource.ComposeTestCheckFunc(
 					// Verify all updated fields
@@ -367,13 +366,13 @@ resource "hpe_morpheus_network" "foo" {
 						"hpe_morpheus_network.foo", "appliance_url_proxy_bypass", "false",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.resourceGroupId", "updated-resource-group",
+						"hpe_morpheus_network.foo", "config_from_api.resourceGroupId", "morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetName", "updated-subnet",
+						"hpe_morpheus_network.foo", "config_from_api.subnetName", "updated-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetCidr", "10.99.1.0/24",
+						"hpe_morpheus_network.foo", "config_from_api.subnetCidr", "10.50.2.0/24",
 					),
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.foo", "resource_permissions.all",
@@ -437,8 +436,9 @@ func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique names for this test run
-	initialName := acctest.RandomWithPrefix(t.Name() + "-initial")
-	updatedName := acctest.RandomWithPrefix(t.Name() + "-updated")
+	// Azure limits a virtual network name to 64 characters.
+	initialName := azureSafeName(t, "-initial")
+	updatedName := azureSafeName(t, "-updated")
 
 	// Build the configuration with variables
 	configText := providerConfig + testhelpers.WhoamiBlock() + `
@@ -469,7 +469,7 @@ variable "type_id" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "name-change-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {
@@ -534,14 +534,14 @@ resource "hpe_morpheus_network" "name_change_test" {
 						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
-						"name-change-resource-group",
+						"hpe_morpheus_network.name_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet",
+						"hpe_morpheus_network.name_change_test", "config_from_api.subnetName", "name-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24",
+						"hpe_morpheus_network.name_change_test", "config_from_api.subnetCidr", "10.0.3.0/24",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
@@ -610,14 +610,14 @@ resource "hpe_morpheus_network" "name_change_test" {
 						"hpe_morpheus_network.name_change_test", "cidr", "10.0.0.0/8",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.resourceGroupId",
-						"name-change-resource-group",
+						"hpe_morpheus_network.name_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetName", "name-change-subnet",
+						"hpe_morpheus_network.name_change_test", "config_from_api.subnetName", "name-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.name_change_test", "config.subnetCidr", "10.0.3.0/24",
+						"hpe_morpheus_network.name_change_test", "config_from_api.subnetCidr", "10.0.3.0/24",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
@@ -684,7 +684,7 @@ func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
-	uniqueName := acctest.RandomWithPrefix(t.Name())
+	uniqueName := azureSafeName(t, "")
 
 	// Build the configuration with variables
 	configText := providerConfig + testhelpers.WhoamiBlock() + `
@@ -727,7 +727,7 @@ variable "cidr_ipv6" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "cidr-change-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {
@@ -790,14 +790,14 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetName", "cidr-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetCidr", "10.1.1.0/24",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
@@ -845,8 +845,9 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 				// Step 2: Change the IPv4 CIDR and verify the resource is replaced (new ID)
 				Config: configText,
 				ConfigVariables: config.Variables{
-					"name": config.StringVariable(uniqueName),
-					"cidr": config.StringVariable("10.2.0.0/16"), // CHANGED
+					"name":               config.StringVariable(uniqueName),
+					"cidr":               config.StringVariable("10.2.0.0/16"), // CHANGED
+					"config_subnet_cidr": config.StringVariable("10.2.1.0/24"), // inside the new CIDR
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -870,14 +871,14 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 						"hpe_morpheus_network.cidr_change_test", "cidr_ipv6", "2001:db8::/32",
 					), // unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetName", "cidr-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetCidr", "10.2.1.0/24",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
@@ -930,9 +931,10 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 				// Step 3: Change the IPv6 CIDR and verify the resource is replaced again (new ID)
 				Config: configText,
 				ConfigVariables: config.Variables{
-					"name":      config.StringVariable(uniqueName),
-					"cidr":      config.StringVariable("10.2.0.0/16"),   // keep previous change
-					"cidr_ipv6": config.StringVariable("2001:db9::/32"), // CHANGED
+					"name":               config.StringVariable(uniqueName),
+					"cidr":               config.StringVariable("10.2.0.0/16"), // keep previous change
+					"config_subnet_cidr": config.StringVariable("10.2.1.0/24"),
+					"cidr_ipv6":          config.StringVariable("2001:db9::/32"), // CHANGED
 				},
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(
@@ -956,14 +958,14 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 						"hpe_morpheus_network.cidr_change_test", "cidr", "10.2.0.0/16",
 					), // unchanged from step 2
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.resourceGroupId",
-						"cidr-change-resource-group",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetName", "cidr-change-subnet",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetName", "cidr-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.cidr_change_test", "config.subnetCidr", "10.1.1.0/24",
+						"hpe_morpheus_network.cidr_change_test", "config_from_api.subnetCidr", "10.2.1.0/24",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
@@ -1018,7 +1020,7 @@ func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
-	uniqueName := acctest.RandomWithPrefix(t.Name())
+	uniqueName := azureSafeName(t, "")
 
 	// Build the configuration with variables
 	configText := providerConfig + testhelpers.WhoamiBlock() + `
@@ -1061,7 +1063,7 @@ variable "tenant_ids" {
 variable "config_resource_group_id" {
   description = "Resource Group ID for network config"
   type        = string
-  default     = "tenant-change-resource-group"
+  default     = "morph-qa"
 }
 
 variable "config_subnet_name" {
@@ -1130,14 +1132,14 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "2",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
-						"tenant-change-resource-group",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.subnetName", "tenant-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.subnetCidr", "10.3.1.0/24",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -1175,7 +1177,8 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 				),
 			},
 			{
-				// Step 2: Change the tenant_ids and verify the resource is replaced (new ID)
+				// Step 2: Change the tenant_ids and verify they are applied in place
+				// (same ID): Morpheus updates tenant permissions on update (MORPH-17908).
 				Config: configText,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
@@ -1212,14 +1215,14 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 						"hpe_morpheus_network.tenant_change_test", "cidr", "10.3.0.0/16",
 					), // unchanged
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.resourceGroupId",
-						"tenant-change-resource-group",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.resourceGroupId",
+						"morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetName", "tenant-change-subnet",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.subnetName", "tenant-change-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.tenant_change_test", "config.subnetCidr", "10.3.1.0/24",
+						"hpe_morpheus_network.tenant_change_test", "config_from_api.subnetCidr", "10.3.1.0/24",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -1240,20 +1243,20 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all",
 					),
-					// Check that the resource has a new ID (replacement occurred)
+					// Check that the resource kept its ID (updated in place)
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.tenant_change_test", "id",
 					),
-					// Verify the ID changed (resource was replaced)
+					// Verify the ID did not change
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.tenant_change_test"]
 						if !ok {
 							return fmt.Errorf("Not found: hpe_morpheus_network.tenant_change_test")
 						}
 						currentResourceID := rs.Primary.ID
-						if currentResourceID == initialResourceID {
-							return fmt.Errorf("Expected resource ID to change due to tenant_ids change "+
-								"(RequiresReplace), but ID remained the same: %s", currentResourceID)
+						if currentResourceID != initialResourceID {
+							return fmt.Errorf("Expected tenant_ids to be updated in place, "+
+								"but the resource was replaced: %s -> %s", initialResourceID, currentResourceID)
 						}
 						afterTenantChangeID = currentResourceID
 
@@ -1262,12 +1265,12 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 				),
 			},
 			{
-				// Step 3: Change tenant_ids again (add another tenant) and verify replacement again
+				// Step 3: Change tenant_ids again (add another tenant); still in place
 				Config: configText,
 				ConfigVariables: config.Variables{
 					"name": config.StringVariable(uniqueName),
 					"tenant_ids": config.ListVariable(
-						config.IntegerVariable(1), config.IntegerVariable(3), config.IntegerVariable(4),
+						config.IntegerVariable(1), config.IntegerVariable(3), config.IntegerVariable(11),
 					), // CHANGED: added 4
 				},
 				Check: resource.ComposeTestCheckFunc(
@@ -1286,7 +1289,7 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3",
 					),
 					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "4",
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "11",
 					),
 					// Verify other attributes remain the same
 					resource.TestCheckResourceAttr(
@@ -1304,24 +1307,20 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.tenant_change_test", "resource_permissions.all",
 					),
-					// Check that the resource has a new ID (replacement occurred again)
+					// Check that the resource kept its ID (updated in place again)
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.tenant_change_test", "id",
 					),
-					// Verify the ID changed again (resource was replaced)
+					// Verify the ID still did not change
 					func(s *terraform.State) error {
 						rs, ok := s.RootModule().Resources["hpe_morpheus_network.tenant_change_test"]
 						if !ok {
 							return fmt.Errorf("Not found: hpe_morpheus_network.tenant_change_test")
 						}
 						currentResourceID := rs.Primary.ID
-						if currentResourceID == afterTenantChangeID {
-							return fmt.Errorf("Expected resource ID to change due to tenant_ids change "+
-								"(RequiresReplace), but ID remained the same: %s", currentResourceID)
-						}
-						if currentResourceID == initialResourceID {
-							return fmt.Errorf("Resource ID reverted to initial ID, "+
-								"this should not happen: %s", currentResourceID)
+						if currentResourceID != afterTenantChangeID {
+							return fmt.Errorf("Expected tenant_ids to be updated in place, "+
+								"but the resource was replaced: %s -> %s", afterTenantChangeID, currentResourceID)
 						}
 
 						return nil

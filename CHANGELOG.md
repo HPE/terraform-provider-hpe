@@ -1,5 +1,58 @@
 # v2.2.0 Release Notes
 
+## Breaking changes
+
+### `hpe_morpheus_network` — typed, write-only configuration (MORPH-17744)
+
+A Morpheus network's behaviour is almost entirely decided by its type, and the type's configuration
+fields used to be a free-form `config` map written through to state and never read back: a typo was
+accepted silently, a value Morpheus would not apply after create was accepted silently, an import
+left the map empty, and nothing in the schema said what any type needed. The resource is rebuilt
+around what each network type declares.
+
+- **Typed configuration blocks.** The configuration-map fields of the common types are typed,
+  documented attributes: `config_ovs_port_group`, `config_hvm_data`, `config_hvm_overlay`,
+  `config_hvm_private`, `config_hvm_sriov`, `config_nsxt`, `config_nsx_cloud`, `config_azure`,
+  `config_gcp` and `config_openstack` (OpenStack, Huawei and Open Telekom private networks). A
+  network takes at most one block, and it must be the block for its type. The free-form `config`
+  remains for types without a block, such as those a network plugin adds.
+- **Write-only.** The blocks and `config` are write-only: sent to Morpheus on create and update and
+  never stored in state, so they can carry values Morpheus masks. What Morpheus holds is readable in
+  the new computed `config_from_api`. A change is detected from a secure hash the provider keeps in
+  the resource's private state — HashiCorp's recommended pattern for write-only arguments — so no
+  version or trigger attribute is needed: a change to a field Morpheus edits in place plans an
+  update, a change to a field it does not edit after create plans a replacement. Write-only
+  attributes need **Terraform 1.11 or later, or OpenTofu 1.11 or later**.
+- **`config` leaves state.** A reference to `hpe_morpheus_network.x.config` in a configuration must
+  become `hpe_morpheus_network.x.config_from_api`. Existing state is upgraded automatically and the
+  first plan after upgrading shows no change to the network.
+- **`type_code`.** The type may be named by code (`ovsPortGroup`, `nsxtLogicalSwitch`,
+  `azureNetwork`, …), which is the same on every appliance, or by `type_id`; one is required and the
+  other computed. `type_id` is no longer required on its own.
+- **Replacement follows the type.** Every Morpheus network type declares which of `name`, `cidr`,
+  `gateway`, `vlan_id`, `dhcp_server` and the DNS attributes it edits after create; a change to any
+  other is accepted by the API and ignored. The provider reads the type from the appliance at plan
+  time and plans a replacement for exactly those changes, in place of the previous rule that
+  `name`, `cidr` and `cidr_ipv6` always replaced the network. A built-in table of a recent Morpheus
+  release's types stands in when the appliance cannot be reached during planning.
+- **New attributes.** `network_server_id` (the network integration a plugin-managed type requires;
+  Morpheus 9.1 requires it on the HVM port group types), `scope_id` (NSX-T transport zone),
+  `vxlan_id` (OVS overlay), `parent_network_id` (custom child network) and `availability_zone`
+  (Amazon subnet). Morpheus never returns the first four, so the configured values are kept in state.
+- **Deprecated.** The top-level `connected_gateway` is superseded by `connected_gateway` inside
+  `config_nsxt` and `config_nsx_cloud`; it still works.
+- **Timing.** Create waits for the network to finish provisioning — on a cloud, or on an HVM
+  cluster's hosts — before reading it back, so a failed provisioning is an error at apply rather than
+  drift later. Destroy waits until the network is gone.
+- **Appliance capability check.** A block attribute the appliance's own definition of the network
+  type does not declare — the HVM virtual-switch layout fields on a release before 9.1, say — is
+  rejected at plan time, naming the field and the appliance's version, instead of being accepted by
+  Morpheus and silently ignored; an undeclared key of the free-form `config` is a warning.
+
+The documentation describes each block, marks the attributes that replace the network, and gives a
+validated example for the OVS port group, HVM data, NSX-T, OpenStack, Azure, Google, Amazon and
+child network types.
+
 ## New data sources
 
 ### `hpe_morpheus_option_source_value` and `hpe_morpheus_option_source_values` (MORPH-17643)
@@ -40,6 +93,31 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### `hpe_morpheus_network` data source: `cloud_id` selects among per-cloud records
+
+Morpheus keeps one network record per cloud. When two clouds cover the same account — a cloud scoped
+to one Azure resource group or AWS region alongside one covering the whole subscription or all
+regions, or a vSphere cloud alongside the NSX-T cloud for the same vCenter — every cloud discovers
+the network on its next refresh and keeps its own record of it, under the same name, so a lookup by
+`name` alone found several and failed. The data source gains `cloud_id`: it filters a lookup by
+name, is checked against a lookup by id, and is returned on every read. The ambiguity error now
+names each record's cloud. The documentation explains the per-cloud model and warns against
+deleting another cloud's record to tidy up, since that deletes the network itself.
+
+### `hpe_morpheus_network` applies a rename and IPv6 changes in place where the type allows
+
+The update request never carried `name`, `cidr_ipv6`, `gateway_ipv6`, `netmask_ipv6`, the IPv6
+DNS and DHCP attributes, `pool_ipv6_id` or `ipv4enabled`/`ipv6enabled`, so a change to any of them
+that was planned in place did nothing on the appliance. They are sent now; `name` only when it
+changes, because the API also sets a blank display name from it.
+
+### `hpe_morpheus_network` reports a delete Morpheus refused
+
+Morpheus answers a refused network delete with HTTP 200 and `success: false` — for example when a
+network plugin's host-side clean-up fails — and the provider read the status code alone, so the
+resource was removed from state while the network remained. The answer is read now: a refusal is
+retried briefly and then reported with Morpheus's own message.
+
 ### `Invalid network` on instance create and clone now says which networks would have been accepted (MORPH-17643)
 
 Version 2.1 made `hpe_morpheus_instance` and `hpe_morpheus_instance_clone` explain an `Invalid
@@ -57,6 +135,22 @@ lookup leaves the rest of the explanation as it was.
 One line of 2.1's text is corrected: a network that belongs to no resource pool passes Morpheus's
 pool filter for every pool, so the explanation no longer says such a network was excluded by the
 requested pool; it points at the network's type and its group and tenant visibility instead.
+
+## Bug fixes
+
+### `hpe_morpheus_network` (MORPH-17908, MORPH-17909, MORPH-17910)
+
+- Any change to a network with `tenant_ids` unset was planned as a replacement, because the
+  attribute's unconditional replacement rule compared an unknown planned value with state. Tenant
+  permissions are applied in place by Morpheus, so `tenant_ids` no longer replaces the network at all
+  (MORPH-17908).
+- `visibility = "public"` on a network whose `tenant_ids` did not include the master tenant failed
+  after apply with an inconsistent result, because Morpheus creates such a network as `private`. The
+  provider now reports this at plan time (MORPH-17909).
+- The OVS port group and Azure examples in the documentation were invalid HCL (unquoted string
+  values); the Amazon example placed `assignPublicIp` and `availabilityZone` in `config`, where
+  Morpheus never read them — they are the top-level `assign_public_ip` and `availability_zone`
+  (MORPH-17910).
 
 # v2.1.0 Release Notes
 

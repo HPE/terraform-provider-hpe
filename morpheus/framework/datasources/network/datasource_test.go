@@ -3,7 +3,9 @@
 package network_test
 
 import (
+	"fmt"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -11,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
@@ -196,6 +199,86 @@ data "hpe_morpheus_network" "example" {
 					// Note: cloud_id, group_id, and type_id are not available in the datasource schema
 					// Only checking the attributes that are actually exposed by the datasource
 				),
+			},
+		},
+	})
+}
+
+// A network two clouds see has a record in each; a lookup by name alone is
+// ambiguous, and cloud_id resolves it. The fixture is a standing pair on the
+// test appliance: the same Azure VNet seen by the resource-group-scoped cloud
+// and by the subscription-wide cloud.
+func TestAccNetworkDataSourceCloudIDSelectsAmongTwins(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Azure)
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	const (
+		name        = "morph-qa-net"
+		scopedCloud = "4617"
+		wideCloud   = "4618"
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// By name alone: both records are found, and the error says which
+				// cloud each belongs to.
+				Config: providerConfig + `
+data "hpe_morpheus_network" "ambiguous" {
+  name = "` + name + `"
+}
+`,
+				// Terraform re-wraps diagnostics, so every gap may be a newline.
+				ExpectError: regexp.MustCompile(`multiple\s+networks\s+found\s+with\s+name\s+` + name +
+					`[\s\S]*\(cloud\s+(` + scopedCloud + `|` + wideCloud + `)\)[\s\S]*\(cloud\s+(` + scopedCloud + `|` + wideCloud + `)\)`),
+			},
+			{
+				// With cloud_id: the scoped cloud's record.
+				Config: providerConfig + `
+data "hpe_morpheus_network" "scoped" {
+  name     = "` + name + `"
+  cloud_id = ` + scopedCloud + `
+}
+
+data "hpe_morpheus_network" "wide" {
+  name     = "` + name + `"
+  cloud_id = ` + wideCloud + `
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network.scoped", "name", name),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network.scoped", "cloud_id", scopedCloud),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network.wide", "cloud_id", wideCloud),
+					// Two records of one network.
+					func(s *terraform.State) error {
+						a := s.RootModule().Resources["data.hpe_morpheus_network.scoped"].Primary.ID
+						b := s.RootModule().Resources["data.hpe_morpheus_network.wide"].Primary.ID
+						if a == b {
+							return fmt.Errorf("expected different records in the two clouds, both are %s", a)
+						}
+
+						return nil
+					},
+				),
+			},
+			{
+				// By id with the wrong cloud: refused, naming the real one.
+				Config: providerConfig + `
+data "hpe_morpheus_network" "scoped" {
+  name     = "` + name + `"
+  cloud_id = ` + scopedCloud + `
+}
+
+data "hpe_morpheus_network" "wrong" {
+  id       = data.hpe_morpheus_network.scoped.id
+  cloud_id = ` + wideCloud + `
+}
+`,
+				ExpectError: regexp.MustCompile(`belongs\s+to\s+cloud\s+` + scopedCloud + `,\s+not\s+cloud\s+` + wideCloud),
 			},
 		},
 	})

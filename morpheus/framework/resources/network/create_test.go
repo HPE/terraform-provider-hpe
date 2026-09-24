@@ -5,6 +5,7 @@ package network_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/config"
@@ -29,7 +30,7 @@ func TestAccMorpheusNetworkResourceCreateRequiredAttrsOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
-	uniqueName := acctest.RandomWithPrefix(t.Name())
+	uniqueName := azureSafeName(t, "")
 
 	// Build the configuration with variables and defaults for required fields only
 	configText := providerConfig + testhelpers.WhoamiBlock() + `
@@ -125,13 +126,13 @@ resource "hpe_morpheus_network" "foo" {
 						"hpe_morpheus_network.foo", "cidr", "10.0.0.0/8",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.resourceGroupId", "morph-qa",
+						"hpe_morpheus_network.foo", "config_from_api.resourceGroupId", "morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetName", "example-subnet",
+						"hpe_morpheus_network.foo", "config_from_api.subnetName", "example-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.foo", "config.subnetCidr", "10.0.1.0/24",
+						"hpe_morpheus_network.foo", "config_from_api.subnetCidr", "10.0.1.0/24",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -179,7 +180,7 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
-	uniqueName := acctest.RandomWithPrefix(t.Name())
+	uniqueName := azureSafeName(t, "")
 
 	// Path to example configuration files
 	examplePath := "../../../../examples/resources/hpe_morpheus_network/azure"
@@ -242,19 +243,19 @@ func TestAccMorpheusNetworkResourceCreateAllAttrsOk(t *testing.T) {
 
 					// Check config object fields
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.resourceGroupId", "all-attrs-resource-group",
+						"hpe_morpheus_network.all_attrs", "config_from_api.resourceGroupId", "morph-qa",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.subnetName", "all-attrs-subnet",
+						"hpe_morpheus_network.all_attrs", "config_from_api.subnetName", "all-attrs-subnet",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.subnetCidr", "10.100.1.0/24",
+						"hpe_morpheus_network.all_attrs", "config_from_api.subnetCidr", "10.100.1.0/24",
 					),
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.location", "eastus",
-					),
-					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.all_attrs", "config.additionalField", "test-value",
+					// The Azure provider keeps only the keys it knows (resourceGroupId,
+					// subnetName, subnetCidr); extra keys the configuration sends are
+					// accepted but not stored, so they are absent from config_from_api.
+					resource.TestCheckNoResourceAttr(
+						"hpe_morpheus_network.all_attrs", "config_from_api.additionalField",
 					),
 
 					// Check resource permissions (computed-only)
@@ -477,11 +478,11 @@ func TestAccMorpheusNetworkResourceCreateAWSExample(t *testing.T) {
 					// Check config object fields specific to AWS
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws",
-						"config.assignPublicIp", "true",
+						"assign_public_ip", "true",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.aws",
-						"config.availabilityZone", "us-west-1a",
+						"availability_zone", "us-west-1a",
 					),
 
 					// Check resource permissions (computed-only)
@@ -524,7 +525,8 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	// Generate unique name for this test run
-	uniqueName := acctest.RandomWithPrefix(t.Name())
+	// A Google network name must be lowercase: [a-z]([-a-z0-9]*[a-z0-9])?.
+	uniqueName := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
 
 	// Path to example configuration files
 	examplePath := "../../../../examples/resources/hpe_morpheus_network/gcp"
@@ -556,7 +558,7 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 						"hpe_morpheus_network.gcp", "description", "GCP network",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.gcp", "cloud_id", "6",
+						"hpe_morpheus_network.gcp", "cloud_id", "24430",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.gcp", "pool_id", "6446",
@@ -585,15 +587,15 @@ func TestAccMorpheusNetworkResourceCreateGcp(t *testing.T) {
 						"hpe_morpheus_network.gcp", "cidr", "10.0.0.0/8",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.gcp", "zone_pool_id", "85990",
+						"hpe_morpheus_network.gcp", "zone_pool_id", "159651",
 					),
 
 					// Check config object fields specific to GCP
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.gcp", "config.mtu", "1460",
+						"hpe_morpheus_network.gcp", "config_from_api.mtu", "1460",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.gcp", "config.autoCreate", "true",
+						"hpe_morpheus_network.gcp", "config_from_api.autoCreate", "true",
 					),
 
 					// Check resource permissions (computed-only)
@@ -666,7 +668,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 						"hpe_morpheus_network.ovs_port_group", "description", "OVS Port Group network",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "cloud_id", "7714",
+						"hpe_morpheus_network.ovs_port_group", "cloud_id", "17",
 					),
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.ovs_port_group", "pool_id", "3251",
@@ -674,8 +676,22 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.ovs_port_group", "group_id", "1",
 					),
+					// type_id is computed from type_code.
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.ovs_port_group", "type_id", "63",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "type_code", "ovsPortGroup",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "network_server_id", "7834",
+					),
+					// The typed block is write-only; the server's view is readable.
+					resource.TestCheckNoResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "config_ovs_port_group",
+					),
+					resource.TestCheckResourceAttr(
+						"hpe_morpheus_network.ovs_port_group", "config_from_api.hvmVlanTrunks", "100,200",
 					),
 					// Check OVS-specific fields
 					resource.TestCheckResourceAttr(
@@ -695,13 +711,13 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 						"hpe_morpheus_network.ovs_port_group", "visibility", "public",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "cidr", "10.32.148.0/22",
+						"hpe_morpheus_network.ovs_port_group", "cidr", "10.209.101.0/24",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "zone_pool_id", "62299",
+						"hpe_morpheus_network.ovs_port_group", "zone_pool_id", "153047",
 					),
 					resource.TestCheckResourceAttr(
-						"hpe_morpheus_network.ovs_port_group", "vlan_id", "43",
+						"hpe_morpheus_network.ovs_port_group", "vlan_id", "2101",
 					),
 					// Check permissions
 					resource.TestCheckResourceAttrSet(
@@ -722,4 +738,19 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 			},
 		},
 	})
+}
+
+// azureSafeName returns a unique test resource name, ending in suffix, that
+// fits Azure's 64-character limit on virtual network names while keeping the
+// sweeper's prefix: the test name is cut so that name, the 21-character random
+// part and the suffix add up to at most 64.
+func azureSafeName(t *testing.T, suffix string) string {
+	t.Helper()
+
+	prefix := t.Name()
+	if cut := 64 - 21 - len(suffix); len(prefix) > cut {
+		prefix = prefix[:cut]
+	}
+
+	return acctest.RandomWithPrefix(prefix) + suffix
 }

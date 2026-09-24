@@ -45,16 +45,37 @@ func (d *DataSource) Schema(
 	resp.Schema = NetworkDataSourceSchema(ctx)
 }
 
+// getNetwork finds the network by id or by name. Morpheus keeps one network
+// record per cloud, so a name may match a record in each of several clouds
+// that cover the same account; cloud_id selects among them, and with an id it
+// is checked.
 func getNetwork(
 	ctx context.Context,
 	config NetworkModel,
 	client *sdk.APIClient,
 ) (*NetworkModel, error) {
-	if !config.Id.IsNull() {
-		return getNetworkByID(ctx, config.Id.ValueInt64(), client)
+	var cloudID *int64
+	if !config.CloudId.IsNull() && !config.CloudId.IsUnknown() {
+		v := config.CloudId.ValueInt64()
+		cloudID = &v
 	}
+
+	if !config.Id.IsNull() {
+		state, err := getNetworkByID(ctx, config.Id.ValueInt64(), client)
+		if err != nil {
+			return nil, err
+		}
+
+		if cloudID != nil && (state.CloudId.IsNull() || state.CloudId.ValueInt64() != *cloudID) {
+			return nil, fmt.Errorf("network %d belongs to cloud %s, not cloud %d",
+				config.Id.ValueInt64(), state.CloudId.String(), *cloudID)
+		}
+
+		return state, nil
+	}
+
 	if !config.Name.IsNull() {
-		return getNetworkByName(ctx, config.Name.ValueString(), client)
+		return getNetworkByName(ctx, config.Name.ValueString(), cloudID, client)
 	}
 
 	return nil, fmt.Errorf("either id or name must be specified")
@@ -87,15 +108,26 @@ func getNetworkByID(
 	state.Active = convert.BoolToType(net.Active)
 	state.Visibility = convert.StrToType(net.Visibility)
 
+	state.CloudId = types.Int64Null()
+	if net.Zone != nil {
+		state.CloudId = convert.Int64ToType(net.Zone.Id)
+	}
+
 	return state, nil
 }
 
 func getNetworkByName(
 	ctx context.Context,
 	name string,
+	cloudID *int64,
 	client *sdk.APIClient,
 ) (*NetworkModel, error) {
-	networks, hresp, err := client.NetworksAPI.ListNetworks(ctx).Name(name).Execute()
+	request := client.NetworksAPI.ListNetworks(ctx).Name(name)
+	if cloudID != nil {
+		request = request.ZoneId(*cloudID)
+	}
+
+	networks, hresp, err := request.Execute()
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("network %s list failed: %s", name, errfmt.ErrMsg(err, hresp))
 	}
@@ -108,22 +140,35 @@ func getNetworkByName(
 	}
 
 	if len(matchingNetworks) == 0 {
+		if cloudID != nil {
+			return nil, fmt.Errorf("network %s not found in cloud %d", name, *cloudID)
+		}
+
 		return nil, fmt.Errorf("network %s not found", name)
 	}
 
 	if len(matchingNetworks) > 1 {
-		var networkIDs []string
+		// Usually one record per cloud for the same network: Morpheus keeps a
+		// network record in every cloud that sees it. Say which, so cloud_id
+		// can pick.
+		var found []string
 		for _, n := range matchingNetworks {
-			if n.Id != nil {
-				networkIDs = append(networkIDs, fmt.Sprintf("%d", *n.Id))
+			if n.Id == nil {
+				continue
+			}
+
+			if n.Zone != nil && n.Zone.Id != nil {
+				found = append(found, fmt.Sprintf("%d (cloud %d)", *n.Id, *n.Zone.Id))
+			} else {
+				found = append(found, fmt.Sprintf("%d", *n.Id))
 			}
 		}
 
 		return nil, fmt.Errorf(
-			"multiple networks found with name %s. Network IDs: %s. "+
-				"Please specify an ID instead",
+			"multiple networks found with name %s: %s. "+
+				"Set cloud_id to select the cloud, or use id",
 			name,
-			strings.Join(networkIDs, ", "),
+			strings.Join(found, ", "),
 		)
 	}
 

@@ -16,17 +16,17 @@ resource "hpe_morpheus_network" "azure" {
   cloud_id                   = data.hpe_morpheus_cloud.example.id
   pool_id                    = {{.PoolId}}
   group_id                   = data.hpe_morpheus_group.example.id
-  type_id                    = {{.TypeId}}
+  type_code                  = "azureNetwork"
   cidr                       = "{{.CIDR}}"
   visibility                 = "{{.Visibility}}"
   active                     = {{.Active}}
   dhcp_server                = {{.DHCPServer}}
   appliance_url_proxy_bypass = {{.ApplianceURLProxyBypass}}
   labels                     = [{{.Labels}}]
-  config = {
-    "resourceGroupId" = {{.ResourceGroupId}}
-    "subnetName"      = "{{.SubnetName}}"
-    "subnetCidr"      = "{{.SubnetCIDR}}"
+  config_azure = {
+    resource_group_id = "{{.ResourceGroupId}}"
+    subnet_name       = "{{.SubnetName}}"
+    subnet_cidr       = "{{.SubnetCIDR}}"
   }
   tenant_ids                 = [
     data.hpe_morpheus_tenant.example.id,

@@ -39,5 +39,7 @@ func (r *Resource) Schema(
 	_ resource.SchemaRequest,
 	resp *resource.SchemaResponse,
 ) {
-	resp.Schema = NetworkResourceSchema(ctx)
+	s := NetworkResourceSchema(ctx)
+	s.Version = schemaVersion
+	resp.Schema = s
 }

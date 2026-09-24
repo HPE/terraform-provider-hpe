@@ -123,18 +123,18 @@ func TestAccMorpheusNetworkResourceValidationMissingTypeId(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 
-	// Configuration missing the required 'type_id' field
+	// Configuration naming the type neither by type_id nor by type_code
 	config := providerConfig + `
 resource "hpe_morpheus_network" "test" {
 	name     = "TestAccMorpheusNetworkResourceValidationMissingTypeId"
 	cloud_id = 1
 	group_id = 1
 	labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
-	# type_id is missing - this should cause validation error
+	# neither type_id nor type_code - this should cause validation error
 }
 `
 
-	expected := `The argument "type_id" is required, but no definition was found`
+	expected := `one\s+\(and\s+only\s+one\)\s+of\s+\[type_id,type_code\]\s+is\s+required`
 
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

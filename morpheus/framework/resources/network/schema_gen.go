@@ -8,9 +8,12 @@ import (
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
@@ -51,21 +54,21 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Assign Public IP",
 				MarkdownDescription: "Assign Public IP",
 			},
+			"availability_zone": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Availability zone of an Amazon subnet, e.g. `us-west-1a` (Morpheus `availabilityZone`). Set on create only; a change replaces the network.",
+				MarkdownDescription: "Availability zone of an Amazon subnet, e.g. `us-west-1a` (Morpheus `availabilityZone`). Set on create only; a change replaces the network.",
+			},
 			"cidr": schema.StringAttribute{
 				Optional:            true,
-				Description:         "Network CIDR.",
-				MarkdownDescription: "Network CIDR.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(), // force new,
-				},
+				Description:         "Network CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the network otherwise.",
+				MarkdownDescription: "Network CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the network otherwise.",
 			},
 			"cidr_ipv6": schema.StringAttribute{
 				Optional:            true,
-				Description:         "Network IPv6 CIDR.",
-				MarkdownDescription: "Network IPv6 CIDR.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(), // force new,
-				},
+				Description:         "Network IPv6 CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the network otherwise.",
+				MarkdownDescription: "Network IPv6 CIDR. Applied in place on network types whose `cidrEditable` flag is on; replaces the network otherwise.",
 			},
 			"cloud_id": schema.Int64Attribute{
 				Required:            true,
@@ -77,18 +80,430 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config": schema.DynamicAttribute{
 				Optional:            true,
-				Computed:            true,
-				Description:         "Configuration object. Settings vary by type.",
-				MarkdownDescription: "Configuration object. Settings vary by type.",
+				WriteOnly:           true,
+				Description:         "Type-specific configuration for network types that have no typed `config_*` block, as a map of the keys the type's option types read (for example `{ hvmVlanTrunks = \"100,200\" }`). Write-only: sent to Morpheus on create and update, never stored in state; a change is detected from a digest kept in the resource's private state, so no version attribute is needed. The server's view of the configuration is available read-only in `config_from_api`. Requires Terraform or OpenTofu 1.11 or later.",
+				MarkdownDescription: "Type-specific configuration for network types that have no typed `config_*` block, as a map of the keys the type's option types read (for example `{ hvmVlanTrunks = \"100,200\" }`). Write-only: sent to Morpheus on create and update, never stored in state; a change is detected from a digest kept in the resource's private state, so no version attribute is needed. The server's view of the configuration is available read-only in `config_from_api`. Requires Terraform or OpenTofu 1.11 or later.",
 				Validators: []validator.Dynamic{
 					validators.ValidObjectMap(),
+				},
+			},
+			"config_azure": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"resource_group_id": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Resource group the virtual network is created in (Morpheus `resourceGroupId`). Cannot be changed after create.",
+						MarkdownDescription: "Resource group the virtual network is created in (Morpheus `resourceGroupId`). Cannot be changed after create.",
+					},
+					"subnet_cidr": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "The subnet's address range in CIDR notation, contained by the virtual network's `cidr` (Morpheus `subnetCidr`). Cannot be changed after create.",
+						MarkdownDescription: "The subnet's address range in CIDR notation, contained by the virtual network's `cidr` (Morpheus `subnetCidr`). Cannot be changed after create.",
+					},
+					"subnet_name": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Name of a subnet created along with the virtual network; later subnet changes are not reflected here (Morpheus `subnetName`). Cannot be changed after create.",
+						MarkdownDescription: "Name of a subnet created along with the virtual network; later subnet changes are not reflected here (Morpheus `subnetName`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigAzureType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigAzureValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an Azure virtual network (type `azureNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an Azure virtual network (type `azureNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_from_api": schema.DynamicAttribute{
+				Computed:            true,
+				Description:         "The type-specific configuration as Morpheus returns it, read-only. Includes keys the server adds itself and masks secrets; a change here is visible but never enforced.",
+				MarkdownDescription: "The type-specific configuration as Morpheus returns it, read-only. Includes keys the server adds itself and masks secrets; a change here is visible but never enforced.",
+			},
+			"config_gcp": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"auto_create": schema.BoolAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Whether the VPC creates a subnet in each region automatically (Morpheus `autoCreate`). Cannot be changed after create.",
+						MarkdownDescription: "Whether the VPC creates a subnet in each region automatically (Morpheus `autoCreate`). Cannot be changed after create.",
+					},
+					"mtu": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Maximum transmission unit, e.g. 1460 (the Google default) or 1500 (Morpheus `mtu`).",
+						MarkdownDescription: "Maximum transmission unit, e.g. 1460 (the Google default) or 1500 (Morpheus `mtu`).",
+					},
+				},
+				CustomType: ConfigGcpType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigGcpValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for a Google Cloud VPC network (type `googleNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for a Google Cloud VPC network (type `googleNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_hvm_data": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"cluster_network_layout": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "How the network attaches to the cluster: `HOST_INTERFACE` (a VLAN on a host interface; the default) or `VSWITCH` (a virtual switch segment) (Morpheus `hvmClusterNetworkLayout`). Cannot be changed after create.",
+						MarkdownDescription: "How the network attaches to the cluster: `HOST_INTERFACE` (a VLAN on a host interface; the default) or `VSWITCH` (a virtual switch segment) (Morpheus `hvmClusterNetworkLayout`). Cannot be changed after create.",
+					},
+					"host_network_interface": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Host interface VMs send data traffic out of, e.g. `bond0`, for the `HOST_INTERFACE` layout (Morpheus `hvmHostNetworkInterface`). Cannot be changed after create.",
+						MarkdownDescription: "Host interface VMs send data traffic out of, e.g. `bond0`, for the `HOST_INTERFACE` layout (Morpheus `hvmHostNetworkInterface`). Cannot be changed after create.",
+					},
+					"mtu": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Maximum transmission unit: 1500 as the standard default or 9000 for jumbo frames (Morpheus `hvmMtu`).",
+						MarkdownDescription: "Maximum transmission unit: 1500 as the standard default or 9000 for jumbo frames (Morpheus `hvmMtu`).",
+					},
+					"virtual_switch_segment_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Id of a data-eligible virtual switch segment, for the `VSWITCH` layout; the segment determines the VLAN and MTU (Morpheus `virtualSwitchSegmentId`). Cannot be changed after create.",
+						MarkdownDescription: "Id of a data-eligible virtual switch segment, for the `VSWITCH` layout; the segment determines the VLAN and MTU (Morpheus `virtualSwitchSegmentId`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigHvmDataType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHvmDataValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an HVM data network (type `hvmPortGroupDataNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an HVM data network (type `hvmPortGroupDataNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_hvm_overlay": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"overlay_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "VXLAN network identifier (VNI) between 1 and 16777215, unique across the infrastructure (Morpheus `hvmOverlayId`). Cannot be changed after create.",
+						MarkdownDescription: "VXLAN network identifier (VNI) between 1 and 16777215, unique across the infrastructure (Morpheus `hvmOverlayId`). Cannot be changed after create.",
+					},
+					"overlay_network_interface": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Host interface that carries the overlay's VXLAN tunnels (Morpheus `hvmOverlayNetworkInterface`). Cannot be changed after create.",
+						MarkdownDescription: "Host interface that carries the overlay's VXLAN tunnels (Morpheus `hvmOverlayNetworkInterface`). Cannot be changed after create.",
+					},
+					"overlay_port": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "UDP port for VXLAN tunnel encapsulation between hosts; 4789 is the IANA-assigned port (Morpheus `hvmOverlayPort`). Cannot be changed after create.",
+						MarkdownDescription: "UDP port for VXLAN tunnel encapsulation between hosts; 4789 is the IANA-assigned port (Morpheus `hvmOverlayPort`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigHvmOverlayType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHvmOverlayValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an HVM overlay network (type `hvmPortGroupOverlayNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an HVM overlay network (type `hvmPortGroupOverlayNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_hvm_private": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"cluster_network_layout": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "How the network attaches to the cluster: `HOST_INTERFACE` (the default) or `VSWITCH` (Morpheus `hvmClusterNetworkLayout`). Cannot be changed after create.",
+						MarkdownDescription: "How the network attaches to the cluster: `HOST_INTERFACE` (the default) or `VSWITCH` (Morpheus `hvmClusterNetworkLayout`). Cannot be changed after create.",
+					},
+					"host_network_interface": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Host interface whose MacVTAP device isolates the VMs, for the `HOST_INTERFACE` layout (Morpheus `hvmHostNetworkInterface`). Cannot be changed after create.",
+						MarkdownDescription: "Host interface whose MacVTAP device isolates the VMs, for the `HOST_INTERFACE` layout (Morpheus `hvmHostNetworkInterface`). Cannot be changed after create.",
+					},
+					"virtual_switch_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Id of the virtual switch for the private network, for the `VSWITCH` layout (Morpheus `virtualSwitchId`). Cannot be changed after create.",
+						MarkdownDescription: "Id of the virtual switch for the private network, for the `VSWITCH` layout (Morpheus `virtualSwitchId`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigHvmPrivateType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHvmPrivateValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an HVM private network (type `hvmPortGroupPrivateNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an HVM private network (type `hvmPortGroupPrivateNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_hvm_sriov": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"physical_function": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "SR-IOV capable physical function (PF) that virtual functions are allocated from (Morpheus `hvmPhysicalFunction`). Cannot be changed after create.",
+						MarkdownDescription: "SR-IOV capable physical function (PF) that virtual functions are allocated from (Morpheus `hvmPhysicalFunction`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigHvmSriovType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigHvmSriovValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an HVM SR-IOV network (type `hvmPortGroupSriovNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an HVM SR-IOV network (type `hvmPortGroupSriovNetwork`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_nsx_cloud": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"connected_gateway": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Path of the Tier-1 gateway the segment connects to (Morpheus `connectedGateway`). Supersedes the top-level `connected_gateway`.",
+						MarkdownDescription: "Path of the Tier-1 gateway the segment connects to (Morpheus `connectedGateway`). Supersedes the top-level `connected_gateway`.",
+					},
+					"dhcp_range": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP address ranges (Morpheus `dhcpRange`).",
+						MarkdownDescription: "DHCP address ranges (Morpheus `dhcpRange`).",
+					},
+					"subnet_dhcp_lease_time": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTime`).",
+						MarkdownDescription: "DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTime`).",
+					},
+					"subnet_dhcp_server_address": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).",
+						MarkdownDescription: "Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).",
+					},
+					"subnet_ip_management_type": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP type as NSX names it, e.g. `dhcpLocal`, `dhcpRelay` (Morpheus `subnetIpManagementType`).",
+						MarkdownDescription: "DHCP type as NSX names it, e.g. `dhcpLocal`, `dhcpRelay` (Morpheus `subnetIpManagementType`).",
+					},
+					"subnet_ip_server_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+						MarkdownDescription: "Id of the DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+					},
+					"vlan_ids": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).",
+						MarkdownDescription: "VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).",
+					},
+				},
+				CustomType: ConfigNsxCloudType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigNsxCloudValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an NSX Cloud segment (type `nsxCloudLogicalSwitch`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an NSX Cloud segment (type `nsxCloudLogicalSwitch`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_nsxt": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"connected_gateway": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Path of the Tier-0 or Tier-1 gateway the segment connects to, e.g. `/infra/tier-1s/<id>` (Morpheus `connectedGateway`). Supersedes the top-level `connected_gateway`.",
+						MarkdownDescription: "Path of the Tier-0 or Tier-1 gateway the segment connects to, e.g. `/infra/tier-1s/<id>` (Morpheus `connectedGateway`). Supersedes the top-level `connected_gateway`.",
+					},
+					"dhcp_domain_names_ipv6": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Domain names handed out by IPv6 DHCP (Morpheus `dhcpDomainNamesIPv6`).",
+						MarkdownDescription: "Domain names handed out by IPv6 DHCP (Morpheus `dhcpDomainNamesIPv6`).",
+					},
+					"dhcp_excluded_ranges_ipv6": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "IPv6 address ranges excluded from DHCP (Morpheus `dhcpExcludedRangesIPv6`).",
+						MarkdownDescription: "IPv6 address ranges excluded from DHCP (Morpheus `dhcpExcludedRangesIPv6`).",
+					},
+					"dhcp_preferred_time_ipv6": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "IPv6 DHCP preferred time in seconds (Morpheus `dhcpPreferredTimeIPv6`).",
+						MarkdownDescription: "IPv6 DHCP preferred time in seconds (Morpheus `dhcpPreferredTimeIPv6`).",
+					},
+					"dhcp_range": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP address ranges, one per line or comma-separated (Morpheus `dhcpRange`).",
+						MarkdownDescription: "DHCP address ranges, one per line or comma-separated (Morpheus `dhcpRange`).",
+					},
+					"dhcp_range_ipv6": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "IPv6 DHCP address ranges (Morpheus `dhcpRangeIPv6`).",
+						MarkdownDescription: "IPv6 DHCP address ranges (Morpheus `dhcpRangeIPv6`).",
+					},
+					"dhcp_sntp_servers_ipv6": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "SNTP servers handed out by IPv6 DHCP (Morpheus `dhcpSntpServersIPv6`).",
+						MarkdownDescription: "SNTP servers handed out by IPv6 DHCP (Morpheus `dhcpSntpServersIPv6`).",
+					},
+					"subnet_dhcp_lease_time": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP lease time in seconds; NSX-T defaults to 86400 (Morpheus `subnetDhcpLeaseTime`).",
+						MarkdownDescription: "DHCP lease time in seconds; NSX-T defaults to 86400 (Morpheus `subnetDhcpLeaseTime`).",
+					},
+					"subnet_dhcp_lease_time_ipv6": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "IPv6 DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTimeIPv6`).",
+						MarkdownDescription: "IPv6 DHCP lease time in seconds (Morpheus `subnetDhcpLeaseTimeIPv6`).",
+					},
+					"subnet_dhcp_server_address": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).",
+						MarkdownDescription: "Address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddress`).",
+					},
+					"subnet_dhcp_server_address_ipv6": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "IPv6 address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddressIPv6`).",
+						MarkdownDescription: "IPv6 address of the segment's DHCP server, in CIDR notation (Morpheus `subnetDhcpServerAddressIPv6`).",
+					},
+					"subnet_ip_management_type": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "How addresses on the segment's subnet are managed: DHCP type as NSX-T names it, e.g. `dhcpLocal`, `dhcpRelay` (Morpheus `subnetIpManagementType`).",
+						MarkdownDescription: "How addresses on the segment's subnet are managed: DHCP type as NSX-T names it, e.g. `dhcpLocal`, `dhcpRelay` (Morpheus `subnetIpManagementType`).",
+					},
+					"subnet_ip_server_id": schema.Int64Attribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+						MarkdownDescription: "Id of the NSX-T DHCP server profile for `dhcpLocal` or `dhcpRelay` (Morpheus `subnetIpServerId`).",
+					},
+					"vlan_ids": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).",
+						MarkdownDescription: "VLAN ids for a VLAN-backed segment, comma-separated (Morpheus `vlanIDs`).",
+					},
+				},
+				CustomType: ConfigNsxtType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigNsxtValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an NSX-T segment (type `nsxtLogicalSwitch`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an NSX-T segment (type `nsxtLogicalSwitch`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_openstack": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"dhcp_range": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "DHCP allocation pool for the subnet, as `start,end` (Morpheus `dhcpRange`).",
+						MarkdownDescription: "DHCP allocation pool for the subnet, as `start,end` (Morpheus `dhcpRange`).",
+					},
+					"host_routes": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Static host routes handed out by the subnet's DHCP (Morpheus `hostRoutes`). Cannot be changed after create.",
+						MarkdownDescription: "Static host routes handed out by the subnet's DHCP (Morpheus `hostRoutes`). Cannot be changed after create.",
+					},
+				},
+				CustomType: ConfigOpenstackType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigOpenstackValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an OpenStack-family private network (types `openstackPrivate`, `huaweiPrivate`, `opentelekomPrivate`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				MarkdownDescription: "Configuration for an OpenStack-family private network (types `openstackPrivate`, `huaweiPrivate`, `opentelekomPrivate`), typed. Write-only, like `config`; the two are mutually exclusive, and a network takes at most one typed block, which must match its type. Attributes marked \"cannot be changed after create\" replace the network when changed; the others are applied in place.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
+				},
+			},
+			"config_ovs_port_group": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"trunk_only": schema.BoolAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "Whether the port group carries trunked VLANs only (Morpheus `hvmTrunkOnly`).",
+						MarkdownDescription: "Whether the port group carries trunked VLANs only (Morpheus `hvmTrunkOnly`).",
+					},
+					"vlan_trunks": schema.StringAttribute{
+						Optional:            true,
+						WriteOnly:           true,
+						Description:         "VLAN IDs to trunk on the port group, comma-separated (Morpheus `hvmVlanTrunks`).",
+						MarkdownDescription: "VLAN IDs to trunk on the port group, comma-separated (Morpheus `hvmVlanTrunks`).",
+					},
+				},
+				CustomType: ConfigOvsPortGroupType{
+					ObjectType: types.ObjectType{
+						AttrTypes: ConfigOvsPortGroupValue{}.AttributeTypes(ctx),
+					},
+				},
+				Optional:            true,
+				WriteOnly:           true,
+				Description:         "Configuration for an OVS port group network (type `ovsPortGroup`), typed. Write-only, like `config`; the two are mutually exclusive. The port group's virtual switch, VLAN and resource pool are the top-level `switch_id`, `vlan_id` and `zone_pool_id`.",
+				MarkdownDescription: "Configuration for an OVS port group network (type `ovsPortGroup`), typed. Write-only, like `config`; the two are mutually exclusive. The port group's virtual switch, VLAN and resource pool are the top-level `switch_id`, `vlan_id` and `zone_pool_id`.",
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.Expressions{path.MatchRoot("config")}...),
 				},
 			},
 			"connected_gateway": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Provider ID of the connected NSX-T Tier-1 gateway.",
-				MarkdownDescription: "Provider ID of the connected NSX-T Tier-1 gateway.",
+				Description:         "Path of the connected NSX-T gateway. Deprecated: set `connected_gateway` inside `config_nsxt` or `config_nsx_cloud` instead; this attribute is kept for existing configurations and is read back from the network's configuration.",
+				MarkdownDescription: "Path of the connected NSX-T gateway. Deprecated: set `connected_gateway` inside `config_nsxt` or `config_nsx_cloud` instead; this attribute is kept for existing configurations and is read back from the network's configuration.",
+				DeprecationMessage:  "Set connected_gateway inside the config_nsxt or config_nsx_cloud block instead.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -180,11 +595,8 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "Network name.",
-				MarkdownDescription: "Network name.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(), // force new,
-				},
+				Description:         "Network name. Whether a change is applied in place or replaces the network depends on the network type: Morpheus ignores a new name on types whose `nameEditable` flag is off, so the provider plans a replacement for those.",
+				MarkdownDescription: "Network name. Whether a change is applied in place or replaces the network depends on the network type: Morpheus ignores a new name on types whose `nameEditable` flag is off, so the provider plans a replacement for those.",
 			},
 			"netmask_ipv6": schema.StringAttribute{
 				Optional: true,
@@ -202,11 +614,29 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Network proxy id",
 				MarkdownDescription: "Network proxy id",
 			},
+			"network_server_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Network server (integration) id. Required by network types that a network plugin manages (`hasNetworkServer`), such as the HVM port group types, whose network server is the cluster's hidden \"HVM Network Server\" — list it with `GET /api/networks/servers?showHidden=true`.",
+				MarkdownDescription: "Network server (integration) id. Required by network types that a network plugin manages (`hasNetworkServer`), such as the HVM port group types, whose network server is the cluster's hidden \"HVM Network Server\" — list it with `GET /api/networks/servers?showHidden=true`.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"no_proxy": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
 				Description:         "Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.",
 				MarkdownDescription: "Comma-separated list of ip addresses or name servers to exclude proxy traversal for. Typically locally routable servers are excluded.",
+			},
+			"parent_network_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Parent network of a custom child network (type `childNetwork`; Morpheus `parentNetwork.id`). Never returned by the API, so the configured value is kept in state.",
+				MarkdownDescription: "Parent network of a custom child network (type `childNetwork`; Morpheus `parentNetwork.id`). Never returned by the API, so the configured value is kept in state.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"pool_id": schema.Int64Attribute{
 				Optional:            true,
@@ -241,6 +671,15 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Computed: true,
 			},
+			"scope_id": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "NSX-T transport zone id for a segment on NSX-T 2.x (Morpheus `scopeId`). Morpheus accepts it on create and never returns it, so the configured value is kept in state; a change replaces the network.",
+				MarkdownDescription: "NSX-T transport zone id for a segment on NSX-T 2.x (Morpheus `scopeId`). Morpheus accepts it on create and never returns it, so the configured value is kept in state; a change replaces the network.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
 			"search_domains": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -257,16 +696,34 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				ElementType:         types.Int64Type,
 				Optional:            true,
 				Computed:            true,
-				Description:         "List of tenant account ids that are allowed access",
-				MarkdownDescription: "List of tenant account ids that are allowed access",
+				Description:         "Tenant account ids allowed access to the network; updated in place. A network is only `public` when this includes the master tenant — Morpheus makes it `private` otherwise.",
+				MarkdownDescription: "Tenant account ids allowed access to the network; updated in place. A network is only `public` when this includes the master tenant — Morpheus makes it `private` otherwise.",
 				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplace(), // force new,
+					setplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"type_code": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Network type code, e.g. `ovsPortGroup`, `nsxtLogicalSwitch`, `azureNetwork`; the codes are stable across appliances where ids are not. Set either `type_code` or `type_id`; the other is computed. Changing the type replaces the network.",
+				MarkdownDescription: "Network type code, e.g. `ovsPortGroup`, `nsxtLogicalSwitch`, `azureNetwork`; the codes are stable across appliances where ids are not. Set either `type_code` or `type_id`; the other is computed. Changing the type replaces the network.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"type_id": schema.Int64Attribute{
-				Required:            true,
-				Description:         "Network type id",
-				MarkdownDescription: "Network type id",
+				Optional:            true,
+				Computed:            true,
+				Description:         "Network type id. Set either `type_id` or `type_code`; the other is computed. Changing the type replaces the network.",
+				MarkdownDescription: "Network type id. Set either `type_id` or `type_code`; the other is computed. Changing the type replaces the network.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.RequiresReplaceIfConfigured(),
+					int64planmodifier.UseStateForUnknown(),
+				},
+				Validators: []validator.Int64{
+					int64validator.ExactlyOneOf(path.MatchRoot("type_id"), path.MatchRoot("type_code")),
+				},
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
@@ -285,6 +742,15 @@ func NetworkResourceSchema(ctx context.Context) schema.Schema {
 				Optional: true,
 				Computed: true,
 			},
+			"vxlan_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "VXLAN id of an OVS overlay network (type `ovsOverlay`; Morpheus `vxlanId`). Accepted on create and never returned, so the configured value is kept in state; a change replaces the network.",
+				MarkdownDescription: "VXLAN id of an OVS overlay network (type `ovsOverlay`; Morpheus `vxlanId`). Accepted on create and never returned, so the configured value is kept in state; a change replaces the network.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"zone_pool_id": schema.Int64Attribute{
 				Optional:            true,
 				Computed:            true,
@@ -300,10 +766,22 @@ type NetworkModel struct {
 	AllowStaticOverride     types.Bool               `tfsdk:"allow_static_override"`
 	ApplianceUrlProxyBypass types.Bool               `tfsdk:"appliance_url_proxy_bypass"`
 	AssignPublicIp          types.Bool               `tfsdk:"assign_public_ip"`
+	AvailabilityZone        types.String             `tfsdk:"availability_zone"`
 	Cidr                    types.String             `tfsdk:"cidr"`
 	CidrIpv6                types.String             `tfsdk:"cidr_ipv6"`
 	CloudId                 types.Int64              `tfsdk:"cloud_id"`
 	Config                  types.Dynamic            `tfsdk:"config"`
+	ConfigAzure             ConfigAzureValue         `tfsdk:"config_azure"`
+	ConfigFromApi           types.Dynamic            `tfsdk:"config_from_api"`
+	ConfigGcp               ConfigGcpValue           `tfsdk:"config_gcp"`
+	ConfigHvmData           ConfigHvmDataValue       `tfsdk:"config_hvm_data"`
+	ConfigHvmOverlay        ConfigHvmOverlayValue    `tfsdk:"config_hvm_overlay"`
+	ConfigHvmPrivate        ConfigHvmPrivateValue    `tfsdk:"config_hvm_private"`
+	ConfigHvmSriov          ConfigHvmSriovValue      `tfsdk:"config_hvm_sriov"`
+	ConfigNsxCloud          ConfigNsxCloudValue      `tfsdk:"config_nsx_cloud"`
+	ConfigNsxt              ConfigNsxtValue          `tfsdk:"config_nsxt"`
+	ConfigOpenstack         ConfigOpenstackValue     `tfsdk:"config_openstack"`
+	ConfigOvsPortGroup      ConfigOvsPortGroupValue  `tfsdk:"config_ovs_port_group"`
 	ConnectedGateway        types.String             `tfsdk:"connected_gateway"`
 	Description             types.String             `tfsdk:"description"`
 	DhcpServer              types.Bool               `tfsdk:"dhcp_server"`
@@ -324,17 +802,4986 @@ type NetworkModel struct {
 	NetmaskIpv6             types.String             `tfsdk:"netmask_ipv6"`
 	NetworkDomainId         types.Int64              `tfsdk:"network_domain_id"`
 	NetworkProxyId          types.Int64              `tfsdk:"network_proxy_id"`
+	NetworkServerId         types.Int64              `tfsdk:"network_server_id"`
 	NoProxy                 types.String             `tfsdk:"no_proxy"`
+	ParentNetworkId         types.Int64              `tfsdk:"parent_network_id"`
 	PoolId                  types.Int64              `tfsdk:"pool_id"`
 	PoolIpv6Id              types.Int64              `tfsdk:"pool_ipv6_id"`
 	ResourcePermissions     ResourcePermissionsValue `tfsdk:"resource_permissions"`
+	ScopeId                 types.String             `tfsdk:"scope_id"`
 	SearchDomains           types.String             `tfsdk:"search_domains"`
 	SwitchId                types.String             `tfsdk:"switch_id"`
 	TenantIds               types.Set                `tfsdk:"tenant_ids"`
+	TypeCode                types.String             `tfsdk:"type_code"`
 	TypeId                  types.Int64              `tfsdk:"type_id"`
 	Visibility              types.String             `tfsdk:"visibility"`
 	VlanId                  types.Int64              `tfsdk:"vlan_id"`
+	VxlanId                 types.Int64              `tfsdk:"vxlan_id"`
 	ZonePoolId              types.Int64              `tfsdk:"zone_pool_id"`
+}
+
+var _ basetypes.ObjectTypable = ConfigAzureType{}
+
+type ConfigAzureType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigAzureType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigAzureType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigAzureType) String() string {
+	return "ConfigAzureType"
+}
+
+func (t ConfigAzureType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	resourceGroupIdAttribute, ok := attributes["resource_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group_id is missing from object`)
+
+		return nil, diags
+	}
+
+	resourceGroupIdVal, ok := resourceGroupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group_id expected to be basetypes.StringValue, was: %T`, resourceGroupIdAttribute))
+	}
+
+	subnetCidrAttribute, ok := attributes["subnet_cidr"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_cidr is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetCidrVal, ok := subnetCidrAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_cidr expected to be basetypes.StringValue, was: %T`, subnetCidrAttribute))
+	}
+
+	subnetNameAttribute, ok := attributes["subnet_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_name is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetNameVal, ok := subnetNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_name expected to be basetypes.StringValue, was: %T`, subnetNameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigAzureValue{
+		ResourceGroupId: resourceGroupIdVal,
+		SubnetCidr:      subnetCidrVal,
+		SubnetName:      subnetNameVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueNull() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigAzureValueUnknown() ConfigAzureValue {
+	return ConfigAzureValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigAzureValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigAzureValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, a missing attribute value was detected. "+
+					"A ConfigAzureValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigAzureValue Attribute Type",
+				"While creating a ConfigAzureValue value, an invalid attribute value was detected. "+
+					"A ConfigAzureValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigAzureValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigAzureValue Attribute Value",
+				"While creating a ConfigAzureValue value, an extra attribute value was detected. "+
+					"A ConfigAzureValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigAzureValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	resourceGroupIdAttribute, ok := attributes["resource_group_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`resource_group_id is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	resourceGroupIdVal, ok := resourceGroupIdAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`resource_group_id expected to be basetypes.StringValue, was: %T`, resourceGroupIdAttribute))
+	}
+
+	subnetCidrAttribute, ok := attributes["subnet_cidr"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_cidr is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	subnetCidrVal, ok := subnetCidrAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_cidr expected to be basetypes.StringValue, was: %T`, subnetCidrAttribute))
+	}
+
+	subnetNameAttribute, ok := attributes["subnet_name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_name is missing from object`)
+
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	subnetNameVal, ok := subnetNameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_name expected to be basetypes.StringValue, was: %T`, subnetNameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigAzureValueUnknown(), diags
+	}
+
+	return ConfigAzureValue{
+		ResourceGroupId: resourceGroupIdVal,
+		SubnetCidr:      subnetCidrVal,
+		SubnetName:      subnetNameVal,
+		state:           attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigAzureValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigAzureValue {
+	object, diags := NewConfigAzureValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigAzureValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigAzureType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigAzureValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigAzureValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigAzureValueMust(ConfigAzureValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigAzureType) ValueType(ctx context.Context) attr.Value {
+	return ConfigAzureValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigAzureValue{}
+
+type ConfigAzureValue struct {
+	ResourceGroupId basetypes.StringValue `tfsdk:"resource_group_id"`
+	SubnetCidr      basetypes.StringValue `tfsdk:"subnet_cidr"`
+	SubnetName      basetypes.StringValue `tfsdk:"subnet_name"`
+	state           attr.ValueState
+}
+
+func (v ConfigAzureValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["resource_group_id"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_cidr"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.ResourceGroupId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["resource_group_id"] = val
+
+		val, err = v.SubnetCidr.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_cidr"] = val
+
+		val, err = v.SubnetName.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigAzureValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigAzureValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigAzureValue) String() string {
+	return "ConfigAzureValue"
+}
+
+func (v ConfigAzureValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"resource_group_id": basetypes.StringType{},
+		"subnet_cidr":       basetypes.StringType{},
+		"subnet_name":       basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"resource_group_id": v.ResourceGroupId,
+			"subnet_cidr":       v.SubnetCidr,
+			"subnet_name":       v.SubnetName,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigAzureValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigAzureValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ResourceGroupId.Equal(other.ResourceGroupId) {
+		return false
+	}
+
+	if !v.SubnetCidr.Equal(other.SubnetCidr) {
+		return false
+	}
+
+	if !v.SubnetName.Equal(other.SubnetName) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigAzureValue) Type(ctx context.Context) attr.Type {
+	return ConfigAzureType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigAzureValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"resource_group_id": basetypes.StringType{},
+		"subnet_cidr":       basetypes.StringType{},
+		"subnet_name":       basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigGcpType{}
+
+type ConfigGcpType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigGcpType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigGcpType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigGcpType) String() string {
+	return "ConfigGcpType"
+}
+
+func (t ConfigGcpType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigGcpValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigGcpValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	autoCreateAttribute, ok := attributes["auto_create"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`auto_create is missing from object`)
+
+		return nil, diags
+	}
+
+	autoCreateVal, ok := autoCreateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`auto_create expected to be basetypes.BoolValue, was: %T`, autoCreateAttribute))
+	}
+
+	mtuAttribute, ok := attributes["mtu"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mtu is missing from object`)
+
+		return nil, diags
+	}
+
+	mtuVal, ok := mtuAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mtu expected to be basetypes.Int64Value, was: %T`, mtuAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigGcpValue{
+		AutoCreate: autoCreateVal,
+		Mtu:        mtuVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigGcpValueNull() ConfigGcpValue {
+	return ConfigGcpValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigGcpValueUnknown() ConfigGcpValue {
+	return ConfigGcpValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigGcpValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigGcpValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigGcpValue Attribute Value",
+				"While creating a ConfigGcpValue value, a missing attribute value was detected. "+
+					"A ConfigGcpValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigGcpValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigGcpValue Attribute Type",
+				"While creating a ConfigGcpValue value, an invalid attribute value was detected. "+
+					"A ConfigGcpValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigGcpValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigGcpValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigGcpValue Attribute Value",
+				"While creating a ConfigGcpValue value, an extra attribute value was detected. "+
+					"A ConfigGcpValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigGcpValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigGcpValueUnknown(), diags
+	}
+
+	autoCreateAttribute, ok := attributes["auto_create"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`auto_create is missing from object`)
+
+		return NewConfigGcpValueUnknown(), diags
+	}
+
+	autoCreateVal, ok := autoCreateAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`auto_create expected to be basetypes.BoolValue, was: %T`, autoCreateAttribute))
+	}
+
+	mtuAttribute, ok := attributes["mtu"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mtu is missing from object`)
+
+		return NewConfigGcpValueUnknown(), diags
+	}
+
+	mtuVal, ok := mtuAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mtu expected to be basetypes.Int64Value, was: %T`, mtuAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigGcpValueUnknown(), diags
+	}
+
+	return ConfigGcpValue{
+		AutoCreate: autoCreateVal,
+		Mtu:        mtuVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigGcpValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigGcpValue {
+	object, diags := NewConfigGcpValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigGcpValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigGcpType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigGcpValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigGcpValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigGcpValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigGcpValueMust(ConfigGcpValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigGcpType) ValueType(ctx context.Context) attr.Value {
+	return ConfigGcpValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigGcpValue{}
+
+type ConfigGcpValue struct {
+	AutoCreate basetypes.BoolValue  `tfsdk:"auto_create"`
+	Mtu        basetypes.Int64Value `tfsdk:"mtu"`
+	state      attr.ValueState
+}
+
+func (v ConfigGcpValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["auto_create"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["mtu"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.AutoCreate.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["auto_create"] = val
+
+		val, err = v.Mtu.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["mtu"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigGcpValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigGcpValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigGcpValue) String() string {
+	return "ConfigGcpValue"
+}
+
+func (v ConfigGcpValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"auto_create": basetypes.BoolType{},
+		"mtu":         basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"auto_create": v.AutoCreate,
+			"mtu":         v.Mtu,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigGcpValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigGcpValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.AutoCreate.Equal(other.AutoCreate) {
+		return false
+	}
+
+	if !v.Mtu.Equal(other.Mtu) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigGcpValue) Type(ctx context.Context) attr.Type {
+	return ConfigGcpType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigGcpValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"auto_create": basetypes.BoolType{},
+		"mtu":         basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigHvmDataType{}
+
+type ConfigHvmDataType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHvmDataType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHvmDataType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHvmDataType) String() string {
+	return "ConfigHvmDataType"
+}
+
+func (t ConfigHvmDataType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHvmDataValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmDataValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	clusterNetworkLayoutAttribute, ok := attributes["cluster_network_layout"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cluster_network_layout is missing from object`)
+
+		return nil, diags
+	}
+
+	clusterNetworkLayoutVal, ok := clusterNetworkLayoutAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cluster_network_layout expected to be basetypes.StringValue, was: %T`, clusterNetworkLayoutAttribute))
+	}
+
+	hostNetworkInterfaceAttribute, ok := attributes["host_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_network_interface is missing from object`)
+
+		return nil, diags
+	}
+
+	hostNetworkInterfaceVal, ok := hostNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_network_interface expected to be basetypes.StringValue, was: %T`, hostNetworkInterfaceAttribute))
+	}
+
+	mtuAttribute, ok := attributes["mtu"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mtu is missing from object`)
+
+		return nil, diags
+	}
+
+	mtuVal, ok := mtuAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mtu expected to be basetypes.Int64Value, was: %T`, mtuAttribute))
+	}
+
+	virtualSwitchSegmentIdAttribute, ok := attributes["virtual_switch_segment_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_switch_segment_id is missing from object`)
+
+		return nil, diags
+	}
+
+	virtualSwitchSegmentIdVal, ok := virtualSwitchSegmentIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_switch_segment_id expected to be basetypes.Int64Value, was: %T`, virtualSwitchSegmentIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHvmDataValue{
+		ClusterNetworkLayout:   clusterNetworkLayoutVal,
+		HostNetworkInterface:   hostNetworkInterfaceVal,
+		Mtu:                    mtuVal,
+		VirtualSwitchSegmentId: virtualSwitchSegmentIdVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmDataValueNull() ConfigHvmDataValue {
+	return ConfigHvmDataValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHvmDataValueUnknown() ConfigHvmDataValue {
+	return ConfigHvmDataValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHvmDataValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHvmDataValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHvmDataValue Attribute Value",
+				"While creating a ConfigHvmDataValue value, a missing attribute value was detected. "+
+					"A ConfigHvmDataValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmDataValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHvmDataValue Attribute Type",
+				"While creating a ConfigHvmDataValue value, an invalid attribute value was detected. "+
+					"A ConfigHvmDataValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmDataValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHvmDataValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHvmDataValue Attribute Value",
+				"While creating a ConfigHvmDataValue value, an extra attribute value was detected. "+
+					"A ConfigHvmDataValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHvmDataValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	clusterNetworkLayoutAttribute, ok := attributes["cluster_network_layout"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cluster_network_layout is missing from object`)
+
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	clusterNetworkLayoutVal, ok := clusterNetworkLayoutAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cluster_network_layout expected to be basetypes.StringValue, was: %T`, clusterNetworkLayoutAttribute))
+	}
+
+	hostNetworkInterfaceAttribute, ok := attributes["host_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_network_interface is missing from object`)
+
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	hostNetworkInterfaceVal, ok := hostNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_network_interface expected to be basetypes.StringValue, was: %T`, hostNetworkInterfaceAttribute))
+	}
+
+	mtuAttribute, ok := attributes["mtu"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`mtu is missing from object`)
+
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	mtuVal, ok := mtuAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`mtu expected to be basetypes.Int64Value, was: %T`, mtuAttribute))
+	}
+
+	virtualSwitchSegmentIdAttribute, ok := attributes["virtual_switch_segment_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_switch_segment_id is missing from object`)
+
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	virtualSwitchSegmentIdVal, ok := virtualSwitchSegmentIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_switch_segment_id expected to be basetypes.Int64Value, was: %T`, virtualSwitchSegmentIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmDataValueUnknown(), diags
+	}
+
+	return ConfigHvmDataValue{
+		ClusterNetworkLayout:   clusterNetworkLayoutVal,
+		HostNetworkInterface:   hostNetworkInterfaceVal,
+		Mtu:                    mtuVal,
+		VirtualSwitchSegmentId: virtualSwitchSegmentIdVal,
+		state:                  attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmDataValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHvmDataValue {
+	object, diags := NewConfigHvmDataValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHvmDataValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHvmDataType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHvmDataValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHvmDataValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmDataValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHvmDataValueMust(ConfigHvmDataValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHvmDataType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHvmDataValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHvmDataValue{}
+
+type ConfigHvmDataValue struct {
+	ClusterNetworkLayout   basetypes.StringValue `tfsdk:"cluster_network_layout"`
+	HostNetworkInterface   basetypes.StringValue `tfsdk:"host_network_interface"`
+	Mtu                    basetypes.Int64Value  `tfsdk:"mtu"`
+	VirtualSwitchSegmentId basetypes.Int64Value  `tfsdk:"virtual_switch_segment_id"`
+	state                  attr.ValueState
+}
+
+func (v ConfigHvmDataValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 4)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["cluster_network_layout"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["host_network_interface"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["mtu"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["virtual_switch_segment_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 4)
+
+		val, err = v.ClusterNetworkLayout.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cluster_network_layout"] = val
+
+		val, err = v.HostNetworkInterface.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_network_interface"] = val
+
+		val, err = v.Mtu.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["mtu"] = val
+
+		val, err = v.VirtualSwitchSegmentId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virtual_switch_segment_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHvmDataValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHvmDataValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHvmDataValue) String() string {
+	return "ConfigHvmDataValue"
+}
+
+func (v ConfigHvmDataValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"cluster_network_layout":    basetypes.StringType{},
+		"host_network_interface":    basetypes.StringType{},
+		"mtu":                       basetypes.Int64Type{},
+		"virtual_switch_segment_id": basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"cluster_network_layout":    v.ClusterNetworkLayout,
+			"host_network_interface":    v.HostNetworkInterface,
+			"mtu":                       v.Mtu,
+			"virtual_switch_segment_id": v.VirtualSwitchSegmentId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHvmDataValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHvmDataValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ClusterNetworkLayout.Equal(other.ClusterNetworkLayout) {
+		return false
+	}
+
+	if !v.HostNetworkInterface.Equal(other.HostNetworkInterface) {
+		return false
+	}
+
+	if !v.Mtu.Equal(other.Mtu) {
+		return false
+	}
+
+	if !v.VirtualSwitchSegmentId.Equal(other.VirtualSwitchSegmentId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHvmDataValue) Type(ctx context.Context) attr.Type {
+	return ConfigHvmDataType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHvmDataValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"cluster_network_layout":    basetypes.StringType{},
+		"host_network_interface":    basetypes.StringType{},
+		"mtu":                       basetypes.Int64Type{},
+		"virtual_switch_segment_id": basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigHvmOverlayType{}
+
+type ConfigHvmOverlayType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHvmOverlayType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHvmOverlayType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHvmOverlayType) String() string {
+	return "ConfigHvmOverlayType"
+}
+
+func (t ConfigHvmOverlayType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHvmOverlayValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmOverlayValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	overlayIdAttribute, ok := attributes["overlay_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_id is missing from object`)
+
+		return nil, diags
+	}
+
+	overlayIdVal, ok := overlayIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_id expected to be basetypes.Int64Value, was: %T`, overlayIdAttribute))
+	}
+
+	overlayNetworkInterfaceAttribute, ok := attributes["overlay_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_network_interface is missing from object`)
+
+		return nil, diags
+	}
+
+	overlayNetworkInterfaceVal, ok := overlayNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_network_interface expected to be basetypes.StringValue, was: %T`, overlayNetworkInterfaceAttribute))
+	}
+
+	overlayPortAttribute, ok := attributes["overlay_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_port is missing from object`)
+
+		return nil, diags
+	}
+
+	overlayPortVal, ok := overlayPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_port expected to be basetypes.Int64Value, was: %T`, overlayPortAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHvmOverlayValue{
+		OverlayId:               overlayIdVal,
+		OverlayNetworkInterface: overlayNetworkInterfaceVal,
+		OverlayPort:             overlayPortVal,
+		state:                   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmOverlayValueNull() ConfigHvmOverlayValue {
+	return ConfigHvmOverlayValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHvmOverlayValueUnknown() ConfigHvmOverlayValue {
+	return ConfigHvmOverlayValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHvmOverlayValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHvmOverlayValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHvmOverlayValue Attribute Value",
+				"While creating a ConfigHvmOverlayValue value, a missing attribute value was detected. "+
+					"A ConfigHvmOverlayValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmOverlayValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHvmOverlayValue Attribute Type",
+				"While creating a ConfigHvmOverlayValue value, an invalid attribute value was detected. "+
+					"A ConfigHvmOverlayValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmOverlayValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHvmOverlayValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHvmOverlayValue Attribute Value",
+				"While creating a ConfigHvmOverlayValue value, an extra attribute value was detected. "+
+					"A ConfigHvmOverlayValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHvmOverlayValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmOverlayValueUnknown(), diags
+	}
+
+	overlayIdAttribute, ok := attributes["overlay_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_id is missing from object`)
+
+		return NewConfigHvmOverlayValueUnknown(), diags
+	}
+
+	overlayIdVal, ok := overlayIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_id expected to be basetypes.Int64Value, was: %T`, overlayIdAttribute))
+	}
+
+	overlayNetworkInterfaceAttribute, ok := attributes["overlay_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_network_interface is missing from object`)
+
+		return NewConfigHvmOverlayValueUnknown(), diags
+	}
+
+	overlayNetworkInterfaceVal, ok := overlayNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_network_interface expected to be basetypes.StringValue, was: %T`, overlayNetworkInterfaceAttribute))
+	}
+
+	overlayPortAttribute, ok := attributes["overlay_port"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`overlay_port is missing from object`)
+
+		return NewConfigHvmOverlayValueUnknown(), diags
+	}
+
+	overlayPortVal, ok := overlayPortAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`overlay_port expected to be basetypes.Int64Value, was: %T`, overlayPortAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmOverlayValueUnknown(), diags
+	}
+
+	return ConfigHvmOverlayValue{
+		OverlayId:               overlayIdVal,
+		OverlayNetworkInterface: overlayNetworkInterfaceVal,
+		OverlayPort:             overlayPortVal,
+		state:                   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmOverlayValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHvmOverlayValue {
+	object, diags := NewConfigHvmOverlayValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHvmOverlayValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHvmOverlayType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHvmOverlayValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHvmOverlayValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmOverlayValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHvmOverlayValueMust(ConfigHvmOverlayValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHvmOverlayType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHvmOverlayValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHvmOverlayValue{}
+
+type ConfigHvmOverlayValue struct {
+	OverlayId               basetypes.Int64Value  `tfsdk:"overlay_id"`
+	OverlayNetworkInterface basetypes.StringValue `tfsdk:"overlay_network_interface"`
+	OverlayPort             basetypes.Int64Value  `tfsdk:"overlay_port"`
+	state                   attr.ValueState
+}
+
+func (v ConfigHvmOverlayValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["overlay_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["overlay_network_interface"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["overlay_port"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.OverlayId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["overlay_id"] = val
+
+		val, err = v.OverlayNetworkInterface.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["overlay_network_interface"] = val
+
+		val, err = v.OverlayPort.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["overlay_port"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHvmOverlayValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHvmOverlayValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHvmOverlayValue) String() string {
+	return "ConfigHvmOverlayValue"
+}
+
+func (v ConfigHvmOverlayValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"overlay_id":                basetypes.Int64Type{},
+		"overlay_network_interface": basetypes.StringType{},
+		"overlay_port":              basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"overlay_id":                v.OverlayId,
+			"overlay_network_interface": v.OverlayNetworkInterface,
+			"overlay_port":              v.OverlayPort,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHvmOverlayValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHvmOverlayValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.OverlayId.Equal(other.OverlayId) {
+		return false
+	}
+
+	if !v.OverlayNetworkInterface.Equal(other.OverlayNetworkInterface) {
+		return false
+	}
+
+	if !v.OverlayPort.Equal(other.OverlayPort) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHvmOverlayValue) Type(ctx context.Context) attr.Type {
+	return ConfigHvmOverlayType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHvmOverlayValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"overlay_id":                basetypes.Int64Type{},
+		"overlay_network_interface": basetypes.StringType{},
+		"overlay_port":              basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigHvmPrivateType{}
+
+type ConfigHvmPrivateType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHvmPrivateType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHvmPrivateType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHvmPrivateType) String() string {
+	return "ConfigHvmPrivateType"
+}
+
+func (t ConfigHvmPrivateType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHvmPrivateValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmPrivateValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	clusterNetworkLayoutAttribute, ok := attributes["cluster_network_layout"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cluster_network_layout is missing from object`)
+
+		return nil, diags
+	}
+
+	clusterNetworkLayoutVal, ok := clusterNetworkLayoutAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cluster_network_layout expected to be basetypes.StringValue, was: %T`, clusterNetworkLayoutAttribute))
+	}
+
+	hostNetworkInterfaceAttribute, ok := attributes["host_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_network_interface is missing from object`)
+
+		return nil, diags
+	}
+
+	hostNetworkInterfaceVal, ok := hostNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_network_interface expected to be basetypes.StringValue, was: %T`, hostNetworkInterfaceAttribute))
+	}
+
+	virtualSwitchIdAttribute, ok := attributes["virtual_switch_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_switch_id is missing from object`)
+
+		return nil, diags
+	}
+
+	virtualSwitchIdVal, ok := virtualSwitchIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_switch_id expected to be basetypes.Int64Value, was: %T`, virtualSwitchIdAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHvmPrivateValue{
+		ClusterNetworkLayout: clusterNetworkLayoutVal,
+		HostNetworkInterface: hostNetworkInterfaceVal,
+		VirtualSwitchId:      virtualSwitchIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmPrivateValueNull() ConfigHvmPrivateValue {
+	return ConfigHvmPrivateValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHvmPrivateValueUnknown() ConfigHvmPrivateValue {
+	return ConfigHvmPrivateValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHvmPrivateValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHvmPrivateValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHvmPrivateValue Attribute Value",
+				"While creating a ConfigHvmPrivateValue value, a missing attribute value was detected. "+
+					"A ConfigHvmPrivateValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmPrivateValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHvmPrivateValue Attribute Type",
+				"While creating a ConfigHvmPrivateValue value, an invalid attribute value was detected. "+
+					"A ConfigHvmPrivateValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmPrivateValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHvmPrivateValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHvmPrivateValue Attribute Value",
+				"While creating a ConfigHvmPrivateValue value, an extra attribute value was detected. "+
+					"A ConfigHvmPrivateValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHvmPrivateValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmPrivateValueUnknown(), diags
+	}
+
+	clusterNetworkLayoutAttribute, ok := attributes["cluster_network_layout"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`cluster_network_layout is missing from object`)
+
+		return NewConfigHvmPrivateValueUnknown(), diags
+	}
+
+	clusterNetworkLayoutVal, ok := clusterNetworkLayoutAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`cluster_network_layout expected to be basetypes.StringValue, was: %T`, clusterNetworkLayoutAttribute))
+	}
+
+	hostNetworkInterfaceAttribute, ok := attributes["host_network_interface"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_network_interface is missing from object`)
+
+		return NewConfigHvmPrivateValueUnknown(), diags
+	}
+
+	hostNetworkInterfaceVal, ok := hostNetworkInterfaceAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_network_interface expected to be basetypes.StringValue, was: %T`, hostNetworkInterfaceAttribute))
+	}
+
+	virtualSwitchIdAttribute, ok := attributes["virtual_switch_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`virtual_switch_id is missing from object`)
+
+		return NewConfigHvmPrivateValueUnknown(), diags
+	}
+
+	virtualSwitchIdVal, ok := virtualSwitchIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`virtual_switch_id expected to be basetypes.Int64Value, was: %T`, virtualSwitchIdAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmPrivateValueUnknown(), diags
+	}
+
+	return ConfigHvmPrivateValue{
+		ClusterNetworkLayout: clusterNetworkLayoutVal,
+		HostNetworkInterface: hostNetworkInterfaceVal,
+		VirtualSwitchId:      virtualSwitchIdVal,
+		state:                attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmPrivateValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHvmPrivateValue {
+	object, diags := NewConfigHvmPrivateValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHvmPrivateValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHvmPrivateType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHvmPrivateValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHvmPrivateValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmPrivateValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHvmPrivateValueMust(ConfigHvmPrivateValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHvmPrivateType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHvmPrivateValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHvmPrivateValue{}
+
+type ConfigHvmPrivateValue struct {
+	ClusterNetworkLayout basetypes.StringValue `tfsdk:"cluster_network_layout"`
+	HostNetworkInterface basetypes.StringValue `tfsdk:"host_network_interface"`
+	VirtualSwitchId      basetypes.Int64Value  `tfsdk:"virtual_switch_id"`
+	state                attr.ValueState
+}
+
+func (v ConfigHvmPrivateValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["cluster_network_layout"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["host_network_interface"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["virtual_switch_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.ClusterNetworkLayout.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["cluster_network_layout"] = val
+
+		val, err = v.HostNetworkInterface.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_network_interface"] = val
+
+		val, err = v.VirtualSwitchId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["virtual_switch_id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHvmPrivateValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHvmPrivateValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHvmPrivateValue) String() string {
+	return "ConfigHvmPrivateValue"
+}
+
+func (v ConfigHvmPrivateValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"cluster_network_layout": basetypes.StringType{},
+		"host_network_interface": basetypes.StringType{},
+		"virtual_switch_id":      basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"cluster_network_layout": v.ClusterNetworkLayout,
+			"host_network_interface": v.HostNetworkInterface,
+			"virtual_switch_id":      v.VirtualSwitchId,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHvmPrivateValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHvmPrivateValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ClusterNetworkLayout.Equal(other.ClusterNetworkLayout) {
+		return false
+	}
+
+	if !v.HostNetworkInterface.Equal(other.HostNetworkInterface) {
+		return false
+	}
+
+	if !v.VirtualSwitchId.Equal(other.VirtualSwitchId) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHvmPrivateValue) Type(ctx context.Context) attr.Type {
+	return ConfigHvmPrivateType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHvmPrivateValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"cluster_network_layout": basetypes.StringType{},
+		"host_network_interface": basetypes.StringType{},
+		"virtual_switch_id":      basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigHvmSriovType{}
+
+type ConfigHvmSriovType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigHvmSriovType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigHvmSriovType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigHvmSriovType) String() string {
+	return "ConfigHvmSriovType"
+}
+
+func (t ConfigHvmSriovType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigHvmSriovValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmSriovValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	physicalFunctionAttribute, ok := attributes["physical_function"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`physical_function is missing from object`)
+
+		return nil, diags
+	}
+
+	physicalFunctionVal, ok := physicalFunctionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`physical_function expected to be basetypes.StringValue, was: %T`, physicalFunctionAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigHvmSriovValue{
+		PhysicalFunction: physicalFunctionVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmSriovValueNull() ConfigHvmSriovValue {
+	return ConfigHvmSriovValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigHvmSriovValueUnknown() ConfigHvmSriovValue {
+	return ConfigHvmSriovValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigHvmSriovValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigHvmSriovValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigHvmSriovValue Attribute Value",
+				"While creating a ConfigHvmSriovValue value, a missing attribute value was detected. "+
+					"A ConfigHvmSriovValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmSriovValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigHvmSriovValue Attribute Type",
+				"While creating a ConfigHvmSriovValue value, an invalid attribute value was detected. "+
+					"A ConfigHvmSriovValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigHvmSriovValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigHvmSriovValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigHvmSriovValue Attribute Value",
+				"While creating a ConfigHvmSriovValue value, an extra attribute value was detected. "+
+					"A ConfigHvmSriovValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigHvmSriovValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmSriovValueUnknown(), diags
+	}
+
+	physicalFunctionAttribute, ok := attributes["physical_function"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`physical_function is missing from object`)
+
+		return NewConfigHvmSriovValueUnknown(), diags
+	}
+
+	physicalFunctionVal, ok := physicalFunctionAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`physical_function expected to be basetypes.StringValue, was: %T`, physicalFunctionAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigHvmSriovValueUnknown(), diags
+	}
+
+	return ConfigHvmSriovValue{
+		PhysicalFunction: physicalFunctionVal,
+		state:            attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigHvmSriovValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigHvmSriovValue {
+	object, diags := NewConfigHvmSriovValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigHvmSriovValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigHvmSriovType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigHvmSriovValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigHvmSriovValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigHvmSriovValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigHvmSriovValueMust(ConfigHvmSriovValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigHvmSriovType) ValueType(ctx context.Context) attr.Value {
+	return ConfigHvmSriovValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigHvmSriovValue{}
+
+type ConfigHvmSriovValue struct {
+	PhysicalFunction basetypes.StringValue `tfsdk:"physical_function"`
+	state            attr.ValueState
+}
+
+func (v ConfigHvmSriovValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["physical_function"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.PhysicalFunction.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["physical_function"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigHvmSriovValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigHvmSriovValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigHvmSriovValue) String() string {
+	return "ConfigHvmSriovValue"
+}
+
+func (v ConfigHvmSriovValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"physical_function": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"physical_function": v.PhysicalFunction,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigHvmSriovValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigHvmSriovValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.PhysicalFunction.Equal(other.PhysicalFunction) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigHvmSriovValue) Type(ctx context.Context) attr.Type {
+	return ConfigHvmSriovType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigHvmSriovValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"physical_function": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigNsxCloudType{}
+
+type ConfigNsxCloudType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigNsxCloudType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxCloudType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigNsxCloudType) String() string {
+	return "ConfigNsxCloudType"
+}
+
+func (t ConfigNsxCloudType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigNsxCloudValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxCloudValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	connectedGatewayAttribute, ok := attributes["connected_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connected_gateway is missing from object`)
+
+		return nil, diags
+	}
+
+	connectedGatewayVal, ok := connectedGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connected_gateway expected to be basetypes.StringValue, was: %T`, connectedGatewayAttribute))
+	}
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	subnetDhcpLeaseTimeAttribute, ok := attributes["subnet_dhcp_lease_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpLeaseTimeVal, ok := subnetDhcpLeaseTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeAttribute))
+	}
+
+	subnetDhcpServerAddressAttribute, ok := attributes["subnet_dhcp_server_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpServerAddressVal, ok := subnetDhcpServerAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressAttribute))
+	}
+
+	subnetIpManagementTypeAttribute, ok := attributes["subnet_ip_management_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_management_type is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpManagementTypeVal, ok := subnetIpManagementTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_management_type expected to be basetypes.StringValue, was: %T`, subnetIpManagementTypeAttribute))
+	}
+
+	subnetIpServerIdAttribute, ok := attributes["subnet_ip_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpServerIdVal, ok := subnetIpServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
+	}
+
+	vlanIdsAttribute, ok := attributes["vlan_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	vlanIdsVal, ok := vlanIdsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_ids expected to be basetypes.StringValue, was: %T`, vlanIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigNsxCloudValue{
+		ConnectedGateway:        connectedGatewayVal,
+		DhcpRange:               dhcpRangeVal,
+		SubnetDhcpLeaseTime:     subnetDhcpLeaseTimeVal,
+		SubnetDhcpServerAddress: subnetDhcpServerAddressVal,
+		SubnetIpManagementType:  subnetIpManagementTypeVal,
+		SubnetIpServerId:        subnetIpServerIdVal,
+		VlanIds:                 vlanIdsVal,
+		state:                   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxCloudValueNull() ConfigNsxCloudValue {
+	return ConfigNsxCloudValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigNsxCloudValueUnknown() ConfigNsxCloudValue {
+	return ConfigNsxCloudValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigNsxCloudValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxCloudValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigNsxCloudValue Attribute Value",
+				"While creating a ConfigNsxCloudValue value, a missing attribute value was detected. "+
+					"A ConfigNsxCloudValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxCloudValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigNsxCloudValue Attribute Type",
+				"While creating a ConfigNsxCloudValue value, an invalid attribute value was detected. "+
+					"A ConfigNsxCloudValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxCloudValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxCloudValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigNsxCloudValue Attribute Value",
+				"While creating a ConfigNsxCloudValue value, an extra attribute value was detected. "+
+					"A ConfigNsxCloudValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigNsxCloudValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	connectedGatewayAttribute, ok := attributes["connected_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connected_gateway is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	connectedGatewayVal, ok := connectedGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connected_gateway expected to be basetypes.StringValue, was: %T`, connectedGatewayAttribute))
+	}
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	subnetDhcpLeaseTimeAttribute, ok := attributes["subnet_dhcp_lease_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	subnetDhcpLeaseTimeVal, ok := subnetDhcpLeaseTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeAttribute))
+	}
+
+	subnetDhcpServerAddressAttribute, ok := attributes["subnet_dhcp_server_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	subnetDhcpServerAddressVal, ok := subnetDhcpServerAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressAttribute))
+	}
+
+	subnetIpManagementTypeAttribute, ok := attributes["subnet_ip_management_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_management_type is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	subnetIpManagementTypeVal, ok := subnetIpManagementTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_management_type expected to be basetypes.StringValue, was: %T`, subnetIpManagementTypeAttribute))
+	}
+
+	subnetIpServerIdAttribute, ok := attributes["subnet_ip_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_id is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	subnetIpServerIdVal, ok := subnetIpServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
+	}
+
+	vlanIdsAttribute, ok := attributes["vlan_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_ids is missing from object`)
+
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	vlanIdsVal, ok := vlanIdsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_ids expected to be basetypes.StringValue, was: %T`, vlanIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxCloudValueUnknown(), diags
+	}
+
+	return ConfigNsxCloudValue{
+		ConnectedGateway:        connectedGatewayVal,
+		DhcpRange:               dhcpRangeVal,
+		SubnetDhcpLeaseTime:     subnetDhcpLeaseTimeVal,
+		SubnetDhcpServerAddress: subnetDhcpServerAddressVal,
+		SubnetIpManagementType:  subnetIpManagementTypeVal,
+		SubnetIpServerId:        subnetIpServerIdVal,
+		VlanIds:                 vlanIdsVal,
+		state:                   attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxCloudValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxCloudValue {
+	object, diags := NewConfigNsxCloudValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigNsxCloudValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigNsxCloudType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigNsxCloudValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigNsxCloudValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxCloudValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigNsxCloudValueMust(ConfigNsxCloudValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigNsxCloudType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxCloudValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigNsxCloudValue{}
+
+type ConfigNsxCloudValue struct {
+	ConnectedGateway        basetypes.StringValue `tfsdk:"connected_gateway"`
+	DhcpRange               basetypes.StringValue `tfsdk:"dhcp_range"`
+	SubnetDhcpLeaseTime     basetypes.Int64Value  `tfsdk:"subnet_dhcp_lease_time"`
+	SubnetDhcpServerAddress basetypes.StringValue `tfsdk:"subnet_dhcp_server_address"`
+	SubnetIpManagementType  basetypes.StringValue `tfsdk:"subnet_ip_management_type"`
+	SubnetIpServerId        basetypes.Int64Value  `tfsdk:"subnet_ip_server_id"`
+	VlanIds                 basetypes.StringValue `tfsdk:"vlan_ids"`
+	state                   attr.ValueState
+}
+
+func (v ConfigNsxCloudValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 7)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["connected_gateway"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_range"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_lease_time"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_server_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_ip_management_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_ip_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["vlan_ids"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 7)
+
+		val, err = v.ConnectedGateway.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["connected_gateway"] = val
+
+		val, err = v.DhcpRange.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_range"] = val
+
+		val, err = v.SubnetDhcpLeaseTime.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_lease_time"] = val
+
+		val, err = v.SubnetDhcpServerAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_server_address"] = val
+
+		val, err = v.SubnetIpManagementType.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_management_type"] = val
+
+		val, err = v.SubnetIpServerId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_server_id"] = val
+
+		val, err = v.VlanIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vlan_ids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigNsxCloudValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigNsxCloudValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigNsxCloudValue) String() string {
+	return "ConfigNsxCloudValue"
+}
+
+func (v ConfigNsxCloudValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"connected_gateway":          basetypes.StringType{},
+		"dhcp_range":                 basetypes.StringType{},
+		"subnet_dhcp_lease_time":     basetypes.Int64Type{},
+		"subnet_dhcp_server_address": basetypes.StringType{},
+		"subnet_ip_management_type":  basetypes.StringType{},
+		"subnet_ip_server_id":        basetypes.Int64Type{},
+		"vlan_ids":                   basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"connected_gateway":          v.ConnectedGateway,
+			"dhcp_range":                 v.DhcpRange,
+			"subnet_dhcp_lease_time":     v.SubnetDhcpLeaseTime,
+			"subnet_dhcp_server_address": v.SubnetDhcpServerAddress,
+			"subnet_ip_management_type":  v.SubnetIpManagementType,
+			"subnet_ip_server_id":        v.SubnetIpServerId,
+			"vlan_ids":                   v.VlanIds,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigNsxCloudValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxCloudValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ConnectedGateway.Equal(other.ConnectedGateway) {
+		return false
+	}
+
+	if !v.DhcpRange.Equal(other.DhcpRange) {
+		return false
+	}
+
+	if !v.SubnetDhcpLeaseTime.Equal(other.SubnetDhcpLeaseTime) {
+		return false
+	}
+
+	if !v.SubnetDhcpServerAddress.Equal(other.SubnetDhcpServerAddress) {
+		return false
+	}
+
+	if !v.SubnetIpManagementType.Equal(other.SubnetIpManagementType) {
+		return false
+	}
+
+	if !v.SubnetIpServerId.Equal(other.SubnetIpServerId) {
+		return false
+	}
+
+	if !v.VlanIds.Equal(other.VlanIds) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigNsxCloudValue) Type(ctx context.Context) attr.Type {
+	return ConfigNsxCloudType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigNsxCloudValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"connected_gateway":          basetypes.StringType{},
+		"dhcp_range":                 basetypes.StringType{},
+		"subnet_dhcp_lease_time":     basetypes.Int64Type{},
+		"subnet_dhcp_server_address": basetypes.StringType{},
+		"subnet_ip_management_type":  basetypes.StringType{},
+		"subnet_ip_server_id":        basetypes.Int64Type{},
+		"vlan_ids":                   basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigNsxtType{}
+
+type ConfigNsxtType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigNsxtType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigNsxtType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigNsxtType) String() string {
+	return "ConfigNsxtType"
+}
+
+func (t ConfigNsxtType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	connectedGatewayAttribute, ok := attributes["connected_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connected_gateway is missing from object`)
+
+		return nil, diags
+	}
+
+	connectedGatewayVal, ok := connectedGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connected_gateway expected to be basetypes.StringValue, was: %T`, connectedGatewayAttribute))
+	}
+
+	dhcpDomainNamesIpv6Attribute, ok := attributes["dhcp_domain_names_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_domain_names_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpDomainNamesIpv6Val, ok := dhcpDomainNamesIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_domain_names_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpDomainNamesIpv6Attribute))
+	}
+
+	dhcpExcludedRangesIpv6Attribute, ok := attributes["dhcp_excluded_ranges_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_excluded_ranges_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpExcludedRangesIpv6Val, ok := dhcpExcludedRangesIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_excluded_ranges_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpExcludedRangesIpv6Attribute))
+	}
+
+	dhcpPreferredTimeIpv6Attribute, ok := attributes["dhcp_preferred_time_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_preferred_time_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpPreferredTimeIpv6Val, ok := dhcpPreferredTimeIpv6Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_preferred_time_ipv6 expected to be basetypes.Int64Value, was: %T`, dhcpPreferredTimeIpv6Attribute))
+	}
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	dhcpRangeIpv6Attribute, ok := attributes["dhcp_range_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpRangeIpv6Val, ok := dhcpRangeIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpRangeIpv6Attribute))
+	}
+
+	dhcpSntpServersIpv6Attribute, ok := attributes["dhcp_sntp_servers_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_sntp_servers_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpSntpServersIpv6Val, ok := dhcpSntpServersIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_sntp_servers_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpSntpServersIpv6Attribute))
+	}
+
+	subnetDhcpLeaseTimeAttribute, ok := attributes["subnet_dhcp_lease_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpLeaseTimeVal, ok := subnetDhcpLeaseTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeAttribute))
+	}
+
+	subnetDhcpLeaseTimeIpv6Attribute, ok := attributes["subnet_dhcp_lease_time_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpLeaseTimeIpv6Val, ok := subnetDhcpLeaseTimeIpv6Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time_ipv6 expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeIpv6Attribute))
+	}
+
+	subnetDhcpServerAddressAttribute, ok := attributes["subnet_dhcp_server_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpServerAddressVal, ok := subnetDhcpServerAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressAttribute))
+	}
+
+	subnetDhcpServerAddressIpv6Attribute, ok := attributes["subnet_dhcp_server_address_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address_ipv6 is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetDhcpServerAddressIpv6Val, ok := subnetDhcpServerAddressIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address_ipv6 expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressIpv6Attribute))
+	}
+
+	subnetIpManagementTypeAttribute, ok := attributes["subnet_ip_management_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_management_type is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpManagementTypeVal, ok := subnetIpManagementTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_management_type expected to be basetypes.StringValue, was: %T`, subnetIpManagementTypeAttribute))
+	}
+
+	subnetIpServerIdAttribute, ok := attributes["subnet_ip_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_id is missing from object`)
+
+		return nil, diags
+	}
+
+	subnetIpServerIdVal, ok := subnetIpServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
+	}
+
+	vlanIdsAttribute, ok := attributes["vlan_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_ids is missing from object`)
+
+		return nil, diags
+	}
+
+	vlanIdsVal, ok := vlanIdsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_ids expected to be basetypes.StringValue, was: %T`, vlanIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigNsxtValue{
+		ConnectedGateway:            connectedGatewayVal,
+		DhcpDomainNamesIpv6:         dhcpDomainNamesIpv6Val,
+		DhcpExcludedRangesIpv6:      dhcpExcludedRangesIpv6Val,
+		DhcpPreferredTimeIpv6:       dhcpPreferredTimeIpv6Val,
+		DhcpRange:                   dhcpRangeVal,
+		DhcpRangeIpv6:               dhcpRangeIpv6Val,
+		DhcpSntpServersIpv6:         dhcpSntpServersIpv6Val,
+		SubnetDhcpLeaseTime:         subnetDhcpLeaseTimeVal,
+		SubnetDhcpLeaseTimeIpv6:     subnetDhcpLeaseTimeIpv6Val,
+		SubnetDhcpServerAddress:     subnetDhcpServerAddressVal,
+		SubnetDhcpServerAddressIpv6: subnetDhcpServerAddressIpv6Val,
+		SubnetIpManagementType:      subnetIpManagementTypeVal,
+		SubnetIpServerId:            subnetIpServerIdVal,
+		VlanIds:                     vlanIdsVal,
+		state:                       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueNull() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigNsxtValueUnknown() ConfigNsxtValue {
+	return ConfigNsxtValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigNsxtValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigNsxtValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, a missing attribute value was detected. "+
+					"A ConfigNsxtValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigNsxtValue Attribute Type",
+				"While creating a ConfigNsxtValue value, an invalid attribute value was detected. "+
+					"A ConfigNsxtValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigNsxtValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigNsxtValue Attribute Value",
+				"While creating a ConfigNsxtValue value, an extra attribute value was detected. "+
+					"A ConfigNsxtValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigNsxtValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	connectedGatewayAttribute, ok := attributes["connected_gateway"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`connected_gateway is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	connectedGatewayVal, ok := connectedGatewayAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`connected_gateway expected to be basetypes.StringValue, was: %T`, connectedGatewayAttribute))
+	}
+
+	dhcpDomainNamesIpv6Attribute, ok := attributes["dhcp_domain_names_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_domain_names_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpDomainNamesIpv6Val, ok := dhcpDomainNamesIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_domain_names_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpDomainNamesIpv6Attribute))
+	}
+
+	dhcpExcludedRangesIpv6Attribute, ok := attributes["dhcp_excluded_ranges_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_excluded_ranges_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpExcludedRangesIpv6Val, ok := dhcpExcludedRangesIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_excluded_ranges_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpExcludedRangesIpv6Attribute))
+	}
+
+	dhcpPreferredTimeIpv6Attribute, ok := attributes["dhcp_preferred_time_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_preferred_time_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpPreferredTimeIpv6Val, ok := dhcpPreferredTimeIpv6Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_preferred_time_ipv6 expected to be basetypes.Int64Value, was: %T`, dhcpPreferredTimeIpv6Attribute))
+	}
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	dhcpRangeIpv6Attribute, ok := attributes["dhcp_range_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpRangeIpv6Val, ok := dhcpRangeIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpRangeIpv6Attribute))
+	}
+
+	dhcpSntpServersIpv6Attribute, ok := attributes["dhcp_sntp_servers_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_sntp_servers_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	dhcpSntpServersIpv6Val, ok := dhcpSntpServersIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_sntp_servers_ipv6 expected to be basetypes.StringValue, was: %T`, dhcpSntpServersIpv6Attribute))
+	}
+
+	subnetDhcpLeaseTimeAttribute, ok := attributes["subnet_dhcp_lease_time"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetDhcpLeaseTimeVal, ok := subnetDhcpLeaseTimeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeAttribute))
+	}
+
+	subnetDhcpLeaseTimeIpv6Attribute, ok := attributes["subnet_dhcp_lease_time_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_lease_time_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetDhcpLeaseTimeIpv6Val, ok := subnetDhcpLeaseTimeIpv6Attribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_lease_time_ipv6 expected to be basetypes.Int64Value, was: %T`, subnetDhcpLeaseTimeIpv6Attribute))
+	}
+
+	subnetDhcpServerAddressAttribute, ok := attributes["subnet_dhcp_server_address"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetDhcpServerAddressVal, ok := subnetDhcpServerAddressAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressAttribute))
+	}
+
+	subnetDhcpServerAddressIpv6Attribute, ok := attributes["subnet_dhcp_server_address_ipv6"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_dhcp_server_address_ipv6 is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetDhcpServerAddressIpv6Val, ok := subnetDhcpServerAddressIpv6Attribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_dhcp_server_address_ipv6 expected to be basetypes.StringValue, was: %T`, subnetDhcpServerAddressIpv6Attribute))
+	}
+
+	subnetIpManagementTypeAttribute, ok := attributes["subnet_ip_management_type"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_management_type is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetIpManagementTypeVal, ok := subnetIpManagementTypeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_management_type expected to be basetypes.StringValue, was: %T`, subnetIpManagementTypeAttribute))
+	}
+
+	subnetIpServerIdAttribute, ok := attributes["subnet_ip_server_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`subnet_ip_server_id is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	subnetIpServerIdVal, ok := subnetIpServerIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`subnet_ip_server_id expected to be basetypes.Int64Value, was: %T`, subnetIpServerIdAttribute))
+	}
+
+	vlanIdsAttribute, ok := attributes["vlan_ids"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_ids is missing from object`)
+
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	vlanIdsVal, ok := vlanIdsAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_ids expected to be basetypes.StringValue, was: %T`, vlanIdsAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigNsxtValueUnknown(), diags
+	}
+
+	return ConfigNsxtValue{
+		ConnectedGateway:            connectedGatewayVal,
+		DhcpDomainNamesIpv6:         dhcpDomainNamesIpv6Val,
+		DhcpExcludedRangesIpv6:      dhcpExcludedRangesIpv6Val,
+		DhcpPreferredTimeIpv6:       dhcpPreferredTimeIpv6Val,
+		DhcpRange:                   dhcpRangeVal,
+		DhcpRangeIpv6:               dhcpRangeIpv6Val,
+		DhcpSntpServersIpv6:         dhcpSntpServersIpv6Val,
+		SubnetDhcpLeaseTime:         subnetDhcpLeaseTimeVal,
+		SubnetDhcpLeaseTimeIpv6:     subnetDhcpLeaseTimeIpv6Val,
+		SubnetDhcpServerAddress:     subnetDhcpServerAddressVal,
+		SubnetDhcpServerAddressIpv6: subnetDhcpServerAddressIpv6Val,
+		SubnetIpManagementType:      subnetIpManagementTypeVal,
+		SubnetIpServerId:            subnetIpServerIdVal,
+		VlanIds:                     vlanIdsVal,
+		state:                       attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigNsxtValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigNsxtValue {
+	object, diags := NewConfigNsxtValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigNsxtValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigNsxtType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigNsxtValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigNsxtValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigNsxtValueMust(ConfigNsxtValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigNsxtType) ValueType(ctx context.Context) attr.Value {
+	return ConfigNsxtValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigNsxtValue{}
+
+type ConfigNsxtValue struct {
+	ConnectedGateway            basetypes.StringValue `tfsdk:"connected_gateway"`
+	DhcpDomainNamesIpv6         basetypes.StringValue `tfsdk:"dhcp_domain_names_ipv6"`
+	DhcpExcludedRangesIpv6      basetypes.StringValue `tfsdk:"dhcp_excluded_ranges_ipv6"`
+	DhcpPreferredTimeIpv6       basetypes.Int64Value  `tfsdk:"dhcp_preferred_time_ipv6"`
+	DhcpRange                   basetypes.StringValue `tfsdk:"dhcp_range"`
+	DhcpRangeIpv6               basetypes.StringValue `tfsdk:"dhcp_range_ipv6"`
+	DhcpSntpServersIpv6         basetypes.StringValue `tfsdk:"dhcp_sntp_servers_ipv6"`
+	SubnetDhcpLeaseTime         basetypes.Int64Value  `tfsdk:"subnet_dhcp_lease_time"`
+	SubnetDhcpLeaseTimeIpv6     basetypes.Int64Value  `tfsdk:"subnet_dhcp_lease_time_ipv6"`
+	SubnetDhcpServerAddress     basetypes.StringValue `tfsdk:"subnet_dhcp_server_address"`
+	SubnetDhcpServerAddressIpv6 basetypes.StringValue `tfsdk:"subnet_dhcp_server_address_ipv6"`
+	SubnetIpManagementType      basetypes.StringValue `tfsdk:"subnet_ip_management_type"`
+	SubnetIpServerId            basetypes.Int64Value  `tfsdk:"subnet_ip_server_id"`
+	VlanIds                     basetypes.StringValue `tfsdk:"vlan_ids"`
+	state                       attr.ValueState
+}
+
+func (v ConfigNsxtValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 14)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["connected_gateway"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_domain_names_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_excluded_ranges_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_preferred_time_ipv6"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["dhcp_range"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_range_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["dhcp_sntp_servers_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_lease_time"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_lease_time_ipv6"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_server_address"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_dhcp_server_address_ipv6"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_ip_management_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["subnet_ip_server_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["vlan_ids"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 14)
+
+		val, err = v.ConnectedGateway.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["connected_gateway"] = val
+
+		val, err = v.DhcpDomainNamesIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_domain_names_ipv6"] = val
+
+		val, err = v.DhcpExcludedRangesIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_excluded_ranges_ipv6"] = val
+
+		val, err = v.DhcpPreferredTimeIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_preferred_time_ipv6"] = val
+
+		val, err = v.DhcpRange.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_range"] = val
+
+		val, err = v.DhcpRangeIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_range_ipv6"] = val
+
+		val, err = v.DhcpSntpServersIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_sntp_servers_ipv6"] = val
+
+		val, err = v.SubnetDhcpLeaseTime.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_lease_time"] = val
+
+		val, err = v.SubnetDhcpLeaseTimeIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_lease_time_ipv6"] = val
+
+		val, err = v.SubnetDhcpServerAddress.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_server_address"] = val
+
+		val, err = v.SubnetDhcpServerAddressIpv6.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_dhcp_server_address_ipv6"] = val
+
+		val, err = v.SubnetIpManagementType.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_management_type"] = val
+
+		val, err = v.SubnetIpServerId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["subnet_ip_server_id"] = val
+
+		val, err = v.VlanIds.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vlan_ids"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigNsxtValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigNsxtValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigNsxtValue) String() string {
+	return "ConfigNsxtValue"
+}
+
+func (v ConfigNsxtValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"connected_gateway":               basetypes.StringType{},
+		"dhcp_domain_names_ipv6":          basetypes.StringType{},
+		"dhcp_excluded_ranges_ipv6":       basetypes.StringType{},
+		"dhcp_preferred_time_ipv6":        basetypes.Int64Type{},
+		"dhcp_range":                      basetypes.StringType{},
+		"dhcp_range_ipv6":                 basetypes.StringType{},
+		"dhcp_sntp_servers_ipv6":          basetypes.StringType{},
+		"subnet_dhcp_lease_time":          basetypes.Int64Type{},
+		"subnet_dhcp_lease_time_ipv6":     basetypes.Int64Type{},
+		"subnet_dhcp_server_address":      basetypes.StringType{},
+		"subnet_dhcp_server_address_ipv6": basetypes.StringType{},
+		"subnet_ip_management_type":       basetypes.StringType{},
+		"subnet_ip_server_id":             basetypes.Int64Type{},
+		"vlan_ids":                        basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"connected_gateway":               v.ConnectedGateway,
+			"dhcp_domain_names_ipv6":          v.DhcpDomainNamesIpv6,
+			"dhcp_excluded_ranges_ipv6":       v.DhcpExcludedRangesIpv6,
+			"dhcp_preferred_time_ipv6":        v.DhcpPreferredTimeIpv6,
+			"dhcp_range":                      v.DhcpRange,
+			"dhcp_range_ipv6":                 v.DhcpRangeIpv6,
+			"dhcp_sntp_servers_ipv6":          v.DhcpSntpServersIpv6,
+			"subnet_dhcp_lease_time":          v.SubnetDhcpLeaseTime,
+			"subnet_dhcp_lease_time_ipv6":     v.SubnetDhcpLeaseTimeIpv6,
+			"subnet_dhcp_server_address":      v.SubnetDhcpServerAddress,
+			"subnet_dhcp_server_address_ipv6": v.SubnetDhcpServerAddressIpv6,
+			"subnet_ip_management_type":       v.SubnetIpManagementType,
+			"subnet_ip_server_id":             v.SubnetIpServerId,
+			"vlan_ids":                        v.VlanIds,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigNsxtValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigNsxtValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.ConnectedGateway.Equal(other.ConnectedGateway) {
+		return false
+	}
+
+	if !v.DhcpDomainNamesIpv6.Equal(other.DhcpDomainNamesIpv6) {
+		return false
+	}
+
+	if !v.DhcpExcludedRangesIpv6.Equal(other.DhcpExcludedRangesIpv6) {
+		return false
+	}
+
+	if !v.DhcpPreferredTimeIpv6.Equal(other.DhcpPreferredTimeIpv6) {
+		return false
+	}
+
+	if !v.DhcpRange.Equal(other.DhcpRange) {
+		return false
+	}
+
+	if !v.DhcpRangeIpv6.Equal(other.DhcpRangeIpv6) {
+		return false
+	}
+
+	if !v.DhcpSntpServersIpv6.Equal(other.DhcpSntpServersIpv6) {
+		return false
+	}
+
+	if !v.SubnetDhcpLeaseTime.Equal(other.SubnetDhcpLeaseTime) {
+		return false
+	}
+
+	if !v.SubnetDhcpLeaseTimeIpv6.Equal(other.SubnetDhcpLeaseTimeIpv6) {
+		return false
+	}
+
+	if !v.SubnetDhcpServerAddress.Equal(other.SubnetDhcpServerAddress) {
+		return false
+	}
+
+	if !v.SubnetDhcpServerAddressIpv6.Equal(other.SubnetDhcpServerAddressIpv6) {
+		return false
+	}
+
+	if !v.SubnetIpManagementType.Equal(other.SubnetIpManagementType) {
+		return false
+	}
+
+	if !v.SubnetIpServerId.Equal(other.SubnetIpServerId) {
+		return false
+	}
+
+	if !v.VlanIds.Equal(other.VlanIds) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigNsxtValue) Type(ctx context.Context) attr.Type {
+	return ConfigNsxtType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigNsxtValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"connected_gateway":               basetypes.StringType{},
+		"dhcp_domain_names_ipv6":          basetypes.StringType{},
+		"dhcp_excluded_ranges_ipv6":       basetypes.StringType{},
+		"dhcp_preferred_time_ipv6":        basetypes.Int64Type{},
+		"dhcp_range":                      basetypes.StringType{},
+		"dhcp_range_ipv6":                 basetypes.StringType{},
+		"dhcp_sntp_servers_ipv6":          basetypes.StringType{},
+		"subnet_dhcp_lease_time":          basetypes.Int64Type{},
+		"subnet_dhcp_lease_time_ipv6":     basetypes.Int64Type{},
+		"subnet_dhcp_server_address":      basetypes.StringType{},
+		"subnet_dhcp_server_address_ipv6": basetypes.StringType{},
+		"subnet_ip_management_type":       basetypes.StringType{},
+		"subnet_ip_server_id":             basetypes.Int64Type{},
+		"vlan_ids":                        basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigOpenstackType{}
+
+type ConfigOpenstackType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigOpenstackType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigOpenstackType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigOpenstackType) String() string {
+	return "ConfigOpenstackType"
+}
+
+func (t ConfigOpenstackType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigOpenstackValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigOpenstackValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return nil, diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	hostRoutesAttribute, ok := attributes["host_routes"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_routes is missing from object`)
+
+		return nil, diags
+	}
+
+	hostRoutesVal, ok := hostRoutesAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_routes expected to be basetypes.StringValue, was: %T`, hostRoutesAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigOpenstackValue{
+		DhcpRange:  dhcpRangeVal,
+		HostRoutes: hostRoutesVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigOpenstackValueNull() ConfigOpenstackValue {
+	return ConfigOpenstackValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigOpenstackValueUnknown() ConfigOpenstackValue {
+	return ConfigOpenstackValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigOpenstackValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigOpenstackValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigOpenstackValue Attribute Value",
+				"While creating a ConfigOpenstackValue value, a missing attribute value was detected. "+
+					"A ConfigOpenstackValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigOpenstackValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigOpenstackValue Attribute Type",
+				"While creating a ConfigOpenstackValue value, an invalid attribute value was detected. "+
+					"A ConfigOpenstackValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigOpenstackValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigOpenstackValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigOpenstackValue Attribute Value",
+				"While creating a ConfigOpenstackValue value, an extra attribute value was detected. "+
+					"A ConfigOpenstackValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigOpenstackValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigOpenstackValueUnknown(), diags
+	}
+
+	dhcpRangeAttribute, ok := attributes["dhcp_range"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`dhcp_range is missing from object`)
+
+		return NewConfigOpenstackValueUnknown(), diags
+	}
+
+	dhcpRangeVal, ok := dhcpRangeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`dhcp_range expected to be basetypes.StringValue, was: %T`, dhcpRangeAttribute))
+	}
+
+	hostRoutesAttribute, ok := attributes["host_routes"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_routes is missing from object`)
+
+		return NewConfigOpenstackValueUnknown(), diags
+	}
+
+	hostRoutesVal, ok := hostRoutesAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_routes expected to be basetypes.StringValue, was: %T`, hostRoutesAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigOpenstackValueUnknown(), diags
+	}
+
+	return ConfigOpenstackValue{
+		DhcpRange:  dhcpRangeVal,
+		HostRoutes: hostRoutesVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigOpenstackValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigOpenstackValue {
+	object, diags := NewConfigOpenstackValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigOpenstackValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigOpenstackType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigOpenstackValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigOpenstackValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigOpenstackValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigOpenstackValueMust(ConfigOpenstackValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigOpenstackType) ValueType(ctx context.Context) attr.Value {
+	return ConfigOpenstackValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigOpenstackValue{}
+
+type ConfigOpenstackValue struct {
+	DhcpRange  basetypes.StringValue `tfsdk:"dhcp_range"`
+	HostRoutes basetypes.StringValue `tfsdk:"host_routes"`
+	state      attr.ValueState
+}
+
+func (v ConfigOpenstackValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["dhcp_range"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["host_routes"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.DhcpRange.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["dhcp_range"] = val
+
+		val, err = v.HostRoutes.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_routes"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigOpenstackValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigOpenstackValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigOpenstackValue) String() string {
+	return "ConfigOpenstackValue"
+}
+
+func (v ConfigOpenstackValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"dhcp_range":  basetypes.StringType{},
+		"host_routes": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"dhcp_range":  v.DhcpRange,
+			"host_routes": v.HostRoutes,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigOpenstackValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigOpenstackValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.DhcpRange.Equal(other.DhcpRange) {
+		return false
+	}
+
+	if !v.HostRoutes.Equal(other.HostRoutes) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigOpenstackValue) Type(ctx context.Context) attr.Type {
+	return ConfigOpenstackType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigOpenstackValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"dhcp_range":  basetypes.StringType{},
+		"host_routes": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = ConfigOvsPortGroupType{}
+
+type ConfigOvsPortGroupType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigOvsPortGroupType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigOvsPortGroupType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigOvsPortGroupType) String() string {
+	return "ConfigOvsPortGroupType"
+}
+
+func (t ConfigOvsPortGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewConfigOvsPortGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigOvsPortGroupValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	trunkOnlyAttribute, ok := attributes["trunk_only"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`trunk_only is missing from object`)
+
+		return nil, diags
+	}
+
+	trunkOnlyVal, ok := trunkOnlyAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`trunk_only expected to be basetypes.BoolValue, was: %T`, trunkOnlyAttribute))
+	}
+
+	vlanTrunksAttribute, ok := attributes["vlan_trunks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_trunks is missing from object`)
+
+		return nil, diags
+	}
+
+	vlanTrunksVal, ok := vlanTrunksAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_trunks expected to be basetypes.StringValue, was: %T`, vlanTrunksAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigOvsPortGroupValue{
+		TrunkOnly:  trunkOnlyVal,
+		VlanTrunks: vlanTrunksVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigOvsPortGroupValueNull() ConfigOvsPortGroupValue {
+	return ConfigOvsPortGroupValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigOvsPortGroupValueUnknown() ConfigOvsPortGroupValue {
+	return ConfigOvsPortGroupValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigOvsPortGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigOvsPortGroupValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigOvsPortGroupValue Attribute Value",
+				"While creating a ConfigOvsPortGroupValue value, a missing attribute value was detected. "+
+					"A ConfigOvsPortGroupValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigOvsPortGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigOvsPortGroupValue Attribute Type",
+				"While creating a ConfigOvsPortGroupValue value, an invalid attribute value was detected. "+
+					"A ConfigOvsPortGroupValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigOvsPortGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigOvsPortGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigOvsPortGroupValue Attribute Value",
+				"While creating a ConfigOvsPortGroupValue value, an extra attribute value was detected. "+
+					"A ConfigOvsPortGroupValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigOvsPortGroupValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigOvsPortGroupValueUnknown(), diags
+	}
+
+	trunkOnlyAttribute, ok := attributes["trunk_only"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`trunk_only is missing from object`)
+
+		return NewConfigOvsPortGroupValueUnknown(), diags
+	}
+
+	trunkOnlyVal, ok := trunkOnlyAttribute.(basetypes.BoolValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`trunk_only expected to be basetypes.BoolValue, was: %T`, trunkOnlyAttribute))
+	}
+
+	vlanTrunksAttribute, ok := attributes["vlan_trunks"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vlan_trunks is missing from object`)
+
+		return NewConfigOvsPortGroupValueUnknown(), diags
+	}
+
+	vlanTrunksVal, ok := vlanTrunksAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vlan_trunks expected to be basetypes.StringValue, was: %T`, vlanTrunksAttribute))
+	}
+
+	if diags.HasError() {
+		return NewConfigOvsPortGroupValueUnknown(), diags
+	}
+
+	return ConfigOvsPortGroupValue{
+		TrunkOnly:  trunkOnlyVal,
+		VlanTrunks: vlanTrunksVal,
+		state:      attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigOvsPortGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigOvsPortGroupValue {
+	object, diags := NewConfigOvsPortGroupValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigOvsPortGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigOvsPortGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigOvsPortGroupValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigOvsPortGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigOvsPortGroupValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigOvsPortGroupValueMust(ConfigOvsPortGroupValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigOvsPortGroupType) ValueType(ctx context.Context) attr.Value {
+	return ConfigOvsPortGroupValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigOvsPortGroupValue{}
+
+type ConfigOvsPortGroupValue struct {
+	TrunkOnly  basetypes.BoolValue   `tfsdk:"trunk_only"`
+	VlanTrunks basetypes.StringValue `tfsdk:"vlan_trunks"`
+	state      attr.ValueState
+}
+
+func (v ConfigOvsPortGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["trunk_only"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["vlan_trunks"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.TrunkOnly.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["trunk_only"] = val
+
+		val, err = v.VlanTrunks.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vlan_trunks"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigOvsPortGroupValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigOvsPortGroupValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigOvsPortGroupValue) String() string {
+	return "ConfigOvsPortGroupValue"
+}
+
+func (v ConfigOvsPortGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"trunk_only":  basetypes.BoolType{},
+		"vlan_trunks": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"trunk_only":  v.TrunkOnly,
+			"vlan_trunks": v.VlanTrunks,
+		})
+
+	return objVal, diags
+}
+
+func (v ConfigOvsPortGroupValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigOvsPortGroupValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.TrunkOnly.Equal(other.TrunkOnly) {
+		return false
+	}
+
+	if !v.VlanTrunks.Equal(other.VlanTrunks) {
+		return false
+	}
+
+	return true
+}
+
+func (v ConfigOvsPortGroupValue) Type(ctx context.Context) attr.Type {
+	return ConfigOvsPortGroupType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigOvsPortGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"trunk_only":  basetypes.BoolType{},
+		"vlan_trunks": basetypes.StringType{},
+	}
 }
 
 var _ basetypes.ObjectTypable = ResourcePermissionsType{}
