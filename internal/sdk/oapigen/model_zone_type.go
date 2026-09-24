@@ -179,51 +179,6 @@ func (o ZoneType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableZoneType struct {
-	value *ZoneType
-	isSet bool
-}
-
-func (v NullableZoneType) Get() *ZoneType {
-	return v.value
-}
-
-func (v *NullableZoneType) Set(val *ZoneType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableZoneType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableZoneType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableZoneType(val *ZoneType) *NullableZoneType {
-	return &NullableZoneType{value: val, isSet: true}
-}
-
-func (v NullableZoneType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableZoneType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableZoneType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ZoneType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

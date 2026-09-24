@@ -83,51 +83,6 @@ func (o LibraryScriptTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableLibraryScriptTaskConfig struct {
-	value *LibraryScriptTaskConfig
-	isSet bool
-}
-
-func (v NullableLibraryScriptTaskConfig) Get() *LibraryScriptTaskConfig {
-	return v.value
-}
-
-func (v *NullableLibraryScriptTaskConfig) Set(val *LibraryScriptTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableLibraryScriptTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableLibraryScriptTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableLibraryScriptTaskConfig(val *LibraryScriptTaskConfig) *NullableLibraryScriptTaskConfig {
-	return &NullableLibraryScriptTaskConfig{value: val, isSet: true}
-}
-
-func (v NullableLibraryScriptTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableLibraryScriptTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableLibraryScriptTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *LibraryScriptTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

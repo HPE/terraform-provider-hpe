@@ -168,51 +168,6 @@ func (o GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner struct {
-	value *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner
-	isSet bool
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) Get() *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner {
-	return v.value
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) Set(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner {
-	return &NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner{value: val, isSet: true}
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o AddVirtualImage200ResponseAllOfVirtualImageStorageProvider) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider struct {
-	value *AddVirtualImage200ResponseAllOfVirtualImageStorageProvider
-	isSet bool
-}
-
-func (v NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) Get() *AddVirtualImage200ResponseAllOfVirtualImageStorageProvider {
-	return v.value
-}
-
-func (v *NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) Set(val *AddVirtualImage200ResponseAllOfVirtualImageStorageProvider) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider(val *AddVirtualImage200ResponseAllOfVirtualImageStorageProvider) *NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider {
-	return &NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider{value: val, isSet: true}
-}
-
-func (v NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVirtualImage200ResponseAllOfVirtualImageStorageProvider) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVirtualImage200ResponseAllOfVirtualImageStorageProvider) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o GetInstance200ResponseInstanceCluster) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableGetInstance200ResponseInstanceCluster struct {
-	value *GetInstance200ResponseInstanceCluster
-	isSet bool
-}
-
-func (v NullableGetInstance200ResponseInstanceCluster) Get() *GetInstance200ResponseInstanceCluster {
-	return v.value
-}
-
-func (v *NullableGetInstance200ResponseInstanceCluster) Set(val *GetInstance200ResponseInstanceCluster) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstance200ResponseInstanceCluster) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstance200ResponseInstanceCluster) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstance200ResponseInstanceCluster(val *GetInstance200ResponseInstanceCluster) *NullableGetInstance200ResponseInstanceCluster {
-	return &NullableGetInstance200ResponseInstanceCluster{value: val, isSet: true}
-}
-
-func (v NullableGetInstance200ResponseInstanceCluster) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstance200ResponseInstanceCluster) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstance200ResponseInstanceCluster) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstance200ResponseInstanceCluster) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

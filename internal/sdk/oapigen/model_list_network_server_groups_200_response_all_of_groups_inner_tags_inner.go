@@ -55,51 +55,6 @@ func (o ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner struct {
-	value *ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner
-	isSet bool
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) Get() *ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner {
-	return v.value
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) Set(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner {
-	return &NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListNetworkServerGroups200ResponseAllOfGroupsInnerTagsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

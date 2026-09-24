@@ -47,51 +47,6 @@ func (o ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePe
 	return toSerialize, nil
 }
 
-type NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount struct {
-	value *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Get() *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Set(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount {
-	return &NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

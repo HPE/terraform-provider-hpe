@@ -55,51 +55,6 @@ func (o GetServicePlans200ResponseServicePlanConfig) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableGetServicePlans200ResponseServicePlanConfig struct {
-	value *GetServicePlans200ResponseServicePlanConfig
-	isSet bool
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfig) Get() *GetServicePlans200ResponseServicePlanConfig {
-	return v.value
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfig) Set(val *GetServicePlans200ResponseServicePlanConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetServicePlans200ResponseServicePlanConfig(val *GetServicePlans200ResponseServicePlanConfig) *NullableGetServicePlans200ResponseServicePlanConfig {
-	return &NullableGetServicePlans200ResponseServicePlanConfig{value: val, isSet: true}
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetServicePlans200ResponseServicePlanConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -68,51 +68,6 @@ func (o FastTCPLoadBalancerProfileConfig3) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableFastTCPLoadBalancerProfileConfig3 struct {
-	value *FastTCPLoadBalancerProfileConfig3
-	isSet bool
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig3) Get() *FastTCPLoadBalancerProfileConfig3 {
-	return v.value
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig3) Set(val *FastTCPLoadBalancerProfileConfig3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableFastTCPLoadBalancerProfileConfig3(val *FastTCPLoadBalancerProfileConfig3) *NullableFastTCPLoadBalancerProfileConfig3 {
-	return &NullableFastTCPLoadBalancerProfileConfig3{value: val, isSet: true}
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableFastTCPLoadBalancerProfileConfig3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableFastTCPLoadBalancerProfileConfig3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *FastTCPLoadBalancerProfileConfig3) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerAp
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner struct {
-	value *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) Get() *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) Set(val *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner(val *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner {
-	return &NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInnerApplicationsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

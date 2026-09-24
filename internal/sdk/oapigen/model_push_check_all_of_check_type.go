@@ -47,51 +47,6 @@ func (o PushCheckAllOfCheckType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePushCheckAllOfCheckType struct {
-	value *PushCheckAllOfCheckType
-	isSet bool
-}
-
-func (v NullablePushCheckAllOfCheckType) Get() *PushCheckAllOfCheckType {
-	return v.value
-}
-
-func (v *NullablePushCheckAllOfCheckType) Set(val *PushCheckAllOfCheckType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePushCheckAllOfCheckType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePushCheckAllOfCheckType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePushCheckAllOfCheckType(val *PushCheckAllOfCheckType) *NullablePushCheckAllOfCheckType {
-	return &NullablePushCheckAllOfCheckType{value: val, isSet: true}
-}
-
-func (v NullablePushCheckAllOfCheckType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePushCheckAllOfCheckType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePushCheckAllOfCheckType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PushCheckAllOfCheckType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

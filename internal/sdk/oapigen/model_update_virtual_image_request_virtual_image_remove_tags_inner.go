@@ -49,51 +49,6 @@ func (o UpdateVirtualImageRequestVirtualImageRemoveTagsInner) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner struct {
-	value *UpdateVirtualImageRequestVirtualImageRemoveTagsInner
-	isSet bool
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) Get() *UpdateVirtualImageRequestVirtualImageRemoveTagsInner {
-	return v.value
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) Set(val *UpdateVirtualImageRequestVirtualImageRemoveTagsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner(val *UpdateVirtualImageRequestVirtualImageRemoveTagsInner) *NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner {
-	return &NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVirtualImageRequestVirtualImageRemoveTagsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVirtualImageRequestVirtualImageRemoveTagsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

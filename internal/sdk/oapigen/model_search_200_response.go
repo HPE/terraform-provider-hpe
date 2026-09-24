@@ -59,51 +59,6 @@ func (o Search200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSearch200Response struct {
-	value *Search200Response
-	isSet bool
-}
-
-func (v NullableSearch200Response) Get() *Search200Response {
-	return v.value
-}
-
-func (v *NullableSearch200Response) Set(val *Search200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSearch200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSearch200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSearch200Response(val *Search200Response) *NullableSearch200Response {
-	return &NullableSearch200Response{value: val, isSet: true}
-}
-
-func (v NullableSearch200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSearch200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSearch200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Search200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

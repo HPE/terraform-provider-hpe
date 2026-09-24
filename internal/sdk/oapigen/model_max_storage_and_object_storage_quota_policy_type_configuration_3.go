@@ -49,51 +49,6 @@ func (o MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 struct {
-	value *MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3
-	isSet bool
-}
-
-func (v NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) Get() *MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 {
-	return v.value
-}
-
-func (v *NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) Set(val *MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3(val *MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) *NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3 {
-	return &NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3{value: val, isSet: true}
-}
-
-func (v NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MaxStorageAndObjectStorageQuotaPolicyTypeConfiguration3) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

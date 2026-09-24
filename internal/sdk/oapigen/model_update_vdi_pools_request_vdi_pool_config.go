@@ -56,51 +56,6 @@ func (o UpdateVDIPoolsRequestVdiPoolConfig) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableUpdateVDIPoolsRequestVdiPoolConfig struct {
-	value *UpdateVDIPoolsRequestVdiPoolConfig
-	isSet bool
-}
-
-func (v NullableUpdateVDIPoolsRequestVdiPoolConfig) Get() *UpdateVDIPoolsRequestVdiPoolConfig {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPoolsRequestVdiPoolConfig) Set(val *UpdateVDIPoolsRequestVdiPoolConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPoolsRequestVdiPoolConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPoolsRequestVdiPoolConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPoolsRequestVdiPoolConfig(val *UpdateVDIPoolsRequestVdiPoolConfig) *NullableUpdateVDIPoolsRequestVdiPoolConfig {
-	return &NullableUpdateVDIPoolsRequestVdiPoolConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPoolsRequestVdiPoolConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPoolsRequestVdiPoolConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPoolsRequestVdiPoolConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVDIPoolsRequestVdiPoolConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

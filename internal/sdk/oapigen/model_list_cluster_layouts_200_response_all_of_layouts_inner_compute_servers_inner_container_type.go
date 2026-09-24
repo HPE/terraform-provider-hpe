@@ -103,51 +103,6 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContain
 	return toSerialize, nil
 }
 
-type NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType struct {
-	value *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType
-	isSet bool
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType {
-	return v.value
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType(val *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType {
-	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType{value: val, isSet: true}
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

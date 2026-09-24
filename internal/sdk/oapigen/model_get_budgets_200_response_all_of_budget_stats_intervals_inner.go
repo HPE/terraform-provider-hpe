@@ -76,51 +76,6 @@ func (o GetBudgets200ResponseAllOfBudgetStatsIntervalsInner) ToMap() (map[string
 	return toSerialize, nil
 }
 
-type NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner struct {
-	value *GetBudgets200ResponseAllOfBudgetStatsIntervalsInner
-	isSet bool
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) Get() *GetBudgets200ResponseAllOfBudgetStatsIntervalsInner {
-	return v.value
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) Set(val *GetBudgets200ResponseAllOfBudgetStatsIntervalsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner(val *GetBudgets200ResponseAllOfBudgetStatsIntervalsInner) *NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner {
-	return &NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner{value: val, isSet: true}
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetStatsIntervalsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetBudgets200ResponseAllOfBudgetStatsIntervalsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

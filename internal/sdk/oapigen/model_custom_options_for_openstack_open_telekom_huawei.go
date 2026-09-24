@@ -48,51 +48,6 @@ func (o CustomOptionsForOpenstackOpenTelekomHuawei) ToMap() (map[string]interfac
 	return toSerialize, nil
 }
 
-type NullableCustomOptionsForOpenstackOpenTelekomHuawei struct {
-	value *CustomOptionsForOpenstackOpenTelekomHuawei
-	isSet bool
-}
-
-func (v NullableCustomOptionsForOpenstackOpenTelekomHuawei) Get() *CustomOptionsForOpenstackOpenTelekomHuawei {
-	return v.value
-}
-
-func (v *NullableCustomOptionsForOpenstackOpenTelekomHuawei) Set(val *CustomOptionsForOpenstackOpenTelekomHuawei) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCustomOptionsForOpenstackOpenTelekomHuawei) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCustomOptionsForOpenstackOpenTelekomHuawei) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCustomOptionsForOpenstackOpenTelekomHuawei(val *CustomOptionsForOpenstackOpenTelekomHuawei) *NullableCustomOptionsForOpenstackOpenTelekomHuawei {
-	return &NullableCustomOptionsForOpenstackOpenTelekomHuawei{value: val, isSet: true}
-}
-
-func (v NullableCustomOptionsForOpenstackOpenTelekomHuawei) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCustomOptionsForOpenstackOpenTelekomHuawei) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCustomOptionsForOpenstackOpenTelekomHuawei) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CustomOptionsForOpenstackOpenTelekomHuawei) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o CreateSubnetRequestResourcePermissionsSitesInner) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableCreateSubnetRequestResourcePermissionsSitesInner struct {
-	value *CreateSubnetRequestResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableCreateSubnetRequestResourcePermissionsSitesInner) Get() *CreateSubnetRequestResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissionsSitesInner) Set(val *CreateSubnetRequestResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateSubnetRequestResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateSubnetRequestResourcePermissionsSitesInner(val *CreateSubnetRequestResourcePermissionsSitesInner) *NullableCreateSubnetRequestResourcePermissionsSitesInner {
-	return &NullableCreateSubnetRequestResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableCreateSubnetRequestResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateSubnetRequestResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateSubnetRequestResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -73,51 +73,6 @@ func (o ServerSSLLoadBalancerProfileConfig) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableServerSSLLoadBalancerProfileConfig struct {
-	value *ServerSSLLoadBalancerProfileConfig
-	isSet bool
-}
-
-func (v NullableServerSSLLoadBalancerProfileConfig) Get() *ServerSSLLoadBalancerProfileConfig {
-	return v.value
-}
-
-func (v *NullableServerSSLLoadBalancerProfileConfig) Set(val *ServerSSLLoadBalancerProfileConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableServerSSLLoadBalancerProfileConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableServerSSLLoadBalancerProfileConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableServerSSLLoadBalancerProfileConfig(val *ServerSSLLoadBalancerProfileConfig) *NullableServerSSLLoadBalancerProfileConfig {
-	return &NullableServerSSLLoadBalancerProfileConfig{value: val, isSet: true}
-}
-
-func (v NullableServerSSLLoadBalancerProfileConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableServerSSLLoadBalancerProfileConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableServerSSLLoadBalancerProfileConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ServerSSLLoadBalancerProfileConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

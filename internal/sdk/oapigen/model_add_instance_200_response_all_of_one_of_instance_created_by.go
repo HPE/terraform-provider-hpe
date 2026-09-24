@@ -51,51 +51,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceCreatedBy) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceCreatedBy
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) Get() *AddInstance200ResponseAllOfOneOfInstanceCreatedBy {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) Set(val *AddInstance200ResponseAllOfOneOfInstanceCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy(val *AddInstance200ResponseAllOfOneOfInstanceCreatedBy) *NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstance200ResponseAllOfOneOfInstanceCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

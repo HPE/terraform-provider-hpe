@@ -47,51 +47,6 @@ func (o SetApplianceSettingsMaintenanceMode200Response) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableSetApplianceSettingsMaintenanceMode200Response struct {
-	value *SetApplianceSettingsMaintenanceMode200Response
-	isSet bool
-}
-
-func (v NullableSetApplianceSettingsMaintenanceMode200Response) Get() *SetApplianceSettingsMaintenanceMode200Response {
-	return v.value
-}
-
-func (v *NullableSetApplianceSettingsMaintenanceMode200Response) Set(val *SetApplianceSettingsMaintenanceMode200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSetApplianceSettingsMaintenanceMode200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSetApplianceSettingsMaintenanceMode200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSetApplianceSettingsMaintenanceMode200Response(val *SetApplianceSettingsMaintenanceMode200Response) *NullableSetApplianceSettingsMaintenanceMode200Response {
-	return &NullableSetApplianceSettingsMaintenanceMode200Response{value: val, isSet: true}
-}
-
-func (v NullableSetApplianceSettingsMaintenanceMode200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSetApplianceSettingsMaintenanceMode200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSetApplianceSettingsMaintenanceMode200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SetApplianceSettingsMaintenanceMode200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

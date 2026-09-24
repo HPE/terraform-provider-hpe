@@ -48,51 +48,6 @@ func (o AddInstanceRequestInstanceUserGroup) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableAddInstanceRequestInstanceUserGroup struct {
-	value *AddInstanceRequestInstanceUserGroup
-	isSet bool
-}
-
-func (v NullableAddInstanceRequestInstanceUserGroup) Get() *AddInstanceRequestInstanceUserGroup {
-	return v.value
-}
-
-func (v *NullableAddInstanceRequestInstanceUserGroup) Set(val *AddInstanceRequestInstanceUserGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstanceRequestInstanceUserGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstanceRequestInstanceUserGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstanceRequestInstanceUserGroup(val *AddInstanceRequestInstanceUserGroup) *NullableAddInstanceRequestInstanceUserGroup {
-	return &NullableAddInstanceRequestInstanceUserGroup{value: val, isSet: true}
-}
-
-func (v NullableAddInstanceRequestInstanceUserGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstanceRequestInstanceUserGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstanceRequestInstanceUserGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstanceRequestInstanceUserGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

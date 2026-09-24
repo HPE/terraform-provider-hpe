@@ -55,51 +55,6 @@ func (o AzureReferenceVirtualImageConfiguration4) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableAzureReferenceVirtualImageConfiguration4 struct {
-	value *AzureReferenceVirtualImageConfiguration4
-	isSet bool
-}
-
-func (v NullableAzureReferenceVirtualImageConfiguration4) Get() *AzureReferenceVirtualImageConfiguration4 {
-	return v.value
-}
-
-func (v *NullableAzureReferenceVirtualImageConfiguration4) Set(val *AzureReferenceVirtualImageConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAzureReferenceVirtualImageConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAzureReferenceVirtualImageConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAzureReferenceVirtualImageConfiguration4(val *AzureReferenceVirtualImageConfiguration4) *NullableAzureReferenceVirtualImageConfiguration4 {
-	return &NullableAzureReferenceVirtualImageConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableAzureReferenceVirtualImageConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAzureReferenceVirtualImageConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAzureReferenceVirtualImageConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AzureReferenceVirtualImageConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

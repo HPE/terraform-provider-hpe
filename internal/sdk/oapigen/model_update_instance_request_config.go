@@ -53,51 +53,6 @@ func (o UpdateInstanceRequestConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateInstanceRequestConfig struct {
-	value *UpdateInstanceRequestConfig
-	isSet bool
-}
-
-func (v NullableUpdateInstanceRequestConfig) Get() *UpdateInstanceRequestConfig {
-	return v.value
-}
-
-func (v *NullableUpdateInstanceRequestConfig) Set(val *UpdateInstanceRequestConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateInstanceRequestConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateInstanceRequestConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateInstanceRequestConfig(val *UpdateInstanceRequestConfig) *NullableUpdateInstanceRequestConfig {
-	return &NullableUpdateInstanceRequestConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateInstanceRequestConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateInstanceRequestConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateInstanceRequestConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateInstanceRequestConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

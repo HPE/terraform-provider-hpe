@@ -207,51 +207,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInne
 	return toSerialize, nil
 }
 
-type NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner struct {
-	value *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) Get() *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) Set(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

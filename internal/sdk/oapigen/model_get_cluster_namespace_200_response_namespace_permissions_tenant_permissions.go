@@ -47,51 +47,6 @@ func (o GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) ToM
 	return toSerialize, nil
 }
 
-type NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions struct {
-	value *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) Get() *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) Set(val *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions(val *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions {
-	return &NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

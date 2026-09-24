@@ -71,51 +71,6 @@ func (o ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInne
 	return toSerialize, nil
 }
 
-type NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner struct {
-	value *ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner
-	isSet bool
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) Get() *ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner {
-	return v.value
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) Set(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner {
-	return &NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListProvisionTypes200ResponseAllOfProvisionTypesInnerControllerTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

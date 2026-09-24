@@ -55,51 +55,6 @@ func (o BackupSettingsDefaultSchedule) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBackupSettingsDefaultSchedule struct {
-	value *BackupSettingsDefaultSchedule
-	isSet bool
-}
-
-func (v NullableBackupSettingsDefaultSchedule) Get() *BackupSettingsDefaultSchedule {
-	return v.value
-}
-
-func (v *NullableBackupSettingsDefaultSchedule) Set(val *BackupSettingsDefaultSchedule) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBackupSettingsDefaultSchedule) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBackupSettingsDefaultSchedule) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBackupSettingsDefaultSchedule(val *BackupSettingsDefaultSchedule) *NullableBackupSettingsDefaultSchedule {
-	return &NullableBackupSettingsDefaultSchedule{value: val, isSet: true}
-}
-
-func (v NullableBackupSettingsDefaultSchedule) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBackupSettingsDefaultSchedule) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBackupSettingsDefaultSchedule) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BackupSettingsDefaultSchedule) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

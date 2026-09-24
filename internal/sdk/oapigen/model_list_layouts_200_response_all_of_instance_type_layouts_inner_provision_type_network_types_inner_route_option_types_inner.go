@@ -199,51 +199,6 @@ func (o ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkT
 	return toSerialize, nil
 }
 
-type NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner struct {
-	value *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) Get() *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) Set(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner {
-	return &NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInnerRouteOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

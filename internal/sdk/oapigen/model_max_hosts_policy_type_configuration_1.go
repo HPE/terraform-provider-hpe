@@ -47,51 +47,6 @@ func (o MaxHostsPolicyTypeConfiguration1) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableMaxHostsPolicyTypeConfiguration1 struct {
-	value *MaxHostsPolicyTypeConfiguration1
-	isSet bool
-}
-
-func (v NullableMaxHostsPolicyTypeConfiguration1) Get() *MaxHostsPolicyTypeConfiguration1 {
-	return v.value
-}
-
-func (v *NullableMaxHostsPolicyTypeConfiguration1) Set(val *MaxHostsPolicyTypeConfiguration1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMaxHostsPolicyTypeConfiguration1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMaxHostsPolicyTypeConfiguration1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMaxHostsPolicyTypeConfiguration1(val *MaxHostsPolicyTypeConfiguration1) *NullableMaxHostsPolicyTypeConfiguration1 {
-	return &NullableMaxHostsPolicyTypeConfiguration1{value: val, isSet: true}
-}
-
-func (v NullableMaxHostsPolicyTypeConfiguration1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMaxHostsPolicyTypeConfiguration1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMaxHostsPolicyTypeConfiguration1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MaxHostsPolicyTypeConfiguration1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

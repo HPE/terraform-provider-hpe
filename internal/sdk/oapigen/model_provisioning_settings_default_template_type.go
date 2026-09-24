@@ -55,51 +55,6 @@ func (o ProvisioningSettingsDefaultTemplateType) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableProvisioningSettingsDefaultTemplateType struct {
-	value *ProvisioningSettingsDefaultTemplateType
-	isSet bool
-}
-
-func (v NullableProvisioningSettingsDefaultTemplateType) Get() *ProvisioningSettingsDefaultTemplateType {
-	return v.value
-}
-
-func (v *NullableProvisioningSettingsDefaultTemplateType) Set(val *ProvisioningSettingsDefaultTemplateType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableProvisioningSettingsDefaultTemplateType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableProvisioningSettingsDefaultTemplateType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableProvisioningSettingsDefaultTemplateType(val *ProvisioningSettingsDefaultTemplateType) *NullableProvisioningSettingsDefaultTemplateType {
-	return &NullableProvisioningSettingsDefaultTemplateType{value: val, isSet: true}
-}
-
-func (v NullableProvisioningSettingsDefaultTemplateType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableProvisioningSettingsDefaultTemplateType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableProvisioningSettingsDefaultTemplateType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ProvisioningSettingsDefaultTemplateType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

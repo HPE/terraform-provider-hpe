@@ -47,51 +47,6 @@ func (o GetTasks200ResponseAllOfTaskCredential) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableGetTasks200ResponseAllOfTaskCredential struct {
-	value *GetTasks200ResponseAllOfTaskCredential
-	isSet bool
-}
-
-func (v NullableGetTasks200ResponseAllOfTaskCredential) Get() *GetTasks200ResponseAllOfTaskCredential {
-	return v.value
-}
-
-func (v *NullableGetTasks200ResponseAllOfTaskCredential) Set(val *GetTasks200ResponseAllOfTaskCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetTasks200ResponseAllOfTaskCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetTasks200ResponseAllOfTaskCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetTasks200ResponseAllOfTaskCredential(val *GetTasks200ResponseAllOfTaskCredential) *NullableGetTasks200ResponseAllOfTaskCredential {
-	return &NullableGetTasks200ResponseAllOfTaskCredential{value: val, isSet: true}
-}
-
-func (v NullableGetTasks200ResponseAllOfTaskCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetTasks200ResponseAllOfTaskCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetTasks200ResponseAllOfTaskCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetTasks200ResponseAllOfTaskCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

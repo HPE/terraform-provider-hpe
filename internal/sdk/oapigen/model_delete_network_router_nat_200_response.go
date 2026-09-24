@@ -47,51 +47,6 @@ func (o DeleteNetworkRouterNat200Response) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableDeleteNetworkRouterNat200Response struct {
-	value *DeleteNetworkRouterNat200Response
-	isSet bool
-}
-
-func (v NullableDeleteNetworkRouterNat200Response) Get() *DeleteNetworkRouterNat200Response {
-	return v.value
-}
-
-func (v *NullableDeleteNetworkRouterNat200Response) Set(val *DeleteNetworkRouterNat200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeleteNetworkRouterNat200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeleteNetworkRouterNat200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeleteNetworkRouterNat200Response(val *DeleteNetworkRouterNat200Response) *NullableDeleteNetworkRouterNat200Response {
-	return &NullableDeleteNetworkRouterNat200Response{value: val, isSet: true}
-}
-
-func (v NullableDeleteNetworkRouterNat200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeleteNetworkRouterNat200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeleteNetworkRouterNat200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeleteNetworkRouterNat200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -63,51 +63,6 @@ func (o NSXTLoadBalancerPoolConfigObjectMemberGroup) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableNSXTLoadBalancerPoolConfigObjectMemberGroup struct {
-	value *NSXTLoadBalancerPoolConfigObjectMemberGroup
-	isSet bool
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) Get() *NSXTLoadBalancerPoolConfigObjectMemberGroup {
-	return v.value
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) Set(val *NSXTLoadBalancerPoolConfigObjectMemberGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNSXTLoadBalancerPoolConfigObjectMemberGroup(val *NSXTLoadBalancerPoolConfigObjectMemberGroup) *NullableNSXTLoadBalancerPoolConfigObjectMemberGroup {
-	return &NullableNSXTLoadBalancerPoolConfigObjectMemberGroup{value: val, isSet: true}
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObjectMemberGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NSXTLoadBalancerPoolConfigObjectMemberGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -56,51 +56,6 @@ func (o UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) ToMap() (
 	return toSerialize, nil
 }
 
-type NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner struct {
-	value *UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner
-	isSet bool
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) Get() *UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner {
-	return v.value
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) Set(val *UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner(val *UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) *NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner {
-	return &NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateOptionListRequestOptionTypeListConfigSourceHeadersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

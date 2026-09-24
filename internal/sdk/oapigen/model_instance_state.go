@@ -75,51 +75,6 @@ func (o InstanceState) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceState struct {
-	value *InstanceState
-	isSet bool
-}
-
-func (v NullableInstanceState) Get() *InstanceState {
-	return v.value
-}
-
-func (v *NullableInstanceState) Set(val *InstanceState) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceState) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceState) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceState(val *InstanceState) *NullableInstanceState {
-	return &NullableInstanceState{value: val, isSet: true}
-}
-
-func (v NullableInstanceState) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceState) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceState) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceState) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -84,51 +84,6 @@ func (o GetDeployment200ResponseDeploymentVersionsInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableGetDeployment200ResponseDeploymentVersionsInner struct {
-	value *GetDeployment200ResponseDeploymentVersionsInner
-	isSet bool
-}
-
-func (v NullableGetDeployment200ResponseDeploymentVersionsInner) Get() *GetDeployment200ResponseDeploymentVersionsInner {
-	return v.value
-}
-
-func (v *NullableGetDeployment200ResponseDeploymentVersionsInner) Set(val *GetDeployment200ResponseDeploymentVersionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetDeployment200ResponseDeploymentVersionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetDeployment200ResponseDeploymentVersionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetDeployment200ResponseDeploymentVersionsInner(val *GetDeployment200ResponseDeploymentVersionsInner) *NullableGetDeployment200ResponseDeploymentVersionsInner {
-	return &NullableGetDeployment200ResponseDeploymentVersionsInner{value: val, isSet: true}
-}
-
-func (v NullableGetDeployment200ResponseDeploymentVersionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetDeployment200ResponseDeploymentVersionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetDeployment200ResponseDeploymentVersionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetDeployment200ResponseDeploymentVersionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

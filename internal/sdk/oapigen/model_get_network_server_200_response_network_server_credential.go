@@ -59,51 +59,6 @@ func (o GetNetworkServer200ResponseNetworkServerCredential) ToMap() (map[string]
 	return toSerialize, nil
 }
 
-type NullableGetNetworkServer200ResponseNetworkServerCredential struct {
-	value *GetNetworkServer200ResponseNetworkServerCredential
-	isSet bool
-}
-
-func (v NullableGetNetworkServer200ResponseNetworkServerCredential) Get() *GetNetworkServer200ResponseNetworkServerCredential {
-	return v.value
-}
-
-func (v *NullableGetNetworkServer200ResponseNetworkServerCredential) Set(val *GetNetworkServer200ResponseNetworkServerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkServer200ResponseNetworkServerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkServer200ResponseNetworkServerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkServer200ResponseNetworkServerCredential(val *GetNetworkServer200ResponseNetworkServerCredential) *NullableGetNetworkServer200ResponseNetworkServerCredential {
-	return &NullableGetNetworkServer200ResponseNetworkServerCredential{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkServer200ResponseNetworkServerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkServer200ResponseNetworkServerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkServer200ResponseNetworkServerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkServer200ResponseNetworkServerCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -53,51 +53,6 @@ func (o ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePerm
 	return toSerialize, nil
 }
 
-type NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner struct {
-	value *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) Get() *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) Set(val *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner(val *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner {
-	return &NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterAffinityGroups200ResponseAllOfAffinityGroupsInnerResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

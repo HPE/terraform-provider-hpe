@@ -207,51 +207,6 @@ func (o ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOpt
 	return toSerialize, nil
 }
 
-type NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner struct {
-	value *ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) Get() *ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) Set(val *ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner(val *ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) *NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner {
-	return &NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListNetworkPoolServerTypes200ResponseAllOfNetworkPoolServerTypesInnerOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

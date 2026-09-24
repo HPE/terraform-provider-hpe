@@ -51,51 +51,6 @@ func (o ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) T
 	return toSerialize, nil
 }
 
-type NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer struct {
-	value *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer
-	isSet bool
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) Get() *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer {
-	return v.value
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) Set(val *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer(val *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer {
-	return &NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer{value: val, isSet: true}
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerStorageServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

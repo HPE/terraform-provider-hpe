@@ -75,51 +75,6 @@ func (o PowerShellTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePowerShellTaskConfig struct {
-	value *PowerShellTaskConfig
-	isSet bool
-}
-
-func (v NullablePowerShellTaskConfig) Get() *PowerShellTaskConfig {
-	return v.value
-}
-
-func (v *NullablePowerShellTaskConfig) Set(val *PowerShellTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePowerShellTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePowerShellTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePowerShellTaskConfig(val *PowerShellTaskConfig) *NullablePowerShellTaskConfig {
-	return &NullablePowerShellTaskConfig{value: val, isSet: true}
-}
-
-func (v NullablePowerShellTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePowerShellTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePowerShellTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PowerShellTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

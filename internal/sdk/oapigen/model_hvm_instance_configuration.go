@@ -93,51 +93,6 @@ func (o HVMInstanceConfiguration) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableHVMInstanceConfiguration struct {
-	value *HVMInstanceConfiguration
-	isSet bool
-}
-
-func (v NullableHVMInstanceConfiguration) Get() *HVMInstanceConfiguration {
-	return v.value
-}
-
-func (v *NullableHVMInstanceConfiguration) Set(val *HVMInstanceConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHVMInstanceConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHVMInstanceConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHVMInstanceConfiguration(val *HVMInstanceConfiguration) *NullableHVMInstanceConfiguration {
-	return &NullableHVMInstanceConfiguration{value: val, isSet: true}
-}
-
-func (v NullableHVMInstanceConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHVMInstanceConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHVMInstanceConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *HVMInstanceConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

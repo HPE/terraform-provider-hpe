@@ -55,51 +55,6 @@ func (o CreateSubnet200ResponseSubnetType) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableCreateSubnet200ResponseSubnetType struct {
-	value *CreateSubnet200ResponseSubnetType
-	isSet bool
-}
-
-func (v NullableCreateSubnet200ResponseSubnetType) Get() *CreateSubnet200ResponseSubnetType {
-	return v.value
-}
-
-func (v *NullableCreateSubnet200ResponseSubnetType) Set(val *CreateSubnet200ResponseSubnetType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateSubnet200ResponseSubnetType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateSubnet200ResponseSubnetType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateSubnet200ResponseSubnetType(val *CreateSubnet200ResponseSubnetType) *NullableCreateSubnet200ResponseSubnetType {
-	return &NullableCreateSubnet200ResponseSubnetType{value: val, isSet: true}
-}
-
-func (v NullableCreateSubnet200ResponseSubnetType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateSubnet200ResponseSubnetType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateSubnet200ResponseSubnetType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateSubnet200ResponseSubnetType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

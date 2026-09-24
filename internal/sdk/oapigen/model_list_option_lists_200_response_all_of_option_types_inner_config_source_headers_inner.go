@@ -55,51 +55,6 @@ func (o ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner)
 	return toSerialize, nil
 }
 
-type NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner struct {
-	value *ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner
-	isSet bool
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) Get() *ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner {
-	return v.value
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) Set(val *ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner(val *ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner {
-	return &NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner{value: val, isSet: true}
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListOptionLists200ResponseAllOfOptionTypesInnerConfigSourceHeadersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

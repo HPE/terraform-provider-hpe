@@ -47,51 +47,6 @@ func (o AddLayoutRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddLayoutRequest struct {
-	value *AddLayoutRequest
-	isSet bool
-}
-
-func (v NullableAddLayoutRequest) Get() *AddLayoutRequest {
-	return v.value
-}
-
-func (v *NullableAddLayoutRequest) Set(val *AddLayoutRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayoutRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayoutRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayoutRequest(val *AddLayoutRequest) *NullableAddLayoutRequest {
-	return &NullableAddLayoutRequest{value: val, isSet: true}
-}
-
-func (v NullableAddLayoutRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayoutRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayoutRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayoutRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

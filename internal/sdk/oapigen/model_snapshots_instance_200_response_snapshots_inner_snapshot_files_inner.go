@@ -75,51 +75,6 @@ func (o SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner struct {
-	value *SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner
-	isSet bool
-}
-
-func (v NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) Get() *SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner {
-	return v.value
-}
-
-func (v *NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) Set(val *SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner(val *SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) *NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner {
-	return &NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner{value: val, isSet: true}
-}
-
-func (v NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SnapshotsInstance200ResponseSnapshotsInnerSnapshotFilesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

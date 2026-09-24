@@ -53,51 +53,6 @@ func (o MonitoringSettingsServiceNowIntegration) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableMonitoringSettingsServiceNowIntegration struct {
-	value *MonitoringSettingsServiceNowIntegration
-	isSet bool
-}
-
-func (v NullableMonitoringSettingsServiceNowIntegration) Get() *MonitoringSettingsServiceNowIntegration {
-	return v.value
-}
-
-func (v *NullableMonitoringSettingsServiceNowIntegration) Set(val *MonitoringSettingsServiceNowIntegration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMonitoringSettingsServiceNowIntegration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMonitoringSettingsServiceNowIntegration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMonitoringSettingsServiceNowIntegration(val *MonitoringSettingsServiceNowIntegration) *NullableMonitoringSettingsServiceNowIntegration {
-	return &NullableMonitoringSettingsServiceNowIntegration{value: val, isSet: true}
-}
-
-func (v NullableMonitoringSettingsServiceNowIntegration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMonitoringSettingsServiceNowIntegration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMonitoringSettingsServiceNowIntegration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MonitoringSettingsServiceNowIntegration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

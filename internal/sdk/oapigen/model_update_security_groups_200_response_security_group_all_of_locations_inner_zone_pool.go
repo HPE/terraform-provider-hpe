@@ -51,51 +51,6 @@ func (o UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool)
 	return toSerialize, nil
 }
 
-type NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool struct {
-	value *UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) Get() *UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) Set(val *UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool(val *UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool {
-	return &NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZonePool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

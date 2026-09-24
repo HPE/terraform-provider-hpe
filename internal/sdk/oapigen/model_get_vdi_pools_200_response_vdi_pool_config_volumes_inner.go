@@ -83,51 +83,6 @@ func (o GetVDIPools200ResponseVdiPoolConfigVolumesInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner struct {
-	value *GetVDIPools200ResponseVdiPoolConfigVolumesInner
-	isSet bool
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) Get() *GetVDIPools200ResponseVdiPoolConfigVolumesInner {
-	return v.value
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) Set(val *GetVDIPools200ResponseVdiPoolConfigVolumesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetVDIPools200ResponseVdiPoolConfigVolumesInner(val *GetVDIPools200ResponseVdiPoolConfigVolumesInner) *NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner {
-	return &NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner{value: val, isSet: true}
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetVDIPools200ResponseVdiPoolConfigVolumesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetVDIPools200ResponseVdiPoolConfigVolumesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

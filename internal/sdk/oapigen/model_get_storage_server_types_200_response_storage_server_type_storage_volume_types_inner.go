@@ -75,51 +75,6 @@ func (o GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner
 	return toSerialize, nil
 }
 
-type NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner struct {
-	value *GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner
-	isSet bool
-}
-
-func (v NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) Get() *GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner {
-	return v.value
-}
-
-func (v *NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) Set(val *GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner(val *GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) *NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner {
-	return &NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetStorageServerTypes200ResponseStorageServerTypeStorageVolumeTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

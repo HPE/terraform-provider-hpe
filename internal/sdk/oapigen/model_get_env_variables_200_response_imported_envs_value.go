@@ -51,51 +51,6 @@ func (o GetEnvVariables200ResponseImportedEnvsValue) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableGetEnvVariables200ResponseImportedEnvsValue struct {
-	value *GetEnvVariables200ResponseImportedEnvsValue
-	isSet bool
-}
-
-func (v NullableGetEnvVariables200ResponseImportedEnvsValue) Get() *GetEnvVariables200ResponseImportedEnvsValue {
-	return v.value
-}
-
-func (v *NullableGetEnvVariables200ResponseImportedEnvsValue) Set(val *GetEnvVariables200ResponseImportedEnvsValue) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetEnvVariables200ResponseImportedEnvsValue) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetEnvVariables200ResponseImportedEnvsValue) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetEnvVariables200ResponseImportedEnvsValue(val *GetEnvVariables200ResponseImportedEnvsValue) *NullableGetEnvVariables200ResponseImportedEnvsValue {
-	return &NullableGetEnvVariables200ResponseImportedEnvsValue{value: val, isSet: true}
-}
-
-func (v NullableGetEnvVariables200ResponseImportedEnvsValue) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetEnvVariables200ResponseImportedEnvsValue) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetEnvVariables200ResponseImportedEnvsValue) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetEnvVariables200ResponseImportedEnvsValue) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

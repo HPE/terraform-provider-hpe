@@ -51,51 +51,6 @@ func (o GetCheckApps200ResponseChecksInnerCreatedBy) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableGetCheckApps200ResponseChecksInnerCreatedBy struct {
-	value *GetCheckApps200ResponseChecksInnerCreatedBy
-	isSet bool
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCreatedBy) Get() *GetCheckApps200ResponseChecksInnerCreatedBy {
-	return v.value
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCreatedBy) Set(val *GetCheckApps200ResponseChecksInnerCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCheckApps200ResponseChecksInnerCreatedBy(val *GetCheckApps200ResponseChecksInnerCreatedBy) *NullableGetCheckApps200ResponseChecksInnerCreatedBy {
-	return &NullableGetCheckApps200ResponseChecksInnerCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCheckApps200ResponseChecksInnerCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

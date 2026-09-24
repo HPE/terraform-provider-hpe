@@ -48,51 +48,6 @@ func (o UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonito
 	return toSerialize, nil
 }
 
-type NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor struct {
-	value *UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) Get() *UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) Set(val *UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor(val *UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) *NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor {
-	return &NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateLoadBalancerMonitor200ResponseAllOfLoadBalancerMonitorConfigMonitor) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

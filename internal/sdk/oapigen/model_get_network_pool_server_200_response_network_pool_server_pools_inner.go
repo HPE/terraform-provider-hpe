@@ -51,51 +51,6 @@ func (o GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner struct {
-	value *GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) Get() *GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) Set(val *GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner(val *GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) *NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner {
-	return &NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkPoolServer200ResponseNetworkPoolServerPoolsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

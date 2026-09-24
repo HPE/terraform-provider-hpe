@@ -88,51 +88,6 @@ func (o UpdateScriptRequestContainerScript) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableUpdateScriptRequestContainerScript struct {
-	value *UpdateScriptRequestContainerScript
-	isSet bool
-}
-
-func (v NullableUpdateScriptRequestContainerScript) Get() *UpdateScriptRequestContainerScript {
-	return v.value
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) Set(val *UpdateScriptRequestContainerScript) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateScriptRequestContainerScript) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateScriptRequestContainerScript(val *UpdateScriptRequestContainerScript) *NullableUpdateScriptRequestContainerScript {
-	return &NullableUpdateScriptRequestContainerScript{value: val, isSet: true}
-}
-
-func (v NullableUpdateScriptRequestContainerScript) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateScriptRequestContainerScript) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateScriptRequestContainerScript) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateScriptRequestContainerScript) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

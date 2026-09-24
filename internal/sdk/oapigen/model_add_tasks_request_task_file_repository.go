@@ -48,51 +48,6 @@ func (o AddTasksRequestTaskFileRepository) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableAddTasksRequestTaskFileRepository struct {
-	value *AddTasksRequestTaskFileRepository
-	isSet bool
-}
-
-func (v NullableAddTasksRequestTaskFileRepository) Get() *AddTasksRequestTaskFileRepository {
-	return v.value
-}
-
-func (v *NullableAddTasksRequestTaskFileRepository) Set(val *AddTasksRequestTaskFileRepository) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddTasksRequestTaskFileRepository) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddTasksRequestTaskFileRepository) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddTasksRequestTaskFileRepository(val *AddTasksRequestTaskFileRepository) *NullableAddTasksRequestTaskFileRepository {
-	return &NullableAddTasksRequestTaskFileRepository{value: val, isSet: true}
-}
-
-func (v NullableAddTasksRequestTaskFileRepository) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddTasksRequestTaskFileRepository) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddTasksRequestTaskFileRepository) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddTasksRequestTaskFileRepository) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

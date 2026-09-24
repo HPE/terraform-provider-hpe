@@ -58,51 +58,6 @@ func (o Error) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableError struct {
-	value *Error
-	isSet bool
-}
-
-func (v NullableError) Get() *Error {
-	return v.value
-}
-
-func (v *NullableError) Set(val *Error) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableError) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableError) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableError(val *Error) *NullableError {
-	return &NullableError{value: val, isSet: true}
-}
-
-func (v NullableError) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableError) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableError) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Error) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

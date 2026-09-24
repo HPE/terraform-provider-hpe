@@ -63,51 +63,6 @@ func (o FastUDPLoadBalancerProfileConfig4) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableFastUDPLoadBalancerProfileConfig4 struct {
-	value *FastUDPLoadBalancerProfileConfig4
-	isSet bool
-}
-
-func (v NullableFastUDPLoadBalancerProfileConfig4) Get() *FastUDPLoadBalancerProfileConfig4 {
-	return v.value
-}
-
-func (v *NullableFastUDPLoadBalancerProfileConfig4) Set(val *FastUDPLoadBalancerProfileConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableFastUDPLoadBalancerProfileConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableFastUDPLoadBalancerProfileConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableFastUDPLoadBalancerProfileConfig4(val *FastUDPLoadBalancerProfileConfig4) *NullableFastUDPLoadBalancerProfileConfig4 {
-	return &NullableFastUDPLoadBalancerProfileConfig4{value: val, isSet: true}
-}
-
-func (v NullableFastUDPLoadBalancerProfileConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableFastUDPLoadBalancerProfileConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableFastUDPLoadBalancerProfileConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *FastUDPLoadBalancerProfileConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

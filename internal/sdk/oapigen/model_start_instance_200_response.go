@@ -51,51 +51,6 @@ func (o StartInstance200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableStartInstance200Response struct {
-	value *StartInstance200Response
-	isSet bool
-}
-
-func (v NullableStartInstance200Response) Get() *StartInstance200Response {
-	return v.value
-}
-
-func (v *NullableStartInstance200Response) Set(val *StartInstance200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableStartInstance200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableStartInstance200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableStartInstance200Response(val *StartInstance200Response) *NullableStartInstance200Response {
-	return &NullableStartInstance200Response{value: val, isSet: true}
-}
-
-func (v NullableStartInstance200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableStartInstance200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableStartInstance200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *StartInstance200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

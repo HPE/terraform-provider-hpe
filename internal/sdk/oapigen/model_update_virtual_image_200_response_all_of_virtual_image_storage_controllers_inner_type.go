@@ -55,51 +55,6 @@ func (o UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerTyp
 	return toSerialize, nil
 }
 
-type NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType struct {
-	value *UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType
-	isSet bool
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) Get() *UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType {
-	return v.value
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) Set(val *UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType(val *UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) *NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType {
-	return &NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType{value: val, isSet: true}
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVirtualImage200ResponseAllOfVirtualImageStorageControllersInnerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

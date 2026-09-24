@@ -47,51 +47,6 @@ func (o SaveDatastoreRequestDatastoreResourcePermissionsSitesInner) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner struct {
-	value *SaveDatastoreRequestDatastoreResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) Get() *SaveDatastoreRequestDatastoreResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) Set(val *SaveDatastoreRequestDatastoreResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner(val *SaveDatastoreRequestDatastoreResourcePermissionsSitesInner) *NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner {
-	return &NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -207,51 +207,6 @@ func (o NetworkRouterTypeBgpOptionTypesInner) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableNetworkRouterTypeBgpOptionTypesInner struct {
-	value *NetworkRouterTypeBgpOptionTypesInner
-	isSet bool
-}
-
-func (v NullableNetworkRouterTypeBgpOptionTypesInner) Get() *NetworkRouterTypeBgpOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableNetworkRouterTypeBgpOptionTypesInner) Set(val *NetworkRouterTypeBgpOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNetworkRouterTypeBgpOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNetworkRouterTypeBgpOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNetworkRouterTypeBgpOptionTypesInner(val *NetworkRouterTypeBgpOptionTypesInner) *NullableNetworkRouterTypeBgpOptionTypesInner {
-	return &NullableNetworkRouterTypeBgpOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableNetworkRouterTypeBgpOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNetworkRouterTypeBgpOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNetworkRouterTypeBgpOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NetworkRouterTypeBgpOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

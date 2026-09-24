@@ -207,51 +207,6 @@ func (o GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInne
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner struct {
-	value *GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) Get() *GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) Set(val *GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner(val *GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) *NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner {
-	return &NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouter200ResponseNetworkRouterTypeFirewallGroupOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

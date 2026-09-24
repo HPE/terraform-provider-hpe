@@ -47,51 +47,6 @@ func (o GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) ToMap
 	return toSerialize, nil
 }
 
-type NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner struct {
-	value *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner
-	isSet bool
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) Get() *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner {
-	return v.value
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) Set(val *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner(val *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner {
-	return &NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkDhcpServers200ResponseAllOfNetworkDhcpServersInnerOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

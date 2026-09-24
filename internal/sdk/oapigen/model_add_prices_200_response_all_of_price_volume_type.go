@@ -55,51 +55,6 @@ func (o AddPrices200ResponseAllOfPriceVolumeType) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableAddPrices200ResponseAllOfPriceVolumeType struct {
-	value *AddPrices200ResponseAllOfPriceVolumeType
-	isSet bool
-}
-
-func (v NullableAddPrices200ResponseAllOfPriceVolumeType) Get() *AddPrices200ResponseAllOfPriceVolumeType {
-	return v.value
-}
-
-func (v *NullableAddPrices200ResponseAllOfPriceVolumeType) Set(val *AddPrices200ResponseAllOfPriceVolumeType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddPrices200ResponseAllOfPriceVolumeType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddPrices200ResponseAllOfPriceVolumeType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddPrices200ResponseAllOfPriceVolumeType(val *AddPrices200ResponseAllOfPriceVolumeType) *NullableAddPrices200ResponseAllOfPriceVolumeType {
-	return &NullableAddPrices200ResponseAllOfPriceVolumeType{value: val, isSet: true}
-}
-
-func (v NullableAddPrices200ResponseAllOfPriceVolumeType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddPrices200ResponseAllOfPriceVolumeType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddPrices200ResponseAllOfPriceVolumeType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddPrices200ResponseAllOfPriceVolumeType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

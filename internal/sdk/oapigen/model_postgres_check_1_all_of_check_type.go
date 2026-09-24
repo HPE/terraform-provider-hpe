@@ -47,51 +47,6 @@ func (o PostgresCheck1AllOfCheckType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePostgresCheck1AllOfCheckType struct {
-	value *PostgresCheck1AllOfCheckType
-	isSet bool
-}
-
-func (v NullablePostgresCheck1AllOfCheckType) Get() *PostgresCheck1AllOfCheckType {
-	return v.value
-}
-
-func (v *NullablePostgresCheck1AllOfCheckType) Set(val *PostgresCheck1AllOfCheckType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePostgresCheck1AllOfCheckType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePostgresCheck1AllOfCheckType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePostgresCheck1AllOfCheckType(val *PostgresCheck1AllOfCheckType) *NullablePostgresCheck1AllOfCheckType {
-	return &NullablePostgresCheck1AllOfCheckType{value: val, isSet: true}
-}
-
-func (v NullablePostgresCheck1AllOfCheckType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePostgresCheck1AllOfCheckType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePostgresCheck1AllOfCheckType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PostgresCheck1AllOfCheckType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

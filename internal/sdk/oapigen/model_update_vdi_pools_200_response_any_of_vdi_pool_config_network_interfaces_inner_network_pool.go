@@ -51,51 +51,6 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork
 	return toSerialize, nil
 }
 
-type NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool struct {
-	value *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool
-	isSet bool
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Get() *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Set(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool {
-	return &NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

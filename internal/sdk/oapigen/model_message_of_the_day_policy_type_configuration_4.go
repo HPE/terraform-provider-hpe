@@ -67,51 +67,6 @@ func (o MessageOfTheDayPolicyTypeConfiguration4) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableMessageOfTheDayPolicyTypeConfiguration4 struct {
-	value *MessageOfTheDayPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration4) Get() *MessageOfTheDayPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration4) Set(val *MessageOfTheDayPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMessageOfTheDayPolicyTypeConfiguration4(val *MessageOfTheDayPolicyTypeConfiguration4) *NullableMessageOfTheDayPolicyTypeConfiguration4 {
-	return &NullableMessageOfTheDayPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMessageOfTheDayPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMessageOfTheDayPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MessageOfTheDayPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

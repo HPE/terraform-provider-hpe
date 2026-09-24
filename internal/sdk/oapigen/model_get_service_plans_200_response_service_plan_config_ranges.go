@@ -91,51 +91,6 @@ func (o GetServicePlans200ResponseServicePlanConfigRanges) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableGetServicePlans200ResponseServicePlanConfigRanges struct {
-	value *GetServicePlans200ResponseServicePlanConfigRanges
-	isSet bool
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfigRanges) Get() *GetServicePlans200ResponseServicePlanConfigRanges {
-	return v.value
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfigRanges) Set(val *GetServicePlans200ResponseServicePlanConfigRanges) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfigRanges) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfigRanges) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetServicePlans200ResponseServicePlanConfigRanges(val *GetServicePlans200ResponseServicePlanConfigRanges) *NullableGetServicePlans200ResponseServicePlanConfigRanges {
-	return &NullableGetServicePlans200ResponseServicePlanConfigRanges{value: val, isSet: true}
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfigRanges) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanConfigRanges) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanConfigRanges) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetServicePlans200ResponseServicePlanConfigRanges) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -103,51 +103,6 @@ func (o GetPolicies200ResponseAllOfPolicy) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableGetPolicies200ResponseAllOfPolicy struct {
-	value *GetPolicies200ResponseAllOfPolicy
-	isSet bool
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) Get() *GetPolicies200ResponseAllOfPolicy {
-	return v.value
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) Set(val *GetPolicies200ResponseAllOfPolicy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetPolicies200ResponseAllOfPolicy(val *GetPolicies200ResponseAllOfPolicy) *NullableGetPolicies200ResponseAllOfPolicy {
-	return &NullableGetPolicies200ResponseAllOfPolicy{value: val, isSet: true}
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetPolicies200ResponseAllOfPolicy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetPolicies200ResponseAllOfPolicy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetPolicies200ResponseAllOfPolicy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

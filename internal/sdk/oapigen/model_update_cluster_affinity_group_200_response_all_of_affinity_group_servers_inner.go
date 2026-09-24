@@ -51,51 +51,6 @@ func (o UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) ToM
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner struct {
-	value *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) Get() *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) Set(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner {
-	return &NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupServersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

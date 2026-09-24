@@ -47,51 +47,6 @@ func (o GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccou
 	return toSerialize, nil
 }
 
-type NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount struct {
-	value *GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) Get() *GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) Set(val *GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount(val *GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) *NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount {
-	return &NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetServicePlans200ResponseServicePlanPermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -207,51 +207,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOpti
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner struct {
-	value *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) Get() *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) Set(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutProvisionTypeNetworkTypesInnerOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

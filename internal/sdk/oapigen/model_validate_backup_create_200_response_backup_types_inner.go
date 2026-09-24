@@ -53,51 +53,6 @@ func (o ValidateBackupCreate200ResponseBackupTypesInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableValidateBackupCreate200ResponseBackupTypesInner struct {
-	value *ValidateBackupCreate200ResponseBackupTypesInner
-	isSet bool
-}
-
-func (v NullableValidateBackupCreate200ResponseBackupTypesInner) Get() *ValidateBackupCreate200ResponseBackupTypesInner {
-	return v.value
-}
-
-func (v *NullableValidateBackupCreate200ResponseBackupTypesInner) Set(val *ValidateBackupCreate200ResponseBackupTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableValidateBackupCreate200ResponseBackupTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableValidateBackupCreate200ResponseBackupTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableValidateBackupCreate200ResponseBackupTypesInner(val *ValidateBackupCreate200ResponseBackupTypesInner) *NullableValidateBackupCreate200ResponseBackupTypesInner {
-	return &NullableValidateBackupCreate200ResponseBackupTypesInner{value: val, isSet: true}
-}
-
-func (v NullableValidateBackupCreate200ResponseBackupTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableValidateBackupCreate200ResponseBackupTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableValidateBackupCreate200ResponseBackupTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ValidateBackupCreate200ResponseBackupTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

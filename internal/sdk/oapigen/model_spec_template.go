@@ -108,51 +108,6 @@ func (o SpecTemplate) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSpecTemplate struct {
-	value *SpecTemplate
-	isSet bool
-}
-
-func (v NullableSpecTemplate) Get() *SpecTemplate {
-	return v.value
-}
-
-func (v *NullableSpecTemplate) Set(val *SpecTemplate) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSpecTemplate) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSpecTemplate) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSpecTemplate(val *SpecTemplate) *NullableSpecTemplate {
-	return &NullableSpecTemplate{value: val, isSet: true}
-}
-
-func (v NullableSpecTemplate) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSpecTemplate) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSpecTemplate) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SpecTemplate) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

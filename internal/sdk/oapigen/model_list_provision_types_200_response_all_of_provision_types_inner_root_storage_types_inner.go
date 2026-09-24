@@ -75,51 +75,6 @@ func (o ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInn
 	return toSerialize, nil
 }
 
-type NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner struct {
-	value *ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner
-	isSet bool
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) Get() *ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner {
-	return v.value
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) Set(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner {
-	return &NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListProvisionTypes200ResponseAllOfProvisionTypesInnerRootStorageTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

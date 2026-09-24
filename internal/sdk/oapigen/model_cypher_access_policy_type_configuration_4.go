@@ -67,51 +67,6 @@ func (o CypherAccessPolicyTypeConfiguration4) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableCypherAccessPolicyTypeConfiguration4 struct {
-	value *CypherAccessPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableCypherAccessPolicyTypeConfiguration4) Get() *CypherAccessPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableCypherAccessPolicyTypeConfiguration4) Set(val *CypherAccessPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCypherAccessPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCypherAccessPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCypherAccessPolicyTypeConfiguration4(val *CypherAccessPolicyTypeConfiguration4) *NullableCypherAccessPolicyTypeConfiguration4 {
-	return &NullableCypherAccessPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableCypherAccessPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCypherAccessPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCypherAccessPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CypherAccessPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

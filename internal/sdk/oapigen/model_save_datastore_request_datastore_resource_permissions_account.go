@@ -47,51 +47,6 @@ func (o SaveDatastoreRequestDatastoreResourcePermissionsAccount) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount struct {
-	value *SaveDatastoreRequestDatastoreResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) Get() *SaveDatastoreRequestDatastoreResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) Set(val *SaveDatastoreRequestDatastoreResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveDatastoreRequestDatastoreResourcePermissionsAccount(val *SaveDatastoreRequestDatastoreResourcePermissionsAccount) *NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount {
-	return &NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveDatastoreRequestDatastoreResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveDatastoreRequestDatastoreResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

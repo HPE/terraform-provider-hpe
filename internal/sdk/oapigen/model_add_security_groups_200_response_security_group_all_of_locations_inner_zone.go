@@ -51,51 +51,6 @@ func (o AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) ToMap(
 	return toSerialize, nil
 }
 
-type NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone struct {
-	value *AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone
-	isSet bool
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) Get() *AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone {
-	return v.value
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) Set(val *AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone(val *AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) *NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone {
-	return &NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone{value: val, isSet: true}
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddSecurityGroups200ResponseSecurityGroupAllOfLocationsInnerZone) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

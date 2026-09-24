@@ -48,51 +48,6 @@ func (o NSXTBGPNeighborConfig1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableNSXTBGPNeighborConfig1 struct {
-	value *NSXTBGPNeighborConfig1
-	isSet bool
-}
-
-func (v NullableNSXTBGPNeighborConfig1) Get() *NSXTBGPNeighborConfig1 {
-	return v.value
-}
-
-func (v *NullableNSXTBGPNeighborConfig1) Set(val *NSXTBGPNeighborConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNSXTBGPNeighborConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNSXTBGPNeighborConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNSXTBGPNeighborConfig1(val *NSXTBGPNeighborConfig1) *NullableNSXTBGPNeighborConfig1 {
-	return &NullableNSXTBGPNeighborConfig1{value: val, isSet: true}
-}
-
-func (v NullableNSXTBGPNeighborConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNSXTBGPNeighborConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNSXTBGPNeighborConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NSXTBGPNeighborConfig1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

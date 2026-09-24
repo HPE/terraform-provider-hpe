@@ -98,51 +98,6 @@ func (o HTTPLoadBalancerProfileConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableHTTPLoadBalancerProfileConfig struct {
-	value *HTTPLoadBalancerProfileConfig
-	isSet bool
-}
-
-func (v NullableHTTPLoadBalancerProfileConfig) Get() *HTTPLoadBalancerProfileConfig {
-	return v.value
-}
-
-func (v *NullableHTTPLoadBalancerProfileConfig) Set(val *HTTPLoadBalancerProfileConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHTTPLoadBalancerProfileConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHTTPLoadBalancerProfileConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHTTPLoadBalancerProfileConfig(val *HTTPLoadBalancerProfileConfig) *NullableHTTPLoadBalancerProfileConfig {
-	return &NullableHTTPLoadBalancerProfileConfig{value: val, isSet: true}
-}
-
-func (v NullableHTTPLoadBalancerProfileConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHTTPLoadBalancerProfileConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHTTPLoadBalancerProfileConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *HTTPLoadBalancerProfileConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

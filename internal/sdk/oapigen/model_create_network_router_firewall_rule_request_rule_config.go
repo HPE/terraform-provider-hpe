@@ -48,51 +48,6 @@ func (o CreateNetworkRouterFirewallRuleRequestRuleConfig) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkRouterFirewallRuleRequestRuleConfig struct {
-	value *CreateNetworkRouterFirewallRuleRequestRuleConfig
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) Get() *CreateNetworkRouterFirewallRuleRequestRuleConfig {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) Set(val *CreateNetworkRouterFirewallRuleRequestRuleConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterFirewallRuleRequestRuleConfig(val *CreateNetworkRouterFirewallRuleRequestRuleConfig) *NullableCreateNetworkRouterFirewallRuleRequestRuleConfig {
-	return &NullableCreateNetworkRouterFirewallRuleRequestRuleConfig{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterFirewallRuleRequestRuleConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkRouterFirewallRuleRequestRuleConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

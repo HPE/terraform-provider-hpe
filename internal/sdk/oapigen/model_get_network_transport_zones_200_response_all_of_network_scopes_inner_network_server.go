@@ -47,51 +47,6 @@ func (o GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer)
 	return toSerialize, nil
 }
 
-type NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer struct {
-	value *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) Get() *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) Set(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer {
-	return &NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerNetworkServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

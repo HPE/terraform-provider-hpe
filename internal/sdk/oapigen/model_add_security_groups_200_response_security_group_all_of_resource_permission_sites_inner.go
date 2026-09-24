@@ -55,51 +55,6 @@ func (o AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInn
 	return toSerialize, nil
 }
 
-type NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner struct {
-	value *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner
-	isSet bool
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) Get() *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner {
-	return v.value
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) Set(val *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner(val *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) *NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner {
-	return &NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner{value: val, isSet: true}
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddSecurityGroups200ResponseSecurityGroupAllOfResourcePermissionSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

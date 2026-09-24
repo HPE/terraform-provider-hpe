@@ -74,51 +74,6 @@ func (o WebGetConfig4) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWebGetConfig4 struct {
-	value *WebGetConfig4
-	isSet bool
-}
-
-func (v NullableWebGetConfig4) Get() *WebGetConfig4 {
-	return v.value
-}
-
-func (v *NullableWebGetConfig4) Set(val *WebGetConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWebGetConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWebGetConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWebGetConfig4(val *WebGetConfig4) *NullableWebGetConfig4 {
-	return &NullableWebGetConfig4{value: val, isSet: true}
-}
-
-func (v NullableWebGetConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWebGetConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWebGetConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *WebGetConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

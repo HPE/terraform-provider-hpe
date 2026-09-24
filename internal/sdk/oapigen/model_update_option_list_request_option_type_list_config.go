@@ -47,51 +47,6 @@ func (o UpdateOptionListRequestOptionTypeListConfig) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableUpdateOptionListRequestOptionTypeListConfig struct {
-	value *UpdateOptionListRequestOptionTypeListConfig
-	isSet bool
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfig) Get() *UpdateOptionListRequestOptionTypeListConfig {
-	return v.value
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfig) Set(val *UpdateOptionListRequestOptionTypeListConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateOptionListRequestOptionTypeListConfig(val *UpdateOptionListRequestOptionTypeListConfig) *NullableUpdateOptionListRequestOptionTypeListConfig {
-	return &NullableUpdateOptionListRequestOptionTypeListConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateOptionListRequestOptionTypeListConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateOptionListRequestOptionTypeListConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateOptionListRequestOptionTypeListConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

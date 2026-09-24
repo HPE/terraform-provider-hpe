@@ -59,51 +59,6 @@ func (o Whoami200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWhoami200Response struct {
-	value *Whoami200Response
-	isSet bool
-}
-
-func (v NullableWhoami200Response) Get() *Whoami200Response {
-	return v.value
-}
-
-func (v *NullableWhoami200Response) Set(val *Whoami200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWhoami200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWhoami200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWhoami200Response(val *Whoami200Response) *NullableWhoami200Response {
-	return &NullableWhoami200Response{value: val, isSet: true}
-}
-
-func (v NullableWhoami200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWhoami200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWhoami200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Whoami200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

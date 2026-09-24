@@ -51,51 +51,6 @@ func (o GetApp200ResponseAppAccount) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGetApp200ResponseAppAccount struct {
-	value *GetApp200ResponseAppAccount
-	isSet bool
-}
-
-func (v NullableGetApp200ResponseAppAccount) Get() *GetApp200ResponseAppAccount {
-	return v.value
-}
-
-func (v *NullableGetApp200ResponseAppAccount) Set(val *GetApp200ResponseAppAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetApp200ResponseAppAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetApp200ResponseAppAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetApp200ResponseAppAccount(val *GetApp200ResponseAppAccount) *NullableGetApp200ResponseAppAccount {
-	return &NullableGetApp200ResponseAppAccount{value: val, isSet: true}
-}
-
-func (v NullableGetApp200ResponseAppAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetApp200ResponseAppAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetApp200ResponseAppAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetApp200ResponseAppAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -84,51 +84,6 @@ func (o DeploymentVersionsInner) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableDeploymentVersionsInner struct {
-	value *DeploymentVersionsInner
-	isSet bool
-}
-
-func (v NullableDeploymentVersionsInner) Get() *DeploymentVersionsInner {
-	return v.value
-}
-
-func (v *NullableDeploymentVersionsInner) Set(val *DeploymentVersionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeploymentVersionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeploymentVersionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeploymentVersionsInner(val *DeploymentVersionsInner) *NullableDeploymentVersionsInner {
-	return &NullableDeploymentVersionsInner{value: val, isSet: true}
-}
-
-func (v NullableDeploymentVersionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeploymentVersionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeploymentVersionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeploymentVersionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

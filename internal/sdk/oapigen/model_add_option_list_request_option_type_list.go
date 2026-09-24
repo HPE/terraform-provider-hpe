@@ -124,51 +124,6 @@ func (o AddOptionListRequestOptionTypeList) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableAddOptionListRequestOptionTypeList struct {
-	value *AddOptionListRequestOptionTypeList
-	isSet bool
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) Get() *AddOptionListRequestOptionTypeList {
-	return v.value
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) Set(val *AddOptionListRequestOptionTypeList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddOptionListRequestOptionTypeList(val *AddOptionListRequestOptionTypeList) *NullableAddOptionListRequestOptionTypeList {
-	return &NullableAddOptionListRequestOptionTypeList{value: val, isSet: true}
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddOptionListRequestOptionTypeList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddOptionListRequestOptionTypeList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddOptionListRequestOptionTypeList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

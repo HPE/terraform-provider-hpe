@@ -59,51 +59,6 @@ func (o ValidateBackupCreate200ResponseProviderBackupTypesInner) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableValidateBackupCreate200ResponseProviderBackupTypesInner struct {
-	value *ValidateBackupCreate200ResponseProviderBackupTypesInner
-	isSet bool
-}
-
-func (v NullableValidateBackupCreate200ResponseProviderBackupTypesInner) Get() *ValidateBackupCreate200ResponseProviderBackupTypesInner {
-	return v.value
-}
-
-func (v *NullableValidateBackupCreate200ResponseProviderBackupTypesInner) Set(val *ValidateBackupCreate200ResponseProviderBackupTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableValidateBackupCreate200ResponseProviderBackupTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableValidateBackupCreate200ResponseProviderBackupTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableValidateBackupCreate200ResponseProviderBackupTypesInner(val *ValidateBackupCreate200ResponseProviderBackupTypesInner) *NullableValidateBackupCreate200ResponseProviderBackupTypesInner {
-	return &NullableValidateBackupCreate200ResponseProviderBackupTypesInner{value: val, isSet: true}
-}
-
-func (v NullableValidateBackupCreate200ResponseProviderBackupTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableValidateBackupCreate200ResponseProviderBackupTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableValidateBackupCreate200ResponseProviderBackupTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ValidateBackupCreate200ResponseProviderBackupTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

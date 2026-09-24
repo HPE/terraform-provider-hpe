@@ -135,51 +135,6 @@ func (o ServerType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableServerType struct {
-	value *ServerType
-	isSet bool
-}
-
-func (v NullableServerType) Get() *ServerType {
-	return v.value
-}
-
-func (v *NullableServerType) Set(val *ServerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableServerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableServerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableServerType(val *ServerType) *NullableServerType {
-	return &NullableServerType{value: val, isSet: true}
-}
-
-func (v NullableServerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableServerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableServerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ServerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

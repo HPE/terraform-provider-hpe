@@ -59,51 +59,6 @@ func (o CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer
 	return toSerialize, nil
 }
 
-type NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer struct {
-	value *CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) Get() *CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) Set(val *CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer(val *CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) *NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer {
-	return &NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateLoadBalancerProfile200ResponseAllOfLoadBalancerProfileLoadBalancer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

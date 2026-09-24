@@ -80,51 +80,6 @@ func (o Deployment) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableDeployment struct {
-	value *Deployment
-	isSet bool
-}
-
-func (v NullableDeployment) Get() *Deployment {
-	return v.value
-}
-
-func (v *NullableDeployment) Set(val *Deployment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeployment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeployment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeployment(val *Deployment) *NullableDeployment {
-	return &NullableDeployment{value: val, isSet: true}
-}
-
-func (v NullableDeployment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeployment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeployment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Deployment) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

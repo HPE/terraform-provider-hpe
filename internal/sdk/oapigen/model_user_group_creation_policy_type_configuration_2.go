@@ -45,51 +45,6 @@ func (o UserGroupCreationPolicyTypeConfiguration2) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableUserGroupCreationPolicyTypeConfiguration2 struct {
-	value *UserGroupCreationPolicyTypeConfiguration2
-	isSet bool
-}
-
-func (v NullableUserGroupCreationPolicyTypeConfiguration2) Get() *UserGroupCreationPolicyTypeConfiguration2 {
-	return v.value
-}
-
-func (v *NullableUserGroupCreationPolicyTypeConfiguration2) Set(val *UserGroupCreationPolicyTypeConfiguration2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUserGroupCreationPolicyTypeConfiguration2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUserGroupCreationPolicyTypeConfiguration2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUserGroupCreationPolicyTypeConfiguration2(val *UserGroupCreationPolicyTypeConfiguration2) *NullableUserGroupCreationPolicyTypeConfiguration2 {
-	return &NullableUserGroupCreationPolicyTypeConfiguration2{value: val, isSet: true}
-}
-
-func (v NullableUserGroupCreationPolicyTypeConfiguration2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUserGroupCreationPolicyTypeConfiguration2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUserGroupCreationPolicyTypeConfiguration2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UserGroupCreationPolicyTypeConfiguration2) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

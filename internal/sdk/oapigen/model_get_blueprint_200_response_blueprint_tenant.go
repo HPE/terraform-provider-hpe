@@ -51,51 +51,6 @@ func (o GetBlueprint200ResponseBlueprintTenant) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableGetBlueprint200ResponseBlueprintTenant struct {
-	value *GetBlueprint200ResponseBlueprintTenant
-	isSet bool
-}
-
-func (v NullableGetBlueprint200ResponseBlueprintTenant) Get() *GetBlueprint200ResponseBlueprintTenant {
-	return v.value
-}
-
-func (v *NullableGetBlueprint200ResponseBlueprintTenant) Set(val *GetBlueprint200ResponseBlueprintTenant) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetBlueprint200ResponseBlueprintTenant) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetBlueprint200ResponseBlueprintTenant) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetBlueprint200ResponseBlueprintTenant(val *GetBlueprint200ResponseBlueprintTenant) *NullableGetBlueprint200ResponseBlueprintTenant {
-	return &NullableGetBlueprint200ResponseBlueprintTenant{value: val, isSet: true}
-}
-
-func (v NullableGetBlueprint200ResponseBlueprintTenant) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetBlueprint200ResponseBlueprintTenant) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetBlueprint200ResponseBlueprintTenant) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetBlueprint200ResponseBlueprintTenant) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

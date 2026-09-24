@@ -47,51 +47,6 @@ func (o GetBackupJobs200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGetBackupJobs200Response struct {
-	value *GetBackupJobs200Response
-	isSet bool
-}
-
-func (v NullableGetBackupJobs200Response) Get() *GetBackupJobs200Response {
-	return v.value
-}
-
-func (v *NullableGetBackupJobs200Response) Set(val *GetBackupJobs200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetBackupJobs200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetBackupJobs200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetBackupJobs200Response(val *GetBackupJobs200Response) *NullableGetBackupJobs200Response {
-	return &NullableGetBackupJobs200Response{value: val, isSet: true}
-}
-
-func (v NullableGetBackupJobs200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetBackupJobs200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetBackupJobs200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetBackupJobs200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

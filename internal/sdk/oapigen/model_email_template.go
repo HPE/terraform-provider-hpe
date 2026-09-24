@@ -70,51 +70,6 @@ func (o EmailTemplate) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableEmailTemplate struct {
-	value *EmailTemplate
-	isSet bool
-}
-
-func (v NullableEmailTemplate) Get() *EmailTemplate {
-	return v.value
-}
-
-func (v *NullableEmailTemplate) Set(val *EmailTemplate) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableEmailTemplate) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableEmailTemplate) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableEmailTemplate(val *EmailTemplate) *NullableEmailTemplate {
-	return &NullableEmailTemplate{value: val, isSet: true}
-}
-
-func (v NullableEmailTemplate) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableEmailTemplate) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableEmailTemplate) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *EmailTemplate) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

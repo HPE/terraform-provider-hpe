@@ -207,51 +207,6 @@ func (o GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) ToM
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner struct {
-	value *GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) Get() *GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) Set(val *GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner(val *GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) *NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner {
-	return &NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouterType200ResponseNetworkRouterTypeBgpOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -226,51 +226,6 @@ func (o ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner struct {
-	value *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
-	isSet bool
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) Get() *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) Set(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner {
-	return &NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -48,51 +48,6 @@ func (o ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermi
 	return toSerialize, nil
 }
 
-type NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions struct {
-	value *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions
-	isSet bool
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) Get() *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions {
-	return v.value
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) Set(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions(val *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions {
-	return &NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions{value: val, isSet: true}
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListNetworkServerGroups200ResponseAllOfGroupsInnerPermissionsTenantPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

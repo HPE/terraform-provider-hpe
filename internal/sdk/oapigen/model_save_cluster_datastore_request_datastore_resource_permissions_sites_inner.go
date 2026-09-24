@@ -47,51 +47,6 @@ func (o SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) ToMap
 	return toSerialize, nil
 }
 
-type NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner struct {
-	value *SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) Get() *SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) Set(val *SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner(val *SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) *NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner {
-	return &NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterDatastoreRequestDatastoreResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

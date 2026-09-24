@@ -51,51 +51,6 @@ func (o CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) ToMa
 	return toSerialize, nil
 }
 
-type NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool struct {
-	value *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Get() *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Set(val *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool(val *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool {
-	return &NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateLoadBalancerVirtualServer200ResponseLoadBalancerInstancePool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

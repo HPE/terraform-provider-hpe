@@ -47,51 +47,6 @@ func (o ListApplianceSettings5XXResponse) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableListApplianceSettings5XXResponse struct {
-	value *ListApplianceSettings5XXResponse
-	isSet bool
-}
-
-func (v NullableListApplianceSettings5XXResponse) Get() *ListApplianceSettings5XXResponse {
-	return v.value
-}
-
-func (v *NullableListApplianceSettings5XXResponse) Set(val *ListApplianceSettings5XXResponse) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListApplianceSettings5XXResponse) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListApplianceSettings5XXResponse) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListApplianceSettings5XXResponse(val *ListApplianceSettings5XXResponse) *NullableListApplianceSettings5XXResponse {
-	return &NullableListApplianceSettings5XXResponse{value: val, isSet: true}
-}
-
-func (v NullableListApplianceSettings5XXResponse) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListApplianceSettings5XXResponse) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListApplianceSettings5XXResponse) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListApplianceSettings5XXResponse) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

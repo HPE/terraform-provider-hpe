@@ -45,51 +45,6 @@ func (o AddRolesRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddRolesRequest struct {
-	value *AddRolesRequest
-	isSet bool
-}
-
-func (v NullableAddRolesRequest) Get() *AddRolesRequest {
-	return v.value
-}
-
-func (v *NullableAddRolesRequest) Set(val *AddRolesRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddRolesRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddRolesRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddRolesRequest(val *AddRolesRequest) *NullableAddRolesRequest {
-	return &NullableAddRolesRequest{value: val, isSet: true}
-}
-
-func (v NullableAddRolesRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddRolesRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddRolesRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddRolesRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

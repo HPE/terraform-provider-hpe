@@ -45,51 +45,6 @@ func (o DelayedDeletePolicyTypeConfiguration5) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableDelayedDeletePolicyTypeConfiguration5 struct {
-	value *DelayedDeletePolicyTypeConfiguration5
-	isSet bool
-}
-
-func (v NullableDelayedDeletePolicyTypeConfiguration5) Get() *DelayedDeletePolicyTypeConfiguration5 {
-	return v.value
-}
-
-func (v *NullableDelayedDeletePolicyTypeConfiguration5) Set(val *DelayedDeletePolicyTypeConfiguration5) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDelayedDeletePolicyTypeConfiguration5) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDelayedDeletePolicyTypeConfiguration5) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDelayedDeletePolicyTypeConfiguration5(val *DelayedDeletePolicyTypeConfiguration5) *NullableDelayedDeletePolicyTypeConfiguration5 {
-	return &NullableDelayedDeletePolicyTypeConfiguration5{value: val, isSet: true}
-}
-
-func (v NullableDelayedDeletePolicyTypeConfiguration5) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDelayedDeletePolicyTypeConfiguration5) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDelayedDeletePolicyTypeConfiguration5) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DelayedDeletePolicyTypeConfiguration5) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -141,51 +141,6 @@ func (o AddPowerSchedulesRequestSchedule) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableAddPowerSchedulesRequestSchedule struct {
-	value *AddPowerSchedulesRequestSchedule
-	isSet bool
-}
-
-func (v NullableAddPowerSchedulesRequestSchedule) Get() *AddPowerSchedulesRequestSchedule {
-	return v.value
-}
-
-func (v *NullableAddPowerSchedulesRequestSchedule) Set(val *AddPowerSchedulesRequestSchedule) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddPowerSchedulesRequestSchedule) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddPowerSchedulesRequestSchedule) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddPowerSchedulesRequestSchedule(val *AddPowerSchedulesRequestSchedule) *NullableAddPowerSchedulesRequestSchedule {
-	return &NullableAddPowerSchedulesRequestSchedule{value: val, isSet: true}
-}
-
-func (v NullableAddPowerSchedulesRequestSchedule) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddPowerSchedulesRequestSchedule) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddPowerSchedulesRequestSchedule) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddPowerSchedulesRequestSchedule) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

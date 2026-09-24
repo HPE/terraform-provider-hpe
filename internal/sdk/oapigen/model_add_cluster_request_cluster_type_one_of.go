@@ -48,51 +48,6 @@ func (o AddClusterRequestClusterTypeOneOf) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableAddClusterRequestClusterTypeOneOf struct {
-	value *AddClusterRequestClusterTypeOneOf
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterTypeOneOf) Get() *AddClusterRequestClusterTypeOneOf {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterTypeOneOf) Set(val *AddClusterRequestClusterTypeOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterTypeOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterTypeOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterTypeOneOf(val *AddClusterRequestClusterTypeOneOf) *NullableAddClusterRequestClusterTypeOneOf {
-	return &NullableAddClusterRequestClusterTypeOneOf{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterTypeOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterTypeOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterTypeOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterRequestClusterTypeOneOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

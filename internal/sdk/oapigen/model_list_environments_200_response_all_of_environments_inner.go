@@ -84,51 +84,6 @@ func (o ListEnvironments200ResponseAllOfEnvironmentsInner) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableListEnvironments200ResponseAllOfEnvironmentsInner struct {
-	value *ListEnvironments200ResponseAllOfEnvironmentsInner
-	isSet bool
-}
-
-func (v NullableListEnvironments200ResponseAllOfEnvironmentsInner) Get() *ListEnvironments200ResponseAllOfEnvironmentsInner {
-	return v.value
-}
-
-func (v *NullableListEnvironments200ResponseAllOfEnvironmentsInner) Set(val *ListEnvironments200ResponseAllOfEnvironmentsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListEnvironments200ResponseAllOfEnvironmentsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListEnvironments200ResponseAllOfEnvironmentsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListEnvironments200ResponseAllOfEnvironmentsInner(val *ListEnvironments200ResponseAllOfEnvironmentsInner) *NullableListEnvironments200ResponseAllOfEnvironmentsInner {
-	return &NullableListEnvironments200ResponseAllOfEnvironmentsInner{value: val, isSet: true}
-}
-
-func (v NullableListEnvironments200ResponseAllOfEnvironmentsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListEnvironments200ResponseAllOfEnvironmentsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListEnvironments200ResponseAllOfEnvironmentsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListEnvironments200ResponseAllOfEnvironmentsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

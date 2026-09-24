@@ -47,51 +47,6 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionA
 	return toSerialize, nil
 }
 
-type NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount struct {
-	value *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount
-	isSet bool
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) Get() *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount {
-	return v.value
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) Set(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount {
-	return &NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount{value: val, isSet: true}
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

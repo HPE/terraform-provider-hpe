@@ -99,51 +99,6 @@ func (o WebCheck1AllOfConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWebCheck1AllOfConfig struct {
-	value *WebCheck1AllOfConfig
-	isSet bool
-}
-
-func (v NullableWebCheck1AllOfConfig) Get() *WebCheck1AllOfConfig {
-	return v.value
-}
-
-func (v *NullableWebCheck1AllOfConfig) Set(val *WebCheck1AllOfConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWebCheck1AllOfConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWebCheck1AllOfConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWebCheck1AllOfConfig(val *WebCheck1AllOfConfig) *NullableWebCheck1AllOfConfig {
-	return &NullableWebCheck1AllOfConfig{value: val, isSet: true}
-}
-
-func (v NullableWebCheck1AllOfConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWebCheck1AllOfConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWebCheck1AllOfConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *WebCheck1AllOfConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

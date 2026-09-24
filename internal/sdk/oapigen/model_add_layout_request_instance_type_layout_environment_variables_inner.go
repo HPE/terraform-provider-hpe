@@ -61,51 +61,6 @@ func (o AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner struct {
-	value *AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner
-	isSet bool
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) Get() *AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner {
-	return v.value
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) Set(val *AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner(val *AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) *NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner {
-	return &NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner{value: val, isSet: true}
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayoutRequestInstanceTypeLayoutEnvironmentVariablesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -75,51 +75,6 @@ func (o SocketConfig1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSocketConfig1 struct {
-	value *SocketConfig1
-	isSet bool
-}
-
-func (v NullableSocketConfig1) Get() *SocketConfig1 {
-	return v.value
-}
-
-func (v *NullableSocketConfig1) Set(val *SocketConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSocketConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSocketConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSocketConfig1(val *SocketConfig1) *NullableSocketConfig1 {
-	return &NullableSocketConfig1{value: val, isSet: true}
-}
-
-func (v NullableSocketConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSocketConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSocketConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SocketConfig1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

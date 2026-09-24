@@ -93,51 +93,6 @@ func (o ExpirationPolicyTypeConfiguration14) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableExpirationPolicyTypeConfiguration14 struct {
-	value *ExpirationPolicyTypeConfiguration14
-	isSet bool
-}
-
-func (v NullableExpirationPolicyTypeConfiguration14) Get() *ExpirationPolicyTypeConfiguration14 {
-	return v.value
-}
-
-func (v *NullableExpirationPolicyTypeConfiguration14) Set(val *ExpirationPolicyTypeConfiguration14) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableExpirationPolicyTypeConfiguration14) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableExpirationPolicyTypeConfiguration14) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableExpirationPolicyTypeConfiguration14(val *ExpirationPolicyTypeConfiguration14) *NullableExpirationPolicyTypeConfiguration14 {
-	return &NullableExpirationPolicyTypeConfiguration14{value: val, isSet: true}
-}
-
-func (v NullableExpirationPolicyTypeConfiguration14) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableExpirationPolicyTypeConfiguration14) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableExpirationPolicyTypeConfiguration14) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ExpirationPolicyTypeConfiguration14) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

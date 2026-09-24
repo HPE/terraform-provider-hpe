@@ -103,51 +103,6 @@ func (o CookiePersistenceLoadBalancerProfileConfig) ToMap() (map[string]interfac
 	return toSerialize, nil
 }
 
-type NullableCookiePersistenceLoadBalancerProfileConfig struct {
-	value *CookiePersistenceLoadBalancerProfileConfig
-	isSet bool
-}
-
-func (v NullableCookiePersistenceLoadBalancerProfileConfig) Get() *CookiePersistenceLoadBalancerProfileConfig {
-	return v.value
-}
-
-func (v *NullableCookiePersistenceLoadBalancerProfileConfig) Set(val *CookiePersistenceLoadBalancerProfileConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCookiePersistenceLoadBalancerProfileConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCookiePersistenceLoadBalancerProfileConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCookiePersistenceLoadBalancerProfileConfig(val *CookiePersistenceLoadBalancerProfileConfig) *NullableCookiePersistenceLoadBalancerProfileConfig {
-	return &NullableCookiePersistenceLoadBalancerProfileConfig{value: val, isSet: true}
-}
-
-func (v NullableCookiePersistenceLoadBalancerProfileConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCookiePersistenceLoadBalancerProfileConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCookiePersistenceLoadBalancerProfileConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CookiePersistenceLoadBalancerProfileConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

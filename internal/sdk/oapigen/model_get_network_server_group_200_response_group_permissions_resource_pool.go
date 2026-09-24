@@ -55,51 +55,6 @@ func (o GetNetworkServerGroup200ResponseGroupPermissionsResourcePool) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool struct {
-	value *GetNetworkServerGroup200ResponseGroupPermissionsResourcePool
-	isSet bool
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) Get() *GetNetworkServerGroup200ResponseGroupPermissionsResourcePool {
-	return v.value
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) Set(val *GetNetworkServerGroup200ResponseGroupPermissionsResourcePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool(val *GetNetworkServerGroup200ResponseGroupPermissionsResourcePool) *NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool {
-	return &NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkServerGroup200ResponseGroupPermissionsResourcePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkServerGroup200ResponseGroupPermissionsResourcePool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

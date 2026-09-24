@@ -84,51 +84,6 @@ func (o GetEnvironments200ResponseEnvironment) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableGetEnvironments200ResponseEnvironment struct {
-	value *GetEnvironments200ResponseEnvironment
-	isSet bool
-}
-
-func (v NullableGetEnvironments200ResponseEnvironment) Get() *GetEnvironments200ResponseEnvironment {
-	return v.value
-}
-
-func (v *NullableGetEnvironments200ResponseEnvironment) Set(val *GetEnvironments200ResponseEnvironment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetEnvironments200ResponseEnvironment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetEnvironments200ResponseEnvironment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetEnvironments200ResponseEnvironment(val *GetEnvironments200ResponseEnvironment) *NullableGetEnvironments200ResponseEnvironment {
-	return &NullableGetEnvironments200ResponseEnvironment{value: val, isSet: true}
-}
-
-func (v NullableGetEnvironments200ResponseEnvironment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetEnvironments200ResponseEnvironment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetEnvironments200ResponseEnvironment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetEnvironments200ResponseEnvironment) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

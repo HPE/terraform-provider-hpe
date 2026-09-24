@@ -51,51 +51,6 @@ func (o PhpIPAMNetworkPoolServerUpdateCredential) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullablePhpIPAMNetworkPoolServerUpdateCredential struct {
-	value *PhpIPAMNetworkPoolServerUpdateCredential
-	isSet bool
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) Get() *PhpIPAMNetworkPoolServerUpdateCredential {
-	return v.value
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) Set(val *PhpIPAMNetworkPoolServerUpdateCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePhpIPAMNetworkPoolServerUpdateCredential(val *PhpIPAMNetworkPoolServerUpdateCredential) *NullablePhpIPAMNetworkPoolServerUpdateCredential {
-	return &NullablePhpIPAMNetworkPoolServerUpdateCredential{value: val, isSet: true}
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePhpIPAMNetworkPoolServerUpdateCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePhpIPAMNetworkPoolServerUpdateCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PhpIPAMNetworkPoolServerUpdateCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

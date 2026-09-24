@@ -47,51 +47,6 @@ func (o DeleteNetworkFirewallRule200Response) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableDeleteNetworkFirewallRule200Response struct {
-	value *DeleteNetworkFirewallRule200Response
-	isSet bool
-}
-
-func (v NullableDeleteNetworkFirewallRule200Response) Get() *DeleteNetworkFirewallRule200Response {
-	return v.value
-}
-
-func (v *NullableDeleteNetworkFirewallRule200Response) Set(val *DeleteNetworkFirewallRule200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeleteNetworkFirewallRule200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeleteNetworkFirewallRule200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeleteNetworkFirewallRule200Response(val *DeleteNetworkFirewallRule200Response) *NullableDeleteNetworkFirewallRule200Response {
-	return &NullableDeleteNetworkFirewallRule200Response{value: val, isSet: true}
-}
-
-func (v NullableDeleteNetworkFirewallRule200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeleteNetworkFirewallRule200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeleteNetworkFirewallRule200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeleteNetworkFirewallRule200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

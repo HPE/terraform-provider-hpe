@@ -55,51 +55,6 @@ func (o ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionS
 	return toSerialize, nil
 }
 
-type NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner struct {
-	value *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner
-	isSet bool
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) Get() *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner {
-	return v.value
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) Set(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner(val *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner {
-	return &NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner{value: val, isSet: true}
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListSecurityGroups200ResponseAllOfSecurityGroupsInnerResourcePermissionSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceConfigLayout) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceConfigLayout
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) Get() *AddInstance200ResponseAllOfOneOfInstanceConfigLayout {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) Set(val *AddInstance200ResponseAllOfOneOfInstanceConfigLayout) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout(val *AddInstance200ResponseAllOfOneOfInstanceConfigLayout) *NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceConfigLayout) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstance200ResponseAllOfOneOfInstanceConfigLayout) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

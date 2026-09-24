@@ -64,51 +64,6 @@ func (o AddEnvironmentsRequestEnvironment) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableAddEnvironmentsRequestEnvironment struct {
-	value *AddEnvironmentsRequestEnvironment
-	isSet bool
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) Get() *AddEnvironmentsRequestEnvironment {
-	return v.value
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) Set(val *AddEnvironmentsRequestEnvironment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEnvironmentsRequestEnvironment(val *AddEnvironmentsRequestEnvironment) *NullableAddEnvironmentsRequestEnvironment {
-	return &NullableAddEnvironmentsRequestEnvironment{value: val, isSet: true}
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEnvironmentsRequestEnvironment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEnvironmentsRequestEnvironment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddEnvironmentsRequestEnvironment) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

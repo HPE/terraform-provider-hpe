@@ -47,51 +47,6 @@ func (o ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) ToMap
 	return toSerialize, nil
 }
 
-type NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType struct {
-	value *ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType
-	isSet bool
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) Get() *ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType {
-	return v.value
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) Set(val *ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType(val *ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) *NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType {
-	return &NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType{value: val, isSet: true}
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListDatastoreTypes200ResponseDatastoreTypesInnerStorageServerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

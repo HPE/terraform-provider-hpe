@@ -63,51 +63,6 @@ func (o GetRole200ResponseFeaturePermissionsInner) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableGetRole200ResponseFeaturePermissionsInner struct {
-	value *GetRole200ResponseFeaturePermissionsInner
-	isSet bool
-}
-
-func (v NullableGetRole200ResponseFeaturePermissionsInner) Get() *GetRole200ResponseFeaturePermissionsInner {
-	return v.value
-}
-
-func (v *NullableGetRole200ResponseFeaturePermissionsInner) Set(val *GetRole200ResponseFeaturePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetRole200ResponseFeaturePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetRole200ResponseFeaturePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetRole200ResponseFeaturePermissionsInner(val *GetRole200ResponseFeaturePermissionsInner) *NullableGetRole200ResponseFeaturePermissionsInner {
-	return &NullableGetRole200ResponseFeaturePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableGetRole200ResponseFeaturePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetRole200ResponseFeaturePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetRole200ResponseFeaturePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetRole200ResponseFeaturePermissionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

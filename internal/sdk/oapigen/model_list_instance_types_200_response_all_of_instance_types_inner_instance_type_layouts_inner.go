@@ -55,51 +55,6 @@ func (o ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsIn
 	return toSerialize, nil
 }
 
-type NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner struct {
-	value *ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner
-	isSet bool
-}
-
-func (v NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) Get() *ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner {
-	return v.value
-}
-
-func (v *NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) Set(val *ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner(val *ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) *NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner {
-	return &NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner{value: val, isSet: true}
-}
-
-func (v NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListInstanceTypes200ResponseAllOfInstanceTypesInnerInstanceTypeLayoutsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

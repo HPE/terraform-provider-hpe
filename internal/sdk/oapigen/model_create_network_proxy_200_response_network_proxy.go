@@ -87,51 +87,6 @@ func (o CreateNetworkProxy200ResponseNetworkProxy) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkProxy200ResponseNetworkProxy struct {
-	value *CreateNetworkProxy200ResponseNetworkProxy
-	isSet bool
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxy) Get() *CreateNetworkProxy200ResponseNetworkProxy {
-	return v.value
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxy) Set(val *CreateNetworkProxy200ResponseNetworkProxy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkProxy200ResponseNetworkProxy(val *CreateNetworkProxy200ResponseNetworkProxy) *NullableCreateNetworkProxy200ResponseNetworkProxy {
-	return &NullableCreateNetworkProxy200ResponseNetworkProxy{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkProxy200ResponseNetworkProxy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkProxy200ResponseNetworkProxy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkProxy200ResponseNetworkProxy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o GetClouds200ResponseZoneStats) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGetClouds200ResponseZoneStats struct {
-	value *GetClouds200ResponseZoneStats
-	isSet bool
-}
-
-func (v NullableGetClouds200ResponseZoneStats) Get() *GetClouds200ResponseZoneStats {
-	return v.value
-}
-
-func (v *NullableGetClouds200ResponseZoneStats) Set(val *GetClouds200ResponseZoneStats) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClouds200ResponseZoneStats) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClouds200ResponseZoneStats) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClouds200ResponseZoneStats(val *GetClouds200ResponseZoneStats) *NullableGetClouds200ResponseZoneStats {
-	return &NullableGetClouds200ResponseZoneStats{value: val, isSet: true}
-}
-
-func (v NullableGetClouds200ResponseZoneStats) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClouds200ResponseZoneStats) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClouds200ResponseZoneStats) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClouds200ResponseZoneStats) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

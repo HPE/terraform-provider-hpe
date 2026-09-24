@@ -55,51 +55,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInn
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Get() *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Set(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerContainerPortsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

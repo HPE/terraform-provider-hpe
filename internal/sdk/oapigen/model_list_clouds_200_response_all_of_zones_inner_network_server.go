@@ -51,51 +51,6 @@ func (o ListClouds200ResponseAllOfZonesInnerNetworkServer) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableListClouds200ResponseAllOfZonesInnerNetworkServer struct {
-	value *ListClouds200ResponseAllOfZonesInnerNetworkServer
-	isSet bool
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerNetworkServer) Get() *ListClouds200ResponseAllOfZonesInnerNetworkServer {
-	return v.value
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerNetworkServer) Set(val *ListClouds200ResponseAllOfZonesInnerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClouds200ResponseAllOfZonesInnerNetworkServer(val *ListClouds200ResponseAllOfZonesInnerNetworkServer) *NullableListClouds200ResponseAllOfZonesInnerNetworkServer {
-	return &NullableListClouds200ResponseAllOfZonesInnerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClouds200ResponseAllOfZonesInnerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClouds200ResponseAllOfZonesInnerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClouds200ResponseAllOfZonesInnerNetworkServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

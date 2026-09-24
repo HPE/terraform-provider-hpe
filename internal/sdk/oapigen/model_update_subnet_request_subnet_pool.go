@@ -47,51 +47,6 @@ func (o UpdateSubnetRequestSubnetPool) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateSubnetRequestSubnetPool struct {
-	value *UpdateSubnetRequestSubnetPool
-	isSet bool
-}
-
-func (v NullableUpdateSubnetRequestSubnetPool) Get() *UpdateSubnetRequestSubnetPool {
-	return v.value
-}
-
-func (v *NullableUpdateSubnetRequestSubnetPool) Set(val *UpdateSubnetRequestSubnetPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSubnetRequestSubnetPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSubnetRequestSubnetPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSubnetRequestSubnetPool(val *UpdateSubnetRequestSubnetPool) *NullableUpdateSubnetRequestSubnetPool {
-	return &NullableUpdateSubnetRequestSubnetPool{value: val, isSet: true}
-}
-
-func (v NullableUpdateSubnetRequestSubnetPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSubnetRequestSubnetPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSubnetRequestSubnetPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateSubnetRequestSubnetPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

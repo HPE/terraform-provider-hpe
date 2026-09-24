@@ -68,51 +68,6 @@ func (o ConditionalWorkflowTaskConfig4) ToMap() (map[string]interface{}, error) 
 	return toSerialize, nil
 }
 
-type NullableConditionalWorkflowTaskConfig4 struct {
-	value *ConditionalWorkflowTaskConfig4
-	isSet bool
-}
-
-func (v NullableConditionalWorkflowTaskConfig4) Get() *ConditionalWorkflowTaskConfig4 {
-	return v.value
-}
-
-func (v *NullableConditionalWorkflowTaskConfig4) Set(val *ConditionalWorkflowTaskConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableConditionalWorkflowTaskConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableConditionalWorkflowTaskConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableConditionalWorkflowTaskConfig4(val *ConditionalWorkflowTaskConfig4) *NullableConditionalWorkflowTaskConfig4 {
-	return &NullableConditionalWorkflowTaskConfig4{value: val, isSet: true}
-}
-
-func (v NullableConditionalWorkflowTaskConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableConditionalWorkflowTaskConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableConditionalWorkflowTaskConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ConditionalWorkflowTaskConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

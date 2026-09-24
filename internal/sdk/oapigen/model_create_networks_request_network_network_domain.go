@@ -48,51 +48,6 @@ func (o CreateNetworksRequestNetworkNetworkDomain) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableCreateNetworksRequestNetworkNetworkDomain struct {
-	value *CreateNetworksRequestNetworkNetworkDomain
-	isSet bool
-}
-
-func (v NullableCreateNetworksRequestNetworkNetworkDomain) Get() *CreateNetworksRequestNetworkNetworkDomain {
-	return v.value
-}
-
-func (v *NullableCreateNetworksRequestNetworkNetworkDomain) Set(val *CreateNetworksRequestNetworkNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworksRequestNetworkNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworksRequestNetworkNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworksRequestNetworkNetworkDomain(val *CreateNetworksRequestNetworkNetworkDomain) *NullableCreateNetworksRequestNetworkNetworkDomain {
-	return &NullableCreateNetworksRequestNetworkNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworksRequestNetworkNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworksRequestNetworkNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworksRequestNetworkNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworksRequestNetworkNetworkDomain) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

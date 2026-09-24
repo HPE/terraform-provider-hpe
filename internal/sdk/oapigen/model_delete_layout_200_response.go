@@ -47,51 +47,6 @@ func (o DeleteLayout200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableDeleteLayout200Response struct {
-	value *DeleteLayout200Response
-	isSet bool
-}
-
-func (v NullableDeleteLayout200Response) Get() *DeleteLayout200Response {
-	return v.value
-}
-
-func (v *NullableDeleteLayout200Response) Set(val *DeleteLayout200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeleteLayout200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeleteLayout200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeleteLayout200Response(val *DeleteLayout200Response) *NullableDeleteLayout200Response {
-	return &NullableDeleteLayout200Response{value: val, isSet: true}
-}
-
-func (v NullableDeleteLayout200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeleteLayout200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeleteLayout200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeleteLayout200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

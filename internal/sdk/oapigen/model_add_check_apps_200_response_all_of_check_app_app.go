@@ -51,51 +51,6 @@ func (o AddCheckApps200ResponseAllOfCheckAppApp) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableAddCheckApps200ResponseAllOfCheckAppApp struct {
-	value *AddCheckApps200ResponseAllOfCheckAppApp
-	isSet bool
-}
-
-func (v NullableAddCheckApps200ResponseAllOfCheckAppApp) Get() *AddCheckApps200ResponseAllOfCheckAppApp {
-	return v.value
-}
-
-func (v *NullableAddCheckApps200ResponseAllOfCheckAppApp) Set(val *AddCheckApps200ResponseAllOfCheckAppApp) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCheckApps200ResponseAllOfCheckAppApp) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCheckApps200ResponseAllOfCheckAppApp) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCheckApps200ResponseAllOfCheckAppApp(val *AddCheckApps200ResponseAllOfCheckAppApp) *NullableAddCheckApps200ResponseAllOfCheckAppApp {
-	return &NullableAddCheckApps200ResponseAllOfCheckAppApp{value: val, isSet: true}
-}
-
-func (v NullableAddCheckApps200ResponseAllOfCheckAppApp) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCheckApps200ResponseAllOfCheckAppApp) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCheckApps200ResponseAllOfCheckAppApp) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddCheckApps200ResponseAllOfCheckAppApp) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

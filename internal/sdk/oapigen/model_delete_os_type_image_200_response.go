@@ -47,51 +47,6 @@ func (o DeleteOsTypeImage200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableDeleteOsTypeImage200Response struct {
-	value *DeleteOsTypeImage200Response
-	isSet bool
-}
-
-func (v NullableDeleteOsTypeImage200Response) Get() *DeleteOsTypeImage200Response {
-	return v.value
-}
-
-func (v *NullableDeleteOsTypeImage200Response) Set(val *DeleteOsTypeImage200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeleteOsTypeImage200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeleteOsTypeImage200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeleteOsTypeImage200Response(val *DeleteOsTypeImage200Response) *NullableDeleteOsTypeImage200Response {
-	return &NullableDeleteOsTypeImage200Response{value: val, isSet: true}
-}
-
-func (v NullableDeleteOsTypeImage200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeleteOsTypeImage200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeleteOsTypeImage200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeleteOsTypeImage200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

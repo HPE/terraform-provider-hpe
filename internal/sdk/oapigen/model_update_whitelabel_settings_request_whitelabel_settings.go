@@ -162,51 +162,6 @@ func (o UpdateWhitelabelSettingsRequestWhitelabelSettings) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableUpdateWhitelabelSettingsRequestWhitelabelSettings struct {
-	value *UpdateWhitelabelSettingsRequestWhitelabelSettings
-	isSet bool
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) Get() *UpdateWhitelabelSettingsRequestWhitelabelSettings {
-	return v.value
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) Set(val *UpdateWhitelabelSettingsRequestWhitelabelSettings) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateWhitelabelSettingsRequestWhitelabelSettings(val *UpdateWhitelabelSettingsRequestWhitelabelSettings) *NullableUpdateWhitelabelSettingsRequestWhitelabelSettings {
-	return &NullableUpdateWhitelabelSettingsRequestWhitelabelSettings{value: val, isSet: true}
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettings) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateWhitelabelSettingsRequestWhitelabelSettings) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

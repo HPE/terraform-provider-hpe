@@ -51,51 +51,6 @@ func (o UpdateVirtualImage200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateVirtualImage200Response struct {
-	value *UpdateVirtualImage200Response
-	isSet bool
-}
-
-func (v NullableUpdateVirtualImage200Response) Get() *UpdateVirtualImage200Response {
-	return v.value
-}
-
-func (v *NullableUpdateVirtualImage200Response) Set(val *UpdateVirtualImage200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVirtualImage200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVirtualImage200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVirtualImage200Response(val *UpdateVirtualImage200Response) *NullableUpdateVirtualImage200Response {
-	return &NullableUpdateVirtualImage200Response{value: val, isSet: true}
-}
-
-func (v NullableUpdateVirtualImage200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVirtualImage200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVirtualImage200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVirtualImage200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

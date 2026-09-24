@@ -75,51 +75,6 @@ func (o ShellTaskConfig4) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableShellTaskConfig4 struct {
-	value *ShellTaskConfig4
-	isSet bool
-}
-
-func (v NullableShellTaskConfig4) Get() *ShellTaskConfig4 {
-	return v.value
-}
-
-func (v *NullableShellTaskConfig4) Set(val *ShellTaskConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableShellTaskConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableShellTaskConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableShellTaskConfig4(val *ShellTaskConfig4) *NullableShellTaskConfig4 {
-	return &NullableShellTaskConfig4{value: val, isSet: true}
-}
-
-func (v NullableShellTaskConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableShellTaskConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableShellTaskConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ShellTaskConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

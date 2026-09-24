@@ -51,51 +51,6 @@ func (o InstanceContainer1Cloud) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceContainer1Cloud struct {
-	value *InstanceContainer1Cloud
-	isSet bool
-}
-
-func (v NullableInstanceContainer1Cloud) Get() *InstanceContainer1Cloud {
-	return v.value
-}
-
-func (v *NullableInstanceContainer1Cloud) Set(val *InstanceContainer1Cloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceContainer1Cloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceContainer1Cloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceContainer1Cloud(val *InstanceContainer1Cloud) *NullableInstanceContainer1Cloud {
-	return &NullableInstanceContainer1Cloud{value: val, isSet: true}
-}
-
-func (v NullableInstanceContainer1Cloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceContainer1Cloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceContainer1Cloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceContainer1Cloud) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

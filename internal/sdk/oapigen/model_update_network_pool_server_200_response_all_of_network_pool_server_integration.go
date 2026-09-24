@@ -51,51 +51,6 @@ func (o UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) ToM
 	return toSerialize, nil
 }
 
-type NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration struct {
-	value *UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration
-	isSet bool
-}
-
-func (v NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Get() *UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Set(val *UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration(val *UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) *NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration {
-	return &NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetworkPoolServer200ResponseAllOfNetworkPoolServerIntegration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

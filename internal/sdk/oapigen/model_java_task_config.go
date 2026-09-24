@@ -79,51 +79,6 @@ func (o JavaTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableJavaTaskConfig struct {
-	value *JavaTaskConfig
-	isSet bool
-}
-
-func (v NullableJavaTaskConfig) Get() *JavaTaskConfig {
-	return v.value
-}
-
-func (v *NullableJavaTaskConfig) Set(val *JavaTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableJavaTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableJavaTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableJavaTaskConfig(val *JavaTaskConfig) *NullableJavaTaskConfig {
-	return &NullableJavaTaskConfig{value: val, isSet: true}
-}
-
-func (v NullableJavaTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableJavaTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableJavaTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *JavaTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o SaveClusterAffinityGroupRequestAffinityGroupPool) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableSaveClusterAffinityGroupRequestAffinityGroupPool struct {
-	value *SaveClusterAffinityGroupRequestAffinityGroupPool
-	isSet bool
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupPool) Get() *SaveClusterAffinityGroupRequestAffinityGroupPool {
-	return v.value
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupPool) Set(val *SaveClusterAffinityGroupRequestAffinityGroupPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterAffinityGroupRequestAffinityGroupPool(val *SaveClusterAffinityGroupRequestAffinityGroupPool) *NullableSaveClusterAffinityGroupRequestAffinityGroupPool {
-	return &NullableSaveClusterAffinityGroupRequestAffinityGroupPool{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterAffinityGroupRequestAffinityGroupPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

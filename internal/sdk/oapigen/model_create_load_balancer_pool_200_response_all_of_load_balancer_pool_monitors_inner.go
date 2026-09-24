@@ -51,51 +51,6 @@ func (o CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) ToM
 	return toSerialize, nil
 }
 
-type NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner struct {
-	value *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) Get() *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) Set(val *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner(val *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner {
-	return &NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateLoadBalancerPool200ResponseAllOfLoadBalancerPoolMonitorsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -45,51 +45,6 @@ func (o RouterQuotaPolicyTypeConfiguration) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableRouterQuotaPolicyTypeConfiguration struct {
-	value *RouterQuotaPolicyTypeConfiguration
-	isSet bool
-}
-
-func (v NullableRouterQuotaPolicyTypeConfiguration) Get() *RouterQuotaPolicyTypeConfiguration {
-	return v.value
-}
-
-func (v *NullableRouterQuotaPolicyTypeConfiguration) Set(val *RouterQuotaPolicyTypeConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableRouterQuotaPolicyTypeConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableRouterQuotaPolicyTypeConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableRouterQuotaPolicyTypeConfiguration(val *RouterQuotaPolicyTypeConfiguration) *NullableRouterQuotaPolicyTypeConfiguration {
-	return &NullableRouterQuotaPolicyTypeConfiguration{value: val, isSet: true}
-}
-
-func (v NullableRouterQuotaPolicyTypeConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableRouterQuotaPolicyTypeConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableRouterQuotaPolicyTypeConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *RouterQuotaPolicyTypeConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

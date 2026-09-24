@@ -51,51 +51,6 @@ func (o BackupSettingsDefaultStorageBucket) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableBackupSettingsDefaultStorageBucket struct {
-	value *BackupSettingsDefaultStorageBucket
-	isSet bool
-}
-
-func (v NullableBackupSettingsDefaultStorageBucket) Get() *BackupSettingsDefaultStorageBucket {
-	return v.value
-}
-
-func (v *NullableBackupSettingsDefaultStorageBucket) Set(val *BackupSettingsDefaultStorageBucket) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBackupSettingsDefaultStorageBucket) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBackupSettingsDefaultStorageBucket) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBackupSettingsDefaultStorageBucket(val *BackupSettingsDefaultStorageBucket) *NullableBackupSettingsDefaultStorageBucket {
-	return &NullableBackupSettingsDefaultStorageBucket{value: val, isSet: true}
-}
-
-func (v NullableBackupSettingsDefaultStorageBucket) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBackupSettingsDefaultStorageBucket) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBackupSettingsDefaultStorageBucket) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BackupSettingsDefaultStorageBucket) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

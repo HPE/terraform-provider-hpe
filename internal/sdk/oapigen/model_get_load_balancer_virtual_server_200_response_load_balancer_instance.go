@@ -226,51 +226,6 @@ func (o GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance struct {
-	value *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) Get() *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) Set(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance {
-	return &NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstance) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

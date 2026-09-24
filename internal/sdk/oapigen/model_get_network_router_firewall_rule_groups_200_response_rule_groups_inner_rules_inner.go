@@ -131,51 +131,6 @@ func (o GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) 
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner struct {
-	value *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) Get() *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) Set(val *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner(val *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner {
-	return &NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouterFirewallRuleGroups200ResponseRuleGroupsInnerRulesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

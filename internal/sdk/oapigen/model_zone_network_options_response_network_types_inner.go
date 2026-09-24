@@ -71,51 +71,6 @@ func (o ZoneNetworkOptionsResponseNetworkTypesInner) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableZoneNetworkOptionsResponseNetworkTypesInner struct {
-	value *ZoneNetworkOptionsResponseNetworkTypesInner
-	isSet bool
-}
-
-func (v NullableZoneNetworkOptionsResponseNetworkTypesInner) Get() *ZoneNetworkOptionsResponseNetworkTypesInner {
-	return v.value
-}
-
-func (v *NullableZoneNetworkOptionsResponseNetworkTypesInner) Set(val *ZoneNetworkOptionsResponseNetworkTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableZoneNetworkOptionsResponseNetworkTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableZoneNetworkOptionsResponseNetworkTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableZoneNetworkOptionsResponseNetworkTypesInner(val *ZoneNetworkOptionsResponseNetworkTypesInner) *NullableZoneNetworkOptionsResponseNetworkTypesInner {
-	return &NullableZoneNetworkOptionsResponseNetworkTypesInner{value: val, isSet: true}
-}
-
-func (v NullableZoneNetworkOptionsResponseNetworkTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableZoneNetworkOptionsResponseNetworkTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableZoneNetworkOptionsResponseNetworkTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ZoneNetworkOptionsResponseNetworkTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

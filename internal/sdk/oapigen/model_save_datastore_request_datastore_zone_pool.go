@@ -47,51 +47,6 @@ func (o SaveDatastoreRequestDatastoreZonePool) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableSaveDatastoreRequestDatastoreZonePool struct {
-	value *SaveDatastoreRequestDatastoreZonePool
-	isSet bool
-}
-
-func (v NullableSaveDatastoreRequestDatastoreZonePool) Get() *SaveDatastoreRequestDatastoreZonePool {
-	return v.value
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreZonePool) Set(val *SaveDatastoreRequestDatastoreZonePool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveDatastoreRequestDatastoreZonePool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreZonePool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveDatastoreRequestDatastoreZonePool(val *SaveDatastoreRequestDatastoreZonePool) *NullableSaveDatastoreRequestDatastoreZonePool {
-	return &NullableSaveDatastoreRequestDatastoreZonePool{value: val, isSet: true}
-}
-
-func (v NullableSaveDatastoreRequestDatastoreZonePool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveDatastoreRequestDatastoreZonePool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveDatastoreRequestDatastoreZonePool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveDatastoreRequestDatastoreZonePool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

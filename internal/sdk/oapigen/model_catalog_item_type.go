@@ -165,51 +165,6 @@ func (o CatalogItemType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableCatalogItemType struct {
-	value *CatalogItemType
-	isSet bool
-}
-
-func (v NullableCatalogItemType) Get() *CatalogItemType {
-	return v.value
-}
-
-func (v *NullableCatalogItemType) Set(val *CatalogItemType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCatalogItemType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCatalogItemType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCatalogItemType(val *CatalogItemType) *NullableCatalogItemType {
-	return &NullableCatalogItemType{value: val, isSet: true}
-}
-
-func (v NullableCatalogItemType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCatalogItemType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCatalogItemType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CatalogItemType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

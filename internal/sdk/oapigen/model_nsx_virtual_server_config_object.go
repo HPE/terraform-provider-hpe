@@ -73,51 +73,6 @@ func (o NSXVirtualServerConfigObject) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableNSXVirtualServerConfigObject struct {
-	value *NSXVirtualServerConfigObject
-	isSet bool
-}
-
-func (v NullableNSXVirtualServerConfigObject) Get() *NSXVirtualServerConfigObject {
-	return v.value
-}
-
-func (v *NullableNSXVirtualServerConfigObject) Set(val *NSXVirtualServerConfigObject) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNSXVirtualServerConfigObject) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNSXVirtualServerConfigObject) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNSXVirtualServerConfigObject(val *NSXVirtualServerConfigObject) *NullableNSXVirtualServerConfigObject {
-	return &NullableNSXVirtualServerConfigObject{value: val, isSet: true}
-}
-
-func (v NullableNSXVirtualServerConfigObject) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNSXVirtualServerConfigObject) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNSXVirtualServerConfigObject) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NSXVirtualServerConfigObject) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

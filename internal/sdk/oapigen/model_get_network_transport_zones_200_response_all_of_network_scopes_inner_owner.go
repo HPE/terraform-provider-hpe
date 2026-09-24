@@ -47,51 +47,6 @@ func (o GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) ToMap()
 	return toSerialize, nil
 }
 
-type NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner struct {
-	value *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner
-	isSet bool
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) Get() *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner {
-	return v.value
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) Set(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner {
-	return &NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

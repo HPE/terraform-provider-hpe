@@ -90,51 +90,6 @@ func (o BluecatNetworkPoolServer) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBluecatNetworkPoolServer struct {
-	value *BluecatNetworkPoolServer
-	isSet bool
-}
-
-func (v NullableBluecatNetworkPoolServer) Get() *BluecatNetworkPoolServer {
-	return v.value
-}
-
-func (v *NullableBluecatNetworkPoolServer) Set(val *BluecatNetworkPoolServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBluecatNetworkPoolServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBluecatNetworkPoolServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBluecatNetworkPoolServer(val *BluecatNetworkPoolServer) *NullableBluecatNetworkPoolServer {
-	return &NullableBluecatNetworkPoolServer{value: val, isSet: true}
-}
-
-func (v NullableBluecatNetworkPoolServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBluecatNetworkPoolServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBluecatNetworkPoolServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BluecatNetworkPoolServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) ToMap() (map[str
 	return toSerialize, nil
 }
 
-type NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner struct {
-	value *UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner
-	isSet bool
-}
-
-func (v NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) Get() *UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner {
-	return v.value
-}
-
-func (v *NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) Set(val *UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner(val *UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) *NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner {
-	return &NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner{value: val, isSet: true}
-}
-
-func (v NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateStorageVolumes200ResponseAllOfStorageVolumeOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

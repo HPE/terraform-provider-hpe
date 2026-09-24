@@ -55,51 +55,6 @@ func (o GetRole200ResponseVdiPoolPermissionsInner) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableGetRole200ResponseVdiPoolPermissionsInner struct {
-	value *GetRole200ResponseVdiPoolPermissionsInner
-	isSet bool
-}
-
-func (v NullableGetRole200ResponseVdiPoolPermissionsInner) Get() *GetRole200ResponseVdiPoolPermissionsInner {
-	return v.value
-}
-
-func (v *NullableGetRole200ResponseVdiPoolPermissionsInner) Set(val *GetRole200ResponseVdiPoolPermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetRole200ResponseVdiPoolPermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetRole200ResponseVdiPoolPermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetRole200ResponseVdiPoolPermissionsInner(val *GetRole200ResponseVdiPoolPermissionsInner) *NullableGetRole200ResponseVdiPoolPermissionsInner {
-	return &NullableGetRole200ResponseVdiPoolPermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableGetRole200ResponseVdiPoolPermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetRole200ResponseVdiPoolPermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetRole200ResponseVdiPoolPermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetRole200ResponseVdiPoolPermissionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

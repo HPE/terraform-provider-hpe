@@ -53,51 +53,6 @@ func (o AddStorageServersRequestStorageServerCredential) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableAddStorageServersRequestStorageServerCredential struct {
-	value *AddStorageServersRequestStorageServerCredential
-	isSet bool
-}
-
-func (v NullableAddStorageServersRequestStorageServerCredential) Get() *AddStorageServersRequestStorageServerCredential {
-	return v.value
-}
-
-func (v *NullableAddStorageServersRequestStorageServerCredential) Set(val *AddStorageServersRequestStorageServerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddStorageServersRequestStorageServerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddStorageServersRequestStorageServerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddStorageServersRequestStorageServerCredential(val *AddStorageServersRequestStorageServerCredential) *NullableAddStorageServersRequestStorageServerCredential {
-	return &NullableAddStorageServersRequestStorageServerCredential{value: val, isSet: true}
-}
-
-func (v NullableAddStorageServersRequestStorageServerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddStorageServersRequestStorageServerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddStorageServersRequestStorageServerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddStorageServersRequestStorageServerCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

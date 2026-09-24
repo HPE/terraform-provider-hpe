@@ -198,51 +198,6 @@ func (o InstanceConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceConfig struct {
-	value *InstanceConfig
-	isSet bool
-}
-
-func (v NullableInstanceConfig) Get() *InstanceConfig {
-	return v.value
-}
-
-func (v *NullableInstanceConfig) Set(val *InstanceConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceConfig(val *InstanceConfig) *NullableInstanceConfig {
-	return &NullableInstanceConfig{value: val, isSet: true}
-}
-
-func (v NullableInstanceConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

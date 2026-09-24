@@ -51,51 +51,6 @@ func (o AddPreseedScript200ResponseAllOfPreseedScriptAccount) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount struct {
-	value *AddPreseedScript200ResponseAllOfPreseedScriptAccount
-	isSet bool
-}
-
-func (v NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) Get() *AddPreseedScript200ResponseAllOfPreseedScriptAccount {
-	return v.value
-}
-
-func (v *NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) Set(val *AddPreseedScript200ResponseAllOfPreseedScriptAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddPreseedScript200ResponseAllOfPreseedScriptAccount(val *AddPreseedScript200ResponseAllOfPreseedScriptAccount) *NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount {
-	return &NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount{value: val, isSet: true}
-}
-
-func (v NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddPreseedScript200ResponseAllOfPreseedScriptAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddPreseedScript200ResponseAllOfPreseedScriptAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

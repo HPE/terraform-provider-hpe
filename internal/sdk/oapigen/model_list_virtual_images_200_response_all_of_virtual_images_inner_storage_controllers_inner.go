@@ -83,51 +83,6 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInn
 	return toSerialize, nil
 }
 
-type NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct {
-	value *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
-	isSet bool
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Get() *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner {
-	return v.value
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Set(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner {
-	return &NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner{value: val, isSet: true}
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

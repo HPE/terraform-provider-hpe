@@ -55,51 +55,6 @@ func (o UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissi
 	return toSerialize, nil
 }
 
-type NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner struct {
-	value *UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) Get() *UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) Set(val *UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner(val *UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner {
-	return &NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateServicePlans200ResponseAllOfServicePlanPermissionsResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

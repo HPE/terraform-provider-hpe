@@ -51,51 +51,6 @@ func (o GetStorageServers200ResponseStorageServerGroupsInner) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableGetStorageServers200ResponseStorageServerGroupsInner struct {
-	value *GetStorageServers200ResponseStorageServerGroupsInner
-	isSet bool
-}
-
-func (v NullableGetStorageServers200ResponseStorageServerGroupsInner) Get() *GetStorageServers200ResponseStorageServerGroupsInner {
-	return v.value
-}
-
-func (v *NullableGetStorageServers200ResponseStorageServerGroupsInner) Set(val *GetStorageServers200ResponseStorageServerGroupsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetStorageServers200ResponseStorageServerGroupsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetStorageServers200ResponseStorageServerGroupsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetStorageServers200ResponseStorageServerGroupsInner(val *GetStorageServers200ResponseStorageServerGroupsInner) *NullableGetStorageServers200ResponseStorageServerGroupsInner {
-	return &NullableGetStorageServers200ResponseStorageServerGroupsInner{value: val, isSet: true}
-}
-
-func (v NullableGetStorageServers200ResponseStorageServerGroupsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetStorageServers200ResponseStorageServerGroupsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetStorageServers200ResponseStorageServerGroupsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetStorageServers200ResponseStorageServerGroupsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

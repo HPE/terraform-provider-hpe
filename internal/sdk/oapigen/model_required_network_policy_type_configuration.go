@@ -45,51 +45,6 @@ func (o RequiredNetworkPolicyTypeConfiguration) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableRequiredNetworkPolicyTypeConfiguration struct {
-	value *RequiredNetworkPolicyTypeConfiguration
-	isSet bool
-}
-
-func (v NullableRequiredNetworkPolicyTypeConfiguration) Get() *RequiredNetworkPolicyTypeConfiguration {
-	return v.value
-}
-
-func (v *NullableRequiredNetworkPolicyTypeConfiguration) Set(val *RequiredNetworkPolicyTypeConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableRequiredNetworkPolicyTypeConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableRequiredNetworkPolicyTypeConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableRequiredNetworkPolicyTypeConfiguration(val *RequiredNetworkPolicyTypeConfiguration) *NullableRequiredNetworkPolicyTypeConfiguration {
-	return &NullableRequiredNetworkPolicyTypeConfiguration{value: val, isSet: true}
-}
-
-func (v NullableRequiredNetworkPolicyTypeConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableRequiredNetworkPolicyTypeConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableRequiredNetworkPolicyTypeConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *RequiredNetworkPolicyTypeConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

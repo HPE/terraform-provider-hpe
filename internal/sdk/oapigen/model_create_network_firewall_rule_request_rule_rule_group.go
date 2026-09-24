@@ -48,51 +48,6 @@ func (o CreateNetworkFirewallRuleRequestRuleRuleGroup) ToMap() (map[string]inter
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkFirewallRuleRequestRuleRuleGroup struct {
-	value *CreateNetworkFirewallRuleRequestRuleRuleGroup
-	isSet bool
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) Get() *CreateNetworkFirewallRuleRequestRuleRuleGroup {
-	return v.value
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) Set(val *CreateNetworkFirewallRuleRequestRuleRuleGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkFirewallRuleRequestRuleRuleGroup(val *CreateNetworkFirewallRuleRequestRuleRuleGroup) *NullableCreateNetworkFirewallRuleRequestRuleRuleGroup {
-	return &NullableCreateNetworkFirewallRuleRequestRuleRuleGroup{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkFirewallRuleRequestRuleRuleGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkFirewallRuleRequestRuleRuleGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

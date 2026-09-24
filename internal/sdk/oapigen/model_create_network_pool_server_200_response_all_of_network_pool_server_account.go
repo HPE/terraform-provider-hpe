@@ -51,51 +51,6 @@ func (o CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) ToMap()
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount struct {
-	value *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount
-	isSet bool
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) Get() *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount {
-	return v.value
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) Set(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount(val *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount {
-	return &NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkPoolServer200ResponseAllOfNetworkPoolServerAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

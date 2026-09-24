@@ -75,51 +75,6 @@ func (o GroovyTaskConfig2) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGroovyTaskConfig2 struct {
-	value *GroovyTaskConfig2
-	isSet bool
-}
-
-func (v NullableGroovyTaskConfig2) Get() *GroovyTaskConfig2 {
-	return v.value
-}
-
-func (v *NullableGroovyTaskConfig2) Set(val *GroovyTaskConfig2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGroovyTaskConfig2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGroovyTaskConfig2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGroovyTaskConfig2(val *GroovyTaskConfig2) *NullableGroovyTaskConfig2 {
-	return &NullableGroovyTaskConfig2{value: val, isSet: true}
-}
-
-func (v NullableGroovyTaskConfig2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGroovyTaskConfig2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGroovyTaskConfig2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GroovyTaskConfig2) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -71,51 +71,6 @@ func (o UpdateNetwork200ResponseAllOfNetworkConfig) ToMap() (map[string]interfac
 	return toSerialize, nil
 }
 
-type NullableUpdateNetwork200ResponseAllOfNetworkConfig struct {
-	value *UpdateNetwork200ResponseAllOfNetworkConfig
-	isSet bool
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkConfig) Get() *UpdateNetwork200ResponseAllOfNetworkConfig {
-	return v.value
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkConfig) Set(val *UpdateNetwork200ResponseAllOfNetworkConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetwork200ResponseAllOfNetworkConfig(val *UpdateNetwork200ResponseAllOfNetworkConfig) *NullableUpdateNetwork200ResponseAllOfNetworkConfig {
-	return &NullableUpdateNetwork200ResponseAllOfNetworkConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetwork200ResponseAllOfNetworkConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetwork200ResponseAllOfNetworkConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetwork200ResponseAllOfNetworkConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

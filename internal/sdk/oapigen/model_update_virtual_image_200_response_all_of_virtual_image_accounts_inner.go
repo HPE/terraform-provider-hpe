@@ -51,51 +51,6 @@ func (o UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner struct {
-	value *UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner
-	isSet bool
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) Get() *UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner {
-	return v.value
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) Set(val *UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner(val *UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) *NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner {
-	return &NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVirtualImage200ResponseAllOfVirtualImageAccountsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

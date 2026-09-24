@@ -47,51 +47,6 @@ func (o SaveClusterDatastore200ResponseAllOfDatastoreStorageServer) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer struct {
-	value *SaveClusterDatastore200ResponseAllOfDatastoreStorageServer
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) Get() *SaveClusterDatastore200ResponseAllOfDatastoreStorageServer {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) Set(val *SaveClusterDatastore200ResponseAllOfDatastoreStorageServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer(val *SaveClusterDatastore200ResponseAllOfDatastoreStorageServer) *NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer {
-	return &NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreStorageServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterDatastore200ResponseAllOfDatastoreStorageServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

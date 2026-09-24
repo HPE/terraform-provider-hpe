@@ -85,51 +85,6 @@ func (o SolarWindsNetworkPoolServer) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSolarWindsNetworkPoolServer struct {
-	value *SolarWindsNetworkPoolServer
-	isSet bool
-}
-
-func (v NullableSolarWindsNetworkPoolServer) Get() *SolarWindsNetworkPoolServer {
-	return v.value
-}
-
-func (v *NullableSolarWindsNetworkPoolServer) Set(val *SolarWindsNetworkPoolServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSolarWindsNetworkPoolServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSolarWindsNetworkPoolServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSolarWindsNetworkPoolServer(val *SolarWindsNetworkPoolServer) *NullableSolarWindsNetworkPoolServer {
-	return &NullableSolarWindsNetworkPoolServer{value: val, isSet: true}
-}
-
-func (v NullableSolarWindsNetworkPoolServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSolarWindsNetworkPoolServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSolarWindsNetworkPoolServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SolarWindsNetworkPoolServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

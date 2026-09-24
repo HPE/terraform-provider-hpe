@@ -59,51 +59,6 @@ func (o GetCheckApps200ResponseChecksInnerCheckType) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableGetCheckApps200ResponseChecksInnerCheckType struct {
-	value *GetCheckApps200ResponseChecksInnerCheckType
-	isSet bool
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCheckType) Get() *GetCheckApps200ResponseChecksInnerCheckType {
-	return v.value
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCheckType) Set(val *GetCheckApps200ResponseChecksInnerCheckType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCheckType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCheckType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCheckApps200ResponseChecksInnerCheckType(val *GetCheckApps200ResponseChecksInnerCheckType) *NullableGetCheckApps200ResponseChecksInnerCheckType {
-	return &NullableGetCheckApps200ResponseChecksInnerCheckType{value: val, isSet: true}
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCheckType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerCheckType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerCheckType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCheckApps200ResponseChecksInnerCheckType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

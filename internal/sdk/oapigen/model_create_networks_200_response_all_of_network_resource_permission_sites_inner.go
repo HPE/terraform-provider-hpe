@@ -51,51 +51,6 @@ func (o CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) ToMap
 	return toSerialize, nil
 }
 
-type NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner struct {
-	value *CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner
-	isSet bool
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) Get() *CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner {
-	return v.value
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) Set(val *CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner(val *CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) *NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner {
-	return &NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworks200ResponseAllOfNetworkResourcePermissionSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerPermissions) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerPermissions struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerPermissions
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) Get() *InstanceTypeInstanceTypeLayoutsInnerPermissions {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) Set(val *InstanceTypeInstanceTypeLayoutsInnerPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerPermissions(val *InstanceTypeInstanceTypeLayoutsInnerPermissions) *NullableInstanceTypeInstanceTypeLayoutsInnerPermissions {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerPermissions{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

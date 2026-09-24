@@ -76,51 +76,6 @@ func (o AddDeployments200ResponseAllOfDeployment) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableAddDeployments200ResponseAllOfDeployment struct {
-	value *AddDeployments200ResponseAllOfDeployment
-	isSet bool
-}
-
-func (v NullableAddDeployments200ResponseAllOfDeployment) Get() *AddDeployments200ResponseAllOfDeployment {
-	return v.value
-}
-
-func (v *NullableAddDeployments200ResponseAllOfDeployment) Set(val *AddDeployments200ResponseAllOfDeployment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddDeployments200ResponseAllOfDeployment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddDeployments200ResponseAllOfDeployment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddDeployments200ResponseAllOfDeployment(val *AddDeployments200ResponseAllOfDeployment) *NullableAddDeployments200ResponseAllOfDeployment {
-	return &NullableAddDeployments200ResponseAllOfDeployment{value: val, isSet: true}
-}
-
-func (v NullableAddDeployments200ResponseAllOfDeployment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddDeployments200ResponseAllOfDeployment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddDeployments200ResponseAllOfDeployment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddDeployments200ResponseAllOfDeployment) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

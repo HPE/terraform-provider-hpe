@@ -127,51 +127,6 @@ func (o SNMPCheckAllOfConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSNMPCheckAllOfConfig struct {
-	value *SNMPCheckAllOfConfig
-	isSet bool
-}
-
-func (v NullableSNMPCheckAllOfConfig) Get() *SNMPCheckAllOfConfig {
-	return v.value
-}
-
-func (v *NullableSNMPCheckAllOfConfig) Set(val *SNMPCheckAllOfConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSNMPCheckAllOfConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSNMPCheckAllOfConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSNMPCheckAllOfConfig(val *SNMPCheckAllOfConfig) *NullableSNMPCheckAllOfConfig {
-	return &NullableSNMPCheckAllOfConfig{value: val, isSet: true}
-}
-
-func (v NullableSNMPCheckAllOfConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSNMPCheckAllOfConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSNMPCheckAllOfConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SNMPCheckAllOfConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

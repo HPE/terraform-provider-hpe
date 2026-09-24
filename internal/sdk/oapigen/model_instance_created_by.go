@@ -51,51 +51,6 @@ func (o InstanceCreatedBy) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceCreatedBy struct {
-	value *InstanceCreatedBy
-	isSet bool
-}
-
-func (v NullableInstanceCreatedBy) Get() *InstanceCreatedBy {
-	return v.value
-}
-
-func (v *NullableInstanceCreatedBy) Set(val *InstanceCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceCreatedBy(val *InstanceCreatedBy) *NullableInstanceCreatedBy {
-	return &NullableInstanceCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableInstanceCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o ServicePlanZonesInner) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableServicePlanZonesInner struct {
-	value *ServicePlanZonesInner
-	isSet bool
-}
-
-func (v NullableServicePlanZonesInner) Get() *ServicePlanZonesInner {
-	return v.value
-}
-
-func (v *NullableServicePlanZonesInner) Set(val *ServicePlanZonesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableServicePlanZonesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableServicePlanZonesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableServicePlanZonesInner(val *ServicePlanZonesInner) *NullableServicePlanZonesInner {
-	return &NullableServicePlanZonesInner{value: val, isSet: true}
-}
-
-func (v NullableServicePlanZonesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableServicePlanZonesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableServicePlanZonesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ServicePlanZonesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

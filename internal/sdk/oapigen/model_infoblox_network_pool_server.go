@@ -105,51 +105,6 @@ func (o InfobloxNetworkPoolServer) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInfobloxNetworkPoolServer struct {
-	value *InfobloxNetworkPoolServer
-	isSet bool
-}
-
-func (v NullableInfobloxNetworkPoolServer) Get() *InfobloxNetworkPoolServer {
-	return v.value
-}
-
-func (v *NullableInfobloxNetworkPoolServer) Set(val *InfobloxNetworkPoolServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInfobloxNetworkPoolServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInfobloxNetworkPoolServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInfobloxNetworkPoolServer(val *InfobloxNetworkPoolServer) *NullableInfobloxNetworkPoolServer {
-	return &NullableInfobloxNetworkPoolServer{value: val, isSet: true}
-}
-
-func (v NullableInfobloxNetworkPoolServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInfobloxNetworkPoolServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInfobloxNetworkPoolServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InfobloxNetworkPoolServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

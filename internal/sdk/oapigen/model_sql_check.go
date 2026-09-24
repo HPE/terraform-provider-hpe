@@ -79,51 +79,6 @@ func (o SqlCheck) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSqlCheck struct {
-	value *SqlCheck
-	isSet bool
-}
-
-func (v NullableSqlCheck) Get() *SqlCheck {
-	return v.value
-}
-
-func (v *NullableSqlCheck) Set(val *SqlCheck) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSqlCheck) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSqlCheck) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSqlCheck(val *SqlCheck) *NullableSqlCheck {
-	return &NullableSqlCheck{value: val, isSet: true}
-}
-
-func (v NullableSqlCheck) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSqlCheck) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSqlCheck) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SqlCheck) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

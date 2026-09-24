@@ -207,51 +207,6 @@ func (o ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOp
 	return toSerialize, nil
 }
 
-type NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner struct {
-	value *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) Get() *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) Set(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner {
-	return &NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

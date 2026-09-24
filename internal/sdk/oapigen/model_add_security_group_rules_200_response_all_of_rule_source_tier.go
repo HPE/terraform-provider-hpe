@@ -51,51 +51,6 @@ func (o AddSecurityGroupRules200ResponseAllOfRuleSourceTier) ToMap() (map[string
 	return toSerialize, nil
 }
 
-type NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier struct {
-	value *AddSecurityGroupRules200ResponseAllOfRuleSourceTier
-	isSet bool
-}
-
-func (v NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) Get() *AddSecurityGroupRules200ResponseAllOfRuleSourceTier {
-	return v.value
-}
-
-func (v *NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) Set(val *AddSecurityGroupRules200ResponseAllOfRuleSourceTier) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier(val *AddSecurityGroupRules200ResponseAllOfRuleSourceTier) *NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier {
-	return &NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier{value: val, isSet: true}
-}
-
-func (v NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddSecurityGroupRules200ResponseAllOfRuleSourceTier) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

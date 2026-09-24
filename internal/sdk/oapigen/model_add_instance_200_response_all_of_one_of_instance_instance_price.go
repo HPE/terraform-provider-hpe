@@ -59,51 +59,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceInstancePrice) ToMap() (map[stri
 	return toSerialize, nil
 }
 
-type NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceInstancePrice
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) Get() *AddInstance200ResponseAllOfOneOfInstanceInstancePrice {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) Set(val *AddInstance200ResponseAllOfOneOfInstanceInstancePrice) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice(val *AddInstance200ResponseAllOfOneOfInstanceInstancePrice) *NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceInstancePrice) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstance200ResponseAllOfOneOfInstanceInstancePrice) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

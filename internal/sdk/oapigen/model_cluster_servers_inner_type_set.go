@@ -55,51 +55,6 @@ func (o ClusterServersInnerTypeSet) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableClusterServersInnerTypeSet struct {
-	value *ClusterServersInnerTypeSet
-	isSet bool
-}
-
-func (v NullableClusterServersInnerTypeSet) Get() *ClusterServersInnerTypeSet {
-	return v.value
-}
-
-func (v *NullableClusterServersInnerTypeSet) Set(val *ClusterServersInnerTypeSet) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableClusterServersInnerTypeSet) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableClusterServersInnerTypeSet) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableClusterServersInnerTypeSet(val *ClusterServersInnerTypeSet) *NullableClusterServersInnerTypeSet {
-	return &NullableClusterServersInnerTypeSet{value: val, isSet: true}
-}
-
-func (v NullableClusterServersInnerTypeSet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableClusterServersInnerTypeSet) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableClusterServersInnerTypeSet) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ClusterServersInnerTypeSet) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -207,51 +207,6 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) ToMap() 
 	return toSerialize, nil
 }
 
-type NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner struct {
-	value *ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner(val *ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner {
-	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

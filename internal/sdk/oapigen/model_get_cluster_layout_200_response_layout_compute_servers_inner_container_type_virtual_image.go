@@ -51,51 +51,6 @@ func (o GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtual
 	return toSerialize, nil
 }
 
-type NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage struct {
-	value *GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) Get() *GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) Set(val *GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage(val *GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage {
-	return &NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterLayout200ResponseLayoutComputeServersInnerContainerTypeVirtualImage) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

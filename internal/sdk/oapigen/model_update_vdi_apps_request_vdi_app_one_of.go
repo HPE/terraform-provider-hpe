@@ -64,51 +64,6 @@ func (o UpdateVDIAppsRequestVdiAppOneOf) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableUpdateVDIAppsRequestVdiAppOneOf struct {
-	value *UpdateVDIAppsRequestVdiAppOneOf
-	isSet bool
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) Get() *UpdateVDIAppsRequestVdiAppOneOf {
-	return v.value
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) Set(val *UpdateVDIAppsRequestVdiAppOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIAppsRequestVdiAppOneOf(val *UpdateVDIAppsRequestVdiAppOneOf) *NullableUpdateVDIAppsRequestVdiAppOneOf {
-	return &NullableUpdateVDIAppsRequestVdiAppOneOf{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIAppsRequestVdiAppOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIAppsRequestVdiAppOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVDIAppsRequestVdiAppOneOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

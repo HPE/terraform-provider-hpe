@@ -47,51 +47,6 @@ func (o GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAcc
 	return toSerialize, nil
 }
 
-type NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount struct {
-	value *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) Get() *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) Set(val *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount(val *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount {
-	return &NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterNamespace200ResponseNamespacePermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

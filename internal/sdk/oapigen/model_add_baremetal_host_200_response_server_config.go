@@ -87,51 +87,6 @@ func (o AddBaremetalHost200ResponseServerConfig) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableAddBaremetalHost200ResponseServerConfig struct {
-	value *AddBaremetalHost200ResponseServerConfig
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfig) Get() *AddBaremetalHost200ResponseServerConfig {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfig) Set(val *AddBaremetalHost200ResponseServerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerConfig(val *AddBaremetalHost200ResponseServerConfig) *NullableAddBaremetalHost200ResponseServerConfig {
-	return &NullableAddBaremetalHost200ResponseServerConfig{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddBaremetalHost200ResponseServerConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

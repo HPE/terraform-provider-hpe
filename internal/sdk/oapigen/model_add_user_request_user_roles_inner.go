@@ -47,51 +47,6 @@ func (o AddUserRequestUserRolesInner) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddUserRequestUserRolesInner struct {
-	value *AddUserRequestUserRolesInner
-	isSet bool
-}
-
-func (v NullableAddUserRequestUserRolesInner) Get() *AddUserRequestUserRolesInner {
-	return v.value
-}
-
-func (v *NullableAddUserRequestUserRolesInner) Set(val *AddUserRequestUserRolesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserRequestUserRolesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserRequestUserRolesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserRequestUserRolesInner(val *AddUserRequestUserRolesInner) *NullableAddUserRequestUserRolesInner {
-	return &NullableAddUserRequestUserRolesInner{value: val, isSet: true}
-}
-
-func (v NullableAddUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserRequestUserRolesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserRequestUserRolesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddUserRequestUserRolesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

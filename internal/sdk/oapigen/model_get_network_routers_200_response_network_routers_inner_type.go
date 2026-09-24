@@ -95,51 +95,6 @@ func (o GetNetworkRouters200ResponseNetworkRoutersInnerType) ToMap() (map[string
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouters200ResponseNetworkRoutersInnerType struct {
-	value *GetNetworkRouters200ResponseNetworkRoutersInnerType
-	isSet bool
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) Get() *GetNetworkRouters200ResponseNetworkRoutersInnerType {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) Set(val *GetNetworkRouters200ResponseNetworkRoutersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouters200ResponseNetworkRoutersInnerType(val *GetNetworkRouters200ResponseNetworkRoutersInnerType) *NullableGetNetworkRouters200ResponseNetworkRoutersInnerType {
-	return &NullableGetNetworkRouters200ResponseNetworkRoutersInnerType{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouters200ResponseNetworkRoutersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouters200ResponseNetworkRoutersInnerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

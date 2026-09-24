@@ -51,51 +51,6 @@ func (o GetCluster200ResponseClusterPermissions) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableGetCluster200ResponseClusterPermissions struct {
-	value *GetCluster200ResponseClusterPermissions
-	isSet bool
-}
-
-func (v NullableGetCluster200ResponseClusterPermissions) Get() *GetCluster200ResponseClusterPermissions {
-	return v.value
-}
-
-func (v *NullableGetCluster200ResponseClusterPermissions) Set(val *GetCluster200ResponseClusterPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCluster200ResponseClusterPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCluster200ResponseClusterPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCluster200ResponseClusterPermissions(val *GetCluster200ResponseClusterPermissions) *NullableGetCluster200ResponseClusterPermissions {
-	return &NullableGetCluster200ResponseClusterPermissions{value: val, isSet: true}
-}
-
-func (v NullableGetCluster200ResponseClusterPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCluster200ResponseClusterPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCluster200ResponseClusterPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCluster200ResponseClusterPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

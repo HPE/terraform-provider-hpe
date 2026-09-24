@@ -51,51 +51,6 @@ func (o CredentialAuthKey) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableCredentialAuthKey struct {
-	value *CredentialAuthKey
-	isSet bool
-}
-
-func (v NullableCredentialAuthKey) Get() *CredentialAuthKey {
-	return v.value
-}
-
-func (v *NullableCredentialAuthKey) Set(val *CredentialAuthKey) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCredentialAuthKey) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCredentialAuthKey) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCredentialAuthKey(val *CredentialAuthKey) *NullableCredentialAuthKey {
-	return &NullableCredentialAuthKey{value: val, isSet: true}
-}
-
-func (v NullableCredentialAuthKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCredentialAuthKey) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCredentialAuthKey) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CredentialAuthKey) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

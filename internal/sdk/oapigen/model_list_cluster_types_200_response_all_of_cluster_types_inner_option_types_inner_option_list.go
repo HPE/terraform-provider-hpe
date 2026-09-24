@@ -51,51 +51,6 @@ func (o ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionL
 	return toSerialize, nil
 }
 
-type NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList struct {
-	value *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) Get() *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) Set(val *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList(val *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList {
-	return &NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

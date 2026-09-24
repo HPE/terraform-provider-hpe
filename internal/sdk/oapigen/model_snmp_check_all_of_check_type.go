@@ -47,51 +47,6 @@ func (o SNMPCheckAllOfCheckType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSNMPCheckAllOfCheckType struct {
-	value *SNMPCheckAllOfCheckType
-	isSet bool
-}
-
-func (v NullableSNMPCheckAllOfCheckType) Get() *SNMPCheckAllOfCheckType {
-	return v.value
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) Set(val *SNMPCheckAllOfCheckType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSNMPCheckAllOfCheckType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSNMPCheckAllOfCheckType(val *SNMPCheckAllOfCheckType) *NullableSNMPCheckAllOfCheckType {
-	return &NullableSNMPCheckAllOfCheckType{value: val, isSet: true}
-}
-
-func (v NullableSNMPCheckAllOfCheckType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSNMPCheckAllOfCheckType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSNMPCheckAllOfCheckType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SNMPCheckAllOfCheckType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

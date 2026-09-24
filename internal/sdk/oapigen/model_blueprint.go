@@ -87,51 +87,6 @@ func (o Blueprint) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBlueprint struct {
-	value *Blueprint
-	isSet bool
-}
-
-func (v NullableBlueprint) Get() *Blueprint {
-	return v.value
-}
-
-func (v *NullableBlueprint) Set(val *Blueprint) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBlueprint) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBlueprint) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBlueprint(val *Blueprint) *NullableBlueprint {
-	return &NullableBlueprint{value: val, isSet: true}
-}
-
-func (v NullableBlueprint) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBlueprint) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBlueprint) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Blueprint) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

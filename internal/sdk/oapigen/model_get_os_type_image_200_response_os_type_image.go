@@ -77,51 +77,6 @@ func (o GetOsTypeImage200ResponseOsTypeImage) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableGetOsTypeImage200ResponseOsTypeImage struct {
-	value *GetOsTypeImage200ResponseOsTypeImage
-	isSet bool
-}
-
-func (v NullableGetOsTypeImage200ResponseOsTypeImage) Get() *GetOsTypeImage200ResponseOsTypeImage {
-	return v.value
-}
-
-func (v *NullableGetOsTypeImage200ResponseOsTypeImage) Set(val *GetOsTypeImage200ResponseOsTypeImage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetOsTypeImage200ResponseOsTypeImage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetOsTypeImage200ResponseOsTypeImage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetOsTypeImage200ResponseOsTypeImage(val *GetOsTypeImage200ResponseOsTypeImage) *NullableGetOsTypeImage200ResponseOsTypeImage {
-	return &NullableGetOsTypeImage200ResponseOsTypeImage{value: val, isSet: true}
-}
-
-func (v NullableGetOsTypeImage200ResponseOsTypeImage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetOsTypeImage200ResponseOsTypeImage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetOsTypeImage200ResponseOsTypeImage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetOsTypeImage200ResponseOsTypeImage) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

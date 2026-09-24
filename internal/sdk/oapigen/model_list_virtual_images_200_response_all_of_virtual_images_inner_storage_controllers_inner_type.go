@@ -55,51 +55,6 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInn
 	return toSerialize, nil
 }
 
-type NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType struct {
-	value *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType
-	isSet bool
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) Get() *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType {
-	return v.value
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) Set(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType(val *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType {
-	return &NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType{value: val, isSet: true}
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -103,51 +103,6 @@ func (o ContainerPort) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableContainerPort struct {
-	value *ContainerPort
-	isSet bool
-}
-
-func (v NullableContainerPort) Get() *ContainerPort {
-	return v.value
-}
-
-func (v *NullableContainerPort) Set(val *ContainerPort) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableContainerPort) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableContainerPort) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableContainerPort(val *ContainerPort) *NullableContainerPort {
-	return &NullableContainerPort{value: val, isSet: true}
-}
-
-func (v NullableContainerPort) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableContainerPort) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableContainerPort) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ContainerPort) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

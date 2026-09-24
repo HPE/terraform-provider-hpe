@@ -55,51 +55,6 @@ func (o InstanceContainerServer1SourceImage) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableInstanceContainerServer1SourceImage struct {
-	value *InstanceContainerServer1SourceImage
-	isSet bool
-}
-
-func (v NullableInstanceContainerServer1SourceImage) Get() *InstanceContainerServer1SourceImage {
-	return v.value
-}
-
-func (v *NullableInstanceContainerServer1SourceImage) Set(val *InstanceContainerServer1SourceImage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceContainerServer1SourceImage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceContainerServer1SourceImage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceContainerServer1SourceImage(val *InstanceContainerServer1SourceImage) *NullableInstanceContainerServer1SourceImage {
-	return &NullableInstanceContainerServer1SourceImage{value: val, isSet: true}
-}
-
-func (v NullableInstanceContainerServer1SourceImage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceContainerServer1SourceImage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceContainerServer1SourceImage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceContainerServer1SourceImage) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

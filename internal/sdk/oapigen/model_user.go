@@ -152,51 +152,6 @@ func (o User) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUser struct {
-	value *User
-	isSet bool
-}
-
-func (v NullableUser) Get() *User {
-	return v.value
-}
-
-func (v *NullableUser) Set(val *User) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUser) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUser) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUser(val *User) *NullableUser {
-	return &NullableUser{value: val, isSet: true}
-}
-
-func (v NullableUser) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUser) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUser) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *User) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

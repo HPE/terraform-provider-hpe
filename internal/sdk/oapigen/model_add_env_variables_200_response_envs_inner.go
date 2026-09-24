@@ -51,51 +51,6 @@ func (o AddEnvVariables200ResponseEnvsInner) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableAddEnvVariables200ResponseEnvsInner struct {
-	value *AddEnvVariables200ResponseEnvsInner
-	isSet bool
-}
-
-func (v NullableAddEnvVariables200ResponseEnvsInner) Get() *AddEnvVariables200ResponseEnvsInner {
-	return v.value
-}
-
-func (v *NullableAddEnvVariables200ResponseEnvsInner) Set(val *AddEnvVariables200ResponseEnvsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEnvVariables200ResponseEnvsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEnvVariables200ResponseEnvsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEnvVariables200ResponseEnvsInner(val *AddEnvVariables200ResponseEnvsInner) *NullableAddEnvVariables200ResponseEnvsInner {
-	return &NullableAddEnvVariables200ResponseEnvsInner{value: val, isSet: true}
-}
-
-func (v NullableAddEnvVariables200ResponseEnvsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEnvVariables200ResponseEnvsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEnvVariables200ResponseEnvsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddEnvVariables200ResponseEnvsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

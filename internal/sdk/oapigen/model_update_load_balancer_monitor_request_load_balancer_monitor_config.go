@@ -52,51 +52,6 @@ func (o UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) ToMap() (map[
 	return toSerialize, nil
 }
 
-type NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig struct {
-	value *UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) Get() *UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) Set(val *UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig(val *UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) *NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig {
-	return &NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

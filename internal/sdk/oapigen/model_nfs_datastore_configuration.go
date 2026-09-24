@@ -54,51 +54,6 @@ func (o NFSDatastoreConfiguration) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableNFSDatastoreConfiguration struct {
-	value *NFSDatastoreConfiguration
-	isSet bool
-}
-
-func (v NullableNFSDatastoreConfiguration) Get() *NFSDatastoreConfiguration {
-	return v.value
-}
-
-func (v *NullableNFSDatastoreConfiguration) Set(val *NFSDatastoreConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNFSDatastoreConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNFSDatastoreConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNFSDatastoreConfiguration(val *NFSDatastoreConfiguration) *NullableNFSDatastoreConfiguration {
-	return &NullableNFSDatastoreConfiguration{value: val, isSet: true}
-}
-
-func (v NullableNFSDatastoreConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNFSDatastoreConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNFSDatastoreConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NFSDatastoreConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

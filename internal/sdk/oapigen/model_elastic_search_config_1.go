@@ -69,51 +69,6 @@ func (o ElasticSearchConfig1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableElasticSearchConfig1 struct {
-	value *ElasticSearchConfig1
-	isSet bool
-}
-
-func (v NullableElasticSearchConfig1) Get() *ElasticSearchConfig1 {
-	return v.value
-}
-
-func (v *NullableElasticSearchConfig1) Set(val *ElasticSearchConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableElasticSearchConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableElasticSearchConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableElasticSearchConfig1(val *ElasticSearchConfig1) *NullableElasticSearchConfig1 {
-	return &NullableElasticSearchConfig1{value: val, isSet: true}
-}
-
-func (v NullableElasticSearchConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableElasticSearchConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableElasticSearchConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ElasticSearchConfig1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

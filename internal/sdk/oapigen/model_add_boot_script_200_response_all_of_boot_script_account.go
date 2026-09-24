@@ -51,51 +51,6 @@ func (o AddBootScript200ResponseAllOfBootScriptAccount) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableAddBootScript200ResponseAllOfBootScriptAccount struct {
-	value *AddBootScript200ResponseAllOfBootScriptAccount
-	isSet bool
-}
-
-func (v NullableAddBootScript200ResponseAllOfBootScriptAccount) Get() *AddBootScript200ResponseAllOfBootScriptAccount {
-	return v.value
-}
-
-func (v *NullableAddBootScript200ResponseAllOfBootScriptAccount) Set(val *AddBootScript200ResponseAllOfBootScriptAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBootScript200ResponseAllOfBootScriptAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBootScript200ResponseAllOfBootScriptAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBootScript200ResponseAllOfBootScriptAccount(val *AddBootScript200ResponseAllOfBootScriptAccount) *NullableAddBootScript200ResponseAllOfBootScriptAccount {
-	return &NullableAddBootScript200ResponseAllOfBootScriptAccount{value: val, isSet: true}
-}
-
-func (v NullableAddBootScript200ResponseAllOfBootScriptAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBootScript200ResponseAllOfBootScriptAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBootScript200ResponseAllOfBootScriptAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddBootScript200ResponseAllOfBootScriptAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

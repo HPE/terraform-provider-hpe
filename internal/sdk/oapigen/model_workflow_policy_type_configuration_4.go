@@ -47,51 +47,6 @@ func (o WorkflowPolicyTypeConfiguration4) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableWorkflowPolicyTypeConfiguration4 struct {
-	value *WorkflowPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableWorkflowPolicyTypeConfiguration4) Get() *WorkflowPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableWorkflowPolicyTypeConfiguration4) Set(val *WorkflowPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWorkflowPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWorkflowPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWorkflowPolicyTypeConfiguration4(val *WorkflowPolicyTypeConfiguration4) *NullableWorkflowPolicyTypeConfiguration4 {
-	return &NullableWorkflowPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableWorkflowPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWorkflowPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWorkflowPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *WorkflowPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

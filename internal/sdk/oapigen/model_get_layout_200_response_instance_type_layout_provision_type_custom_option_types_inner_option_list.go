@@ -51,51 +51,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInne
 	return toSerialize, nil
 }
 
-type NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList struct {
-	value *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) Get() *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) Set(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList(val *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLayout200ResponseInstanceTypeLayoutProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

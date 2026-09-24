@@ -97,51 +97,6 @@ func (o CreateLoadBalancerVirtualServerRequestLoadBalancerInstance) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance struct {
-	value *CreateLoadBalancerVirtualServerRequestLoadBalancerInstance
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) Get() *CreateLoadBalancerVirtualServerRequestLoadBalancerInstance {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) Set(val *CreateLoadBalancerVirtualServerRequestLoadBalancerInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance(val *CreateLoadBalancerVirtualServerRequestLoadBalancerInstance) *NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance {
-	return &NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateLoadBalancerVirtualServerRequestLoadBalancerInstance) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -48,51 +48,6 @@ func (o CloneInstanceRequestPlan) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableCloneInstanceRequestPlan struct {
-	value *CloneInstanceRequestPlan
-	isSet bool
-}
-
-func (v NullableCloneInstanceRequestPlan) Get() *CloneInstanceRequestPlan {
-	return v.value
-}
-
-func (v *NullableCloneInstanceRequestPlan) Set(val *CloneInstanceRequestPlan) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCloneInstanceRequestPlan) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCloneInstanceRequestPlan) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCloneInstanceRequestPlan(val *CloneInstanceRequestPlan) *NullableCloneInstanceRequestPlan {
-	return &NullableCloneInstanceRequestPlan{value: val, isSet: true}
-}
-
-func (v NullableCloneInstanceRequestPlan) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCloneInstanceRequestPlan) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCloneInstanceRequestPlan) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CloneInstanceRequestPlan) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

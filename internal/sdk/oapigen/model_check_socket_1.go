@@ -79,51 +79,6 @@ func (o CheckSocket1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableCheckSocket1 struct {
-	value *CheckSocket1
-	isSet bool
-}
-
-func (v NullableCheckSocket1) Get() *CheckSocket1 {
-	return v.value
-}
-
-func (v *NullableCheckSocket1) Set(val *CheckSocket1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCheckSocket1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCheckSocket1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCheckSocket1(val *CheckSocket1) *NullableCheckSocket1 {
-	return &NullableCheckSocket1{value: val, isSet: true}
-}
-
-func (v NullableCheckSocket1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCheckSocket1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCheckSocket1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CheckSocket1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

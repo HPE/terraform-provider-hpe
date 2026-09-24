@@ -47,51 +47,6 @@ func (o AddVirtualImageRequestVirtualImageStorageProvider) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableAddVirtualImageRequestVirtualImageStorageProvider struct {
-	value *AddVirtualImageRequestVirtualImageStorageProvider
-	isSet bool
-}
-
-func (v NullableAddVirtualImageRequestVirtualImageStorageProvider) Get() *AddVirtualImageRequestVirtualImageStorageProvider {
-	return v.value
-}
-
-func (v *NullableAddVirtualImageRequestVirtualImageStorageProvider) Set(val *AddVirtualImageRequestVirtualImageStorageProvider) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVirtualImageRequestVirtualImageStorageProvider) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVirtualImageRequestVirtualImageStorageProvider) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVirtualImageRequestVirtualImageStorageProvider(val *AddVirtualImageRequestVirtualImageStorageProvider) *NullableAddVirtualImageRequestVirtualImageStorageProvider {
-	return &NullableAddVirtualImageRequestVirtualImageStorageProvider{value: val, isSet: true}
-}
-
-func (v NullableAddVirtualImageRequestVirtualImageStorageProvider) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVirtualImageRequestVirtualImageStorageProvider) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVirtualImageRequestVirtualImageStorageProvider) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVirtualImageRequestVirtualImageStorageProvider) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

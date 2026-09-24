@@ -55,51 +55,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) 
 	return toSerialize, nil
 }
 
-type NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType struct {
-	value *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) Get() *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) Set(val *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType(val *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLayout200ResponseInstanceTypeLayoutContainerTypesInnerProvisionType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o ListClusters200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableListClusters200Response struct {
-	value *ListClusters200Response
-	isSet bool
-}
-
-func (v NullableListClusters200Response) Get() *ListClusters200Response {
-	return v.value
-}
-
-func (v *NullableListClusters200Response) Set(val *ListClusters200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusters200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusters200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusters200Response(val *ListClusters200Response) *NullableListClusters200Response {
-	return &NullableListClusters200Response{value: val, isSet: true}
-}
-
-func (v NullableListClusters200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusters200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusters200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusters200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

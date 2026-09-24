@@ -69,51 +69,6 @@ func (o GetAlerts200ResponseAllOfChecksInnerConfigAnyOf) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf struct {
-	value *GetAlerts200ResponseAllOfChecksInnerConfigAnyOf
-	isSet bool
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) Get() *GetAlerts200ResponseAllOfChecksInnerConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) Set(val *GetAlerts200ResponseAllOfChecksInnerConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf(val *GetAlerts200ResponseAllOfChecksInnerConfigAnyOf) *NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf {
-	return &NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetAlerts200ResponseAllOfChecksInnerConfigAnyOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

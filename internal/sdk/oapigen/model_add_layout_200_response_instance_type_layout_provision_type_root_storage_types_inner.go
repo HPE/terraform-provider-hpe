@@ -75,51 +75,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner struct {
-	value *AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) Get() *AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) Set(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutProvisionTypeRootStorageTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

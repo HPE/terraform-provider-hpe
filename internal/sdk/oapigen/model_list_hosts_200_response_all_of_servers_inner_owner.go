@@ -51,51 +51,6 @@ func (o ListHosts200ResponseAllOfServersInnerOwner) ToMap() (map[string]interfac
 	return toSerialize, nil
 }
 
-type NullableListHosts200ResponseAllOfServersInnerOwner struct {
-	value *ListHosts200ResponseAllOfServersInnerOwner
-	isSet bool
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerOwner) Get() *ListHosts200ResponseAllOfServersInnerOwner {
-	return v.value
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerOwner) Set(val *ListHosts200ResponseAllOfServersInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListHosts200ResponseAllOfServersInnerOwner(val *ListHosts200ResponseAllOfServersInnerOwner) *NullableListHosts200ResponseAllOfServersInnerOwner {
-	return &NullableListHosts200ResponseAllOfServersInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListHosts200ResponseAllOfServersInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListHosts200ResponseAllOfServersInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListHosts200ResponseAllOfServersInnerOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

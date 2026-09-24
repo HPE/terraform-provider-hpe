@@ -47,51 +47,6 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) ToMap() (map[
 	return toSerialize, nil
 }
 
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole(val *AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf2WorkerRole) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o ClusterResourceNamePolicyTypeConfiguration4) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableClusterResourceNamePolicyTypeConfiguration4 struct {
-	value *ClusterResourceNamePolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableClusterResourceNamePolicyTypeConfiguration4) Get() *ClusterResourceNamePolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableClusterResourceNamePolicyTypeConfiguration4) Set(val *ClusterResourceNamePolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableClusterResourceNamePolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableClusterResourceNamePolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableClusterResourceNamePolicyTypeConfiguration4(val *ClusterResourceNamePolicyTypeConfiguration4) *NullableClusterResourceNamePolicyTypeConfiguration4 {
-	return &NullableClusterResourceNamePolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableClusterResourceNamePolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableClusterResourceNamePolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableClusterResourceNamePolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ClusterResourceNamePolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

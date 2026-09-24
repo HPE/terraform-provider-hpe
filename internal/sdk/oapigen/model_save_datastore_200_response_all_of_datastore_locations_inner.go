@@ -61,51 +61,6 @@ func (o SaveDatastore200ResponseAllOfDatastoreLocationsInner) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner struct {
-	value *SaveDatastore200ResponseAllOfDatastoreLocationsInner
-	isSet bool
-}
-
-func (v NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) Get() *SaveDatastore200ResponseAllOfDatastoreLocationsInner {
-	return v.value
-}
-
-func (v *NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) Set(val *SaveDatastore200ResponseAllOfDatastoreLocationsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveDatastore200ResponseAllOfDatastoreLocationsInner(val *SaveDatastore200ResponseAllOfDatastoreLocationsInner) *NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner {
-	return &NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner{value: val, isSet: true}
-}
-
-func (v NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveDatastore200ResponseAllOfDatastoreLocationsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveDatastore200ResponseAllOfDatastoreLocationsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

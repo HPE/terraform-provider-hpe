@@ -55,51 +55,6 @@ func (o GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) To
 	return toSerialize, nil
 }
 
-type NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner struct {
-	value *GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner
-	isSet bool
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) Get() *GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner {
-	return v.value
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) Set(val *GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner(val *GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) *NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner {
-	return &NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterDatastore200ResponseDatastoreResourcePermissionsPlansInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

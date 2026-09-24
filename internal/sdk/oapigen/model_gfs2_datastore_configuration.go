@@ -51,51 +51,6 @@ func (o GFS2DatastoreConfiguration) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGFS2DatastoreConfiguration struct {
-	value *GFS2DatastoreConfiguration
-	isSet bool
-}
-
-func (v NullableGFS2DatastoreConfiguration) Get() *GFS2DatastoreConfiguration {
-	return v.value
-}
-
-func (v *NullableGFS2DatastoreConfiguration) Set(val *GFS2DatastoreConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGFS2DatastoreConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGFS2DatastoreConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGFS2DatastoreConfiguration(val *GFS2DatastoreConfiguration) *NullableGFS2DatastoreConfiguration {
-	return &NullableGFS2DatastoreConfiguration{value: val, isSet: true}
-}
-
-func (v NullableGFS2DatastoreConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGFS2DatastoreConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGFS2DatastoreConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GFS2DatastoreConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

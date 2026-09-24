@@ -95,51 +95,6 @@ func (o SQLConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSQLConfig struct {
-	value *SQLConfig
-	isSet bool
-}
-
-func (v NullableSQLConfig) Get() *SQLConfig {
-	return v.value
-}
-
-func (v *NullableSQLConfig) Set(val *SQLConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSQLConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSQLConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSQLConfig(val *SQLConfig) *NullableSQLConfig {
-	return &NullableSQLConfig{value: val, isSet: true}
-}
-
-func (v NullableSQLConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSQLConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSQLConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SQLConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

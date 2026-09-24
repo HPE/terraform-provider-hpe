@@ -55,51 +55,6 @@ func (o InstanceCloud) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceCloud struct {
-	value *InstanceCloud
-	isSet bool
-}
-
-func (v NullableInstanceCloud) Get() *InstanceCloud {
-	return v.value
-}
-
-func (v *NullableInstanceCloud) Set(val *InstanceCloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceCloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceCloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceCloud(val *InstanceCloud) *NullableInstanceCloud {
-	return &NullableInstanceCloud{value: val, isSet: true}
-}
-
-func (v NullableInstanceCloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceCloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceCloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceCloud) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

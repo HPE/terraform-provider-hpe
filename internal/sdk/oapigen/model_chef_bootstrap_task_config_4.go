@@ -103,51 +103,6 @@ func (o ChefBootstrapTaskConfig4) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableChefBootstrapTaskConfig4 struct {
-	value *ChefBootstrapTaskConfig4
-	isSet bool
-}
-
-func (v NullableChefBootstrapTaskConfig4) Get() *ChefBootstrapTaskConfig4 {
-	return v.value
-}
-
-func (v *NullableChefBootstrapTaskConfig4) Set(val *ChefBootstrapTaskConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableChefBootstrapTaskConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableChefBootstrapTaskConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableChefBootstrapTaskConfig4(val *ChefBootstrapTaskConfig4) *NullableChefBootstrapTaskConfig4 {
-	return &NullableChefBootstrapTaskConfig4{value: val, isSet: true}
-}
-
-func (v NullableChefBootstrapTaskConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableChefBootstrapTaskConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableChefBootstrapTaskConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ChefBootstrapTaskConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -48,51 +48,6 @@ func (o ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigM
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor struct {
-	value *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor
-	isSet bool
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) Get() *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) Set(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor {
-	return &NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfigMonitor) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

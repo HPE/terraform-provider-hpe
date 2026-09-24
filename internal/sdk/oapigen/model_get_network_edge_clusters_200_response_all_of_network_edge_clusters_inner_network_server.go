@@ -47,51 +47,6 @@ func (o GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkSer
 	return toSerialize, nil
 }
 
-type NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer struct {
-	value *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) Get() *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) Set(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer {
-	return &NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerNetworkServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

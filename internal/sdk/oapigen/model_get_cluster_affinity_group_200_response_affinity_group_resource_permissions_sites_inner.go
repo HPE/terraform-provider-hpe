@@ -53,51 +53,6 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesI
 	return toSerialize, nil
 }
 
-type NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner struct {
-	value *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) Get() *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) Set(val *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner(val *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner {
-	return &NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o AddVDIApps200ResponseAnyOf) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddVDIApps200ResponseAnyOf struct {
-	value *AddVDIApps200ResponseAnyOf
-	isSet bool
-}
-
-func (v NullableAddVDIApps200ResponseAnyOf) Get() *AddVDIApps200ResponseAnyOf {
-	return v.value
-}
-
-func (v *NullableAddVDIApps200ResponseAnyOf) Set(val *AddVDIApps200ResponseAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIApps200ResponseAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIApps200ResponseAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIApps200ResponseAnyOf(val *AddVDIApps200ResponseAnyOf) *NullableAddVDIApps200ResponseAnyOf {
-	return &NullableAddVDIApps200ResponseAnyOf{value: val, isSet: true}
-}
-
-func (v NullableAddVDIApps200ResponseAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIApps200ResponseAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIApps200ResponseAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVDIApps200ResponseAnyOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) ToM
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) Get() *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) Set(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage(val *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerContainerTypesInnerVirtualImage) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

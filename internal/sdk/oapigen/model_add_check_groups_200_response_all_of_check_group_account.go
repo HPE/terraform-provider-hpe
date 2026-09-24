@@ -47,51 +47,6 @@ func (o AddCheckGroups200ResponseAllOfCheckGroupAccount) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableAddCheckGroups200ResponseAllOfCheckGroupAccount struct {
-	value *AddCheckGroups200ResponseAllOfCheckGroupAccount
-	isSet bool
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) Get() *AddCheckGroups200ResponseAllOfCheckGroupAccount {
-	return v.value
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) Set(val *AddCheckGroups200ResponseAllOfCheckGroupAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCheckGroups200ResponseAllOfCheckGroupAccount(val *AddCheckGroups200ResponseAllOfCheckGroupAccount) *NullableAddCheckGroups200ResponseAllOfCheckGroupAccount {
-	return &NullableAddCheckGroups200ResponseAllOfCheckGroupAccount{value: val, isSet: true}
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCheckGroups200ResponseAllOfCheckGroupAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddCheckGroups200ResponseAllOfCheckGroupAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

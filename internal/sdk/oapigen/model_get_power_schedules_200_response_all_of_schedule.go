@@ -196,51 +196,6 @@ func (o GetPowerSchedules200ResponseAllOfSchedule) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableGetPowerSchedules200ResponseAllOfSchedule struct {
-	value *GetPowerSchedules200ResponseAllOfSchedule
-	isSet bool
-}
-
-func (v NullableGetPowerSchedules200ResponseAllOfSchedule) Get() *GetPowerSchedules200ResponseAllOfSchedule {
-	return v.value
-}
-
-func (v *NullableGetPowerSchedules200ResponseAllOfSchedule) Set(val *GetPowerSchedules200ResponseAllOfSchedule) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetPowerSchedules200ResponseAllOfSchedule) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetPowerSchedules200ResponseAllOfSchedule) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetPowerSchedules200ResponseAllOfSchedule(val *GetPowerSchedules200ResponseAllOfSchedule) *NullableGetPowerSchedules200ResponseAllOfSchedule {
-	return &NullableGetPowerSchedules200ResponseAllOfSchedule{value: val, isSet: true}
-}
-
-func (v NullableGetPowerSchedules200ResponseAllOfSchedule) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetPowerSchedules200ResponseAllOfSchedule) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetPowerSchedules200ResponseAllOfSchedule) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetPowerSchedules200ResponseAllOfSchedule) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

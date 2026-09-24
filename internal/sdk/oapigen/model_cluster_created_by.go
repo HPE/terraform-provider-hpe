@@ -51,51 +51,6 @@ func (o ClusterCreatedBy) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableClusterCreatedBy struct {
-	value *ClusterCreatedBy
-	isSet bool
-}
-
-func (v NullableClusterCreatedBy) Get() *ClusterCreatedBy {
-	return v.value
-}
-
-func (v *NullableClusterCreatedBy) Set(val *ClusterCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableClusterCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableClusterCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableClusterCreatedBy(val *ClusterCreatedBy) *NullableClusterCreatedBy {
-	return &NullableClusterCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableClusterCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableClusterCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableClusterCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ClusterCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

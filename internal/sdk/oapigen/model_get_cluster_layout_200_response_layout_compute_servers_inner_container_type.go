@@ -103,51 +103,6 @@ func (o GetClusterLayout200ResponseLayoutComputeServersInnerContainerType) ToMap
 	return toSerialize, nil
 }
 
-type NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType struct {
-	value *GetClusterLayout200ResponseLayoutComputeServersInnerContainerType
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) Get() *GetClusterLayout200ResponseLayoutComputeServersInnerContainerType {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) Set(val *GetClusterLayout200ResponseLayoutComputeServersInnerContainerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType(val *GetClusterLayout200ResponseLayoutComputeServersInnerContainerType) *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType {
-	return &NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutComputeServersInnerContainerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterLayout200ResponseLayoutComputeServersInnerContainerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

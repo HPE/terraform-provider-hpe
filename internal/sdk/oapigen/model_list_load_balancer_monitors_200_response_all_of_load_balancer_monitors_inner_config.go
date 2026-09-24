@@ -52,51 +52,6 @@ func (o ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig)
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig struct {
-	value *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig
-	isSet bool
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) Get() *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) Set(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig {
-	return &NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

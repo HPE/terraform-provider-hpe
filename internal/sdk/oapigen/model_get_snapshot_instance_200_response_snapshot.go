@@ -112,51 +112,6 @@ func (o GetSnapshotInstance200ResponseSnapshot) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableGetSnapshotInstance200ResponseSnapshot struct {
-	value *GetSnapshotInstance200ResponseSnapshot
-	isSet bool
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) Get() *GetSnapshotInstance200ResponseSnapshot {
-	return v.value
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) Set(val *GetSnapshotInstance200ResponseSnapshot) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSnapshotInstance200ResponseSnapshot(val *GetSnapshotInstance200ResponseSnapshot) *NullableGetSnapshotInstance200ResponseSnapshot {
-	return &NullableGetSnapshotInstance200ResponseSnapshot{value: val, isSet: true}
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSnapshotInstance200ResponseSnapshot) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSnapshotInstance200ResponseSnapshot) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetSnapshotInstance200ResponseSnapshot) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

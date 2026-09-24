@@ -51,51 +51,6 @@ func (o ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool struct {
-	value *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool
-	isSet bool
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) Get() *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) Set(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool {
-	return &NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

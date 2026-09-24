@@ -120,51 +120,6 @@ func (o Plugin) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePlugin struct {
-	value *Plugin
-	isSet bool
-}
-
-func (v NullablePlugin) Get() *Plugin {
-	return v.value
-}
-
-func (v *NullablePlugin) Set(val *Plugin) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePlugin) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePlugin) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePlugin(val *Plugin) *NullablePlugin {
-	return &NullablePlugin{value: val, isSet: true}
-}
-
-func (v NullablePlugin) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePlugin) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePlugin) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Plugin) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

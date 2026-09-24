@@ -112,51 +112,6 @@ func (o GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) ToMap() 
 	return toSerialize, nil
 }
 
-type NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner struct {
-	value *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner
-	isSet bool
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) Get() *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) Set(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner {
-	return &NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

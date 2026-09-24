@@ -47,51 +47,6 @@ func (o CreateNetworkRouterBgpNeighborRequest) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkRouterBgpNeighborRequest struct {
-	value *CreateNetworkRouterBgpNeighborRequest
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterBgpNeighborRequest) Get() *CreateNetworkRouterBgpNeighborRequest {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterBgpNeighborRequest) Set(val *CreateNetworkRouterBgpNeighborRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterBgpNeighborRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterBgpNeighborRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterBgpNeighborRequest(val *CreateNetworkRouterBgpNeighborRequest) *NullableCreateNetworkRouterBgpNeighborRequest {
-	return &NullableCreateNetworkRouterBgpNeighborRequest{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterBgpNeighborRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterBgpNeighborRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterBgpNeighborRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkRouterBgpNeighborRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

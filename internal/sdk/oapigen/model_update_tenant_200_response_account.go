@@ -112,51 +112,6 @@ func (o UpdateTenant200ResponseAccount) ToMap() (map[string]interface{}, error) 
 	return toSerialize, nil
 }
 
-type NullableUpdateTenant200ResponseAccount struct {
-	value *UpdateTenant200ResponseAccount
-	isSet bool
-}
-
-func (v NullableUpdateTenant200ResponseAccount) Get() *UpdateTenant200ResponseAccount {
-	return v.value
-}
-
-func (v *NullableUpdateTenant200ResponseAccount) Set(val *UpdateTenant200ResponseAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTenant200ResponseAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTenant200ResponseAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTenant200ResponseAccount(val *UpdateTenant200ResponseAccount) *NullableUpdateTenant200ResponseAccount {
-	return &NullableUpdateTenant200ResponseAccount{value: val, isSet: true}
-}
-
-func (v NullableUpdateTenant200ResponseAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTenant200ResponseAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTenant200ResponseAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateTenant200ResponseAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

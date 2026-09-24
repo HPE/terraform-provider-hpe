@@ -76,51 +76,6 @@ func (o BudgetStatsIntervalsInner) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBudgetStatsIntervalsInner struct {
-	value *BudgetStatsIntervalsInner
-	isSet bool
-}
-
-func (v NullableBudgetStatsIntervalsInner) Get() *BudgetStatsIntervalsInner {
-	return v.value
-}
-
-func (v *NullableBudgetStatsIntervalsInner) Set(val *BudgetStatsIntervalsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBudgetStatsIntervalsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBudgetStatsIntervalsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBudgetStatsIntervalsInner(val *BudgetStatsIntervalsInner) *NullableBudgetStatsIntervalsInner {
-	return &NullableBudgetStatsIntervalsInner{value: val, isSet: true}
-}
-
-func (v NullableBudgetStatsIntervalsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBudgetStatsIntervalsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBudgetStatsIntervalsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BudgetStatsIntervalsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

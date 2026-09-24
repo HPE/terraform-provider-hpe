@@ -87,51 +87,6 @@ func (o AnsibleTowerTaskConfig1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAnsibleTowerTaskConfig1 struct {
-	value *AnsibleTowerTaskConfig1
-	isSet bool
-}
-
-func (v NullableAnsibleTowerTaskConfig1) Get() *AnsibleTowerTaskConfig1 {
-	return v.value
-}
-
-func (v *NullableAnsibleTowerTaskConfig1) Set(val *AnsibleTowerTaskConfig1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAnsibleTowerTaskConfig1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAnsibleTowerTaskConfig1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAnsibleTowerTaskConfig1(val *AnsibleTowerTaskConfig1) *NullableAnsibleTowerTaskConfig1 {
-	return &NullableAnsibleTowerTaskConfig1{value: val, isSet: true}
-}
-
-func (v NullableAnsibleTowerTaskConfig1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAnsibleTowerTaskConfig1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAnsibleTowerTaskConfig1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AnsibleTowerTaskConfig1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

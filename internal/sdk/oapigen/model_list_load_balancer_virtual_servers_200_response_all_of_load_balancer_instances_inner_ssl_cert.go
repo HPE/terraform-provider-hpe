@@ -51,51 +51,6 @@ func (o ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInner
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert struct {
-	value *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert
-	isSet bool
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) Get() *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) Set(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert(val *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert {
-	return &NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerVirtualServers200ResponseAllOfLoadBalancerInstancesInnerSslCert) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

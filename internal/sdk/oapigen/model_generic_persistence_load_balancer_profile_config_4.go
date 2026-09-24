@@ -68,51 +68,6 @@ func (o GenericPersistenceLoadBalancerProfileConfig4) ToMap() (map[string]interf
 	return toSerialize, nil
 }
 
-type NullableGenericPersistenceLoadBalancerProfileConfig4 struct {
-	value *GenericPersistenceLoadBalancerProfileConfig4
-	isSet bool
-}
-
-func (v NullableGenericPersistenceLoadBalancerProfileConfig4) Get() *GenericPersistenceLoadBalancerProfileConfig4 {
-	return v.value
-}
-
-func (v *NullableGenericPersistenceLoadBalancerProfileConfig4) Set(val *GenericPersistenceLoadBalancerProfileConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGenericPersistenceLoadBalancerProfileConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGenericPersistenceLoadBalancerProfileConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGenericPersistenceLoadBalancerProfileConfig4(val *GenericPersistenceLoadBalancerProfileConfig4) *NullableGenericPersistenceLoadBalancerProfileConfig4 {
-	return &NullableGenericPersistenceLoadBalancerProfileConfig4{value: val, isSet: true}
-}
-
-func (v NullableGenericPersistenceLoadBalancerProfileConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGenericPersistenceLoadBalancerProfileConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGenericPersistenceLoadBalancerProfileConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GenericPersistenceLoadBalancerProfileConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

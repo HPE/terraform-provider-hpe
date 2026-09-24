@@ -51,51 +51,6 @@ func (o GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) ToMap() (map[
 	return toSerialize, nil
 }
 
-type NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner struct {
-	value *GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) Get() *GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) Set(val *GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner(val *GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) *NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner {
-	return &NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkGroups200ResponseNetworkGroupsInnerTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

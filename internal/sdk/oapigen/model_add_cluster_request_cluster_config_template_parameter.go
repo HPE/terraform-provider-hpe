@@ -78,51 +78,6 @@ func (o AddClusterRequestClusterConfigTemplateParameter) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableAddClusterRequestClusterConfigTemplateParameter struct {
-	value *AddClusterRequestClusterConfigTemplateParameter
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterConfigTemplateParameter) Get() *AddClusterRequestClusterConfigTemplateParameter {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterConfigTemplateParameter) Set(val *AddClusterRequestClusterConfigTemplateParameter) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterConfigTemplateParameter) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterConfigTemplateParameter) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterConfigTemplateParameter(val *AddClusterRequestClusterConfigTemplateParameter) *NullableAddClusterRequestClusterConfigTemplateParameter {
-	return &NullableAddClusterRequestClusterConfigTemplateParameter{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterConfigTemplateParameter) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterConfigTemplateParameter) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterConfigTemplateParameter) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterRequestClusterConfigTemplateParameter) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

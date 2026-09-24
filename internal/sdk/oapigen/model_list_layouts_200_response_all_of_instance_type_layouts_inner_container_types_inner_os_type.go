@@ -51,51 +51,6 @@ func (o ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOs
 	return toSerialize, nil
 }
 
-type NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType struct {
-	value *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType
-	isSet bool
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) Get() *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType {
-	return v.value
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) Set(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType(val *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType {
-	return &NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType{value: val, isSet: true}
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLayouts200ResponseAllOfInstanceTypeLayoutsInnerContainerTypesInnerOsType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

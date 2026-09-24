@@ -51,51 +51,6 @@ func (o GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) 
 	return toSerialize, nil
 }
 
-type NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType struct {
-	value *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType
-	isSet bool
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) Get() *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType {
-	return v.value
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) Set(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType {
-	return &NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType{value: val, isSet: true}
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerProcessType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

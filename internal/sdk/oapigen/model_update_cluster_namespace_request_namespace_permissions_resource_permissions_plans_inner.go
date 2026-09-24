@@ -51,51 +51,6 @@ func (o UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlan
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner struct {
-	value *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner
-	isSet bool
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) Get() *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner {
-	return v.value
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) Set(val *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner(val *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) *NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner {
-	return &NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterNamespaceRequestNamespacePermissionsResourcePermissionsPlansInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

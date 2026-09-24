@@ -48,51 +48,6 @@ func (o UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) ToMa
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions struct {
-	value *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions
-	isSet bool
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) Get() *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions {
-	return v.value
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) Set(val *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions(val *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) *NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions {
-	return &NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterNamespaceRequestNamespacePermissionsTenantPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

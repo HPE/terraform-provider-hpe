@@ -63,51 +63,6 @@ func (o ListLayouts200ResponseAllOfMeta) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableListLayouts200ResponseAllOfMeta struct {
-	value *ListLayouts200ResponseAllOfMeta
-	isSet bool
-}
-
-func (v NullableListLayouts200ResponseAllOfMeta) Get() *ListLayouts200ResponseAllOfMeta {
-	return v.value
-}
-
-func (v *NullableListLayouts200ResponseAllOfMeta) Set(val *ListLayouts200ResponseAllOfMeta) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLayouts200ResponseAllOfMeta) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLayouts200ResponseAllOfMeta) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLayouts200ResponseAllOfMeta(val *ListLayouts200ResponseAllOfMeta) *NullableListLayouts200ResponseAllOfMeta {
-	return &NullableListLayouts200ResponseAllOfMeta{value: val, isSet: true}
-}
-
-func (v NullableListLayouts200ResponseAllOfMeta) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLayouts200ResponseAllOfMeta) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLayouts200ResponseAllOfMeta) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLayouts200ResponseAllOfMeta) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

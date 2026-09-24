@@ -55,51 +55,6 @@ func (o AddSecurityPackages200ResponseAllOfSecurityPackageType) ToMap() (map[str
 	return toSerialize, nil
 }
 
-type NullableAddSecurityPackages200ResponseAllOfSecurityPackageType struct {
-	value *AddSecurityPackages200ResponseAllOfSecurityPackageType
-	isSet bool
-}
-
-func (v NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) Get() *AddSecurityPackages200ResponseAllOfSecurityPackageType {
-	return v.value
-}
-
-func (v *NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) Set(val *AddSecurityPackages200ResponseAllOfSecurityPackageType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddSecurityPackages200ResponseAllOfSecurityPackageType(val *AddSecurityPackages200ResponseAllOfSecurityPackageType) *NullableAddSecurityPackages200ResponseAllOfSecurityPackageType {
-	return &NullableAddSecurityPackages200ResponseAllOfSecurityPackageType{value: val, isSet: true}
-}
-
-func (v NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddSecurityPackages200ResponseAllOfSecurityPackageType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddSecurityPackages200ResponseAllOfSecurityPackageType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

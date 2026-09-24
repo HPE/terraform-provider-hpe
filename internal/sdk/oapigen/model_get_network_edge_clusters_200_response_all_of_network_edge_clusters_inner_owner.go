@@ -47,51 +47,6 @@ func (o GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) ToM
 	return toSerialize, nil
 }
 
-type NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner struct {
-	value *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner
-	isSet bool
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) Get() *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner {
-	return v.value
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) Set(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner(val *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner {
-	return &NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkEdgeClusters200ResponseAllOfNetworkEdgeClustersInnerOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

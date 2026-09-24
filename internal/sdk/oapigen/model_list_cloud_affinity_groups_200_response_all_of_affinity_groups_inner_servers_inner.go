@@ -51,51 +51,6 @@ func (o ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) 
 	return toSerialize, nil
 }
 
-type NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner struct {
-	value *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner
-	isSet bool
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Get() *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner {
-	return v.value
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Set(val *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner(val *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner {
-	return &NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner{value: val, isSet: true}
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListCloudAffinityGroups200ResponseAllOfAffinityGroupsInnerServersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -63,51 +63,6 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerCompute
 	return toSerialize, nil
 }
 
-type NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType struct {
-	value *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType
-	isSet bool
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType {
-	return v.value
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType(val *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType {
-	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType{value: val, isSet: true}
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerComputeServerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -47,51 +47,6 @@ func (o AddTenantRequestAccountParentAccount) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableAddTenantRequestAccountParentAccount struct {
-	value *AddTenantRequestAccountParentAccount
-	isSet bool
-}
-
-func (v NullableAddTenantRequestAccountParentAccount) Get() *AddTenantRequestAccountParentAccount {
-	return v.value
-}
-
-func (v *NullableAddTenantRequestAccountParentAccount) Set(val *AddTenantRequestAccountParentAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddTenantRequestAccountParentAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddTenantRequestAccountParentAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddTenantRequestAccountParentAccount(val *AddTenantRequestAccountParentAccount) *NullableAddTenantRequestAccountParentAccount {
-	return &NullableAddTenantRequestAccountParentAccount{value: val, isSet: true}
-}
-
-func (v NullableAddTenantRequestAccountParentAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddTenantRequestAccountParentAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddTenantRequestAccountParentAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddTenantRequestAccountParentAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

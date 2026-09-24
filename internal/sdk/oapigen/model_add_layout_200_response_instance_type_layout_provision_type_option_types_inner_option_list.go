@@ -51,51 +51,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptio
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList struct {
-	value *AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) Get() *AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) Set(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList(val *AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutProvisionTypeOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

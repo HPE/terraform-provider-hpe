@@ -48,51 +48,6 @@ func (o UpdateClusterAffinityGroupRequestTenantPermissions) ToMap() (map[string]
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterAffinityGroupRequestTenantPermissions struct {
-	value *UpdateClusterAffinityGroupRequestTenantPermissions
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestTenantPermissions) Get() *UpdateClusterAffinityGroupRequestTenantPermissions {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestTenantPermissions) Set(val *UpdateClusterAffinityGroupRequestTenantPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestTenantPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestTenantPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroupRequestTenantPermissions(val *UpdateClusterAffinityGroupRequestTenantPermissions) *NullableUpdateClusterAffinityGroupRequestTenantPermissions {
-	return &NullableUpdateClusterAffinityGroupRequestTenantPermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestTenantPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestTenantPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestTenantPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterAffinityGroupRequestTenantPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

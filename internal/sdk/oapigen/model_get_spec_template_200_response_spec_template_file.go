@@ -67,51 +67,6 @@ func (o GetSpecTemplate200ResponseSpecTemplateFile) ToMap() (map[string]interfac
 	return toSerialize, nil
 }
 
-type NullableGetSpecTemplate200ResponseSpecTemplateFile struct {
-	value *GetSpecTemplate200ResponseSpecTemplateFile
-	isSet bool
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateFile) Get() *GetSpecTemplate200ResponseSpecTemplateFile {
-	return v.value
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateFile) Set(val *GetSpecTemplate200ResponseSpecTemplateFile) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateFile) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateFile) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSpecTemplate200ResponseSpecTemplateFile(val *GetSpecTemplate200ResponseSpecTemplateFile) *NullableGetSpecTemplate200ResponseSpecTemplateFile {
-	return &NullableGetSpecTemplate200ResponseSpecTemplateFile{value: val, isSet: true}
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateFile) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSpecTemplate200ResponseSpecTemplateFile) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSpecTemplate200ResponseSpecTemplateFile) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetSpecTemplate200ResponseSpecTemplateFile) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

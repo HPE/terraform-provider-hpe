@@ -143,51 +143,6 @@ func (o UpdateRole200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateRole200Response struct {
-	value *UpdateRole200Response
-	isSet bool
-}
-
-func (v NullableUpdateRole200Response) Get() *UpdateRole200Response {
-	return v.value
-}
-
-func (v *NullableUpdateRole200Response) Set(val *UpdateRole200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRole200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRole200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRole200Response(val *UpdateRole200Response) *NullableUpdateRole200Response {
-	return &NullableUpdateRole200Response{value: val, isSet: true}
-}
-
-func (v NullableUpdateRole200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRole200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRole200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateRole200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o GetClusterLayout200ResponseLayoutProvisionType) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableGetClusterLayout200ResponseLayoutProvisionType struct {
-	value *GetClusterLayout200ResponseLayoutProvisionType
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutProvisionType) Get() *GetClusterLayout200ResponseLayoutProvisionType {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutProvisionType) Set(val *GetClusterLayout200ResponseLayoutProvisionType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutProvisionType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutProvisionType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutProvisionType(val *GetClusterLayout200ResponseLayoutProvisionType) *NullableGetClusterLayout200ResponseLayoutProvisionType {
-	return &NullableGetClusterLayout200ResponseLayoutProvisionType{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutProvisionType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutProvisionType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutProvisionType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterLayout200ResponseLayoutProvisionType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

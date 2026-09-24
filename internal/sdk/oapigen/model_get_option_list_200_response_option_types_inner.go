@@ -119,51 +119,6 @@ func (o GetOptionList200ResponseOptionTypesInner) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableGetOptionList200ResponseOptionTypesInner struct {
-	value *GetOptionList200ResponseOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInner) Get() *GetOptionList200ResponseOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInner) Set(val *GetOptionList200ResponseOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetOptionList200ResponseOptionTypesInner(val *GetOptionList200ResponseOptionTypesInner) *NullableGetOptionList200ResponseOptionTypesInner {
-	return &NullableGetOptionList200ResponseOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetOptionList200ResponseOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetOptionList200ResponseOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetOptionList200ResponseOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

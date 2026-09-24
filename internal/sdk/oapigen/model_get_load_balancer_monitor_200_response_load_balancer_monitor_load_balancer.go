@@ -59,51 +59,6 @@ func (o GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) ToMap(
 	return toSerialize, nil
 }
 
-type NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer struct {
-	value *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) Get() *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) Set(val *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer(val *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer {
-	return &NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLoadBalancerMonitor200ResponseLoadBalancerMonitorLoadBalancer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

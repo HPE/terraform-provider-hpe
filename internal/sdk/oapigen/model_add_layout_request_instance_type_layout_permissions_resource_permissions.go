@@ -53,51 +53,6 @@ func (o AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) ToMap(
 	return toSerialize, nil
 }
 
-type NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions struct {
-	value *AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions
-	isSet bool
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) Get() *AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions {
-	return v.value
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) Set(val *AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions(val *AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) *NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions {
-	return &NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayoutRequestInstanceTypeLayoutPermissionsResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

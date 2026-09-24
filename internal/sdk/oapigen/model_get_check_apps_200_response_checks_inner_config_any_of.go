@@ -69,51 +69,6 @@ func (o GetCheckApps200ResponseChecksInnerConfigAnyOf) ToMap() (map[string]inter
 	return toSerialize, nil
 }
 
-type NullableGetCheckApps200ResponseChecksInnerConfigAnyOf struct {
-	value *GetCheckApps200ResponseChecksInnerConfigAnyOf
-	isSet bool
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) Get() *GetCheckApps200ResponseChecksInnerConfigAnyOf {
-	return v.value
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) Set(val *GetCheckApps200ResponseChecksInnerConfigAnyOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCheckApps200ResponseChecksInnerConfigAnyOf(val *GetCheckApps200ResponseChecksInnerConfigAnyOf) *NullableGetCheckApps200ResponseChecksInnerConfigAnyOf {
-	return &NullableGetCheckApps200ResponseChecksInnerConfigAnyOf{value: val, isSet: true}
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCheckApps200ResponseChecksInnerConfigAnyOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCheckApps200ResponseChecksInnerConfigAnyOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

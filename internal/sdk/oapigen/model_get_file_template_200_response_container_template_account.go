@@ -51,51 +51,6 @@ func (o GetFileTemplate200ResponseContainerTemplateAccount) ToMap() (map[string]
 	return toSerialize, nil
 }
 
-type NullableGetFileTemplate200ResponseContainerTemplateAccount struct {
-	value *GetFileTemplate200ResponseContainerTemplateAccount
-	isSet bool
-}
-
-func (v NullableGetFileTemplate200ResponseContainerTemplateAccount) Get() *GetFileTemplate200ResponseContainerTemplateAccount {
-	return v.value
-}
-
-func (v *NullableGetFileTemplate200ResponseContainerTemplateAccount) Set(val *GetFileTemplate200ResponseContainerTemplateAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetFileTemplate200ResponseContainerTemplateAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetFileTemplate200ResponseContainerTemplateAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetFileTemplate200ResponseContainerTemplateAccount(val *GetFileTemplate200ResponseContainerTemplateAccount) *NullableGetFileTemplate200ResponseContainerTemplateAccount {
-	return &NullableGetFileTemplate200ResponseContainerTemplateAccount{value: val, isSet: true}
-}
-
-func (v NullableGetFileTemplate200ResponseContainerTemplateAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetFileTemplate200ResponseContainerTemplateAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetFileTemplate200ResponseContainerTemplateAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetFileTemplate200ResponseContainerTemplateAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

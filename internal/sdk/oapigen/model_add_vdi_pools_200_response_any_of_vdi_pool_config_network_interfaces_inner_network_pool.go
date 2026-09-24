@@ -51,51 +51,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPoo
 	return toSerialize, nil
 }
 
-type NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Get() *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Set(val *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool(val *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetworkPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o AddEmailTemplateRequestEmailTemplateOwner) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableAddEmailTemplateRequestEmailTemplateOwner struct {
-	value *AddEmailTemplateRequestEmailTemplateOwner
-	isSet bool
-}
-
-func (v NullableAddEmailTemplateRequestEmailTemplateOwner) Get() *AddEmailTemplateRequestEmailTemplateOwner {
-	return v.value
-}
-
-func (v *NullableAddEmailTemplateRequestEmailTemplateOwner) Set(val *AddEmailTemplateRequestEmailTemplateOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddEmailTemplateRequestEmailTemplateOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddEmailTemplateRequestEmailTemplateOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddEmailTemplateRequestEmailTemplateOwner(val *AddEmailTemplateRequestEmailTemplateOwner) *NullableAddEmailTemplateRequestEmailTemplateOwner {
-	return &NullableAddEmailTemplateRequestEmailTemplateOwner{value: val, isSet: true}
-}
-
-func (v NullableAddEmailTemplateRequestEmailTemplateOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddEmailTemplateRequestEmailTemplateOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddEmailTemplateRequestEmailTemplateOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddEmailTemplateRequestEmailTemplateOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

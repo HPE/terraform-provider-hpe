@@ -51,51 +51,6 @@ func (o InfobloxNetworkPoolServerUpdateCredential) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableInfobloxNetworkPoolServerUpdateCredential struct {
-	value *InfobloxNetworkPoolServerUpdateCredential
-	isSet bool
-}
-
-func (v NullableInfobloxNetworkPoolServerUpdateCredential) Get() *InfobloxNetworkPoolServerUpdateCredential {
-	return v.value
-}
-
-func (v *NullableInfobloxNetworkPoolServerUpdateCredential) Set(val *InfobloxNetworkPoolServerUpdateCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInfobloxNetworkPoolServerUpdateCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInfobloxNetworkPoolServerUpdateCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInfobloxNetworkPoolServerUpdateCredential(val *InfobloxNetworkPoolServerUpdateCredential) *NullableInfobloxNetworkPoolServerUpdateCredential {
-	return &NullableInfobloxNetworkPoolServerUpdateCredential{value: val, isSet: true}
-}
-
-func (v NullableInfobloxNetworkPoolServerUpdateCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInfobloxNetworkPoolServerUpdateCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInfobloxNetworkPoolServerUpdateCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InfobloxNetworkPoolServerUpdateCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

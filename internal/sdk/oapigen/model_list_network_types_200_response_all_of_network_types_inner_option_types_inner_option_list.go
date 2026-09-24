@@ -51,51 +51,6 @@ func (o ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionL
 	return toSerialize, nil
 }
 
-type NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList struct {
-	value *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) Get() *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) Set(val *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList(val *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList {
-	return &NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListNetworkTypes200ResponseAllOfNetworkTypesInnerOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

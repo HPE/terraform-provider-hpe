@@ -47,51 +47,6 @@ func (o UpdateTasksRequestTaskCredentialOneOf) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableUpdateTasksRequestTaskCredentialOneOf struct {
-	value *UpdateTasksRequestTaskCredentialOneOf
-	isSet bool
-}
-
-func (v NullableUpdateTasksRequestTaskCredentialOneOf) Get() *UpdateTasksRequestTaskCredentialOneOf {
-	return v.value
-}
-
-func (v *NullableUpdateTasksRequestTaskCredentialOneOf) Set(val *UpdateTasksRequestTaskCredentialOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateTasksRequestTaskCredentialOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateTasksRequestTaskCredentialOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateTasksRequestTaskCredentialOneOf(val *UpdateTasksRequestTaskCredentialOneOf) *NullableUpdateTasksRequestTaskCredentialOneOf {
-	return &NullableUpdateTasksRequestTaskCredentialOneOf{value: val, isSet: true}
-}
-
-func (v NullableUpdateTasksRequestTaskCredentialOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateTasksRequestTaskCredentialOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateTasksRequestTaskCredentialOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateTasksRequestTaskCredentialOneOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

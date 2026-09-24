@@ -79,51 +79,6 @@ func (o VRealizeOrchestratorTaskConfig3) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableVRealizeOrchestratorTaskConfig3 struct {
-	value *VRealizeOrchestratorTaskConfig3
-	isSet bool
-}
-
-func (v NullableVRealizeOrchestratorTaskConfig3) Get() *VRealizeOrchestratorTaskConfig3 {
-	return v.value
-}
-
-func (v *NullableVRealizeOrchestratorTaskConfig3) Set(val *VRealizeOrchestratorTaskConfig3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableVRealizeOrchestratorTaskConfig3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableVRealizeOrchestratorTaskConfig3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableVRealizeOrchestratorTaskConfig3(val *VRealizeOrchestratorTaskConfig3) *NullableVRealizeOrchestratorTaskConfig3 {
-	return &NullableVRealizeOrchestratorTaskConfig3{value: val, isSet: true}
-}
-
-func (v NullableVRealizeOrchestratorTaskConfig3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableVRealizeOrchestratorTaskConfig3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableVRealizeOrchestratorTaskConfig3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *VRealizeOrchestratorTaskConfig3) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

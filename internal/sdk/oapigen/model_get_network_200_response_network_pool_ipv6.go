@@ -58,51 +58,6 @@ func (o GetNetwork200ResponseNetworkPoolIPv6) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableGetNetwork200ResponseNetworkPoolIPv6 struct {
-	value *GetNetwork200ResponseNetworkPoolIPv6
-	isSet bool
-}
-
-func (v NullableGetNetwork200ResponseNetworkPoolIPv6) Get() *GetNetwork200ResponseNetworkPoolIPv6 {
-	return v.value
-}
-
-func (v *NullableGetNetwork200ResponseNetworkPoolIPv6) Set(val *GetNetwork200ResponseNetworkPoolIPv6) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetwork200ResponseNetworkPoolIPv6) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetwork200ResponseNetworkPoolIPv6) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetwork200ResponseNetworkPoolIPv6(val *GetNetwork200ResponseNetworkPoolIPv6) *NullableGetNetwork200ResponseNetworkPoolIPv6 {
-	return &NullableGetNetwork200ResponseNetworkPoolIPv6{value: val, isSet: true}
-}
-
-func (v NullableGetNetwork200ResponseNetworkPoolIPv6) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetwork200ResponseNetworkPoolIPv6) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetwork200ResponseNetworkPoolIPv6) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetwork200ResponseNetworkPoolIPv6) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -48,51 +48,6 @@ func (o ExecuteInstanceActionRequestSshKeyPair) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableExecuteInstanceActionRequestSshKeyPair struct {
-	value *ExecuteInstanceActionRequestSshKeyPair
-	isSet bool
-}
-
-func (v NullableExecuteInstanceActionRequestSshKeyPair) Get() *ExecuteInstanceActionRequestSshKeyPair {
-	return v.value
-}
-
-func (v *NullableExecuteInstanceActionRequestSshKeyPair) Set(val *ExecuteInstanceActionRequestSshKeyPair) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableExecuteInstanceActionRequestSshKeyPair) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableExecuteInstanceActionRequestSshKeyPair) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableExecuteInstanceActionRequestSshKeyPair(val *ExecuteInstanceActionRequestSshKeyPair) *NullableExecuteInstanceActionRequestSshKeyPair {
-	return &NullableExecuteInstanceActionRequestSshKeyPair{value: val, isSet: true}
-}
-
-func (v NullableExecuteInstanceActionRequestSshKeyPair) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableExecuteInstanceActionRequestSshKeyPair) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableExecuteInstanceActionRequestSshKeyPair) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ExecuteInstanceActionRequestSshKeyPair) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

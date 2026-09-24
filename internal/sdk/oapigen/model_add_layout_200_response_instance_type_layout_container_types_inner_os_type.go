@@ -51,51 +51,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) ToMap()
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType struct {
-	value *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Get() *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Set(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerOsType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

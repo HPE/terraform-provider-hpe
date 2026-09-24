@@ -47,51 +47,6 @@ func (o GetLayout200ResponseInstanceTypeLayoutPermissions) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableGetLayout200ResponseInstanceTypeLayoutPermissions struct {
-	value *GetLayout200ResponseInstanceTypeLayoutPermissions
-	isSet bool
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutPermissions) Get() *GetLayout200ResponseInstanceTypeLayoutPermissions {
-	return v.value
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutPermissions) Set(val *GetLayout200ResponseInstanceTypeLayoutPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLayout200ResponseInstanceTypeLayoutPermissions(val *GetLayout200ResponseInstanceTypeLayoutPermissions) *NullableGetLayout200ResponseInstanceTypeLayoutPermissions {
-	return &NullableGetLayout200ResponseInstanceTypeLayoutPermissions{value: val, isSet: true}
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLayout200ResponseInstanceTypeLayoutPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLayout200ResponseInstanceTypeLayoutPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLayout200ResponseInstanceTypeLayoutPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

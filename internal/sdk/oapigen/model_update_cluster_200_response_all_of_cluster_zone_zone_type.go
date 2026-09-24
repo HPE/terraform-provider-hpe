@@ -47,51 +47,6 @@ func (o UpdateCluster200ResponseAllOfClusterZoneZoneType) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableUpdateCluster200ResponseAllOfClusterZoneZoneType struct {
-	value *UpdateCluster200ResponseAllOfClusterZoneZoneType
-	isSet bool
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) Get() *UpdateCluster200ResponseAllOfClusterZoneZoneType {
-	return v.value
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) Set(val *UpdateCluster200ResponseAllOfClusterZoneZoneType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateCluster200ResponseAllOfClusterZoneZoneType(val *UpdateCluster200ResponseAllOfClusterZoneZoneType) *NullableUpdateCluster200ResponseAllOfClusterZoneZoneType {
-	return &NullableUpdateCluster200ResponseAllOfClusterZoneZoneType{value: val, isSet: true}
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateCluster200ResponseAllOfClusterZoneZoneType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateCluster200ResponseAllOfClusterZoneZoneType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

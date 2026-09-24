@@ -51,51 +51,6 @@ func (o AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesIn
 	return toSerialize, nil
 }
 
-type NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner struct {
-	value *AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) Get() *AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) Set(val *AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner(val *AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner {
-	return &NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterNamespaceRequestNamespacePermissionsResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

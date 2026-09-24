@@ -59,51 +59,6 @@ func (o ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBal
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer struct {
-	value *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer
-	isSet bool
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) Get() *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) Set(val *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer(val *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer {
-	return &NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerProfiles200ResponseAllOfLoadBalancerProfilesInnerLoadBalancer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

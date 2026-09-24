@@ -48,51 +48,6 @@ func (o CustomOptionsForAzure) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableCustomOptionsForAzure struct {
-	value *CustomOptionsForAzure
-	isSet bool
-}
-
-func (v NullableCustomOptionsForAzure) Get() *CustomOptionsForAzure {
-	return v.value
-}
-
-func (v *NullableCustomOptionsForAzure) Set(val *CustomOptionsForAzure) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCustomOptionsForAzure) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCustomOptionsForAzure) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCustomOptionsForAzure(val *CustomOptionsForAzure) *NullableCustomOptionsForAzure {
-	return &NullableCustomOptionsForAzure{value: val, isSet: true}
-}
-
-func (v NullableCustomOptionsForAzure) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCustomOptionsForAzure) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCustomOptionsForAzure) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CustomOptionsForAzure) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

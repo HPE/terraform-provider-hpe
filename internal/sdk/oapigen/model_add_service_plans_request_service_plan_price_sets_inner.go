@@ -48,51 +48,6 @@ func (o AddServicePlansRequestServicePlanPriceSetsInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableAddServicePlansRequestServicePlanPriceSetsInner struct {
-	value *AddServicePlansRequestServicePlanPriceSetsInner
-	isSet bool
-}
-
-func (v NullableAddServicePlansRequestServicePlanPriceSetsInner) Get() *AddServicePlansRequestServicePlanPriceSetsInner {
-	return v.value
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPriceSetsInner) Set(val *AddServicePlansRequestServicePlanPriceSetsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddServicePlansRequestServicePlanPriceSetsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPriceSetsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddServicePlansRequestServicePlanPriceSetsInner(val *AddServicePlansRequestServicePlanPriceSetsInner) *NullableAddServicePlansRequestServicePlanPriceSetsInner {
-	return &NullableAddServicePlansRequestServicePlanPriceSetsInner{value: val, isSet: true}
-}
-
-func (v NullableAddServicePlansRequestServicePlanPriceSetsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddServicePlansRequestServicePlanPriceSetsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddServicePlansRequestServicePlanPriceSetsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddServicePlansRequestServicePlanPriceSetsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

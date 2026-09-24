@@ -77,51 +77,6 @@ func (o NSXTLoadBalancerPoolConfigObject) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableNSXTLoadBalancerPoolConfigObject struct {
-	value *NSXTLoadBalancerPoolConfigObject
-	isSet bool
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObject) Get() *NSXTLoadBalancerPoolConfigObject {
-	return v.value
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObject) Set(val *NSXTLoadBalancerPoolConfigObject) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObject) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObject) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNSXTLoadBalancerPoolConfigObject(val *NSXTLoadBalancerPoolConfigObject) *NullableNSXTLoadBalancerPoolConfigObject {
-	return &NullableNSXTLoadBalancerPoolConfigObject{value: val, isSet: true}
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObject) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNSXTLoadBalancerPoolConfigObject) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNSXTLoadBalancerPoolConfigObject) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NSXTLoadBalancerPoolConfigObject) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

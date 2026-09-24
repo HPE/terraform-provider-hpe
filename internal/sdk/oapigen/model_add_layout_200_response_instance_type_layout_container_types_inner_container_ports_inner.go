@@ -55,51 +55,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsI
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner struct {
-	value *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) Get() *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) Set(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner(val *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutContainerTypesInnerContainerPortsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

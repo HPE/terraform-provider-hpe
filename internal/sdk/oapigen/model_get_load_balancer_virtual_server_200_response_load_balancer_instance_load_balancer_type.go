@@ -55,51 +55,6 @@ func (o GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerT
 	return toSerialize, nil
 }
 
-type NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType struct {
-	value *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Get() *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Set(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType {
-	return &NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceLoadBalancerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

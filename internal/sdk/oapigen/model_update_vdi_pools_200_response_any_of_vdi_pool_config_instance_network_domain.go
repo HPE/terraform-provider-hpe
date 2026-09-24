@@ -47,51 +47,6 @@ func (o UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) ToMap(
 	return toSerialize, nil
 }
 
-type NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain struct {
-	value *UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain
-	isSet bool
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Get() *UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain {
-	return v.value
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Set(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain(val *UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain {
-	return &NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain{value: val, isSet: true}
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateVDIPools200ResponseAnyOfVdiPoolConfigInstanceNetworkDomain) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

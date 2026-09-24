@@ -47,51 +47,6 @@ func (o DeleteScript200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableDeleteScript200Response struct {
-	value *DeleteScript200Response
-	isSet bool
-}
-
-func (v NullableDeleteScript200Response) Get() *DeleteScript200Response {
-	return v.value
-}
-
-func (v *NullableDeleteScript200Response) Set(val *DeleteScript200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableDeleteScript200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableDeleteScript200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableDeleteScript200Response(val *DeleteScript200Response) *NullableDeleteScript200Response {
-	return &NullableDeleteScript200Response{value: val, isSet: true}
-}
-
-func (v NullableDeleteScript200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableDeleteScript200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableDeleteScript200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *DeleteScript200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -53,51 +53,6 @@ func (o ListBackups200ResponseAllOfBackupsInnerInstance) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableListBackups200ResponseAllOfBackupsInnerInstance struct {
-	value *ListBackups200ResponseAllOfBackupsInnerInstance
-	isSet bool
-}
-
-func (v NullableListBackups200ResponseAllOfBackupsInnerInstance) Get() *ListBackups200ResponseAllOfBackupsInnerInstance {
-	return v.value
-}
-
-func (v *NullableListBackups200ResponseAllOfBackupsInnerInstance) Set(val *ListBackups200ResponseAllOfBackupsInnerInstance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListBackups200ResponseAllOfBackupsInnerInstance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListBackups200ResponseAllOfBackupsInnerInstance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListBackups200ResponseAllOfBackupsInnerInstance(val *ListBackups200ResponseAllOfBackupsInnerInstance) *NullableListBackups200ResponseAllOfBackupsInnerInstance {
-	return &NullableListBackups200ResponseAllOfBackupsInnerInstance{value: val, isSet: true}
-}
-
-func (v NullableListBackups200ResponseAllOfBackupsInnerInstance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListBackups200ResponseAllOfBackupsInnerInstance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListBackups200ResponseAllOfBackupsInnerInstance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListBackups200ResponseAllOfBackupsInnerInstance) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

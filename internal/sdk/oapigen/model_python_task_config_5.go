@@ -87,51 +87,6 @@ func (o PythonTaskConfig5) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePythonTaskConfig5 struct {
-	value *PythonTaskConfig5
-	isSet bool
-}
-
-func (v NullablePythonTaskConfig5) Get() *PythonTaskConfig5 {
-	return v.value
-}
-
-func (v *NullablePythonTaskConfig5) Set(val *PythonTaskConfig5) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePythonTaskConfig5) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePythonTaskConfig5) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePythonTaskConfig5(val *PythonTaskConfig5) *NullablePythonTaskConfig5 {
-	return &NullablePythonTaskConfig5{value: val, isSet: true}
-}
-
-func (v NullablePythonTaskConfig5) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePythonTaskConfig5) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePythonTaskConfig5) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PythonTaskConfig5) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

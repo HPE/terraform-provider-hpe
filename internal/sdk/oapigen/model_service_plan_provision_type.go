@@ -71,51 +71,6 @@ func (o ServicePlanProvisionType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableServicePlanProvisionType struct {
-	value *ServicePlanProvisionType
-	isSet bool
-}
-
-func (v NullableServicePlanProvisionType) Get() *ServicePlanProvisionType {
-	return v.value
-}
-
-func (v *NullableServicePlanProvisionType) Set(val *ServicePlanProvisionType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableServicePlanProvisionType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableServicePlanProvisionType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableServicePlanProvisionType(val *ServicePlanProvisionType) *NullableServicePlanProvisionType {
-	return &NullableServicePlanProvisionType{value: val, isSet: true}
-}
-
-func (v NullableServicePlanProvisionType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableServicePlanProvisionType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableServicePlanProvisionType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ServicePlanProvisionType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

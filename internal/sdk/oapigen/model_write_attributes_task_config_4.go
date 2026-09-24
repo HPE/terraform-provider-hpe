@@ -79,51 +79,6 @@ func (o WriteAttributesTaskConfig4) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWriteAttributesTaskConfig4 struct {
-	value *WriteAttributesTaskConfig4
-	isSet bool
-}
-
-func (v NullableWriteAttributesTaskConfig4) Get() *WriteAttributesTaskConfig4 {
-	return v.value
-}
-
-func (v *NullableWriteAttributesTaskConfig4) Set(val *WriteAttributesTaskConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWriteAttributesTaskConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWriteAttributesTaskConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWriteAttributesTaskConfig4(val *WriteAttributesTaskConfig4) *NullableWriteAttributesTaskConfig4 {
-	return &NullableWriteAttributesTaskConfig4{value: val, isSet: true}
-}
-
-func (v NullableWriteAttributesTaskConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWriteAttributesTaskConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWriteAttributesTaskConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *WriteAttributesTaskConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

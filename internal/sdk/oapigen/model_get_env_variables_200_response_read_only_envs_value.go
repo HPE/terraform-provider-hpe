@@ -51,51 +51,6 @@ func (o GetEnvVariables200ResponseReadOnlyEnvsValue) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableGetEnvVariables200ResponseReadOnlyEnvsValue struct {
-	value *GetEnvVariables200ResponseReadOnlyEnvsValue
-	isSet bool
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValue) Get() *GetEnvVariables200ResponseReadOnlyEnvsValue {
-	return v.value
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValue) Set(val *GetEnvVariables200ResponseReadOnlyEnvsValue) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValue) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValue) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetEnvVariables200ResponseReadOnlyEnvsValue(val *GetEnvVariables200ResponseReadOnlyEnvsValue) *NullableGetEnvVariables200ResponseReadOnlyEnvsValue {
-	return &NullableGetEnvVariables200ResponseReadOnlyEnvsValue{value: val, isSet: true}
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValue) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetEnvVariables200ResponseReadOnlyEnvsValue) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetEnvVariables200ResponseReadOnlyEnvsValue) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetEnvVariables200ResponseReadOnlyEnvsValue) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

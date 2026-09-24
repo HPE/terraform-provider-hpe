@@ -55,51 +55,6 @@ func (o GetClusterPackage200ResponseClusterPackageSpecTemplatesInner) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner struct {
-	value *GetClusterPackage200ResponseClusterPackageSpecTemplatesInner
-	isSet bool
-}
-
-func (v NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) Get() *GetClusterPackage200ResponseClusterPackageSpecTemplatesInner {
-	return v.value
-}
-
-func (v *NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) Set(val *GetClusterPackage200ResponseClusterPackageSpecTemplatesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner(val *GetClusterPackage200ResponseClusterPackageSpecTemplatesInner) *NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner {
-	return &NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterPackage200ResponseClusterPackageSpecTemplatesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterPackage200ResponseClusterPackageSpecTemplatesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

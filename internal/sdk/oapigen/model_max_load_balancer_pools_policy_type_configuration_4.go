@@ -47,51 +47,6 @@ func (o MaxLoadBalancerPoolsPolicyTypeConfiguration4) ToMap() (map[string]interf
 	return toSerialize, nil
 }
 
-type NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4 struct {
-	value *MaxLoadBalancerPoolsPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) Get() *MaxLoadBalancerPoolsPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) Set(val *MaxLoadBalancerPoolsPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMaxLoadBalancerPoolsPolicyTypeConfiguration4(val *MaxLoadBalancerPoolsPolicyTypeConfiguration4) *NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4 {
-	return &NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMaxLoadBalancerPoolsPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MaxLoadBalancerPoolsPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

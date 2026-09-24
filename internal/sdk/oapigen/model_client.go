@@ -75,51 +75,6 @@ func (o Client) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableClient struct {
-	value *Client
-	isSet bool
-}
-
-func (v NullableClient) Get() *Client {
-	return v.value
-}
-
-func (v *NullableClient) Set(val *Client) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableClient) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableClient) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableClient(val *Client) *NullableClient {
-	return &NullableClient{value: val, isSet: true}
-}
-
-func (v NullableClient) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableClient) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableClient) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Client) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

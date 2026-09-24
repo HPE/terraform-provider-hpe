@@ -51,51 +51,6 @@ func (o GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) ToMap() (map[
 	return toSerialize, nil
 }
 
-type NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner struct {
-	value *GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner
-	isSet bool
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) Get() *GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner {
-	return v.value
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) Set(val *GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner(val *GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) *NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner {
-	return &NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

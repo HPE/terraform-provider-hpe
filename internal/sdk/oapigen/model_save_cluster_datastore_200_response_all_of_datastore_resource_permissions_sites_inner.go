@@ -55,51 +55,6 @@ func (o SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInn
 	return toSerialize, nil
 }
 
-type NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner struct {
-	value *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Get() *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Set(val *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner(val *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner {
-	return &NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterDatastore200ResponseAllOfDatastoreResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

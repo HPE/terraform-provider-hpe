@@ -51,51 +51,6 @@ func (o GetInstance200ResponseInstanceOwner) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableGetInstance200ResponseInstanceOwner struct {
-	value *GetInstance200ResponseInstanceOwner
-	isSet bool
-}
-
-func (v NullableGetInstance200ResponseInstanceOwner) Get() *GetInstance200ResponseInstanceOwner {
-	return v.value
-}
-
-func (v *NullableGetInstance200ResponseInstanceOwner) Set(val *GetInstance200ResponseInstanceOwner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstance200ResponseInstanceOwner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstance200ResponseInstanceOwner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstance200ResponseInstanceOwner(val *GetInstance200ResponseInstanceOwner) *NullableGetInstance200ResponseInstanceOwner {
-	return &NullableGetInstance200ResponseInstanceOwner{value: val, isSet: true}
-}
-
-func (v NullableGetInstance200ResponseInstanceOwner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstance200ResponseInstanceOwner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstance200ResponseInstanceOwner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstance200ResponseInstanceOwner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

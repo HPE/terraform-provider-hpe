@@ -59,51 +59,6 @@ func (o InstanceInstancePrice) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableInstanceInstancePrice struct {
-	value *InstanceInstancePrice
-	isSet bool
-}
-
-func (v NullableInstanceInstancePrice) Get() *InstanceInstancePrice {
-	return v.value
-}
-
-func (v *NullableInstanceInstancePrice) Set(val *InstanceInstancePrice) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceInstancePrice) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceInstancePrice) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceInstancePrice(val *InstanceInstancePrice) *NullableInstanceInstancePrice {
-	return &NullableInstanceInstancePrice{value: val, isSet: true}
-}
-
-func (v NullableInstanceInstancePrice) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceInstancePrice) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceInstancePrice) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceInstancePrice) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

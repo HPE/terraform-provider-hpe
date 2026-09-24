@@ -55,51 +55,6 @@ func (o UpdateNetworkGroupRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateNetworkGroupRequest struct {
-	value *UpdateNetworkGroupRequest
-	isSet bool
-}
-
-func (v NullableUpdateNetworkGroupRequest) Get() *UpdateNetworkGroupRequest {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkGroupRequest) Set(val *UpdateNetworkGroupRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkGroupRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkGroupRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkGroupRequest(val *UpdateNetworkGroupRequest) *NullableUpdateNetworkGroupRequest {
-	return &NullableUpdateNetworkGroupRequest{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkGroupRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkGroupRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkGroupRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetworkGroupRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

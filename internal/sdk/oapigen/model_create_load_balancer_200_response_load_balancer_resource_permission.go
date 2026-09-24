@@ -75,51 +75,6 @@ func (o CreateLoadBalancer200ResponseLoadBalancerResourcePermission) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission struct {
-	value *CreateLoadBalancer200ResponseLoadBalancerResourcePermission
-	isSet bool
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) Get() *CreateLoadBalancer200ResponseLoadBalancerResourcePermission {
-	return v.value
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) Set(val *CreateLoadBalancer200ResponseLoadBalancerResourcePermission) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission(val *CreateLoadBalancer200ResponseLoadBalancerResourcePermission) *NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission {
-	return &NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission{value: val, isSet: true}
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateLoadBalancer200ResponseLoadBalancerResourcePermission) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateLoadBalancer200ResponseLoadBalancerResourcePermission) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -99,51 +99,6 @@ func (o WebCheckAllOfConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWebCheckAllOfConfig struct {
-	value *WebCheckAllOfConfig
-	isSet bool
-}
-
-func (v NullableWebCheckAllOfConfig) Get() *WebCheckAllOfConfig {
-	return v.value
-}
-
-func (v *NullableWebCheckAllOfConfig) Set(val *WebCheckAllOfConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWebCheckAllOfConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWebCheckAllOfConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWebCheckAllOfConfig(val *WebCheckAllOfConfig) *NullableWebCheckAllOfConfig {
-	return &NullableWebCheckAllOfConfig{value: val, isSet: true}
-}
-
-func (v NullableWebCheckAllOfConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWebCheckAllOfConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWebCheckAllOfConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *WebCheckAllOfConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

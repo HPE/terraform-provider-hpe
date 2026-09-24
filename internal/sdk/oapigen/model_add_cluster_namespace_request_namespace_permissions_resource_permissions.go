@@ -63,51 +63,6 @@ func (o AddClusterNamespaceRequestNamespacePermissionsResourcePermissions) ToMap
 	return toSerialize, nil
 }
 
-type NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions struct {
-	value *AddClusterNamespaceRequestNamespacePermissionsResourcePermissions
-	isSet bool
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) Get() *AddClusterNamespaceRequestNamespacePermissionsResourcePermissions {
-	return v.value
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) Set(val *AddClusterNamespaceRequestNamespacePermissionsResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions(val *AddClusterNamespaceRequestNamespacePermissionsResourcePermissions) *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions {
-	return &NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterNamespaceRequestNamespacePermissionsResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterNamespaceRequestNamespacePermissionsResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerO
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) Get() *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) Set(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeCustomOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

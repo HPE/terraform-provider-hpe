@@ -59,51 +59,6 @@ func (o GetLoadBalancer200ResponseLoadBalancerCredential) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableGetLoadBalancer200ResponseLoadBalancerCredential struct {
-	value *GetLoadBalancer200ResponseLoadBalancerCredential
-	isSet bool
-}
-
-func (v NullableGetLoadBalancer200ResponseLoadBalancerCredential) Get() *GetLoadBalancer200ResponseLoadBalancerCredential {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancer200ResponseLoadBalancerCredential) Set(val *GetLoadBalancer200ResponseLoadBalancerCredential) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancer200ResponseLoadBalancerCredential) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancer200ResponseLoadBalancerCredential) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancer200ResponseLoadBalancerCredential(val *GetLoadBalancer200ResponseLoadBalancerCredential) *NullableGetLoadBalancer200ResponseLoadBalancerCredential {
-	return &NullableGetLoadBalancer200ResponseLoadBalancerCredential{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancer200ResponseLoadBalancerCredential) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancer200ResponseLoadBalancerCredential) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancer200ResponseLoadBalancerCredential) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLoadBalancer200ResponseLoadBalancerCredential) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

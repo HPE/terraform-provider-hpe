@@ -51,51 +51,6 @@ func (o GetProvisioningLicense200ResponseLicenseVirtualImagesInner) ToMap() (map
 	return toSerialize, nil
 }
 
-type NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner struct {
-	value *GetProvisioningLicense200ResponseLicenseVirtualImagesInner
-	isSet bool
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) Get() *GetProvisioningLicense200ResponseLicenseVirtualImagesInner {
-	return v.value
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) Set(val *GetProvisioningLicense200ResponseLicenseVirtualImagesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner(val *GetProvisioningLicense200ResponseLicenseVirtualImagesInner) *NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner {
-	return &NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner{value: val, isSet: true}
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetProvisioningLicense200ResponseLicenseVirtualImagesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetProvisioningLicense200ResponseLicenseVirtualImagesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

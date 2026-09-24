@@ -51,51 +51,6 @@ func (o AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy struct {
-	value *AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy
-	isSet bool
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) Get() *AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy {
-	return v.value
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) Set(val *AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy(val *AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) *NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy {
-	return &NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddIncident200ResponseAllOfIncidentChecksInnerCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

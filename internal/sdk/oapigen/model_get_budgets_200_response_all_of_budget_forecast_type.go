@@ -51,51 +51,6 @@ func (o GetBudgets200ResponseAllOfBudgetForecastType) ToMap() (map[string]interf
 	return toSerialize, nil
 }
 
-type NullableGetBudgets200ResponseAllOfBudgetForecastType struct {
-	value *GetBudgets200ResponseAllOfBudgetForecastType
-	isSet bool
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetForecastType) Get() *GetBudgets200ResponseAllOfBudgetForecastType {
-	return v.value
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetForecastType) Set(val *GetBudgets200ResponseAllOfBudgetForecastType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetForecastType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetForecastType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetBudgets200ResponseAllOfBudgetForecastType(val *GetBudgets200ResponseAllOfBudgetForecastType) *NullableGetBudgets200ResponseAllOfBudgetForecastType {
-	return &NullableGetBudgets200ResponseAllOfBudgetForecastType{value: val, isSet: true}
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetForecastType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetBudgets200ResponseAllOfBudgetForecastType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetBudgets200ResponseAllOfBudgetForecastType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetBudgets200ResponseAllOfBudgetForecastType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

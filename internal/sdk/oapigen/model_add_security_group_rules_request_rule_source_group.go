@@ -48,51 +48,6 @@ func (o AddSecurityGroupRulesRequestRuleSourceGroup) ToMap() (map[string]interfa
 	return toSerialize, nil
 }
 
-type NullableAddSecurityGroupRulesRequestRuleSourceGroup struct {
-	value *AddSecurityGroupRulesRequestRuleSourceGroup
-	isSet bool
-}
-
-func (v NullableAddSecurityGroupRulesRequestRuleSourceGroup) Get() *AddSecurityGroupRulesRequestRuleSourceGroup {
-	return v.value
-}
-
-func (v *NullableAddSecurityGroupRulesRequestRuleSourceGroup) Set(val *AddSecurityGroupRulesRequestRuleSourceGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddSecurityGroupRulesRequestRuleSourceGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddSecurityGroupRulesRequestRuleSourceGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddSecurityGroupRulesRequestRuleSourceGroup(val *AddSecurityGroupRulesRequestRuleSourceGroup) *NullableAddSecurityGroupRulesRequestRuleSourceGroup {
-	return &NullableAddSecurityGroupRulesRequestRuleSourceGroup{value: val, isSet: true}
-}
-
-func (v NullableAddSecurityGroupRulesRequestRuleSourceGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddSecurityGroupRulesRequestRuleSourceGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddSecurityGroupRulesRequestRuleSourceGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddSecurityGroupRulesRequestRuleSourceGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

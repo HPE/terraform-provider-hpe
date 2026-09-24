@@ -51,51 +51,6 @@ func (o ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesIn
 	return toSerialize, nil
 }
 
-type NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList struct {
-	value *ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) Get() *ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) Set(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList(val *ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList {
-	return &NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListProvisionTypes200ResponseAllOfProvisionTypesInnerCustomOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

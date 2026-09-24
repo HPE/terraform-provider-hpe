@@ -59,51 +59,6 @@ func (o AddUser200ResponseAllOfUserAccessFeaturesInner) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableAddUser200ResponseAllOfUserAccessFeaturesInner struct {
-	value *AddUser200ResponseAllOfUserAccessFeaturesInner
-	isSet bool
-}
-
-func (v NullableAddUser200ResponseAllOfUserAccessFeaturesInner) Get() *AddUser200ResponseAllOfUserAccessFeaturesInner {
-	return v.value
-}
-
-func (v *NullableAddUser200ResponseAllOfUserAccessFeaturesInner) Set(val *AddUser200ResponseAllOfUserAccessFeaturesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUser200ResponseAllOfUserAccessFeaturesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUser200ResponseAllOfUserAccessFeaturesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUser200ResponseAllOfUserAccessFeaturesInner(val *AddUser200ResponseAllOfUserAccessFeaturesInner) *NullableAddUser200ResponseAllOfUserAccessFeaturesInner {
-	return &NullableAddUser200ResponseAllOfUserAccessFeaturesInner{value: val, isSet: true}
-}
-
-func (v NullableAddUser200ResponseAllOfUserAccessFeaturesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUser200ResponseAllOfUserAccessFeaturesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUser200ResponseAllOfUserAccessFeaturesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddUser200ResponseAllOfUserAccessFeaturesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

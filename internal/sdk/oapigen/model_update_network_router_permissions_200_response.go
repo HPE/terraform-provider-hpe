@@ -51,51 +51,6 @@ func (o UpdateNetworkRouterPermissions200Response) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableUpdateNetworkRouterPermissions200Response struct {
-	value *UpdateNetworkRouterPermissions200Response
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRouterPermissions200Response) Get() *UpdateNetworkRouterPermissions200Response {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRouterPermissions200Response) Set(val *UpdateNetworkRouterPermissions200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRouterPermissions200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRouterPermissions200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRouterPermissions200Response(val *UpdateNetworkRouterPermissions200Response) *NullableUpdateNetworkRouterPermissions200Response {
-	return &NullableUpdateNetworkRouterPermissions200Response{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRouterPermissions200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRouterPermissions200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRouterPermissions200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetworkRouterPermissions200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

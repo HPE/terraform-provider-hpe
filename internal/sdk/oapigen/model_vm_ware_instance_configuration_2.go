@@ -93,51 +93,6 @@ func (o VMWareInstanceConfiguration2) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableVMWareInstanceConfiguration2 struct {
-	value *VMWareInstanceConfiguration2
-	isSet bool
-}
-
-func (v NullableVMWareInstanceConfiguration2) Get() *VMWareInstanceConfiguration2 {
-	return v.value
-}
-
-func (v *NullableVMWareInstanceConfiguration2) Set(val *VMWareInstanceConfiguration2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableVMWareInstanceConfiguration2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableVMWareInstanceConfiguration2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableVMWareInstanceConfiguration2(val *VMWareInstanceConfiguration2) *NullableVMWareInstanceConfiguration2 {
-	return &NullableVMWareInstanceConfiguration2{value: val, isSet: true}
-}
-
-func (v NullableVMWareInstanceConfiguration2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableVMWareInstanceConfiguration2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableVMWareInstanceConfiguration2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *VMWareInstanceConfiguration2) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

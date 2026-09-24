@@ -47,51 +47,6 @@ func (o UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermission
 	return toSerialize, nil
 }
 
-type NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions struct {
-	value *UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions
-	isSet bool
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) Get() *UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions {
-	return v.value
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) Set(val *UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions(val *UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions {
-	return &NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateServicePlans200ResponseAllOfServicePlanPermissionsTenantPermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

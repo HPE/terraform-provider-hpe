@@ -55,51 +55,6 @@ func (o BudgetPolicyTypeConfiguration4) ToMap() (map[string]interface{}, error) 
 	return toSerialize, nil
 }
 
-type NullableBudgetPolicyTypeConfiguration4 struct {
-	value *BudgetPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableBudgetPolicyTypeConfiguration4) Get() *BudgetPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableBudgetPolicyTypeConfiguration4) Set(val *BudgetPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBudgetPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBudgetPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBudgetPolicyTypeConfiguration4(val *BudgetPolicyTypeConfiguration4) *NullableBudgetPolicyTypeConfiguration4 {
-	return &NullableBudgetPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableBudgetPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBudgetPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBudgetPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BudgetPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

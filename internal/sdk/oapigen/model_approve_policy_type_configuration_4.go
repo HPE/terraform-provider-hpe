@@ -59,51 +59,6 @@ func (o ApprovePolicyTypeConfiguration4) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableApprovePolicyTypeConfiguration4 struct {
-	value *ApprovePolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableApprovePolicyTypeConfiguration4) Get() *ApprovePolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableApprovePolicyTypeConfiguration4) Set(val *ApprovePolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableApprovePolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableApprovePolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableApprovePolicyTypeConfiguration4(val *ApprovePolicyTypeConfiguration4) *NullableApprovePolicyTypeConfiguration4 {
-	return &NullableApprovePolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableApprovePolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableApprovePolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableApprovePolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ApprovePolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

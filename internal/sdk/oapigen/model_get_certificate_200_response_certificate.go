@@ -103,51 +103,6 @@ func (o GetCertificate200ResponseCertificate) ToMap() (map[string]interface{}, e
 	return toSerialize, nil
 }
 
-type NullableGetCertificate200ResponseCertificate struct {
-	value *GetCertificate200ResponseCertificate
-	isSet bool
-}
-
-func (v NullableGetCertificate200ResponseCertificate) Get() *GetCertificate200ResponseCertificate {
-	return v.value
-}
-
-func (v *NullableGetCertificate200ResponseCertificate) Set(val *GetCertificate200ResponseCertificate) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCertificate200ResponseCertificate) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCertificate200ResponseCertificate) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCertificate200ResponseCertificate(val *GetCertificate200ResponseCertificate) *NullableGetCertificate200ResponseCertificate {
-	return &NullableGetCertificate200ResponseCertificate{value: val, isSet: true}
-}
-
-func (v NullableGetCertificate200ResponseCertificate) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCertificate200ResponseCertificate) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCertificate200ResponseCertificate) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCertificate200ResponseCertificate) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o ListInstances200ResponseAllOfInstancesInnerControllersInnerType) ToMap()
 	return toSerialize, nil
 }
 
-type NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType struct {
-	value *ListInstances200ResponseAllOfInstancesInnerControllersInnerType
-	isSet bool
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) Get() *ListInstances200ResponseAllOfInstancesInnerControllersInnerType {
-	return v.value
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) Set(val *ListInstances200ResponseAllOfInstancesInnerControllersInnerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListInstances200ResponseAllOfInstancesInnerControllersInnerType(val *ListInstances200ResponseAllOfInstancesInnerControllersInnerType) *NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType {
-	return &NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType{value: val, isSet: true}
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListInstances200ResponseAllOfInstancesInnerControllersInnerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListInstances200ResponseAllOfInstancesInnerControllersInnerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

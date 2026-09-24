@@ -51,51 +51,6 @@ func (o GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) To
 	return toSerialize, nil
 }
 
-type NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy struct {
-	value *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy
-	isSet bool
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) Get() *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy {
-	return v.value
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) Set(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy(val *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy {
-	return &NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy{value: val, isSet: true}
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstanceHistory200ResponseAllOfProcessesInnerEventsInnerUpdatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) ToMa
 	return toSerialize, nil
 }
 
-type NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert struct {
-	value *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert
-	isSet bool
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) Get() *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert {
-	return v.value
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) Set(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert(val *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert {
-	return &NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert{value: val, isSet: true}
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetLoadBalancerVirtualServer200ResponseLoadBalancerInstanceSslCert) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

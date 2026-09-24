@@ -107,51 +107,6 @@ func (o HTTPTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableHTTPTaskConfig struct {
-	value *HTTPTaskConfig
-	isSet bool
-}
-
-func (v NullableHTTPTaskConfig) Get() *HTTPTaskConfig {
-	return v.value
-}
-
-func (v *NullableHTTPTaskConfig) Set(val *HTTPTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHTTPTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHTTPTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHTTPTaskConfig(val *HTTPTaskConfig) *NullableHTTPTaskConfig {
-	return &NullableHTTPTaskConfig{value: val, isSet: true}
-}
-
-func (v NullableHTTPTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHTTPTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHTTPTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *HTTPTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

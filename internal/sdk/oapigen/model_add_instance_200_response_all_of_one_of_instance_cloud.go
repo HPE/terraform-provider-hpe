@@ -55,51 +55,6 @@ func (o AddInstance200ResponseAllOfOneOfInstanceCloud) ToMap() (map[string]inter
 	return toSerialize, nil
 }
 
-type NullableAddInstance200ResponseAllOfOneOfInstanceCloud struct {
-	value *AddInstance200ResponseAllOfOneOfInstanceCloud
-	isSet bool
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCloud) Get() *AddInstance200ResponseAllOfOneOfInstanceCloud {
-	return v.value
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCloud) Set(val *AddInstance200ResponseAllOfOneOfInstanceCloud) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCloud) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCloud) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstance200ResponseAllOfOneOfInstanceCloud(val *AddInstance200ResponseAllOfOneOfInstanceCloud) *NullableAddInstance200ResponseAllOfOneOfInstanceCloud {
-	return &NullableAddInstance200ResponseAllOfOneOfInstanceCloud{value: val, isSet: true}
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCloud) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstance200ResponseAllOfOneOfInstanceCloud) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstance200ResponseAllOfOneOfInstanceCloud) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstance200ResponseAllOfOneOfInstanceCloud) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

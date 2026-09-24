@@ -207,51 +207,6 @@ func (o ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) ToMap
 	return toSerialize, nil
 }
 
-type NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner struct {
-	value *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner
-	isSet bool
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) Get() *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) Set(val *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner(val *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner {
-	return &NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterTypes200ResponseAllOfClusterTypesInnerOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

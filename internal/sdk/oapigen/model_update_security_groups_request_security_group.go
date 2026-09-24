@@ -71,51 +71,6 @@ func (o UpdateSecurityGroupsRequestSecurityGroup) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableUpdateSecurityGroupsRequestSecurityGroup struct {
-	value *UpdateSecurityGroupsRequestSecurityGroup
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) Get() *UpdateSecurityGroupsRequestSecurityGroup {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) Set(val *UpdateSecurityGroupsRequestSecurityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroupsRequestSecurityGroup(val *UpdateSecurityGroupsRequestSecurityGroup) *NullableUpdateSecurityGroupsRequestSecurityGroup {
-	return &NullableUpdateSecurityGroupsRequestSecurityGroup{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateSecurityGroupsRequestSecurityGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

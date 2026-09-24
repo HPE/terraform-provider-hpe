@@ -51,51 +51,6 @@ func (o ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreated
 	return toSerialize, nil
 }
 
-type NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy struct {
-	value *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy
-	isSet bool
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) Get() *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy {
-	return v.value
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) Set(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy(val *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy {
-	return &NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy{value: val, isSet: true}
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListLoadBalancerMonitors200ResponseAllOfLoadBalancerMonitorsInnerCreatedBy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

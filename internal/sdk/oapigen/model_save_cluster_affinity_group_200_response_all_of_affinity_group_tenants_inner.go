@@ -47,51 +47,6 @@ func (o SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) ToMap
 	return toSerialize, nil
 }
 
-type NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner struct {
-	value *SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner
-	isSet bool
-}
-
-func (v NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) Get() *SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner {
-	return v.value
-}
-
-func (v *NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) Set(val *SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner(val *SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) *NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner {
-	return &NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterAffinityGroup200ResponseAllOfAffinityGroupTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

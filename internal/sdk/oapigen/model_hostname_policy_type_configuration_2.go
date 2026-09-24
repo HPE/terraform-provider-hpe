@@ -49,51 +49,6 @@ func (o HostnamePolicyTypeConfiguration2) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableHostnamePolicyTypeConfiguration2 struct {
-	value *HostnamePolicyTypeConfiguration2
-	isSet bool
-}
-
-func (v NullableHostnamePolicyTypeConfiguration2) Get() *HostnamePolicyTypeConfiguration2 {
-	return v.value
-}
-
-func (v *NullableHostnamePolicyTypeConfiguration2) Set(val *HostnamePolicyTypeConfiguration2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableHostnamePolicyTypeConfiguration2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableHostnamePolicyTypeConfiguration2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableHostnamePolicyTypeConfiguration2(val *HostnamePolicyTypeConfiguration2) *NullableHostnamePolicyTypeConfiguration2 {
-	return &NullableHostnamePolicyTypeConfiguration2{value: val, isSet: true}
-}
-
-func (v NullableHostnamePolicyTypeConfiguration2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableHostnamePolicyTypeConfiguration2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableHostnamePolicyTypeConfiguration2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *HostnamePolicyTypeConfiguration2) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

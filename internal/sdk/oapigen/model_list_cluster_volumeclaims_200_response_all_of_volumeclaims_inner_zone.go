@@ -51,51 +51,6 @@ func (o ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone struct {
-	value *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone
-	isSet bool
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) Get() *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone {
-	return v.value
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) Set(val *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone(val *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone {
-	return &NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone{value: val, isSet: true}
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListClusterVolumeclaims200ResponseAllOfVolumeclaimsInnerZone) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

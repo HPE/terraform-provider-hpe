@@ -59,51 +59,6 @@ func (o AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) T
 	return toSerialize, nil
 }
 
-type NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork struct {
-	value *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork
-	isSet bool
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Get() *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork {
-	return v.value
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Set(val *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork(val *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork {
-	return &NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork{value: val, isSet: true}
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVDIPools200ResponseAnyOfVdiPoolConfigNetworkInterfacesInnerNetwork) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

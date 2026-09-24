@@ -47,51 +47,6 @@ func (o SaveCloudAffinityGroupRequestAffinityGroupPool) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableSaveCloudAffinityGroupRequestAffinityGroupPool struct {
-	value *SaveCloudAffinityGroupRequestAffinityGroupPool
-	isSet bool
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupPool) Get() *SaveCloudAffinityGroupRequestAffinityGroupPool {
-	return v.value
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupPool) Set(val *SaveCloudAffinityGroupRequestAffinityGroupPool) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupPool) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupPool) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveCloudAffinityGroupRequestAffinityGroupPool(val *SaveCloudAffinityGroupRequestAffinityGroupPool) *NullableSaveCloudAffinityGroupRequestAffinityGroupPool {
-	return &NullableSaveCloudAffinityGroupRequestAffinityGroupPool{value: val, isSet: true}
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupPool) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveCloudAffinityGroupRequestAffinityGroupPool) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveCloudAffinityGroupRequestAffinityGroupPool) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveCloudAffinityGroupRequestAffinityGroupPool) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

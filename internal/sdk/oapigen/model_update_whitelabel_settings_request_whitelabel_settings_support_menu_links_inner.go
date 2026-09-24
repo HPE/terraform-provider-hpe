@@ -49,51 +49,6 @@ func (o UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) 
 	return toSerialize, nil
 }
 
-type NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner struct {
-	value *UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner
-	isSet bool
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) Get() *UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner {
-	return v.value
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) Set(val *UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner(val *UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) *NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner {
-	return &NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateWhitelabelSettingsRequestWhitelabelSettingsSupportMenuLinksInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

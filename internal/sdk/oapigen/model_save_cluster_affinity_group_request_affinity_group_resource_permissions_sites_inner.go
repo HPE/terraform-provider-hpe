@@ -53,51 +53,6 @@ func (o SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInne
 	return toSerialize, nil
 }
 
-type NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner struct {
-	value *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) Get() *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) Set(val *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner(val *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) *NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner {
-	return &NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterAffinityGroupRequestAffinityGroupResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

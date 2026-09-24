@@ -47,51 +47,6 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf3Worker) ToMap() (map[stri
 	return toSerialize, nil
 }
 
-type NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker struct {
-	value *AddClusterRequestClusterServerConfigAnyOfOneOf3Worker
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) Get() *AddClusterRequestClusterServerConfigAnyOfOneOf3Worker {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) Set(val *AddClusterRequestClusterServerConfigAnyOfOneOf3Worker) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker(val *AddClusterRequestClusterServerConfigAnyOfOneOf3Worker) *NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker {
-	return &NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerConfigAnyOfOneOf3Worker) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterRequestClusterServerConfigAnyOfOneOf3Worker) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

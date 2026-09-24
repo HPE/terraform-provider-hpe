@@ -47,51 +47,6 @@ func (o GetInstance200ResponseInstanceConfigReplicationGroup) ToMap() (map[strin
 	return toSerialize, nil
 }
 
-type NullableGetInstance200ResponseInstanceConfigReplicationGroup struct {
-	value *GetInstance200ResponseInstanceConfigReplicationGroup
-	isSet bool
-}
-
-func (v NullableGetInstance200ResponseInstanceConfigReplicationGroup) Get() *GetInstance200ResponseInstanceConfigReplicationGroup {
-	return v.value
-}
-
-func (v *NullableGetInstance200ResponseInstanceConfigReplicationGroup) Set(val *GetInstance200ResponseInstanceConfigReplicationGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstance200ResponseInstanceConfigReplicationGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstance200ResponseInstanceConfigReplicationGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstance200ResponseInstanceConfigReplicationGroup(val *GetInstance200ResponseInstanceConfigReplicationGroup) *NullableGetInstance200ResponseInstanceConfigReplicationGroup {
-	return &NullableGetInstance200ResponseInstanceConfigReplicationGroup{value: val, isSet: true}
-}
-
-func (v NullableGetInstance200ResponseInstanceConfigReplicationGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstance200ResponseInstanceConfigReplicationGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstance200ResponseInstanceConfigReplicationGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstance200ResponseInstanceConfigReplicationGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList struct {
-	value *GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) Get() *GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) Set(val *GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList(val *GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList {
-	return &NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetSubnetType200ResponseSubnetTypeOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

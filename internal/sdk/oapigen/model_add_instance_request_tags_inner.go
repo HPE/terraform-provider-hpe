@@ -51,51 +51,6 @@ func (o AddInstanceRequestTagsInner) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddInstanceRequestTagsInner struct {
-	value *AddInstanceRequestTagsInner
-	isSet bool
-}
-
-func (v NullableAddInstanceRequestTagsInner) Get() *AddInstanceRequestTagsInner {
-	return v.value
-}
-
-func (v *NullableAddInstanceRequestTagsInner) Set(val *AddInstanceRequestTagsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstanceRequestTagsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstanceRequestTagsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstanceRequestTagsInner(val *AddInstanceRequestTagsInner) *NullableAddInstanceRequestTagsInner {
-	return &NullableAddInstanceRequestTagsInner{value: val, isSet: true}
-}
-
-func (v NullableAddInstanceRequestTagsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstanceRequestTagsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstanceRequestTagsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstanceRequestTagsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

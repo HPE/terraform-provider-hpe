@@ -51,51 +51,6 @@ func (o UploadPlugin200ResponseAllOfPluginProvidersInner) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableUploadPlugin200ResponseAllOfPluginProvidersInner struct {
-	value *UploadPlugin200ResponseAllOfPluginProvidersInner
-	isSet bool
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Get() *UploadPlugin200ResponseAllOfPluginProvidersInner {
-	return v.value
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Set(val *UploadPlugin200ResponseAllOfPluginProvidersInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUploadPlugin200ResponseAllOfPluginProvidersInner(val *UploadPlugin200ResponseAllOfPluginProvidersInner) *NullableUploadPlugin200ResponseAllOfPluginProvidersInner {
-	return &NullableUploadPlugin200ResponseAllOfPluginProvidersInner{value: val, isSet: true}
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UploadPlugin200ResponseAllOfPluginProvidersInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

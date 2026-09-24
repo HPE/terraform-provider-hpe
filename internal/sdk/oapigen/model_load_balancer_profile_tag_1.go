@@ -53,51 +53,6 @@ func (o LoadBalancerProfileTag1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableLoadBalancerProfileTag1 struct {
-	value *LoadBalancerProfileTag1
-	isSet bool
-}
-
-func (v NullableLoadBalancerProfileTag1) Get() *LoadBalancerProfileTag1 {
-	return v.value
-}
-
-func (v *NullableLoadBalancerProfileTag1) Set(val *LoadBalancerProfileTag1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableLoadBalancerProfileTag1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableLoadBalancerProfileTag1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableLoadBalancerProfileTag1(val *LoadBalancerProfileTag1) *NullableLoadBalancerProfileTag1 {
-	return &NullableLoadBalancerProfileTag1{value: val, isSet: true}
-}
-
-func (v NullableLoadBalancerProfileTag1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableLoadBalancerProfileTag1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableLoadBalancerProfileTag1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *LoadBalancerProfileTag1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

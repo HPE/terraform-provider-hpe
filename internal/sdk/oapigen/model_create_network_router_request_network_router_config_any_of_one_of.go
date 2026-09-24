@@ -155,51 +155,6 @@ func (o CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf struct {
-	value *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf
-	isSet bool
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) Get() *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf {
-	return v.value
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) Set(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf(val *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf {
-	return &NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf{value: val, isSet: true}
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateNetworkRouterRequestNetworkRouterConfigAnyOfOneOf) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

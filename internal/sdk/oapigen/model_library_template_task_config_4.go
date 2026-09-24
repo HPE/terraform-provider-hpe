@@ -83,51 +83,6 @@ func (o LibraryTemplateTaskConfig4) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableLibraryTemplateTaskConfig4 struct {
-	value *LibraryTemplateTaskConfig4
-	isSet bool
-}
-
-func (v NullableLibraryTemplateTaskConfig4) Get() *LibraryTemplateTaskConfig4 {
-	return v.value
-}
-
-func (v *NullableLibraryTemplateTaskConfig4) Set(val *LibraryTemplateTaskConfig4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableLibraryTemplateTaskConfig4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableLibraryTemplateTaskConfig4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableLibraryTemplateTaskConfig4(val *LibraryTemplateTaskConfig4) *NullableLibraryTemplateTaskConfig4 {
-	return &NullableLibraryTemplateTaskConfig4{value: val, isSet: true}
-}
-
-func (v NullableLibraryTemplateTaskConfig4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableLibraryTemplateTaskConfig4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableLibraryTemplateTaskConfig4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *LibraryTemplateTaskConfig4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -55,51 +55,6 @@ func (o GetRole200ResponseCatalogItemTypePermissionsInner) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableGetRole200ResponseCatalogItemTypePermissionsInner struct {
-	value *GetRole200ResponseCatalogItemTypePermissionsInner
-	isSet bool
-}
-
-func (v NullableGetRole200ResponseCatalogItemTypePermissionsInner) Get() *GetRole200ResponseCatalogItemTypePermissionsInner {
-	return v.value
-}
-
-func (v *NullableGetRole200ResponseCatalogItemTypePermissionsInner) Set(val *GetRole200ResponseCatalogItemTypePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetRole200ResponseCatalogItemTypePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetRole200ResponseCatalogItemTypePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetRole200ResponseCatalogItemTypePermissionsInner(val *GetRole200ResponseCatalogItemTypePermissionsInner) *NullableGetRole200ResponseCatalogItemTypePermissionsInner {
-	return &NullableGetRole200ResponseCatalogItemTypePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableGetRole200ResponseCatalogItemTypePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetRole200ResponseCatalogItemTypePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetRole200ResponseCatalogItemTypePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetRole200ResponseCatalogItemTypePermissionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

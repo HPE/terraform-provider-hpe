@@ -51,51 +51,6 @@ func (o AlletraMPHVMDatastoreConfiguration) ToMap() (map[string]interface{}, err
 	return toSerialize, nil
 }
 
-type NullableAlletraMPHVMDatastoreConfiguration struct {
-	value *AlletraMPHVMDatastoreConfiguration
-	isSet bool
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration) Get() *AlletraMPHVMDatastoreConfiguration {
-	return v.value
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration) Set(val *AlletraMPHVMDatastoreConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAlletraMPHVMDatastoreConfiguration(val *AlletraMPHVMDatastoreConfiguration) *NullableAlletraMPHVMDatastoreConfiguration {
-	return &NullableAlletraMPHVMDatastoreConfiguration{value: val, isSet: true}
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAlletraMPHVMDatastoreConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAlletraMPHVMDatastoreConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AlletraMPHVMDatastoreConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) 
 	return toSerialize, nil
 }
 
-type NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner struct {
-	value *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) Get() *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) Set(val *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner(val *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner {
-	return &NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkFirewallRuleGroup200ResponseRuleGroupRulesInnerProfilesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

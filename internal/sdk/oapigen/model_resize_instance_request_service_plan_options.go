@@ -58,51 +58,6 @@ func (o ResizeInstanceRequestServicePlanOptions) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableResizeInstanceRequestServicePlanOptions struct {
-	value *ResizeInstanceRequestServicePlanOptions
-	isSet bool
-}
-
-func (v NullableResizeInstanceRequestServicePlanOptions) Get() *ResizeInstanceRequestServicePlanOptions {
-	return v.value
-}
-
-func (v *NullableResizeInstanceRequestServicePlanOptions) Set(val *ResizeInstanceRequestServicePlanOptions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableResizeInstanceRequestServicePlanOptions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableResizeInstanceRequestServicePlanOptions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableResizeInstanceRequestServicePlanOptions(val *ResizeInstanceRequestServicePlanOptions) *NullableResizeInstanceRequestServicePlanOptions {
-	return &NullableResizeInstanceRequestServicePlanOptions{value: val, isSet: true}
-}
-
-func (v NullableResizeInstanceRequestServicePlanOptions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableResizeInstanceRequestServicePlanOptions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableResizeInstanceRequestServicePlanOptions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ResizeInstanceRequestServicePlanOptions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

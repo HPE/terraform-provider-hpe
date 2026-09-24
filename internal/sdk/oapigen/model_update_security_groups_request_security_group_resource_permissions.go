@@ -63,51 +63,6 @@ func (o UpdateSecurityGroupsRequestSecurityGroupResourcePermissions) ToMap() (ma
 	return toSerialize, nil
 }
 
-type NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions struct {
-	value *UpdateSecurityGroupsRequestSecurityGroupResourcePermissions
-	isSet bool
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) Get() *UpdateSecurityGroupsRequestSecurityGroupResourcePermissions {
-	return v.value
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) Set(val *UpdateSecurityGroupsRequestSecurityGroupResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions(val *UpdateSecurityGroupsRequestSecurityGroupResourcePermissions) *NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions {
-	return &NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateSecurityGroupsRequestSecurityGroupResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateSecurityGroupsRequestSecurityGroupResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

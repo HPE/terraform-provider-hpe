@@ -71,51 +71,6 @@ func (o GetClusterNamespace200ResponseNamespace) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableGetClusterNamespace200ResponseNamespace struct {
-	value *GetClusterNamespace200ResponseNamespace
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespace) Get() *GetClusterNamespace200ResponseNamespace {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespace) Set(val *GetClusterNamespace200ResponseNamespace) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespace) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespace) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespace(val *GetClusterNamespace200ResponseNamespace) *NullableGetClusterNamespace200ResponseNamespace {
-	return &NullableGetClusterNamespace200ResponseNamespace{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespace) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespace) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespace) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterNamespace200ResponseNamespace) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

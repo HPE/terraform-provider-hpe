@@ -47,51 +47,6 @@ func (o UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner struct {
-	value *UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner
-	isSet bool
-}
-
-func (v NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) Get() *UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner {
-	return v.value
-}
-
-func (v *NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) Set(val *UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner(val *UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) *NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner {
-	return &NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateCloudFoldersRequestFolderResourcePermissionsPlansInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

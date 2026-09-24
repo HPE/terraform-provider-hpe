@@ -47,51 +47,6 @@ func (o GetAlerts200ResponseAllOfChecksInnerContainer) ToMap() (map[string]inter
 	return toSerialize, nil
 }
 
-type NullableGetAlerts200ResponseAllOfChecksInnerContainer struct {
-	value *GetAlerts200ResponseAllOfChecksInnerContainer
-	isSet bool
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerContainer) Get() *GetAlerts200ResponseAllOfChecksInnerContainer {
-	return v.value
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerContainer) Set(val *GetAlerts200ResponseAllOfChecksInnerContainer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerContainer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerContainer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetAlerts200ResponseAllOfChecksInnerContainer(val *GetAlerts200ResponseAllOfChecksInnerContainer) *NullableGetAlerts200ResponseAllOfChecksInnerContainer {
-	return &NullableGetAlerts200ResponseAllOfChecksInnerContainer{value: val, isSet: true}
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerContainer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetAlerts200ResponseAllOfChecksInnerContainer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetAlerts200ResponseAllOfChecksInnerContainer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetAlerts200ResponseAllOfChecksInnerContainer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -63,51 +63,6 @@ func (o GetInstanceHistory200ResponseAllOfMeta) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableGetInstanceHistory200ResponseAllOfMeta struct {
-	value *GetInstanceHistory200ResponseAllOfMeta
-	isSet bool
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfMeta) Get() *GetInstanceHistory200ResponseAllOfMeta {
-	return v.value
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfMeta) Set(val *GetInstanceHistory200ResponseAllOfMeta) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfMeta) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfMeta) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetInstanceHistory200ResponseAllOfMeta(val *GetInstanceHistory200ResponseAllOfMeta) *NullableGetInstanceHistory200ResponseAllOfMeta {
-	return &NullableGetInstanceHistory200ResponseAllOfMeta{value: val, isSet: true}
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfMeta) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetInstanceHistory200ResponseAllOfMeta) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetInstanceHistory200ResponseAllOfMeta) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetInstanceHistory200ResponseAllOfMeta) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) ToMap() (map[string
 	return toSerialize, nil
 }
 
-type NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy struct {
-	value *ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy
-	isSet bool
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) Get() *ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy {
-	return v.value
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) Set(val *ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy(val *ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy {
-	return &NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy{value: val, isSet: true}
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListSubnets200ResponseAllOfSubnetsInnerNetworkProxy) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

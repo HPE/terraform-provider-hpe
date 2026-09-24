@@ -47,51 +47,6 @@ func (o Whoami200ResponseAppliance) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableWhoami200ResponseAppliance struct {
-	value *Whoami200ResponseAppliance
-	isSet bool
-}
-
-func (v NullableWhoami200ResponseAppliance) Get() *Whoami200ResponseAppliance {
-	return v.value
-}
-
-func (v *NullableWhoami200ResponseAppliance) Set(val *Whoami200ResponseAppliance) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableWhoami200ResponseAppliance) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableWhoami200ResponseAppliance) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableWhoami200ResponseAppliance(val *Whoami200ResponseAppliance) *NullableWhoami200ResponseAppliance {
-	return &NullableWhoami200ResponseAppliance{value: val, isSet: true}
-}
-
-func (v NullableWhoami200ResponseAppliance) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableWhoami200ResponseAppliance) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableWhoami200ResponseAppliance) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Whoami200ResponseAppliance) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

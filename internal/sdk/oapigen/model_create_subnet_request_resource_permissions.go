@@ -61,51 +61,6 @@ func (o CreateSubnetRequestResourcePermissions) ToMap() (map[string]interface{},
 	return toSerialize, nil
 }
 
-type NullableCreateSubnetRequestResourcePermissions struct {
-	value *CreateSubnetRequestResourcePermissions
-	isSet bool
-}
-
-func (v NullableCreateSubnetRequestResourcePermissions) Get() *CreateSubnetRequestResourcePermissions {
-	return v.value
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissions) Set(val *CreateSubnetRequestResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableCreateSubnetRequestResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableCreateSubnetRequestResourcePermissions(val *CreateSubnetRequestResourcePermissions) *NullableCreateSubnetRequestResourcePermissions {
-	return &NullableCreateSubnetRequestResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableCreateSubnetRequestResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableCreateSubnetRequestResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableCreateSubnetRequestResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *CreateSubnetRequestResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

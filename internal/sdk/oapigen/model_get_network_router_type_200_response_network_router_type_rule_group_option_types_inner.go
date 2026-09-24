@@ -207,51 +207,6 @@ func (o GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInne
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner struct {
-	value *GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) Get() *GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) Set(val *GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner(val *GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) *NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner {
-	return &NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouterType200ResponseNetworkRouterTypeRuleGroupOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -58,51 +58,6 @@ func (o AddClusterRequestClusterServerServicePlanOptions) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableAddClusterRequestClusterServerServicePlanOptions struct {
-	value *AddClusterRequestClusterServerServicePlanOptions
-	isSet bool
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) Get() *AddClusterRequestClusterServerServicePlanOptions {
-	return v.value
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) Set(val *AddClusterRequestClusterServerServicePlanOptions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddClusterRequestClusterServerServicePlanOptions(val *AddClusterRequestClusterServerServicePlanOptions) *NullableAddClusterRequestClusterServerServicePlanOptions {
-	return &NullableAddClusterRequestClusterServerServicePlanOptions{value: val, isSet: true}
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddClusterRequestClusterServerServicePlanOptions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddClusterRequestClusterServerServicePlanOptions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddClusterRequestClusterServerServicePlanOptions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

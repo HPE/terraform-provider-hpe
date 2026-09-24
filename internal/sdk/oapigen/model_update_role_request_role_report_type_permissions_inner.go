@@ -49,51 +49,6 @@ func (o UpdateRoleRequestRoleReportTypePermissionsInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableUpdateRoleRequestRoleReportTypePermissionsInner struct {
-	value *UpdateRoleRequestRoleReportTypePermissionsInner
-	isSet bool
-}
-
-func (v NullableUpdateRoleRequestRoleReportTypePermissionsInner) Get() *UpdateRoleRequestRoleReportTypePermissionsInner {
-	return v.value
-}
-
-func (v *NullableUpdateRoleRequestRoleReportTypePermissionsInner) Set(val *UpdateRoleRequestRoleReportTypePermissionsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateRoleRequestRoleReportTypePermissionsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateRoleRequestRoleReportTypePermissionsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateRoleRequestRoleReportTypePermissionsInner(val *UpdateRoleRequestRoleReportTypePermissionsInner) *NullableUpdateRoleRequestRoleReportTypePermissionsInner {
-	return &NullableUpdateRoleRequestRoleReportTypePermissionsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateRoleRequestRoleReportTypePermissionsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateRoleRequestRoleReportTypePermissionsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateRoleRequestRoleReportTypePermissionsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateRoleRequestRoleReportTypePermissionsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

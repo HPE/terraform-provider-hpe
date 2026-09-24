@@ -73,51 +73,6 @@ func (o UpdateProvisioningLicenseRequestLicense) ToMap() (map[string]interface{}
 	return toSerialize, nil
 }
 
-type NullableUpdateProvisioningLicenseRequestLicense struct {
-	value *UpdateProvisioningLicenseRequestLicense
-	isSet bool
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) Get() *UpdateProvisioningLicenseRequestLicense {
-	return v.value
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) Set(val *UpdateProvisioningLicenseRequestLicense) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateProvisioningLicenseRequestLicense(val *UpdateProvisioningLicenseRequestLicense) *NullableUpdateProvisioningLicenseRequestLicense {
-	return &NullableUpdateProvisioningLicenseRequestLicense{value: val, isSet: true}
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateProvisioningLicenseRequestLicense) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateProvisioningLicenseRequestLicense) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateProvisioningLicenseRequestLicense) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) ToMa
 	return toSerialize, nil
 }
 
-type NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions struct {
-	value *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions
-	isSet bool
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) Get() *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions {
-	return v.value
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) Set(val *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions(val *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions {
-	return &NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterAffinityGroup200ResponseAffinityGroupResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

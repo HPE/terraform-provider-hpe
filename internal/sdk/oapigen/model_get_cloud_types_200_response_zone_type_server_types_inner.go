@@ -131,51 +131,6 @@ func (o GetCloudTypes200ResponseZoneTypeServerTypesInner) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableGetCloudTypes200ResponseZoneTypeServerTypesInner struct {
-	value *GetCloudTypes200ResponseZoneTypeServerTypesInner
-	isSet bool
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Get() *GetCloudTypes200ResponseZoneTypeServerTypesInner {
-	return v.value
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Set(val *GetCloudTypes200ResponseZoneTypeServerTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetCloudTypes200ResponseZoneTypeServerTypesInner(val *GetCloudTypes200ResponseZoneTypeServerTypesInner) *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner {
-	return &NullableGetCloudTypes200ResponseZoneTypeServerTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetCloudTypes200ResponseZoneTypeServerTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

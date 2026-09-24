@@ -47,51 +47,6 @@ func (o ListOptionLists200ResponseAllOfOptionTypesInnerConfig) ToMap() (map[stri
 	return toSerialize, nil
 }
 
-type NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig struct {
-	value *ListOptionLists200ResponseAllOfOptionTypesInnerConfig
-	isSet bool
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) Get() *ListOptionLists200ResponseAllOfOptionTypesInnerConfig {
-	return v.value
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) Set(val *ListOptionLists200ResponseAllOfOptionTypesInnerConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListOptionLists200ResponseAllOfOptionTypesInnerConfig(val *ListOptionLists200ResponseAllOfOptionTypesInnerConfig) *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig {
-	return &NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig{value: val, isSet: true}
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListOptionLists200ResponseAllOfOptionTypesInnerConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListOptionLists200ResponseAllOfOptionTypesInnerConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

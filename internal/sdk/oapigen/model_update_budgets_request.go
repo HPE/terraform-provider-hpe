@@ -45,51 +45,6 @@ func (o UpdateBudgetsRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUpdateBudgetsRequest struct {
-	value *UpdateBudgetsRequest
-	isSet bool
-}
-
-func (v NullableUpdateBudgetsRequest) Get() *UpdateBudgetsRequest {
-	return v.value
-}
-
-func (v *NullableUpdateBudgetsRequest) Set(val *UpdateBudgetsRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateBudgetsRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateBudgetsRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateBudgetsRequest(val *UpdateBudgetsRequest) *NullableUpdateBudgetsRequest {
-	return &NullableUpdateBudgetsRequest{value: val, isSet: true}
-}
-
-func (v NullableUpdateBudgetsRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateBudgetsRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateBudgetsRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateBudgetsRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

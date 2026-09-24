@@ -47,51 +47,6 @@ func (o GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) ToMap() (
 	return toSerialize, nil
 }
 
-type NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer struct {
-	value *GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer
-	isSet bool
-}
-
-func (v NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) Get() *GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer {
-	return v.value
-}
-
-func (v *NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) Set(val *GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer(val *GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) *NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer {
-	return &NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkDhcpServer200ResponseNetworkDhcpServerNetworkServer) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

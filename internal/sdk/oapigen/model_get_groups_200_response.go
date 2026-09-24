@@ -47,51 +47,6 @@ func (o GetGroups200Response) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableGetGroups200Response struct {
-	value *GetGroups200Response
-	isSet bool
-}
-
-func (v NullableGetGroups200Response) Get() *GetGroups200Response {
-	return v.value
-}
-
-func (v *NullableGetGroups200Response) Set(val *GetGroups200Response) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetGroups200Response) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetGroups200Response) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetGroups200Response(val *GetGroups200Response) *NullableGetGroups200Response {
-	return &NullableGetGroups200Response{value: val, isSet: true}
-}
-
-func (v NullableGetGroups200Response) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetGroups200Response) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetGroups200Response) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetGroups200Response) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

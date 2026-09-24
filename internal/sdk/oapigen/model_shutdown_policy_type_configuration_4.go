@@ -95,51 +95,6 @@ func (o ShutdownPolicyTypeConfiguration4) ToMap() (map[string]interface{}, error
 	return toSerialize, nil
 }
 
-type NullableShutdownPolicyTypeConfiguration4 struct {
-	value *ShutdownPolicyTypeConfiguration4
-	isSet bool
-}
-
-func (v NullableShutdownPolicyTypeConfiguration4) Get() *ShutdownPolicyTypeConfiguration4 {
-	return v.value
-}
-
-func (v *NullableShutdownPolicyTypeConfiguration4) Set(val *ShutdownPolicyTypeConfiguration4) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableShutdownPolicyTypeConfiguration4) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableShutdownPolicyTypeConfiguration4) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableShutdownPolicyTypeConfiguration4(val *ShutdownPolicyTypeConfiguration4) *NullableShutdownPolicyTypeConfiguration4 {
-	return &NullableShutdownPolicyTypeConfiguration4{value: val, isSet: true}
-}
-
-func (v NullableShutdownPolicyTypeConfiguration4) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableShutdownPolicyTypeConfiguration4) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableShutdownPolicyTypeConfiguration4) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ShutdownPolicyTypeConfiguration4) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

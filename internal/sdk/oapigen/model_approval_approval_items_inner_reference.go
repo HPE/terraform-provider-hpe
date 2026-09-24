@@ -59,51 +59,6 @@ func (o ApprovalApprovalItemsInnerReference) ToMap() (map[string]interface{}, er
 	return toSerialize, nil
 }
 
-type NullableApprovalApprovalItemsInnerReference struct {
-	value *ApprovalApprovalItemsInnerReference
-	isSet bool
-}
-
-func (v NullableApprovalApprovalItemsInnerReference) Get() *ApprovalApprovalItemsInnerReference {
-	return v.value
-}
-
-func (v *NullableApprovalApprovalItemsInnerReference) Set(val *ApprovalApprovalItemsInnerReference) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableApprovalApprovalItemsInnerReference) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableApprovalApprovalItemsInnerReference) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableApprovalApprovalItemsInnerReference(val *ApprovalApprovalItemsInnerReference) *NullableApprovalApprovalItemsInnerReference {
-	return &NullableApprovalApprovalItemsInnerReference{value: val, isSet: true}
-}
-
-func (v NullableApprovalApprovalItemsInnerReference) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableApprovalApprovalItemsInnerReference) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableApprovalApprovalItemsInnerReference) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ApprovalApprovalItemsInnerReference) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

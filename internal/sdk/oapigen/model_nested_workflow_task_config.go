@@ -51,51 +51,6 @@ func (o NestedWorkflowTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableNestedWorkflowTaskConfig struct {
-	value *NestedWorkflowTaskConfig
-	isSet bool
-}
-
-func (v NullableNestedWorkflowTaskConfig) Get() *NestedWorkflowTaskConfig {
-	return v.value
-}
-
-func (v *NullableNestedWorkflowTaskConfig) Set(val *NestedWorkflowTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableNestedWorkflowTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableNestedWorkflowTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableNestedWorkflowTaskConfig(val *NestedWorkflowTaskConfig) *NullableNestedWorkflowTaskConfig {
-	return &NullableNestedWorkflowTaskConfig{value: val, isSet: true}
-}
-
-func (v NullableNestedWorkflowTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableNestedWorkflowTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableNestedWorkflowTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *NestedWorkflowTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

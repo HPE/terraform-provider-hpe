@@ -51,51 +51,6 @@ func (o AddInstanceRequestMetadataInner) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableAddInstanceRequestMetadataInner struct {
-	value *AddInstanceRequestMetadataInner
-	isSet bool
-}
-
-func (v NullableAddInstanceRequestMetadataInner) Get() *AddInstanceRequestMetadataInner {
-	return v.value
-}
-
-func (v *NullableAddInstanceRequestMetadataInner) Set(val *AddInstanceRequestMetadataInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddInstanceRequestMetadataInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddInstanceRequestMetadataInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddInstanceRequestMetadataInner(val *AddInstanceRequestMetadataInner) *NullableAddInstanceRequestMetadataInner {
-	return &NullableAddInstanceRequestMetadataInner{value: val, isSet: true}
-}
-
-func (v NullableAddInstanceRequestMetadataInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddInstanceRequestMetadataInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddInstanceRequestMetadataInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddInstanceRequestMetadataInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

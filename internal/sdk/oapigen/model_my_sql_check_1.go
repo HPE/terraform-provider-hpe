@@ -79,51 +79,6 @@ func (o MySqlCheck1) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableMySqlCheck1 struct {
-	value *MySqlCheck1
-	isSet bool
-}
-
-func (v NullableMySqlCheck1) Get() *MySqlCheck1 {
-	return v.value
-}
-
-func (v *NullableMySqlCheck1) Set(val *MySqlCheck1) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMySqlCheck1) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMySqlCheck1) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMySqlCheck1(val *MySqlCheck1) *NullableMySqlCheck1 {
-	return &NullableMySqlCheck1{value: val, isSet: true}
-}
-
-func (v NullableMySqlCheck1) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMySqlCheck1) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMySqlCheck1) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MySqlCheck1) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

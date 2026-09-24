@@ -51,51 +51,6 @@ func (o AddBaremetalHost200ResponseServerSecureMetadataDatastore) ToMap() (map[s
 	return toSerialize, nil
 }
 
-type NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore struct {
-	value *AddBaremetalHost200ResponseServerSecureMetadataDatastore
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) Get() *AddBaremetalHost200ResponseServerSecureMetadataDatastore {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) Set(val *AddBaremetalHost200ResponseServerSecureMetadataDatastore) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerSecureMetadataDatastore(val *AddBaremetalHost200ResponseServerSecureMetadataDatastore) *NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore {
-	return &NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerSecureMetadataDatastore) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddBaremetalHost200ResponseServerSecureMetadataDatastore) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o AddGroups200ResponseAllOfGroupZonesInner) ToMap() (map[string]interface{
 	return toSerialize, nil
 }
 
-type NullableAddGroups200ResponseAllOfGroupZonesInner struct {
-	value *AddGroups200ResponseAllOfGroupZonesInner
-	isSet bool
-}
-
-func (v NullableAddGroups200ResponseAllOfGroupZonesInner) Get() *AddGroups200ResponseAllOfGroupZonesInner {
-	return v.value
-}
-
-func (v *NullableAddGroups200ResponseAllOfGroupZonesInner) Set(val *AddGroups200ResponseAllOfGroupZonesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddGroups200ResponseAllOfGroupZonesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddGroups200ResponseAllOfGroupZonesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddGroups200ResponseAllOfGroupZonesInner(val *AddGroups200ResponseAllOfGroupZonesInner) *NullableAddGroups200ResponseAllOfGroupZonesInner {
-	return &NullableAddGroups200ResponseAllOfGroupZonesInner{value: val, isSet: true}
-}
-
-func (v NullableAddGroups200ResponseAllOfGroupZonesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddGroups200ResponseAllOfGroupZonesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddGroups200ResponseAllOfGroupZonesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddGroups200ResponseAllOfGroupZonesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

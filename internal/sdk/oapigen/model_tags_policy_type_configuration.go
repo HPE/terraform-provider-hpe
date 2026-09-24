@@ -57,51 +57,6 @@ func (o TagsPolicyTypeConfiguration) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableTagsPolicyTypeConfiguration struct {
-	value *TagsPolicyTypeConfiguration
-	isSet bool
-}
-
-func (v NullableTagsPolicyTypeConfiguration) Get() *TagsPolicyTypeConfiguration {
-	return v.value
-}
-
-func (v *NullableTagsPolicyTypeConfiguration) Set(val *TagsPolicyTypeConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableTagsPolicyTypeConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableTagsPolicyTypeConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableTagsPolicyTypeConfiguration(val *TagsPolicyTypeConfiguration) *NullableTagsPolicyTypeConfiguration {
-	return &NullableTagsPolicyTypeConfiguration{value: val, isSet: true}
-}
-
-func (v NullableTagsPolicyTypeConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableTagsPolicyTypeConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableTagsPolicyTypeConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *TagsPolicyTypeConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

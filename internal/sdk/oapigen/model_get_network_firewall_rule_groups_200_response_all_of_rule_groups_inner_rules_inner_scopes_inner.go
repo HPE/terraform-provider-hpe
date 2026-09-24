@@ -51,51 +51,6 @@ func (o GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerSco
 	return toSerialize, nil
 }
 
-type NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner struct {
-	value *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) Get() *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) Set(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner {
-	return &NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerRulesInnerScopesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

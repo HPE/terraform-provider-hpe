@@ -46,51 +46,6 @@ func (o AddLayoutRequestInstanceTypeLayoutPriceSetsInner) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner struct {
-	value *AddLayoutRequestInstanceTypeLayoutPriceSetsInner
-	isSet bool
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) Get() *AddLayoutRequestInstanceTypeLayoutPriceSetsInner {
-	return v.value
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) Set(val *AddLayoutRequestInstanceTypeLayoutPriceSetsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner(val *AddLayoutRequestInstanceTypeLayoutPriceSetsInner) *NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner {
-	return &NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner{value: val, isSet: true}
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayoutRequestInstanceTypeLayoutPriceSetsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayoutRequestInstanceTypeLayoutPriceSetsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

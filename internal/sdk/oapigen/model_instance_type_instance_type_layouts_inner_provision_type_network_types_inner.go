@@ -143,51 +143,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) ToMa
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) Get() *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) Set(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeNetworkTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

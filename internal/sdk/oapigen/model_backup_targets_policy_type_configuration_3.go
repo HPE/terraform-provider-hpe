@@ -45,51 +45,6 @@ func (o BackupTargetsPolicyTypeConfiguration3) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullableBackupTargetsPolicyTypeConfiguration3 struct {
-	value *BackupTargetsPolicyTypeConfiguration3
-	isSet bool
-}
-
-func (v NullableBackupTargetsPolicyTypeConfiguration3) Get() *BackupTargetsPolicyTypeConfiguration3 {
-	return v.value
-}
-
-func (v *NullableBackupTargetsPolicyTypeConfiguration3) Set(val *BackupTargetsPolicyTypeConfiguration3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBackupTargetsPolicyTypeConfiguration3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBackupTargetsPolicyTypeConfiguration3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBackupTargetsPolicyTypeConfiguration3(val *BackupTargetsPolicyTypeConfiguration3) *NullableBackupTargetsPolicyTypeConfiguration3 {
-	return &NullableBackupTargetsPolicyTypeConfiguration3{value: val, isSet: true}
-}
-
-func (v NullableBackupTargetsPolicyTypeConfiguration3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBackupTargetsPolicyTypeConfiguration3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBackupTargetsPolicyTypeConfiguration3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BackupTargetsPolicyTypeConfiguration3) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

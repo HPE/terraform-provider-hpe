@@ -94,51 +94,6 @@ func (o ElasticCheck1AllOfConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableElasticCheck1AllOfConfig struct {
-	value *ElasticCheck1AllOfConfig
-	isSet bool
-}
-
-func (v NullableElasticCheck1AllOfConfig) Get() *ElasticCheck1AllOfConfig {
-	return v.value
-}
-
-func (v *NullableElasticCheck1AllOfConfig) Set(val *ElasticCheck1AllOfConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableElasticCheck1AllOfConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableElasticCheck1AllOfConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableElasticCheck1AllOfConfig(val *ElasticCheck1AllOfConfig) *NullableElasticCheck1AllOfConfig {
-	return &NullableElasticCheck1AllOfConfig{value: val, isSet: true}
-}
-
-func (v NullableElasticCheck1AllOfConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableElasticCheck1AllOfConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableElasticCheck1AllOfConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ElasticCheck1AllOfConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

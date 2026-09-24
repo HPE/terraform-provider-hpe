@@ -51,51 +51,6 @@ func (o GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner)
 	return toSerialize, nil
 }
 
-type NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner struct {
-	value *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) Get() *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) Set(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner(val *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner {
-	return &NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkFirewallRuleGroups200ResponseAllOfRuleGroupsInnerTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

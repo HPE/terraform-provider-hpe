@@ -120,51 +120,6 @@ func (o ListScripts200ResponseAllOfContainerScriptsInner) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableListScripts200ResponseAllOfContainerScriptsInner struct {
-	value *ListScripts200ResponseAllOfContainerScriptsInner
-	isSet bool
-}
-
-func (v NullableListScripts200ResponseAllOfContainerScriptsInner) Get() *ListScripts200ResponseAllOfContainerScriptsInner {
-	return v.value
-}
-
-func (v *NullableListScripts200ResponseAllOfContainerScriptsInner) Set(val *ListScripts200ResponseAllOfContainerScriptsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableListScripts200ResponseAllOfContainerScriptsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableListScripts200ResponseAllOfContainerScriptsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableListScripts200ResponseAllOfContainerScriptsInner(val *ListScripts200ResponseAllOfContainerScriptsInner) *NullableListScripts200ResponseAllOfContainerScriptsInner {
-	return &NullableListScripts200ResponseAllOfContainerScriptsInner{value: val, isSet: true}
-}
-
-func (v NullableListScripts200ResponseAllOfContainerScriptsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableListScripts200ResponseAllOfContainerScriptsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableListScripts200ResponseAllOfContainerScriptsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ListScripts200ResponseAllOfContainerScriptsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

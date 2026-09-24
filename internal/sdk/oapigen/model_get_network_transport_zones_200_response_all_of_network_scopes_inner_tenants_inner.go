@@ -51,51 +51,6 @@ func (o GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) 
 	return toSerialize, nil
 }
 
-type NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner struct {
-	value *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner
-	isSet bool
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) Get() *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) Set(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner(val *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner {
-	return &NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkTransportZones200ResponseAllOfNetworkScopesInnerTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

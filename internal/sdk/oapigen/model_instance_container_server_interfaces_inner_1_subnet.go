@@ -51,51 +51,6 @@ func (o InstanceContainerServerInterfacesInner1Subnet) ToMap() (map[string]inter
 	return toSerialize, nil
 }
 
-type NullableInstanceContainerServerInterfacesInner1Subnet struct {
-	value *InstanceContainerServerInterfacesInner1Subnet
-	isSet bool
-}
-
-func (v NullableInstanceContainerServerInterfacesInner1Subnet) Get() *InstanceContainerServerInterfacesInner1Subnet {
-	return v.value
-}
-
-func (v *NullableInstanceContainerServerInterfacesInner1Subnet) Set(val *InstanceContainerServerInterfacesInner1Subnet) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceContainerServerInterfacesInner1Subnet) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceContainerServerInterfacesInner1Subnet) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceContainerServerInterfacesInner1Subnet(val *InstanceContainerServerInterfacesInner1Subnet) *NullableInstanceContainerServerInterfacesInner1Subnet {
-	return &NullableInstanceContainerServerInterfacesInner1Subnet{value: val, isSet: true}
-}
-
-func (v NullableInstanceContainerServerInterfacesInner1Subnet) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceContainerServerInterfacesInner1Subnet) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceContainerServerInterfacesInner1Subnet) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceContainerServerInterfacesInner1Subnet) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

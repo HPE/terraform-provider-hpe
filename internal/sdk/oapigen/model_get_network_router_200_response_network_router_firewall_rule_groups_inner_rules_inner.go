@@ -131,51 +131,6 @@ func (o GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInne
 	return toSerialize, nil
 }
 
-type NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner struct {
-	value *GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) Get() *GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) Set(val *GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner(val *GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) *NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner {
-	return &NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkRouter200ResponseNetworkRouterFirewallRuleGroupsInnerRulesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

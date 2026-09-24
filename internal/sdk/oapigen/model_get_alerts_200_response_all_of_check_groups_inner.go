@@ -152,51 +152,6 @@ func (o GetAlerts200ResponseAllOfCheckGroupsInner) ToMap() (map[string]interface
 	return toSerialize, nil
 }
 
-type NullableGetAlerts200ResponseAllOfCheckGroupsInner struct {
-	value *GetAlerts200ResponseAllOfCheckGroupsInner
-	isSet bool
-}
-
-func (v NullableGetAlerts200ResponseAllOfCheckGroupsInner) Get() *GetAlerts200ResponseAllOfCheckGroupsInner {
-	return v.value
-}
-
-func (v *NullableGetAlerts200ResponseAllOfCheckGroupsInner) Set(val *GetAlerts200ResponseAllOfCheckGroupsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetAlerts200ResponseAllOfCheckGroupsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetAlerts200ResponseAllOfCheckGroupsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetAlerts200ResponseAllOfCheckGroupsInner(val *GetAlerts200ResponseAllOfCheckGroupsInner) *NullableGetAlerts200ResponseAllOfCheckGroupsInner {
-	return &NullableGetAlerts200ResponseAllOfCheckGroupsInner{value: val, isSet: true}
-}
-
-func (v NullableGetAlerts200ResponseAllOfCheckGroupsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetAlerts200ResponseAllOfCheckGroupsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetAlerts200ResponseAllOfCheckGroupsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetAlerts200ResponseAllOfCheckGroupsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

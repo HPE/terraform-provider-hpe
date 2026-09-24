@@ -135,51 +135,6 @@ func (o UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) ToMap() (
 	return toSerialize, nil
 }
 
-type NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor struct {
-	value *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor
-	isSet bool
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Get() *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Set(val *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor(val *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor {
-	return &NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighbor) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

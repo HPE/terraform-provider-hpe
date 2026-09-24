@@ -203,51 +203,6 @@ func (o GetTaskTypes200ResponseTaskTypeOptionTypesInner) ToMap() (map[string]int
 	return toSerialize, nil
 }
 
-type NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner struct {
-	value *GetTaskTypes200ResponseTaskTypeOptionTypesInner
-	isSet bool
-}
-
-func (v NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) Get() *GetTaskTypes200ResponseTaskTypeOptionTypesInner {
-	return v.value
-}
-
-func (v *NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) Set(val *GetTaskTypes200ResponseTaskTypeOptionTypesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetTaskTypes200ResponseTaskTypeOptionTypesInner(val *GetTaskTypes200ResponseTaskTypeOptionTypesInner) *NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner {
-	return &NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner{value: val, isSet: true}
-}
-
-func (v NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetTaskTypes200ResponseTaskTypeOptionTypesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetTaskTypes200ResponseTaskTypeOptionTypesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

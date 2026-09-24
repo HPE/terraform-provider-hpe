@@ -55,51 +55,6 @@ func (o UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) 
 	return toSerialize, nil
 }
 
-type NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType struct {
-	value *UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Get() *UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Set(val *UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType(val *UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) *NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType {
-	return &NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateLoadBalancerPool200ResponseAllOfLoadBalancerPoolLoadBalancerType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

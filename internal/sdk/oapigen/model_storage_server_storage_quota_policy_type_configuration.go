@@ -49,51 +49,6 @@ func (o StorageServerStorageQuotaPolicyTypeConfiguration) ToMap() (map[string]in
 	return toSerialize, nil
 }
 
-type NullableStorageServerStorageQuotaPolicyTypeConfiguration struct {
-	value *StorageServerStorageQuotaPolicyTypeConfiguration
-	isSet bool
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration) Get() *StorageServerStorageQuotaPolicyTypeConfiguration {
-	return v.value
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration) Set(val *StorageServerStorageQuotaPolicyTypeConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableStorageServerStorageQuotaPolicyTypeConfiguration(val *StorageServerStorageQuotaPolicyTypeConfiguration) *NullableStorageServerStorageQuotaPolicyTypeConfiguration {
-	return &NullableStorageServerStorageQuotaPolicyTypeConfiguration{value: val, isSet: true}
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableStorageServerStorageQuotaPolicyTypeConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableStorageServerStorageQuotaPolicyTypeConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *StorageServerStorageQuotaPolicyTypeConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

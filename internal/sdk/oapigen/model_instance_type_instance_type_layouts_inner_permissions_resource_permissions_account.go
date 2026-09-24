@@ -47,51 +47,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccoun
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Get() *InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Set(val *InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount(val *InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) *NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerPermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

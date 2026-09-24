@@ -83,51 +83,6 @@ func (o PuppetTaskConfig) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePuppetTaskConfig struct {
-	value *PuppetTaskConfig
-	isSet bool
-}
-
-func (v NullablePuppetTaskConfig) Get() *PuppetTaskConfig {
-	return v.value
-}
-
-func (v *NullablePuppetTaskConfig) Set(val *PuppetTaskConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePuppetTaskConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePuppetTaskConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePuppetTaskConfig(val *PuppetTaskConfig) *NullablePuppetTaskConfig {
-	return &NullablePuppetTaskConfig{value: val, isSet: true}
-}
-
-func (v NullablePuppetTaskConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePuppetTaskConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePuppetTaskConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PuppetTaskConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

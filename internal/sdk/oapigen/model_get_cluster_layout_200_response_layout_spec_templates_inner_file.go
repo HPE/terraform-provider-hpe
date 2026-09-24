@@ -67,51 +67,6 @@ func (o GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) ToMap() (map[st
 	return toSerialize, nil
 }
 
-type NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile struct {
-	value *GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile
-	isSet bool
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) Get() *GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile {
-	return v.value
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) Set(val *GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile(val *GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile {
-	return &NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile{value: val, isSet: true}
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterLayout200ResponseLayoutSpecTemplatesInnerFile) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

@@ -51,51 +51,6 @@ func (o GetNetworkFirewallRule200ResponseRuleSourcesInner) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableGetNetworkFirewallRule200ResponseRuleSourcesInner struct {
-	value *GetNetworkFirewallRule200ResponseRuleSourcesInner
-	isSet bool
-}
-
-func (v NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) Get() *GetNetworkFirewallRule200ResponseRuleSourcesInner {
-	return v.value
-}
-
-func (v *NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) Set(val *GetNetworkFirewallRule200ResponseRuleSourcesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetNetworkFirewallRule200ResponseRuleSourcesInner(val *GetNetworkFirewallRule200ResponseRuleSourcesInner) *NullableGetNetworkFirewallRule200ResponseRuleSourcesInner {
-	return &NullableGetNetworkFirewallRule200ResponseRuleSourcesInner{value: val, isSet: true}
-}
-
-func (v NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetNetworkFirewallRule200ResponseRuleSourcesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetNetworkFirewallRule200ResponseRuleSourcesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

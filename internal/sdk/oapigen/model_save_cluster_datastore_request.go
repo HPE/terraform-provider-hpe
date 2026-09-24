@@ -47,51 +47,6 @@ func (o SaveClusterDatastoreRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSaveClusterDatastoreRequest struct {
-	value *SaveClusterDatastoreRequest
-	isSet bool
-}
-
-func (v NullableSaveClusterDatastoreRequest) Get() *SaveClusterDatastoreRequest {
-	return v.value
-}
-
-func (v *NullableSaveClusterDatastoreRequest) Set(val *SaveClusterDatastoreRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSaveClusterDatastoreRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSaveClusterDatastoreRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSaveClusterDatastoreRequest(val *SaveClusterDatastoreRequest) *NullableSaveClusterDatastoreRequest {
-	return &NullableSaveClusterDatastoreRequest{value: val, isSet: true}
-}
-
-func (v NullableSaveClusterDatastoreRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSaveClusterDatastoreRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSaveClusterDatastoreRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SaveClusterDatastoreRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

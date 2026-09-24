@@ -51,51 +51,6 @@ func (o GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccou
 	return toSerialize, nil
 }
 
-type NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner struct {
-	value *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner
-	isSet bool
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) Get() *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner {
-	return v.value
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) Set(val *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner(val *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner {
-	return &NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner{value: val, isSet: true}
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableGetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *GetClusterNamespace200ResponseNamespacePermissionsTenantPermissionsAccountsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

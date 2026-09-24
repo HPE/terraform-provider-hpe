@@ -47,51 +47,6 @@ func (o AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAcco
 	return toSerialize, nil
 }
 
-type NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount struct {
-	value *AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount
-	isSet bool
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) Get() *AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount {
-	return v.value
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) Set(val *AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount(val *AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) *NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount {
-	return &NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount{value: val, isSet: true}
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddLayout200ResponseInstanceTypeLayoutPermissionsResourcePermissionsAccount) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

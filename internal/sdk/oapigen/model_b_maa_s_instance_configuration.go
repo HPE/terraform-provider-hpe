@@ -71,51 +71,6 @@ func (o BMaaSInstanceConfiguration) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBMaaSInstanceConfiguration struct {
-	value *BMaaSInstanceConfiguration
-	isSet bool
-}
-
-func (v NullableBMaaSInstanceConfiguration) Get() *BMaaSInstanceConfiguration {
-	return v.value
-}
-
-func (v *NullableBMaaSInstanceConfiguration) Set(val *BMaaSInstanceConfiguration) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBMaaSInstanceConfiguration) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBMaaSInstanceConfiguration) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBMaaSInstanceConfiguration(val *BMaaSInstanceConfiguration) *NullableBMaaSInstanceConfiguration {
-	return &NullableBMaaSInstanceConfiguration{value: val, isSet: true}
-}
-
-func (v NullableBMaaSInstanceConfiguration) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBMaaSInstanceConfiguration) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBMaaSInstanceConfiguration) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BMaaSInstanceConfiguration) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

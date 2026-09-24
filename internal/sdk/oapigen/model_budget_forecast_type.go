@@ -51,51 +51,6 @@ func (o BudgetForecastType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableBudgetForecastType struct {
-	value *BudgetForecastType
-	isSet bool
-}
-
-func (v NullableBudgetForecastType) Get() *BudgetForecastType {
-	return v.value
-}
-
-func (v *NullableBudgetForecastType) Set(val *BudgetForecastType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableBudgetForecastType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableBudgetForecastType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableBudgetForecastType(val *BudgetForecastType) *NullableBudgetForecastType {
-	return &NullableBudgetForecastType{value: val, isSet: true}
-}
-
-func (v NullableBudgetForecastType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableBudgetForecastType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableBudgetForecastType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *BudgetForecastType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

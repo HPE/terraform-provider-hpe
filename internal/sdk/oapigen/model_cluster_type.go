@@ -51,51 +51,6 @@ func (o ClusterType) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableClusterType struct {
-	value *ClusterType
-	isSet bool
-}
-
-func (v NullableClusterType) Get() *ClusterType {
-	return v.value
-}
-
-func (v *NullableClusterType) Set(val *ClusterType) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableClusterType) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableClusterType) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableClusterType(val *ClusterType) *NullableClusterType {
-	return &NullableClusterType{value: val, isSet: true}
-}
-
-func (v NullableClusterType) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableClusterType) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableClusterType) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ClusterType) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

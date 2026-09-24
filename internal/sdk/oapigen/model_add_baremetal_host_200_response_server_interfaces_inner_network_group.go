@@ -51,51 +51,6 @@ func (o AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) ToMap() (m
 	return toSerialize, nil
 }
 
-type NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup struct {
-	value *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup
-	isSet bool
-}
-
-func (v NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) Get() *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup {
-	return v.value
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) Set(val *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup(val *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) *NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup {
-	return &NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup{value: val, isSet: true}
-}
-
-func (v NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddBaremetalHost200ResponseServerInterfacesInnerNetworkGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

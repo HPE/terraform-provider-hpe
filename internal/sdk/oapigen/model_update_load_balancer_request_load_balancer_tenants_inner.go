@@ -47,51 +47,6 @@ func (o UpdateLoadBalancerRequestLoadBalancerTenantsInner) ToMap() (map[string]i
 	return toSerialize, nil
 }
 
-type NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner struct {
-	value *UpdateLoadBalancerRequestLoadBalancerTenantsInner
-	isSet bool
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) Get() *UpdateLoadBalancerRequestLoadBalancerTenantsInner {
-	return v.value
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) Set(val *UpdateLoadBalancerRequestLoadBalancerTenantsInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateLoadBalancerRequestLoadBalancerTenantsInner(val *UpdateLoadBalancerRequestLoadBalancerTenantsInner) *NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner {
-	return &NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateLoadBalancerRequestLoadBalancerTenantsInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateLoadBalancerRequestLoadBalancerTenantsInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

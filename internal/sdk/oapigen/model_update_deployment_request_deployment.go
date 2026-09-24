@@ -53,51 +53,6 @@ func (o UpdateDeploymentRequestDeployment) ToMap() (map[string]interface{}, erro
 	return toSerialize, nil
 }
 
-type NullableUpdateDeploymentRequestDeployment struct {
-	value *UpdateDeploymentRequestDeployment
-	isSet bool
-}
-
-func (v NullableUpdateDeploymentRequestDeployment) Get() *UpdateDeploymentRequestDeployment {
-	return v.value
-}
-
-func (v *NullableUpdateDeploymentRequestDeployment) Set(val *UpdateDeploymentRequestDeployment) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateDeploymentRequestDeployment) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateDeploymentRequestDeployment) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateDeploymentRequestDeployment(val *UpdateDeploymentRequestDeployment) *NullableUpdateDeploymentRequestDeployment {
-	return &NullableUpdateDeploymentRequestDeployment{value: val, isSet: true}
-}
-
-func (v NullableUpdateDeploymentRequestDeployment) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateDeploymentRequestDeployment) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateDeploymentRequestDeployment) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateDeploymentRequestDeployment) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

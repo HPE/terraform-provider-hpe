@@ -51,51 +51,6 @@ func (o PolicyUser) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePolicyUser struct {
-	value *PolicyUser
-	isSet bool
-}
-
-func (v NullablePolicyUser) Get() *PolicyUser {
-	return v.value
-}
-
-func (v *NullablePolicyUser) Set(val *PolicyUser) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePolicyUser) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePolicyUser) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePolicyUser(val *PolicyUser) *NullablePolicyUser {
-	return &NullablePolicyUser{value: val, isSet: true}
-}
-
-func (v NullablePolicyUser) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePolicyUser) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePolicyUser) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PolicyUser) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

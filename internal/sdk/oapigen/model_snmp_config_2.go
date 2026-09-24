@@ -102,51 +102,6 @@ func (o SNMPConfig2) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableSNMPConfig2 struct {
-	value *SNMPConfig2
-	isSet bool
-}
-
-func (v NullableSNMPConfig2) Get() *SNMPConfig2 {
-	return v.value
-}
-
-func (v *NullableSNMPConfig2) Set(val *SNMPConfig2) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSNMPConfig2) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSNMPConfig2) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSNMPConfig2(val *SNMPConfig2) *NullableSNMPConfig2 {
-	return &NullableSNMPConfig2{value: val, isSet: true}
-}
-
-func (v NullableSNMPConfig2) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSNMPConfig2) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSNMPConfig2) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SNMPConfig2) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

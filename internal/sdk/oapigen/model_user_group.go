@@ -88,51 +88,6 @@ func (o UserGroup) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableUserGroup struct {
-	value *UserGroup
-	isSet bool
-}
-
-func (v NullableUserGroup) Get() *UserGroup {
-	return v.value
-}
-
-func (v *NullableUserGroup) Set(val *UserGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUserGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUserGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUserGroup(val *UserGroup) *NullableUserGroup {
-	return &NullableUserGroup{value: val, isSet: true}
-}
-
-func (v NullableUserGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUserGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUserGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UserGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

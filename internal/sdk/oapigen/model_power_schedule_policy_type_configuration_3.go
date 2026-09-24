@@ -53,51 +53,6 @@ func (o PowerSchedulePolicyTypeConfiguration3) ToMap() (map[string]interface{}, 
 	return toSerialize, nil
 }
 
-type NullablePowerSchedulePolicyTypeConfiguration3 struct {
-	value *PowerSchedulePolicyTypeConfiguration3
-	isSet bool
-}
-
-func (v NullablePowerSchedulePolicyTypeConfiguration3) Get() *PowerSchedulePolicyTypeConfiguration3 {
-	return v.value
-}
-
-func (v *NullablePowerSchedulePolicyTypeConfiguration3) Set(val *PowerSchedulePolicyTypeConfiguration3) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePowerSchedulePolicyTypeConfiguration3) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePowerSchedulePolicyTypeConfiguration3) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePowerSchedulePolicyTypeConfiguration3(val *PowerSchedulePolicyTypeConfiguration3) *NullablePowerSchedulePolicyTypeConfiguration3 {
-	return &NullablePowerSchedulePolicyTypeConfiguration3{value: val, isSet: true}
-}
-
-func (v NullablePowerSchedulePolicyTypeConfiguration3) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePowerSchedulePolicyTypeConfiguration3) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePowerSchedulePolicyTypeConfiguration3) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *PowerSchedulePolicyTypeConfiguration3) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

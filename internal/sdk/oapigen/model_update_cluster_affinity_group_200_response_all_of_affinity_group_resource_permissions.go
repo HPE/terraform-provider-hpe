@@ -51,51 +51,6 @@ func (o UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissio
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions struct {
-	value *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) Get() *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) Set(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions(val *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions {
-	return &NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterAffinityGroup200ResponseAllOfAffinityGroupResourcePermissions) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

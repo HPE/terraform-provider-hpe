@@ -95,51 +95,6 @@ func (o AddUserRequestUser) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddUserRequestUser struct {
-	value *AddUserRequestUser
-	isSet bool
-}
-
-func (v NullableAddUserRequestUser) Get() *AddUserRequestUser {
-	return v.value
-}
-
-func (v *NullableAddUserRequestUser) Set(val *AddUserRequestUser) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddUserRequestUser) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddUserRequestUser) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddUserRequestUser(val *AddUserRequestUser) *NullableAddUserRequestUser {
-	return &NullableAddUserRequestUser{value: val, isSet: true}
-}
-
-func (v NullableAddUserRequestUser) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddUserRequestUser) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddUserRequestUser) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddUserRequestUser) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

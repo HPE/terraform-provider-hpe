@@ -73,51 +73,6 @@ func (o UpdateGroupsRequestGroupConfig) ToMap() (map[string]interface{}, error) 
 	return toSerialize, nil
 }
 
-type NullableUpdateGroupsRequestGroupConfig struct {
-	value *UpdateGroupsRequestGroupConfig
-	isSet bool
-}
-
-func (v NullableUpdateGroupsRequestGroupConfig) Get() *UpdateGroupsRequestGroupConfig {
-	return v.value
-}
-
-func (v *NullableUpdateGroupsRequestGroupConfig) Set(val *UpdateGroupsRequestGroupConfig) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateGroupsRequestGroupConfig) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateGroupsRequestGroupConfig) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateGroupsRequestGroupConfig(val *UpdateGroupsRequestGroupConfig) *NullableUpdateGroupsRequestGroupConfig {
-	return &NullableUpdateGroupsRequestGroupConfig{value: val, isSet: true}
-}
-
-func (v NullableUpdateGroupsRequestGroupConfig) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateGroupsRequestGroupConfig) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateGroupsRequestGroupConfig) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateGroupsRequestGroupConfig) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

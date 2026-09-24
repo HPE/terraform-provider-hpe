@@ -47,51 +47,6 @@ func (o UpdateNetworkGroupRequestResourcePermissionsSitesInner) ToMap() (map[str
 	return toSerialize, nil
 }
 
-type NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner struct {
-	value *UpdateNetworkGroupRequestResourcePermissionsSitesInner
-	isSet bool
-}
-
-func (v NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) Get() *UpdateNetworkGroupRequestResourcePermissionsSitesInner {
-	return v.value
-}
-
-func (v *NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) Set(val *UpdateNetworkGroupRequestResourcePermissionsSitesInner) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateNetworkGroupRequestResourcePermissionsSitesInner(val *UpdateNetworkGroupRequestResourcePermissionsSitesInner) *NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner {
-	return &NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner{value: val, isSet: true}
-}
-
-func (v NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateNetworkGroupRequestResourcePermissionsSitesInner) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateNetworkGroupRequestResourcePermissionsSitesInner) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

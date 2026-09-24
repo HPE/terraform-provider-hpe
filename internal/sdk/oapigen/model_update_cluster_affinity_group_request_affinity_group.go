@@ -72,51 +72,6 @@ func (o UpdateClusterAffinityGroupRequestAffinityGroup) ToMap() (map[string]inte
 	return toSerialize, nil
 }
 
-type NullableUpdateClusterAffinityGroupRequestAffinityGroup struct {
-	value *UpdateClusterAffinityGroupRequestAffinityGroup
-	isSet bool
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroup) Get() *UpdateClusterAffinityGroupRequestAffinityGroup {
-	return v.value
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroup) Set(val *UpdateClusterAffinityGroupRequestAffinityGroup) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroup) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroup) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableUpdateClusterAffinityGroupRequestAffinityGroup(val *UpdateClusterAffinityGroupRequestAffinityGroup) *NullableUpdateClusterAffinityGroupRequestAffinityGroup {
-	return &NullableUpdateClusterAffinityGroupRequestAffinityGroup{value: val, isSet: true}
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroup) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableUpdateClusterAffinityGroupRequestAffinityGroup) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableUpdateClusterAffinityGroupRequestAffinityGroup) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *UpdateClusterAffinityGroupRequestAffinityGroup) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

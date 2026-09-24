@@ -187,51 +187,6 @@ func (o ApplianceSettings) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableApplianceSettings struct {
-	value *ApplianceSettings
-	isSet bool
-}
-
-func (v NullableApplianceSettings) Get() *ApplianceSettings {
-	return v.value
-}
-
-func (v *NullableApplianceSettings) Set(val *ApplianceSettings) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableApplianceSettings) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableApplianceSettings) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableApplianceSettings(val *ApplianceSettings) *NullableApplianceSettings {
-	return &NullableApplianceSettings{value: val, isSet: true}
-}
-
-func (v NullableApplianceSettings) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableApplianceSettings) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableApplianceSettings) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *ApplianceSettings) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

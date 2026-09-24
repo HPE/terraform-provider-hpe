@@ -127,51 +127,6 @@ func (o Price) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullablePrice struct {
-	value *Price
-	isSet bool
-}
-
-func (v NullablePrice) Get() *Price {
-	return v.value
-}
-
-func (v *NullablePrice) Set(val *Price) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullablePrice) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullablePrice) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullablePrice(val *Price) *NullablePrice {
-	return &NullablePrice{value: val, isSet: true}
-}
-
-func (v NullablePrice) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullablePrice) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullablePrice) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *Price) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

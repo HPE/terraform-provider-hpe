@@ -63,51 +63,6 @@ func (o SnapshotInstanceRequestSnapshot) ToMap() (map[string]interface{}, error)
 	return toSerialize, nil
 }
 
-type NullableSnapshotInstanceRequestSnapshot struct {
-	value *SnapshotInstanceRequestSnapshot
-	isSet bool
-}
-
-func (v NullableSnapshotInstanceRequestSnapshot) Get() *SnapshotInstanceRequestSnapshot {
-	return v.value
-}
-
-func (v *NullableSnapshotInstanceRequestSnapshot) Set(val *SnapshotInstanceRequestSnapshot) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableSnapshotInstanceRequestSnapshot) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableSnapshotInstanceRequestSnapshot) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableSnapshotInstanceRequestSnapshot(val *SnapshotInstanceRequestSnapshot) *NullableSnapshotInstanceRequestSnapshot {
-	return &NullableSnapshotInstanceRequestSnapshot{value: val, isSet: true}
-}
-
-func (v NullableSnapshotInstanceRequestSnapshot) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableSnapshotInstanceRequestSnapshot) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableSnapshotInstanceRequestSnapshot) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *SnapshotInstanceRequestSnapshot) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

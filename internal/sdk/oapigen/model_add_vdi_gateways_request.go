@@ -45,51 +45,6 @@ func (o AddVDIGatewaysRequest) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableAddVDIGatewaysRequest struct {
-	value *AddVDIGatewaysRequest
-	isSet bool
-}
-
-func (v NullableAddVDIGatewaysRequest) Get() *AddVDIGatewaysRequest {
-	return v.value
-}
-
-func (v *NullableAddVDIGatewaysRequest) Set(val *AddVDIGatewaysRequest) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddVDIGatewaysRequest) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddVDIGatewaysRequest) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddVDIGatewaysRequest(val *AddVDIGatewaysRequest) *NullableAddVDIGatewaysRequest {
-	return &NullableAddVDIGatewaysRequest{value: val, isSet: true}
-}
-
-func (v NullableAddVDIGatewaysRequest) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddVDIGatewaysRequest) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddVDIGatewaysRequest) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *AddVDIGatewaysRequest) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

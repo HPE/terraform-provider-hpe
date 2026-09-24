@@ -51,51 +51,6 @@ func (o InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionL
 	return toSerialize, nil
 }
 
-type NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList struct {
-	value *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList
-	isSet bool
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) Get() *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList {
-	return v.value
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) Set(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList(val *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList {
-	return &NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList{value: val, isSet: true}
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableInstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *InstanceTypeInstanceTypeLayoutsInnerProvisionTypeOptionTypesInnerOptionList) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }

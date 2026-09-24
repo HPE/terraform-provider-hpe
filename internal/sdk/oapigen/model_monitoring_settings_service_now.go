@@ -77,51 +77,6 @@ func (o MonitoringSettingsServiceNow) ToMap() (map[string]interface{}, error) {
 	return toSerialize, nil
 }
 
-type NullableMonitoringSettingsServiceNow struct {
-	value *MonitoringSettingsServiceNow
-	isSet bool
-}
-
-func (v NullableMonitoringSettingsServiceNow) Get() *MonitoringSettingsServiceNow {
-	return v.value
-}
-
-func (v *NullableMonitoringSettingsServiceNow) Set(val *MonitoringSettingsServiceNow) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableMonitoringSettingsServiceNow) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableMonitoringSettingsServiceNow) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableMonitoringSettingsServiceNow(val *MonitoringSettingsServiceNow) *NullableMonitoringSettingsServiceNow {
-	return &NullableMonitoringSettingsServiceNow{value: val, isSet: true}
-}
-
-func (v NullableMonitoringSettingsServiceNow) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableMonitoringSettingsServiceNow) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableMonitoringSettingsServiceNow) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
-}
-
 func (o *MonitoringSettingsServiceNow) UnmarshalJSON(data []byte) (err error) {
 	return decode(data, &o)
 }
