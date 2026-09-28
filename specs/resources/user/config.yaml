@@ -63,7 +63,10 @@ user:
     linux_password_wo_version:
       int64:
         computed_optional_required: optional
-        description: Linux password version. Used to determine if linux_password_wo has been updated.
+        description: |-
+          Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends linux_password_wo.
+        deprecation_message: "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     windows_username:
       string:
         computed_optional_required: computed_optional
@@ -84,7 +87,10 @@ user:
     windows_password_wo_version:
       int64:
         computed_optional_required: optional
-        description: Windows password version. Used to determine if windows_password_wo has been updated.
+        description: |-
+          Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends windows_password_wo.
+        deprecation_message: "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     password_wo:
       string:
         computed_optional_required: optional
@@ -100,7 +106,22 @@ user:
     password_wo_version:
       int64:
         computed_optional_required: optional
-        description: Password version. Used to determine if password_wo has been updated.
+        description: |-
+          Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
+        deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (password_wo,
+          linux_password_wo or windows_password_wo) was last sent to Morpheus. Changes whenever one
+          of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   includes:
     - user.username
     - user.email
@@ -122,3 +143,4 @@ user:
     - template-windows_password_wo_version: windows_password_wo_version
     - template-password_wo: password_wo
     - template-password_wo_version: password_wo_version
+    - template-write_only_revision: write_only_revision

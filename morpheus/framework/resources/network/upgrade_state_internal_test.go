@@ -98,7 +98,7 @@ func TestUnitUpgradeStateV0toV1StashesConfig(t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	if fromStash.digests != fromConfig.digests {
+	if !fromStash.digests.Equal(fromConfig.digests) {
 		t.Errorf("stash and configuration must digest equally: %+v vs %+v", fromStash.digests, fromConfig.digests)
 	}
 
@@ -115,7 +115,7 @@ func TestUnitUpgradeStateV0toV1StashesConfig(t *testing.T) {
 		t.Fatal(diags)
 	}
 
-	if fromBlock.digests != fromConfig.digests || fromBlock.block == nil || fromBlock.block.Attr != "config_ovs_port_group" {
+	if !fromBlock.digests.Equal(fromConfig.digests) || fromBlock.block == nil || fromBlock.block.Attr != "config_ovs_port_group" {
 		t.Errorf("typed block and generic map must digest equally: %+v vs %+v (block %v)",
 			fromBlock.digests, fromConfig.digests, fromBlock.block)
 	}

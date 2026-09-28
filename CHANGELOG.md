@@ -93,6 +93,39 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### Write-only values: changes are detected automatically; the `*_version` markers are deprecated (MORPH-18005)
+
+A write-only attribute such as `password_wo` is never stored in state, so until now the provider
+could not see it change: a companion `*_version` marker had to be bumped by hand for a new value to
+be sent, and a forgotten bump left the appliance silently out of date. The provider now keeps a
+digest of each configured write-only value in the resource's private state and compares it on
+every plan, so **changing the value is enough** — the plan shows the change as
+`~ write_only_revision = <n> -> (known after apply)` and the apply sends the new value.
+
+This release migrates `hpe_morpheus_user` (`password_wo`, `linux_password_wo`,
+`windows_password_wo`); the remaining resources with write-only attributes follow in the 2.2 line.
+For a migrated resource:
+
+- **`*_wo_version` is deprecated.** It still works for the whole 2.2 line — changing it re-sends the
+  value as before — but every plan warns that it is no longer needed. Remove the attribute from
+  your configuration: the removal is one in-place update, after which the plan is empty. The
+  attributes will be removed in the 2.3 release.
+- **A new read-only `write_only_revision`** records the time of the last apply that sent a
+  write-only value. It is the visible trace of "a write-only value was re-sent on this apply".
+- **Upgrading from 2.1:** the first plan after upgrading shows one in-place update per resource
+  (`+ write_only_revision`), which re-sends the values the appliance already has and records their
+  digests. This is a one-time cost; every later plan is clean. It cannot be avoided: the digest can
+  only be taken when the configured value is next seen at apply.
+- **Import:** the plan after `terraform import` (or an `import` block) is empty. Without more
+  information the provider cannot know whether the configured value matches the appliance, so it is
+  taken as applied and a change to it is only detected once the resource is next updated for another
+  reason — Terraform warns about this on every plan until then. To have changes detected from the
+  start, put the sha256 digest of each configured write-only value in the import ID:
+  `"123#password_wo=<sha256 hex>&linux_password_wo=<sha256 hex>"` (Terraform's `sha256()` function
+  produces it in an import block). Migration tooling that knows the values uses this form.
+- **An unset write-only attribute is not managed.** Leaving `linux_password_wo` out of the
+  configuration is not a change and never triggers a re-send.
+
 ### `hpe_morpheus_network` data source: `cloud_id` selects among per-cloud records
 
 Morpheus keeps one network record per cloud. When two clouds cover the same account — a cloud scoped

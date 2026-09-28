@@ -93,7 +93,7 @@ func TestUnitDigestsRoundTripThroughPrivateState(t *testing.T) {
 		t.Fatalf("expected stored digests, ok=%v diags=%v", ok, diags)
 	}
 
-	if got != want {
+	if got.All != want.All || got.Immutable != want.Immutable || got.Version != want.Version {
 		t.Errorf("round trip changed the digests: %+v vs %+v", got, want)
 	}
 

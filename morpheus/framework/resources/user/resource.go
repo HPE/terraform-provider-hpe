@@ -18,6 +18,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -27,6 +28,7 @@ import (
 var (
 	_ resource.Resource                = &Resource{}
 	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.ResourceWithModifyPlan  = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -264,6 +266,8 @@ func (r *Resource) Create(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.WriteOnlyRevision = newRevision()
+	resp.Diagnostics.Append(storeWoDigests(ctx, resp.Private, config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -330,16 +334,12 @@ func (r *Resource) Update(
 	updateUser.Email = plan.Email.ValueStringPointer()
 	updateUser.Roles = roles
 
-	if !plan.PasswordWoVersion.Equal(state.PasswordWoVersion) {
-		if config.PasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'password_wo_version' changed, "+
-					"but 'password_wo' is not set", username),
-			)
+	// ModifyPlan marks write_only_revision unknown when a write-only value
+	// changed (or a deprecated *_wo_version marker did); that is the signal
+	// to re-send the configured write-only values. See write_only.go.
+	resend := plan.WriteOnlyRevision.IsUnknown()
 
-			return
-		}
+	if resend && !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() {
 		updateUser.Password = config.PasswordWo.ValueStringPointer()
 	}
 
@@ -373,38 +373,12 @@ func (r *Resource) Update(
 
 	updateUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
 
-	if !plan.LinuxPasswordWoVersion.Equal(state.LinuxPasswordWoVersion) {
-		if config.LinuxPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'linux_password_wo_version' changed, "+
-					"but 'linux_password_wo' is not set", username),
-			)
-
-			return
-		}
-		if plan.LinuxPasswordWo.IsNull() {
-			updateUser.LinuxPassword.Set(nil)
-		} else {
-			updateUser.LinuxPassword.Set(plan.LinuxPasswordWo.ValueStringPointer())
-		}
+	if resend && !config.LinuxPasswordWo.IsNull() && !config.LinuxPasswordWo.IsUnknown() {
+		updateUser.LinuxPassword.Set(config.LinuxPasswordWo.ValueStringPointer())
 	}
 
-	if !plan.WindowsPasswordWoVersion.Equal(state.WindowsPasswordWoVersion) {
-		if config.WindowsPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %s: 'windows_password_wo_version' changed, "+
-					"but 'windows_password_wo' is not set", username),
-			)
-
-			return
-		}
-		if plan.WindowsPasswordWo.IsNull() {
-			updateUser.WindowsPassword.Set(nil)
-		} else {
-			updateUser.WindowsPassword.Set(plan.WindowsPasswordWo.ValueStringPointer())
-		}
+	if resend && !config.WindowsPasswordWo.IsNull() && !config.WindowsPasswordWo.IsUnknown() {
+		updateUser.WindowsPassword.Set(config.WindowsPasswordWo.ValueStringPointer())
 	}
 
 	client, err := r.NewClient(ctx)
@@ -457,6 +431,8 @@ func (r *Resource) Update(
 		return
 	}
 
+	prior := state
+
 	state, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
@@ -472,6 +448,15 @@ func (r *Resource) Update(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+
+	state.WriteOnlyRevision = prior.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = newRevision()
+	}
+
+	// Always record the digests of the configured values, sent or not, so an
+	// import sentinel or a missing digest never survives an update.
+	resp.Diagnostics.Append(storeWoDigests(ctx, resp.Private, config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -514,6 +499,7 @@ func (r *Resource) Read(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision // not in the API; carried from prior state
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -558,11 +544,21 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.Atoi(req.ID)
+	// The import ID is the user id, optionally followed by the sha256 digests
+	// of the configured write-only values: "<id>#password_wo=<hex>[&...]".
+	// See importWriteOnlyDigests.
+	rawID, attrs, err := wodigest.ParseImportID(req.ID, woAttrs)
+	if err != nil {
+		resp.Diagnostics.AddError("import user resource", err.Error())
+
+		return
+	}
+
+	id, err := strconv.Atoi(rawID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import user resource",
-			"provided import ID '"+req.ID+"' is invalid (non-number)",
+			"provided import ID '"+rawID+"' is invalid (non-number)",
 		)
 
 		return
@@ -572,4 +568,6 @@ func (r *Resource) ImportState(
 		ctx, path.Root("id"), id,
 	)
 	resp.Diagnostics.Append(diags...)
+
+	resp.Diagnostics.Append(importWriteOnlyDigests(ctx, resp, attrs)...)
 }

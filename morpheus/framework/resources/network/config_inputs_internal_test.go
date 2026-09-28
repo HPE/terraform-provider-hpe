@@ -93,7 +93,7 @@ func TestUnitResolveConfigInputsRoutesTheBlockForTheType(t *testing.T) {
 		t.Errorf("empty inputs: %+v %v", empty, diags)
 	}
 
-	if empty.digests == inputs.digests {
+	if empty.digests.Equal(inputs.digests) {
 		t.Error("different configurations must digest differently")
 	}
 }

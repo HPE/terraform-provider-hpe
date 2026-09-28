@@ -426,8 +426,11 @@ resource "hpe_morpheus_user" "foo" {
 					return rs.Primary.ID, nil
 				},
 				ImportStateVerify: true, // Check state post import
-				ResourceName:      "hpe_morpheus_user.foo",
-				Check:             checkFn,
+				// write_only_revision is the time of the last apply that sent a
+				// write-only value; an import sets its own.
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            "hpe_morpheus_user.foo",
+				Check:                   checkFn,
 			},
 			{
 				// Check that a post-import plan detects no changes
@@ -846,7 +849,8 @@ resource "hpe_morpheus_user" "foo" {
 			},
 			{
 				Config: providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
-# checks plan detects no change if only password_wo is changed
+# checks plan detects no change if only password_wo is removed: an unset
+# write-only attribute is not managed, so it is not a change
 resource "hpe_morpheus_user" "foo" {
 	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
@@ -1717,6 +1721,7 @@ resource "hpe_morpheus_user" "foo" {
 					"password_wo_version",
 					"linux_password_wo_version",
 					"windows_password_wo_version",
+					"write_only_revision",
 				},
 				ResourceName: "hpe_morpheus_user.foo",
 				Check:        checkImportFn,
