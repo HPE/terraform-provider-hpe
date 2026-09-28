@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
@@ -2341,4 +2342,78 @@ resource "hpe_morpheus_user" "foo" {
 			},
 		},
 	)
+}
+
+// TestAccMorpheusUserResourceRemoveOsUsernamesOk pins MORPH-18061: removing
+// a configured linux_username / windows_username from the configuration
+// clears them on the appliance and the plan then converges.
+//
+// Before the fix the update sent both usernames as explicit nulls, which the
+// API rejects with HTTP 500 (MORPH-18060), reported as "resource was not
+// updated". Only this path reaches a null: an attribute that was never set is
+// planned as unknown, whose string pointer is "" rather than nil, so the API
+// receives "" and the existing tests never saw the failure.
+func TestAccMorpheusUserResourceRemoveOsUsernamesOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+	rolesConfig := roleResourceConfig("example", name+"-a")
+
+	config := func(osUsernames string) string {
+		return providerConfig + testhelpers.WhoamiBlock() + rolesConfig + `
+resource "hpe_morpheus_user" "example" {
+	tenant_id           = data.hpe_morpheus_whoami.current.tenant_id
+	username            = "` + name + `"
+	email               = "` + name + `@testacc.com"
+	password_wo         = "Secret123!"
+	password_wo_version = 1
+	role_ids            = [hpe_morpheus_role.example.id]
+` + osUsernames + `
+}`
+	}
+
+	withOsUsernames := `
+	linux_username   = "linus"
+	windows_username = "bill"
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config(withOsUsernames),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("hpe_morpheus_user.example", "linux_username", "linus"),
+					resource.TestCheckResourceAttr("hpe_morpheus_user.example", "windows_username", "bill"),
+				),
+			},
+			{
+				// Remove both usernames: the update that used to fail with
+				// "resource was not updated".
+				Config: config(""),
+				ConfigPlanChecks: resource.ConfigPlanChecks{
+					PreApply: []plancheck.PlanCheck{
+						plancheck.ExpectResourceAction("hpe_morpheus_user.example", plancheck.ResourceActionUpdate),
+					},
+				},
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckNoResourceAttr("hpe_morpheus_user.example", "linux_username"),
+					resource.TestCheckNoResourceAttr("hpe_morpheus_user.example", "windows_username"),
+				),
+			},
+			{
+				// The plan converges: nothing left to send.
+				Config:             config(""),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: false,
+			},
+		},
+	})
 }

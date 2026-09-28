@@ -152,6 +152,13 @@ requested pool; it points at the network's type and its group and tenant visibil
   Morpheus never read them — they are the top-level `assign_public_ip` and `availability_zone`
   (MORPH-17910).
 
+### `hpe_morpheus_user` (MORPH-18061)
+
+- Removing a configured `linux_username` or `windows_username` from the configuration failed with
+  `resource was not updated`. The update sent the removed username as an explicit null, which the
+  Morpheus API rejects with an internal error (MORPH-18060). It is now sent as an empty string, which
+  Morpheus accepts and stores as unset, so the username is cleared and the following plan is empty.
+
 # v2.1.0 Release Notes
 
 This release hardens the provider for day-two use. It completes the move of the tenant resource and

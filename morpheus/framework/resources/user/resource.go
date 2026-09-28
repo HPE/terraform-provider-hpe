@@ -55,19 +55,6 @@ func (r *Resource) Schema(
 	resp.Schema = UserResourceSchema(ctx)
 }
 
-func getUser(
-	ctx context.Context,
-	id int64,
-	client *sdk.APIClient,
-) (*sdk.GetUser200Response, error) {
-	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("user %d GET failed: %s", id, errfmt.ErrMsg(err, hresp))
-	}
-
-	return u, nil
-}
-
 // populate user resource model with current API values
 func getUserAsState(
 	ctx context.Context,
@@ -375,17 +362,14 @@ func (r *Resource) Update(
 		updateUser.LinuxKeyPairId.Set(plan.LinuxKeyPairId.ValueInt64Pointer())
 	}
 
-	if plan.LinuxUsername.IsNull() {
-		updateUser.LinuxUsername.Set(nil)
-	} else {
-		updateUser.LinuxUsername.Set(plan.LinuxUsername.ValueStringPointer())
-	}
-
-	if plan.WindowsUsername.IsNull() {
-		updateUser.WindowsUsername.Set(nil)
-	} else {
-		updateUser.WindowsUsername.Set(plan.WindowsUsername.ValueStringPointer())
-	}
+	// A username removed from the configuration is planned as null (see
+	// NullableStringUpdateModifier). It is sent as "" rather than as an
+	// explicit null: the API validates these two fields on key presence with a
+	// validator that is not null-safe and answers a null with HTTP 500
+	// (MORPH-18060; Windows on 9.0.1 and 9.1.0, Linux on 9.0.1), whereas ""
+	// clears the field and reads back as null, so state converges. MORPH-18061.
+	updateUser.LinuxUsername.Set(sdk.PtrString(plan.LinuxUsername.ValueString()))
+	updateUser.WindowsUsername.Set(sdk.PtrString(plan.WindowsUsername.ValueString()))
 
 	updateUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
 
@@ -435,89 +419,23 @@ func (r *Resource) Update(
 
 	id := plan.Id.ValueInt64()
 
-	originalUserState, err := getUser(ctx, id, client)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: failed to read from api", id),
-		)
-
-		return
-	}
-
-	if originalUserState == nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: GET returned nil response", id),
-		)
-
-		return
-	}
-
-	if originalUserState.User == nil || originalUserState.User.LastUpdated == nil {
-		resp.Diagnostics.AddError(
-			"update user resource",
-			fmt.Sprintf("user %d: original user state or LastUpdated is nil", id),
-		)
-
-		return
-	}
-
 	apiUpdateUserReq := client.UsersAPI.UpdateUser(ctx, id)
 
 	updateUserReq := &sdk.UpdateUserRequest{User: *updateUser}
 	user, hresp, err := apiUpdateUserReq.UpdateUserRequest(*updateUserReq).Execute()
 
 	if err != nil || hresp.StatusCode != http.StatusOK {
-		if hresp.StatusCode != http.StatusInternalServerError {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
-			)
+		// Until MORPH-18061 a 500 here was assumed to be a transient API fault
+		// and the update judged by re-reading the user's lastUpdated; the 500
+		// was in fact the API rejecting the request (MORPH-18060), so the
+		// heuristic only hid the real error as "resource was not updated".
+		// A failed PUT is now reported as what it is.
+		resp.Diagnostics.AddError(
+			"update user resource",
+			"user "+username+" PUT failed: "+errfmt.ErrMsg(err, hresp),
+		)
 
-			return
-		}
-
-		// Work around an API bug
-		newUserState, err := getUser(ctx, id, client)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: failed to read from api", id),
-			)
-
-			return
-		}
-
-		if newUserState == nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: GET returned nil response", id),
-			)
-
-			return
-		}
-
-		if newUserState.User == nil || newUserState.User.LastUpdated == nil {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: new user state or LastUpdated is nil", id),
-			)
-
-			return
-		}
-
-		if !newUserState.User.LastUpdated.After(*originalUserState.User.LastUpdated) {
-			resp.Diagnostics.AddError(
-				"update user resource",
-				fmt.Sprintf("user %d: resource was not updated", id),
-			)
-		}
-
-		innerUser := &sdk.AddUser200ResponseAllOfUser{}
-		innerUser.Id = sdk.PtrInt64(id)
-		user = &sdk.UpdateUser200Response{}
-		user.User = innerUser
+		return
 	}
 
 	if user.User == nil || user.User.Id == nil {
