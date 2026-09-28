@@ -91,7 +91,14 @@ func dataSourceAnsibleTowerJobTemplateRead(
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-17962: a 404 (e.g. a missing integration) must surface an
+			// error rather than silently returning no state, consistent with
+			// the other data sources.
+			return diag.Errorf(
+				"ansible tower job template not found "+
+					"(ansible_tower_integration_id=%d)",
+				ansibleTowerIntegrationId,
+			)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)
@@ -115,27 +122,45 @@ func dataSourceAnsibleTowerJobTemplateRead(
 		return diag.FromErr(helpers.NotFoundInResponseError("Data"))
 	}
 
+	// Validate lookup inputs before iterating so empty input is rejected
+	// cleanly even when the option source returns no templates (MORPH-17962).
+	if value == 0 && name == "" {
+		return diag.Errorf(
+			"Ansible tower job template cannot be read without name or value",
+		)
+	}
+
 	allTemplates := *result.Data
 
 	var template morpheus.OptionSourceOption
+	var found bool
 	for i := range allTemplates {
-		if value == 0 && name != "" {
+		if value == 0 {
 			if strings.EqualFold(allTemplates[i].Name, name) {
 				template = allTemplates[i]
-
-				break
-			}
-		} else if value != 0 {
-			if value == allTemplates[i].Value {
-				template = allTemplates[i]
+				found = true
 
 				break
 			}
 		} else {
-			return diag.Errorf(
-				"Ansible tower job template cannot be read without name or value",
-			)
+			if value == allTemplates[i].Value {
+				template = allTemplates[i]
+				found = true
+
+				break
+			}
 		}
+	}
+
+	// MORPH-17962: a non-existent name/value (or a missing integration whose
+	// option source is empty) must surface a clean diagnostic rather than a
+	// raw "Type assertion failed for value: <nil>" from the assertion below.
+	if !found {
+		return diag.Errorf(
+			"ansible tower job template not found "+
+				"(name=%q, id=%d, ansible_tower_integration_id=%d)",
+			name, value, ansibleTowerIntegrationId,
+		)
 	}
 
 	var templateValue float64

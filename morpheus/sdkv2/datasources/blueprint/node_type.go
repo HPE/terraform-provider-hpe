@@ -78,7 +78,9 @@ func dataSourceNodeTypeRead(
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-17887: a non-existent/negative id must surface an error
+			// rather than silently returning no state.
+			return diag.Errorf("node type not found (id=%d, name=%q)", id, name)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)
