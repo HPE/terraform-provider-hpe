@@ -1405,21 +1405,8 @@ func getVolumes(
 		return basetypes.NewListNull(VolumesValue{}.Type(ctx)), diags
 	}
 
-	// Remove any CD ROM volumes from the list
-	apiVolumes := slices.DeleteFunc(
-		serverVolumes,
-		func(v sdk.InstanceContainerServerVolume1) bool {
-			if v.Name == nil {
-				return false
-			}
-
-			if strings.HasPrefix(*v.Name, "CD ROM") {
-				return true
-			}
-
-			return false
-		},
-	)
+	// Remove any CD/DVD drives from the list
+	apiVolumes := slices.DeleteFunc(serverVolumes, isCDROMVolume)
 
 	// Remove externally-attached storage-server (SAN) volumes — e.g. Alletra MP
 	// BMaaS LUNs created by hpe_morpheus_storage_volume and exported to this
@@ -1700,6 +1687,29 @@ func isExternallyAttachedVolume(v sdk.InstanceContainerServerVolume1) bool {
 	}
 
 	return true
+}
+
+// isCDROMVolume reports whether a volume is the virtual CD/DVD drive Morpheus
+// attaches when an instance boots from an ISO virtual image. It is not one of
+// the instance's configured disks, so it must not reach state.
+//
+// Matching is on the volume category, which the API populates independently of
+// the display name. The name varies by provision type — "CD ROM" on VMware,
+// "CD Drive" on HVM/KVM — so the previous name-prefix check let the HVM drive
+// through, and getVolumes then appended it as an extra volume, failing the
+// apply with "Provider produced inconsistent result after apply: .volumes: new
+// element N has appeared". The names are retained only as a fallback for
+// responses that omit the category.
+func isCDROMVolume(v sdk.InstanceContainerServerVolume1) bool {
+	if v.Category != nil {
+		return strings.EqualFold(*v.Category, "cd")
+	}
+
+	if v.Name == nil {
+		return false
+	}
+
+	return strings.HasPrefix(*v.Name, "CD ROM") || strings.HasPrefix(*v.Name, "CD Drive")
 }
 
 // removeRaidDisks removes any RAID disks from the list of volumes
