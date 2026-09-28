@@ -18,10 +18,10 @@ import (
 // checks if the UpdateNetworkRequestNetworkNetworkDomain type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkRequestNetworkNetworkDomain{}
 
-// UpdateNetworkRequestNetworkNetworkDomain struct for UpdateNetworkRequestNetworkNetworkDomain
+// UpdateNetworkRequestNetworkNetworkDomain Network domain; null, or a null id, removes it
 type UpdateNetworkRequestNetworkNetworkDomain struct {
-	// Network Domain ID
-	Id                   *int64                 `json:"id,omitempty"`
+	// Network Domain ID; null removes the domain
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -37,8 +37,8 @@ func (o UpdateNetworkRequestNetworkNetworkDomain) MarshalJSON() ([]byte, error) 
 
 func (o UpdateNetworkRequestNetworkNetworkDomain) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

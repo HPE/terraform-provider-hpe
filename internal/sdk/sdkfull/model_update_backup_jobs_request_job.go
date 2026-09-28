@@ -28,8 +28,8 @@ type UpdateBackupJobsRequestJob struct {
 	Code *string `json:"code,omitempty"`
 	// Execute Schedule ID to use for the backup job
 	ScheduleId NullableInt64 `json:"scheduleId,omitempty"`
-	// Retention Count
-	RetentionCount       *int64                 `json:"retentionCount,omitempty"`
+	// Retention Count; null clears it
+	RetentionCount       NullableInt64          `json:"retentionCount,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -54,8 +54,8 @@ func (o UpdateBackupJobsRequestJob) ToMap() (map[string]interface{}, error) {
 	if o.ScheduleId.IsSet() {
 		toSerialize["scheduleId"] = o.ScheduleId.Get()
 	}
-	if !IsNil(o.RetentionCount) {
-		toSerialize["retentionCount"] = o.RetentionCount
+	if o.RetentionCount.IsSet() {
+		toSerialize["retentionCount"] = o.RetentionCount.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

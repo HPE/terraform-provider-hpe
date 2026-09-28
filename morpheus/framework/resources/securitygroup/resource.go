@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -100,7 +101,7 @@ func (r *securityGroupResource) Create(ctx context.Context, req resource.CreateR
 	// These are also sent here for completeness, but the create endpoint does not
 	// act on them (see applyPlanAfterCreate below), so the authoritative write
 	// happens in the follow-up update after the create.
-	rp, diags := resourcePermissionsFromPlan(ctx, &plan)
+	rp, diags := resourcePermissionsFromPlan(ctx, &plan, nil)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -219,7 +220,14 @@ func (r *securityGroupResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
-	body, diags := updateBodyFromPlan(ctx, &plan)
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	body, diags := updateBodyFromPlan(ctx, &plan, pending)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -418,9 +426,14 @@ func preservePlannedPermissions(state, plan *SecurityGroupModel) {
 // and the ids are only meaningful inside the permissions object. The update
 // request type is returned because it is the one the API actually honours (see
 // applyPlanAfterCreate); the create body adapts it.
+//
+// Removing the group list together with the "all" flag still clears the
+// groups: the flag keeps its prior value in the plan (UseStateForUnknown), so
+// the permissions object is sent with the empty list.
 func resourcePermissionsFromPlan(
 	ctx context.Context,
 	plan *SecurityGroupModel,
+	pending clearable.Pending,
 ) (*sdk.UpdateSecurityGroupsRequestSecurityGroupResourcePermissions, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
@@ -432,16 +445,18 @@ func resourcePermissionsFromPlan(
 		All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
 	}
 
-	if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
-		var groupIDs []int64
-		diags.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
-		if diags.HasError() {
-			return nil, diags
-		}
+	// The planned groups when known; an empty list — every group removed —
+	// when the attribute is being cleared.
+	groupIDs, send, gdiags := pending.Int64s(ctx, "resource_permission_group_ids", plan.ResourcePermissionGroupIds)
+	diags.Append(gdiags...)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	if send {
 		sites := make([]sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner, len(groupIDs))
 		for i, gid := range groupIDs {
-			id := gid
-			sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &id}
+			sites[i] = sdk.UpdateCloudFoldersRequestFolderResourcePermissionsSitesInner{Id: &gid}
 		}
 		rp.Sites = sites
 	}
@@ -459,14 +474,15 @@ func resourcePermissionsFromPlan(
 func updateBodyFromPlan(
 	ctx context.Context,
 	plan *SecurityGroupModel,
+	pending clearable.Pending,
 ) (*sdk.UpdateSecurityGroupsRequestSecurityGroup, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
 	body := &sdk.UpdateSecurityGroupsRequestSecurityGroup{}
 	body.Name = plan.Name.ValueStringPointer()
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	// Sent when known, null when being cleared (pending; nil after create),
+	// not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.Active.IsNull() && !plan.Active.IsUnknown() {
 		body.Active = plan.Active.ValueBoolPointer()
 	}
@@ -495,7 +511,7 @@ func updateBodyFromPlan(
 		}
 	}
 
-	rp, rpDiags := resourcePermissionsFromPlan(ctx, plan)
+	rp, rpDiags := resourcePermissionsFromPlan(ctx, plan, pending)
 	diags.Append(rpDiags...)
 	if diags.HasError() {
 		return nil, diags
@@ -520,7 +536,7 @@ func applyPlanAfterCreate(
 	id int64,
 	plan *SecurityGroupModel,
 ) error {
-	body, diags := updateBodyFromPlan(ctx, plan)
+	body, diags := updateBodyFromPlan(ctx, plan, nil)
 	if diags.HasError() {
 		return fmt.Errorf("building follow-up update after create: %s", diags.Errors()[0].Detail())
 	}

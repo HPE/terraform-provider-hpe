@@ -15,6 +15,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -82,9 +83,8 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		body.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
 	}
 	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-		body.Pool = &sdk.CreateSubnetRequestSubnetPool{
-			Id: plan.PoolId.ValueInt64Pointer(),
-		}
+		body.Pool = &sdk.CreateSubnetRequestSubnetPool{}
+		body.Pool.Id.Set(plan.PoolId.ValueInt64Pointer())
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
@@ -278,14 +278,21 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration, to be cleared.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := &sdk.UpdateSubnetRequestSubnet{}
 
 	if !plan.Name.IsNull() && !plan.Name.IsUnknown() {
 		body.Name = plan.Name.ValueStringPointer()
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+
+	// Sent when known, sent empty when being cleared, not sent otherwise.
+	body.Description = pending.String("description", plan.Description)
 	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
 		body.Cidr = plan.Cidr.ValueStringPointer()
 	}
@@ -298,20 +305,21 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
 		body.AllowStaticOverride = plan.AllowStaticOverride.ValueBoolPointer()
 	}
-	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-		body.Pool = &sdk.UpdateSubnetRequestSubnetPool{
-			Id: plan.PoolId.ValueInt64Pointer(),
-		}
+	// The pool is an association: {"id": n}, or {"id": null} to remove it.
+	var poolID sdk.NullableInt64
+	if clearable.NullableInt64(pending, "pool_id", plan.PoolId, &poolID) {
+		body.Pool = &sdk.UpdateSubnetRequestSubnetPool{Id: poolID}
 	}
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		var labels []string
-		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendLabels {
 		body.Labels = labels
 	}
 	// Tenants — always send to avoid perpetual diff when user removes tenant_ids from config.
@@ -335,24 +343,43 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Subnet: body,
 	}
 
-	// Resource permissions
-	if !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown() {
-		rp := &sdk.UpdateSubnetRequestResourcePermissions{
-			All: plan.ResourcePermissionGroupsAll.ValueBoolPointer(),
-		}
-		if !plan.ResourcePermissionGroupIds.IsNull() && !plan.ResourcePermissionGroupIds.IsUnknown() {
-			var groupIDs []int64
-			resp.Diagnostics.Append(plan.ResourcePermissionGroupIds.ElementsAs(ctx, &groupIDs, false)...)
+	// Resource permissions: sent when the "all" flag is known, and also when
+	// the group list is being cleared — then with an empty list, and the flag
+	// as planned or, unknown, as it is in state.
+	groupIDs, sendGroups, gdiags := pending.Int64s(ctx, "resource_permission_group_ids", plan.ResourcePermissionGroupIds)
+	resp.Diagnostics.Append(gdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	allKnown := !plan.ResourcePermissionGroupsAll.IsNull() && !plan.ResourcePermissionGroupsAll.IsUnknown()
+	if allKnown || sendGroups {
+		rp := &sdk.UpdateSubnetRequestResourcePermissions{}
+
+		switch {
+		case allKnown:
+			rp.All = plan.ResourcePermissionGroupsAll.ValueBoolPointer()
+		default:
+			var state SubnetModel
+
+			resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 			if resp.Diagnostics.HasError() {
 				return
 			}
+
+			if !state.ResourcePermissionGroupsAll.IsNull() {
+				rp.All = state.ResourcePermissionGroupsAll.ValueBoolPointer()
+			}
+		}
+
+		if sendGroups {
 			sites := make([]sdk.UpdateSubnetRequestResourcePermissionsSitesInner, len(groupIDs))
 			for i, gid := range groupIDs {
-				id := gid
-				sites[i] = sdk.UpdateSubnetRequestResourcePermissionsSitesInner{Id: &id}
+				sites[i] = sdk.UpdateSubnetRequestResourcePermissionsSitesInner{Id: &gid}
 			}
 			rp.Sites = sites
 		}
+
 		updateReq.ResourcePermissions = rp
 	}
 

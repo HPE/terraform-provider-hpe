@@ -171,6 +171,48 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_network`: removing an optional attribute clears it (MORPH-17990)
+
+Removing an optional attribute from a network's configuration used to do one of two wrong things.
+An attribute Morpheus also computes (`gateway`, the DNS servers, `pool_id`, `description`, the IPv6
+addressing, `labels`, …) was silently kept: Terraform planned no change, and the value stayed on the
+network. An attribute Morpheus does not compute (`cidr`, `cidr_ipv6`) was planned to `null` but
+never sent, so every apply failed with *Provider produced inconsistent result after apply*. Both are
+fixed: a removed attribute is cleared on the network and reads back empty, `cidr` included. The
+provider records at each apply which attributes the configuration set, so a value the user never
+set — a display name Morpheus filled in, a gateway a cloud sync reported — is left alone; booleans
+keep their value. Removing `tenant_ids` revokes every tenant but the owning one, which Morpheus
+always keeps. A clear of an attribute the network type does not edit after create is planned as a
+replacement, like a change to it, and `zone_pool_id` cannot be removed from the HVM port group types,
+whose pool is the network's cluster. The record starts with the first apply made by this version:
+an attribute removed before that apply is kept once more — apply, then remove.
+
+### Removing an optional attribute clears it on fifteen more resources (MORPH-17990)
+
+The same fix, resource by resource, for the attributes practitioners edit: `description` on
+`hpe_morpheus_subnet`, `hpe_morpheus_cluster`, `hpe_morpheus_security_group`,
+`hpe_morpheus_monitoring_check`, `hpe_morpheus_monitoring_group`, `hpe_morpheus_vdi_pool`,
+`hpe_morpheus_vdi_gateway`, `hpe_morpheus_vdi_app` and `hpe_morpheus_instance` (and
+`hpe_morpheus_tenant`, `hpe_morpheus_role`, whose removal already worked and is now covered by
+tests); `labels` on `hpe_morpheus_group`, `hpe_morpheus_subnet`, `hpe_morpheus_cluster` and
+`hpe_morpheus_instance`; `code` and `location` on `hpe_morpheus_group`, and its `cloud_ids`;
+`pool_id` and `resource_permission_group_ids` on `hpe_morpheus_subnet`;
+`resource_permission_group_ids` on `hpe_morpheus_security_group`; `name` on
+`hpe_morpheus_security_group_rule`; `gateway_url` on `hpe_morpheus_vdi_gateway`; `retention_count`
+and `schedule_id` on `hpe_morpheus_backup_job`; `path`, `ssh_username` and `storage_provider_id` on
+`hpe_morpheus_backup_host`; `subdomain`, `account_number`, `account_name` and `customer_number` on
+`hpe_morpheus_tenant`. Each of these was either a failed apply (*Provider produced inconsistent
+result after apply*) or a silently ignored removal. The bundled Morpheus SDK sends null for them;
+the cluster API rejects an empty label list, so an empty list goes under the key it does accept.
+The provider index documents the behaviour and which resources have it.
+
+### `hpe_morpheus_security_group_rule`: rules with ids of a million or more could not be read
+
+The rule id was sent to the API as a floating-point number, which for ids of 1,000,000 and above
+was formatted in exponent notation (`/rules/1.962589e+06`) and not found: every read, update and
+delete of such a rule failed. The id is now sent as an integer. The rule sweeper also passed the
+security group and rule ids in the wrong order and could not remove leftover test rules.
+
 ### `hpe_morpheus_network` (MORPH-17908, MORPH-17909, MORPH-17910)
 
 - Any change to a network with `tenant_ids` unset was planned as a replacement, because the

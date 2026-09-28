@@ -21,6 +21,12 @@ resource "hpe_morpheus_instance" "example" {
   plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
 
   instance_context = "{{.InstanceContext}}"
+{{- if .Description}}
+  description      = "{{.Description}}"
+{{- end}}
+{{- if .Labels}}
+  labels           = [{{.Labels}}]
+{{- end}}
 {{- if .CreateTimeout}}
 
   timeouts = {

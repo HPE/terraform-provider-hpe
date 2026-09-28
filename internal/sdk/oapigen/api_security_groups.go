@@ -288,7 +288,7 @@ type ApiGetSecurityGroupRulesRequest struct {
 	ctx        context.Context
 	ApiService *SecurityGroupsAPIService
 	id         int64
-	sgId       float32
+	sgId       int64
 }
 
 func (r ApiGetSecurityGroupRulesRequest) Execute() (*GetSecurityGroupRules200Response, *http.Response, error) {
@@ -305,7 +305,7 @@ Retrieves a specific security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiGetSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) GetSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiGetSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) GetSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiGetSecurityGroupRulesRequest {
 	return ApiGetSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -928,7 +928,7 @@ type ApiRemoveSecurityGroupRulesRequest struct {
 	ctx        context.Context
 	ApiService *SecurityGroupsAPIService
 	id         int64
-	sgId       float32
+	sgId       int64
 }
 
 func (r ApiRemoveSecurityGroupRulesRequest) Execute() (*RemoveExecuteSchedules200Response, *http.Response, error) {
@@ -945,7 +945,7 @@ Deletes a security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiRemoveSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) RemoveSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiRemoveSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) RemoveSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiRemoveSecurityGroupRulesRequest {
 	return ApiRemoveSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,
@@ -1180,7 +1180,7 @@ type ApiUpdateSecurityGroupRulesRequest struct {
 	ctx                             context.Context
 	ApiService                      *SecurityGroupsAPIService
 	id                              int64
-	sgId                            float32
+	sgId                            int64
 	updateSecurityGroupRulesRequest *UpdateSecurityGroupRulesRequest
 }
 
@@ -1203,7 +1203,7 @@ Updates a security group rule.
 	@param sgId Morpheus ID of the security group rule being referenced
 	@return ApiUpdateSecurityGroupRulesRequest
 */
-func (a *SecurityGroupsAPIService) UpdateSecurityGroupRules(ctx context.Context, id int64, sgId float32) ApiUpdateSecurityGroupRulesRequest {
+func (a *SecurityGroupsAPIService) UpdateSecurityGroupRules(ctx context.Context, id int64, sgId int64) ApiUpdateSecurityGroupRulesRequest {
 	return ApiUpdateSecurityGroupRulesRequest{
 		ApiService: a,
 		ctx:        ctx,

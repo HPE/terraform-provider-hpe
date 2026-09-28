@@ -18,10 +18,10 @@ import (
 // checks if the UpdateNetworkRequestNetworkNetworkProxy type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkRequestNetworkNetworkProxy{}
 
-// UpdateNetworkRequestNetworkNetworkProxy struct for UpdateNetworkRequestNetworkNetworkProxy
+// UpdateNetworkRequestNetworkNetworkProxy Network proxy; null, or a null id, removes it
 type UpdateNetworkRequestNetworkNetworkProxy struct {
-	// Network Proxy ID
-	Id                   *int64                 `json:"id,omitempty"`
+	// Network Proxy ID; null removes the proxy
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -37,8 +37,8 @@ func (o UpdateNetworkRequestNetworkNetworkProxy) MarshalJSON() ([]byte, error) {
 
 func (o UpdateNetworkRequestNetworkNetworkProxy) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

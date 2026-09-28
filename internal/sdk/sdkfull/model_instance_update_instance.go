@@ -24,8 +24,8 @@ var _ MappedNullable = &InstanceUpdateInstance{}
 type InstanceUpdateInstance struct {
 	// Unique name scoped to your account for the instance.
 	Name *string `json:"name,omitempty"`
-	// Optional description field.
-	Description *string `json:"description,omitempty"`
+	// Optional description field; null clears it.
+	Description NullableString `json:"description,omitempty"`
 	// Environment
 	InstanceContext *string `json:"instanceContext,omitempty"`
 	// Array of strings (keywords).
@@ -61,8 +61,8 @@ func (o InstanceUpdateInstance) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.InstanceContext) {
 		toSerialize["instanceContext"] = o.InstanceContext

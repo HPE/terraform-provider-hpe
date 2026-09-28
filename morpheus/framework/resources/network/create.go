@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -373,6 +374,7 @@ func (r *Resource) Create(
 	// Record what was sent, so the next plan can tell whether the write-only
 	// configuration changed.
 	resp.Diagnostics.Append(networkconfig.Store(ctx, resp.Private, inputs.digests)...)
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

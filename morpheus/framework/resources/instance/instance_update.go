@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -71,6 +72,14 @@ func (g *Resource) Update(
 	ctx, cancel := context.WithTimeout(ctx, updateTimeout)
 	defer cancel()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	// Two appliance calls, each gated on its own attributes (see
 	// instance_update_gate.go). The gates read the raw plan and state so that
 	// unknown planned values -- optional-and-computed attributes the practitioner
@@ -83,7 +92,7 @@ func (g *Resource) Update(
 	// applyEvarsUpdate below, which runs unconditionally and is a no-op when
 	// the planned variables match state.
 	if isUpdateCallNeeded(req.Plan.Raw, req.State.Raw) {
-		makeUpdateAPIcalls(ctx, client, plan, resp)
+		makeUpdateAPIcalls(ctx, client, plan, pending, resp)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -152,6 +161,7 @@ func (g *Resource) Update(
 
 	newState.ServicePlanOptions = servicePlanOptions
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -165,6 +175,7 @@ func makeUpdateAPIcalls(
 	ctx context.Context,
 	client *sdk.APIClient,
 	plan InstanceModel,
+	pending clearable.Pending,
 	resp *resource.UpdateResponse,
 ) {
 	updateInstance := client.InstancesAPI.UpdateInstance(ctx, plan.Id.ValueInt64())
@@ -179,10 +190,8 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.DisplayName = plan.Name.ValueStringPointer()
 	}
 
-	// description
-	if !plan.Description.IsNull() {
-		instanceUpdateRequest.Description = plan.Description.ValueStringPointer()
-	}
+	// description: sent when known, null when being cleared, not sent otherwise
+	clearable.NullableString(pending, "description", plan.Description, &instanceUpdateRequest.Description)
 
 	// instance_context
 	if !plan.InstanceContext.IsNull() && !plan.InstanceContext.IsUnknown() {
@@ -211,13 +220,14 @@ func makeUpdateAPIcalls(
 		instanceUpdateRequest.Tags = []sdk.UpdateInstanceRequestInstanceTagsInner{}
 	}
 
-	// labels
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		var labels []string
-		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	// labels: the planned list, or an empty list when being cleared
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendLabels {
 		instanceUpdateRequest.Labels = labels
 	}
 

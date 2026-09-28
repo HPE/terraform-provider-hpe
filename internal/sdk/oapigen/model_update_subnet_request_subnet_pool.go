@@ -18,9 +18,9 @@ import (
 // checks if the UpdateSubnetRequestSubnetPool type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateSubnetRequestSubnetPool{}
 
-// UpdateSubnetRequestSubnetPool Network Pool
+// UpdateSubnetRequestSubnetPool Network Pool; on update, null or a null id removes the pool
 type UpdateSubnetRequestSubnetPool struct {
-	Id                   *int64                 `json:"id,omitempty"`
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -36,8 +36,8 @@ func (o UpdateSubnetRequestSubnetPool) MarshalJSON() ([]byte, error) {
 
 func (o UpdateSubnetRequestSubnetPool) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

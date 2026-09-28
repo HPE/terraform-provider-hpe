@@ -24,10 +24,10 @@ var _ MappedNullable = &UpdateVDIGatewaysRequestVdiGatewayOneOf{}
 type UpdateVDIGatewaysRequestVdiGatewayOneOf struct {
 	// VDI Gateway name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
-	// Gateway URL
-	GatewayUrl           *string                `json:"gatewayUrl,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
+	// Gateway URL; null clears it
+	GatewayUrl           NullableString         `json:"gatewayUrl,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -46,11 +46,11 @@ func (o UpdateVDIGatewaysRequestVdiGatewayOneOf) ToMap() (map[string]interface{}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.GatewayUrl) {
-		toSerialize["gatewayUrl"] = o.GatewayUrl
+	if o.GatewayUrl.IsSet() {
+		toSerialize["gatewayUrl"] = o.GatewayUrl.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

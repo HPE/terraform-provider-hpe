@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
@@ -41,6 +42,14 @@ func (r *Resource) Update(
 
 	id := state.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	network := &sdk.UpdateNetworkRequestNetwork{}
 
 	// Set all updateable fields from plan. Whether Morpheus applies a change
@@ -54,9 +63,10 @@ func (r *Resource) Update(
 		network.Name = plan.Name.ValueStringPointer()
 	}
 
-	if !plan.DisplayName.IsNull() && !plan.DisplayName.IsUnknown() {
-		network.DisplayName = plan.DisplayName.ValueStringPointer()
-	}
+	// A clearable attribute is sent when known, sent as its cleared form when
+	// pending (an empty string, or null for a nullable field — Morpheus
+	// stores both as null), and not sent otherwise.
+	network.DisplayName = pending.String("display_name", plan.DisplayName)
 
 	if !plan.Ipv4enabled.IsNull() && !plan.Ipv4enabled.IsUnknown() {
 		network.Ipv4Enabled = plan.Ipv4enabled.ValueBoolPointer()
@@ -66,72 +76,29 @@ func (r *Resource) Update(
 		network.Ipv6Enabled = plan.Ipv6enabled.ValueBoolPointer()
 	}
 
-	if !plan.CidrIpv6.IsNull() && !plan.CidrIpv6.IsUnknown() {
-		network.CidrIPv6 = plan.CidrIpv6.ValueStringPointer()
-	}
-
-	if !plan.GatewayIpv6.IsNull() && !plan.GatewayIpv6.IsUnknown() {
-		gatewayIpv6 := plan.GatewayIpv6.ValueString()
-		network.GatewayIPv6.Set(&gatewayIpv6)
-	}
-
-	if !plan.NetmaskIpv6.IsNull() && !plan.NetmaskIpv6.IsUnknown() {
-		netmaskIpv6 := plan.NetmaskIpv6.ValueString()
-		network.NetmaskIPv6.Set(&netmaskIpv6)
-	}
-
-	if !plan.DnsPrimaryIpv6.IsNull() && !plan.DnsPrimaryIpv6.IsUnknown() {
-		dnsPrimaryIpv6 := plan.DnsPrimaryIpv6.ValueString()
-		network.DnsPrimaryIPv6.Set(&dnsPrimaryIpv6)
-	}
-
-	if !plan.DnsSecondaryIpv6.IsNull() && !plan.DnsSecondaryIpv6.IsUnknown() {
-		dnsSecondaryIpv6 := plan.DnsSecondaryIpv6.ValueString()
-		network.DnsSecondaryIPv6.Set(&dnsSecondaryIpv6)
-	}
+	network.CidrIPv6 = pending.String("cidr_ipv6", plan.CidrIpv6)
+	clearable.NullableString(pending, "gateway_ipv6", plan.GatewayIpv6, &network.GatewayIPv6)
+	clearable.NullableString(pending, "netmask_ipv6", plan.NetmaskIpv6, &network.NetmaskIPv6)
+	clearable.NullableString(pending, "dns_primary_ipv6", plan.DnsPrimaryIpv6, &network.DnsPrimaryIPv6)
+	clearable.NullableString(pending, "dns_secondary_ipv6", plan.DnsSecondaryIpv6, &network.DnsSecondaryIPv6)
 
 	if !plan.DhcpServerIpv6.IsNull() && !plan.DhcpServerIpv6.IsUnknown() {
 		network.DhcpServerIPv6 = plan.DhcpServerIpv6.ValueBoolPointer()
 	}
 
-	if !plan.PoolIpv6Id.IsNull() && !plan.PoolIpv6Id.IsUnknown() {
-		poolIpv6ID := plan.PoolIpv6Id.ValueInt64()
-		network.PoolIPv6.Set(&poolIpv6ID)
-	}
+	clearable.NullableInt64(pending, "pool_ipv6_id", plan.PoolIpv6Id, &network.PoolIPv6)
+	clearable.NullableString(pending, "description", plan.Description, &network.Description)
+	network.Cidr = pending.String("cidr", plan.Cidr)
+	network.Gateway = pending.String("gateway", plan.Gateway)
+	network.DnsPrimary = pending.String("dns_primary", plan.DnsPrimary)
+	network.DnsSecondary = pending.String("dns_secondary", plan.DnsSecondary)
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		description := plan.Description.ValueString()
-		network.Description.Set(&description)
-	}
+	clearable.NullableInt64(pending, "vlan_id", plan.VlanId, &network.VlanId)
+	clearable.NullableInt64(pending, "pool_id", plan.PoolId, &network.Pool)
 
-	if !plan.Cidr.IsNull() && !plan.Cidr.IsUnknown() {
-		network.Cidr = plan.Cidr.ValueStringPointer()
-	}
-
-	if !plan.Gateway.IsNull() && !plan.Gateway.IsUnknown() {
-		network.Gateway = plan.Gateway.ValueStringPointer()
-	}
-
-	if !plan.DnsPrimary.IsNull() && !plan.DnsPrimary.IsUnknown() {
-		network.DnsPrimary = plan.DnsPrimary.ValueStringPointer()
-	}
-
-	if !plan.DnsSecondary.IsNull() && !plan.DnsSecondary.IsUnknown() {
-		network.DnsSecondary = plan.DnsSecondary.ValueStringPointer()
-	}
-
-	if !plan.VlanId.IsNull() && !plan.VlanId.IsUnknown() {
-		network.VlanId = plan.VlanId.ValueInt64Pointer()
-	}
-
-	if !plan.PoolId.IsNull() && !plan.PoolId.IsUnknown() {
-		poolID := plan.PoolId.ValueInt64()
-		network.Pool.Set(&poolID)
-	}
-
-	if !plan.ZonePoolId.IsNull() && !plan.ZonePoolId.IsUnknown() {
-		zonePoolID := plan.ZonePoolId.ValueInt64()
-		network.ZonePool = &sdk.UpdateNetworkRequestNetworkZonePool{Id: &zonePoolID}
+	// Associations are sent as {"id": n}; {"id": null} removes one.
+	if id, ok := idRef(pending, "zone_pool_id", plan.ZonePoolId); ok {
+		network.ZonePool = &sdk.UpdateNetworkRequestNetworkZonePool{Id: id}
 	}
 
 	if !plan.AllowStaticOverride.IsNull() && !plan.AllowStaticOverride.IsUnknown() {
@@ -150,72 +117,61 @@ func (r *Resource) Update(
 		network.DhcpServer = plan.DhcpServer.ValueBoolPointer()
 	}
 
-	if !plan.SearchDomains.IsNull() && !plan.SearchDomains.IsUnknown() {
-		network.SearchDomains = plan.SearchDomains.ValueStringPointer()
-	}
-
-	if !plan.SwitchId.IsNull() && !plan.SwitchId.IsUnknown() {
-		network.SwitchId = plan.SwitchId.ValueStringPointer()
-	}
+	network.SearchDomains = pending.String("search_domains", plan.SearchDomains)
+	network.SwitchId = pending.String("switch_id", plan.SwitchId)
 
 	if !plan.ApplianceUrlProxyBypass.IsNull() && !plan.ApplianceUrlProxyBypass.IsUnknown() {
 		network.ApplianceUrlProxyBypass = plan.ApplianceUrlProxyBypass.ValueBoolPointer()
 	}
 
-	if !plan.NoProxy.IsNull() && !plan.NoProxy.IsUnknown() {
-		noProxy := plan.NoProxy.ValueString()
-		network.NoProxy.Set(&noProxy)
-	}
+	clearable.NullableString(pending, "no_proxy", plan.NoProxy, &network.NoProxy)
 
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		network.Visibility = plan.Visibility.ValueStringPointer()
 	}
 
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		var labels []types.String
-		diags := plan.Labels.ElementsAs(ctx, &labels, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-		var labelStrings []string
-		for _, label := range labels {
-			if !label.IsNull() {
-				labelStrings = append(labelStrings, label.ValueString())
-			}
-		}
-		network.Labels = labelStrings
+	if sendLabels {
+		network.Labels = labels
 	}
 
 	// Type-specific configuration, resolved from the write-only inputs. Morpheus
-	// merges it into the network's existing config map: keys not sent are kept.
-	if inputs.all != nil {
-		network.Config = inputs.all
+	// merges it into the network's existing config map: keys not sent are kept,
+	// so a removed connected_gateway is cleared by sending it empty. The map is
+	// copied: inputs.all is what the stored digests describe.
+	if inputs.all != nil || pending.Clears("connected_gateway") {
+		network.Config = make(map[string]any, len(inputs.all)+1)
+		for k, v := range inputs.all {
+			network.Config[k] = v
+		}
+
+		if pending.Clears("connected_gateway") {
+			network.Config["connectedGateway"] = ""
+		}
 	}
 
-	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
-		var tenantIDs []types.Int64
-		diags := plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
+	tenantIDs, sendTenants, tdiags := pending.Int64s(ctx, "tenant_ids", plan.TenantIds)
+	resp.Diagnostics.Append(tdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendTenants {
+		tenants := make([]sdk.UpdateNetworkRequestNetworkTenantsInner, 0, len(tenantIDs))
+		for _, tenantID := range tenantIDs {
+			tenants = append(tenants, sdk.UpdateNetworkRequestNetworkTenantsInner{Id: &tenantID})
 		}
 
-		var tenants []sdk.UpdateNetworkRequestNetworkTenantsInner
-		for _, tenantID := range tenantIDs {
-			if !tenantID.IsNull() {
-				id := tenantID.ValueInt64()
-				tenant := sdk.UpdateNetworkRequestNetworkTenantsInner{Id: &id}
-				tenants = append(tenants, tenant)
-			}
-		}
 		network.Tenants = tenants
 	}
 
-	if !plan.NetworkDomainId.IsNull() && !plan.NetworkDomainId.IsUnknown() {
-		networkDomainID := plan.NetworkDomainId.ValueInt64()
-		network.NetworkDomain = &sdk.UpdateNetworkRequestNetworkNetworkDomain{Id: &networkDomainID}
+	if id, ok := idRef(pending, "network_domain_id", plan.NetworkDomainId); ok {
+		network.NetworkDomain = &sdk.UpdateNetworkRequestNetworkNetworkDomain{Id: id}
 	}
 
 	// The network server and a child network's parent; the type-specific
@@ -229,9 +185,8 @@ func (r *Resource) Update(
 		network.ParentNetwork = &sdk.UpdateNetworkRequestNetworkParentNetwork{Id: &v}
 	}
 
-	if !plan.NetworkProxyId.IsNull() && !plan.NetworkProxyId.IsUnknown() {
-		networkProxyID := plan.NetworkProxyId.ValueInt64()
-		network.NetworkProxy = &sdk.UpdateNetworkRequestNetworkNetworkProxy{Id: &networkProxyID}
+	if id, ok := idRef(pending, "network_proxy_id", plan.NetworkProxyId); ok {
+		network.NetworkProxy = &sdk.UpdateNetworkRequestNetworkNetworkProxy{Id: id}
 	}
 
 	updateNetworkReq := &sdk.UpdateNetworkRequest{Network: network}
@@ -270,6 +225,18 @@ func (r *Resource) Update(
 	}
 
 	resp.Diagnostics.Append(networkconfig.Store(ctx, resp.Private, inputs.digests)...)
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &networkState)...)
+}
+
+// idRef is the id of an association object in the update request: null when
+// the attribute is being cleared, the planned id when known, and false — send
+// no object — otherwise.
+func idRef(pending clearable.Pending, name string, plan types.Int64) (sdk.NullableInt64, bool) {
+	var id sdk.NullableInt64
+
+	ok := clearable.NullableInt64(pending, name, plan, &id)
+
+	return id, ok
 }

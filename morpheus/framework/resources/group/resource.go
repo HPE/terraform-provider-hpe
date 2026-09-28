@@ -16,6 +16,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -115,23 +116,18 @@ func getGroupAsState(
 	return state, diags
 }
 
+// updateClouds sets the group's clouds to exactly cloudIDs; an empty list
+// removes them all.
 func updateClouds(
 	ctx context.Context,
 	client *sdk.APIClient,
 	id int64,
-	plan GroupModel,
+	cloudIDs []int64,
 ) error {
-	var clouds []map[string]interface{}
+	clouds := make([]map[string]interface{}, 0, len(cloudIDs))
 
-	for _, c := range plan.CloudIds.Elements() {
-		val, ok := c.(types.Int64)
-		if !ok {
-			continue
-		}
-
-		cloud := map[string]interface{}{"id": val.ValueInt64()}
-
-		clouds = append(clouds, cloud)
+	for _, cloudID := range cloudIDs {
+		clouds = append(clouds, map[string]interface{}{"id": cloudID})
 	}
 
 	reqGrp := &sdk.UpdateGroupsZonesRequestGroup{
@@ -254,7 +250,14 @@ func (r *Resource) Create(
 	}
 
 	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
-		if err := updateClouds(ctx, client, id, plan); err != nil {
+		var cloudIDs []int64
+
+		resp.Diagnostics.Append(plan.CloudIds.ElementsAs(ctx, &cloudIDs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+
+		if err := updateClouds(ctx, client, id, cloudIDs); err != nil {
 			resp.Diagnostics.AddError(
 				"create group resource",
 				"group "+name+" update clouds failed: "+err.Error(),
@@ -275,6 +278,8 @@ func (r *Resource) Create(
 
 		return
 	}
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -316,27 +321,25 @@ func (r *Resource) Update(
 
 	updateGroup.Name = name
 
-	if !plan.Code.IsNull() {
-		updateGroup.Code = plan.Code.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if !plan.Location.IsNull() {
-		updateGroup.Location = plan.Location.ValueStringPointer()
+	// Sent when known, sent empty when being cleared, not sent otherwise.
+	updateGroup.Code = pending.String("code", plan.Code)
+	updateGroup.Location = pending.String("location", plan.Location)
+
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if plan.Labels.IsNull() {
-		updateGroup.Labels = []string{}
-	} else {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				"update group resource",
-				"group "+name+": failed to parse labels: "+err.Error(),
-			)
-
-			return
-		}
-
+	if sendLabels {
 		updateGroup.Labels = labels
 	}
 
@@ -392,10 +395,18 @@ func (r *Resource) Update(
 		return
 	}
 
-	if !plan.CloudIds.IsUnknown() && !plan.CloudIds.IsNull() {
-		if err := updateClouds(ctx, client, id, plan); err != nil {
+	// The clouds are a separate call: the planned list when known, an empty
+	// list — every cloud removed — when the attribute is being cleared.
+	cloudIDs, sendClouds, cdiags := pending.Int64s(ctx, "cloud_ids", plan.CloudIds)
+	resp.Diagnostics.Append(cdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendClouds {
+		if err := updateClouds(ctx, client, id, cloudIDs); err != nil {
 			resp.Diagnostics.AddError(
-				"create group resource",
+				"update group resource",
 				"group "+name+" update clouds failed: "+err.Error(),
 			)
 
@@ -403,9 +414,9 @@ func (r *Resource) Update(
 		}
 	}
 
-	state, pdiags := getGroupAsState(ctx, newid, client, plan)
-	if pdiags.HasError() {
-		resp.Diagnostics.Append(pdiags...)
+	state, sdiags := getGroupAsState(ctx, newid, client, plan)
+	if sdiags.HasError() {
+		resp.Diagnostics.Append(sdiags...)
 		resp.Diagnostics.AddError(
 			"update group resource",
 			fmt.Sprintf("group %d: failed to read from api", id),
@@ -413,6 +424,8 @@ func (r *Resource) Update(
 
 		return
 	}
+
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

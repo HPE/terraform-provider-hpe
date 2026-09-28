@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateSecurityGroupsRequestSecurityGroup{}
 type UpdateSecurityGroupsRequestSecurityGroup struct {
 	// Name for your security group
 	Name *string `json:"name,omitempty"`
-	// Optional description field
-	Description *string `json:"description,omitempty"`
+	// Optional description field; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Set to `false` to disable a security group.
 	Active *bool `json:"active,omitempty"`
 	// Visibility for the security group.
@@ -48,8 +48,8 @@ func (o UpdateSecurityGroupsRequestSecurityGroup) ToMap() (map[string]interface{
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active

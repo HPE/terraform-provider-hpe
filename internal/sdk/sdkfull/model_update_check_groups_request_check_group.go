@@ -24,8 +24,8 @@ var _ MappedNullable = &UpdateCheckGroupsRequestCheckGroup{}
 type UpdateCheckGroupsRequestCheckGroup struct {
 	// Unique name scoped to your account for the check group
 	Name *string `json:"name,omitempty"`
-	// Optional description field
-	Description *string `json:"description,omitempty"`
+	// Optional description field; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// This specifies the minimum number of checks within the group that must be happy to keep the group from becoming unhealthy.
 	MinHappy *int32 `json:"minHappy,omitempty"`
 	// Used to determine if check should affect account wide availability calculations
@@ -53,8 +53,8 @@ func (o UpdateCheckGroupsRequestCheckGroup) ToMap() (map[string]interface{}, err
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.MinHappy) {
 		toSerialize["minHappy"] = o.MinHappy

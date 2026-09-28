@@ -20,10 +20,10 @@ import (
 // checks if the UpdateNetworkRequestNetworkZonePool type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateNetworkRequestNetworkZonePool{}
 
-// UpdateNetworkRequestNetworkZonePool struct for UpdateNetworkRequestNetworkZonePool
+// UpdateNetworkRequestNetworkZonePool Zone pool (resource pool) the network is assigned to; null, or a null id, removes the assignment
 type UpdateNetworkRequestNetworkZonePool struct {
-	// Morpheus zone pool ID of the GCP Project for the network
-	Id                   *int64                 `json:"id,omitempty"`
+	// Morpheus zone pool ID of the GCP Project for the network; null removes the assignment
+	Id                   NullableInt64          `json:"id,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -39,8 +39,8 @@ func (o UpdateNetworkRequestNetworkZonePool) MarshalJSON() ([]byte, error) {
 
 func (o UpdateNetworkRequestNetworkZonePool) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Id) {
-		toSerialize["id"] = o.Id
+	if o.Id.IsSet() {
+		toSerialize["id"] = o.Id.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

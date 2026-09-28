@@ -196,9 +196,11 @@ func getRuleByID(
 	securityGroupID int64,
 	apiClient *sdk.APIClient,
 ) (*sdk.GetSecurityGroupRules200ResponseRule, error) {
-	// GetSecurityGroupRules(ctx, id, sgId) where id=securityGroupId (parent), sgId=ruleId (child, float32)
+	// GetSecurityGroupRules(ctx, id, sgId): the path is
+	// /api/security-groups/{id}/rules/{sgId}, where id is the security group
+	// and the misleadingly named sgId is the rule.
 	r, hresp, err := apiClient.SecurityGroupsAPI.GetSecurityGroupRules(
-		ctx, securityGroupID, float32(ruleID),
+		ctx, securityGroupID, ruleID,
 	).Execute()
 	if r == nil || err != nil || hresp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf(

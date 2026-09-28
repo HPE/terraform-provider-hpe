@@ -30,14 +30,14 @@ type UpdateBackupsRequestBackup struct {
 	BackupJobId *int64 `json:"backupJobId,omitempty"`
 	// Cron expression for custom schedule (overrides job schedule).
 	CronExpression *string `json:"cronExpression,omitempty"`
-	// The file or directory path on the target host. Applies to server/host backups (fileBackup, directoryBackup).
-	TargetPath *string `json:"targetPath,omitempty"`
+	// The file or directory path on the target host. Applies to server/host backups (fileBackup, directoryBackup). Null clears it.
+	TargetPath NullableString `json:"targetPath,omitempty"`
 	// Target host address. Applies to server/host and database backups.
 	TargetHost *string `json:"targetHost,omitempty"`
 	// Target port. Applies to server/host and database backups.
 	TargetPort *int32 `json:"targetPort,omitempty"`
-	// Target username for connecting to the backup target.
-	TargetUsername *string `json:"targetUsername,omitempty"`
+	// Target username for connecting to the backup target. Null clears it.
+	TargetUsername NullableString `json:"targetUsername,omitempty"`
 	// Target password for connecting to the backup target.
 	TargetPassword *string `json:"targetPassword,omitempty"`
 	// Whether to backup all databases. Applies to database backup types.
@@ -74,8 +74,8 @@ func (o UpdateBackupsRequestBackup) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.CronExpression) {
 		toSerialize["cronExpression"] = o.CronExpression
 	}
-	if !IsNil(o.TargetPath) {
-		toSerialize["targetPath"] = o.TargetPath
+	if o.TargetPath.IsSet() {
+		toSerialize["targetPath"] = o.TargetPath.Get()
 	}
 	if !IsNil(o.TargetHost) {
 		toSerialize["targetHost"] = o.TargetHost
@@ -83,8 +83,8 @@ func (o UpdateBackupsRequestBackup) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.TargetPort) {
 		toSerialize["targetPort"] = o.TargetPort
 	}
-	if !IsNil(o.TargetUsername) {
-		toSerialize["targetUsername"] = o.TargetUsername
+	if o.TargetUsername.IsSet() {
+		toSerialize["targetUsername"] = o.TargetUsername.Get()
 	}
 	if !IsNil(o.TargetPassword) {
 		toSerialize["targetPassword"] = o.TargetPassword

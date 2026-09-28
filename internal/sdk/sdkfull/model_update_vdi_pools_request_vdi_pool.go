@@ -24,8 +24,8 @@ var _ MappedNullable = &UpdateVDIPoolsRequestVdiPool{}
 type UpdateVDIPoolsRequestVdiPool struct {
 	// Virtual Desktop name
 	Name *string `json:"name,omitempty"`
-	// Virtual Desktop description
-	Description *string `json:"description,omitempty"`
+	// Virtual Desktop description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Owner (User) ID
 	Owner *int64 `json:"owner,omitempty"`
 	// Min Idle - Sets the minimum number of idle instances on standby in the pool. The pool will always try to maintain this number of available instances on standby.
@@ -91,8 +91,8 @@ func (o UpdateVDIPoolsRequestVdiPool) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Owner) {
 		toSerialize["owner"] = o.Owner

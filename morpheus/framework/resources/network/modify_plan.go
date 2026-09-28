@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/networkconfig"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 )
@@ -43,6 +44,11 @@ var _ resource.ResourceWithModifyPlan = &Resource{}
 // differing immutable digest with an unchanged overall digest means the
 // catalogue's idea of what is immutable moved between provider versions, not
 // that the user changed anything.
+//
+// An optional attribute removed from the configuration is planned as a clear
+// when it was configured at the last apply (recorded in private state by
+// Create and Update); one the user never set is left to the server. See
+// clearableAttributes.
 func (r *Resource) ModifyPlan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
@@ -110,6 +116,41 @@ func (r *Resource) ModifyPlan(
 		}
 	}
 
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears: null, or unknown for one the server may still
+	// hold a value for afterwards. Clearing a value the type does not edit in
+	// place is, like changing it, a replacement.
+	pending, pdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if typ != nil {
+		for _, attr := range networkconfig.ImmutableAttributes(*typ) {
+			if pending.Clears(attr) {
+				tflog.Debug(ctx, "network: attribute is not editable on this type; requiring replacement to clear it",
+					map[string]any{"attribute": attr, "type": typ.Code})
+				resp.RequiresReplace = append(resp.RequiresReplace, path.Root(attr))
+			}
+		}
+	}
+
+	if d := poolClearRefusal(typ, pending); d != nil {
+		resp.Diagnostics.Append(d)
+
+		return
+	}
+
+	// connected_gateway is cleared through the config map, which
+	// config_from_api mirrors.
+	if pending.Clears("connected_gateway") {
+		resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("config_from_api"), types.DynamicUnknown())...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	stored, ok, ldiags := networkconfig.Load(ctx, req.Private)
 	resp.Diagnostics.Append(ldiags...)
 	if resp.Diagnostics.HasError() {
@@ -162,6 +203,19 @@ func planConfigUpdate(ctx context.Context, req resource.ModifyPlanRequest, resp 
 	}
 
 	resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("connected_gateway"), types.StringUnknown())...)
+}
+
+// poolClearRefusal is the error for removing zone_pool_id from a network
+// whose type keeps its cluster there (poolIsCluster), or nil.
+func poolClearRefusal(typ *networkconfig.TypeSpec, pending clearable.Pending) diag.Diagnostic {
+	if typ == nil || !poolIsCluster[typ.Code] || !pending.Clears("zone_pool_id") {
+		return nil
+	}
+
+	return diag.NewAttributeErrorDiagnostic(path.Root("zone_pool_id"),
+		"zone_pool_id cannot be removed from this network",
+		fmt.Sprintf("For the %s type (%s) the pool is the cluster the network lives on; without it the network "+
+			"could neither be updated nor deleted. Keep zone_pool_id, or replace the network to move it.", typ.Name, typ.Code))
 }
 
 // checkBlockMatchesType rejects a typed block set for a network of another

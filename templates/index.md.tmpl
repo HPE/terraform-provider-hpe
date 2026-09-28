@@ -695,6 +695,28 @@ The `hpe_morpheus_storage_volume_type` data source previously surfaced only `id`
 - `hpe_morpheus_instance` in Morpheus versions prior to 8.0.11 requires that the `root` volume is the first entry in
   the `volumes` block list
 
+## Removing an attribute from the configuration
+
+Removing an optional attribute from a resource's configuration **clears it on the appliance**, for
+the resources listed below; the attribute is planned to `null` (or, where Morpheus keeps a value of
+its own afterwards, `(known after apply)`) and read back empty after the apply. Three things are
+not cleared: a boolean keeps its value when it is removed, since there is no empty boolean; a value
+the practitioner never set — one Morpheus filled in, or a cloud sync reported — is left alone; and
+an attribute Morpheus requires, or one whose change replaces the resource, keeps its current value,
+as each resource's documentation says. The provider records, at every apply, which of a resource's
+optional-and-computed attributes the configuration set, and only a recorded attribute is cleared
+when it goes: the record starts with the first apply made by this version, so an attribute removed
+*before* that apply is kept once more — apply, then remove. An imported resource behaves the same
+way until its first apply.
+
+In this release the behaviour applies to `hpe_morpheus_network`, `hpe_morpheus_subnet`,
+`hpe_morpheus_group`, `hpe_morpheus_role`, `hpe_morpheus_tenant`, `hpe_morpheus_cluster`,
+`hpe_morpheus_security_group`, `hpe_morpheus_security_group_rule`, `hpe_morpheus_monitoring_check`,
+`hpe_morpheus_monitoring_group`, `hpe_morpheus_vdi_pool`, `hpe_morpheus_vdi_gateway`,
+`hpe_morpheus_vdi_app`, `hpe_morpheus_backup_job`, `hpe_morpheus_backup_host` and
+`hpe_morpheus_instance`. On the other resources a removed optional attribute is still kept, as in
+earlier releases.
+
 ## Automatic version checking
 
 The provider performs automatic version checking.

@@ -16,6 +16,8 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
+
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 )
 
 // ModifyPlan performs plan-time validation the generated schema cannot express:
@@ -36,6 +38,16 @@ func (r *Resource) ModifyPlan(
 ) {
 	if req.Plan.Raw.IsNull() {
 		return
+	}
+
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	if !req.State.Raw.IsNull() {
+		_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+		resp.Diagnostics.Append(cdiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	var plan TenantModel

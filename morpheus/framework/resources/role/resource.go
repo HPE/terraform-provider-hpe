@@ -19,6 +19,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -2046,24 +2047,17 @@ func (r *Resource) Update(
 	// required - authority (name)
 	updateRole.Authority = plan.Name.ValueStringPointer()
 
-	// optional fields
-	if plan.DefaultPersonaCode.IsNull() {
-		updateRole.DefaultPersona.Set(nil)
-	} else {
-		updateRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
+	// Attributes removed from the configuration, to be cleared: sent when
+	// known, null when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if plan.Description.IsNull() {
-		updateRole.Description.Set(nil)
-	} else {
-		updateRole.Description.Set(plan.Description.ValueStringPointer())
-	}
-
-	if plan.LandingUrl.IsNull() {
-		updateRole.LandingUrl.Set(nil)
-	} else {
-		updateRole.LandingUrl.Set(plan.LandingUrl.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "default_persona_code", plan.DefaultPersonaCode, &updateRole.DefaultPersona)
+	clearable.NullableString(pending, "description", plan.Description, &updateRole.Description)
+	clearable.NullableString(pending, "landing_url", plan.LandingUrl, &updateRole.LandingUrl)
 
 	if !plan.Multitenant.IsNull() {
 		updateRole.Multitenant = plan.Multitenant.ValueBoolPointer()

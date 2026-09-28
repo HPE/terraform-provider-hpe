@@ -49,8 +49,8 @@ type UpdateNetworkRequestNetwork struct {
 	DnsSecondaryIPv6 NullableString `json:"dnsSecondaryIPv6,omitempty"`
 	// IPv6 Network CIDR
 	CidrIPv6 *string `json:"cidrIPv6,omitempty"`
-	// VLAN ID. Applied when the network type's `vlanIdEditable` flag is set; otherwise ignored.
-	VlanId *int64 `json:"vlanId,omitempty"`
+	// VLAN ID; null removes it. Applied when the network type's `vlanIdEditable` flag is set; otherwise ignored.
+	VlanId NullableInt64 `json:"vlanId,omitempty"`
 	// Network switch identifier
 	SwitchId      *string                                   `json:"switchId,omitempty"`
 	NetworkServer *UpdateNetworkRequestNetworkNetworkServer `json:"networkServer,omitempty"`
@@ -145,8 +145,8 @@ func (o UpdateNetworkRequestNetwork) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.CidrIPv6) {
 		toSerialize["cidrIPv6"] = o.CidrIPv6
 	}
-	if !IsNil(o.VlanId) {
-		toSerialize["vlanId"] = o.VlanId
+	if o.VlanId.IsSet() {
+		toSerialize["vlanId"] = o.VlanId.Get()
 	}
 	if !IsNil(o.SwitchId) {
 		toSerialize["switchId"] = o.SwitchId

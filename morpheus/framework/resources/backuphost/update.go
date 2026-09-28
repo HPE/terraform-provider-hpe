@@ -10,6 +10,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -48,15 +49,18 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.StorageProviderId.IsUnknown() {
-		body.StorageProviderId = *sdk.NewNullableInt64(plan.StorageProviderId.ValueInt64Pointer())
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
-	if !plan.Path.IsNull() {
-		body.TargetPath = plan.Path.ValueStringPointer()
-	}
-	if !plan.SshUsername.IsNull() {
-		body.TargetUsername = plan.SshUsername.ValueStringPointer()
-	}
+
+	clearable.NullableInt64(pending, "storage_provider_id", plan.StorageProviderId, &body.StorageProviderId)
+	clearable.NullableString(pending, "path", plan.Path, &body.TargetPath)
+	clearable.NullableString(pending, "ssh_username", plan.SshUsername, &body.TargetUsername)
 	// The write-only ssh_password_wo cannot be diffed by Terraform, so it is only
 	// re-sent when ssh_password_wo_version changes.
 	if !plan.SshPasswordWoVersion.Equal(priorState.SshPasswordWoVersion) {
@@ -86,5 +90,6 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

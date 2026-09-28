@@ -20,8 +20,8 @@ var _ MappedNullable = &UpdateSecurityGroupRulesRequestRule{}
 
 // UpdateSecurityGroupRulesRequestRule struct for UpdateSecurityGroupRulesRequestRule
 type UpdateSecurityGroupRulesRequestRule struct {
-	// A name for the rule
-	Name *string `json:"name,omitempty"`
+	// A name for the rule; null clears it
+	Name NullableString `json:"name,omitempty"`
 	// Either `ingress` or `egress`
 	Direction *string `json:"direction,omitempty"`
 	// Either `cidr`, `group`, `tier`, `all`.
@@ -63,8 +63,8 @@ func (o UpdateSecurityGroupRulesRequestRule) MarshalJSON() ([]byte, error) {
 
 func (o UpdateSecurityGroupRulesRequestRule) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Name) {
-		toSerialize["name"] = o.Name
+	if o.Name.IsSet() {
+		toSerialize["name"] = o.Name.Get()
 	}
 	if !IsNil(o.Direction) {
 		toSerialize["direction"] = o.Direction

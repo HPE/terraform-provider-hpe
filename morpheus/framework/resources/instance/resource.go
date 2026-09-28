@@ -17,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 )
 
@@ -79,6 +80,14 @@ func (g *Resource) ModifyPlan(
 	// not show them as "(known after apply)". Done before the checks below,
 	// which return early when the appliance version cannot be determined.
 	restoreUnchangedComputedAttributes(ctx, req, resp)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+	resp.Diagnostics.Append(cdiags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

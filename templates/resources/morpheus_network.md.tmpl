@@ -105,13 +105,30 @@ run; when the appliance cannot be reached at plan time, a table of the network t
 Morpheus release built into the provider is used instead, and a type in neither is treated
 generically.
 
-~> **Note** An optional attribute that Morpheus also computes — `gateway`, the DNS servers,
-`pool_id`, the IPv6 addressing (`gateway_ipv6`, `netmask_ipv6`, `dns_primary_ipv6`,
-`dns_secondary_ipv6`, `pool_ipv6_id`) and the like — cannot be **cleared** by removing it from the
-configuration: the value already on the network is kept, and state follows it, so no change is
-planned. To clear such a value, set it explicitly (for example to an empty string) where Morpheus
-accepts that, or change it on the appliance. This mirrors the configuration map, where an omitted
-key is kept as well.
+### Removing an attribute clears it
+
+Removing an optional attribute from the configuration **clears it on the network**: `description`,
+`display_name`, `gateway`, the DNS servers, `search_domains`, `switch_id`, `vlan_id`, the IPv6
+addressing (`cidr_ipv6`, `gateway_ipv6`, `netmask_ipv6`, `dns_primary_ipv6`, `dns_secondary_ipv6`),
+`pool_id`, `pool_ipv6_id`, `network_domain_id`, `network_proxy_id`, `zone_pool_id`, `no_proxy`,
+`labels` and `cidr` are planned to `null` and read back empty after the apply. Removing
+`tenant_ids` revokes every tenant's access but the owner's — Morpheus always keeps the owning
+tenant — so it is planned as `(known after apply)` and reads back as the owner alone. Whether the
+clear is applied in place or by replacement follows the type's flags exactly as a change does:
+removing `gateway` from a network whose type does not edit the gateway after create replaces the
+network.
+
+Three things are not cleared. A boolean keeps its value when it is removed (there is no empty
+boolean). A value the user never set — the display name Morpheus fills in from the name, or a
+gateway a cloud sync reported — is not the provider's to remove, so it stays: the provider records,
+at every apply, which of these attributes the configuration set, and only a recorded attribute is
+cleared when it goes. And `zone_pool_id` cannot be removed from a network of the HVM port group
+types, whose pool is the cluster the network lives on; the plan refuses it.
+
+~> **Note** The record is written by the first apply made with this provider version. A network
+last applied by an earlier version has none yet, so an attribute removed from its configuration
+*before* that apply is kept, as before; apply once, then remove it. An imported network behaves the
+same way until its first apply.
 
 ### Network server
 

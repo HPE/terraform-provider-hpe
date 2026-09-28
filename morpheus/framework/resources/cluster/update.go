@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -53,23 +54,33 @@ func (r *Resource) Update(
 		cluster.Name = plan.Name.ValueStringPointer()
 	}
 
-	// description
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		cluster.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration, to be cleared: sent when
+	// known, sent empty when being cleared, not sent otherwise.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	// labels
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				updateOperation,
-				"cluster "+plan.Name.ValueString()+": failed to parse label: "+err.Error(),
-			)
+	cluster.Description = pending.String("description", plan.Description)
 
-			return
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	switch {
+	case sendLabels && len(labels) == 0:
+		// The API rejects an empty labels list as an unrecognised field (its
+		// handler only renames a non-empty one to labelArray, the key it
+		// binds), so an empty list is sent under that key directly.
+		if cluster.AdditionalProperties == nil {
+			cluster.AdditionalProperties = map[string]interface{}{}
 		}
 
+		cluster.AdditionalProperties["labelArray"] = []string{}
+	case sendLabels:
 		cluster.Labels = labels
 	}
 
