@@ -58,9 +58,10 @@ func TestAccMorpheusStorageServerResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_storage_server.example",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            "hpe_morpheus_storage_server.example",
 			},
 		},
 	})

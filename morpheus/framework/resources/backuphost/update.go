@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -61,17 +62,11 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	clearable.NullableInt64(pending, "storage_provider_id", plan.StorageProviderId, &body.StorageProviderId)
 	clearable.NullableString(pending, "path", plan.Path, &body.TargetPath)
 	clearable.NullableString(pending, "ssh_username", plan.SshUsername, &body.TargetUsername)
-	// The write-only ssh_password_wo cannot be diffed by Terraform, so it is only
-	// re-sent when ssh_password_wo_version changes.
-	if !plan.SshPasswordWoVersion.Equal(priorState.SshPasswordWoVersion) {
-		if config.SshPasswordWo.IsNull() {
-			resp.Diagnostics.AddError(
-				updateOperation,
-				"'ssh_password_wo_version' changed, but 'ssh_password_wo' is not set",
-			)
-
-			return
-		}
+	// The write-only ssh_password_wo cannot be diffed by Terraform; ModifyPlan
+	// marks write_only_revision unknown when its digest changed (or the
+	// deprecated marker did), and that is when it is re-sent. See write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
 		body.TargetPassword = config.SshPasswordWo.ValueStringPointer()
 	}
 
@@ -85,6 +80,12 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 	}
 
 	state, diags := getBackupAsState(ctx, id, client, plan)
+	state.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

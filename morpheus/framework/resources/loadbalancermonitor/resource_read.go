@@ -80,6 +80,7 @@ func (r *Resource) Read(
 	// ExtraConfig is not returned by the API — on import it will be null.
 	state.ExtraConfig = data.ExtraConfig
 	state.MonitorPasswordWoVersion = data.MonitorPasswordWoVersion
+	state.WriteOnlyRevision = data.WriteOnlyRevision
 
 	// Preserve plan config since the API may not return it verbatim.
 	if !data.Config.IsNull() && !data.Config.IsUnknown() {

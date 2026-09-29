@@ -79,6 +79,8 @@ resource "hpe_morpheus_load_balancer_pool" "nsxt" {
 - `status` (String)
 - `vip_server_ip_mode` (String)
 - `visibility` (String)
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which the write-only partition was last sent to
+Morpheus. Changes whenever that value changes; not configurable.
 
 <a id="nestedatt--config_nsxt"></a>
 ### Nested Schema for `config_nsxt`
@@ -132,4 +134,14 @@ Load balancer pools can be imported using the load balancer ID and pool ID separ
 
 ```shell
 terraform import hpe_morpheus_load_balancer_pool.example 1/42
+```
+
+The write-only `partition` is not stored in state, so the import cannot tell whether the value in your
+configuration matches the appliance: it is taken as already applied, the plan after import is empty,
+and a later change is only detected once the pool is next updated for another reason (Terraform warns
+about this on every plan until then). To have changes detected from the start, append the sha256
+digest of the configured value to the import ID:
+
+```shell
+terraform import hpe_morpheus_load_balancer_pool.example "1/42#partition=<sha256 hex>"
 ```

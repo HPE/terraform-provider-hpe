@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -144,6 +145,9 @@ func (r *Resource) Create(
 			Diagnostics:  &resp.Diagnostics,
 		})
 	}
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	state, err := getLoadBalancerAsState(ctx, id, client, plan)
 	if err != nil {

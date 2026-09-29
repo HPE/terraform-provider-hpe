@@ -119,11 +119,26 @@ cluster:
     ssh_password_wo_version:
       int64:
         computed_optional_required: optional
-        description: SSH password version. Used to determine if ssh_password_wo has been updated.
+        description: |-
+          Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is
+          no longer needed and will be removed in the 2.3 release. The SSH password cannot be changed
+          after the cluster is created, so a change replaces the cluster.
+        deprecation_message: "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     dynamic_placement:
       bool:
         computed_optional_required: optional
         description: When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last
+          sent to Morpheus. Changes whenever the cluster is created; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - cluster: "" # unnest cluster
     - cluster_id: id
@@ -159,6 +174,7 @@ cluster:
     - template-management_net_interface: server.management_net_interface
     - template-ssh_password_wo: server.ssh_password_wo
     - template-ssh_password_wo_version: server.ssh_password_wo_version
+    - template-write_only_revision: write_only_revision
     # HKS on HVM
     - template-node_count: config_hks_hvm.node_count
     # HVM

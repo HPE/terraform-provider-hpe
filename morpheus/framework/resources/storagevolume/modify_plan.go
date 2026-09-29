@@ -39,6 +39,14 @@ func (r *storageVolumeResource) ModifyPlan(
 		return
 	}
 
+	// A change to a write-only configuration plans a replacement (see
+	// write_only.go); this runs on updates only.
+	wo.ModifyPlan(ctx, req, resp)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var plan StorageVolumeModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {

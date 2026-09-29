@@ -37,6 +37,7 @@ type instanceNodeModel struct {
 	SshHost              types.String   `tfsdk:"ssh_host"`
 	SshUsername          types.String   `tfsdk:"ssh_username"`
 	SshPassword          types.String   `tfsdk:"ssh_password"`
+	WriteOnlyRevision    types.Int64    `tfsdk:"write_only_revision"`
 	SshKeyPairID         types.Int64    `tfsdk:"ssh_key_pair_id"`
 	WaitForIPAddress     types.Bool     `tfsdk:"wait_for_ip_address"`
 	ContainerID          types.Int64    `tfsdk:"container_id"`
@@ -166,6 +167,16 @@ func (r *Resource) Schema(
 					"Write-only.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed: true,
+				Description: "The time, in seconds since the Unix epoch, at which the write-only " +
+					"ssh_password was sent to Morpheus. Changes when the node is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which the write-only " +
+					"`ssh_password` was sent to Morpheus. Changes when the node is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 				},
 			},
 			"ssh_key_pair_id": schema.Int64Attribute{

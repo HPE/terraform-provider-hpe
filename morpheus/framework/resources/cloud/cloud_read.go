@@ -645,6 +645,9 @@ func getCloudAsState(
 		}
 	}
 
+	// write_only_revision is not in the API; carried from prior state.
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
+
 	return state, diags
 }
 

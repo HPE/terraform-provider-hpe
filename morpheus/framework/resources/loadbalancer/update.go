@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -88,6 +89,14 @@ func (r *Resource) Update(
 		return
 	}
 
+	// group_id and network_server_id are create-only (a change replaces the
+	// load balancer); an update planned through write_only_revision only
+	// records the digests of the configured values.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	newState, err := getLoadBalancerAsState(ctx, id, client, plan)
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -104,6 +113,10 @@ func (r *Resource) Update(
 	case !plan.Config.IsNull() && !plan.Config.IsUnknown():
 		newState.Config = plan.Config
 	}
+
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }

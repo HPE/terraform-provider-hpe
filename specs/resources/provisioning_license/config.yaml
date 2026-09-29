@@ -10,7 +10,10 @@ provisioning_license:
     licenseKeyWoVersion:
       int64:
         computed_optional_required: optional
-        description: License key version. Used to determine if license_key_wo has been updated.
+        description: |-
+          Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.
+        deprecation_message: "No longer needed: changes to license_key_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     tenantsList:
       list:
         computed_optional_required: optional
@@ -23,10 +26,22 @@ provisioning_license:
         element_type:
           int64: {}
         description: List of virtual image IDs associated with the license.
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (license_key_wo) was last
+          sent to Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - license: ""
     - template-licenseKeyWo: license_key_wo
     - template-licenseKeyWoVersion: license_key_wo_version
+    - template-write_only_revision: write_only_revision
     - template-tenantsList: tenants
     - template-virtualImagesList: virtual_images
   removes:

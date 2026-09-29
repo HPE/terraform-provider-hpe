@@ -307,8 +307,9 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"ssh_password_wo_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "SSH password version. Used to determine if ssh_password_wo has been updated.",
-						MarkdownDescription: "SSH password version. Used to determine if ssh_password_wo has been updated.",
+						Description:         "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.3 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						MarkdownDescription: "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.3 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						DeprecationMessage:  "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 					},
 					"ssh_port": schema.Int64Attribute{
 						Optional:            true,
@@ -471,27 +472,36 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last\nsent to Morpheus. Changes whenever the cluster is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last\nsent to Morpheus. Changes whenever the cluster is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
 
 type ClusterModel struct {
-	CloudId          types.Int64    `tfsdk:"cloud_id"`
-	ClusterTypeCode  types.String   `tfsdk:"cluster_type_code"`
-	Config           types.Dynamic  `tfsdk:"config"`
-	ConfigHvm        ConfigHvmValue `tfsdk:"config_hvm"`
-	CpuPlacementMode types.String   `tfsdk:"cpu_placement_mode"`
-	Description      types.String   `tfsdk:"description"`
-	GroupId          types.Int64    `tfsdk:"group_id"`
-	Id               types.Int64    `tfsdk:"id"`
-	Labels           types.Set      `tfsdk:"labels"`
-	LayoutId         types.Int64    `tfsdk:"layout_id"`
-	Name             types.String   `tfsdk:"name"`
-	Server           ServerValue    `tfsdk:"server"`
-	ServiceUrl       types.String   `tfsdk:"service_url"`
-	Timeouts         timeouts.Value `tfsdk:"timeouts"`
-	Uuid             types.String   `tfsdk:"uuid"`
-	WorkflowId       types.Int64    `tfsdk:"workflow_id"`
+	CloudId           types.Int64    `tfsdk:"cloud_id"`
+	ClusterTypeCode   types.String   `tfsdk:"cluster_type_code"`
+	Config            types.Dynamic  `tfsdk:"config"`
+	ConfigHvm         ConfigHvmValue `tfsdk:"config_hvm"`
+	CpuPlacementMode  types.String   `tfsdk:"cpu_placement_mode"`
+	Description       types.String   `tfsdk:"description"`
+	GroupId           types.Int64    `tfsdk:"group_id"`
+	Id                types.Int64    `tfsdk:"id"`
+	Labels            types.Set      `tfsdk:"labels"`
+	LayoutId          types.Int64    `tfsdk:"layout_id"`
+	Name              types.String   `tfsdk:"name"`
+	Server            ServerValue    `tfsdk:"server"`
+	ServiceUrl        types.String   `tfsdk:"service_url"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Uuid              types.String   `tfsdk:"uuid"`
+	WorkflowId        types.Int64    `tfsdk:"workflow_id"`
+	WriteOnlyRevision types.Int64    `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHvmType{}

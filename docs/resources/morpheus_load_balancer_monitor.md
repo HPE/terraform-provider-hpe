@@ -103,7 +103,8 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
 - `monitor_destination` (String) The target path or URL for the health check (e.g. /health)
 - `monitor_interval` (Number) The interval in seconds at which the monitor checks target health
 - `monitor_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password for authenticated health checks (Write Only)
-- `monitor_password_wo_version` (Number) Monitor password version. Used to determine if monitor_password_wo has been updated.
+- `monitor_password_wo_version` (Number, Deprecated) Deprecated. Changes to monitor_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends monitor_password_wo.
 - `monitor_timeout` (Number) The maximum time in seconds to wait for a health check response before marking as failed
 - `monitor_type` (String) The monitor protocol type. Valid values are: dns, http, https, icmp, ldap, mssql, passive, tcp, udp. The provider maps these to the appropriate load-balancer-specific value based on the load balancer type (e.g. http becomes LBHttpMonitorProfile for NSX-T).
 - `monitor_username` (String) The username for authenticated health checks
@@ -117,6 +118,8 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
 ### Read-Only
 
 - `id` (Number) The ID of this resource.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (monitor_password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 <a id="nestedatt--config"></a>
 ### Nested Schema for `config`
@@ -140,5 +143,19 @@ Load balancer monitors can be imported using the composite ID `loadBalancerId.mo
 ```shell
 terraform import hpe_morpheus_load_balancer_monitor.example 42.101
 ```
+
+The write-only value `monitor_password_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_load_balancer_monitor.example "42.101#monitor_password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "42.101#monitor_password_wo=${sha256(var.monitor_password_wo)}"`.
 
 ~> The API accepts `receive_data` and `data_length` on create and update but never returns them (`receive_data` is stored encrypted, and `data_length` is only round-tripped for ICMP monitors). They therefore cannot be populated on import and will be null in the imported state. Set them in your configuration and apply to reconcile.

@@ -104,6 +104,8 @@ func TestAccMorpheusLoadBalancerMonitorResourceNsxtExampleOk(t *testing.T) {
 					// them. See preserveUnreturnedFields in resource_read.go.
 					"receive_data",
 					"data_length",
+
+					"write_only_revision",
 				},
 			},
 		},

@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -88,7 +89,10 @@ func (r *Resource) Update(
 		neighbor.HoldDown = plan.HoldDown.ValueInt64Pointer()
 	}
 
-	if !passwordWo.IsNull() && !passwordWo.IsUnknown() {
+	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed, or the deprecated marker did). See write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !passwordWo.IsNull() && !passwordWo.IsUnknown() {
 		neighbor.Password = passwordWo.ValueStringPointer()
 	}
 
@@ -162,6 +166,13 @@ func (r *Resource) Update(
 
 		return
 	}
+
+	newState.WriteOnlyRevision = state.WriteOnlyRevision
+	if resend {
+		newState.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }

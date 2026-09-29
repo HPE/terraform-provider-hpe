@@ -19,6 +19,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -27,6 +28,7 @@ import (
 var (
 	_ resource.Resource                = &Resource{}
 	_ resource.ResourceWithImportState = &Resource{}
+	_ resource.ResourceWithModifyPlan  = &Resource{}
 )
 
 func NewResource() resource.Resource {
@@ -158,6 +160,9 @@ func (r *Resource) Create(
 		})
 	}
 
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
@@ -227,6 +232,7 @@ func getNatAsState(
 	state.ActionVersion = plan.ActionVersion
 	state.FirewallVersion = plan.FirewallVersion
 	state.ServiceVersion = plan.ServiceVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	state.Description = convert.StrToType(nat.Description)
 
@@ -381,11 +387,25 @@ func (r *Resource) Update(
 		return
 	}
 
+	// The update always carries the configured action/firewall/service (the
+	// controller merges them over the current rule); write_only_revision
+	// records when a change to one of them was the reason for the update.
+	var priorState NetworkRouterNatModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	state, diags := getNatAsState(ctx, id, routerID, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -439,11 +459,18 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ".", 2)
+	// "router_id.nat_id", optionally followed by "#action=<sha256 hex>&..."
+	// (see wodigest).
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	parts := strings.SplitN(rawID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network router nat resource",
-			"provided import ID '"+req.ID+"' is invalid, expected format 'router_id.nat_id'",
+			"provided import ID '"+rawID+"' is invalid, expected format 'router_id.nat_id'",
 		)
 
 		return

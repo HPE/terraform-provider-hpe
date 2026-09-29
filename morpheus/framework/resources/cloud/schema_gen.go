@@ -321,8 +321,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"client_secret_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Client secret version. Used to determine if client secret has been updated.",
-						MarkdownDescription: "Client secret version. Used to determine if client secret has been updated.",
+						Description:         "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+						MarkdownDescription: "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+						DeprecationMessage:  "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 					},
 					"cloud_type": schema.StringAttribute{
 						Optional:            true,
@@ -488,8 +489,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"password_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Password version. Used to determine if password has been updated.",
-						MarkdownDescription: "Password version. Used to determine if password has been updated.",
+						Description:         "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+						MarkdownDescription: "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+						DeprecationMessage:  "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 					},
 					"resource_pool": schema.StringAttribute{
 						Optional:            true,
@@ -681,6 +683,14 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("private"),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last\nsent to Morpheus. Changes whenever one of those values changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -717,6 +727,7 @@ type CloudModel struct {
 	SecurityMode                   types.String      `tfsdk:"security_mode"`
 	TenantId                       types.Int64       `tfsdk:"tenant_id"`
 	Visibility                     types.String      `tfsdk:"visibility"`
+	WriteOnlyRevision              types.Int64       `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

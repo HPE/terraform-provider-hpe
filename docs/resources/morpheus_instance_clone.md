@@ -358,7 +358,8 @@ combined with a typed config_* block.
 - `config_vmware` (Attributes) Configuration overrides for VMware clones, merged over the source instance's configuration. (see [below for nested schema](#nestedatt--config_vmware))
 - `group_id` (Number) The ID of the group to clone into. Defaults to the source instance's group.
 - `plan_id` (Number) The ID of the service plan override for the clone. Defaults to the source instance's service plan.
-- `source_instance_id_version` (Number) Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.
+- `source_instance_id_version` (Number, Deprecated) Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_group` (Number) The id of the user group to associate with the clone. Can only be set at clone time; changing it forces replacement.
 
@@ -366,6 +367,8 @@ combined with a typed config_* block.
 
 - `id` (Number) The ID of the cloned instance.
 - `status` (String) The status of the cloned instance.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which source_instance_id was last
+sent to Morpheus. Changes when the clone is created; not configurable.
 
 <a id="nestedatt--network_interfaces"></a>
 ### Nested Schema for `network_interfaces`
@@ -553,6 +556,18 @@ Import is supported using the cloned instance ID:
 ```shell
 terraform import hpe_morpheus_instance_clone.example 42
 ```
+
+The write-only value `source_instance_id` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_instance_clone.example "42#source_instance_id=<sha256 hex>"
+```
+
+The digest is sha256 of the value's text (Terraform's `sha256()` function, with numbers as `tostring(v)`). A change to this value plans a **replacement**: Morpheus takes it only at creation.
 
 On import, Terraform recovers `source_instance_id` from the clone's
 `cloneInstanceId` configuration value, which Morpheus records during cloning.

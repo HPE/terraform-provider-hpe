@@ -462,6 +462,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "import_test" {
 					"password_wo",
 					"password_wo_version",
 					"description",
+					"write_only_revision",
 				},
 				ResourceName: "hpe_morpheus_network_router_bgp_neighbor.import_test",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {

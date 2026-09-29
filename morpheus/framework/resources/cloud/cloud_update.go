@@ -13,6 +13,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -36,6 +37,8 @@ func (r *Resource) Update(
 	}
 
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+
+	resend := wodigest.Resend(ctx, req.Plan)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -316,8 +319,10 @@ func (r *Resource) Update(
 			updateCloud.Config["datacenter"] = plan.ConfigVmware.Datacenter.ValueString()
 		}
 
-		// password is write-only: read it from req.Config, not the plan.
-		if !config.ConfigVmware.Password.IsNull() && !config.ConfigVmware.Password.IsUnknown() {
+		// password is write-only: read it from req.Config, not the plan. It is
+		// re-sent when ModifyPlan marked write_only_revision unknown (its digest
+		// changed, or the deprecated marker did). See write_only.go.
+		if resend && !config.ConfigVmware.Password.IsNull() && !config.ConfigVmware.Password.IsUnknown() {
 			updateCloud.Config["password"] = config.ConfigVmware.Password.ValueString()
 		}
 
@@ -382,7 +387,8 @@ func (r *Resource) Update(
 		}
 
 		// client_secret is write-only: read it from req.Config, not the plan.
-		if !config.ConfigAzure.ClientSecret.IsNull() && !config.ConfigAzure.ClientSecret.IsUnknown() {
+		// Re-sent when ModifyPlan marked write_only_revision unknown.
+		if resend && !config.ConfigAzure.ClientSecret.IsNull() && !config.ConfigAzure.ClientSecret.IsUnknown() {
 			updateCloud.Config["clientSecret"] = config.ConfigAzure.ClientSecret.ValueString()
 		}
 
@@ -466,6 +472,8 @@ func (r *Resource) Update(
 		return
 	}
 
+	prior := state
+
 	state, pdiags := getCloudAsState(ctx, newid, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
@@ -482,6 +490,13 @@ func (r *Resource) Update(
 
 		return
 	}
+
+	state.WriteOnlyRevision = prior.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

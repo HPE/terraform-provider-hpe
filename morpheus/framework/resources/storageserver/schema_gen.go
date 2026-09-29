@@ -76,8 +76,9 @@ func StorageServerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Service password version. Used to determine if service_password_wo has been updated.",
-				MarkdownDescription: "Service password version. Used to determine if service_password_wo has been updated.",
+				Description:         "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				MarkdownDescription: "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				DeprecationMessage:  "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"service_url": schema.StringAttribute{
 				Optional:            true,
@@ -118,6 +119,14 @@ func StorageServerResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("private"),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 		Description:         "Manages a Morpheus Storage Server resource.",
 		MarkdownDescription: "Manages a Morpheus Storage Server resource.",
@@ -139,4 +148,5 @@ type StorageServerModel struct {
 	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 	Type                     types.String   `tfsdk:"type"`
 	Visibility               types.String   `tfsdk:"visibility"`
+	WriteOnlyRevision        types.Int64    `tfsdk:"write_only_revision"`
 }

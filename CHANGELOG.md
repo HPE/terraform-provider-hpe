@@ -102,8 +102,35 @@ digest of each configured write-only value in the resource's private state and c
 every plan, so **changing the value is enough** — the plan shows the change as
 `~ write_only_revision = <n> -> (known after apply)` and the apply sends the new value.
 
-This release migrates `hpe_morpheus_user` (`password_wo`, `linux_password_wo`,
-`windows_password_wo`); the remaining resources with write-only attributes follow in the 2.2 line.
+This release migrates the resources whose write-only attributes are secrets sent on update:
+
+| Resource | Write-only attribute(s) | Deprecated marker(s) |
+|---|---|---|
+| `hpe_morpheus_user` | `password_wo`, `linux_password_wo`, `windows_password_wo` | `*_wo_version` |
+| `hpe_morpheus_backup_host` | `ssh_password_wo` | `ssh_password_wo_version` |
+| `hpe_morpheus_image` | `ssh_password_wo` | `ssh_password_wo_version` |
+| `hpe_morpheus_load_balancer_monitor` | `monitor_password_wo` | `monitor_password_wo_version` |
+| `hpe_morpheus_network_pool_server` | `service_password_wo` | `service_password_wo_version` |
+| `hpe_morpheus_network_router_bgp_neighbor` | `password_wo` | `password_wo_version` |
+| `hpe_morpheus_provisioning_license` | `license_key_wo` | `license_key_wo_version` |
+| `hpe_morpheus_storage_bucket` | `access_key`, `secret_key` | `access_key_version`, `secret_key_version` |
+| `hpe_morpheus_storage_server` | `service_password_wo` | `service_password_wo_version` |
+| `hpe_morpheus_cloud` | `config_vmware.password`, `config_azure.client_secret` | `config_vmware.password_version`, `config_azure.client_secret_version` |
+| `hpe_morpheus_cluster` | `server.ssh_password_wo` (create-only: a change **replaces** the cluster) | `server.ssh_password_wo_version` |
+| `hpe_morpheus_load_balancer` | `group_id`, `network_server_id` (create-only: a change **replaces**) | `group_id_version`, `network_server_id_version` |
+| `hpe_morpheus_instance_clone` | `source_instance_id` (create-only: a change **replaces**) | `source_instance_id_version` |
+| `hpe_morpheus_subnet` | `config` (create-only: a change **replaces**) | `config_version` |
+| `hpe_morpheus_storage_volume` | `config`, `config_alletramp_bmaas` (create-only: a change **replaces**) | `config_wo_version`, `config_alletramp_bmaas_wo_version` |
+| `hpe_morpheus_network_router_nat` | `action`, `firewall`, `service` (updated in place) | `action_version`, `firewall_version`, `service_version` |
+| `hpe_morpheus_load_balancer_pool` | `partition` (updated in place) | — (never had one) |
+| `hpe_morpheus_instance_node` | `ssh_password` (create-only: a change **replaces**) | — (never had one) |
+
+Nested attributes are named by their dotted path in the import ID (`"123#config_vmware.password=<sha256>"`);
+a map or object value is digested as sha256 of its JSON form (`sha256(jsonencode(v))`), a number as its text.
+
+For the create-only attributes, the deprecated marker used to be the *only* way to ask for a replacement
+("increment to recreate"); now the change itself is detected and plans the replacement, bumping the marker
+still does, and **removing** the marker from the configuration is an in-place update, never a replacement.
 For a migrated resource:
 
 - **`*_wo_version` is deprecated.** It still works for the whole 2.2 line — changing it re-sends the
@@ -125,6 +152,28 @@ For a migrated resource:
   produces it in an import block). Migration tooling that knows the values uses this form.
 - **An unset write-only attribute is not managed.** Leaving `linux_password_wo` out of the
   configuration is not a change and never triggers a re-send.
+- **`hpe_morpheus_cluster`:** Morpheus cannot change a cluster's SSH password after creation, so a
+  change to `server.ssh_password_wo` now plans a replacement of the cluster instead of being silently
+  ignored (before, neither the value nor its marker had any effect after create). Bumping the
+  deprecated marker plans the same replacement; removing it does not.
+- **`hpe_morpheus_network_router_nat`:** a change to `action`, `firewall` or `service` now plans an
+  update (before, the plan was empty and the change only went out when something else changed).
+- **Not migrated:** the three SDKv2 resources with a write-only attribute — `hpe_morpheus_network_domain`
+  (`domain_password_wo`), `hpe_morpheus_task_shell_script` and `hpe_morpheus_task_powershell_script`
+  (`remote_target_password_wo`) — cannot keep digests (the SDKv2 has no private state for provider
+  code), so their `*_wo_version` markers remain the way to re-send the value and are **not** deprecated.
+  Their descriptions say so. They will move to the digest mechanism when the resources move to the
+  plugin framework.
+- **Behaviour corrections found on the way:** `hpe_morpheus_load_balancer_monitor` no longer
+  *replaces* the monitor when `monitor_password_wo_version` changes (the marker had `RequiresReplace`
+  although the API updates the password in place); `hpe_morpheus_storage_server` now actually sends
+  `service_password_wo` on update (it read the write-only value from the plan, where it is always
+  null); `hpe_morpheus_storage_bucket` and `hpe_morpheus_network_pool_server` send their keys /
+  password only when they changed rather than on every update; and an in-place update of
+  `hpe_morpheus_image` with `tenant_ids` set no longer crashes the provider (a wrong set conversion
+  behind a `log.Fatal`); `hpe_morpheus_load_balancer_pool` never sent `partition` and
+  `hpe_morpheus_instance_node` never sent `ssh_password` (both read the write-only value from the plan,
+  where it is always null) — they now do.
 
 ### `hpe_morpheus_network` data source: `cloud_id` selects among per-cloud records
 

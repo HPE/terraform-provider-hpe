@@ -102,8 +102,9 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
 				// action/firewall/service are WriteOnly and Read hard-sets them
 				// to null, so they are never in state and cannot produce an
 				// ImportStateVerify diff -- not ignored here. protocol is not set
@@ -198,9 +199,10 @@ resource "hpe_morpheus_network_router_nat" "example" {
 			// and sync layers), so the configured value round-trips on import
 			// and is verified here rather than ignored.
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            resourceName,
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources[resourceName]
 					if !ok {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
@@ -78,6 +79,8 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 	id := *result.Backup.Id
 
 	state, diags := getBackupAsState(ctx, id, client, plan)
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		// The backup was created, but reading it back failed. Taint the resource

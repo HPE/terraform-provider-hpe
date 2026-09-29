@@ -191,10 +191,11 @@ func TestAccMorpheusCloudResourceExampleOk(t *testing.T) {
 				PlanOnly:           false,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true, // Check state post import
-				ResourceName:      "hpe_morpheus_cloud.example",
-				Check:             checkFn,
+				ImportState:             true,
+				ImportStateVerify:       true, // Check state post import
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            "hpe_morpheus_cloud.example",
+				Check:                   checkFn,
 			},
 		},
 	})

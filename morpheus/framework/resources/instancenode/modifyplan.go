@@ -28,6 +28,13 @@ func (r *Resource) ModifyPlan(
 		return
 	}
 
+	// A changed write-only ssh_password plans a replacement (write_only.go).
+	wo.ModifyPlan(ctx, req, resp)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	var plan instanceNodeModel
 
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)

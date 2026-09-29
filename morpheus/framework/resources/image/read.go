@@ -158,6 +158,7 @@ func getImageAsState(
 
 	// ssh_password_wo_version
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// storage_provider_id
 	if image.StorageProvider != nil {

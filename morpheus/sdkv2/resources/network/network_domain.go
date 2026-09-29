@@ -81,7 +81,7 @@ func ResourceNetworkDomain() *schema.Resource {
 				ConflictsWith: []string{"domain_password"},
 			},
 			"domain_password_wo_version": {
-				Description: "Increment to re-send domain_password_wo; write-only values are not stored in state.",
+				Description: "Increment to re-send domain_password_wo; write-only values are not stored in state. Unlike the framework-based resources, this resource cannot detect a change to the write-only value itself, so the version marker remains the way to re-send it until the resource moves to the plugin framework.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 			},

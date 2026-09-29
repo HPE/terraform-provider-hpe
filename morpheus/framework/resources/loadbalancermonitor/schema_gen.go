@@ -134,8 +134,9 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"monitor_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Monitor password version. Used to determine if monitor_password_wo has been updated.",
-				MarkdownDescription: "Monitor password version. Used to determine if monitor_password_wo has been updated.",
+				Description:         "Deprecated. Changes to monitor_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends monitor_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to monitor_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends monitor_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to monitor_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"monitor_timeout": schema.Int64Attribute{
 				Optional:            true,
@@ -200,6 +201,14 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The HTTP protocol version to use in health check requests (e.g. HTTP/1.0, HTTP/1.1)",
 				MarkdownDescription: "The HTTP protocol version to use in health check requests (e.g. HTTP/1.0, HTTP/1.1)",
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (monitor_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (monitor_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -228,6 +237,7 @@ type LoadBalancerMonitorModel struct {
 	SendData                 types.String `tfsdk:"send_data"`
 	SendType                 types.String `tfsdk:"send_type"`
 	SendVersion              types.String `tfsdk:"send_version"`
+	WriteOnlyRevision        types.Int64  `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigType{}

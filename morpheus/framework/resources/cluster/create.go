@@ -17,6 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -246,6 +247,9 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 
 		return
 	}
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	state, diag := getClusterAsState(ctx, clusterId, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {

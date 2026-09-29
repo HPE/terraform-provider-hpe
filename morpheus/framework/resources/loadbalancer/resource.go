@@ -21,6 +21,7 @@ const (
 var (
 	_ resource.Resource                   = &Resource{}
 	_ resource.ResourceWithImportState    = &Resource{}
+	_ resource.ResourceWithModifyPlan     = &Resource{}
 	_ resource.ResourceWithValidateConfig = &Resource{}
 )
 

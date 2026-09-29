@@ -42,4 +42,7 @@ func (r *Resource) ModifyPlan(
 	}
 
 	tenancy.GuardVisibilityPublic(ctx, client, req.Plan, &resp.Diagnostics)
+
+	// A change to the write-only ssh_password_wo plans an in-place update.
+	wo.ModifyPlan(ctx, req, resp)
 }

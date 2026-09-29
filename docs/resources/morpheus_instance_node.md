@@ -88,6 +88,7 @@ resource "hpe_morpheus_instance_node" "ha" {
 - `name` (String) The name of the node container, assigned by the appliance.
 - `server_id` (Number) The compute server ID of the added node.
 - `server_resource_pool_id` (Number) The resource pool the node's server currently belongs to. For bare-metal instances this is the pool the server was drawn from. For virtual instances it reflects the hypervisor pool. Compare with `resource_pool_id` (the placement requested at create time, bare-metal only) to detect drift.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which the write-only `ssh_password` was sent to Morpheus. Changes when the node is created; not configurable.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

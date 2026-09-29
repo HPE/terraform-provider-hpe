@@ -73,7 +73,8 @@ resource "hpe_morpheus_subnet" "azure_example" {
 - `allow_static_override` (Boolean) Allow IP override.
 - `cidr` (String) The CIDR of the subnet. Used directly by subnet types with cidrEditable (e.g. Google). For Azure subnets, this is derived from config.subnetCidr.
 - `config` (Dynamic, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Configuration object. Settings vary by subnet type. This attribute is write-only and not stored in state.
-- `config_version` (Number) Config version. Increment this value to trigger replacement of the subnet with updated config.
+- `config_version` (Number, Deprecated) Deprecated. Changes to config are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `description` (String) The description of the subnet.
 - `dhcp_server` (Boolean) Whether DHCP server is enabled.
 - `labels` (Set of String) Labels for the subnet.
@@ -91,6 +92,8 @@ resource "hpe_morpheus_subnet" "azure_example" {
 - `id` (Number) The ID of the subnet.
 - `netmask` (String) The netmask of the subnet.
 - `subnet_address` (String) The subnet address.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which the write-only config was last
+sent to Morpheus. Changes when the subnet is created; not configurable.
 
 ## Import
 
@@ -99,3 +102,15 @@ Subnets can be imported using the subnet ID, e.g.
 ```bash
 terraform import hpe_morpheus_subnet.example 123
 ```
+
+The write-only value `config` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_subnet.example "123#config=<sha256 hex>"
+```
+
+The digest of a string or number is sha256 of the value itself; of a map or object, sha256 of its JSON form (`sha256(jsonencode(v))`). A change to this value plans a **replacement**: Morpheus takes it only at creation.

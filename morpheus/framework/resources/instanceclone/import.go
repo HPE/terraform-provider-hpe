@@ -16,11 +16,17 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	instanceID, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#source_instance_id=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	instanceID, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import instance clone",
-			fmt.Sprintf("invalid instance id %q: %v", req.ID, err),
+			fmt.Sprintf("invalid instance id %q: %v", rawID, err),
 		)
 
 		return

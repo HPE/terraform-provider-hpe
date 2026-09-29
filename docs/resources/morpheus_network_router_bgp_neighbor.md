@@ -48,7 +48,8 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
 - `hop_limit` (Number) Maximum hop limit
 - `keep_alive` (Number) Keep-alive interval in seconds
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password (Write Only)
-- `password_wo_version` (Number) Password version. Used to determine if password_wo has been updated.
+- `password_wo_version` (Number, Deprecated) Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
 - `protocol_address` (String) Protocol address (NSX-V distributed router)
 - `remote_as` (String) Remote AS number
 - `restart_mode` (String) Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)
@@ -60,6 +61,8 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
 ### Read-Only
 
 - `id` (Number) The ID of the BGP neighbor
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 <a id="nestedatt--config_nsxt"></a>
 ### Nested Schema for `config_nsxt`
@@ -85,3 +88,17 @@ BGP neighbors can be imported using the `router_id.id` format, e.g.
 # Import using router_id.id format
 terraform import hpe_morpheus_network_router_bgp_neighbor.example 42.123
 ```
+
+The write-only value `password_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_network_router_bgp_neighbor.example "42.123#password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "42.123#password_wo=${sha256(var.password_wo)}"`.

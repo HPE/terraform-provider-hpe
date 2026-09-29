@@ -2,8 +2,6 @@ package image
 
 import (
 	"context"
-	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -14,6 +12,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -126,17 +125,11 @@ func (r *Resource) Update(
 		updateImage.OsType.Set(plan.OsTypeId.ValueInt64Pointer())
 	}
 
-	// ssh_password_wo
-	if !plan.SshPasswordWoVersion.Equal(state.SshPasswordWoVersion) {
-		if config.SshPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update image resource",
-				fmt.Sprintf("image %s: 'ssh_password_wo_version' changed, "+
-					"but 'ssh_password_wo' is not set", name),
-			)
-
-			return
-		}
+	// ssh_password_wo: re-sent when ModifyPlan marked write_only_revision
+	// unknown (its digest changed, or the deprecated marker did). See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.SshPasswordWo.IsNull() && !config.SshPasswordWo.IsUnknown() {
 		updateImage.SshPassword.Set(config.SshPasswordWo.ValueStringPointer())
 	}
 
@@ -168,11 +161,17 @@ func (r *Resource) Update(
 	}
 	updateImage.Tags = tags
 
-	// tenant_ids
-	if !plan.TenantIds.IsNull() {
-		tenantIDs, err := convert.SetToSlice[types.Int64](ctx, plan.TenantIds)
-		if err != nil {
-			log.Fatal(err)
+	// tenant_ids. An unknown set (the attribute is computed and unset in the
+	// configuration) has nothing to send. Decoded as Create does: the former
+	// convert.SetToSlice[types.Int64] could never match and, behind a
+	// log.Fatal, killed the provider on any update with tenant_ids set.
+	if !plan.TenantIds.IsNull() && !plan.TenantIds.IsUnknown() {
+		var tenantIDs []types.Int64
+
+		resp.Diagnostics.Append(plan.TenantIds.ElementsAs(ctx, &tenantIDs, false)...)
+
+		if resp.Diagnostics.HasError() {
+			return
 		}
 
 		for _, idVal := range tenantIDs {
@@ -245,6 +244,11 @@ func (r *Resource) Update(
 
 	plan.Id = convert.Int64ToType(image.VirtualImage.Id)
 
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if resend {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -260,6 +264,10 @@ func (r *Resource) Update(
 
 		return
 	}
+
+	// Record the digests of the configured values, sent or not, once the
+	// read-back succeeded, so private state and state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

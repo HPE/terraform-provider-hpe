@@ -164,8 +164,8 @@ resource "hpe_morpheus_storage_volume" "generic" {
 
 - `config` (Dynamic, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Generic write-only configuration options for the storage volume, varies based on the storage volume type. Only sent to the API on create; not stored in state. Increment config_wo_version to apply a change.
 - `config_alletramp_bmaas` (Attributes, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Alletra MP BMaaS storage volume configuration. This is a write-only attribute; its values are not stored in state. Increment config_alletramp_bmaas_wo_version to apply a change. (see [below for nested schema](#nestedatt--config_alletramp_bmaas))
-- `config_alletramp_bmaas_wo_version` (Number) Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.
-- `config_wo_version` (Number) Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.
+- `config_alletramp_bmaas_wo_version` (Number, Deprecated) Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `config_wo_version` (Number, Deprecated) Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
 - `max_storage` (Number) The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.
 - `provision_type` (String) Provision type for storage volume types that support it.
 - `storage_group_id` (Number) The ID of the storage group.
@@ -177,6 +177,8 @@ resource "hpe_morpheus_storage_volume" "generic" {
 
 - `id` (Number) The ID of the storage volume.
 - `status` (String) The status of the storage volume.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which config or config_alletramp_bmaas were last
+sent to Morpheus. Changes when the volume is created; not configurable.
 - `wwn` (String)
 
 <a id="nestedatt--config_alletramp_bmaas"></a>
@@ -203,3 +205,15 @@ Import is supported using the resource ID.
 ```bash
 terraform import hpe_morpheus_storage_volume.example 123
 ```
+
+The write-only values `config`, `config_alletramp_bmaas` are not stored in state, so the import cannot tell whether
+the values in your configuration match the appliance: they are taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_storage_volume.example "123#config=<sha256 hex>&config_alletramp_bmaas=<sha256 hex>"
+```
+
+The digest of a string or number is sha256 of the value itself; of a map or object, sha256 of its JSON form (`sha256(jsonencode(v))`). A change to these values plans a **replacement**: Morpheus takes them only at creation.

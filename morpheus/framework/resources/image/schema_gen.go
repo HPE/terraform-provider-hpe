@@ -189,8 +189,9 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"ssh_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "SSH password version. Used to determine if ssh_password_wo has been updated.",
-				MarkdownDescription: "SSH password version. Used to determine if ssh_password_wo has been updated.",
+				Description:         "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"ssh_username": schema.StringAttribute{
 				Optional:            true,
@@ -302,6 +303,14 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "VM Tools Installed?",
 				Default:             booldefault.StaticBool(true),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (ssh_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (ssh_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -339,6 +348,7 @@ type ImageModel struct {
 	VirtioSupported      types.Bool       `tfsdk:"virtio_supported"`
 	Visibility           types.String     `tfsdk:"visibility"`
 	VmToolsInstalled     types.Bool       `tfsdk:"vm_tools_installed"`
+	WriteOnlyRevision    types.Int64      `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAzureType{}

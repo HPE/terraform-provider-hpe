@@ -83,10 +83,11 @@ func TestAccMorpheusBackupHostResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				Config:            providerConfig + dependencyConfig + resourceConfig,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      resourceName,
+				Config:                  providerConfig + dependencyConfig + resourceConfig,
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            resourceName,
 			},
 			// Do this to destroy the backup_host (backup_job destroyed as side-effect of backup_host destroy)...
 			{

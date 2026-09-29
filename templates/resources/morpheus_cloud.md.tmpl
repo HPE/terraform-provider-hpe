@@ -70,6 +70,20 @@ Clouds can be imported using the `id`, e.g.
 terraform import hpe_morpheus_cloud.example 123
 ```
 
+The write-only credentials `config_vmware.password` and `config_azure.client_secret` are not stored
+in state, so the import cannot tell whether the value in your configuration matches the appliance:
+it is taken as already applied, the plan after import is empty, and a later change to it is only
+detected once the cloud is next updated for another reason (Terraform warns about this on every
+plan until then). To have changes detected from the start, append the sha256 digest of the
+configured value to the import ID, naming the nested attribute by its dotted path:
+
+```shell
+terraform import hpe_morpheus_cloud.example "123#config_vmware.password=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#config_vmware.password=${sha256(var.vcenter_password)}"`.
+
 ## Notes
 
 ### Agent Installation Modes

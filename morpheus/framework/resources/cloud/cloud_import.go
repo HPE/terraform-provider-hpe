@@ -15,11 +15,18 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.Atoi(req.ID)
+	// "<id>" or "<id>#config_vmware.password=<sha256 hex>" (or
+	// config_azure.client_secret): see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.Atoi(rawID)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"import cloud resource",
-			"provided import ID '"+req.ID+"' is invalid (non-number)",
+			"provided import ID '"+rawID+"' is invalid (non-number)",
 		)
 
 		return

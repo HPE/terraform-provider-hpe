@@ -22,4 +22,7 @@ func (r *backupHostResource) ModifyPlan(ctx context.Context, req resource.Modify
 
 	_, diags := clearable.Plan(ctx, req, resp, clearableAttributes)
 	resp.Diagnostics.Append(diags...)
+
+	// A change to the write-only ssh_password_wo plans an in-place update.
+	wo.ModifyPlan(ctx, req, resp)
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 const defaultUpdateTimeout = 45 * time.Minute
@@ -50,6 +51,14 @@ func (r *Resource) Update(
 	plan.IPAddress = state.IPAddress
 	plan.Name = state.Name
 	plan.ContainerUUID = state.ContainerUUID
+
+	// ssh_password is create-only (a change replaces the node); an update
+	// planned through write_only_revision only records the digests.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	if plan.WaitForIPAddress.ValueBool() &&
 		(!state.IPAddress.IsNull() && containerip.Ready(state.IPAddress.ValueString())) {

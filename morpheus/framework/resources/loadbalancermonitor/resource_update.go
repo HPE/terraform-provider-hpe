@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -139,16 +140,11 @@ func (r *Resource) Update(
 		monitor.MonitorUsername.Set(plan.MonitorUsername.ValueStringPointer())
 	}
 
-	if !plan.MonitorPasswordWoVersion.Equal(currentState.MonitorPasswordWoVersion) {
-		if config.MonitorPasswordWo.IsUnknown() {
-			resp.Diagnostics.AddError(
-				"update load balancer monitor resource",
-				"'monitor_password_wo_version' changed, but 'monitor_password_wo' is not set",
-			)
-
-			return
-		}
-
+	// monitor_password_wo is re-sent when ModifyPlan marked write_only_revision
+	// unknown (its digest changed, or the deprecated marker did). See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.MonitorPasswordWo.IsNull() && !config.MonitorPasswordWo.IsUnknown() {
 		monitor.MonitorPassword.Set(config.MonitorPasswordWo.ValueStringPointer())
 	}
 
@@ -245,6 +241,12 @@ func (r *Resource) Update(
 	// Preserve write-only / sensitive values from plan.
 	state.ExtraConfig = plan.ExtraConfig
 	state.MonitorPasswordWoVersion = plan.MonitorPasswordWoVersion
+	state.WriteOnlyRevision = currentState.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	// Preserve plan config since the API may not return it verbatim.
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {

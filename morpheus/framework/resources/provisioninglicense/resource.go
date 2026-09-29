@@ -17,6 +17,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
@@ -24,6 +25,7 @@ var (
 	_ resource.Resource                = &provisioningLicenseResource{}
 	_ resource.ResourceWithConfigure   = &provisioningLicenseResource{}
 	_ resource.ResourceWithImportState = &provisioningLicenseResource{}
+	_ resource.ResourceWithModifyPlan  = &provisioningLicenseResource{}
 )
 
 type provisioningLicenseResource struct {
@@ -149,6 +151,8 @@ func (r *provisioningLicenseResource) Create(
 		plan.Tenants = savedTenants
 	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -259,7 +263,11 @@ func (r *provisioningLicenseResource) Update(
 		}
 		body.Tenants = tenants
 	}
-	if !plan.LicenseKeyWoVersion.Equal(state.LicenseKeyWoVersion) {
+	// license_key_wo is re-sent when ModifyPlan marked write_only_revision
+	// unknown (its digest changed, or the deprecated marker did). See
+	// write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+	if resend && !config.LicenseKeyWo.IsNull() && !config.LicenseKeyWo.IsUnknown() {
 		body.AdditionalProperties = map[string]interface{}{
 			"licenseKey": config.LicenseKeyWo.ValueString(),
 		}
@@ -297,6 +305,12 @@ func (r *provisioningLicenseResource) Update(
 		plan.Tenants = savedTenants
 	}
 	plan.LicenseKeyWoVersion = config.LicenseKeyWoVersion
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if resend {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -334,9 +348,15 @@ func (r *provisioningLicenseResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#license_key_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

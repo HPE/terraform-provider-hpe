@@ -30,7 +30,10 @@ subnet:
     config_version:
       int64:
         computed_optional_required: optional
-        description: Config version. Increment this value to trigger replacement of the subnet with updated config.
+        description: |-
+          Deprecated. Changes to config are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+        deprecation_message: "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     allow_static_override:
       bool:
         computed_optional_required: optional
@@ -51,6 +54,17 @@ subnet:
         element_type:
           int64: {}
         description: Set of group IDs that have access to the subnet. Only applicable when resource_permission_groups_all is false.
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which the write-only config was last
+          sent to Morpheus. Changes when the subnet is created; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - subnet: ""
     - template-type_id: type_id
@@ -59,6 +73,7 @@ subnet:
     - template-cloud_id: cloud_id
     - template-config: config
     - template-config_version: config_version
+    - template-write_only_revision: write_only_revision
     - template-allow_static_override: allow_static_override
     - template-tenant_ids: tenant_ids
     - template-resource_permission_groups_all: resource_permission_groups_all
@@ -142,7 +157,6 @@ subnet:
     cloud_id:
       state_for_unknown: true
     config_version:
-      requires_replace: true
     network_id:
       requires_replace: true
     tenant_ids:

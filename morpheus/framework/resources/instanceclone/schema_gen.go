@@ -459,8 +459,9 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"source_instance_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.",
-				MarkdownDescription: "Version marker for the write-only source_instance_id attribute. Because source_instance_id is write-only it is never stored in state, so editing source_instance_id on its own produces no plan diff. The clone source is only meaningful at creation time and cannot be changed afterwards, so incrementing this value has no effect on an existing instance; it exists so that a value may be supplied for it without error, for example in configurations produced by migration tooling.",
+				Description:         "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to source_instance_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,
@@ -543,6 +544,14 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The complete set of volumes for the clone. Replaces the source instance's volumes.\nVolume specifications define infrastructure parameters only - disk contents are copied from the source.\n",
 				MarkdownDescription: "The complete set of volumes for the clone. Replaces the source instance's volumes.\nVolume specifications define infrastructure parameters only - disk contents are copied from the source.\n",
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which source_instance_id was last\nsent to Morpheus. Changes when the clone is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which source_instance_id was last\nsent to Morpheus. Changes when the clone is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 		Description:         "Clones an instance in HPE Morpheus from a source instance, copying its disk contents.",
 		MarkdownDescription: "Clones an instance in HPE Morpheus from a source instance, copying its disk contents.",
@@ -567,6 +576,7 @@ type InstanceCloneModel struct {
 	Timeouts                timeouts.Value    `tfsdk:"timeouts"`
 	UserGroup               types.Int64       `tfsdk:"user_group"`
 	Volumes                 types.List        `tfsdk:"volumes"`
+	WriteOnlyRevision       types.Int64       `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigAwsType{}

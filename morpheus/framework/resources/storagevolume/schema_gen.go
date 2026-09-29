@@ -113,19 +113,15 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_alletramp_bmaas_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
-				MarkdownDescription: "Version trigger for the write-only config_alletramp_bmaas attribute. Increment whenever config_alletramp_bmaas changes to recreate the volume with the new configuration.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				MarkdownDescription: "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				DeprecationMessage:  "No longer needed: changes to config_alletramp_bmaas are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"config_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
-				MarkdownDescription: "Version trigger for the write-only config attribute. Increment whenever config changes to recreate the volume with the new configuration.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -216,6 +212,14 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
 				},
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which config or config_alletramp_bmaas were last\nsent to Morpheus. Changes when the volume is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which config or config_alletramp_bmaas were last\nsent to Morpheus. Changes when the volume is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"wwn": schema.StringAttribute{
 				Computed: true,
 			},
@@ -239,6 +243,7 @@ type StorageVolumeModel struct {
 	StorageServerId               types.Int64               `tfsdk:"storage_server_id"`
 	TypeCode                      types.String              `tfsdk:"type_code"`
 	TypeId                        types.Int64               `tfsdk:"type_id"`
+	WriteOnlyRevision             types.Int64               `tfsdk:"write_only_revision"`
 	Wwn                           types.String              `tfsdk:"wwn"`
 }
 

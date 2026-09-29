@@ -175,6 +175,8 @@ resource "hpe_morpheus_cluster" "example_generic_hvm" {
 - `id` (Number) The ID of the cluster
 - `service_url` (String)
 - `uuid` (String)
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (server.ssh_password_wo) was last
+sent to Morpheus. Changes whenever the cluster is created; not configurable.
 
 <a id="nestedatt--server"></a>
 ### Nested Schema for `server`
@@ -197,7 +199,9 @@ It should be passed as an array of Objects with the following attributes (see [b
 - `ssh_hosts` (Attributes Set) Array of Host IPs and Names. This is used in conjunction with sshUsername and sshPassword/sshKeyPair to add existing hosts such as with HPE VM clusters. (see [below for nested schema](#nestedatt--server--ssh_hosts))
 - `ssh_key_pair_id` (Number) SSH Key Pair ID.
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
-- `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
+- `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is
+no longer needed and will be removed in the 2.3 release. The SSH password cannot be changed
+after the cluster is created, so a change replaces the cluster.
 - `ssh_port` (Number) The port which the worker's SSH server is listening on.
 - `ssh_username` (String) SSH Username
 - `tags` (Attributes Set) Metadata tags, Array of objects having a name and value. (see [below for nested schema](#nestedatt--server--tags))
@@ -289,6 +293,8 @@ Optional:
 ## Update limitations
 
 ~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
+
+~> The SSH password (`server.ssh_password_wo`) is set when the cluster is created and cannot be changed afterwards. A change to the configured value therefore plans a **replacement** of the cluster; the read-only `write_only_revision` records when it was last sent. The deprecated `server.ssh_password_wo_version` marker still works for the 2.2 release (changing it plans the same replacement; removing it does not) and will be removed in 2.3.
 
 ## Import
 

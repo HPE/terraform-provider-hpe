@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -23,6 +24,7 @@ var (
 	_ resource.Resource                = &networkPoolServerResource{}
 	_ resource.ResourceWithConfigure   = &networkPoolServerResource{}
 	_ resource.ResourceWithImportState = &networkPoolServerResource{}
+	_ resource.ResourceWithModifyPlan  = &networkPoolServerResource{}
 )
 
 type networkPoolServerResource struct {
@@ -182,6 +184,9 @@ func (r *networkPoolServerResource) Create(
 	}
 	mapReadResponseToModel(ctx, &plan, readResult.NetworkPoolServer)
 
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -267,7 +272,9 @@ func (r *networkPoolServerResource) Update(
 	if !plan.ServiceUsername.IsNull() {
 		infobloxUpdate.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
 	}
-	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed, or the deprecated marker did). See write_only.go.
+	if wodigest.Resend(ctx, req.Plan) && !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
 		infobloxUpdate.ServicePassword = *sdk.NewNullableString(servicePasswordWo.ValueStringPointer())
 	}
 	if !plan.IgnoreSsl.IsNull() {
@@ -338,6 +345,17 @@ func (r *networkPoolServerResource) Update(
 	}
 	mapReadResponseToModel(ctx, &plan, server)
 
+	// write_only_revision is not in the API. Keep the prior value unless a
+	// write-only value was re-sent (ModifyPlan marked it unknown); and always
+	// record the digests of the configured values. See write_only.go.
+	var priorState NetworkPoolServerModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -374,9 +392,15 @@ func (r *networkPoolServerResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#service_password_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

@@ -45,8 +45,10 @@ func (r *Resource) Read(
 		return
 	}
 
-	// Partition is write-only; preserve from prior state.
-	state.Partition = data.Partition
+	// Partition is write-only; never in state. write_only_revision is not in
+	// the API; carried from prior state.
+	state.Partition = types.StringNull()
+	state.WriteOnlyRevision = data.WriteOnlyRevision
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

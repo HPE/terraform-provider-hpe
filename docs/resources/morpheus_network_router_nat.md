@@ -36,16 +36,19 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `action_version` (Number) Version marker for the write-only action attribute. Because action is write-only it is never stored in state, so editing action on its own produces no plan diff. Increment this value whenever action changes: the change to action_version is what produces the plan diff, and the update then sends the current action value to the API.
+- `action_version` (Number, Deprecated) Deprecated. Changes to action are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends action.
 - `description` (String) Description of the NAT rule
 - `destination_network` (String) Destination network
 - `enabled` (Boolean) Whether the NAT rule is enabled
 - `firewall` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.
-- `firewall_version` (Number) Version marker for the write-only firewall attribute. Because firewall is write-only it is never stored in state, so editing firewall on its own produces no plan diff. Increment this value whenever firewall changes: the change to firewall_version is what produces the plan diff, and the update then sends the current firewall value to the API. Leaving this value alone preserves the firewall setting currently held by the provider.
+- `firewall_version` (Number, Deprecated) Deprecated. Changes to firewall are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends firewall.
 - `priority` (Number) Priority of the NAT rule
 - `protocol` (String, Deprecated) Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.
 - `service` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.
-- `service_version` (Number) Version marker for the write-only service attribute. Because service is write-only it is never stored in state, so editing service on its own produces no plan diff. Increment this value whenever service changes: the change to service_version is what produces the plan diff, and the update then sends the current service value to the API. Leaving this value alone preserves the service setting currently held by the provider.
+- `service_version` (Number, Deprecated) Deprecated. Changes to service are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends service.
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network
 - `translated_ports` (String) Translated ports for the NAT rule
@@ -54,6 +57,8 @@ resource "hpe_morpheus_network_router_nat" "example" {
 
 - `external_id` (String) The external ID of the NAT rule, assigned by the provider (for example, the NSX-T identifier).
 - `id` (Number) The ID of the NAT rule
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which action, firewall or service were last
+sent to Morpheus. Changes whenever one of those values changes; not configurable.
 
 ## Notes
 
@@ -84,3 +89,15 @@ Import is supported using `router_id.nat_id`.
 ```bash
 terraform import hpe_morpheus_network_router_nat.example 42.123
 ```
+
+The write-only values `action`, `firewall`, `service` are not stored in state, so the import cannot tell whether
+the values in your configuration match the appliance: they are taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_network_router_nat.example "42.123#action=<sha256 hex>&firewall=<sha256 hex>&service=<sha256 hex>"
+```
+
+The digest is sha256 of the value's text (Terraform's `sha256()` function, with numbers as `tostring(v)`). 

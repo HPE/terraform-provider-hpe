@@ -17,6 +17,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 func (r *Resource) Update(
@@ -141,6 +142,14 @@ func (r *Resource) Update(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// source_instance_id is create-only (a change replaces the clone); an
+	// update planned through write_only_revision only records the digests.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

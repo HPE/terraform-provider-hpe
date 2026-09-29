@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -161,10 +162,23 @@ func (r *Resource) Update(
 		return
 	}
 
+	// The SSH password cannot be updated (a change replaces the cluster); an
+	// update planned through write_only_revision only records the digests of
+	// the configured values -- the one-time upgrade from a provider without
+	// them, or a deprecated marker being removed.
+	plan.WriteOnlyRevision = state.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+
 	updatedState, diag := getClusterAsState(ctx, id, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Record the digests once the read-back succeeded, so private state and
+	// state move together.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }

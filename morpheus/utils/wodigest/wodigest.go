@@ -43,11 +43,17 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 )
 
 // Version changes when the canonical form changes, so a digest written by an
@@ -160,6 +166,121 @@ func Value(v any) (string, error) {
 	sum := sha256.Sum256(raw)
 
 	return hex.EncodeToString(sum[:]), nil
+}
+
+// ValueOf is Value for a framework attribute value: a string is hashed
+// as-is; a dynamic value through its underlying value; anything else through
+// the JSON form of its Terraform value (objects with sorted keys, numbers as
+// JSON numbers), which is what Terraform's jsonencode() produces for the same
+// value -- so an importer can reproduce the digest with sha256(jsonencode(v)).
+func ValueOf(ctx context.Context, v attr.Value) (string, error) {
+	if v == nil || v.IsNull() || v.IsUnknown() {
+		return "", nil
+	}
+
+	if d, ok := v.(basetypes.DynamicValue); ok {
+		return ValueOf(ctx, d.UnderlyingValue())
+	}
+
+	if s, ok := v.(basetypes.StringValue); ok {
+		return Value(s.ValueString())
+	}
+
+	tv, err := v.ToTerraformValue(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	var raw any
+	if err := tftypesToGo(tv, &raw); err != nil {
+		return "", err
+	}
+
+	return Value(raw)
+}
+
+// tftypesToGo converts a tftypes.Value into plain Go values (map[string]any,
+// []any, string, float64/int64 via json.Number, bool) so it can be hashed
+// through the canonical JSON form. Numbers are rendered as JSON numbers
+// without a trailing ".0" when integral, matching jsonencode().
+func tftypesToGo(v tftypes.Value, out *any) error {
+	if v.IsNull() {
+		*out = nil
+
+		return nil
+	}
+
+	switch {
+	case v.Type().Is(tftypes.String):
+		var s string
+		if err := v.As(&s); err != nil {
+			return err
+		}
+
+		*out = s
+	case v.Type().Is(tftypes.Bool):
+		var b bool
+		if err := v.As(&b); err != nil {
+			return err
+		}
+
+		*out = b
+	case v.Type().Is(tftypes.Number):
+		// Terraform numbers are arbitrary precision; jsonencode() renders them
+		// exactly. Every write-only number in the provider is an integer id,
+		// rendered here as int64 -- identical to jsonencode(). A fractional or
+		// beyond-int64 value is rendered through its shortest float64 text,
+		// which may differ from jsonencode(): the digests then disagree and
+		// the cost is one harmless re-send, never a missed change.
+		var f *big.Float
+		if err := v.As(&f); err != nil {
+			return err
+		}
+
+		if i, acc := f.Int64(); acc == big.Exact {
+			*out = i
+		} else {
+			fl, _ := f.Float64()
+			*out = fl
+		}
+	case v.Type().Is(tftypes.Object{}) || v.Type().Is(tftypes.Map{}):
+		var m map[string]tftypes.Value
+		if err := v.As(&m); err != nil {
+			return err
+		}
+
+		res := make(map[string]any, len(m))
+
+		for k, e := range m {
+			var ev any
+			if err := tftypesToGo(e, &ev); err != nil {
+				return err
+			}
+
+			res[k] = ev
+		}
+
+		*out = res
+	case v.Type().Is(tftypes.List{}) || v.Type().Is(tftypes.Set{}) || v.Type().Is(tftypes.Tuple{}):
+		var l []tftypes.Value
+		if err := v.As(&l); err != nil {
+			return err
+		}
+
+		res := make([]any, len(l))
+
+		for i, e := range l {
+			if err := tftypesToGo(e, &res[i]); err != nil {
+				return err
+			}
+		}
+
+		*out = res
+	default:
+		return fmt.Errorf("unsupported value type %s", v.Type())
+	}
+
+	return nil
 }
 
 // Values hashes each value in m with Value, dropping unset ones.
@@ -334,6 +455,12 @@ func Store(ctx context.Context, private PrivateState, key string, d Digests) dia
 // (ParseImportID) avoids it.
 func StoreImportSentinel(ctx context.Context, private PrivateState, key string) diag.Diagnostics {
 	return Store(ctx, private, key, Digests{Sentinel: ImportSentinel, Version: Version})
+}
+
+// NewRevision is the write_only_revision value for an apply that sent a
+// write-only value: the current time in seconds since the Unix epoch.
+func NewRevision() types.Int64 {
+	return types.Int64Value(time.Now().Unix())
 }
 
 // ImportIDSeparator separates the resource ID from the write-only digests in

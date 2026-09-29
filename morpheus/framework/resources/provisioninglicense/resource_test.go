@@ -63,9 +63,10 @@ func TestAccMorpheusProvisioningLicenseResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:       true,
-				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_provisioning_license.example",
+				ImportState:             true,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"write_only_revision"},
+				ResourceName:            "hpe_morpheus_provisioning_license.example",
 			},
 		},
 	})

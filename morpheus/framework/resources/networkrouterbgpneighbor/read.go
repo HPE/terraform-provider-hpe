@@ -145,6 +145,7 @@ func getNetworkRouterBgpNeighborAsState(
 	// Password is write-only — never read back from API
 	state.PasswordWo = types.StringNull()
 	state.PasswordWoVersion = plan.PasswordWoVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// Handle config.
 	//

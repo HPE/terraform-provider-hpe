@@ -33,13 +33,16 @@ resource "hpe_morpheus_provisioning_license" "example" {
 ### Optional
 
 - `description` (String) The description of the provisioning license.
-- `license_key_wo_version` (Number) License key version. Used to determine if license_key_wo has been updated.
+- `license_key_wo_version` (Number, Deprecated) Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.
 - `tenants` (List of Number) List of tenant IDs associated with the license.
 - `virtual_images` (List of Number) List of virtual image IDs associated with the license.
 
 ### Read-Only
 
 - `id` (Number) The ID of the provisioning license.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (license_key_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 ## Import
 
@@ -48,3 +51,17 @@ Import is supported using the resource ID.
 ```bash
 terraform import hpe_morpheus_provisioning_license.example 123
 ```
+
+The write-only value `license_key_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_provisioning_license.example "123#license_key_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#license_key_wo=${sha256(var.license_key_wo)}"`.

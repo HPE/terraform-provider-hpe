@@ -82,6 +82,7 @@ func TestAccMorpheusInstanceCloneResource(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"timeouts",
+					"write_only_revision",
 				},
 			},
 		},
@@ -162,6 +163,7 @@ func TestAccMorpheusInstanceCloneResourceUserGroupStorageProfile(t *testing.T) {
 					// storage_profile is a write-mostly volume input recovered
 					// best-effort from the API on import.
 					"volumes.0.storage_profile",
+					"write_only_revision",
 				},
 			},
 		},

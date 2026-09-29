@@ -16,7 +16,14 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	parts := strings.SplitN(req.ID, ".", 2)
+	// "router_id.id", optionally followed by "#password_wo=<sha256 hex>" (see
+	// wodigest).
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	parts := strings.SplitN(rawID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import network router bgp neighbor resource",

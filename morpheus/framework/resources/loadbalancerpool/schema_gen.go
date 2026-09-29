@@ -314,49 +314,58 @@ func LoadBalancerPoolResourceSchema(ctx context.Context) schema.Schema {
 			"visibility": schema.StringAttribute{
 				Computed: true,
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which the write-only partition was last sent to\nMorpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which the write-only partition was last sent to\nMorpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
 
 type LoadBalancerPoolModel struct {
-	AllowNat         types.String      `tfsdk:"allow_nat"`
-	AllowSnat        types.String      `tfsdk:"allow_snat"`
-	Category         types.String      `tfsdk:"category"`
-	Config           types.Dynamic     `tfsdk:"config"`
-	ConfigNsxt       ConfigNsxtValue   `tfsdk:"config_nsxt"`
-	Description      types.String      `tfsdk:"description"`
-	DownAction       types.String      `tfsdk:"down_action"`
-	Enabled          types.Bool        `tfsdk:"enabled"`
-	ErrorPenalty     types.Int64       `tfsdk:"error_penalty"`
-	ExternalId       types.String      `tfsdk:"external_id"`
-	HealthPenalty    types.Int64       `tfsdk:"health_penalty"`
-	HealthScore      types.Int64       `tfsdk:"health_score"`
-	Id               types.Int64       `tfsdk:"id"`
-	InternalId       types.String      `tfsdk:"internal_id"`
-	LastUpdated      types.String      `tfsdk:"last_updated"`
-	LoadBalancer     LoadBalancerValue `tfsdk:"load_balancer"`
-	LoadBalancerId   types.Int64       `tfsdk:"load_balancer_id"`
-	MaxQueueDepth    types.String      `tfsdk:"max_queue_depth"`
-	MaxQueueTime     types.String      `tfsdk:"max_queue_time"`
-	MinActive        types.Int64       `tfsdk:"min_active"`
-	MinInService     types.String      `tfsdk:"min_in_service"`
-	MinUpAction      types.String      `tfsdk:"min_up_action"`
-	MinUpMonitor     types.String      `tfsdk:"min_up_monitor"`
-	Name             types.String      `tfsdk:"name"`
-	NumberActive     types.Int64       `tfsdk:"number_active"`
-	NumberInService  types.Int64       `tfsdk:"number_in_service"`
-	Partition        types.String      `tfsdk:"partition"`
-	PerformanceScore types.Int64       `tfsdk:"performance_score"`
-	Port             types.Int64       `tfsdk:"port"`
-	PortType         types.String      `tfsdk:"port_type"`
-	RampTime         types.String      `tfsdk:"ramp_time"`
-	SecurityPenalty  types.Int64       `tfsdk:"security_penalty"`
-	Status           types.String      `tfsdk:"status"`
-	VipBalance       types.String      `tfsdk:"vip_balance"`
-	VipClientIpMode  types.String      `tfsdk:"vip_client_ip_mode"`
-	VipServerIpMode  types.String      `tfsdk:"vip_server_ip_mode"`
-	VipSticky        types.String      `tfsdk:"vip_sticky"`
-	Visibility       types.String      `tfsdk:"visibility"`
+	AllowNat          types.String      `tfsdk:"allow_nat"`
+	AllowSnat         types.String      `tfsdk:"allow_snat"`
+	Category          types.String      `tfsdk:"category"`
+	Config            types.Dynamic     `tfsdk:"config"`
+	ConfigNsxt        ConfigNsxtValue   `tfsdk:"config_nsxt"`
+	Description       types.String      `tfsdk:"description"`
+	DownAction        types.String      `tfsdk:"down_action"`
+	Enabled           types.Bool        `tfsdk:"enabled"`
+	ErrorPenalty      types.Int64       `tfsdk:"error_penalty"`
+	ExternalId        types.String      `tfsdk:"external_id"`
+	HealthPenalty     types.Int64       `tfsdk:"health_penalty"`
+	HealthScore       types.Int64       `tfsdk:"health_score"`
+	Id                types.Int64       `tfsdk:"id"`
+	InternalId        types.String      `tfsdk:"internal_id"`
+	LastUpdated       types.String      `tfsdk:"last_updated"`
+	LoadBalancer      LoadBalancerValue `tfsdk:"load_balancer"`
+	LoadBalancerId    types.Int64       `tfsdk:"load_balancer_id"`
+	MaxQueueDepth     types.String      `tfsdk:"max_queue_depth"`
+	MaxQueueTime      types.String      `tfsdk:"max_queue_time"`
+	MinActive         types.Int64       `tfsdk:"min_active"`
+	MinInService      types.String      `tfsdk:"min_in_service"`
+	MinUpAction       types.String      `tfsdk:"min_up_action"`
+	MinUpMonitor      types.String      `tfsdk:"min_up_monitor"`
+	Name              types.String      `tfsdk:"name"`
+	NumberActive      types.Int64       `tfsdk:"number_active"`
+	NumberInService   types.Int64       `tfsdk:"number_in_service"`
+	Partition         types.String      `tfsdk:"partition"`
+	PerformanceScore  types.Int64       `tfsdk:"performance_score"`
+	Port              types.Int64       `tfsdk:"port"`
+	PortType          types.String      `tfsdk:"port_type"`
+	RampTime          types.String      `tfsdk:"ramp_time"`
+	SecurityPenalty   types.Int64       `tfsdk:"security_penalty"`
+	Status            types.String      `tfsdk:"status"`
+	VipBalance        types.String      `tfsdk:"vip_balance"`
+	VipClientIpMode   types.String      `tfsdk:"vip_client_ip_mode"`
+	VipServerIpMode   types.String      `tfsdk:"vip_server_ip_mode"`
+	VipSticky         types.String      `tfsdk:"vip_sticky"`
+	Visibility        types.String      `tfsdk:"visibility"`
+	WriteOnlyRevision types.Int64       `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigNsxtType{}

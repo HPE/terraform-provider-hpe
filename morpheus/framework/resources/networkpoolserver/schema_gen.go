@@ -90,8 +90,9 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Service password version. Used to determine if service_password_wo has been updated.",
-				MarkdownDescription: "Service password version. Used to determine if service_password_wo has been updated.",
+				Description:         "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				MarkdownDescription: "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
+				DeprecationMessage:  "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"service_throttle_rate": schema.Int64Attribute{
 				Optional:            true,
@@ -153,6 +154,14 @@ func NetworkPoolServerResourceSchema(ctx context.Context) schema.Schema {
 					int64validator.ConflictsWith(path.Expressions{path.MatchRoot("type_code")}...),
 				},
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 			"zone_filter": schema.StringAttribute{
 				Optional:            true,
 				Description:         "Filter expression for which DNS zones to sync (Infoblox only).",
@@ -182,5 +191,6 @@ type NetworkPoolServerModel struct {
 	TenantMatch              types.String `tfsdk:"tenant_match"`
 	TypeCode                 types.String `tfsdk:"type_code"`
 	TypeId                   types.Int64  `tfsdk:"type_id"`
+	WriteOnlyRevision        types.Int64  `tfsdk:"write_only_revision"`
 	ZoneFilter               types.String `tfsdk:"zone_filter"`
 }

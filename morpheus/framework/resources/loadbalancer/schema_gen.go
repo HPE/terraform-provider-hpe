@@ -159,11 +159,9 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.",
-				MarkdownDescription: "Version marker for the write-only group_id attribute. Because group_id is write-only it is never stored in state, so editing group_id on its own produces no plan diff. The group is set only when the load balancer is created and the API provides no way to move it afterwards, so increment this value when group_id changes to replace the load balancer with one in the new group.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to group_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
@@ -187,11 +185,9 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_server_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.",
-				MarkdownDescription: "Version marker for the write-only network_server_id attribute. Because network_server_id is write-only it is never stored in state, so editing network_server_id on its own produces no plan diff. The network server is set only when the load balancer is created and the API provides no way to change it afterwards, so increment this value when network_server_id changes to replace the load balancer with one registered against the new network server.",
-				PlanModifiers: []planmodifier.Int64{
-					int64planmodifier.RequiresReplace(),
-				},
+				Description:         "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to network_server_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
@@ -264,6 +260,14 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 				},
 				Default: stringdefault.StaticString("public"),
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which group_id or network_server_id were last\nsent to Morpheus. Changes when the load balancer is created; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which group_id or network_server_id were last\nsent to Morpheus. Changes when the load balancer is created; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 	}
 }
@@ -285,6 +289,7 @@ type LoadBalancerModel struct {
 	Tenants                types.Set          `tfsdk:"tenants"`
 	TypeCode               types.String       `tfsdk:"type_code"`
 	Visibility             types.String       `tfsdk:"visibility"`
+	WriteOnlyRevision      types.Int64        `tfsdk:"write_only_revision"`
 }
 
 var _ basetypes.ObjectTypable = ConfigHaproxyType{}

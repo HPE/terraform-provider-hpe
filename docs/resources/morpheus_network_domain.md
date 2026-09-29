@@ -38,7 +38,7 @@ resource "hpe_morpheus_network_domain" "example" {
 - `domain_controller` (Boolean) The domain controller used to facilitate an automated domain join operation
 - `domain_password` (String, Sensitive, Deprecated) The password of the account used to facilitate an automated domain join operation
 - `domain_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The account password for an automated domain join (write-only, not stored in state).
-- `domain_password_wo_version` (Number) Increment to re-send domain_password_wo; write-only values are not stored in state.
+- `domain_password_wo_version` (Number) Increment to re-send domain_password_wo; write-only values are not stored in state. Unlike the framework-based resources, this resource cannot detect a change to the write-only value itself, so the version marker remains the way to re-send it until the resource moves to the plugin framework.
 - `domain_username` (String) The username of the account used to facilitate an automated domain join operation
 - `public_zone` (Boolean) Whether the domain will be public or private
 - `tenant_id` (Number) The tenant to assign the network domain

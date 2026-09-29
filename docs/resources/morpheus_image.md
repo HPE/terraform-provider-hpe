@@ -76,7 +76,8 @@ resource "hpe_morpheus_image" "example_image" {
 - `min_ram` (Number) Minimal required amount of RAM for provisioning in GB
 - `os_type_id` (Number) ID of the OS Type
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
-- `ssh_password_wo_version` (Number) SSH password version. Used to determine if ssh_password_wo has been updated.
+- `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.
 - `ssh_username` (String) SSH Username
 - `storage_provider_id` (Number) ID of the storage provider where the image will be uploaded
 - `sysprep` (Boolean) Sysprep Enabled?
@@ -97,6 +98,8 @@ resource "hpe_morpheus_image" "example_image" {
 - `owner_id` (Number) ID of the user which created this image
 - `raw_size` (Number) Size of image in bytes
 - `system_image` (Boolean) Is created by system?
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (ssh_password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 <a id="nestedatt--config_azure"></a>
 ### Nested Schema for `config_azure`
@@ -116,3 +119,25 @@ Required:
 
 - `name` (String)
 - `value` (String)
+
+## Import
+
+Import is supported using the resource ID.
+
+```bash
+terraform import hpe_morpheus_image.example 123
+```
+
+The write-only value `ssh_password_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_image.example "123#ssh_password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "123#ssh_password_wo=${sha256(var.ssh_password_wo)}"`.

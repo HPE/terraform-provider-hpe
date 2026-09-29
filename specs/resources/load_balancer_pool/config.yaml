@@ -15,10 +15,22 @@ load_balancer_pool:
         description: Partition identifier
         write_only: true
 
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which the write-only partition was last sent to
+          Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - load_balancer_pool: ""                             # unnest wrapper
     - config.nsxtload_balancer_pool_config_object: config_nsxt  # extract NSX-T config from anyOf
     - template-partition: partition                              # inject write-only partition field
+    - template-write_only_revision: write_only_revision
     - template-config: config                            # replace anyOf shell with dynamic fallback (must be last)
 
   removes:

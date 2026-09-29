@@ -71,6 +71,7 @@ func getLoadBalancerAsState(
 	// Carry forward the write-only version companions from plan/state.
 	state.GroupIdVersion = plan.GroupIdVersion
 	state.NetworkServerIdVersion = plan.NetworkServerIdVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	// Check if load balancer is HAProxy or NSX-T based on returned type code
 	isHAProxy := data.Type.Code != nil && *data.Type.Code == typeCodeHAProxy

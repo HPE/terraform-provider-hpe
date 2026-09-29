@@ -88,7 +88,7 @@ resource "hpe_morpheus_task_shell_script" "tfexample_shell_git" {
 - `remote_target_host` (String) The hostname or ip address of the remote target
 - `remote_target_password` (String, Sensitive, Deprecated) The password of the user account used to authenticate to the remote target
 - `remote_target_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of the user account used to authenticate to the remote target (write-only, not stored in state).
-- `remote_target_password_wo_version` (Number) Increment to re-send remote_target_password_wo; write-only values are not stored in state.
+- `remote_target_password_wo_version` (Number) Increment to re-send remote_target_password_wo; write-only values are not stored in state. Unlike the framework-based resources, this resource cannot detect a change to the write-only value itself, so the version marker remains the way to re-send it until the resource moves to the plugin framework.
 - `remote_target_port` (String) The port used to connect to the remote target
 - `remote_target_username` (String) The username of the user account used to authenticate to the remote target
 - `repository_id` (Number) The ID of the git repository integration

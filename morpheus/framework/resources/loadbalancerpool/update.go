@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -14,6 +15,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -71,8 +73,15 @@ func (r *Resource) Update(
 		pool.VipClientIpMode = sdk.PtrString(plan.VipClientIpMode.ValueString())
 	}
 
-	if !plan.Partition.IsNull() && !plan.Partition.IsUnknown() {
-		pool.Partition = sdk.PtrString(plan.Partition.ValueString())
+	// partition is write-only: its value is only in the configuration. It is
+	// sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed). See write_only.go.
+	resend := wodigest.Resend(ctx, req.Plan)
+
+	var partition types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("partition"), &partition)...)
+	if resend && !partition.IsNull() && !partition.IsUnknown() {
+		pool.Partition = sdk.PtrString(partition.ValueString())
 	}
 
 	if err := setUpdateConfig(ctx, pool, plan); err != nil {
@@ -108,8 +117,14 @@ func (r *Resource) Update(
 		return
 	}
 
-	// Partition is write-only; preserve from plan.
-	state.Partition = plan.Partition
+	// Partition is write-only: never in state.
+	state.Partition = types.StringNull()
+	state.WriteOnlyRevision = currentState.WriteOnlyRevision
+	if resend {
+		state.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	// Always record the digests of the configured values, sent or not.
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

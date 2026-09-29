@@ -37,8 +37,9 @@ func ProvisioningLicenseResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"license_key_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "License key version. Used to determine if license_key_wo has been updated.",
-				MarkdownDescription: "License key version. Used to determine if license_key_wo has been updated.",
+				Description:         "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.",
+				MarkdownDescription: "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.",
+				DeprecationMessage:  "No longer needed: changes to license_key_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
 			},
 			"license_type": schema.StringAttribute{
 				Required:            true,
@@ -63,6 +64,14 @@ func ProvisioningLicenseResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "List of virtual image IDs associated with the license.",
 				MarkdownDescription: "List of virtual image IDs associated with the license.",
 			},
+			"write_only_revision": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "The time, in seconds since the Unix epoch, at which a write-only value (license_key_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				MarkdownDescription: "The time, in seconds since the Unix epoch, at which a write-only value (license_key_wo) was last\nsent to Morpheus. Changes whenever that value changes; not configurable.",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
+			},
 		},
 		Description:         "Manages a Morpheus Provisioning License resource.",
 		MarkdownDescription: "Manages a Morpheus Provisioning License resource.",
@@ -78,4 +87,5 @@ type ProvisioningLicenseModel struct {
 	Name                types.String `tfsdk:"name"`
 	Tenants             types.List   `tfsdk:"tenants"`
 	VirtualImages       types.List   `tfsdk:"virtual_images"`
+	WriteOnlyRevision   types.Int64  `tfsdk:"write_only_revision"`
 }

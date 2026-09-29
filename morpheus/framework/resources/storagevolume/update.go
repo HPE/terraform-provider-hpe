@@ -10,6 +10,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
 func (r *storageVolumeResource) Update(
@@ -75,6 +76,17 @@ func (r *storageVolumeResource) Update(
 	}
 
 	mapGetResponseToModel(&plan, readResult.StorageVolume)
+
+	// The write-only configuration is create-only (a change replaces the
+	// volume); an update planned through write_only_revision only records the
+	// digests of the configured values.
+	var priorState StorageVolumeModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

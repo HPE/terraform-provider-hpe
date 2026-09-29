@@ -292,8 +292,8 @@ data "hpe_morpheus_storage_bucket" "test" {
 				Check:    checkFn,
 				PlanOnly: false,
 			},
-			// changing the password without bumping the `wo_version` should not
-			// change the password
+			// changing the password is detected without bumping the marker
+			// (MORPH-18005): an in-place update that re-sends it
 			{
 				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {
@@ -305,10 +305,11 @@ data "hpe_morpheus_storage_bucket" "test" {
 						ssh_password_wo_version = 1
 					}`,
 				Check:            checkFn,
-				ConfigPlanChecks: checkNoOp,
+				ConfigPlanChecks: checkInPlaceUpdate,
 				PlanOnly:         false,
 			},
-			// removing the password field should not cause any changes
+			// removing the password field should not cause any changes: an
+			// unset write-only attribute is not managed
 			{
 				Config: providerConfig + datasourceConfig + `
 					resource "hpe_morpheus_image" "example" {

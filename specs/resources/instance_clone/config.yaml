@@ -16,13 +16,10 @@ instance_clone:
     source_instance_id_version:
       int64:
         computed_optional_required: optional
-        description: >-
-          Version marker for the write-only source_instance_id attribute. Because
-          source_instance_id is write-only it is never stored in state, so editing
-          source_instance_id on its own produces no plan diff. The clone source is only meaningful
-          at creation time and cannot be changed afterwards, so incrementing this value has no
-          effect on an existing instance; it exists so that a value may be supplied for it without
-          error, for example in configurations produced by migration tooling.
+        description: |-
+          Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+        deprecation_message: "No longer needed: changes to source_instance_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     volumesOuter:
       list_nested:
         computed_optional_required: required
@@ -263,10 +260,22 @@ instance_clone:
           provision type; query `/api/provision-types` to list the `storageProfiles`
           for a type. For example, KVM/HVM volumes use cache-mode profiles such as
           `"kvm-cache-none"` or `"kvm-cache-directsync"` (`/api/provision-types?code=kvm`).
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which source_instance_id was last
+          sent to Morpheus. Changes when the clone is created; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - instance: ""                              # unnest the instance read wrapper to root
     - template-source_instance_id: source_instance_id
     - template-source_instance_id_version: source_instance_id_version
+    - template-write_only_revision: write_only_revision
     - group.id: group_id
     - cloud.id: cloud_id
     - plan.id: plan_id

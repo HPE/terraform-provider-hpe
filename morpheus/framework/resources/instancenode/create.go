@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -17,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
 
@@ -118,8 +120,17 @@ func (r *Resource) Create(
 		}
 	}
 
-	// Step 3: Build the action envelope and execute.
+	// Step 3: Build the action envelope and execute. ssh_password is
+	// write-only: its value is only in the configuration (the plan's is
+	// always null), so it is copied in from there before the envelope is built.
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("ssh_password"), &plan.SshPassword)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	envelope := buildAddNodeEnvelope(&plan, actionCode)
+	plan.SshPassword = types.StringNull() // never persisted
 
 	// The instance and container action endpoints discard a top-level JSON
 	// request body: InstancesController.action() never merges request.JSON
@@ -246,6 +257,9 @@ func (r *Resource) Create(
 			plan.IPAddress = types.StringValue(ip)
 		}
 	}
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

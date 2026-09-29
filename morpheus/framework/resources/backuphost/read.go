@@ -123,6 +123,7 @@ func getBackupAsState(
 		state.SshUsername = convert.StrToType(v)
 	}
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
+	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
 	return state, diags
 }

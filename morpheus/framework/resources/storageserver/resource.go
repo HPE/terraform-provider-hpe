@@ -19,6 +19,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -48,6 +49,7 @@ var (
 	_ resource.Resource                = &storageServerResource{}
 	_ resource.ResourceWithConfigure   = &storageServerResource{}
 	_ resource.ResourceWithImportState = &storageServerResource{}
+	_ resource.ResourceWithModifyPlan  = &storageServerResource{}
 )
 
 type storageServerResource struct {
@@ -119,8 +121,11 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	if !plan.ServiceUsername.IsNull() {
 		body.ServiceUsername = plan.ServiceUsername.ValueStringPointer()
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		body.ServicePassword = plan.ServicePasswordWo.ValueStringPointer()
+	// service_password_wo is write-only: its value is only in the configuration.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...)
+	if !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		body.ServicePassword = servicePasswordWo.ValueStringPointer()
 	}
 
 	// Credential: use credential_id for stored credentials
@@ -238,6 +243,9 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -335,8 +343,13 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.ServiceUsername.IsNull() {
 		body.ServiceUsername = plan.ServiceUsername.ValueStringPointer()
 	}
-	if !plan.ServicePasswordWo.IsNull() && !plan.ServicePasswordWo.IsUnknown() {
-		body.ServicePassword = plan.ServicePasswordWo.ValueStringPointer()
+	// service_password_wo is write-only: its value is only in the configuration.
+	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
+	// changed, or the deprecated marker did). See write_only.go.
+	var servicePasswordWo types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("service_password_wo"), &servicePasswordWo)...)
+	if wodigest.Resend(ctx, req.Plan) && !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
+		body.ServicePassword = servicePasswordWo.ValueStringPointer()
 	}
 
 	// Credential
@@ -434,6 +447,17 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		mapGetResponseToModel(ctx, &plan, storageServer, &resp.Diagnostics)
 	}
 
+	// write_only_revision is not in the API. Keep the prior value unless a
+	// write-only value was re-sent (ModifyPlan marked it unknown); and always
+	// record the digests of the configured values. See write_only.go.
+	var priorState StorageServerModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -505,9 +529,15 @@ func (r *storageServerResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#service_password_wo=<sha256 hex>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

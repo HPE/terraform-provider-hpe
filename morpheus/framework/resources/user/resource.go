@@ -266,8 +266,8 @@ func (r *Resource) Create(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
-	state.WriteOnlyRevision = newRevision()
-	resp.Diagnostics.Append(storeWoDigests(ctx, resp.Private, config)...)
+	state.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -451,12 +451,12 @@ func (r *Resource) Update(
 
 	state.WriteOnlyRevision = prior.WriteOnlyRevision
 	if resend {
-		state.WriteOnlyRevision = newRevision()
+		state.WriteOnlyRevision = wodigest.NewRevision()
 	}
 
 	// Always record the digests of the configured values, sent or not, so an
 	// import sentinel or a missing digest never survives an update.
-	resp.Diagnostics.Append(storeWoDigests(ctx, resp.Private, config)...)
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -546,11 +546,8 @@ func (r *Resource) ImportState(
 ) {
 	// The import ID is the user id, optionally followed by the sha256 digests
 	// of the configured write-only values: "<id>#password_wo=<hex>[&...]".
-	// See importWriteOnlyDigests.
-	rawID, attrs, err := wodigest.ParseImportID(req.ID, woAttrs)
-	if err != nil {
-		resp.Diagnostics.AddError("import user resource", err.Error())
-
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
 		return
 	}
 
@@ -568,6 +565,4 @@ func (r *Resource) ImportState(
 		ctx, path.Root("id"), id,
 	)
 	resp.Diagnostics.Append(diags...)
-
-	resp.Diagnostics.Append(importWriteOnlyDigests(ctx, resp, attrs)...)
 }

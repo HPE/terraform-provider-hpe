@@ -215,7 +215,7 @@ resource "hpe_morpheus_network_pool_server" "with_credential" {
 - `network_filter` (String) Filter expression for which networks to sync from the pool server.
 - `service_mode` (String) The service mode (e.g. "static" or "dhcp"). Applies to Infoblox.
 - `service_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for authentication. Conflicts with credential_id.
-- `service_password_wo_version` (Number) Service password version. Used to determine if service_password_wo has been updated.
+- `service_password_wo_version` (Number, Deprecated) Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
 - `service_throttle_rate` (Number) Rate limit (in milliseconds) for API requests to the pool server.
 - `service_url` (String) The service URL for the IPAM integration.
 - `service_username` (String) The service username for authentication. Conflicts with credential_id.
@@ -228,6 +228,8 @@ resource "hpe_morpheus_network_pool_server" "with_credential" {
 
 - `id` (Number) The ID of the network pool server.
 - `status` (String) The current status of the network pool server.
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (service_password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 ## Import
 
@@ -236,3 +238,17 @@ Network pool servers can be imported using the pool server ID, e.g.
 ```shell
 terraform import hpe_morpheus_network_pool_server.example 42
 ```
+
+The write-only value `service_password_wo` is not stored in state, so the import
+cannot tell whether the value in your configuration matches the appliance: it is taken as already
+applied, the plan after import is empty, and a later change to it is only detected once the
+resource is next updated for another reason (Terraform warns about this on every plan until then).
+To have changes detected from the start, append the sha256 digest of each configured write-only
+value to the import ID:
+
+```shell
+terraform import hpe_morpheus_network_pool_server.example "42#service_password_wo=<sha256 hex>"
+```
+
+The same ID works in an `import` block, where Terraform's `sha256()` function produces the digest:
+`id = "42#service_password_wo=${sha256(var.service_password_wo)}"`.

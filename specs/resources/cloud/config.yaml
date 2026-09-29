@@ -19,11 +19,28 @@ cloud:
     vmware_password_version:
       int64:
         computed_optional_required: optional
-        description: Password version. Used to determine if password has been updated.
+        description: |-
+          Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends config_vmware.password.
+        deprecation_message: "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
     azure_client_secret_version:
       int64:
         computed_optional_required: optional
-        description: Client secret version. Used to determine if client secret has been updated.
+        description: |-
+          Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer
+          needed and will be removed in the 2.3 release. Changing it still re-sends config_azure.client_secret.
+        deprecation_message: "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (config_vmware.password or config_azure.client_secret) was last
+          sent to Morpheus. Changes whenever one of those values changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
   moves:
     - zone: "" # unnest zone
     - account_id: tenant_id
@@ -63,6 +80,7 @@ cloud:
     - template-bool: config_azure.cmdb_discovery
     - template-azure-region: config_azure.azure_region
     - template-azure_client_secret_version: config_azure.client_secret_version
+    - template-write_only_revision: write_only_revision
     - config_azure.rpc_mode.oneof0: config_azure.rpc_mode
     # Generic config
     - template-config: config
@@ -264,7 +282,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_azure.client_secret_version:
       computed_optional_required: optional
-      description: Client secret version. Used to determine if client secret has been updated.
+      description: Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
     config_azure.resource_group:
       description: The Azure resource group
       computed_optional_required: required
@@ -300,7 +318,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_vmware.password_version:
       computed_optional_required: optional
-      description: Password version. Used to determine if password has been updated.
+      description: Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
     costing_mode:
       description: Whether to enable costing on the cloud (off, costing, reservations, full)
       one_of: [off, costing, reservations, full]

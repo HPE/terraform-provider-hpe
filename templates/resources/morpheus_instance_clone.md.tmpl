@@ -338,5 +338,17 @@ Import is supported using the cloned instance ID:
 terraform import hpe_morpheus_instance_clone.example 42
 ```
 
+The write-only value `source_instance_id` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change is only detected once the resource is next updated for
+another reason (Terraform warns about this on every plan until then). To have changes detected from
+the start, append the sha256 digest of each configured write-only value to the import ID:
+
+```shell
+terraform import hpe_morpheus_instance_clone.example "42#source_instance_id=<sha256 hex>"
+```
+
+The digest is sha256 of the value's text (Terraform's `sha256()` function, with numbers as `tostring(v)`). A change to this value plans a **replacement**: Morpheus takes it only at creation.
+
 On import, Terraform recovers `source_instance_id` from the clone's
 `cloneInstanceId` configuration value, which Morpheus records during cloning.

@@ -17,6 +17,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
@@ -26,6 +27,7 @@ var (
 	_ resource.Resource                = &subnetResource{}
 	_ resource.ResourceWithConfigure   = &subnetResource{}
 	_ resource.ResourceWithImportState = &subnetResource{}
+	_ resource.ResourceWithModifyPlan  = &subnetResource{}
 )
 
 type subnetResource struct {
@@ -211,6 +213,9 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 
 		return
 	}
+
+	plan.WriteOnlyRevision = wodigest.NewRevision()
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
 	mapResponseToModel(&plan, readSubnet)
 
@@ -405,6 +410,16 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	// config is create-only (a change replaces the subnet); an update planned
+	// through write_only_revision only records the digests.
+	var priorState SubnetModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &priorState)...)
+	plan.WriteOnlyRevision = priorState.WriteOnlyRevision
+	if wodigest.Resend(ctx, req.Plan) {
+		plan.WriteOnlyRevision = wodigest.NewRevision()
+	}
+	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
+
 	mapResponseToModel(&plan, readSubnet)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -442,9 +457,15 @@ func (r *subnetResource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	id, err := strconv.ParseInt(req.ID, 10, 64)
+	// "<id>" or "<id>#config=<sha256 hex of jsonencode(config)>": see wodigest.
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	id, err := strconv.ParseInt(rawID, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", req.ID, err))
+		resp.Diagnostics.AddError("Invalid ID", fmt.Sprintf("Could not parse ID %q as integer: %s", rawID, err))
 
 		return
 	}

@@ -17,14 +17,20 @@ func (r *Resource) ImportState(
 	req resource.ImportStateRequest,
 	resp *resource.ImportStateResponse,
 ) {
-	// Import ID format: "loadBalancerId.monitorId"
-	parts := strings.SplitN(req.ID, ".", 2)
+	// Import ID format: "loadBalancerId.monitorId", optionally followed by
+	// "#monitor_password_wo=<sha256 hex>" (see wodigest).
+	rawID, ok := wo.Import(ctx, req, resp)
+	if !ok {
+		return
+	}
+
+	parts := strings.SplitN(rawID, ".", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError(
 			"import load_balancer_monitor resource",
 			fmt.Sprintf(
 				"provided import ID %q is invalid: expected format 'loadBalancerId.monitorId'",
-				req.ID,
+				rawID,
 			),
 		)
 
