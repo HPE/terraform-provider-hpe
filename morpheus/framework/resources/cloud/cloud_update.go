@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -472,6 +473,12 @@ func (r *Resource) Update(
 			updateOperation,
 			fmt.Sprintf("cloud %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	if d := tenancy.CheckVisibilityApplied(plan.Visibility, state.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
 
 		return
 	}

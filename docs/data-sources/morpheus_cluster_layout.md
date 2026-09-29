@@ -28,7 +28,7 @@ data "hpe_morpheus_cluster_layout" "example" {
 ### Optional
 
 - `id` (Number) The ID of the cluster layout
-- `name` (String) The name of the cluster layout
+- `name` (String) The name of the cluster layout. Must not be empty.
 
 ### Read-Only
 

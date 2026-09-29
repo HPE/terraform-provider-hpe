@@ -68,7 +68,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("associated_resource_id is required"),
 			},
 		},
@@ -107,7 +107,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Attribute policy_type.code value must be one of"),
 			},
 		},
@@ -146,7 +146,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Attribute associated_resource_type value must be one of"),
 			},
 		},
@@ -205,7 +205,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Incompatible policy type and resource type"),
 			},
 		},
@@ -237,7 +237,7 @@ resource "hpe_morpheus_group" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -252,7 +252,7 @@ resource "hpe_morpheus_policy" "validation_test" {
   name = "` + name + `"
   associated_resource_type = "Cloud"
   associated_resource_id = hpe_morpheus_cloud.test.id
-  tenants = [1]
+  tenants = [data.hpe_morpheus_whoami.current.tenant_id]
   
   policy_type = {
     code = "requiredNetwork"
@@ -268,7 +268,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Tenants not supported for this policy type"),
 			},
 		},
@@ -310,7 +310,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Attribute \"config_approval.workflow_id\" cannot be specified when"),
 			},
 		},
@@ -350,7 +350,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
 			},
 		},
@@ -390,7 +390,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("workflow_id is required when workflow_type is 'workflow'"),
 			},
 		},
@@ -430,7 +430,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
 			},
 		},
@@ -470,7 +470,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("lifecycle_workflow_id is required when workflow_type is 'workflow'"),
 			},
 		},
@@ -510,7 +510,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("flow_id is required when workflow_type is 'flow'"),
 			},
 		},
@@ -550,7 +550,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("shutdown_workflow_id is required when workflow_type is 'workflow'"),
 			},
 		},
@@ -593,7 +593,7 @@ resource "hpe_morpheus_policy" "validation_test" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:      providerConfig + resourceConfig,
+				Config:      providerConfig + testhelpers.WhoamiBlock() + resourceConfig,
 				ExpectError: regexp.MustCompile("Attribute \"config_max_memory\" cannot be specified when"),
 			},
 		},

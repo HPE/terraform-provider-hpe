@@ -33,7 +33,7 @@ func TestAccMorpheusNetworkResourceUpdateOk(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Base configuration with variables for all parameters
-	baseConfigText := providerConfig + `
+	baseConfigText := providerConfig + testhelpers.WhoamiBlock() + `
 variable "name" {
   description = "Network name"
   type        = string
@@ -134,7 +134,7 @@ resource "hpe_morpheus_network" "foo" {
 	active                       = var.active
 	dhcp_server                  = var.dhcp_server
 	appliance_url_proxy_bypass   = var.appliance_url_proxy_bypass
-	tenant_ids                   = [1]
+	tenant_ids                   = [data.hpe_morpheus_whoami.current.tenant_id]
 	labels                       = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
 	config = {
 		"resourceGroupId" = var.config_resource_group_id
@@ -382,8 +382,9 @@ resource "hpe_morpheus_network" "foo" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.foo", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.foo", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.foo", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					// Verify fields that shouldn't change
 					resource.TestCheckResourceAttr(
@@ -440,7 +441,7 @@ func TestAccMorpheusNetworkResourceUpdateNameChange(t *testing.T) {
 	updatedName := acctest.RandomWithPrefix(t.Name() + "-updated")
 
 	// Build the configuration with variables
-	configText := providerConfig + `
+	configText := providerConfig + testhelpers.WhoamiBlock() + `
 variable "name" {
   description = "Network name"
   type        = string
@@ -495,7 +496,7 @@ resource "hpe_morpheus_network" "name_change_test" {
   group_id = var.group_id
   type_id  = var.type_id
   cidr     = var.cidr
-  tenant_ids = [1]
+  tenant_ids = [data.hpe_morpheus_whoami.current.tenant_id]
   labels   = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
   config = {
     "resourceGroupId" = var.config_resource_group_id
@@ -545,8 +546,9 @@ resource "hpe_morpheus_network" "name_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.name_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -620,8 +622,9 @@ resource "hpe_morpheus_network" "name_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.name_change_test", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.name_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.name_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -684,7 +687,7 @@ func TestAccMorpheusNetworkResourceUpdateCidrChange(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	configText := providerConfig + `
+	configText := providerConfig + testhelpers.WhoamiBlock() + `
 variable "name" {
   description = "Network name"
   type        = string
@@ -746,7 +749,7 @@ resource "hpe_morpheus_network" "cidr_change_test" {
   type_id   = var.type_id
   cidr      = var.cidr
   cidr_ipv6 = var.cidr_ipv6
-  tenant_ids = [1]
+  tenant_ids = [data.hpe_morpheus_whoami.current.tenant_id]
   labels    = ["terraform", "acctest", "hpe_morpheus_network", "sweepable"]
   config = {
     "resourceGroupId" = var.config_resource_group_id
@@ -799,8 +802,9 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -878,8 +882,9 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					// Check labels
 					resource.TestCheckResourceAttr(
@@ -963,8 +968,9 @@ resource "hpe_morpheus_network" "cidr_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.cidr_change_test", "tenant_ids.#", "1",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.cidr_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					resource.TestCheckResourceAttrSet(
 						"hpe_morpheus_network.cidr_change_test", "resource_permissions.all",
@@ -1015,7 +1021,7 @@ func TestAccMorpheusNetworkResourceUpdateTenantIdsChange(t *testing.T) {
 	uniqueName := acctest.RandomWithPrefix(t.Name())
 
 	// Build the configuration with variables
-	configText := providerConfig + `
+	configText := providerConfig + testhelpers.WhoamiBlock() + `
 variable "name" {
   description = "Network name"
   type        = string
@@ -1116,8 +1122,9 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "2",
@@ -1184,8 +1191,9 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "2",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3",
@@ -1270,8 +1278,9 @@ resource "hpe_morpheus_network" "tenant_change_test" {
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.#", "3",
 					),
-					resource.TestCheckTypeSetElemAttr(
-						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "1",
+					resource.TestCheckTypeSetElemAttrPair(
+						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*",
+						"data.hpe_morpheus_whoami.current", "tenant_id",
 					),
 					resource.TestCheckTypeSetElemAttr(
 						"hpe_morpheus_network.tenant_change_test", "tenant_ids.*", "3",

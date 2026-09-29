@@ -293,7 +293,7 @@ func (r *IntegrationEventResource) Create(ctx context.Context, req resource.Crea
 
 		return
 	}
-	// Restore the value we actually applied – the create response predates the action.
+	// Restore the value we actually applied - the create response predates the action.
 	plan.Active = types.BoolValue(desiredActive)
 
 	diags = resp.State.Set(ctx, &plan)
@@ -391,7 +391,7 @@ func (r *IntegrationEventResource) Update(ctx context.Context, req resource.Upda
 
 	plan.Id = state.Id
 	r.responseToModel(updated, &plan)
-	// Restore the value we actually applied – the update response predates the action.
+	// Restore the value we actually applied - the update response predates the action.
 	plan.Active = types.BoolValue(desiredActive)
 
 	diags = resp.State.Set(ctx, &plan)
@@ -552,7 +552,7 @@ func (r *IntegrationEventResource) responseToModel(apiResp *client.IntegrationEv
 		model.ResponseHeaders = types.MapNull(types.StringType)
 	}
 
-	// Notifier — the API response doesn't return sensitive credential fields.
+	// Notifier - the API response doesn't return sensitive credential fields.
 	// Preserve the existing notifier block from the model (already populated from state/plan).
 	// Only update non-sensitive computed fields.
 	if apiResp.Notifier != nil && model.Notifier != nil {

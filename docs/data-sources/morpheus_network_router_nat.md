@@ -36,7 +36,7 @@ data "hpe_morpheus_network_router_nat" "example" {
 ### Optional
 
 - `id` (Number) The ID of the NAT rule.
-- `name` (String) The name of the NAT rule.
+- `name` (String) The name of the NAT rule. Must not be empty.
 
 ### Read-Only
 
@@ -47,6 +47,7 @@ data "hpe_morpheus_network_router_nat" "example" {
 - `destination_ports` (String) The destination ports.
 - `enabled` (Boolean) Whether the NAT rule is enabled.
 - `external_id` (String) The external ID of the NAT rule.
+- `firewall` (String)
 - `internal_id` (String) The internal ID of the NAT rule.
 - `last_updated` (String) The date the NAT rule was last updated.
 - `match_ipv6destination_prefix` (String) The IPv6 destination prefix to match.
@@ -55,6 +56,7 @@ data "hpe_morpheus_network_router_nat" "example" {
 - `provider_id` (String) The provider ID of the NAT rule.
 - `ref_id` (String) The reference ID.
 - `ref_type` (String) The reference type.
+- `service` (String)
 - `source_network` (String) Source network.
 - `source_ports` (String) The source ports.
 - `sync_source` (String) The synchronization source.

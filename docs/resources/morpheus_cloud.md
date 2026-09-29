@@ -211,7 +211,7 @@ resource "hpe_morpheus_cloud" "example" {
 - `labels` (Set of String) Array of label strings, can be used for filtering.
 - `location` (String) Optional location for your cloud
 - `security_mode` (String) host firewall. `off` or `internal`. a.k.a. "local firewall"
-- `visibility` (String) The visibility of the cloud (private or public)
+- `visibility` (String) The visibility of the cloud (private or public). Setting "public" requires the master tenant.
 
 ### Read-Only
 

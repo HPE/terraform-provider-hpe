@@ -30,7 +30,7 @@ data "hpe_morpheus_network_router" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network router.
-- `name` (String) The name of the network router.
+- `name` (String) The name of the network router. Must not be empty.
 
 ### Read-Only
 
@@ -70,8 +70,13 @@ Read-Only:
 Read-Only:
 
 - `cidr` (String)
+- `config` (Attributes) (see [below for nested schema](#nestedatt--interfaces--config))
 - `id` (Number)
 - `ip_address` (String) Equivalent to interfaces.source_addresses in the HPE-GL Provider.
+
+<a id="nestedatt--interfaces--config"></a>
+### Nested Schema for `interfaces.config`
+
 
 
 <a id="nestedatt--network_integration"></a>

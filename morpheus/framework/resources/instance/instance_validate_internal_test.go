@@ -117,6 +117,7 @@ func hvmValidateReq(
 	hvmType := tftypes.Object{AttributeTypes: map[string]tftypes.Type{
 		"affinity_group_id":     tftypes.Number,
 		"create_user":           tftypes.Bool,
+		"image_id":              tftypes.Number,
 		"kvm_host_id":           tftypes.Number,
 		"nested_virtualization": tftypes.String,
 		"no_agent":              tftypes.Bool,
@@ -125,6 +126,7 @@ func hvmValidateReq(
 
 	hvmAttrs := map[string]tftypes.Value{
 		"create_user":           tftypes.NewValue(tftypes.Bool, nil),
+		"image_id":              tftypes.NewValue(tftypes.Number, nil),
 		"nested_virtualization": tftypes.NewValue(tftypes.String, nil),
 		"no_agent":              tftypes.NewValue(tftypes.Bool, nil),
 		"resource_pool_id":      tftypes.NewValue(tftypes.String, nil),

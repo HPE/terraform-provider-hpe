@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/sdkfuncs"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -658,6 +659,15 @@ func (r *Resource) Create(
 			fmt.Sprintf("Cloud %d was created but could not be read", id),
 		)
 		taintResourceState(id)
+
+		return
+	}
+
+	// Apply-time fallback for the sub-tenant visibility coercion (MORPH-16419):
+	// if the plan asked for "public" but the API stored "private", surface a
+	// clear error rather than an opaque "inconsistent result".
+	if d := tenancy.CheckVisibilityApplied(plan.Visibility, state.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
 
 		return
 	}

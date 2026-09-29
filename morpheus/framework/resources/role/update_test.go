@@ -50,7 +50,7 @@ resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
 resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
-  visibility = "public"
+  visibility = "` + testhelpers.TenantVisibility(t) + `"
   category = "cloud"
 }
 
@@ -816,11 +816,11 @@ func TestAccMorpheusRoleResourceTenantUpdateAllAttrsOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 	nameUpdated := name + "Updated"
 
-	dependencyResourceConfig := `
+	dependencyResourceConfig := testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_cloud" "testacc_cloud" {
   name = "` + name + `"
-  tenant_id = 1
-  visibility = "public"
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
+  visibility = "` + testhelpers.TenantVisibility(t) + `"
   config_hvm = {
     "enable_network_type_selection" = true
   }
@@ -835,7 +835,7 @@ resource "hpe_morpheus_app_blueprint_terraform" "testacc_blueprint" {
 resource "hpe_morpheus_instance_type" "testacc_instance_type" {
   name = "` + name + `"
   code = "` + name + `"
-  visibility = "public"
+  visibility = "` + testhelpers.TenantVisibility(t) + `"
   category = "cloud"
 }
 

@@ -332,7 +332,7 @@ func (r *ClientResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	// Only overwrite addons/packages when the API returns values or the prior
 	// state was non-null; if the user omitted the attribute and the API echoes
-	// nothing back, keep null so we don't produce a null → [] drift on the
+	// nothing back, keep null so we don't produce a null [] drift on the
 	// next plan.
 	if len(existing.Addons) > 0 || !state.Addons.IsNull() {
 		state.Addons, err = stringSetFromSlice(existing.Addons)

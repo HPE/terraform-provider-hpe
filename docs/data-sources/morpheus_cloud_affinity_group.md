@@ -48,7 +48,7 @@ data "hpe_morpheus_cloud_affinity_group" "example" {
 ### Optional
 
 - `id` (Number) The ID of the cloud affinity group.
-- `name` (String) The name of the cloud affinity group.
+- `name` (String) The name of the cloud affinity group. Must not be empty.
 
 ### Read-Only
 

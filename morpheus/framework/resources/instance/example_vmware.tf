@@ -83,6 +83,11 @@ resource "hpe_morpheus_instance" "example" {
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
+
+    # image_id overrides the image configured on the layout. Omit it to take the
+    # layout default. Changing it replaces the instance, because the image is
+    # only applied at provision time.
+    # image_id = data.hpe_morpheus_image.vmware.id
   }
 
   timeouts = {

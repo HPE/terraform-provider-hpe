@@ -76,6 +76,9 @@ func ClusterAffinityGroupResourceSchema(ctx context.Context) schema.Schema {
 				Required:            true,
 				Description:         "The name of the affinity group.",
 				MarkdownDescription: "The name of the affinity group.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"pool_id": schema.Int64Attribute{
 				Computed:            true,

@@ -19,7 +19,8 @@ group:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
-      description: The name of the Morpheus group
+      string_length_at_least: 1
+      description: The name of the Morpheus group. Must not be empty.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     code:

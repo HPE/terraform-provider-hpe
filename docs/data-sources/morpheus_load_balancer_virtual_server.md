@@ -40,7 +40,7 @@ data "hpe_morpheus_load_balancer_virtual_server" "example" {
 ### Optional
 
 - `id` (Number) The ID of the load balancer virtual server
-- `vip_name` (String) VIP Name
+- `vip_name` (String) VIP Name. Must not be empty.
 
 ### Read-Only
 

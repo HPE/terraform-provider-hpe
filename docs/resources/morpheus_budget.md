@@ -30,6 +30,7 @@ resource "hpe_morpheus_budget" "example" {
 
 ### Optional
 
+- `associated_resource_id` (Number) The ID of the resource the budget is scoped to (the group, cloud, or user matching scope). Leave unset when scope is account.
 - `description` (String) The description of the budget.
 - `enabled` (Boolean) Whether the budget is enabled.
 - `end_date` (String) The end date of the budget.

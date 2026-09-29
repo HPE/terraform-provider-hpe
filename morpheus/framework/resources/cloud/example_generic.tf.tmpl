@@ -7,7 +7,7 @@ resource "hpe_morpheus_cloud" "example" {
   labels           = ["{{.Label}}1", "{{.Label}}2"]
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "{{.Visibility}}"
   cloud_type_code  = "standard"
 
   agent_install_mode       = "ssh"

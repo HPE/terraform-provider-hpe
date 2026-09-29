@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	morpheus "github.com/HPE/terraform-provider-hpe/internal/sdk/legacy"
 
@@ -39,6 +40,11 @@ func ResourceUserGroup() *schema.Resource {
 				Description: "The description of the user group",
 				Optional:    true,
 				Computed:    true,
+				// Morpheus stores user group descriptions in a column that
+				// rejects overly long values with a server 500. Cap the length
+				// at plan time (mirrors the 255-char limit used by other
+				// description fields such as vdi_gateway).
+				ValidateFunc: validation.StringLenBetween(0, 255),
 			},
 			"server_group": {
 				Type:        schema.TypeString,

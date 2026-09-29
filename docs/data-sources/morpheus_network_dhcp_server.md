@@ -34,7 +34,7 @@ data "hpe_morpheus_network_dhcp_server" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the network DHCP server
-- `name` (String) The name of the network DHCP server
+- `name` (String) The name of the network DHCP server. Must not be empty.
 
 ### Read-Only
 

@@ -32,7 +32,7 @@ func RenderCatalogItemAppBlueprintConfig(t *testing.T, overrides map[string]stri
 		"LogoImagePath":     "tfexample.png",
 		"Name":              "tfexample_app_blueprint_catalog",
 		"OptionTypeIds":     "[2056, 2006, 2058]",
-		"Visibility":        "public",
+		"Visibility":        "private",
 	}
 
 	// Apply overrides to defaults

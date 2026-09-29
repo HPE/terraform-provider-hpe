@@ -156,8 +156,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf, return on the first match
@@ -169,8 +176,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf1, return on the first match
@@ -182,8 +196,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10, return on the first match
@@ -195,8 +216,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf11, return on the first match
@@ -208,8 +236,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf12, return on the first match
@@ -221,8 +256,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf13, return on the first match
@@ -234,8 +276,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf14, return on the first match
@@ -247,8 +296,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf15, return on the first match
@@ -260,8 +316,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf16, return on the first match
@@ -273,8 +336,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf2, return on the first match
@@ -286,8 +356,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf3, return on the first match
@@ -299,8 +376,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf4, return on the first match
@@ -312,8 +396,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf5, return on the first match
@@ -325,8 +416,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf6, return on the first match
@@ -338,8 +436,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf7, return on the first match
@@ -351,8 +456,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf8, return on the first match
@@ -364,8 +476,15 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 	// try to unmarshal JSON data into ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9
 	err = json.Unmarshal(data, &dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)
 	if err == nil {
-		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9, _ := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)
-		if string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9) == "{}" { // empty struct
+		jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9, merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9 := json.Marshal(dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)
+		var zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9 ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9
+		jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9, _ := json.Marshal(&zeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9 != nil || string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9) == "{}" || (len(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9) > 0 && jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9[0] == '{' && string(jsonListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9) == string(jsonZeroListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)) {
 			dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9 = nil
 		} else {
 			return nil // data stored in dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9, return on the first match
@@ -374,6 +493,12 @@ func (dst *ListIntegrations200ResponseAnyOfIntegrationsInner) UnmarshalJSON(data
 		dst.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(ListIntegrations200ResponseAnyOfIntegrationsInner)")
 }
 
@@ -447,7 +572,7 @@ func (src ListIntegrations200ResponseAnyOfIntegrationsInner) MarshalJSON() ([]by
 		return json.Marshal(&src.ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf9)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableListIntegrations200ResponseAnyOfIntegrationsInner struct {

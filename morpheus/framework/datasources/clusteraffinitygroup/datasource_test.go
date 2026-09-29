@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 func TestAccMorpheusFindClusterAffinityGroupByName(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
@@ -169,7 +159,11 @@ func TestAccMorpheusFindClusterAffinityGroupNoSearchAttrs(t *testing.T) {
 	// rejects the config for having no id or name before it looks a cluster up,
 	// so this test needs no real affinity-group-capable cluster and
 	// deliberately does not consult TF_VAR_testacc_morpheus_affinity_cluster_id.
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_cluster_affinity_group" "test" {
         cluster_id = 1
       }`

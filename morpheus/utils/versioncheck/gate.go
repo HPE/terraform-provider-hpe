@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -47,6 +48,36 @@ func Require(
 	return Decide(ctx, feature, constraint, v, err)
 }
 
+// RequireAttribute is Require for a gate that applies to a single attribute
+// rather than to the whole resource — a feature the resource works without,
+// but which an older appliance cannot honour when it is configured. The error
+// diagnostic, if any, is attached to attrPath so Terraform points the
+// practitioner at the offending attribute rather than at the resource block.
+//
+// Call it only when the attribute is actually set (known and non-null), so
+// that configurations which do not use the feature never pay for the version
+// lookup and are never refused:
+//
+//	if !plan.ParentId.IsNull() && !plan.ParentId.IsUnknown() {
+//	    resp.Diagnostics.Append(versioncheck.RequireAttribute(
+//	        ctx, client, path.Root("parent_id"),
+//	        "Nominated parent tenants (parent_id)", constants.TenantParentMinVersion,
+//	    )...)
+//	}
+//
+// It shares Require's fail-open policy; see Decide.
+func RequireAttribute(
+	ctx context.Context,
+	client *sdk.APIClient,
+	attrPath path.Path,
+	feature string,
+	constraint string,
+) diag.Diagnostics {
+	v, err := Appliance(ctx, client)
+
+	return DecideAttribute(ctx, attrPath, feature, constraint, v, err)
+}
+
 // Decide is the pure decision half of Require, split out so the gate's
 // behaviour can be unit tested without a live appliance. It returns an error
 // diagnostic if, and only if, the appliance version is known and fails the
@@ -54,14 +85,13 @@ func Require(
 //
 // FAIL OPEN when the version cannot be determined.
 //
-// The version comes from GET /api/health, which is permission-guarded: the API
-// only serves it to callers holding the `admin-health` permission at read or
-// full access. A user with every permission needed to manage the gated resource
-// can still be refused the health endpoint, and a reverse proxy or a transient
-// outage can hide it too. Failing closed would turn any of those into a total,
-// unworkaroundable failure against a perfectly healthy 8.0.10+ appliance — the
-// practitioner would have to go and get an unrelated permission granted before
-// Terraform would run at all.
+// The version comes from GET /api/whoami, which any authenticated caller can
+// read, so a permission shortfall is not a reason it goes missing. But a
+// reverse proxy or WAF can still block the path, a transient outage can hide
+// it, and an unexpected response shape can defeat the decode. Failing closed
+// would turn any of those into a total, unworkaroundable failure against a
+// perfectly healthy 8.0.10+ appliance, over an endpoint the operation itself
+// does not need.
 //
 // Failing open is strictly no worse than the pre-gate behaviour: the operation
 // proceeds and, if the appliance really is too old, the API returns the same
@@ -82,6 +112,43 @@ func Decide(
 ) diag.Diagnostics {
 	var diags diag.Diagnostics
 
+	if summary, detail, refuse := decide(ctx, feature, constraint, v, lookupErr); refuse {
+		diags.AddError(summary, detail)
+	}
+
+	return diags
+}
+
+// DecideAttribute is the pure decision half of RequireAttribute. It applies
+// exactly the same policy as Decide — including failing open — but attaches
+// the refusal to attrPath.
+func DecideAttribute(
+	ctx context.Context,
+	attrPath path.Path,
+	feature string,
+	constraint string,
+	v *Version,
+	lookupErr error,
+) diag.Diagnostics {
+	var diags diag.Diagnostics
+
+	if summary, detail, refuse := decide(ctx, feature, constraint, v, lookupErr); refuse {
+		diags.AddAttributeError(attrPath, summary, detail)
+	}
+
+	return diags
+}
+
+// decide is the shared core of Decide and DecideAttribute: it applies the
+// fail-open policy and, when the appliance is known to be too old, returns the
+// diagnostic text with refuse=true. The callers decide where to attach it.
+func decide(
+	ctx context.Context,
+	feature string,
+	constraint string,
+	v *Version,
+	lookupErr error,
+) (summary, detail string, refuse bool) {
 	if lookupErr != nil || v == nil {
 		reason := "appliance did not report a version"
 		if lookupErr != nil {
@@ -94,7 +161,7 @@ func Decide(
 			"reason":     reason,
 		})
 
-		return diags
+		return "", "", false
 	}
 
 	ok, err := Satisfies(v, constraint)
@@ -108,22 +175,19 @@ func Decide(
 			"reason":     err.Error(),
 		})
 
-		return diags
+		return "", "", false
 	}
 
 	if ok {
-		return diags
+		return "", "", false
 	}
 
-	diags.AddError(
-		fmt.Sprintf("%s require a newer Morpheus appliance", feature),
+	return fmt.Sprintf("%s require a newer Morpheus appliance", feature),
 		fmt.Sprintf(
 			"%s require a Morpheus appliance version %s. This appliance reports "+
 				"version %s. Upgrade the appliance to a version satisfying %s, or "+
 				"remove the affected configuration.",
 			feature, constraint, v.Original(), constraint,
 		),
-	)
-
-	return diags
+		true
 }

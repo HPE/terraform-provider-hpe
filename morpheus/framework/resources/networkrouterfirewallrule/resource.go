@@ -21,6 +21,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
@@ -154,7 +155,7 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -165,6 +166,8 @@ func (r *Resource) Create(
 
 		return
 	}
+
+	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -182,8 +185,9 @@ func getFirewallRuleAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterFirewallRuleModel,
-) (NetworkRouterFirewallRuleModel, diag.Diagnostics) {
+) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent, diag.Diagnostics) {
 	var state NetworkRouterFirewallRuleModel
+	var absent ruleFieldsAbsent
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
@@ -194,15 +198,37 @@ func getFirewallRuleAsState(
 			fmt.Sprintf("firewall rule %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, diags
+		return state, absent, diags
 	}
 
 	rule := resp.Rule
 	if rule == nil {
 		diags.AddError("API returned nil", "Rule is nil in the response")
 
-		return state, diags
+		return state, absent, diags
 	}
+
+	state, absent = mapRuleToState(rule, plan)
+
+	return state, absent, diags
+}
+
+// ruleFieldsAbsent records which optional fields the API did not return, so
+// Create/Update can warn the user that the configured value was preserved.
+type ruleFieldsAbsent struct {
+	Protocol  bool
+	PortRange bool
+}
+
+// mapRuleToState maps an SDK firewall rule onto resource state, preserving
+// planned/prior values for optional fields the API does not reliably return.
+// It is split from getFirewallRuleAsState so the null-safety of those optional
+// fields can be unit-tested without a live API.
+func mapRuleToState(
+	rule *sdk.GetNetworkRouterFirewallRule200ResponseRule,
+	plan NetworkRouterFirewallRuleModel,
+) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent) {
+	var state NetworkRouterFirewallRuleModel
 
 	state.Id = convert.Int64ToType(rule.Id)
 
@@ -216,8 +242,13 @@ func getFirewallRuleAsState(
 
 	state.Direction = convert.StrToType(rule.Direction)
 	state.Policy = convert.StrToType(rule.Policy)
-	state.Protocol = convert.StrToType(rule.Protocol.Get())
-	state.PortRange = convert.StrToType(rule.PortRange.Get())
+	// protocol and port_range are accepted by the API on create and update but
+	// are not reliably returned by the GET (on NSX-T routers the effective
+	// service is derived from application, and the returned rule can carry a
+	// null protocol/portRange), so preserve the configured value. Because they
+	// are not reliably returned they cannot be used for drift detection.
+	state.Protocol = convert.StrOrPlan(rule.Protocol.Get(), plan.Protocol)
+	state.PortRange = convert.StrOrPlan(rule.PortRange.Get(), plan.PortRange)
 	state.SourceType = convert.StrToType(rule.SourceType)
 	state.DestinationType = convert.StrToType(rule.DestinationType)
 	state.Application = convert.StrToType(rule.Application.Get())
@@ -236,7 +267,37 @@ func getFirewallRuleAsState(
 	// not echo back cleanly, so preserve the configured value.
 	state.ParentId = plan.ParentId
 
-	return state, diags
+	absent := ruleFieldsAbsent{
+		Protocol:  rule.Protocol.Get() == nil,
+		PortRange: rule.PortRange.Get() == nil,
+	}
+
+	return state, absent
+}
+
+// warnIfFieldsAbsent emits a warning when a known, non-null configured protocol
+// or port_range was not reported back by the router. Called from Create and
+// Update only (never Read) so refresh stays silent.
+func warnIfFieldsAbsent(
+	diags *diag.Diagnostics,
+	plan NetworkRouterFirewallRuleModel,
+	absent ruleFieldsAbsent,
+) {
+	knownNonNull := func(v types.String) bool {
+		return !v.IsUnknown() && !v.IsNull()
+	}
+
+	if (absent.Protocol && knownNonNull(plan.Protocol)) ||
+		(absent.PortRange && knownNonNull(plan.PortRange)) {
+		diags.AddWarning(
+			"Router did not report the configured protocol/port range",
+			"The router did not report the configured protocol and/or port "+
+				"range back after the write. The configured value has been kept "+
+				"in state. On NSX-T routers the effective service is selected via "+
+				"the `application` attribute; set it there if you need the service "+
+				"to be reflected by the router.",
+		)
+	}
 }
 
 func (r *Resource) Read(
@@ -258,13 +319,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, _, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, NetworkRouterFirewallRuleResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 // Update
@@ -363,11 +430,13 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

@@ -87,7 +87,7 @@ resource "hpe_morpheus_image" "example_image" {
 - `url` (String) Image File URL, a virtual image file will be created by fetching the specified URL
 - `user_data` (String) Cloud-Init User Data, a bash script
 - `virtio_supported` (Boolean) VirtIO Drivers Loaded?
-- `visibility` (String) private or public
+- `visibility` (String) private or public. Setting "public" requires the master tenant.
 - `vm_tools_installed` (Boolean) VM Tools Installed?
 
 ### Read-Only

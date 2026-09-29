@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -106,8 +108,11 @@ func NetworkRouterBgpNeighborDataSourceSchema(ctx context.Context) schema.Schema
 			"ip_address": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided.",
-				MarkdownDescription: "The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided.",
+				Description:         "The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided. Must not be empty.",
+				MarkdownDescription: "The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided. Must not be empty.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"keep_alive": schema.Int64Attribute{
 				Computed: true,

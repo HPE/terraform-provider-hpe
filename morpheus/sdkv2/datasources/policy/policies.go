@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package policy
 
@@ -172,49 +172,71 @@ func dataSourcePoliciesRead(ctx context.Context, d *schema.ResourceData, meta an
 		sortOrder = "desc"
 	}
 
-	resp, err = client.ListPolicies(&morpheus.Request{
-		QueryParams: map[string]string{
-			"max":       "100",
-			"sort":      "id",
-			"direction": sortOrder,
-		},
-	})
-	if err != nil {
-		if resp != nil && resp.StatusCode == 404 {
-			log.Printf("API 404: %s - %v", resp, err)
+	// MORPH-16241: page through ALL policies before applying the client-side
+	// regex filter. Previously a single max=100 request was made, so in a
+	// populated environment (>100 policies) a newly-created high-id policy
+	// could be truncated out of the first page and never matched.
+	const pageSize = int64(100)
 
-			return nil
+	var allPolicies []morpheus.Policy
+	for offset := int64(0); ; offset += pageSize {
+		resp, err = client.ListPolicies(&morpheus.Request{
+			QueryParams: map[string]string{
+				"max":       convert.Int64ToString(pageSize),
+				"offset":    convert.Int64ToString(offset),
+				"sort":      "id",
+				"direction": sortOrder,
+			},
+		})
+		if err != nil {
+			if resp != nil && resp.StatusCode == 404 {
+				log.Printf("API 404: %s - %v", resp, err)
+
+				return nil
+			}
+			log.Printf("API FAILURE: %s - %v", resp, err)
+
+			return diag.FromErr(err)
 		}
-		log.Printf("API FAILURE: %s - %v", resp, err)
+		log.Printf("API RESPONSE: %s", resp)
 
-		return diag.FromErr(err)
+		var result *morpheus.ListPoliciesResult
+		if v, ok := resp.Result.(*morpheus.ListPoliciesResult); ok {
+			result = v
+		} else {
+			return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
+		}
+
+		if result == nil {
+			return diag.FromErr(helpers.NotFoundInResponseError("ListPoliciesResult"))
+		}
+
+		if result.Policies == nil {
+			return diag.FromErr(helpers.NotFoundInResponseError("Policies"))
+		}
+
+		allPolicies = append(allPolicies, *result.Policies...)
+
+		// Primary terminator: a short or empty page means we have reached the
+		// end of the collection. This is robust even when meta is missing or
+		// inconsistent across pages.
+		if len(*result.Policies) < int(pageSize) {
+			break
+		}
+
+		// Secondary terminator: if the API reports a total, stop once we have
+		// collected every record it claims to have.
+		if result.Meta != nil && int64(len(allPolicies)) >= result.Meta.Total {
+			break
+		}
 	}
-	log.Printf("API RESPONSE: %s", resp)
 
 	var policyIDs []string
 
 	// store resource data
-	var result *morpheus.ListPoliciesResult
-	if v, ok := resp.Result.(*morpheus.ListPoliciesResult); ok {
-		result = v
-	} else {
-		return diag.FromErr(helpers.TypeAssertFailError("result", resp.Result))
-	}
-
-	if result == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("ListPoliciesResult"))
-	}
-
-	if result.Policies == nil {
-		return diag.FromErr(helpers.NotFoundInResponseError("Policies"))
-	}
-
-	policies := result.Policies
-	if policies != nil {
-		for _, policy := range *policies {
-			if regexCheck(policyTypes, policy.PolicyType.Name) && regexCheck(names, policy.Name) {
-				policyIDs = append(policyIDs, convert.Int64ToString(policy.ID))
-			}
+	for _, policy := range allPolicies {
+		if regexCheck(policyTypes, policy.PolicyType.Name) && regexCheck(names, policy.Name) {
+			policyIDs = append(policyIDs, convert.Int64ToString(policy.ID))
 		}
 	}
 

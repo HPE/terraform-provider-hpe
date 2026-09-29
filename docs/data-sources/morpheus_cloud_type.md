@@ -2,11 +2,11 @@
 page_title: "hpe_morpheus_cloud_type Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus cloud type data source.
+  Provides a Morpheus cloud type data source. It reads /api/zone-types, which requires no appliance-level permission and so is reachable by sub-tenant callers. Only enabled cloud types are returned (the endpoint defaults to enabled cloud types).
 ---
 # hpe_morpheus_cloud_type (Data Source)
 
-Provides a Morpheus cloud type data source.
+Provides a Morpheus cloud type data source. It reads `/api/zone-types`, which requires no appliance-level permission and so is reachable by sub-tenant callers. Only enabled cloud types are returned (the endpoint defaults to enabled cloud types).
 
 ## Example Usage
 

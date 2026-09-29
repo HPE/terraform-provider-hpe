@@ -34,7 +34,7 @@ data "hpe_morpheus_backup_instance" "example" {
 ### Optional
 
 - `id` (Number) ID of the Instance Backup
-- `name` (String) Name of the Instance Backup
+- `name` (String) Name of the Instance Backup. Must not be empty.
 
 ### Read-Only
 

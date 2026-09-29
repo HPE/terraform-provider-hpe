@@ -12,7 +12,7 @@ type InstallIntegrationV3Request struct {
 
 // InstallV3Profile is the gateway/profile reference for v3 installs.
 type InstallV3Profile struct {
-	UuId string `json:"uuId"`
+	UuId string `json:"uuId,omitempty"`
 }
 
 // IntegrationResponse represents the API response for an installed integration

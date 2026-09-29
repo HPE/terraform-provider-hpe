@@ -115,3 +115,20 @@ func (c *OpsRampClient) SearchManagementProfiles(tenantId string, queryName stri
 
 	return response.Results, nil
 }
+
+// FindManagementProfileByName searches for a management profile by exact name.
+func (c *OpsRampClient) FindManagementProfileByName(tenantId string, name string) (*ManagementProfile, error) {
+	profiles, err := c.SearchManagementProfiles(tenantId, name)
+	if err != nil {
+		return nil, err
+	}
+
+	searchName := strings.TrimSpace(name)
+	for i := range profiles {
+		if strings.EqualFold(strings.TrimSpace(profiles[i].Name), searchName) {
+			return &profiles[i], nil
+		}
+	}
+
+	return nil, fmt.Errorf("management profile with name '%s' not found", name)
+}

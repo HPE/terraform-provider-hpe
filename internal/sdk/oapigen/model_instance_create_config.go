@@ -86,8 +86,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AmazonInstanceConfiguration7
 	err = json.Unmarshal(data, &dst.AmazonInstanceConfiguration7)
 	if err == nil {
-		jsonAmazonInstanceConfiguration7, _ := json.Marshal(dst.AmazonInstanceConfiguration7)
-		if string(jsonAmazonInstanceConfiguration7) == "{}" { // empty struct
+		jsonAmazonInstanceConfiguration7, merrAmazonInstanceConfiguration7 := json.Marshal(dst.AmazonInstanceConfiguration7)
+		var zeroAmazonInstanceConfiguration7 AmazonInstanceConfiguration7
+		jsonZeroAmazonInstanceConfiguration7, _ := json.Marshal(&zeroAmazonInstanceConfiguration7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAmazonInstanceConfiguration7 != nil || string(jsonAmazonInstanceConfiguration7) == "{}" || (len(jsonAmazonInstanceConfiguration7) > 0 && jsonAmazonInstanceConfiguration7[0] == '{' && string(jsonAmazonInstanceConfiguration7) == string(jsonZeroAmazonInstanceConfiguration7)) {
 			dst.AmazonInstanceConfiguration7 = nil
 		} else {
 			return nil // data stored in dst.AmazonInstanceConfiguration7, return on the first match
@@ -99,8 +106,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AzureInstanceConfiguration7
 	err = json.Unmarshal(data, &dst.AzureInstanceConfiguration7)
 	if err == nil {
-		jsonAzureInstanceConfiguration7, _ := json.Marshal(dst.AzureInstanceConfiguration7)
-		if string(jsonAzureInstanceConfiguration7) == "{}" { // empty struct
+		jsonAzureInstanceConfiguration7, merrAzureInstanceConfiguration7 := json.Marshal(dst.AzureInstanceConfiguration7)
+		var zeroAzureInstanceConfiguration7 AzureInstanceConfiguration7
+		jsonZeroAzureInstanceConfiguration7, _ := json.Marshal(&zeroAzureInstanceConfiguration7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAzureInstanceConfiguration7 != nil || string(jsonAzureInstanceConfiguration7) == "{}" || (len(jsonAzureInstanceConfiguration7) > 0 && jsonAzureInstanceConfiguration7[0] == '{' && string(jsonAzureInstanceConfiguration7) == string(jsonZeroAzureInstanceConfiguration7)) {
 			dst.AzureInstanceConfiguration7 = nil
 		} else {
 			return nil // data stored in dst.AzureInstanceConfiguration7, return on the first match
@@ -112,8 +126,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into BMaaSInstanceConfiguration1
 	err = json.Unmarshal(data, &dst.BMaaSInstanceConfiguration1)
 	if err == nil {
-		jsonBMaaSInstanceConfiguration1, _ := json.Marshal(dst.BMaaSInstanceConfiguration1)
-		if string(jsonBMaaSInstanceConfiguration1) == "{}" { // empty struct
+		jsonBMaaSInstanceConfiguration1, merrBMaaSInstanceConfiguration1 := json.Marshal(dst.BMaaSInstanceConfiguration1)
+		var zeroBMaaSInstanceConfiguration1 BMaaSInstanceConfiguration1
+		jsonZeroBMaaSInstanceConfiguration1, _ := json.Marshal(&zeroBMaaSInstanceConfiguration1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBMaaSInstanceConfiguration1 != nil || string(jsonBMaaSInstanceConfiguration1) == "{}" || (len(jsonBMaaSInstanceConfiguration1) > 0 && jsonBMaaSInstanceConfiguration1[0] == '{' && string(jsonBMaaSInstanceConfiguration1) == string(jsonZeroBMaaSInstanceConfiguration1)) {
 			dst.BMaaSInstanceConfiguration1 = nil
 		} else {
 			return nil // data stored in dst.BMaaSInstanceConfiguration1, return on the first match
@@ -125,8 +146,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GenericInstanceConfiguration7
 	err = json.Unmarshal(data, &dst.GenericInstanceConfiguration7)
 	if err == nil {
-		jsonGenericInstanceConfiguration7, _ := json.Marshal(dst.GenericInstanceConfiguration7)
-		if string(jsonGenericInstanceConfiguration7) == "{}" { // empty struct
+		jsonGenericInstanceConfiguration7, merrGenericInstanceConfiguration7 := json.Marshal(dst.GenericInstanceConfiguration7)
+		var zeroGenericInstanceConfiguration7 GenericInstanceConfiguration7
+		jsonZeroGenericInstanceConfiguration7, _ := json.Marshal(&zeroGenericInstanceConfiguration7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGenericInstanceConfiguration7 != nil || string(jsonGenericInstanceConfiguration7) == "{}" || (len(jsonGenericInstanceConfiguration7) > 0 && jsonGenericInstanceConfiguration7[0] == '{' && string(jsonGenericInstanceConfiguration7) == string(jsonZeroGenericInstanceConfiguration7)) {
 			dst.GenericInstanceConfiguration7 = nil
 		} else {
 			return nil // data stored in dst.GenericInstanceConfiguration7, return on the first match
@@ -138,8 +166,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GoogleCloudInstanceConfiguration7
 	err = json.Unmarshal(data, &dst.GoogleCloudInstanceConfiguration7)
 	if err == nil {
-		jsonGoogleCloudInstanceConfiguration7, _ := json.Marshal(dst.GoogleCloudInstanceConfiguration7)
-		if string(jsonGoogleCloudInstanceConfiguration7) == "{}" { // empty struct
+		jsonGoogleCloudInstanceConfiguration7, merrGoogleCloudInstanceConfiguration7 := json.Marshal(dst.GoogleCloudInstanceConfiguration7)
+		var zeroGoogleCloudInstanceConfiguration7 GoogleCloudInstanceConfiguration7
+		jsonZeroGoogleCloudInstanceConfiguration7, _ := json.Marshal(&zeroGoogleCloudInstanceConfiguration7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGoogleCloudInstanceConfiguration7 != nil || string(jsonGoogleCloudInstanceConfiguration7) == "{}" || (len(jsonGoogleCloudInstanceConfiguration7) > 0 && jsonGoogleCloudInstanceConfiguration7[0] == '{' && string(jsonGoogleCloudInstanceConfiguration7) == string(jsonZeroGoogleCloudInstanceConfiguration7)) {
 			dst.GoogleCloudInstanceConfiguration7 = nil
 		} else {
 			return nil // data stored in dst.GoogleCloudInstanceConfiguration7, return on the first match
@@ -151,8 +186,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into HVMInstanceConfiguration2
 	err = json.Unmarshal(data, &dst.HVMInstanceConfiguration2)
 	if err == nil {
-		jsonHVMInstanceConfiguration2, _ := json.Marshal(dst.HVMInstanceConfiguration2)
-		if string(jsonHVMInstanceConfiguration2) == "{}" { // empty struct
+		jsonHVMInstanceConfiguration2, merrHVMInstanceConfiguration2 := json.Marshal(dst.HVMInstanceConfiguration2)
+		var zeroHVMInstanceConfiguration2 HVMInstanceConfiguration2
+		jsonZeroHVMInstanceConfiguration2, _ := json.Marshal(&zeroHVMInstanceConfiguration2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHVMInstanceConfiguration2 != nil || string(jsonHVMInstanceConfiguration2) == "{}" || (len(jsonHVMInstanceConfiguration2) > 0 && jsonHVMInstanceConfiguration2[0] == '{' && string(jsonHVMInstanceConfiguration2) == string(jsonZeroHVMInstanceConfiguration2)) {
 			dst.HVMInstanceConfiguration2 = nil
 		} else {
 			return nil // data stored in dst.HVMInstanceConfiguration2, return on the first match
@@ -164,8 +206,15 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into VMWareInstanceConfiguration7
 	err = json.Unmarshal(data, &dst.VMWareInstanceConfiguration7)
 	if err == nil {
-		jsonVMWareInstanceConfiguration7, _ := json.Marshal(dst.VMWareInstanceConfiguration7)
-		if string(jsonVMWareInstanceConfiguration7) == "{}" { // empty struct
+		jsonVMWareInstanceConfiguration7, merrVMWareInstanceConfiguration7 := json.Marshal(dst.VMWareInstanceConfiguration7)
+		var zeroVMWareInstanceConfiguration7 VMWareInstanceConfiguration7
+		jsonZeroVMWareInstanceConfiguration7, _ := json.Marshal(&zeroVMWareInstanceConfiguration7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrVMWareInstanceConfiguration7 != nil || string(jsonVMWareInstanceConfiguration7) == "{}" || (len(jsonVMWareInstanceConfiguration7) > 0 && jsonVMWareInstanceConfiguration7[0] == '{' && string(jsonVMWareInstanceConfiguration7) == string(jsonZeroVMWareInstanceConfiguration7)) {
 			dst.VMWareInstanceConfiguration7 = nil
 		} else {
 			return nil // data stored in dst.VMWareInstanceConfiguration7, return on the first match
@@ -174,6 +223,12 @@ func (dst *InstanceCreateConfig) UnmarshalJSON(data []byte) error {
 		dst.VMWareInstanceConfiguration7 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(InstanceCreateConfig)")
 }
 
@@ -207,7 +262,7 @@ func (src InstanceCreateConfig) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.VMWareInstanceConfiguration7)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableInstanceCreateConfig struct {

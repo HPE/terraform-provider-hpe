@@ -31,9 +31,9 @@ type Alert struct {
 	MinDuration          *int64                                        `json:"minDuration,omitempty"`
 	DateCreated          *time.Time                                    `json:"dateCreated,omitempty"`
 	LastUpdated          *time.Time                                    `json:"lastUpdated,omitempty"`
-	Checks               []int32                                       `json:"checks,omitempty"`
-	CheckGroups          []int32                                       `json:"checkGroups,omitempty"`
-	Apps                 []int32                                       `json:"apps,omitempty"`
+	Checks               []int64                                       `json:"checks,omitempty"`
+	CheckGroups          []int64                                       `json:"checkGroups,omitempty"`
+	Apps                 []int64                                       `json:"apps,omitempty"`
 	Contacts             []AddAlerts200ResponseAllOfAlertContactsInner `json:"contacts,omitempty"`
 	AdditionalProperties map[string]interface{}                        `json:",remain"`
 }

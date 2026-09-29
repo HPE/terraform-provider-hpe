@@ -1,0 +1,7 @@
+# Look a pool up by id. This is the way to reach a pool that the cloud's listing
+# does not include, such as the pool Morpheus creates for an HVM cluster; read
+# that id from the hpe_morpheus_cluster data source (permissions.resource_pool.id).
+data "hpe_morpheus_resource_pool" "by_id" {
+  id       = data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id
+  cloud_id = data.hpe_morpheus_cloud.hvmcloud.id
+}

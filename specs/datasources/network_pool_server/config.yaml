@@ -25,7 +25,8 @@ network_pool_server:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
-      description: The name of the network pool server.
+      string_length_at_least: 1
+      description: The name of the network pool server. Must not be empty.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     date_created:

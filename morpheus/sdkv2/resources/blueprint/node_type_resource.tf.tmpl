@@ -18,5 +18,7 @@ resource "hpe_morpheus_node_type" "example" {
     port     = "{{.ServicePortPort2}}"
     protocol = "{{.ServicePortProtocol2}}"
   }
-}
+{{if .FileTemplateIds}}  file_template_ids = {{.FileTemplateIds}}
+{{end}}{{if .ScriptTemplateIds}}  script_template_ids = {{.ScriptTemplateIds}}
+{{end}}}
 

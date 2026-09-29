@@ -3,6 +3,7 @@
 package blueprint_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 
@@ -34,9 +35,17 @@ func TestAccMorpheusDataSourceNodeTypeExampleOk(t *testing.T) {
 
 	var dependenciesConfig string
 
+	// Unique per-run labels -- see MORPH-16400 and the resource example test. Both
+	// tests render this resource with t.Parallel(); identical static labels race
+	// Morpheus's find-or-create of the shared org-labels on concurrent node type
+	// creates, intermittently failing with "labels[N].name must be unique" or a 500.
+	labelSuffix := acctest.RandString(8)
+	labels := fmt.Sprintf(`["demo-%s", "node-%s", "tf-%s"]`, labelSuffix, labelSuffix, labelSuffix)
+
 	if currentDependency, err := blueprint.RenderNodeTypeConfig(t, map[string]string{
-		"Name": name,
-		"Code": strings.ToLower(name),
+		"Name":   name,
+		"Code":   strings.ToLower(name),
+		"Labels": labels,
 	}); err != nil {
 		t.Fatal(err)
 	} else {

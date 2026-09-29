@@ -13,8 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -140,6 +141,9 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Attribute-based actions to apply when the policy matches.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"continuous_learning": schema.BoolAttribute{
 						Optional:            true,
@@ -151,16 +155,18 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 						Optional:            true,
 						Computed:            true,
 						MarkdownDescription: "Suppress settings for attribute actions.",
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"learned_configuration": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
 								Default:             booldefault.StaticBool(false),
-								MarkdownDescription: "Whether to use learned configuration for suppression.",
+								MarkdownDescription: "Enables learned configuration from file for the suppression action.",
 							},
 							"suppress_duration": schema.Int64Attribute{
-								Optional:            true,
-								Computed:            true,
+								Required:            true,
 								MarkdownDescription: "Duration in minutes to suppress alerts. Use -1 for indefinite.",
 							},
 						},
@@ -169,6 +175,9 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 						Optional:            true,
 						Computed:            true,
 						MarkdownDescription: "Insights settings for attribute actions.",
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"create_prc_insights": schema.BoolAttribute{
 								Optional:            true,
@@ -181,25 +190,30 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 					"run_process": schema.SingleNestedAttribute{
 						Optional:            true,
 						Computed:            true,
-						MarkdownDescription: "Insights settings for attribute actions.",
+						MarkdownDescription: "Run Process settings for attribute actions.",
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"learned_configuration": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
 								Default:             booldefault.StaticBool(false),
-								MarkdownDescription: "Whether to create PRC insights.",
+								MarkdownDescription: "Enables learned configuration from file for the run process action.",
 							},
 							"run_immediately": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
 								Default:             booldefault.StaticBool(false),
-								MarkdownDescription: "Whether to create PRC insights.",
+								MarkdownDescription: "Run immediately and do not wait until Suppress action time ends.",
 							},
 							"process_ids": schema.ListAttribute{
 								ElementType:         types.StringType,
-								Optional:            true,
-								Computed:            true,
+								Required:            true,
 								MarkdownDescription: "List of process IDs to run when the policy matches.",
+								PlanModifiers: []planmodifier.List{
+									listplanmodifier.UseStateForUnknown(),
+								},
 							},
 						},
 					},
@@ -209,23 +223,32 @@ func (r *FirstResponsePolicyResource) Schema(_ context.Context, _ resource.Schem
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Pattern-based actions for the policy.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"seasonality_time_frame": schema.StringAttribute{
-						Optional:            true,
-						Computed:            true,
-						MarkdownDescription: "The seasonality time frame (e.g., `10D`, `60D`).",
-						Default:             stringdefault.StaticString("7D"),
+						Required:            true,
+						MarkdownDescription: "Learning based on the data for last N days. Valid values: `7D`, `10D`, `30D`, `60D`, `90D`.",
+						Validators: []validator.String{
+							stringvalidator.OneOf("7D", "10D", "30D", "60D", "90D"),
+						},
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.UseStateForUnknown(),
+						},
 					},
 					"suppress": schema.SingleNestedAttribute{
-						Optional:            true,
-						Computed:            true,
+						Required:            true,
 						MarkdownDescription: "Suppress settings for pattern actions.",
+						PlanModifiers: []planmodifier.Object{
+							objectplanmodifier.UseStateForUnknown(),
+						},
 						Attributes: map[string]schema.Attribute{
 							"seasonal_alerts": schema.BoolAttribute{
 								Optional:            true,
 								Computed:            true,
 								Default:             booldefault.StaticBool(false),
-								MarkdownDescription: "Whether to suppress seasonal alerts.",
+								MarkdownDescription: "Suppress alerts based on seasonality patterns",
 							},
 						},
 					},
@@ -244,15 +267,13 @@ func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel) client.First
 
 	if !plan.AttributeActions.IsNull() && !plan.AttributeActions.IsUnknown() {
 		attrActionAttrs := plan.AttributeActions.Attributes()
-		actions := &client.FirstResponseAttrActions{
-			Suppress: &client.FirstResponseAttrSuppress{},
-			Insights: &client.FirstResponseInsights{},
-		}
+		actions := &client.FirstResponseAttrActions{}
 		if v, ok := attrActionAttrs["continuous_learning"]; ok && !v.IsNull() && !v.IsUnknown() {
 			actions.ContinuousLearning = v.(types.Bool).ValueBool()
 		}
 
 		if v, ok := attrActionAttrs["suppress"]; ok && !v.IsNull() && !v.IsUnknown() {
+			actions.Suppress = &client.FirstResponseAttrSuppress{}
 			attrs := v.(types.Object).Attributes()
 			if v, ok := attrs["learned_configuration"]; ok && !v.IsNull() {
 				actions.Suppress.LearnedConfiguration = v.(types.Bool).ValueBool()
@@ -279,6 +300,7 @@ func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel) client.First
 			actions.RunProcess = runProc
 		}
 		if v, ok := attrActionAttrs["insights"]; ok && !v.IsNull() && !v.IsUnknown() {
+			actions.Insights = &client.FirstResponseInsights{}
 			attrs := v.(types.Object).Attributes()
 			if v, ok := attrs["create_prc_insights"]; ok && !v.IsNull() {
 				actions.Insights.CreatePrcInsights = v.(types.Bool).ValueBool()
@@ -289,14 +311,13 @@ func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel) client.First
 
 	if !plan.PatternActions.IsNull() && !plan.PatternActions.IsUnknown() {
 		patternActionAttrs := plan.PatternActions.Attributes()
-		pa := &client.FirstResponsePatternActions{
-			Suppress: &client.FirstResponsePatternSuppress{},
-		}
+		pa := &client.FirstResponsePatternActions{}
 		if v, ok := patternActionAttrs["seasonality_time_frame"]; ok && !v.IsNull() && !v.IsUnknown() {
 			pa.SeasonalityTimeFrame = v.(types.String).ValueString()
 		}
 
 		if v, ok := patternActionAttrs["suppress"]; ok && !v.IsNull() && !v.IsUnknown() {
+			pa.Suppress = &client.FirstResponsePatternSuppress{}
 			attrs := v.(types.Object).Attributes()
 			if v, ok := attrs["seasonal_alerts"]; ok && !v.IsNull() {
 				pa.Suppress.SeasonalAlerts = v.(types.Bool).ValueBool()
@@ -306,6 +327,137 @@ func buildFirstResponsePolicyRequest(plan FirstResponsePolicyModel) client.First
 	}
 
 	return policy
+}
+
+func hasSeasonalAlertsEnabled(object types.Object) bool {
+	if object.IsNull() || object.IsUnknown() {
+		return false
+	}
+
+	suppressValue, ok := object.Attributes()["suppress"]
+	if !ok || suppressValue.IsNull() || suppressValue.IsUnknown() {
+		return false
+	}
+
+	suppressObject, ok := suppressValue.(types.Object)
+	if !ok || suppressObject.IsNull() || suppressObject.IsUnknown() {
+		return false
+	}
+
+	seasonalAlertsValue, ok := suppressObject.Attributes()["seasonal_alerts"]
+	if !ok || seasonalAlertsValue.IsNull() || seasonalAlertsValue.IsUnknown() {
+		return false
+	}
+
+	seasonalAlerts, ok := seasonalAlertsValue.(types.Bool)
+	if !ok {
+		return false
+	}
+
+	return seasonalAlerts.ValueBool()
+}
+
+func hasSuppressEnabled(object types.Object) bool {
+	if object.IsNull() || object.IsUnknown() {
+		return false
+	}
+
+	suppressValue, ok := object.Attributes()["suppress"]
+	if !ok || suppressValue.IsNull() || suppressValue.IsUnknown() {
+		return false
+	}
+
+	suppressObject, ok := suppressValue.(types.Object)
+	if !ok || suppressObject.IsNull() || suppressObject.IsUnknown() {
+		return false
+	}
+
+	attributes := suppressObject.Attributes()
+
+	learnedConfigurationValue, ok := attributes["learned_configuration"]
+	if ok && !learnedConfigurationValue.IsNull() && !learnedConfigurationValue.IsUnknown() &&
+		func() bool {
+			learnedConfiguration, isBool := learnedConfigurationValue.(types.Bool)
+
+			return isBool && learnedConfiguration.ValueBool()
+		}() {
+		return true
+	}
+
+	suppressDurationValue, ok := attributes["suppress_duration"]
+	if ok && !suppressDurationValue.IsNull() && !suppressDurationValue.IsUnknown() {
+		return true
+	}
+
+	return false
+}
+
+func hasInsightsEnabled(object types.Object) bool {
+	if object.IsNull() || object.IsUnknown() {
+		return false
+	}
+
+	insightsValue, ok := object.Attributes()["insights"]
+	if !ok || insightsValue.IsNull() || insightsValue.IsUnknown() {
+		return false
+	}
+
+	insightsObject, ok := insightsValue.(types.Object)
+	if !ok || insightsObject.IsNull() || insightsObject.IsUnknown() {
+		return false
+	}
+
+	createPrcInsightsValue, ok := insightsObject.Attributes()["create_prc_insights"]
+	if !ok || createPrcInsightsValue.IsNull() || createPrcInsightsValue.IsUnknown() {
+		return false
+	}
+
+	createPrcInsights, ok := createPrcInsightsValue.(types.Bool)
+	if !ok {
+		return false
+	}
+
+	return createPrcInsights.ValueBool()
+}
+
+func hasRunProcessEnabled(object types.Object) bool {
+	if object.IsNull() || object.IsUnknown() {
+		return false
+	}
+
+	runProcessValue, ok := object.Attributes()["run_process"]
+	if !ok || runProcessValue.IsNull() || runProcessValue.IsUnknown() {
+		return false
+	}
+
+	runProcessObject, ok := runProcessValue.(types.Object)
+	if !ok || runProcessObject.IsNull() || runProcessObject.IsUnknown() {
+		return false
+	}
+
+	attributes := runProcessObject.Attributes()
+
+	learnedConfigurationValue, ok := attributes["learned_configuration"]
+	if ok && !learnedConfigurationValue.IsNull() && !learnedConfigurationValue.IsUnknown() &&
+		func() bool {
+			learnedConfiguration, isBool := learnedConfigurationValue.(types.Bool)
+
+			return isBool && learnedConfiguration.ValueBool()
+		}() {
+		return true
+	}
+
+	processIDsValue, ok := attributes["process_ids"]
+	if !ok || processIDsValue.IsNull() || processIDsValue.IsUnknown() {
+		return false
+	}
+
+	processIDs, ok := processIDsValue.(types.List)
+	if !ok {
+		return false
+	}
+
+	return len(processIDs.Elements()) > 0
 }
 
 func mapFirstResponsePolicyToState(resp *client.FirstResponsePolicy, state *FirstResponsePolicyModel) {
@@ -344,14 +496,13 @@ func mapFirstResponsePolicyToState(resp *client.FirstResponsePolicy, state *Firs
 			runProcessObj = types.ObjectNull(attrRunProcessAttrTypes)
 		}
 
-		// Insights - always present
-		insights := resp.AttributeActions.Insights
-		if insights == nil {
-			insights = &client.FirstResponseInsights{}
+		// Insights - keep null when API omits the block
+		insightsObj := types.ObjectNull(insightsAttrTypes)
+		if resp.AttributeActions.Insights != nil {
+			insightsObj, _ = types.ObjectValue(insightsAttrTypes, map[string]attr.Value{
+				"create_prc_insights": types.BoolValue(resp.AttributeActions.Insights.CreatePrcInsights),
+			})
 		}
-		insightsObj, _ := types.ObjectValue(insightsAttrTypes, map[string]attr.Value{
-			"create_prc_insights": types.BoolValue(insights.CreatePrcInsights),
-		})
 
 		actionsObj, _ := types.ObjectValue(attributeActionsAttrTypes, map[string]attr.Value{
 			"continuous_learning": types.BoolValue(resp.AttributeActions.ContinuousLearning),
@@ -369,14 +520,13 @@ func mapFirstResponsePolicyToState(resp *client.FirstResponsePolicy, state *Firs
 			seasonalityTimeFrame = types.StringValue(resp.PatternActions.SeasonalityTimeFrame)
 		}
 
-		// Suppress - always present
-		patternSuppress := resp.PatternActions.Suppress
-		if patternSuppress == nil {
-			patternSuppress = &client.FirstResponsePatternSuppress{}
+		// Suppress - keep null when API omits the block
+		suppressObj := types.ObjectNull(patternSuppressAttrTypes)
+		if resp.PatternActions.Suppress != nil {
+			suppressObj, _ = types.ObjectValue(patternSuppressAttrTypes, map[string]attr.Value{
+				"seasonal_alerts": types.BoolValue(resp.PatternActions.Suppress.SeasonalAlerts),
+			})
 		}
-		suppressObj, _ := types.ObjectValue(patternSuppressAttrTypes, map[string]attr.Value{
-			"seasonal_alerts": types.BoolValue(patternSuppress.SeasonalAlerts),
-		})
 
 		patternActionsObj, _ := types.ObjectValue(patternActionsAttrTypes, map[string]attr.Value{
 			"seasonality_time_frame": seasonalityTimeFrame,
@@ -502,4 +652,39 @@ func (r *FirstResponsePolicyResource) Delete(ctx context.Context, req resource.D
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func (r *FirstResponsePolicyResource) ModifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+) {
+	if req.Plan.Raw.IsNull() {
+		return
+	}
+
+	var plan FirstResponsePolicyModel
+	diags := req.Plan.Get(ctx, &plan)
+	resp.Diagnostics.Append(diags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if hasSeasonalAlertsEnabled(plan.PatternActions) ||
+		hasSuppressEnabled(plan.AttributeActions) ||
+		hasRunProcessEnabled(plan.AttributeActions) ||
+		hasInsightsEnabled(plan.AttributeActions) {
+		return
+	}
+
+	resp.Diagnostics.AddError(
+		"Action Required",
+		"At least one first response action must be enabled: "+
+			"set pattern_actions.suppress.seasonal_alerts = true, "+
+			"set attribute_actions.suppress.suppress_duration or "+
+			"attribute_actions.suppress.learned_configuration = true, "+
+			"assign attribute_actions.run_process.process_ids or "+
+			"set attribute_actions.run_process.learned_configuration = true, "+
+			"or set attribute_actions.insights.create_prc_insights = true.",
+	)
 }

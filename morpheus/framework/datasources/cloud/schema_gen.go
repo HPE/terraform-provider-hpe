@@ -22,6 +22,11 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Optional code for use with policies",
 				MarkdownDescription: "Optional code for use with policies",
 			},
+			"config": schema.DynamicAttribute{
+				Computed:            true,
+				Description:         "The cloud's configuration object as returned by the API. Contents vary by cloud type, and include values Morpheus discovers from the target system rather than ones supplied at creation.",
+				MarkdownDescription: "The cloud's configuration object as returned by the API. Contents vary by cloud type, and include values Morpheus discovers from the target system rather than ones supplied at creation.",
+			},
 			"costing_mode": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The costing mode of the cloud",
@@ -71,10 +76,11 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus cloud",
-				MarkdownDescription: "The name of the Morpheus cloud",
+				Description:         "The name of the Morpheus cloud. Must not be empty.",
+				MarkdownDescription: "The name of the Morpheus cloud. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"time_zone": schema.StringAttribute{
@@ -87,15 +93,16 @@ func CloudDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type CloudModel struct {
-	Code           types.String `tfsdk:"code"`
-	CostingMode    types.String `tfsdk:"costing_mode"`
-	ExternalId     types.String `tfsdk:"external_id"`
-	GroupIds       types.Set    `tfsdk:"group_ids"`
-	GuidanceMode   types.String `tfsdk:"guidance_mode"`
-	Id             types.Int64  `tfsdk:"id"`
-	InventoryLevel types.String `tfsdk:"inventory_level"`
-	Labels         types.Set    `tfsdk:"labels"`
-	Location       types.String `tfsdk:"location"`
-	Name           types.String `tfsdk:"name"`
-	TimeZone       types.String `tfsdk:"time_zone"`
+	Code           types.String  `tfsdk:"code"`
+	Config         types.Dynamic `tfsdk:"config"`
+	CostingMode    types.String  `tfsdk:"costing_mode"`
+	ExternalId     types.String  `tfsdk:"external_id"`
+	GroupIds       types.Set     `tfsdk:"group_ids"`
+	GuidanceMode   types.String  `tfsdk:"guidance_mode"`
+	Id             types.Int64   `tfsdk:"id"`
+	InventoryLevel types.String  `tfsdk:"inventory_level"`
+	Labels         types.Set     `tfsdk:"labels"`
+	Location       types.String  `tfsdk:"location"`
+	Name           types.String  `tfsdk:"name"`
+	TimeZone       types.String  `tfsdk:"time_zone"`
 }

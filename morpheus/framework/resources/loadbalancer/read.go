@@ -16,7 +16,19 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
+
+// mapTenant maps a load balancer tenant into its state value. Split out so the
+// nil-safety of the optional id/name (which the API may omit) is unit-testable; the
+// convert.* helpers return typed nulls rather than dereferencing a nil pointer.
+func mapTenant(in sdk.GetLoadBalancer200ResponseLoadBalancerTenantsInner) TenantsValue {
+	return TenantsValue{
+		Id:    convert.Int64ToType(in.Id),
+		Name:  convert.StrToType(in.Name),
+		state: attr.ValueStateKnown,
+	}
+}
 
 func getLoadBalancerAsState(
 	ctx context.Context,
@@ -36,10 +48,6 @@ func getLoadBalancerAsState(
 	data := lb.LoadBalancer
 	if data == nil {
 		return state, fmt.Errorf("load balancer %d not found in response", id)
-	}
-
-	if data.Cloud == nil {
-		return state, fmt.Errorf("load balancer %d cloud id not found", id)
 	}
 
 	if data.Type == nil {
@@ -122,19 +130,7 @@ func getLoadBalancerAsState(
 	}
 
 	// Tenants
-	tenants, d := convert.ToSetType(
-		ctx,
-		data.Tenants,
-		func(
-			in sdk.GetLoadBalancer200ResponseLoadBalancerTenantsInner,
-		) TenantsValue {
-			return TenantsValue{
-				Id:    types.Int64Value(*in.Id),
-				Name:  types.StringValue(*in.Name),
-				state: attr.ValueStateKnown,
-			}
-		},
-	)
+	tenants, d := convert.ToSetType(ctx, data.Tenants, mapTenant)
 	if d.HasError() {
 		return state, fmt.Errorf("failed to convert tenants: %s", d.Errors())
 	}
@@ -333,4 +329,10 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, LoadBalancerResourceSchema(ctx), &resp.State)...,
+	)
 }

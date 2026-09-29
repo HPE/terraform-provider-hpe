@@ -44,10 +44,11 @@ func ClusterNamespaceDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the cluster namespace.",
-				MarkdownDescription: "The name of the cluster namespace.",
+				Description:         "The name of the cluster namespace. Must not be empty.",
+				MarkdownDescription: "The name of the cluster namespace. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"visibility": schema.StringAttribute{

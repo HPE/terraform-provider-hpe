@@ -35,10 +35,11 @@ func InstanceTypeLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the Morpheus instance layout",
-				MarkdownDescription: "The name of the Morpheus instance layout",
+				Description:         "The name of the Morpheus instance layout. Must not be empty.",
+				MarkdownDescription: "The name of the Morpheus instance layout. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"sort_order": schema.Int64Attribute{

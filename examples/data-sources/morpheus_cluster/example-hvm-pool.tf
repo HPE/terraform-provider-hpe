@@ -1,0 +1,14 @@
+# Provisioning into an HVM cluster: the cluster's own resource pool is the one to
+# target. It is attached to the cluster rather than to the cloud, so the cloud's
+# resource-pool listing does not include it; read it from the cluster instead.
+data "hpe_morpheus_cluster" "hvm" {
+  name = "hvm-cluster-01"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  # ... name, cloud_id, group_id, instance_type_id, layout_id, plan_id ...
+
+  config_hvm = {
+    resource_pool_id = "pool-${data.hpe_morpheus_cluster.hvm.permissions.resource_pool.id}"
+  }
+}

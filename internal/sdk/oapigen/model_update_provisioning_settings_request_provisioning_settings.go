@@ -34,6 +34,8 @@ type UpdateProvisioningSettingsRequestProvisioningSettings struct {
 	CrossTenantNamingPolicies *bool `json:"crossTenantNamingPolicies,omitempty"`
 	// Use this to enable / disable reusing naming sequence numbers
 	ReuseSequence *bool `json:"reuseSequence,omitempty"`
+	// Use this to enable / disable showing console keyboard layout settings for applicable clouds and remote protocols. Note that this property is named `showConsoleKeyboardSettings` in the response returned when retrieving provisioning settings.
+	ConsoleKeyboardSettings *bool `json:"consoleKeyboardSettings,omitempty"`
 	// Cloud-init username
 	CloudInitUsername *string `json:"cloudInitUsername,omitempty"`
 	// Cloud-init password
@@ -80,6 +82,9 @@ func (o UpdateProvisioningSettingsRequestProvisioningSettings) ToMap() (map[stri
 	}
 	if !IsNil(o.ReuseSequence) {
 		toSerialize["reuseSequence"] = o.ReuseSequence
+	}
+	if !IsNil(o.ConsoleKeyboardSettings) {
+		toSerialize["consoleKeyboardSettings"] = o.ConsoleKeyboardSettings
 	}
 	if !IsNil(o.CloudInitUsername) {
 		toSerialize["cloudInitUsername"] = o.CloudInitUsername

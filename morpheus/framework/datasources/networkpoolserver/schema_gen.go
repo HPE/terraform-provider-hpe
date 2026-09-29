@@ -60,10 +60,11 @@ func NetworkPoolServerDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network pool server.",
-				MarkdownDescription: "The name of the network pool server.",
+				Description:         "The name of the network pool server. Must not be empty.",
+				MarkdownDescription: "The name of the network pool server. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_filter": schema.StringAttribute{

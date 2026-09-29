@@ -4,6 +4,7 @@ package compute
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -17,7 +18,12 @@ import (
 
 func DataSourceResourcePool() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides a Morpheus resource pool data source.",
+		Description: "Provides a Morpheus resource pool data source.\n\n" +
+			"Looks a pool up by `id` or by `name` within a cloud. A lookup by name uses the cloud's " +
+			"resource-pool listing, which returns cloud-level pools only: the pool Morpheus creates for " +
+			"an HVM cluster is attached to the cluster rather than to the cloud and is not listed, so it " +
+			"must be looked up here by `id`, or read from the `hpe_morpheus_cluster` data source as " +
+			"`permissions.resource_pool.id`.",
 		ReadContext: dataSourceResourcePoolRead,
 		Schema: map[string]*schema.Schema{
 			"cloud_id": {
@@ -26,14 +32,17 @@ func DataSourceResourcePool() *schema.Resource {
 				Required:    true,
 			},
 			"name": {
-				Type:        schema.TypeString,
-				Description: "The name of the Morpheus resource pool.",
-				Optional:    true,
+				Type: schema.TypeString,
+				Description: "The name of the Morpheus resource pool. Matches cloud-level pools only; " +
+					"an HVM cluster's own pool is not found by name (see the data source description).",
+				Optional: true,
 			},
 			"type": {
-				Type:        schema.TypeString,
-				Description: "Optional code for use with policies",
-				Computed:    true,
+				Type: schema.TypeString,
+				Description: "The kind of pool, as reported by Morpheus. `default` for a pool created in the " +
+					"cloud; `namespace` for the pool Morpheus creates for an HVM cluster; `cluster` for a " +
+					"vSphere cluster; `vpc` for an AWS VPC; `resourceGroup` for an Azure resource group.",
+				Computed: true,
 			},
 			"active": {
 				Type:        schema.TypeBool,
@@ -103,16 +112,15 @@ func dataSourceResourcePoolRead(ctx context.Context, d *schema.ResourceData, met
 			int64(id),
 			&morpheus.Request{},
 		)
+		if err != nil && resp != nil && resp.StatusCode == 404 {
+			return diag.Errorf("%s", resourcePoolNotFoundByIDMessage(id, cloudID))
+		}
 	} else {
-		resp, err = client.FindResourcePoolByName(int64(cloudID), name)
+		resp, err = findResourcePoolByName(client, name, cloudID)
 	}
 
 	if err != nil {
-		errorPrefix := "API FAILURE"
-		if resp != nil && resp.StatusCode == 404 {
-			errorPrefix = "API 404"
-		}
-		log.Printf("%s: %s - %v", errorPrefix, resp, err)
+		log.Printf("API FAILURE: %s - %v", resp, err)
 
 		return diag.FromErr(err)
 	}
@@ -139,4 +147,47 @@ func dataSourceResourcePoolRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("description", resourcePool.Description)
 
 	return diags
+}
+
+// findResourcePoolByName lists the cloud's pools filtered by name, requires
+// exactly one exact match, and fetches it by id. It owns the three outcomes so
+// that a miss explains the listing's scope instead of just reporting a count —
+// and, when a cluster of that name exists in the cloud, gives the id of the
+// cluster's pool, which is what the user was almost certainly looking for.
+func findResourcePoolByName(client *morpheus.Client, name string, cloudID int) (*morpheus.Response, error) {
+	resp, err := client.ListResourcePools(int64(cloudID), &morpheus.Request{
+		QueryParams: map[string]string{"name": name},
+	})
+	if err != nil {
+		return resp, err
+	}
+
+	list, ok := resp.Result.(*morpheus.ListResourcePoolsResult)
+	if !ok {
+		return resp, helpers.TypeAssertFailError("Result", resp.Result)
+	}
+
+	var matchIDs []int64
+
+	if list.ResourcePools != nil {
+		for _, pool := range *list.ResourcePools {
+			if pool.Name == name {
+				matchIDs = append(matchIDs, pool.ID)
+			}
+		}
+	}
+
+	switch len(matchIDs) {
+	case 1:
+		return client.GetResourcePool(int64(cloudID), matchIDs[0], &morpheus.Request{})
+	case 0:
+		var hint string
+		if poolID, found := findClusterResourcePoolID(client, name, cloudID); found {
+			hint = clusterResourcePoolHint(name, cloudID, poolID)
+		}
+
+		return resp, errors.New(resourcePoolNotFoundByNameMessage(name, cloudID, hint))
+	default:
+		return resp, errors.New(resourcePoolMultipleMatchesMessage(name, cloudID, matchIDs))
+	}
 }

@@ -154,6 +154,44 @@ func TestAccMorpheusFindDeploymentNotFound(t *testing.T) {
 	})
 }
 
+// TestAccMorpheusFindDeploymentEmptyName is the MORPH-16725 regression guard.
+//
+// An empty name must be rejected as invalid input at plan time by the schema
+// validator, before any API call is made. Previously name = "" was non-null and
+// so flowed into the by-name lookup, where the API returned an empty list and
+// the data source reported "no deployment found" -- indistinguishable from a
+// legitimate lookup that simply matched nothing.
+//
+// The expected error is the stringvalidator message, and it is asserted
+// precisely so that a regression to the old "no deployment found" path FAILS
+// this test rather than passing it by accident.
+func TestAccMorpheusFindDeploymentEmptyName(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	t.Parallel()
+
+	config := testhelpers.ProviderBlock() + `
+      data "hpe_morpheus_deployment" "test" {
+        name = ""
+      }`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: config,
+				// stringvalidator.LengthAtLeast(1) reports:
+				//   Attribute name string length must be at least 1, got: 0
+				ExpectError: regexp.MustCompile(
+					`Attribute name string length must be at least 1, got: 0`,
+				),
+			},
+		},
+	})
+}
+
 func TestAccMorpheusFindDeploymentNoSearchAttrs(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 

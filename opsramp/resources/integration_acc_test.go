@@ -14,10 +14,12 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration – CUSTOM-EVENT (inbound-only with mapping attributes)
+// hpe_opsramp_integration - CUSTOM-EVENT (inbound-only with mapping attributes)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_CustomEvent(t *testing.T) {
+	acctest.SkipIfPartnerWithClientOverrideAvailableRolesBug(t)
+
 	clientOverride := acctest.OptionalClientOverride(t)
 	displayName := acctest.RandomName("intg-custom-event")
 	displayNameUpdated := displayName + "-updated"
@@ -39,7 +41,7 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_opsramp_integration.test", "inbound.enable_drop_alerts", "true"),
 				),
 			},
-			// Update – change display_name and toggle enable_drop_alerts
+			// Update - change display_name and toggle enable_drop_alerts
 			{
 				Config: testAccIntegrationCustomEventConfigUpdated(displayNameUpdated, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -60,10 +62,12 @@ func TestAccIntegrationResource_CustomEvent(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration – CUSTOM (inbound OAUTH2 + outbound REST_API)
+// hpe_opsramp_integration - CUSTOM (inbound OAUTH2 + outbound REST_API)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_Custom(t *testing.T) {
+	acctest.SkipIfPartnerWithClientOverrideAvailableRolesBug(t)
+
 	clientOverride := acctest.OptionalClientOverride(t)
 	displayName := acctest.RandomName("intg-custom")
 
@@ -95,10 +99,12 @@ func TestAccIntegrationResource_Custom(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration – NEWRELIC (pre-configured, inbound auto-provisioned)
+// hpe_opsramp_integration - NEWRELIC (pre-configured, inbound auto-provisioned)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationResource_NewRelic(t *testing.T) {
+	acctest.SkipIfPartnerWithClientOverrideAvailableRolesBug(t)
+
 	clientOverride := acctest.OptionalClientOverride(t)
 
 	resource.ParallelTest(t, resource.TestCase{

@@ -1,0 +1,85 @@
+tenant:
+  moves:
+    - account: ""                       # unnest the response wrapper (GET /api/accounts/{id})
+    - active: enabled                   # rename to match the tenant resource attribute name (components/schemas/tenant.yaml)
+    - role.id: base_role_id             # flatten role{} -> scalar (components/schemas/tenant.yaml)
+    - role.authority: base_role_name    # flatten role{} -> scalar (components/schemas/tenant.yaml)
+    - parent.id: parent_id              # flatten parent{} read object (components/schemas/tenant.yaml)
+    - parent.name: parent_name          # flatten parent{} read object (components/schemas/tenant.yaml)
+    - parent.subdomain: parent_subdomain # flatten parent{} read object (components/schemas/tenant.yaml)
+    - stats.instance_count: instance_count # flatten stats{} read object (components/schemas/tenant.yaml)
+    - stats.user_count: user_count      # flatten stats{} read object (components/schemas/tenant.yaml)
+  removes:
+    - success                           # top-level API envelope flag
+    - role                              # leftover container (role.description deliberately not exposed) (components/schemas/tenant.yaml)
+    - parent                            # leftover container after id/name/subdomain extracted (components/schemas/tenant.yaml)
+    - stats                             # leftover container after counts extracted (components/schemas/tenant.yaml)
+  overrides:
+    id:
+      computed_optional_required: computed_optional
+      description: The ID of the tenant.
+      conflicts_with: ["name"]
+      state_for_unknown: true
+    name:
+      computed_optional_required: computed_optional
+      description: The name of the tenant. Must not be empty.
+      conflicts_with: ["id"]
+      # MORPH-16725: reject an empty name at plan time. Without this, name = ""
+      # is non-null and flows into the by-name lookup, where the API returns an
+      # empty list -- indistinguishable from a legitimate lookup that matched no
+      # tenant. Failing here keeps invalid input distinct from "not found".
+      string_length_at_least: 1
+    description:
+      computed_optional_required: computed
+      description: The description of the tenant.
+    enabled:
+      computed_optional_required: computed
+      description: Whether the tenant is enabled. Disabled tenants cannot be logged into.
+    subdomain:
+      computed_optional_required: computed
+      description: The custom login subdomain (login URL prefix) for sub-tenant users. May contain only letters, numbers, and hyphens, must not start or end with a hyphen, must be 1-63 characters long, cannot be entirely numeric, and must be globally unique across all tenants.
+    currency:
+      computed_optional_required: computed
+      description: Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP).
+    base_role_id:
+      computed_optional_required: computed
+      description: The ID of the tenant's base role, which restricts the access available to this tenant's roles and users.
+    base_role_name:
+      computed_optional_required: computed
+      description: The authority (name) of the tenant's base role.
+    parent_id:
+      computed_optional_required: computed
+      description: The ID of the parent tenant.
+    account_number:
+      computed_optional_required: computed
+      description: An optional field that can be used for billing and accounting.
+    account_name:
+      computed_optional_required: computed
+      description: An optional field that can be used for billing and accounting.
+    customer_number:
+      computed_optional_required: computed
+      description: An optional field that can be used for billing and accounting.
+    master:
+      computed_optional_required: computed
+      description: Whether this is the master tenant.
+    parent_name:
+      computed_optional_required: computed
+      description: The name of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+    parent_subdomain:
+      computed_optional_required: computed
+      description: The subdomain of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+    external_id:
+      computed_optional_required: computed
+      description: The external ID of the tenant.
+    instance_count:
+      computed_optional_required: computed
+      description: The number of instances in the tenant.
+    user_count:
+      computed_optional_required: computed
+      description: The number of users in the tenant.
+    date_created:
+      computed_optional_required: computed
+      description: The date the tenant was created.
+    last_updated:
+      computed_optional_required: computed
+      description: The date the tenant was last updated.

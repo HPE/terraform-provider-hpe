@@ -58,8 +58,15 @@ func (dst *ZoneResourcePoolConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ZoneResourcePoolConfigAnyOf
 	err = json.Unmarshal(data, &dst.ZoneResourcePoolConfigAnyOf)
 	if err == nil {
-		jsonZoneResourcePoolConfigAnyOf, _ := json.Marshal(dst.ZoneResourcePoolConfigAnyOf)
-		if string(jsonZoneResourcePoolConfigAnyOf) == "{}" { // empty struct
+		jsonZoneResourcePoolConfigAnyOf, merrZoneResourcePoolConfigAnyOf := json.Marshal(dst.ZoneResourcePoolConfigAnyOf)
+		var zeroZoneResourcePoolConfigAnyOf ZoneResourcePoolConfigAnyOf
+		jsonZeroZoneResourcePoolConfigAnyOf, _ := json.Marshal(&zeroZoneResourcePoolConfigAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrZoneResourcePoolConfigAnyOf != nil || string(jsonZoneResourcePoolConfigAnyOf) == "{}" || (len(jsonZoneResourcePoolConfigAnyOf) > 0 && jsonZoneResourcePoolConfigAnyOf[0] == '{' && string(jsonZoneResourcePoolConfigAnyOf) == string(jsonZeroZoneResourcePoolConfigAnyOf)) {
 			dst.ZoneResourcePoolConfigAnyOf = nil
 		} else {
 			return nil // data stored in dst.ZoneResourcePoolConfigAnyOf, return on the first match
@@ -71,8 +78,15 @@ func (dst *ZoneResourcePoolConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ZoneResourcePoolConfigAnyOf1
 	err = json.Unmarshal(data, &dst.ZoneResourcePoolConfigAnyOf1)
 	if err == nil {
-		jsonZoneResourcePoolConfigAnyOf1, _ := json.Marshal(dst.ZoneResourcePoolConfigAnyOf1)
-		if string(jsonZoneResourcePoolConfigAnyOf1) == "{}" { // empty struct
+		jsonZoneResourcePoolConfigAnyOf1, merrZoneResourcePoolConfigAnyOf1 := json.Marshal(dst.ZoneResourcePoolConfigAnyOf1)
+		var zeroZoneResourcePoolConfigAnyOf1 ZoneResourcePoolConfigAnyOf1
+		jsonZeroZoneResourcePoolConfigAnyOf1, _ := json.Marshal(&zeroZoneResourcePoolConfigAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrZoneResourcePoolConfigAnyOf1 != nil || string(jsonZoneResourcePoolConfigAnyOf1) == "{}" || (len(jsonZoneResourcePoolConfigAnyOf1) > 0 && jsonZoneResourcePoolConfigAnyOf1[0] == '{' && string(jsonZoneResourcePoolConfigAnyOf1) == string(jsonZeroZoneResourcePoolConfigAnyOf1)) {
 			dst.ZoneResourcePoolConfigAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.ZoneResourcePoolConfigAnyOf1, return on the first match
@@ -84,8 +98,15 @@ func (dst *ZoneResourcePoolConfig) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -94,6 +115,12 @@ func (dst *ZoneResourcePoolConfig) UnmarshalJSON(data []byte) error {
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(ZoneResourcePoolConfig)")
 }
 
@@ -111,7 +138,7 @@ func (src ZoneResourcePoolConfig) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableZoneResourcePoolConfig struct {

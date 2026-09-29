@@ -118,9 +118,9 @@ func RandomName(prefix string) string {
 //   CLIENT            | n/a           | CLIENT (direct)
 //
 // Three CI runs cover all paths:
-//   Run 1: MSP credentials, no target_client       → MSP-level tests run
-//   Run 2: MSP credentials + target_client         → Client tests via delegation (client attr set)
-//   Run 3: CLIENT credentials                      → Client tests directly (no client attr)
+//   Run 1: MSP credentials, no target_client       -> MSP-level tests run
+//   Run 2: MSP credentials + target_client         -> Client tests via delegation (client attr set)
+//   Run 3: CLIENT credentials                      -> Client tests directly (no client attr)
 
 const envTargetClientSuffix = "target_client"
 
@@ -137,9 +137,9 @@ func CredentialScope(t *testing.T) string {
 }
 
 // EffectiveScope returns the testing scope taking target_client into account.
-//   - MSP creds without target_client → "MSP"
-//   - MSP creds with target_client    → "CLIENT"
-//   - CLIENT creds                    → "CLIENT"
+//   - MSP creds without target_client -> "MSP"
+//   - MSP creds with target_client    -> "CLIENT"
+//   - CLIENT creds                    -> "CLIENT"
 func EffectiveScope(t *testing.T) string {
 	t.Helper()
 
@@ -147,7 +147,7 @@ func EffectiveScope(t *testing.T) string {
 		return "CLIENT"
 	}
 
-	// MSP credentials — check if target_client makes this a client-level run
+	// MSP credentials - check if target_client makes this a client-level run
 	if _, ok := LookupProviderEnv(envTargetClientSuffix); ok {
 		return "CLIENT"
 	}
@@ -188,7 +188,7 @@ func RequireClientScope(t *testing.T) string {
 		return ""
 	}
 
-	// MSP credentials — need a target client override
+	// MSP credentials - need a target client override
 	return TargetClientID(t)
 }
 
@@ -223,6 +223,24 @@ func OptionalClientOverride(t *testing.T) string {
 	}
 
 	return ""
+}
+
+// SkipIfPartnerWithClientOverrideAvailableRolesBug skips tests for a known
+// OpsRamp API issue where available roles are evaluated at partner scope even
+// when a client override is provided in the request path.
+//
+// This impacts resources that depend on client-scoped role resolution, such as
+// integration and integration_event acceptance tests.
+func SkipIfPartnerWithClientOverrideAvailableRolesBug(t *testing.T) {
+	t.Helper()
+
+	if CredentialScope(t) == "CLIENT" {
+		return
+	}
+
+	if _, ok := LookupProviderEnv(envTargetClientSuffix); ok {
+		t.Skip("skipping: known OpsRamp API issue - available roles are returned at partner scope when running with MSP credentials and client override")
+	}
 }
 
 // ClientAttrHCL returns a Terraform HCL snippet for the `client` attribute.

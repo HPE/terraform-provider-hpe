@@ -34,9 +34,9 @@ type UpdateAlertsRequestAlert struct {
 	AllGroups *bool `json:"allGroups,omitempty"`
 	// Trigger for all monitor apps
 	AllApps              *bool                                   `json:"allApps,omitempty"`
-	Checks               []int32                                 `json:"checks,omitempty"`
-	Groups               []int32                                 `json:"groups,omitempty"`
-	Apps                 []int32                                 `json:"apps,omitempty"`
+	Checks               []int64                                 `json:"checks,omitempty"`
+	Groups               []int64                                 `json:"groups,omitempty"`
+	Apps                 []int64                                 `json:"apps,omitempty"`
 	Contacts             []UpdateAlertsRequestAlertContactsInner `json:"contacts,omitempty"`
 	AdditionalProperties map[string]interface{}                  `json:",remain"`
 }

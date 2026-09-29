@@ -64,13 +64,13 @@ network_router_firewall_rule:
       default: "accept"
     port_range:
       computed_optional_required: computed_optional
-      description: Port range
+      description: 'Port range (for example "80" or "8000-8080"). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.'
     priority:
       computed_optional_required: computed_optional
       description: Priority of the firewall rule
     protocol:
       computed_optional_required: computed_optional
-      description: Protocol
+      description: 'Protocol (for example tcp, udp, icmp). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.'
     source_type:
       computed_optional_required: computed_optional
       description: Source match type (for example cidr, group, tier, all)

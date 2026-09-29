@@ -168,7 +168,7 @@ instance_clone:
     resourcePoolId:
       string:
         computed_optional_required: required
-        description: The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+        description: The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
     kvmHostId:
       int64:
         computed_optional_required: optional
@@ -379,6 +379,15 @@ instance_clone:
     config_azure:
       computed_optional_required: optional
       requires_replace: true
+    config_hvm.resource_pool_id:
+      description: |-
+        The resource pool to provision the clone into, as `pool-<id>`. For an HVM cluster this is the
+        pool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source
+        as `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the
+        cloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`
+        cannot find it by name. A network belongs to the pool of the cluster it was discovered on; a
+        pool that does not contain the requested network fails with `Invalid network`.
+      computed_optional_required: required
     config_azure.resource_pool_id:
       description: The id of the Azure resource group to provision the clone in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.
       computed_optional_required: required

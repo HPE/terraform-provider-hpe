@@ -36,11 +36,14 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := compute.RenderResourcePoolGroupConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -95,12 +98,12 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_resource_pool_group.example",
 			"visibility",
-			"public",
+			visibility,
 		),
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_resource_pool_group.example",
-			"tenant_ids.0",
-			"1",
+		// MORPH-8207 regression: tenants must round-trip (apply then plan-empty).
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_resource_pool_group.example", "tenant_ids.0",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_resource_pool_group.example",
@@ -115,13 +118,13 @@ func TestAccMorpheusResourcePoolGroupExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},

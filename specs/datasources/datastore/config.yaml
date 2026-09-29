@@ -137,8 +137,9 @@ datastore:
       computed_optional_required: computed_optional
       description: The ID of the datastore
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the datastore
+      description: The name of the datastore. Must not be empty.
     associated_resource_type:
       description: Type of the resource this datastore is associated with, can be 'Cloud' or 'Cluster'
       computed_optional_required: computed

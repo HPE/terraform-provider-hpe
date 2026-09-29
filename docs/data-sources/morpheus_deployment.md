@@ -28,7 +28,7 @@ data "hpe_morpheus_deployment" "example" {
 ### Optional
 
 - `id` (Number) The ID of the deployment.
-- `name` (String) The name of the deployment.
+- `name` (String) The name of the deployment. Must not be empty.
 
 ### Read-Only
 

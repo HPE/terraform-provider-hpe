@@ -18,6 +18,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 func (r *Resource) Read(
@@ -102,6 +103,12 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, InstanceCloneResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 func refreshStateFromAPI(

@@ -21,80 +21,12 @@ type Policy struct {
 		Code string `json:"code"`
 		Name string `json:"name"`
 	} `json:"policyType"`
-	Config struct {
-		ShutdownType                     string      `json:"shutdownType"`
-		ShutdownAge                      string      `json:"shutdownAge"`
-		ShutdownRenewal                  string      `json:"shutdownRenewal"`
-		ShutdownNotify                   string      `json:"shutdownNotify"`
-		ShutdownMessage                  string      `json:"shutdownMessage"`
-		ShutdownAutoRenew                string      `json:"shutdownAutoRenew"`
-		ShutdownExtensionsBeforeApproval string      `json:"shutdownExtensionsBeforeApproval"`
-		ShutdownHideFixed                bool        `json:"shutdownHideFixed"`
-		Strict                           bool        `json:"strict"`
-		Key                              string      `json:"key"`
-		ValueListId                      string      `json:"valueListId"`
-		Value                            string      `json:"value"`
-		PowerSchedule                    int64       `json:"powerSchedule"`
-		PowerScheduleType                string      `json:"powerScheduleType"`
-		PowerScheduleHideFixed           interface{} `json:"powerScheduleHideFixed"`
-		AccountIntegrationId             int64       `json:"accountIntegrationId"`
-		WorkflowID                       int64       `json:"workflowId"`
-		CreateUser                       string      `json:"createUser"`
-		CreateUserType                   string      `json:"createUserType"`
-		MaxSnapshots                     string      `json:"maxSnapshots"`
-		ExcludeContainers                string      `json:"excludeContainers"`
-		MaxRouters                       string      `json:"maxRouters"`
-		MaxNetworks                      string      `json:"maxNetworks"`
-		MaxVms                           string      `json:"maxVms"`
-		MaxStorage                       string      `json:"maxStorage"`
-		MaxPools                         string      `json:"maxPools"`
-		MaxPoolMembers                   string      `json:"maxPoolMembers"`
-		MaxMemory                        string      `json:"maxMemory"`
-		MaxHosts                         string      `json:"maxHosts"`
-		MaxCores                         string      `json:"maxCores"`
-		MaxContainers                    string      `json:"maxContainers"`
-		MaxVirtualServers                string      `json:"maxVirtualServers"`
-		NamingType                       string      `json:"namingType"`
-		NamingPattern                    string      `json:"namingPattern"`
-		NamingConflict                   string      `json:"namingConflict"`
-		HostNamingType                   string      `json:"hostNamingType"`
-		HostNamingPattern                string      `json:"hostNamingPattern"`
-		MaxPrice                         string      `json:"maxPrice"`
-		MaxPriceCurrency                 string      `json:"maxPriceCurrency"`
-		MaxPriceUnit                     string      `json:"maxPriceUnit"`
-		RemovalAge                       string      `json:"removalAge"`
-		MotdTitle                        string      `json:"motd.title"`
-		MotdMessage                      string      `json:"motd.message"`
-		MotdType                         string      `json:"motd.type"`
-		MotdFullPage                     interface{} `json:"motd.fullPage"`
-		MotdDate                         string      `json:"motd.date"`
-		Motd                             struct {
-			Title    string `json:"title"`
-			Message  string `json:"message"`
-			Type     string `json:"type"`
-			FullPage string `json:"fullPage"`
-		} `json:"motd"`
-		KeyPattern                        string      `json:"keyPattern"`
-		Read                              string      `json:"read"`
-		Write                             string      `json:"write"`
-		Update                            string      `json:"update"`
-		Delete                            string      `json:"delete"`
-		List                              string      `json:"list"`
-		UserGroup                         string      `json:"userGroup"`
-		ServerNamingType                  string      `json:"serverNamingType"`
-		ServerNamingPattern               string      `json:"serverNamingPattern"`
-		ServerNamingConflict              interface{} `json:"serverNamingConflict"`
-		CreateBackup                      string      `json:"createBackup"`
-		CreateBackupType                  string      `json:"createBackupType"`
-		LifecycleType                     string      `json:"lifecycleType"`
-		LifecycleAge                      string      `json:"lifecycleAge"`
-		LifecycleRenewal                  string      `json:"lifecycleRenewal"`
-		LifecycleNotify                   string      `json:"lifecycleNotify"`
-		LifecycleMessage                  string      `json:"lifecycleMessage"`
-		LifecycleExtensionsBeforeApproval string      `json:"lifecycleExtensionsBeforeApproval"`
-		LifecycleAutoRenew                interface{} `json:"lifecycleAutoRenew"`
-		LifecycleHideFixed                bool        `json:"lifecycleHideFixed"`
-	} `json:"config"`
+	// Config is an opaque bag whose field types vary by policy type and are
+	// polymorphic in the API (e.g. maxCores/valueListId come back as a number
+	// or a string). The provider never reads these fields (the policies data
+	// source only uses id/name/policyType), so decode config as a raw map to
+	// avoid unmarshal failures when listing real-world policies.
+	Config map[string]interface{} `json:"config"`
 	Owner struct {
 		ID   int64  `json:"id"`
 		Name string `json:"name"`

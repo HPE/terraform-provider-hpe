@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_node_type/resource.tf node_type_resource.tf.tmpl Category 'tfexample' FileTemplateIds '[\n data.hpe_morpheus_file_template.tfexample.id,\n 113\n ]' Labels '[\"demo\", \"nodeType\", \"terraform\"]' Name 'tf_example_node_type' ScriptTemplateIds '[\n data.hpe_morpheus_script_template.tfscript1.id,\n data.hpe_morpheus_script_template.tfscript2.id\n ]' ServicePortName1 'web' ServicePortName2 'secureweb' ServicePortPort1 '8080' ServicePortPort2 '8443' ServicePortProtocol1 'HTTP' ServicePortProtocol2 'HTTPS' ShortName 'tfexamplenodetype' Technology 'vmware' Version '2.0' VirtualImageId '10'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_node_type/resource.tf node_type_resource.tf.tmpl Category 'tfexample' Labels '[\"demo\", \"nodeType\", \"terraform\"]' Name 'tf_example_node_type' ServicePortName1 'web' ServicePortName2 'secureweb' ServicePortPort1 '8080' ServicePortPort2 '8443' ServicePortProtocol1 'HTTP' ServicePortProtocol2 'HTTPS' ShortName 'tfexamplenodetype' Technology 'vmware' Version '2.0' VirtualImageId '10'"
 
 // RenderNodeTypeConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
@@ -19,12 +19,14 @@ func RenderNodeTypeConfig(t *testing.T, overrides map[string]string) (string, er
 	t.Helper()
 
 	defaults := map[string]string{
-		"Category":        "tfexample",
-		"FileTemplateIds": "[\n data.hpe_morpheus_file_template.tfexample.id,\n 113\n ]",
-		"Labels":          "[\"demo\", \"nodeType\", \"terraform\"]",
-		"Name":            "tf_example_node_type",
-		"ScriptTemplateIds": "[\n data.hpe_morpheus_script_template.tfscript1.id,\n " +
-			"data.hpe_morpheus_script_template.tfscript2.id\n ]",
+		"Category": "tfexample",
+		"Labels":   "[\"demo\", \"nodeType\", \"terraform\"]",
+		"Name":     "tf_example_node_type",
+		// FileTemplateIds / ScriptTemplateIds are intentionally unset here: the
+		// shared example and TestAccMorpheusNodeTypeExampleOk do not define the
+		// template fixtures to reference. The MORPH-11006 regression test in
+		// node_type_resource_test.go passes them explicitly with self-contained
+		// fixtures via the tmpl's optional blocks.
 		"ServicePortName1":     "web",
 		"ServicePortName2":     "secureweb",
 		"ServicePortPort1":     "8080",

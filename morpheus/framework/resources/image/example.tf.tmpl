@@ -19,5 +19,5 @@ resource "hpe_morpheus_image" "example_image" {
     EOT
     )
     virtio_supported = true
-    visibility = "public"
+    visibility = "{{.Visibility}}"
 }

@@ -38,6 +38,32 @@ func TestAccFirstResponsePolicyResource(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("create_with_attribute_suppress", func(t *testing.T) {
+		policyName := acctest.RandomName("frp-suppress")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			CheckDestroy:             testAccCheckFirstResponsePolicyDestroy(t),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccFirstResponsePolicySuppressConfig(policyName, clientOverride),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						testAccEnsureFirstResponsePolicyExists(t, "hpe_opsramp_first_response_policy.test_policy_suppress"),
+						resource.TestCheckResourceAttrSet("hpe_opsramp_first_response_policy.test_policy_suppress", "id"),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy_suppress", "name", policyName),
+						resource.TestCheckResourceAttr("hpe_opsramp_first_response_policy.test_policy_suppress", "enabled_mode", "OBSERVED"),
+						resource.TestCheckResourceAttr(
+							"hpe_opsramp_first_response_policy.test_policy_suppress",
+							"attribute_actions.suppress.suppress_duration",
+							"-1",
+						),
+					),
+				},
+			},
+		})
+	})
 }
 
 func testAccFirstResponsePolicyConfig(name string, clientOverride string) string {
@@ -54,6 +80,25 @@ resource "hpe_opsramp_first_response_policy" "test_policy" {
 		seasonality_time_frame = "7D"
 		suppress = {
 			seasonal_alerts = true
+		}
+	}
+}
+`, acctest.ProviderConfigHCL(), name, acctest.ClientAttrHCL(clientOverride))
+}
+
+func testAccFirstResponsePolicySuppressConfig(name string, clientOverride string) string {
+	return fmt.Sprintf(`
+%s
+resource "hpe_opsramp_first_response_policy" "test_policy_suppress" {
+	name = "%s"
+	%s
+
+	enabled_mode = "OBSERVED"
+	filter_query = ""
+
+	attribute_actions = {
+		suppress = {
+			suppress_duration = -1
 		}
 	}
 }

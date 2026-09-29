@@ -17,7 +17,10 @@ import (
 
 func DataSourceCloudType() *schema.Resource {
 	return &schema.Resource{
-		Description: "Provides a Morpheus cloud type data source.",
+		Description: "Provides a Morpheus cloud type data source. It reads " +
+			"`/api/zone-types`, which requires no appliance-level permission and " +
+			"so is reachable by sub-tenant callers. Only enabled cloud types are " +
+			"returned (the endpoint defaults to enabled cloud types).",
 		ReadContext: dataSourceCloudTypeRead,
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -50,22 +53,21 @@ func dataSourceCloudTypeRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	var resp *morpheus.Response
-	var err error
-
-	resp, err = client.Execute(&morpheus.Request{
-		Method: "GET",
+	// Use the tenant-reachable /api/zone-types endpoint (via ListCloudTypes)
+	// instead of the appliance-scoped /api/appliance-settings/zone-types, which
+	// is gated on the admin-appliance permission and 403s for sub-tenants
+	// (MORPH-16399). The server "name" filter matches on code OR name, so we
+	// still confirm an exact Name match locally.
+	resp, err := client.ListCloudTypes(&morpheus.Request{
 		QueryParams: map[string]string{
 			"name": name,
 		},
-		Path:   "/api/appliance-settings/zone-types",
-		Result: &CloudTypes{},
 	})
 	if err != nil {
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			return diag.Errorf("cloud type %q not found", name)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)
@@ -78,35 +80,23 @@ func dataSourceCloudTypeRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(helpers.NotFoundInResponseError("Result"))
 	}
 
-	var cloudType *CloudTypes
-	if v, ok := resp.Result.(*CloudTypes); ok {
-		cloudType = v
+	var result *morpheus.ListCloudTypesResult
+	if v, ok := resp.Result.(*morpheus.ListCloudTypesResult); ok {
+		result = v
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("Result", resp.Result))
 	}
 
-	if cloudType.ZoneTypes == nil {
-		return diag.Errorf("cloud type not found in response data.")
-	}
+	if result.CloudTypes != nil {
+		for _, cType := range *result.CloudTypes {
+			if cType.Name == name {
+				d.SetId(convert.Int64ToString(cType.ID))
+				d.Set("name", cType.Name)
 
-	for _, cType := range cloudType.ZoneTypes {
-		if cType.Name == name {
-			d.SetId(convert.Int64ToString(cType.ID))
-			d.Set("name", cType.Name)
+				return diags
+			}
 		}
 	}
 
-	return diags
-}
-
-type CloudTypes struct {
-	ZoneTypes []CloudType       `json:"zoneTypes"`
-	Message   string            `json:"msg"`
-	Errors    map[string]string `json:"errors"`
-}
-
-type CloudType struct {
-	ID      int64  `json:"id"`
-	Name    string `json:"name"`
-	Enabled bool   `json:"enabled"`
+	return diag.Errorf("cloud type %q not found", name)
 }

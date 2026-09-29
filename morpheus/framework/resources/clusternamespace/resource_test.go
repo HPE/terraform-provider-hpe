@@ -67,12 +67,76 @@ func TestAccMorpheusClusterNamespaceResourceExampleOk(t *testing.T) {
 				PlanOnly:           true,
 			},
 			{
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"active"},
-				ResourceName:            "hpe_morpheus_cluster_namespace.example",
+				ImportState:       true,
+				ImportStateVerify: true,
+				// MORPH-16158: `active` is now looked up from the namespace list
+				// on import, so it must verify without an ignore entry.
+				ResourceName: "hpe_morpheus_cluster_namespace.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_cluster_namespace.example"]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["cluster_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
+			},
+		},
+	})
+}
+
+// TestAccMorpheusClusterNamespaceResourceImportInactiveOk covers MORPH-16158:
+// a namespace created with active = false must import correctly, verifying
+// `active` without an ignore entry. The single-namespace GET does not return
+// `active`; the fix looks it up from the namespace list. schemadefaults.Apply
+// alone (which fills active = true) would fail this test.
+func TestAccMorpheusClusterNamespaceResourceImportInactiveOk(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.KubernetesCluster)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+	t.Parallel()
+
+	clusterID := testhelpers.KubernetesClusterID("571")
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := strings.ToLower(acctest.RandomWithPrefix(t.Name()))
+	// to get around the 63-character name limitation
+	name = name[:63]
+
+	resourceConfig, err := clusternamespace.RenderClusterNamespaceConfig(t, map[string]string{
+		"ClusterId": clusterID,
+		"Name":      name,
+		"Active":    "false",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceName := "hpe_morpheus_cluster_namespace.example"
+	checks := resource.ComposeAggregateTestCheckFunc(
+		resource.TestCheckResourceAttrSet(resourceName, "id"),
+		resource.TestCheckResourceAttr(resourceName, "cluster_id", clusterID),
+		resource.TestCheckResourceAttr(resourceName, "name", name),
+		resource.TestCheckResourceAttr(resourceName, "active", "false"),
+	)
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + resourceConfig,
+				Check:  checks,
+			},
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
 					if !ok {
 						return "", fmt.Errorf("resource not found")
 					}

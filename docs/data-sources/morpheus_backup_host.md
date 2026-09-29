@@ -34,7 +34,7 @@ data "hpe_morpheus_backup_host" "example" {
 ### Optional
 
 - `id` (Number) ID of the Host Backup
-- `name` (String) Name of the Host Backup
+- `name` (String) Name of the Host Backup. Must not be empty.
 
 ### Read-Only
 

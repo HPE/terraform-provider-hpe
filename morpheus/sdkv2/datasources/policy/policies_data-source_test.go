@@ -33,20 +33,6 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 
 	t.Parallel()
 
-	// This test is blocked by two generated-SDK defects that must be fixed
-	// upstream in hpe-morpheus-go-sdk (spec + regenerate + version bump):
-	//   1. oapigen: AddPoliciesRequestPolicyConfig is a discriminator-less
-	//      oneOf. Its UnmarshalJSON ignores the marshal error when probing
-	//      variants, and MaxMemoryPolicyTypeConfiguration1MaxMemory.MarshalJSON
-	//      returns (nil,nil) for an empty value, so an empty/ambiguous policy
-	//      config falsely matches the MaxMemory variant and then fails to
-	//      marshal the create request ("unexpected end of JSON input").
-	//   2. legacy: ListPoliciesResult models config.valueListId as a string but
-	//      the API returns a number, so listing policies fails to parse.
-	// Skip until the SDK is fixed; the marshalling happens inside the SDK and
-	// cannot be worked around in the provider.
-	t.Skip("blocked by hpe-morpheus-go-sdk policy oneOf marshalling and valueListId type defects; fix upstream and re-enable")
-
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
 	}
@@ -67,7 +53,9 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 		dependenciesConfig += currentDependency
 	}
 
-	// create a policy as a dependency purely for testing this
+	// create a policy as a dependency purely for testing this. Use a
+	// self-contained policy type (Max VMs) so the create needs no external
+	// dependency; a workflow policy would require a workflowId.
 	dependenciesConfig += `
 	resource "hpe_morpheus_policy" "example" {
 		name = "` + name + `"
@@ -76,46 +64,59 @@ func TestAccMorpheusDataSourcePoliciesExampleOk(t *testing.T) {
 		associated_resource_id = resource.hpe_morpheus_role.example.id
 		enabled = false
 		policy_type = {
-			code = "workflow"
+			code = "maxVms"
+		}
+		config_max_vms = {
+			max_vms = "5"
 		}
 	}
 	`
 	datasourceConfig, err := dspolicy.RenderPoliciesConfig(t, map[string]string{
 		"Name":          name,
-		"Filter1Values": "[\"Role\"]",
+		"Filter1Values": "[\"Max VMs\"]",
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	// The data source has no attribute reference to the policy, so without an
+	// explicit dependency Terraform reads it during plan (before the policy
+	// exists) and the filter matches nothing. Force it to be read after apply.
+	datasourceConfig = strings.Replace(
+		datasourceConfig,
+		`data "hpe_morpheus_policies" "example" {`,
+		`data "hpe_morpheus_policies" "example" {`+"\n  depends_on = [hpe_morpheus_policy.example]",
+		1,
+	)
+
 	checks := []resource.TestCheckFunc{
 		resource.TestCheckResourceAttrSet(
 			"data.hpe_morpheus_policies.example",
-			"ids[0]",
+			"ids.0",
 		),
 
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_policies.example",
-			"filter.0.name",
-			"\"name\"",
+			"filter.#",
+			"2",
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckTypeSetElemNestedAttrs(
 			"data.hpe_morpheus_policies.example",
-			"filter.1.name",
-			"\"type\"",
+			"filter.*",
+			map[string]string{
+				"name":     "name",
+				"values.#": "1",
+			},
 		),
 
-		resource.TestCheckResourceAttr(
+		resource.TestCheckTypeSetElemNestedAttrs(
 			"data.hpe_morpheus_policies.example",
-			"filter.0.values",
-			"[\".*\"]",
-		),
-
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_policies.example",
-			"filter.1.values",
-			"[\"Role\"]",
+			"filter.*",
+			map[string]string{
+				"name":     "type",
+				"values.#": "1",
+			},
 		),
 
 		resource.TestCheckResourceAttr(

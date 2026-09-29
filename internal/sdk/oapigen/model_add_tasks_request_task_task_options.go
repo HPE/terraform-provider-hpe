@@ -170,8 +170,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AnsiblePlaybookTaskConfig1
 	err = json.Unmarshal(data, &dst.AnsiblePlaybookTaskConfig1)
 	if err == nil {
-		jsonAnsiblePlaybookTaskConfig1, _ := json.Marshal(dst.AnsiblePlaybookTaskConfig1)
-		if string(jsonAnsiblePlaybookTaskConfig1) == "{}" { // empty struct
+		jsonAnsiblePlaybookTaskConfig1, merrAnsiblePlaybookTaskConfig1 := json.Marshal(dst.AnsiblePlaybookTaskConfig1)
+		var zeroAnsiblePlaybookTaskConfig1 AnsiblePlaybookTaskConfig1
+		jsonZeroAnsiblePlaybookTaskConfig1, _ := json.Marshal(&zeroAnsiblePlaybookTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAnsiblePlaybookTaskConfig1 != nil || string(jsonAnsiblePlaybookTaskConfig1) == "{}" || (len(jsonAnsiblePlaybookTaskConfig1) > 0 && jsonAnsiblePlaybookTaskConfig1[0] == '{' && string(jsonAnsiblePlaybookTaskConfig1) == string(jsonZeroAnsiblePlaybookTaskConfig1)) {
 			dst.AnsiblePlaybookTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.AnsiblePlaybookTaskConfig1, return on the first match
@@ -183,8 +190,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into AnsibleTowerTaskConfig1
 	err = json.Unmarshal(data, &dst.AnsibleTowerTaskConfig1)
 	if err == nil {
-		jsonAnsibleTowerTaskConfig1, _ := json.Marshal(dst.AnsibleTowerTaskConfig1)
-		if string(jsonAnsibleTowerTaskConfig1) == "{}" { // empty struct
+		jsonAnsibleTowerTaskConfig1, merrAnsibleTowerTaskConfig1 := json.Marshal(dst.AnsibleTowerTaskConfig1)
+		var zeroAnsibleTowerTaskConfig1 AnsibleTowerTaskConfig1
+		jsonZeroAnsibleTowerTaskConfig1, _ := json.Marshal(&zeroAnsibleTowerTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAnsibleTowerTaskConfig1 != nil || string(jsonAnsibleTowerTaskConfig1) == "{}" || (len(jsonAnsibleTowerTaskConfig1) > 0 && jsonAnsibleTowerTaskConfig1[0] == '{' && string(jsonAnsibleTowerTaskConfig1) == string(jsonZeroAnsibleTowerTaskConfig1)) {
 			dst.AnsibleTowerTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.AnsibleTowerTaskConfig1, return on the first match
@@ -196,8 +210,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ChefBootstrapTaskConfig1
 	err = json.Unmarshal(data, &dst.ChefBootstrapTaskConfig1)
 	if err == nil {
-		jsonChefBootstrapTaskConfig1, _ := json.Marshal(dst.ChefBootstrapTaskConfig1)
-		if string(jsonChefBootstrapTaskConfig1) == "{}" { // empty struct
+		jsonChefBootstrapTaskConfig1, merrChefBootstrapTaskConfig1 := json.Marshal(dst.ChefBootstrapTaskConfig1)
+		var zeroChefBootstrapTaskConfig1 ChefBootstrapTaskConfig1
+		jsonZeroChefBootstrapTaskConfig1, _ := json.Marshal(&zeroChefBootstrapTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrChefBootstrapTaskConfig1 != nil || string(jsonChefBootstrapTaskConfig1) == "{}" || (len(jsonChefBootstrapTaskConfig1) > 0 && jsonChefBootstrapTaskConfig1[0] == '{' && string(jsonChefBootstrapTaskConfig1) == string(jsonZeroChefBootstrapTaskConfig1)) {
 			dst.ChefBootstrapTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.ChefBootstrapTaskConfig1, return on the first match
@@ -209,8 +230,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ConditionalWorkflowTaskConfig
 	err = json.Unmarshal(data, &dst.ConditionalWorkflowTaskConfig)
 	if err == nil {
-		jsonConditionalWorkflowTaskConfig, _ := json.Marshal(dst.ConditionalWorkflowTaskConfig)
-		if string(jsonConditionalWorkflowTaskConfig) == "{}" { // empty struct
+		jsonConditionalWorkflowTaskConfig, merrConditionalWorkflowTaskConfig := json.Marshal(dst.ConditionalWorkflowTaskConfig)
+		var zeroConditionalWorkflowTaskConfig ConditionalWorkflowTaskConfig
+		jsonZeroConditionalWorkflowTaskConfig, _ := json.Marshal(&zeroConditionalWorkflowTaskConfig)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrConditionalWorkflowTaskConfig != nil || string(jsonConditionalWorkflowTaskConfig) == "{}" || (len(jsonConditionalWorkflowTaskConfig) > 0 && jsonConditionalWorkflowTaskConfig[0] == '{' && string(jsonConditionalWorkflowTaskConfig) == string(jsonZeroConditionalWorkflowTaskConfig)) {
 			dst.ConditionalWorkflowTaskConfig = nil
 		} else {
 			return nil // data stored in dst.ConditionalWorkflowTaskConfig, return on the first match
@@ -222,8 +250,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into EmailTaskConfig1
 	err = json.Unmarshal(data, &dst.EmailTaskConfig1)
 	if err == nil {
-		jsonEmailTaskConfig1, _ := json.Marshal(dst.EmailTaskConfig1)
-		if string(jsonEmailTaskConfig1) == "{}" { // empty struct
+		jsonEmailTaskConfig1, merrEmailTaskConfig1 := json.Marshal(dst.EmailTaskConfig1)
+		var zeroEmailTaskConfig1 EmailTaskConfig1
+		jsonZeroEmailTaskConfig1, _ := json.Marshal(&zeroEmailTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrEmailTaskConfig1 != nil || string(jsonEmailTaskConfig1) == "{}" || (len(jsonEmailTaskConfig1) > 0 && jsonEmailTaskConfig1[0] == '{' && string(jsonEmailTaskConfig1) == string(jsonZeroEmailTaskConfig1)) {
 			dst.EmailTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.EmailTaskConfig1, return on the first match
@@ -235,8 +270,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GroovyTaskConfig1
 	err = json.Unmarshal(data, &dst.GroovyTaskConfig1)
 	if err == nil {
-		jsonGroovyTaskConfig1, _ := json.Marshal(dst.GroovyTaskConfig1)
-		if string(jsonGroovyTaskConfig1) == "{}" { // empty struct
+		jsonGroovyTaskConfig1, merrGroovyTaskConfig1 := json.Marshal(dst.GroovyTaskConfig1)
+		var zeroGroovyTaskConfig1 GroovyTaskConfig1
+		jsonZeroGroovyTaskConfig1, _ := json.Marshal(&zeroGroovyTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGroovyTaskConfig1 != nil || string(jsonGroovyTaskConfig1) == "{}" || (len(jsonGroovyTaskConfig1) > 0 && jsonGroovyTaskConfig1[0] == '{' && string(jsonGroovyTaskConfig1) == string(jsonZeroGroovyTaskConfig1)) {
 			dst.GroovyTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.GroovyTaskConfig1, return on the first match
@@ -248,8 +290,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into HTTPTaskConfig1
 	err = json.Unmarshal(data, &dst.HTTPTaskConfig1)
 	if err == nil {
-		jsonHTTPTaskConfig1, _ := json.Marshal(dst.HTTPTaskConfig1)
-		if string(jsonHTTPTaskConfig1) == "{}" { // empty struct
+		jsonHTTPTaskConfig1, merrHTTPTaskConfig1 := json.Marshal(dst.HTTPTaskConfig1)
+		var zeroHTTPTaskConfig1 HTTPTaskConfig1
+		jsonZeroHTTPTaskConfig1, _ := json.Marshal(&zeroHTTPTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrHTTPTaskConfig1 != nil || string(jsonHTTPTaskConfig1) == "{}" || (len(jsonHTTPTaskConfig1) > 0 && jsonHTTPTaskConfig1[0] == '{' && string(jsonHTTPTaskConfig1) == string(jsonZeroHTTPTaskConfig1)) {
 			dst.HTTPTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.HTTPTaskConfig1, return on the first match
@@ -261,8 +310,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into JavaTaskConfig1
 	err = json.Unmarshal(data, &dst.JavaTaskConfig1)
 	if err == nil {
-		jsonJavaTaskConfig1, _ := json.Marshal(dst.JavaTaskConfig1)
-		if string(jsonJavaTaskConfig1) == "{}" { // empty struct
+		jsonJavaTaskConfig1, merrJavaTaskConfig1 := json.Marshal(dst.JavaTaskConfig1)
+		var zeroJavaTaskConfig1 JavaTaskConfig1
+		jsonZeroJavaTaskConfig1, _ := json.Marshal(&zeroJavaTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrJavaTaskConfig1 != nil || string(jsonJavaTaskConfig1) == "{}" || (len(jsonJavaTaskConfig1) > 0 && jsonJavaTaskConfig1[0] == '{' && string(jsonJavaTaskConfig1) == string(jsonZeroJavaTaskConfig1)) {
 			dst.JavaTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.JavaTaskConfig1, return on the first match
@@ -274,8 +330,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into LibraryScriptTaskConfig1
 	err = json.Unmarshal(data, &dst.LibraryScriptTaskConfig1)
 	if err == nil {
-		jsonLibraryScriptTaskConfig1, _ := json.Marshal(dst.LibraryScriptTaskConfig1)
-		if string(jsonLibraryScriptTaskConfig1) == "{}" { // empty struct
+		jsonLibraryScriptTaskConfig1, merrLibraryScriptTaskConfig1 := json.Marshal(dst.LibraryScriptTaskConfig1)
+		var zeroLibraryScriptTaskConfig1 LibraryScriptTaskConfig1
+		jsonZeroLibraryScriptTaskConfig1, _ := json.Marshal(&zeroLibraryScriptTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrLibraryScriptTaskConfig1 != nil || string(jsonLibraryScriptTaskConfig1) == "{}" || (len(jsonLibraryScriptTaskConfig1) > 0 && jsonLibraryScriptTaskConfig1[0] == '{' && string(jsonLibraryScriptTaskConfig1) == string(jsonZeroLibraryScriptTaskConfig1)) {
 			dst.LibraryScriptTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.LibraryScriptTaskConfig1, return on the first match
@@ -287,8 +350,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into LibraryTemplateTaskConfig1
 	err = json.Unmarshal(data, &dst.LibraryTemplateTaskConfig1)
 	if err == nil {
-		jsonLibraryTemplateTaskConfig1, _ := json.Marshal(dst.LibraryTemplateTaskConfig1)
-		if string(jsonLibraryTemplateTaskConfig1) == "{}" { // empty struct
+		jsonLibraryTemplateTaskConfig1, merrLibraryTemplateTaskConfig1 := json.Marshal(dst.LibraryTemplateTaskConfig1)
+		var zeroLibraryTemplateTaskConfig1 LibraryTemplateTaskConfig1
+		jsonZeroLibraryTemplateTaskConfig1, _ := json.Marshal(&zeroLibraryTemplateTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrLibraryTemplateTaskConfig1 != nil || string(jsonLibraryTemplateTaskConfig1) == "{}" || (len(jsonLibraryTemplateTaskConfig1) > 0 && jsonLibraryTemplateTaskConfig1[0] == '{' && string(jsonLibraryTemplateTaskConfig1) == string(jsonZeroLibraryTemplateTaskConfig1)) {
 			dst.LibraryTemplateTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.LibraryTemplateTaskConfig1, return on the first match
@@ -300,8 +370,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into NestedWorkflowTaskConfig1
 	err = json.Unmarshal(data, &dst.NestedWorkflowTaskConfig1)
 	if err == nil {
-		jsonNestedWorkflowTaskConfig1, _ := json.Marshal(dst.NestedWorkflowTaskConfig1)
-		if string(jsonNestedWorkflowTaskConfig1) == "{}" { // empty struct
+		jsonNestedWorkflowTaskConfig1, merrNestedWorkflowTaskConfig1 := json.Marshal(dst.NestedWorkflowTaskConfig1)
+		var zeroNestedWorkflowTaskConfig1 NestedWorkflowTaskConfig1
+		jsonZeroNestedWorkflowTaskConfig1, _ := json.Marshal(&zeroNestedWorkflowTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNestedWorkflowTaskConfig1 != nil || string(jsonNestedWorkflowTaskConfig1) == "{}" || (len(jsonNestedWorkflowTaskConfig1) > 0 && jsonNestedWorkflowTaskConfig1[0] == '{' && string(jsonNestedWorkflowTaskConfig1) == string(jsonZeroNestedWorkflowTaskConfig1)) {
 			dst.NestedWorkflowTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.NestedWorkflowTaskConfig1, return on the first match
@@ -313,8 +390,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into PowerShellTaskConfig1
 	err = json.Unmarshal(data, &dst.PowerShellTaskConfig1)
 	if err == nil {
-		jsonPowerShellTaskConfig1, _ := json.Marshal(dst.PowerShellTaskConfig1)
-		if string(jsonPowerShellTaskConfig1) == "{}" { // empty struct
+		jsonPowerShellTaskConfig1, merrPowerShellTaskConfig1 := json.Marshal(dst.PowerShellTaskConfig1)
+		var zeroPowerShellTaskConfig1 PowerShellTaskConfig1
+		jsonZeroPowerShellTaskConfig1, _ := json.Marshal(&zeroPowerShellTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrPowerShellTaskConfig1 != nil || string(jsonPowerShellTaskConfig1) == "{}" || (len(jsonPowerShellTaskConfig1) > 0 && jsonPowerShellTaskConfig1[0] == '{' && string(jsonPowerShellTaskConfig1) == string(jsonZeroPowerShellTaskConfig1)) {
 			dst.PowerShellTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.PowerShellTaskConfig1, return on the first match
@@ -326,8 +410,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into PuppetTaskConfig1
 	err = json.Unmarshal(data, &dst.PuppetTaskConfig1)
 	if err == nil {
-		jsonPuppetTaskConfig1, _ := json.Marshal(dst.PuppetTaskConfig1)
-		if string(jsonPuppetTaskConfig1) == "{}" { // empty struct
+		jsonPuppetTaskConfig1, merrPuppetTaskConfig1 := json.Marshal(dst.PuppetTaskConfig1)
+		var zeroPuppetTaskConfig1 PuppetTaskConfig1
+		jsonZeroPuppetTaskConfig1, _ := json.Marshal(&zeroPuppetTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrPuppetTaskConfig1 != nil || string(jsonPuppetTaskConfig1) == "{}" || (len(jsonPuppetTaskConfig1) > 0 && jsonPuppetTaskConfig1[0] == '{' && string(jsonPuppetTaskConfig1) == string(jsonZeroPuppetTaskConfig1)) {
 			dst.PuppetTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.PuppetTaskConfig1, return on the first match
@@ -339,8 +430,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into PythonTaskConfig1
 	err = json.Unmarshal(data, &dst.PythonTaskConfig1)
 	if err == nil {
-		jsonPythonTaskConfig1, _ := json.Marshal(dst.PythonTaskConfig1)
-		if string(jsonPythonTaskConfig1) == "{}" { // empty struct
+		jsonPythonTaskConfig1, merrPythonTaskConfig1 := json.Marshal(dst.PythonTaskConfig1)
+		var zeroPythonTaskConfig1 PythonTaskConfig1
+		jsonZeroPythonTaskConfig1, _ := json.Marshal(&zeroPythonTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrPythonTaskConfig1 != nil || string(jsonPythonTaskConfig1) == "{}" || (len(jsonPythonTaskConfig1) > 0 && jsonPythonTaskConfig1[0] == '{' && string(jsonPythonTaskConfig1) == string(jsonZeroPythonTaskConfig1)) {
 			dst.PythonTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.PythonTaskConfig1, return on the first match
@@ -352,8 +450,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into RestartTaskConfig1
 	err = json.Unmarshal(data, &dst.RestartTaskConfig1)
 	if err == nil {
-		jsonRestartTaskConfig1, _ := json.Marshal(dst.RestartTaskConfig1)
-		if string(jsonRestartTaskConfig1) == "{}" { // empty struct
+		jsonRestartTaskConfig1, merrRestartTaskConfig1 := json.Marshal(dst.RestartTaskConfig1)
+		var zeroRestartTaskConfig1 RestartTaskConfig1
+		jsonZeroRestartTaskConfig1, _ := json.Marshal(&zeroRestartTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrRestartTaskConfig1 != nil || string(jsonRestartTaskConfig1) == "{}" || (len(jsonRestartTaskConfig1) > 0 && jsonRestartTaskConfig1[0] == '{' && string(jsonRestartTaskConfig1) == string(jsonZeroRestartTaskConfig1)) {
 			dst.RestartTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.RestartTaskConfig1, return on the first match
@@ -365,8 +470,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into ShellTaskConfig1
 	err = json.Unmarshal(data, &dst.ShellTaskConfig1)
 	if err == nil {
-		jsonShellTaskConfig1, _ := json.Marshal(dst.ShellTaskConfig1)
-		if string(jsonShellTaskConfig1) == "{}" { // empty struct
+		jsonShellTaskConfig1, merrShellTaskConfig1 := json.Marshal(dst.ShellTaskConfig1)
+		var zeroShellTaskConfig1 ShellTaskConfig1
+		jsonZeroShellTaskConfig1, _ := json.Marshal(&zeroShellTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrShellTaskConfig1 != nil || string(jsonShellTaskConfig1) == "{}" || (len(jsonShellTaskConfig1) > 0 && jsonShellTaskConfig1[0] == '{' && string(jsonShellTaskConfig1) == string(jsonZeroShellTaskConfig1)) {
 			dst.ShellTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.ShellTaskConfig1, return on the first match
@@ -378,8 +490,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into VRealizeOrchestratorTaskConfig1
 	err = json.Unmarshal(data, &dst.VRealizeOrchestratorTaskConfig1)
 	if err == nil {
-		jsonVRealizeOrchestratorTaskConfig1, _ := json.Marshal(dst.VRealizeOrchestratorTaskConfig1)
-		if string(jsonVRealizeOrchestratorTaskConfig1) == "{}" { // empty struct
+		jsonVRealizeOrchestratorTaskConfig1, merrVRealizeOrchestratorTaskConfig1 := json.Marshal(dst.VRealizeOrchestratorTaskConfig1)
+		var zeroVRealizeOrchestratorTaskConfig1 VRealizeOrchestratorTaskConfig1
+		jsonZeroVRealizeOrchestratorTaskConfig1, _ := json.Marshal(&zeroVRealizeOrchestratorTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrVRealizeOrchestratorTaskConfig1 != nil || string(jsonVRealizeOrchestratorTaskConfig1) == "{}" || (len(jsonVRealizeOrchestratorTaskConfig1) > 0 && jsonVRealizeOrchestratorTaskConfig1[0] == '{' && string(jsonVRealizeOrchestratorTaskConfig1) == string(jsonZeroVRealizeOrchestratorTaskConfig1)) {
 			dst.VRealizeOrchestratorTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.VRealizeOrchestratorTaskConfig1, return on the first match
@@ -391,8 +510,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into WriteAttributesTaskConfig1
 	err = json.Unmarshal(data, &dst.WriteAttributesTaskConfig1)
 	if err == nil {
-		jsonWriteAttributesTaskConfig1, _ := json.Marshal(dst.WriteAttributesTaskConfig1)
-		if string(jsonWriteAttributesTaskConfig1) == "{}" { // empty struct
+		jsonWriteAttributesTaskConfig1, merrWriteAttributesTaskConfig1 := json.Marshal(dst.WriteAttributesTaskConfig1)
+		var zeroWriteAttributesTaskConfig1 WriteAttributesTaskConfig1
+		jsonZeroWriteAttributesTaskConfig1, _ := json.Marshal(&zeroWriteAttributesTaskConfig1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrWriteAttributesTaskConfig1 != nil || string(jsonWriteAttributesTaskConfig1) == "{}" || (len(jsonWriteAttributesTaskConfig1) > 0 && jsonWriteAttributesTaskConfig1[0] == '{' && string(jsonWriteAttributesTaskConfig1) == string(jsonZeroWriteAttributesTaskConfig1)) {
 			dst.WriteAttributesTaskConfig1 = nil
 		} else {
 			return nil // data stored in dst.WriteAttributesTaskConfig1, return on the first match
@@ -404,8 +530,15 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -414,6 +547,12 @@ func (dst *AddTasksRequestTaskTaskOptions) UnmarshalJSON(data []byte) error {
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddTasksRequestTaskTaskOptions)")
 }
 
@@ -495,7 +634,7 @@ func (src AddTasksRequestTaskTaskOptions) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddTasksRequestTaskTaskOptions struct {

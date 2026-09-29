@@ -34,7 +34,7 @@ resource "hpe_morpheus_option_list" "example" {
 - `real_time` (Boolean) Whether the option list is fetched in real time.
 - `source_url` (String) The source URL for the option list.
 - `type` (String) The type of the option list (rest, manual, ldap, api).
-- `visibility` (String) The visibility of the option type list.
+- `visibility` (String) The visibility of the option type list. Setting "public" requires the master tenant.
 
 ### Read-Only
 

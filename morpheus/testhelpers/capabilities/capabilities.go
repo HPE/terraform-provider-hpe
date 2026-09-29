@@ -120,6 +120,19 @@ const (
 	// VDI
 	VDI Capability = "vdi"
 
+	// Tenancy
+
+	// MasterTenant marks tests that exercise master-tenant-only operations --
+	// ones no grantable role permission can enable for a subtenant. For
+	// example, OsType creation is hard-gated in the API's service layer
+	// ("Only Master Accounts may create OsTypes"), and nominating a tenant's
+	// parent (parent_id) is only honoured for master-tenant callers. These
+	// tests can never pass as a subtenant regardless of permissions, so
+	// master-tenant runs add "master_tenant" to TF_ACC_CAPABILITIES and
+	// subtenant runs omit it, reporting the tests as skipped rather than
+	// failed.
+	MasterTenant Capability = "master_tenant"
+
 	// Licensing
 	License Capability = "license"
 

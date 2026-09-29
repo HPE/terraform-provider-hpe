@@ -12,4 +12,12 @@ description: |-
 
 {{tffile "examples/data-sources/morpheus_resource_pool/data-source.tf"}}
 
+### Looking up an HVM cluster's pool
+
+The pool Morpheus creates for an HVM cluster is attached to the cluster rather than to the
+cloud, so a lookup by `name` does not find it. Read its id from the `hpe_morpheus_cluster`
+data source and look it up by `id`, or use that id directly as the instance `resource_pool_id`:
+
+{{tffile "examples/data-sources/morpheus_resource_pool/data-source-by-id.tf"}}
+
 {{ .SchemaMarkdown | trimspace }}

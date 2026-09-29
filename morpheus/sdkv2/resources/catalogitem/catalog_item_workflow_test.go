@@ -3,6 +3,7 @@
 package catalogitem_test
 
 import (
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -28,6 +29,7 @@ func TestAccMorpheusCatalogItemWorkflowExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -41,6 +43,7 @@ func TestAccMorpheusCatalogItemWorkflowExampleOk(t *testing.T) {
 	resourceConfig, err := catalogitem.RenderCatalogItemWorkflowConfig(t, map[string]string{
 		"Name":       name,
 		"WorkflowId": "hpe_morpheus_workflow_operational.example.id",
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +112,7 @@ func TestAccMorpheusCatalogItemWorkflowExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_catalog_item_workflow.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 	}
 
@@ -128,6 +131,69 @@ func TestAccMorpheusCatalogItemWorkflowExampleOk(t *testing.T) {
 				Config:             providerConfig + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+			// Import: verifies visibility round-trips on Read (MORPH-8850).
+			// visibility is set on Read by pre-existing code; this step adds
+			// import coverage for it. logo_image_path / dark_logo_image_path are
+			// write-only upload inputs (the GET returns a transformed storage
+			// URL, not the supplied file path), so they cannot round-trip and
+			// are ignored.
+			{
+				ResourceName:      "hpe_morpheus_catalog_item_workflow.example",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"logo_image_path",
+					"dark_logo_image_path",
+				},
+			},
+		},
+	})
+}
+
+// TestAccMorpheusCatalogItemWorkflowVisibilityPublicRequiresMasterTenant_MORPH16419
+// verifies that a sub-tenant caller setting visibility = "public" is rejected
+// at plan time with a clear message. It skips on the master tenant.
+func TestAccMorpheusCatalogItemWorkflowVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	dependencyConfig, err := workflow.RenderWorkflowOperationalConfig(t, map[string]string{
+		"Name": name,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resourceConfig, err := catalogitem.RenderCatalogItemWorkflowConfig(t, map[string]string{
+		"Name":       name,
+		"WorkflowId": "hpe_morpheus_workflow_operational.example.id",
+		"Visibility": "public",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + dependencyConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

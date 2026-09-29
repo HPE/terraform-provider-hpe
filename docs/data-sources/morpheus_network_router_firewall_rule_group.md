@@ -36,7 +36,7 @@ data "hpe_morpheus_network_router_firewall_rule_group" "example" {
 ### Optional
 
 - `id` (Number) The ID of the firewall rule group.
-- `name` (String) The name of the firewall rule group.
+- `name` (String) The name of the firewall rule group. Must not be empty.
 
 ### Read-Only
 

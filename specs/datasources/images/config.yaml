@@ -1,0 +1,208 @@
+images:
+  moves:
+    - virtual_images: images
+    - images.accounts: images.tenants
+    - images.config.azure_reference_virtual_image_configuration: images.config_azure
+    - images.os_type.id: images.os_type_id
+    - images.storage_provider.id: images.storage_provider_id
+    - images.is_auto_join_domain: images.auto_join_domain
+    - images.is_cloud_init: images.cloud_init
+    - images.is_force_customization: images.force_customization
+    - images.is_sysprep: images.sysprep
+    # `id` is the API's name for the image ID filter. Renamed so it cannot be
+    # mistaken for an identifier of the data source itself.
+    - id: image_id
+
+  removes:
+    # Element fields the singular data source also drops, kept in step so the
+    # two agree on shape.
+    - images.config
+    - images.tenant
+    - images.config.oneof1
+    - images.min_disk_gb
+    - images.min_ram_gb
+    - images.storage_provider
+    - images.ssh_password
+    - images.ssh_password_hash
+    - images.os_type
+    - images.date_created
+    - images.last_updated
+    - images.locations
+    - images.network_interfaces
+    - images.raw_size_gb
+    - images.storage_controllers
+    - images.volumes
+    # Server-side name matching is a SQL `like`, which would sit awkwardly
+    # beside a filter block taking regular expressions. Use `phrase` for a
+    # substring, or a filter block on `name` for a pattern.
+    - name
+    # Present in the spec but not honoured by the API's filter builder.
+    - last_updated
+    # Paging is handled by the provider, which fetches every page.
+    - max
+    - offset
+    - meta
+    - tagsname
+
+  overrides:
+    images.min_disk:
+      description: >-
+        Minimum disk size the image requires, in GB.
+
+
+        The API reports this in bytes; the provider converts it, so a value of
+        `10` means 10GB. A volume smaller than this is rejected at provision
+        time rather than grown.
+    images.min_ram:
+      description: >-
+        Minimum memory the image requires, in GB.
+
+
+        The API reports this in bytes; the provider converts it, so a value of
+        `4` means 4GB.
+    images.raw_size:
+      description: >-
+        Size of the image on disk, in bytes.
+
+
+        Unlike `min_disk` and `min_ram` this is left as the API reports it. A
+        volume that clears `min_disk` but falls short of this is rounded up at
+        provision time.
+    filter_type:
+      description: >-
+        Which images to consider, before any other filter is applied.
+
+
+        Defaults to `All`, which differs from the platform's own default of
+        `User`. The API returns only user-uploaded images unless told
+        otherwise, hiding synced and system images — including the
+        cloud-provided images most instances are actually provisioned from.
+
+
+        `System` returns only system images, `Synced` only images synced from a
+        cloud, `User` only those uploaded by a user.
+
+
+        Ignored when `system_image` or `include_system_image` is set: those take
+        precedence server-side.
+    image_type:
+      description: >-
+        Filter by image type code. An image matches if it is any of the values
+        given.
+
+
+        Some values are aliases rather than exact codes: `vmware` also matches
+        `ovf` and `vmdk`, and `virtualbox` also matches `vdi`. Any other value
+        is matched exactly, so `qcow2`, `raw` and `iso` mean precisely
+        themselves.
+
+
+        This is the usual way to narrow by hypervisor: `["qcow2", "raw"]` for
+        HVM, `["vmware"]` for VMware, `["iso"]` for bare metal.
+    image_id:
+      description: >-
+        Filter by image ID. Returns the images with these IDs, and is the
+        cheapest way to fetch a known set.
+    description:
+      description: >-
+        Filter by description. An image matches if its description matches any
+        of the values.
+
+
+        Matching is a case-insensitive SQL `like` performed by the server, so
+        `%` is the wildcard — `ubuntu%`, not `ubuntu.*`. For pattern matching
+        use a `filter` block, which takes regular expressions.
+    phrase:
+      description: >-
+        Filter by a substring of the image name, matched case-insensitively by
+        the server.
+
+
+        There is deliberately no top-level `name` argument: it would be a
+        server-side wildcard match sitting beside a `filter` block that takes
+        regular expressions, which is two pattern syntaxes on one data source.
+        Use `phrase` for a substring, or a `filter` block on `name` for a
+        regular expression.
+    system_image:
+      description: >-
+        Filter on whether an image is a system image. `true` returns only
+        system images, `false` only non-system images.
+
+
+        Takes precedence over both `filter_type` and `include_system_image`.
+    include_system_image:
+      description: >-
+        Include system images alongside non-system ones. System images are
+        excluded unless this is `true`.
+
+
+        Takes precedence over `filter_type`, and is itself overridden by
+        `system_image`.
+    labels:
+      description: Filter by label. Images carrying any of the given labels match.
+    all_labels:
+      description: >-
+        Filter by label, requiring every given label to be present rather than
+        any.
+    sort:
+      description: >-
+        Property the server sorts by while paging. Defaults to `name`.
+
+
+        This does not order the result: `images` is a set, so it has no order.
+        It still affects which records fall on which page, so it is not inert.
+    direction:
+      description: Sort direction used while paging, `asc` (the default) or `desc`.
+    images:
+      description: >-
+        The images matching the supplied filters.
+
+
+        This is a set, so it has no order and cannot be indexed. Ordering is not
+        offered because the server pages by a non-unique key, so a stable order
+        cannot be promised.
+
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+
+
+          These are applied by the provider after every matching image has been
+          fetched, so they can express patterns the API cannot. Prefer the
+          top-level arguments where they suffice: those are applied by the
+          server and fetch less.
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, description,
+                  image_type, status, visibility.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "description", "image_type", "status", "visibility")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. An image matches the block if the chosen
+                  field matches ANY value (Go regular expression).
+
+
+                  Expressions are unanchored, so `Test` matches anywhere in the
+                  value. Anchor explicitly with `^Test` or `^Test$` when that is
+                  what is meant.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)

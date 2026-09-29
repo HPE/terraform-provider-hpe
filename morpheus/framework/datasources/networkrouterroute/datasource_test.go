@@ -24,16 +24,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // routerFixture renders a self-contained NSX-T network router that NAT/route
 // resources are proven to create on the QA appliance (group 3, NSX-T
 // integration 5, tier-1 gateway type). The router is labelled
@@ -188,7 +178,11 @@ func TestAccMorpheusFindNetworkRouterRouteNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_network_router_route" "test" {
         router_id = 1
       }`

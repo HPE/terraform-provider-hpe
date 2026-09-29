@@ -3,7 +3,7 @@
 # Note: this Makefile works with GNUMake and BSDMake
 #
 
-.PHONY: build linter lint test test-json docs sweep build-render-tool
+.PHONY: build hooks linter lint lint-ci value-state-check test test-json docs sweep build-render-tool
 
 # Usage: make sweep SWEEP=resource_name SWEEP_SYSTEMS=systemname SWEEP_PREFIX=prefix
 # SWEEP_PREFIX optionally overrides the resource-name prefix the sweeper matches
@@ -24,15 +24,54 @@ TEST_TIMEOUT ?= 120m
 build:
 	go build
 
+# Install the tracked git hooks (.githooks/pre-push): lint, docs and unit-test
+# gates run before every push because the Lint/Test/Docs CI workflows are
+# disabled (see .github/workflows/{lint,test,docs}.yaml). init.sh in the
+# tooling workspace runs this automatically; for a standalone clone, run once:
+#     make hooks
+hooks:
+	git config core.hooksPath .githooks
+	@echo "pre-push hook enabled (core.hooksPath=.githooks)"
+
 linter:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.11.3
+	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
 
 # The vendored Morpheus SDK (internal/sdk/{oapigen,legacy}) is generated /
 # hand-written third-party code that is not subject to the provider's lint
 # rules. It is still type-checked as a dependency, but excluded from the lint
 # target set (linting ~9k generated files is both wrong and prohibitively slow).
-lint:
-	golangci-lint run $$(go list -f '{{.Dir}}' ./... | grep -v '/internal/sdk')
+LINT_DIRS = $$(packages="$$(go list -f '{{.ImportPath}} {{.Dir}}' ./...)" && printf '%s\n' "$$packages" | awk 'NF && $$1 !~ /\/internal\/sdk(\/|$$)/ { print $$2 }' | tr '\n' ' ')
+
+# Fail the build when a generated framework *Value type is constructed without
+# setting `state` (MORPH-16289): such a value lowers to a null tftypes value and
+# silently discards its attributes. Cheap stdlib AST check; part of every lint.
+value-state-check:
+	go run ./cmd/valuestatecheck ./morpheus/framework
+
+lint: value-state-check
+	set -e; \
+	dirs="$(LINT_DIRS)"; \
+	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
+	golangci-lint run $$dirs
+
+# The reduced set the Lint workflow runs (see .github/workflows/lint.yaml).
+#
+# NOTE: that workflow is currently DISABLED in CI (manual trigger only) --
+# golangci-lint is OOM-killed on a standard runner even with this reduced set,
+# and no larger runner is available. `make lint` above is therefore the real
+# gate: it keeps FULL coverage and is run locally before every commit.
+#
+# The SSA/fact-based linters (unused, staticcheck, govet) dominate
+# golangci-lint's peak memory and pushed the ~7 GB runner into an OOM kill
+# (exit 143) on the full package set; gosec was dropped for timeouts. This
+# target keeps the cheap AST linters and drops those four, which cuts peak
+# memory and runs ~3x faster. Keep the --disable list in sync with the lint
+# workflow.
+lint-ci: value-state-check
+	set -e; \
+	dirs="$(LINT_DIRS)"; \
+	test -n "$$dirs" || { echo "no lint targets found (go list produced nothing)" >&2; exit 1; }; \
+	golangci-lint run --disable=gosec,unused,staticcheck,govet $$dirs
 
 test:
 	pkgs=$$(go list ./... | grep -v '/internal/sdk'); \

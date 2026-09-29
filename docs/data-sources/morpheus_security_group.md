@@ -32,7 +32,7 @@ data "hpe_morpheus_security_group" "example" {
 ### Optional
 
 - `id` (Number) The ID of the security group. Conflicts with name.
-- `name` (String) The name of the security group. Conflicts with id.
+- `name` (String) The name of the security group. Conflicts with id. Must not be empty.
 
 ### Read-Only
 

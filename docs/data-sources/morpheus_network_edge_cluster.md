@@ -40,7 +40,7 @@ data "hpe_morpheus_network_edge_cluster" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network edge cluster
-- `name` (String) The name of the network edge cluster
+- `name` (String) The name of the network edge cluster. Must not be empty.
 
 ### Read-Only
 

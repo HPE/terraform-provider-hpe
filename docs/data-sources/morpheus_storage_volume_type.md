@@ -29,3 +29,14 @@ data "hpe_morpheus_storage_volume_type" "example" {
 - `code` (String) The code of the storage volume type. When set alongside name, the lookup is filtered to this code.
 - `id` (Number) The ID of the storage volume type
 - `name` (String) The name of the storage volume type
+
+### Read-Only
+
+- `configurable_iops` (Boolean) Whether IOPS are configurable for the storage volume type
+- `custom_label` (Boolean) Whether the storage volume type supports a custom label
+- `custom_size` (Boolean) Whether the storage volume type supports a custom size
+- `default_type` (Boolean) Whether this is a default storage volume type
+- `description` (String) The description of the storage volume type
+- `display_order` (Number) The display order of the storage volume type
+- `enabled` (Boolean) Whether the storage volume type is enabled
+- `has_datastore` (Boolean) Whether the storage volume type is backed by a datastore

@@ -29,6 +29,7 @@ func TestAccMorpheusOptionTypeTypeaheadExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	// Create the option list this option type depends on, rather than relying
 	// on a hard-coded reference-environment option list ID.
@@ -37,8 +38,7 @@ resource "hpe_morpheus_option_list" "dep" {
   name        = "` + name + `-list"
   description = "dependency option list for acceptance test"
   type        = "manual"
-  visibility  = "public"
-  real_time   = false
+` + "  visibility  = \"" + visibility + "\"\n" + `  real_time   = false
 }
 `
 

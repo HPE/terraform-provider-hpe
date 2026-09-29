@@ -1,1 +1,0 @@
-terraform import hpe_morpheus_tenant.tf_example_tenant 1

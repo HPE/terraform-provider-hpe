@@ -44,8 +44,15 @@ func (dst *GenerateSupportBundleRequestContentsInner) UnmarshalJSON(data []byte)
 	// try to unmarshal JSON data into Any
 	err = json.Unmarshal(data, &dst.Any)
 	if err == nil {
-		jsonAny, _ := json.Marshal(dst.Any)
-		if string(jsonAny) == "{}" { // empty struct
+		jsonAny, merrAny := json.Marshal(dst.Any)
+		var zeroAny interface{}
+		jsonZeroAny, _ := json.Marshal(&zeroAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAny != nil || string(jsonAny) == "{}" || (len(jsonAny) > 0 && jsonAny[0] == '{' && string(jsonAny) == string(jsonZeroAny)) {
 			dst.Any = nil
 		} else {
 			return nil // data stored in dst.Any, return on the first match
@@ -54,6 +61,12 @@ func (dst *GenerateSupportBundleRequestContentsInner) UnmarshalJSON(data []byte)
 		dst.Any = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(GenerateSupportBundleRequestContentsInner)")
 }
 
@@ -63,7 +76,7 @@ func (src GenerateSupportBundleRequestContentsInner) MarshalJSON() ([]byte, erro
 		return json.Marshal(&src.Any)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableGenerateSupportBundleRequestContentsInner struct {

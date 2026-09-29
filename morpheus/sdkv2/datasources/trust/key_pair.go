@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package trust
 
@@ -58,7 +58,14 @@ func dataSourceKeyPairRead(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(helpers.TypeAssertFailError("name", d.Get("name")))
 	}
 
-	id := convert.StringToInt64(d.Id())
+	// MORPH-16728: read the user-supplied "id" attribute rather than d.Id(),
+	// which is the internal resource ID and is empty during a data-source read.
+	var id int64
+	if v, ok := d.Get("id").(int); ok {
+		id = int64(v)
+	} else {
+		return diag.FromErr(helpers.TypeAssertFailError("id", d.Get("id")))
+	}
 
 	var resp *morpheus.Response
 	var err error

@@ -21,6 +21,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
@@ -245,14 +246,17 @@ func getNatAsState(
 		state.Priority = types.Int64Null()
 	}
 
-	// protocol is deprecated (superseded by service) and the API no longer
-	// persists it, so it is omitted from the response. Fall back to the plan
-	// value when the API omits it (matching action/firewall/service) so the
-	// configured value round-trips and does not produce an inconsistent result
-	// after apply.
-	if p := nat.Protocol.Get(); p != nil {
+	// protocol is a deprecated field (superseded by service). It is nullable
+	// with no default in the domain and is rendered by the NAT read view, so an
+	// unset rule reads back as null. No server-side path writes protocol (the
+	// NSX-T create and sync layers never set it), so a configured value is
+	// preserved end to end. Normalize an empty API value to null defensively so
+	// the create and import representations always agree; a non-empty API value
+	// is honored, and the plan value is preserved only when it is a real
+	// (non-null) value.
+	if p := nat.Protocol.Get(); p != nil && *p != "" {
 		state.Protocol = types.StringValue(*p)
-	} else if !plan.Protocol.IsUnknown() {
+	} else if !plan.Protocol.IsUnknown() && !plan.Protocol.IsNull() {
 		state.Protocol = plan.Protocol
 	} else {
 		state.Protocol = types.StringNull()
@@ -287,6 +291,12 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, NetworkRouterNatResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 // Update

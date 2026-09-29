@@ -14,7 +14,7 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration_app – Kubernetes-2.0 SDK APP
+// hpe_opsramp_integration_app - Kubernetes-2.0 SDK APP
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationAppResourceKubernetes(t *testing.T) {

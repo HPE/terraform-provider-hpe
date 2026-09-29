@@ -2,11 +2,43 @@
 
 name: Docs
 
+permissions:
+  contents: read
+
+# DISABLED IN CI -- manual trigger only.
+#
+# Docs generation is enforced locally instead: the tracked pre-push hook
+# (.githooks/pre-push, installed via `make hooks`) runs `make docs` before
+# every push, which catches generation failures before they are pushed rather
+# than a CI round later. That keeps PR iteration fast -- there is no waiting
+# on a CI docs build for every revision.
+#
+# Coverage has NOT been dropped: this workflow only checked that `make docs`
+# succeeds, and the hook runs exactly that on every push. The `DocsDiff`
+# workflow (docs-diff.yaml) STILL runs in CI and remains the enforcing gate
+# that regenerated docs are committed and in sync.
+#
+# `docs` has also been removed from the required status checks on the
+# default-branch and dev-* rulesets -- otherwise pull requests would block
+# indefinitely waiting for a status that is never reported.
+#
+# TO RE-ENABLE:
+#
+#   1. Restore the triggers:
+#
+#        on:
+#          push:
+#            branches:
+#              - main
+#          pull_request:
+#
+#   2. Re-add the `docs` required status check to the default-branch and
+#      dev-* rulesets, or the job will run but stay advisory.
+#
+#   3. Drop the docs gate from .githooks/pre-push (or keep it as a
+#      belt-and-braces local check).
 on:
-  push:
-    branches:
-      - main
-  pull_request:
+  workflow_dispatch:
 jobs:
   docs:
     runs-on: ubuntu-24.04

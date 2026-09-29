@@ -108,9 +108,11 @@ func resourceResourcePoolGroupCreate(ctx context.Context, d *schema.ResourceData
 	var diags diag.Diagnostics
 
 	resourcePermissions := make(map[string]any)
-	tenantPermissions := make(map[string]any)
 
-	tenantsPayload := make([]int, 0)
+	// MORPH-8207: tenants must be sent INSIDE the resourcePoolGroup envelope as
+	// [{"id": N}, ...] so the /api/resource-pools/groups controller persists them.
+	// A top-level tenantPermissions key is never consumed by the controller.
+	tenantsPayload := make([]map[string]any, 0)
 	if attr, ok := d.GetOk("tenant_ids"); ok {
 		var tenantSet *schema.Set
 		if v, ok := attr.(*schema.Set); ok {
@@ -125,11 +127,9 @@ func resourceResourcePoolGroupCreate(ctx context.Context, d *schema.ResourceData
 			} else {
 				return diag.FromErr(helpers.TypeAssertFailError("tenant_id", s))
 			}
-			tenantsPayload = append(tenantsPayload, tenantID)
+			tenantsPayload = append(tenantsPayload, map[string]any{"id": tenantID})
 		}
 	}
-
-	tenantPermissions["accounts"] = tenantsPayload
 
 	var allGroupAccess bool
 	if v, ok := d.Get("all_group_access").(bool); ok {
@@ -205,9 +205,10 @@ func resourceResourcePoolGroupCreate(ctx context.Context, d *schema.ResourceData
 				"mode":        mode,
 				"visibility":  visibility,
 				"pools":       poolsPayload,
+				// MORPH-8207: tenants live inside the envelope, not top-level.
+				"tenants": tenantsPayload,
 			},
 			"resourcePermissions": resourcePermissions,
-			"tenantPermissions":   tenantPermissions,
 		},
 	}
 	resp, err := client.CreateResourcePoolGroup(req)
@@ -354,9 +355,10 @@ func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData
 	id := d.Id()
 
 	resourcePermissions := make(map[string]any)
-	tenantPermissions := make(map[string]any)
 
-	tenantsPayload := make([]int, 0)
+	// MORPH-8207: tenants must be sent INSIDE the resourcePoolGroup envelope as
+	// [{"id": N}, ...] on update as well; top-level tenantPermissions is ignored.
+	tenantsPayload := make([]map[string]any, 0)
 	if attr, ok := d.GetOk("tenant_ids"); ok {
 		var tenantSet *schema.Set
 		if v, ok := attr.(*schema.Set); ok {
@@ -371,11 +373,9 @@ func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData
 			} else {
 				return diag.FromErr(helpers.TypeAssertFailError("tenant_id", s))
 			}
-			tenantsPayload = append(tenantsPayload, tenantID)
+			tenantsPayload = append(tenantsPayload, map[string]any{"id": tenantID})
 		}
 	}
-
-	tenantPermissions["accounts"] = tenantsPayload
 
 	var allGroupAccess bool
 	if v, ok := d.Get("all_group_access").(bool); ok {
@@ -451,9 +451,10 @@ func resourceResourcePoolGroupUpdate(ctx context.Context, d *schema.ResourceData
 				"mode":        mode,
 				"visibility":  visibility,
 				"pools":       poolsPayload,
+				// MORPH-8207: tenants live inside the envelope, not top-level.
+				"tenants": tenantsPayload,
 			},
 			"resourcePermissions": resourcePermissions,
-			"tenantPermissions":   tenantPermissions,
 		},
 	}
 	resp, err := client.UpdateResourcePoolGroup(convert.StringToInt64(id), req)

@@ -20,7 +20,7 @@ description: |-
 ### Optional
 
 - `id` (Number) The ID of the BGP neighbor
-- `ip_address` (String) The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided.
+- `ip_address` (String) The IP address of the BGP neighbor. Used to look up the neighbor if ID is not provided. Must not be empty.
 
 ### Read-Only
 

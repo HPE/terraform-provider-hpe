@@ -170,6 +170,13 @@ func TestAccMorpheusClusterLayoutExampleOk(t *testing.T) {
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			// Import: verifies master/worker node pools are reconstructed
+			// from the compute servers on Read (MORPH-8849).
+			{
+				ResourceName:      "hpe_morpheus_cluster_layout.example",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

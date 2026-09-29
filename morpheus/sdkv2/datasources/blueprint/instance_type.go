@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package blueprint
 
@@ -93,7 +93,9 @@ func dataSourceInstanceTypeRead(ctx context.Context, d *schema.ResourceData, met
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-16726: a non-existent id/name must surface an error rather
+			// than silently returning no state.
+			return diag.Errorf("instance type not found (id=%d, name=%q)", id, name)
 		}
 		log.Printf("API FAILURE: %s - %v", resp, err)
 

@@ -1,0 +1,31 @@
+# Test fixture, not documentation: an HVM instance whose network belongs to a
+# different resource pool than the one requested. Morpheus rejects this during
+# validation, before anything is provisioned, with "Invalid network".
+resource "hpe_morpheus_instance" "wrong_pool" {
+  name             = {{.Name}}
+  cloud_id         = {{.CloudId}}
+  group_id         = {{.GroupId}}
+  instance_type_id = {{.InstanceTypeId}}
+  layout_id        = {{.LayoutId}}
+  plan_id          = {{.PlanId}}
+
+  network_interfaces = [
+    {
+      network_id = {{.NetworkId}}
+    }
+  ]
+
+  volumes = [
+    {
+      root_volume              = true
+      name                     = "root"
+      size                     = 10
+      storage_type_id          = 1
+      datastore_auto_selection = "auto"
+    }
+  ]
+
+  config_hvm = {
+    resource_pool_id = {{.ResourcePoolId}}
+  }
+}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -74,7 +75,10 @@ func NetworkDhcpServerResourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Lease time in seconds for the DHCP server",
 				MarkdownDescription: "Lease time in seconds for the DHCP server",
-				Default:             int64default.StaticInt64(86400),
+				Validators: []validator.Int64{
+					int64validator.AtLeast(1),
+				},
+				Default: int64default.StaticInt64(86400),
 			},
 			"name": schema.StringAttribute{
 				Required:            true,

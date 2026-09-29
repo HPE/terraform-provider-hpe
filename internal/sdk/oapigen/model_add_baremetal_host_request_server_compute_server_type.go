@@ -51,8 +51,15 @@ func (dst *AddBaremetalHostRequestServerComputeServerType) UnmarshalJSON(data []
 	// try to unmarshal JSON data into AddBaremetalHostRequestServerComputeServerTypeAnyOf
 	err = json.Unmarshal(data, &dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf)
 	if err == nil {
-		jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf, _ := json.Marshal(dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf)
-		if string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf) == "{}" { // empty struct
+		jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf, merrAddBaremetalHostRequestServerComputeServerTypeAnyOf := json.Marshal(dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf)
+		var zeroAddBaremetalHostRequestServerComputeServerTypeAnyOf AddBaremetalHostRequestServerComputeServerTypeAnyOf
+		jsonZeroAddBaremetalHostRequestServerComputeServerTypeAnyOf, _ := json.Marshal(&zeroAddBaremetalHostRequestServerComputeServerTypeAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddBaremetalHostRequestServerComputeServerTypeAnyOf != nil || string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf) == "{}" || (len(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf) > 0 && jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf[0] == '{' && string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf) == string(jsonZeroAddBaremetalHostRequestServerComputeServerTypeAnyOf)) {
 			dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf = nil
 		} else {
 			return nil // data stored in dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf, return on the first match
@@ -64,8 +71,15 @@ func (dst *AddBaremetalHostRequestServerComputeServerType) UnmarshalJSON(data []
 	// try to unmarshal JSON data into AddBaremetalHostRequestServerComputeServerTypeAnyOf1
 	err = json.Unmarshal(data, &dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1)
 	if err == nil {
-		jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1, _ := json.Marshal(dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1)
-		if string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1) == "{}" { // empty struct
+		jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1, merrAddBaremetalHostRequestServerComputeServerTypeAnyOf1 := json.Marshal(dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1)
+		var zeroAddBaremetalHostRequestServerComputeServerTypeAnyOf1 AddBaremetalHostRequestServerComputeServerTypeAnyOf1
+		jsonZeroAddBaremetalHostRequestServerComputeServerTypeAnyOf1, _ := json.Marshal(&zeroAddBaremetalHostRequestServerComputeServerTypeAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrAddBaremetalHostRequestServerComputeServerTypeAnyOf1 != nil || string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1) == "{}" || (len(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1) > 0 && jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1[0] == '{' && string(jsonAddBaremetalHostRequestServerComputeServerTypeAnyOf1) == string(jsonZeroAddBaremetalHostRequestServerComputeServerTypeAnyOf1)) {
 			dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1, return on the first match
@@ -74,6 +88,12 @@ func (dst *AddBaremetalHostRequestServerComputeServerType) UnmarshalJSON(data []
 		dst.AddBaremetalHostRequestServerComputeServerTypeAnyOf1 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(AddBaremetalHostRequestServerComputeServerType)")
 }
 
@@ -87,7 +107,7 @@ func (src AddBaremetalHostRequestServerComputeServerType) MarshalJSON() ([]byte,
 		return json.Marshal(&src.AddBaremetalHostRequestServerComputeServerTypeAnyOf1)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableAddBaremetalHostRequestServerComputeServerType struct {

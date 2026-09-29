@@ -23,7 +23,7 @@ func RenderNetworkDomainConfig(t *testing.T, overrides map[string]string) (strin
 		"Description": "Terraform example network domain",
 		"Name":        "tfexampledomain",
 		"PublicZone":  "true",
-		"TenantId":    "1",
+		"TenantId":    testhelpers.WhoamiTenantIDRef,
 		"Visibility":  "private",
 	}
 

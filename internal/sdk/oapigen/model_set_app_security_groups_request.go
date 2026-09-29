@@ -20,7 +20,7 @@ var _ MappedNullable = &SetAppSecurityGroupsRequest{}
 
 // SetAppSecurityGroupsRequest struct for SetAppSecurityGroupsRequest
 type SetAppSecurityGroupsRequest struct {
-	SecurityGroupIds     []int32                `json:"securityGroupIds,omitempty"`
+	SecurityGroupIds     []int64                `json:"securityGroupIds,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 

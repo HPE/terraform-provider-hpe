@@ -676,3 +676,278 @@ func TestUnitComputeServerIDsFromContainerDetails(t *testing.T) {
 		})
 	}
 }
+
+// TestUnitIsEc2OrDefault verifies that the API's isEC2 string resolves to the
+// config_aws.is_ec2 schema default of false when it is absent or unparseable,
+// rather than to null. Null in state against the default is a change Terraform
+// acts on, which shows up as a permanent diff after import.
+//
+// The nil case is the more serious one: config_aws.is_ec2 was previously read by
+// dereferencing this pointer without a guard, so an instance whose config omits
+// isEC2 panicked the provider.
+func TestUnitIsEc2OrDefault(t *testing.T) {
+	t.Parallel()
+
+	strPtr := func(s string) *string { return &s }
+
+	tests := []struct {
+		name string
+		in   *string
+		want types.Bool
+	}{
+		{"absent uses default", nil, types.BoolValue(false)},
+		{"empty string uses default", strPtr(""), types.BoolValue(false)},
+		{"unrecognised uses default", strPtr("maybe"), types.BoolValue(false)},
+		{"true", strPtr("true"), types.BoolValue(true)},
+		{"on", strPtr("on"), types.BoolValue(true)},
+		{"yes", strPtr("yes"), types.BoolValue(true)},
+		{"1", strPtr("1"), types.BoolValue(true)},
+		{"mixed case true", strPtr("True"), types.BoolValue(true)},
+		{"whitespace padded on", strPtr(" on "), types.BoolValue(true)},
+		{"false", strPtr("false"), types.BoolValue(false)},
+		{"off", strPtr("off"), types.BoolValue(false)},
+		{"no", strPtr("no"), types.BoolValue(false)},
+		{"0", strPtr("0"), types.BoolValue(false)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := isEc2OrDefault(tt.in)
+			if got.IsNull() {
+				t.Fatalf("isEc2OrDefault returned null, want %v", tt.want)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("isEc2OrDefault = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitPublicIpTypeOrDefault verifies that an absent publicIpType resolves to
+// the config_aws.public_ip_type schema default of "subnet" rather than to null,
+// so an imported instance does not plan a change nobody made.
+//
+// A present value is passed through unchanged, including the empty string: the
+// attribute's OneOf validator accepts only "subnet" and "elasticIp", so an empty
+// value is a server-side anomaly that should surface rather than be masked.
+func TestUnitPublicIpTypeOrDefault(t *testing.T) {
+	t.Parallel()
+
+	strPtr := func(s string) *string { return &s }
+
+	tests := []struct {
+		name string
+		in   *string
+		want types.String
+	}{
+		{"absent uses default", nil, types.StringValue("subnet")},
+		{"subnet", strPtr("subnet"), types.StringValue("subnet")},
+		{"elasticIp", strPtr("elasticIp"), types.StringValue("elasticIp")},
+		{"empty string passes through", strPtr(""), types.StringValue("")},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := publicIpTypeOrDefault(tt.in)
+			if got.IsNull() {
+				t.Fatalf("publicIpTypeOrDefault returned null, want %v", tt.want)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("publicIpTypeOrDefault = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitLayoutSizeOrDefault verifies that layout_size resolves to the schema
+// default of 1 when the API omits it and there is no prior value, rather than to
+// null. On import there is no prior state, so null would otherwise be written
+// and then compared against the default of 1 on the next plan.
+//
+// It also pins the precedence: an API value wins, a prior value is preferred to
+// the default, and an absent layoutSize inside a present config still reaches
+// the prior-state fallback. The previous form stopped at the API branch whenever
+// config was non-nil, so that last case produced null.
+func TestUnitLayoutSizeOrDefault(t *testing.T) {
+	t.Parallel()
+
+	int64Ptr := func(i int64) *int64 { return &i }
+
+	tests := []struct {
+		name  string
+		cfg   *sdk.GetInstance200ResponseInstanceConfig
+		prior types.Int64
+		want  types.Int64
+	}{
+		{
+			name:  "api value wins",
+			cfg:   &sdk.GetInstance200ResponseInstanceConfig{LayoutSize: int64Ptr(1)},
+			prior: types.Int64Null(),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "api value preferred over prior",
+			cfg:   &sdk.GetInstance200ResponseInstanceConfig{LayoutSize: int64Ptr(1)},
+			prior: types.Int64Value(1),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "config present but layoutSize absent falls back to prior",
+			cfg:   &sdk.GetInstance200ResponseInstanceConfig{},
+			prior: types.Int64Value(1),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "config present but layoutSize absent uses default when no prior",
+			cfg:   &sdk.GetInstance200ResponseInstanceConfig{},
+			prior: types.Int64Null(),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "nil config falls back to prior",
+			cfg:   nil,
+			prior: types.Int64Value(1),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "import: nil config and no prior uses default",
+			cfg:   nil,
+			prior: types.Int64Null(),
+			want:  types.Int64Value(1),
+		},
+		{
+			name:  "unknown prior uses default",
+			cfg:   nil,
+			prior: types.Int64Unknown(),
+			want:  types.Int64Value(1),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := layoutSizeOrDefault(tt.cfg, tt.prior)
+			if got.IsNull() || got.IsUnknown() {
+				t.Fatalf("layoutSizeOrDefault returned %v, want known %v", got, tt.want)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("layoutSizeOrDefault = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitCreateUserOrDefault verifies that config createUser resolves to the
+// supplied per-block schema default when the API omits it, rather than to null
+// or, as the previous getCreateUser did, a hard error that failed the whole
+// instance read.
+//
+// The default is passed by the caller because it varies by config block: true on
+// Azure, false elsewhere. The string encodings Morpheus uses are coerced by the
+// SDK decoder before they reach here, so this helper only has to handle a present
+// boolean and an absent (nil) value.
+func TestUnitCreateUserOrDefault(t *testing.T) {
+	t.Parallel()
+
+	boolPtr := func(b bool) *bool { return &b }
+
+	tests := []struct {
+		name string
+		cfg  *sdk.GetInstance200ResponseInstanceConfig
+		def  bool
+		want types.Bool
+	}{
+		{
+			name: "present true",
+			cfg:  &sdk.GetInstance200ResponseInstanceConfig{CreateUser: boolPtr(true)},
+			def:  false,
+			want: types.BoolValue(true),
+		},
+		{
+			name: "present false wins over default true",
+			cfg:  &sdk.GetInstance200ResponseInstanceConfig{CreateUser: boolPtr(false)},
+			def:  true,
+			want: types.BoolValue(false),
+		},
+		{
+			name: "absent uses default false",
+			cfg:  &sdk.GetInstance200ResponseInstanceConfig{},
+			def:  false,
+			want: types.BoolValue(false),
+		},
+		{
+			name: "absent uses default true (azure)",
+			cfg:  &sdk.GetInstance200ResponseInstanceConfig{},
+			def:  true,
+			want: types.BoolValue(true),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := createUserOrDefault(tt.cfg, tt.def)
+			if got.IsNull() {
+				t.Fatalf("createUserOrDefault returned null, want %v", tt.want)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("createUserOrDefault = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+// TestUnitNoAgentOrDefault verifies that config noAgent resolves across its
+// anyOf[boolean, string] representations, falling back to the supplied default
+// for absence or an unrecognised string rather than failing the read.
+//
+// The API stores a JSON boolean, but some callers (e.g. hpegl) and seed data
+// store a string such as "on"/"off". The previous getNoAgent accepted only what
+// strconv.ParseBool did, so "on"/"off" -- which Morpheus itself writes -- errored
+// the whole instance read. boolFromConfig handles those forms.
+func TestUnitNoAgentOrDefault(t *testing.T) {
+	t.Parallel()
+
+	boolPtr := func(b bool) *bool { return &b }
+	strPtr := func(s string) *string { return &s }
+	boolVariant := func(b bool) *sdk.GetInstance200ResponseInstanceConfigNoAgent {
+		return &sdk.GetInstance200ResponseInstanceConfigNoAgent{Bool: boolPtr(b)}
+	}
+	strVariant := func(s string) *sdk.GetInstance200ResponseInstanceConfigNoAgent {
+		return &sdk.GetInstance200ResponseInstanceConfigNoAgent{String: strPtr(s)}
+	}
+
+	tests := []struct {
+		name string
+		in   *sdk.GetInstance200ResponseInstanceConfigNoAgent
+		def  bool
+		want types.Bool
+	}{
+		{"nil uses default true", nil, true, types.BoolValue(true)},
+		{"nil uses default false", nil, false, types.BoolValue(false)},
+		{"boolean true", boolVariant(true), false, types.BoolValue(true)},
+		{"boolean false wins over default", boolVariant(false), true, types.BoolValue(false)},
+		{"string on", strVariant("on"), false, types.BoolValue(true)},
+		{"string off wins over default", strVariant("off"), true, types.BoolValue(false)},
+		{"string true", strVariant("true"), false, types.BoolValue(true)},
+		{"string false", strVariant("false"), true, types.BoolValue(false)},
+		{"whitespace padded off", strVariant(" off "), true, types.BoolValue(false)},
+		{"empty variant uses default", &sdk.GetInstance200ResponseInstanceConfigNoAgent{}, true, types.BoolValue(true)},
+		{"unrecognised string uses default", strVariant("maybe"), true, types.BoolValue(true)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			got := noAgentOrDefault(tt.in, tt.def)
+			if got.IsNull() {
+				t.Fatalf("noAgentOrDefault returned null, want %v", tt.want)
+			}
+			if !got.Equal(tt.want) {
+				t.Errorf("noAgentOrDefault = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

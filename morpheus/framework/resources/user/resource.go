@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces.
@@ -72,6 +73,7 @@ func getUserAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
+	priorRoleIds types.Set,
 ) (UserModel, diag.Diagnostics) {
 	var state UserModel
 	var diags diag.Diagnostics
@@ -92,15 +94,30 @@ func getUserAsState(
 		return state, diags
 	}
 
-	roleIDValues := []attr.Value{}
-	for _, role := range u.User.Roles {
-		roleIDValues = append(roleIDValues, convert.Int64ToType(role.Id))
-	}
+	// role_ids: the API injects auto-assigned roles (e.g. a default role granted
+	// by the tenant) that were never in the user's config. Rebuilding the set
+	// from the API response would surface those as perpetual drift on a Required
+	// attribute. So, like tenant_ids on network_group (PR #1231), carry the
+	// configured/prior value forward on a normal refresh and only populate from
+	// the API on import (when there is no prior state). MORPH-13857.
+	roleIDSet := priorRoleIds
+	if priorRoleIds.IsNull() || priorRoleIds.IsUnknown() {
+		// Import: no prior state. Skip roles without an Id, since a null element
+		// in the set triggers a Terraform correlation error on refresh.
+		roleIDValues := []attr.Value{}
+		for _, role := range u.User.Roles {
+			if role.Id == nil {
+				continue
+			}
+			roleIDValues = append(roleIDValues, convert.Int64ToType(role.Id))
+		}
 
-	roleIDSet, d := types.SetValue(types.Int64Type, roleIDValues)
-	diags.Append(d...)
-	if diags.HasError() {
-		return state, diags
+		var d diag.Diagnostics
+		roleIDSet, d = types.SetValue(types.Int64Type, roleIDValues)
+		diags.Append(d...)
+		if diags.HasError() {
+			return state, diags
+		}
 	}
 
 	state.Id = convert.Int64ToType(u.User.Id)
@@ -244,7 +261,7 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getUserAsState(ctx, id, client)
+	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -522,7 +539,7 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, pdiags := getUserAsState(ctx, newid, client)
+	state, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -564,7 +581,7 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, pdiags := getUserAsState(ctx, id, client)
+	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -584,6 +601,12 @@ func (r *Resource) Read(
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, UserResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 func (r *Resource) Delete(

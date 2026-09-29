@@ -139,8 +139,9 @@ compute_server:
       description: The ID of the compute server. Conflicts with name.
       conflicts_with: ["name"]
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the compute server. Conflicts with id.
+      description: The name of the compute server. Conflicts with id. Must not be empty.
       conflicts_with: ["id"]
     cloud_id:
       description: The ID of the cloud this compute server belongs to.

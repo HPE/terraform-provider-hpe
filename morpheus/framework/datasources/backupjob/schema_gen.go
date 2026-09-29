@@ -27,11 +27,6 @@ func BackupJobDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The date the backup job was created",
 				MarkdownDescription: "The date the backup job was created",
 			},
-			"enabled": schema.BoolAttribute{
-				Computed:            true,
-				Description:         "Whether the backup job is enabled",
-				MarkdownDescription: "Whether the backup job is enabled",
-			},
 			"external_id": schema.StringAttribute{
 				Computed:            true,
 				Description:         "The external identifier of the backup job",
@@ -54,10 +49,11 @@ func BackupJobDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the backup job",
-				MarkdownDescription: "The name of the backup job",
+				Description:         "The name of the backup job. Must not be empty.",
+				MarkdownDescription: "The name of the backup job. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"next_fire": schema.StringAttribute{
@@ -87,7 +83,6 @@ func BackupJobDataSourceSchema(ctx context.Context) schema.Schema {
 type BackupJobModel struct {
 	CronExpression types.String `tfsdk:"cron_expression"`
 	DateCreated    types.String `tfsdk:"date_created"`
-	Enabled        types.Bool   `tfsdk:"enabled"`
 	ExternalId     types.String `tfsdk:"external_id"`
 	Id             types.Int64  `tfsdk:"id"`
 	LastUpdated    types.String `tfsdk:"last_updated"`

@@ -65,6 +65,12 @@ func TestAccMorpheusLoadBalancerResourceHAProxyExampleOk(t *testing.T) {
 					"config",
 					"config_haproxy",
 					"cloud_id",
+					// group_id and network_server_id are WriteOnly create
+					// inputs: the framework never persists them to state (Read
+					// sets them null) and the load-balancer GET never returns
+					// them, so they cannot diff on import and need no ignore.
+					// The WriteOnly conversion is the actual fix for
+					// MORPH-10303.
 				},
 			},
 		},
@@ -117,6 +123,9 @@ func TestAccMorpheusLoadBalancerResourceHAProxyGenericExampleOk(t *testing.T) {
 					"cloud_id",
 					"type_code",
 					"permissions.groups",
+					// group_id/network_server_id are WriteOnly (never in state)
+					// and not returned by GET, so they cannot diff on import.
+					// See MORPH-10303.
 				},
 			},
 		},

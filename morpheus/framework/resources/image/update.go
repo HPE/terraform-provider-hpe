@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
 
@@ -251,6 +252,12 @@ func (r *Resource) Update(
 
 	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	if d := tenancy.CheckVisibilityApplied(plan.Visibility, state.Visibility); d != nil {
+		resp.Diagnostics.Append(d)
+
 		return
 	}
 

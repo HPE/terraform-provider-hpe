@@ -66,6 +66,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/subnet"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/task"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/tenant"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdiapp"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/vdigateway"
@@ -154,6 +155,9 @@ func (p *MorpheusProvider) Resources(
 		// Sprint 7: Identity, VDI & Governance
 		vdipool.NewResource,
 		settingwhitelabel.NewResource,
+
+		// Multitenancy: ported from SDKv2 to the plugin framework (MORPH-16404)
+		tenant.NewResource,
 	}
 
 	return resources

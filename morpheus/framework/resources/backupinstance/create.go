@@ -141,7 +141,7 @@ func (r *backupInstanceResource) Create(
 	}
 	id := *result.Backup.Id
 
-	state, diags := getBackupAsState(ctx, id, client)
+	state, diags := getBackupAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		// The backup was created, but reading it back failed. Taint the resource

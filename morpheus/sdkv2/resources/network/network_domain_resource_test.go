@@ -30,6 +30,7 @@ func TestAccMorpheusNetworkDomainExampleOk(t *testing.T) {
 	// t.Skip("Skipping due to missing infrastructure in test environment")
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
 
@@ -65,10 +66,9 @@ func TestAccMorpheusNetworkDomainExampleOk(t *testing.T) {
 			"true",
 		),
 
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_network_domain.example",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_network_domain.example", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 
 		resource.TestCheckResourceAttr(
@@ -84,13 +84,13 @@ func TestAccMorpheusNetworkDomainExampleOk(t *testing.T) {
 		Steps: []resource.TestStep{
 			// Apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: true,
 				Check:              checkFn,
 			},
 			// Plan after apply
 			{
-				Config:             providerConfig + resourceConfig,
+				Config:             providerConfig + dependenciesConfig + resourceConfig,
 				ExpectNonEmptyPlan: true,
 				PlanOnly:           true,
 			},

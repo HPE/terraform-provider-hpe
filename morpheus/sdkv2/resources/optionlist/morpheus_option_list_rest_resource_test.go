@@ -123,6 +123,17 @@ func TestAccMorpheusOptionListRestExampleOk(t *testing.T) {
 				Check:              checkFn,
 				ExpectNonEmptyPlan: false,
 			},
+			// Import: verifies ignore_ssl_errors, inject_system_authorization_header,
+			// use_owner_auth and source_headers all round-trip (MORPH-8851).
+			// source_headers is returned under config.sourceHeaders; the API only
+			// masks a value when the header was saved with masked=true, which this
+			// provider never sends, so the clear-text value round-trips and no
+			// ImportStateVerifyIgnore is required.
+			{
+				ResourceName:      "hpe_morpheus_option_list_rest.tf_example_rest_option_list",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
 		},
 	})
 }

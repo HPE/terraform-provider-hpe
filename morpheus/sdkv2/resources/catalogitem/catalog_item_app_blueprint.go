@@ -463,6 +463,11 @@ func resourceCatalogItemAppBlueprintRead(ctx context.Context, d *schema.Resource
 
 	d.Set("blueprint_id", catalogItem.Blueprint.ID)
 
+	// visibility is returned by the GET (catalogItemType.visibility) but was
+	// previously not written to state, so it did not round-trip on import
+	// (MORPH-8541).
+	d.Set("visibility", catalogItem.Visibility)
+
 	if catalogItem.Labels != nil {
 		d.Set("labels", catalogItem.Labels)
 	}
@@ -478,6 +483,12 @@ func resourceCatalogItemAppBlueprintRead(ctx context.Context, d *schema.Resource
 		darkOpt := strings.Replace(darkImagePath[len(darkImagePath)-1], "_original", "", 1)
 		d.Set("dark_logo_image_name", darkOpt)
 	}
+	// logo_image_path / dark_logo_image_path are write-only upload inputs: the
+	// user supplies a local file path, but the GET returns a transformed
+	// storage URL (e.g. .../storage/logos/uploads/.../logo/<name>_original.png),
+	// not the original path. Setting them from the response therefore breaks
+	// apply idempotency, so they are intentionally not written to state and are
+	// ignored on import instead (MORPH-8541).
 
 	return diags
 }

@@ -14,10 +14,12 @@ import (
 )
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration_event – uses base notifier
+// hpe_opsramp_integration_event - uses base notifier
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
+	acctest.SkipIfPartnerWithClientOverrideAvailableRolesBug(t)
+
 	clientOverride := acctest.OptionalClientOverride(t)
 	eventName := acctest.RandomName("event")
 	eventNameUpdated := eventName + "-upd"
@@ -40,7 +42,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "active", "true"),
 				),
 			},
-			// Update – rename and change active state
+			// Update - rename and change active state
 			{
 				Config: testAccIntegrationEventBaseNotifierConfig(eventNameUpdated, false, clientOverride),
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -48,7 +50,7 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 					resource.TestCheckResourceAttr("hpe_opsramp_integration_event.test", "active", "false"),
 				),
 			},
-			// ImportState testing — import ID is <integration_id>:<event_id>
+			// ImportState testing - import ID is <integration_id>:<event_id>
 			{
 				ResourceName:      "hpe_opsramp_integration_event.test",
 				ImportState:       true,
@@ -60,10 +62,12 @@ func TestAccIntegrationEventResource_BaseNotifier(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// hpe_opsramp_integration_event – overrides notifier (OAUTH2)
+// hpe_opsramp_integration_event - overrides notifier (OAUTH2)
 // ---------------------------------------------------------------------------
 
 func TestAccIntegrationEventResource_OverrideNotifier(t *testing.T) {
+	acctest.SkipIfPartnerWithClientOverrideAvailableRolesBug(t)
+
 	clientOverride := acctest.OptionalClientOverride(t)
 	eventName := acctest.RandomName("event-override")
 

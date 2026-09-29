@@ -16,7 +16,7 @@ Reads a Morpheus network server group (NSX-T NSGROUP) by name or ID.
 ### Optional
 
 - `id` (Number) The ID of the network server group
-- `name` (String) The name of the network server group
+- `name` (String) The name of the network server group. Must not be empty.
 - `network_server_id` (Number) The ID of the parent network server (integration). If omitted, the first NSX-T server is used.
 
 ### Read-Only

@@ -169,7 +169,7 @@ func (o AddInstance200ResponseAllOfOneOfInstanceConfig) ToMap() (map[string]inte
 	if !IsNil(o.MemoryDisplay) {
 		toSerialize["memoryDisplay"] = o.MemoryDisplay
 	}
-	if !IsNil(o.Expose) {
+	if o.Expose != nil {
 		toSerialize["expose"] = o.Expose
 	}
 	if !IsNil(o.CreateBackup) {

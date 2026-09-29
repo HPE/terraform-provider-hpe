@@ -4,7 +4,6 @@ package resources
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/HPE/terraform-provider-hpe/opsramp/client"
@@ -41,8 +40,8 @@ type MetricAlertDefinitionModel struct {
 	AlertTriggerDuration types.String            `tfsdk:"alert_trigger_duration"`
 	Subject              types.String            `tfsdk:"subject"`
 	Description          types.String            `tfsdk:"description"`
-	EntityType           types.List              `tfsdk:"entity_type"`
-	Component            types.List              `tfsdk:"component"`
+	EntityType           types.String            `tfsdk:"entity_type"`
+	Component            types.String            `tfsdk:"component"`
 	Status               types.Bool              `tfsdk:"status"`
 	IsObsolete           types.Bool              `tfsdk:"is_obsolete"`
 
@@ -95,6 +94,9 @@ func (r *MetricAlertDefinitionResource) Schema(_ context.Context, _ resource.Sch
 			"name": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The name of the alert definition. Must be unique across the client.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"query": schema.StringAttribute{
 				Required:            true,
@@ -114,6 +116,9 @@ func (r *MetricAlertDefinitionResource) Schema(_ context.Context, _ resource.Sch
 				MarkdownDescription: "The threshold type (`STATIC_THRESHOLD`, `FORECAST`, `DYNAMIC_CHANGE_DETECTION`, `DYNAMIC_THRESHOLD`).",
 				Validators: []validator.String{
 					stringvalidator.OneOf("STATIC_THRESHOLD", "FORECAST", "DYNAMIC_CHANGE_DETECTION", "DYNAMIC_THRESHOLD"),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"alert_threshold_data": schema.SingleNestedAttribute{
@@ -159,10 +164,12 @@ func (r *MetricAlertDefinitionResource) Schema(_ context.Context, _ resource.Sch
 			},
 			"no_data_condition": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "Action when no data is received. Required when alert_threshold_type is STATIC_THRESHOLD or DYNAMIC_THRESHOLD. (e.g.: `NO_DATA_ALERT`, `WARNING_ALERT`, `CRITICAL_ALERT`).",
+				Computed:            true,
+				MarkdownDescription: "Action when no data is received (e.g.: `NO_DATA_ALERT`, `WARNING_ALERT`, `CRITICAL_ALERT`). Applicable to STATIC_THRESHOLD and DYNAMIC_THRESHOLD, and defaults to `NO_DATA_ALERT` when omitted.",
 				Validators: []validator.String{
 					stringvalidator.OneOf("NO_DATA_ALERT", "WARNING_ALERT", "CRITICAL_ALERT"),
 				},
+				Default: stringdefault.StaticString("NO_DATA_ALERT"),
 			},
 			"alert_trigger_duration": schema.StringAttribute{
 				Optional:            true,
@@ -180,15 +187,16 @@ func (r *MetricAlertDefinitionResource) Schema(_ context.Context, _ resource.Sch
 				Default:             stringdefault.StaticString(""),
 				MarkdownDescription: "The alert description. Supports tokens like `{{$host}}`.",
 			},
-			"entity_type": schema.ListAttribute{
+			"entity_type": schema.StringAttribute{
 				Required:            true,
-				MarkdownDescription: "The entity type for the alert (e.g. `[\"RESOURCE\"]`).",
-				ElementType:         types.StringType,
+				MarkdownDescription: "The entity type for the alert (e.g. `RESOURCE`, `CLIENT`).",
+				Validators: []validator.String{
+					stringvalidator.OneOf("RESOURCE", "CLIENT"),
+				},
 			},
-			"component": schema.ListAttribute{
+			"component": schema.StringAttribute{
 				Optional:            true,
-				MarkdownDescription: "The alert component identifiers (e.g. `[\"$ip\"]`).",
-				ElementType:         types.StringType,
+				MarkdownDescription: "The alert component identifiers (e.g. `$ip`, `$__name__`, `$hostname`).",
 			},
 			"status": schema.BoolAttribute{
 				Optional:            true,
@@ -212,13 +220,16 @@ func (r *MetricAlertDefinitionResource) Schema(_ context.Context, _ resource.Sch
 						"value": schema.StringAttribute{
 							Required:            true,
 							MarkdownDescription: "Label value (can use `$variable` tokens).",
+							Validators: []validator.String{
+								stringvalidator.NoneOf(""),
+							},
 						},
 					},
 				},
 			},
 			"attributes": schema.ListNestedAttribute{
-				Required:            true,
-				MarkdownDescription: "Resource attributes for the alert. Each entry must have name as `name`, `host`, `ip`, or `uuid`.",
+				Optional:            true,
+				MarkdownDescription: "Resource attributes for the alert. Required when entity_type is `RESOURCE`. Each entry must have name as `name`, `host`, `ip`, or `uuid`.",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -368,6 +379,7 @@ func (r *MetricAlertDefinitionResource) buildRequest(
 		Subject:              plan.Subject.ValueString(),
 		Description:          plan.Description.ValueString(),
 		Status:               plan.Status.ValueBool(),
+		EntityType:           []string{plan.EntityType.ValueString()},
 	}
 
 	// Threshold data
@@ -391,29 +403,13 @@ func (r *MetricAlertDefinitionResource) buildRequest(
 	if plan.AlertThresholdData.CriticalCondition.ValueString() != "" {
 		apiReq.AlertThresholdData.CriticalCondition = plan.AlertThresholdData.CriticalCondition.ValueString()
 	}
-
-	if plan.NoDataCondition.ValueString() != "" {
+	if plan.NoDataCondition.ValueString() != "" &&
+		(plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" ||
+			plan.AlertThresholdType.ValueString() == "DYNAMIC_THRESHOLD") {
 		apiReq.NoDataCondition = plan.NoDataCondition.ValueString()
 	}
-
-	// Entity type
-	if !plan.EntityType.IsNull() {
-		var entityTypes []string
-		diags := plan.EntityType.ElementsAs(ctx, &entityTypes, false)
-		if diags.HasError() {
-			return nil, fmt.Errorf("failed to parse entity_type")
-		}
-		apiReq.EntityType = entityTypes
-	}
-
-	// Component
-	if !plan.Component.IsNull() {
-		var components []string
-		diags := plan.Component.ElementsAs(ctx, &components, false)
-		if diags.HasError() {
-			return nil, fmt.Errorf("failed to parse component")
-		}
-		apiReq.Component = components
+	if plan.Component.ValueString() != "" {
+		apiReq.Component = []string{plan.Component.ValueString()}
 	}
 
 	// Labels
@@ -443,7 +439,7 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
-	// Don't validate during destroy — plan is null.
+	// Don't validate during destroy - plan is null.
 	if req.Plan.Raw.IsNull() {
 		return
 	}
@@ -452,24 +448,23 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 	diags := req.Plan.Get(ctx, &plan)
 	resp.Diagnostics.Append(diags...)
 
-	if resp.Diagnostics.HasError() {
-		return
+	// req.Config can be empty in unit tests that invoke ModifyPlan directly.
+	// Only read config when raw config is present.
+	hasConfig := !req.Config.Raw.IsNull()
+	var config MetricAlertDefinitionModel
+	if hasConfig {
+		diags = req.Config.Get(ctx, &config)
+		resp.Diagnostics.Append(diags...)
 	}
 
-	if plan.NoDataCondition.ValueString() == "" {
-		if plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" ||
-			plan.AlertThresholdType.ValueString() == "DYNAMIC_THRESHOLD" {
-			diags.AddError(
-				"No Data Condition Required",
-				"no_data_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or DYNAMIC_THRESHOLD",
-			)
-		}
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
 	if plan.AlertThresholdType.ValueString() == "STATIC_THRESHOLD" {
 		if plan.AlertThresholdData.WarningCondition.ValueString() == "" &&
 			plan.AlertThresholdData.CriticalCondition.ValueString() == "" {
-			diags.AddError(
+			resp.Diagnostics.AddError(
 				"Threshold Condition Required",
 				"At least one of warning_condition or critical_condition must be specified when alert_threshold_type is STATIC_THRESHOLD or FORECAST",
 			)
@@ -480,14 +475,17 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 		if plan.AlertThresholdData.Direction.ValueString() == "" ||
 			plan.AlertThresholdData.LearningPeriod.ValueString() == "" ||
 			plan.AlertThresholdData.StandardDeviation.IsNull() {
-			diags.AddError(
+			resp.Diagnostics.AddError(
 				"Direction, Learning Period, and Standard Deviation Required",
 				"direction, learning_period, and standard_deviation must be specified when alert_threshold_type is DYNAMIC_CHANGE_DETECTION",
 			)
 		}
 
-		if plan.NoDataCondition.ValueString() != "" {
-			diags.AddError(
+		if hasConfig &&
+			!config.NoDataCondition.IsNull() &&
+			!config.NoDataCondition.IsUnknown() &&
+			config.NoDataCondition.ValueString() != "" {
+			resp.Diagnostics.AddError(
 				"No Data Condition Not Supported",
 				"no_data_condition is not supported when alert_threshold_type is DYNAMIC_CHANGE_DETECTION",
 			)
@@ -496,18 +494,21 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 
 	if plan.AlertThresholdType.ValueString() == "FORECAST" {
 		if plan.AlertThresholdData.Limit.IsNull() {
-			diags.AddError("Limit Required", "limit must be specified when alert_threshold_type is FORECAST")
+			resp.Diagnostics.AddError("Limit Required", "limit must be specified when alert_threshold_type is FORECAST")
 		}
 
 		if plan.AlertTriggerDuration.ValueString() != "" {
-			diags.AddError(
+			resp.Diagnostics.AddError(
 				"Alert Trigger Duration Not Supported",
 				"alert_trigger_duration is not supported when alert_threshold_type is FORECAST",
 			)
 		}
 
-		if plan.NoDataCondition.ValueString() != "" {
-			diags.AddError(
+		if hasConfig &&
+			!config.NoDataCondition.IsNull() &&
+			!config.NoDataCondition.IsUnknown() &&
+			config.NoDataCondition.ValueString() != "" {
+			resp.Diagnostics.AddError(
 				"No Data Condition Not Supported",
 				"no_data_condition is not supported when alert_threshold_type is FORECAST",
 			)
@@ -515,13 +516,20 @@ func (r *MetricAlertDefinitionResource) ModifyPlan(
 	} else {
 		// opposite side-effect check
 		if plan.AlertTriggerDuration.ValueString() == "" {
-			diags.AddError("Alert Trigger Duration Required", "alert_trigger_duration must be specified when alert_threshold_type is not FORECAST")
+			resp.Diagnostics.AddError("Alert Trigger Duration Required", "alert_trigger_duration must be specified when alert_threshold_type is not FORECAST")
 		}
 	}
 
 	if plan.AlertThresholdType.ValueString() == "DYNAMIC_THRESHOLD" {
 		if plan.AlertThresholdData.Limit.IsNull() {
-			diags.AddError("Limit Required", "limit must be specified when alert_threshold_type is DYNAMIC_THRESHOLD")
+			resp.Diagnostics.AddError("Limit Required", "limit must be specified when alert_threshold_type is DYNAMIC_THRESHOLD")
 		}
+	}
+
+	if plan.EntityType.ValueString() == "RESOURCE" && len(plan.Attributes) == 0 {
+		resp.Diagnostics.AddError(
+			"Attributes Required",
+			"attributes must contain at least one entry when entity_type is RESOURCE",
+		)
 	}
 }

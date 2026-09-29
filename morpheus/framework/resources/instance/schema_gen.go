@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/dynamicvalidator"
@@ -108,8 +109,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
 					},
 					"security_groups": schema.ListNestedAttribute{
 						NestedObject: schema.NestedAttributeObject{
@@ -296,6 +297,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
 						Default:             booldefault.StaticBool(false),
 					},
+					"image_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						MarkdownDescription: "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
 					"kvm_host_id": schema.Int64Attribute{
 						Optional:            true,
 						Description:         "The id of the KVM host to use for provisioning.",
@@ -320,8 +329,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
+						MarkdownDescription: "The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the\npool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source\nas `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the\ncloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`\ncannot find it by name. A network belongs to the pool of the cluster it was discovered on; a\npool that does not contain the requested network fails with `Invalid network`.",
 					},
 				},
 				CustomType: ConfigHvmType{
@@ -350,6 +359,14 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						MarkdownDescription: "Whether to create a user when provisioning the instance.  The default is 'false'",
 						Default:             booldefault.StaticBool(false),
 					},
+					"image_id": schema.Int64Attribute{
+						Optional:            true,
+						Description:         "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						MarkdownDescription: "The id of the virtual image to provision the instance from.\nOverrides the image configured on the instance type layout, so it is\nonly needed when the layout default is not the wanted image.\nCreate-only: changing it replaces the instance.",
+						PlanModifiers: []planmodifier.Int64{
+							int64planmodifier.RequiresReplace(),
+						},
+					},
 					"nested_virtualization": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
@@ -369,8 +386,8 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"resource_pool_id": schema.StringAttribute{
 						Required:            true,
-						Description:         "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
-						MarkdownDescription: "The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.",
+						Description:         "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
+						MarkdownDescription: "The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.",
 					},
 					"vmware_folder_id": schema.StringAttribute{
 						Optional:            true,
@@ -836,6 +853,11 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 			"volumes": schema.ListNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"actual_size": schema.Int64Attribute{
+							Computed:            true,
+							Description:         "The size in GB that Morpheus actually provisioned for this volume.\n\nThis can exceed `size`. A request smaller than the image's minimum disk\nis rejected outright, but a request that clears the minimum while falling\nshort of the image's own size is rounded up to fit — so asking for 10GB\nwith an image occupying a little over 10GB yields an 11GB volume.\n`size` keeps the request; this reports what exists.\n\nThis is also where an out-of-band resize becomes visible: a disk grown\noutside Terraform is reflected here on the next refresh.",
+							MarkdownDescription: "The size in GB that Morpheus actually provisioned for this volume.\n\nThis can exceed `size`. A request smaller than the image's minimum disk\nis rejected outright, but a request that clears the minimum while falling\nshort of the image's own size is rounded up to fit — so asking for 10GB\nwith an image occupying a little over 10GB yields an 11GB volume.\n`size` keeps the request; this reports what exists.\n\nThis is also where an out-of-band resize becomes visible: a disk grown\noutside Terraform is reflected here on the next refresh.",
+						},
 						"controller_mount_point": schema.StringAttribute{
 							Optional:            true,
 							Computed:            true,
@@ -878,8 +900,12 @@ func InstanceResourceSchema(ctx context.Context) schema.Schema {
 						},
 						"size": schema.Int64Attribute{
 							Optional:            true,
-							Description:         "Size of the LV to be created in GBs.  Uses default from service plan.",
-							MarkdownDescription: "Size of the LV to be created in GBs.  Uses default from service plan.",
+							Computed:            true,
+							Description:         "Size of the LV to be created in GBs.  Uses default from service plan.\n\nThis records the size that was *requested*. Morpheus rounds a request up\nwhen the image needs more room, in which case `actual_size` reports the\nvolume that was really created and this attribute is left as the request;\na difference between the two is normal and produces no plan diff. Note a\nrequest below the image's minimum disk is rejected rather than rounded.\nLowering this below the size already provisioned has no effect, as the\nplatform cannot shrink a disk in place.",
+							MarkdownDescription: "Size of the LV to be created in GBs.  Uses default from service plan.\n\nThis records the size that was *requested*. Morpheus rounds a request up\nwhen the image needs more room, in which case `actual_size` reports the\nvolume that was really created and this attribute is left as the request;\na difference between the two is normal and produces no plan diff. Note a\nrequest below the image's minimum disk is rejected rather than rounded.\nLowering this below the size already provisioned has no effect, as the\nplatform cannot shrink a disk in place.",
+							PlanModifiers: []planmodifier.Int64{
+								modifiers.RetainWhenStateSatisfiesRequest(),
+							},
 						},
 						"size_id": schema.Int64Attribute{
 							Optional:            true,
@@ -3651,6 +3677,24 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return nil, diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
 
 	if !ok {
@@ -3730,6 +3774,7 @@ func (t ConfigHvmType) ValueFromObject(ctx context.Context, in basetypes.ObjectV
 	return ConfigHvmValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -3837,6 +3882,24 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return NewConfigHvmValueUnknown(), diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	kvmHostIdAttribute, ok := attributes["kvm_host_id"]
 
 	if !ok {
@@ -3916,6 +3979,7 @@ func NewConfigHvmValue(attributeTypes map[string]attr.Type, attributes map[strin
 	return ConfigHvmValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		KvmHostId:            kvmHostIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
@@ -3992,6 +4056,7 @@ var _ basetypes.ObjectValuable = ConfigHvmValue{}
 type ConfigHvmValue struct {
 	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	ImageId              basetypes.Int64Value  `tfsdk:"image_id"`
 	KvmHostId            basetypes.Int64Value  `tfsdk:"kvm_host_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
@@ -4000,13 +4065,14 @@ type ConfigHvmValue struct {
 }
 
 func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["kvm_host_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
@@ -4016,7 +4082,7 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 7)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4031,6 +4097,13 @@ func (v ConfigHvmValue) ToTerraformValue(ctx context.Context) (tftypes.Value, er
 		}
 
 		vals["create_user"] = val
+
+		val, err = v.ImageId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["image_id"] = val
 
 		val, err = v.KvmHostId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4092,6 +4165,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 	attributeTypes := map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
@@ -4111,6 +4185,7 @@ func (v ConfigHvmValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValu
 		map[string]attr.Value{
 			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
+			"image_id":              v.ImageId,
 			"kvm_host_id":           v.KvmHostId,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
@@ -4140,6 +4215,10 @@ func (v ConfigHvmValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.ImageId.Equal(other.ImageId) {
 		return false
 	}
 
@@ -4174,6 +4253,7 @@ func (v ConfigHvmValue) AttributeTypes(ctx context.Context) map[string]attr.Type
 	return map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"kvm_host_id":           basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
@@ -4248,6 +4328,24 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
+	}
+
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return nil, diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
 	}
 
 	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
@@ -4329,6 +4427,7 @@ func (t ConfigVmwareType) ValueFromObject(ctx context.Context, in basetypes.Obje
 	return ConfigVmwareValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
@@ -4436,6 +4535,24 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 			fmt.Sprintf(`create_user expected to be basetypes.BoolValue, was: %T`, createUserAttribute))
 	}
 
+	imageIdAttribute, ok := attributes["image_id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`image_id is missing from object`)
+
+		return NewConfigVmwareValueUnknown(), diags
+	}
+
+	imageIdVal, ok := imageIdAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`image_id expected to be basetypes.Int64Value, was: %T`, imageIdAttribute))
+	}
+
 	nestedVirtualizationAttribute, ok := attributes["nested_virtualization"]
 
 	if !ok {
@@ -4515,6 +4632,7 @@ func NewConfigVmwareValue(attributeTypes map[string]attr.Type, attributes map[st
 	return ConfigVmwareValue{
 		AffinityGroupId:      affinityGroupIdVal,
 		CreateUser:           createUserVal,
+		ImageId:              imageIdVal,
 		NestedVirtualization: nestedVirtualizationVal,
 		NoAgent:              noAgentVal,
 		ResourcePoolId:       resourcePoolIdVal,
@@ -4591,6 +4709,7 @@ var _ basetypes.ObjectValuable = ConfigVmwareValue{}
 type ConfigVmwareValue struct {
 	AffinityGroupId      basetypes.Int64Value  `tfsdk:"affinity_group_id"`
 	CreateUser           basetypes.BoolValue   `tfsdk:"create_user"`
+	ImageId              basetypes.Int64Value  `tfsdk:"image_id"`
 	NestedVirtualization basetypes.StringValue `tfsdk:"nested_virtualization"`
 	NoAgent              basetypes.BoolValue   `tfsdk:"no_agent"`
 	ResourcePoolId       basetypes.StringValue `tfsdk:"resource_pool_id"`
@@ -4599,13 +4718,14 @@ type ConfigVmwareValue struct {
 }
 
 func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 6)
+	attrTypes := make(map[string]tftypes.Type, 7)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["affinity_group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["create_user"] = basetypes.BoolType{}.TerraformType(ctx)
+	attrTypes["image_id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["nested_virtualization"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["no_agent"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["resource_pool_id"] = basetypes.StringType{}.TerraformType(ctx)
@@ -4615,7 +4735,7 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 6)
+		vals := make(map[string]tftypes.Value, 7)
 
 		val, err = v.AffinityGroupId.ToTerraformValue(ctx)
 		if err != nil {
@@ -4630,6 +4750,13 @@ func (v ConfigVmwareValue) ToTerraformValue(ctx context.Context) (tftypes.Value,
 		}
 
 		vals["create_user"] = val
+
+		val, err = v.ImageId.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["image_id"] = val
 
 		val, err = v.NestedVirtualization.ToTerraformValue(ctx)
 		if err != nil {
@@ -4691,6 +4818,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 	attributeTypes := map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
@@ -4710,6 +4838,7 @@ func (v ConfigVmwareValue) ToObjectValue(ctx context.Context) (basetypes.ObjectV
 		map[string]attr.Value{
 			"affinity_group_id":     v.AffinityGroupId,
 			"create_user":           v.CreateUser,
+			"image_id":              v.ImageId,
 			"nested_virtualization": v.NestedVirtualization,
 			"no_agent":              v.NoAgent,
 			"resource_pool_id":      v.ResourcePoolId,
@@ -4739,6 +4868,10 @@ func (v ConfigVmwareValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.CreateUser.Equal(other.CreateUser) {
+		return false
+	}
+
+	if !v.ImageId.Equal(other.ImageId) {
 		return false
 	}
 
@@ -4773,6 +4906,7 @@ func (v ConfigVmwareValue) AttributeTypes(ctx context.Context) map[string]attr.T
 	return map[string]attr.Type{
 		"affinity_group_id":     basetypes.Int64Type{},
 		"create_user":           basetypes.BoolType{},
+		"image_id":              basetypes.Int64Type{},
 		"nested_virtualization": basetypes.StringType{},
 		"no_agent":              basetypes.BoolType{},
 		"resource_pool_id":      basetypes.StringType{},
@@ -8172,6 +8306,24 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 
 	attributes := in.Attributes()
 
+	actualSizeAttribute, ok := attributes["actual_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`actual_size is missing from object`)
+
+		return nil, diags
+	}
+
+	actualSizeVal, ok := actualSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`actual_size expected to be basetypes.Int64Value, was: %T`, actualSizeAttribute))
+	}
+
 	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
 
 	if !ok {
@@ -8357,6 +8509,7 @@ func (t VolumesType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 	}
 
 	return VolumesValue{
+		ActualSize:             actualSizeVal,
 		ControllerMountPoint:   controllerMountPointVal,
 		DatastoreAutoSelection: datastoreAutoSelectionVal,
 		DatastoreId:            datastoreIdVal,
@@ -8434,6 +8587,24 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 		return NewVolumesValueUnknown(), diags
 	}
 
+	actualSizeAttribute, ok := attributes["actual_size"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`actual_size is missing from object`)
+
+		return NewVolumesValueUnknown(), diags
+	}
+
+	actualSizeVal, ok := actualSizeAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`actual_size expected to be basetypes.Int64Value, was: %T`, actualSizeAttribute))
+	}
+
 	controllerMountPointAttribute, ok := attributes["controller_mount_point"]
 
 	if !ok {
@@ -8619,6 +8790,7 @@ func NewVolumesValue(attributeTypes map[string]attr.Type, attributes map[string]
 	}
 
 	return VolumesValue{
+		ActualSize:             actualSizeVal,
 		ControllerMountPoint:   controllerMountPointVal,
 		DatastoreAutoSelection: datastoreAutoSelectionVal,
 		DatastoreId:            datastoreIdVal,
@@ -8699,6 +8871,7 @@ func (t VolumesType) ValueType(ctx context.Context) attr.Value {
 var _ basetypes.ObjectValuable = VolumesValue{}
 
 type VolumesValue struct {
+	ActualSize             basetypes.Int64Value  `tfsdk:"actual_size"`
 	ControllerMountPoint   basetypes.StringValue `tfsdk:"controller_mount_point"`
 	DatastoreAutoSelection basetypes.StringValue `tfsdk:"datastore_auto_selection"`
 	DatastoreId            basetypes.Int64Value  `tfsdk:"datastore_id"`
@@ -8713,11 +8886,12 @@ type VolumesValue struct {
 }
 
 func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 10)
+	attrTypes := make(map[string]tftypes.Type, 11)
 
 	var val tftypes.Value
 	var err error
 
+	attrTypes["actual_size"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["controller_mount_point"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["datastore_auto_selection"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["datastore_id"] = basetypes.Int64Type{}.TerraformType(ctx)
@@ -8733,7 +8907,14 @@ func (v VolumesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 10)
+		vals := make(map[string]tftypes.Value, 11)
+
+		val, err = v.ActualSize.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["actual_size"] = val
 
 		val, err = v.ControllerMountPoint.ToTerraformValue(ctx)
 		if err != nil {
@@ -8835,6 +9016,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	var diags diag.Diagnostics
 
 	attributeTypes := map[string]attr.Type{
+		"actual_size":              basetypes.Int64Type{},
 		"controller_mount_point":   basetypes.StringType{},
 		"datastore_auto_selection": basetypes.StringType{},
 		"datastore_id":             basetypes.Int64Type{},
@@ -8858,6 +9040,7 @@ func (v VolumesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 	objVal, diags := types.ObjectValue(
 		attributeTypes,
 		map[string]attr.Value{
+			"actual_size":              v.ActualSize,
 			"controller_mount_point":   v.ControllerMountPoint,
 			"datastore_auto_selection": v.DatastoreAutoSelection,
 			"datastore_id":             v.DatastoreId,
@@ -8886,6 +9069,10 @@ func (v VolumesValue) Equal(o attr.Value) bool {
 
 	if v.state != attr.ValueStateKnown {
 		return true
+	}
+
+	if !v.ActualSize.Equal(other.ActualSize) {
+		return false
 	}
 
 	if !v.ControllerMountPoint.Equal(other.ControllerMountPoint) {
@@ -8941,6 +9128,7 @@ func (v VolumesValue) Type(ctx context.Context) attr.Type {
 
 func (v VolumesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
+		"actual_size":              basetypes.Int64Type{},
 		"controller_mount_point":   basetypes.StringType{},
 		"datastore_auto_selection": basetypes.StringType{},
 		"datastore_id":             basetypes.Int64Type{},

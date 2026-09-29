@@ -24,9 +24,12 @@ Manages an OpsRamp Integration. Supports event-based integrations (inbound), cus
 - `bypass_resource_reconciliation` (Boolean) Whether to bypass resource reconciliation for this integration.
 - `category` (String) The integration category. Applicable for `CUSTOM` and `CUSTOM-EVENT` application types. For `CUSTOM-EVENT`, this is automatically set to `Monitoring`. Allowed values: `Custom`, `Collaboration`, `Monitoring`, `SSO`, `Automation`, `ADAPTER_INTEGRATION`.
 - `client` (String) The unique ID of the client (sub-tenant) where the integration should be installed. If not provided, the integration is created at the provider tenant level.
+- `credential_set` (String) The credential set name used by configuration-based integrations (for example, VMWARE).
 - `description` (String) A description of the integration.
+- `discovery_profiles` (Attributes List) Discovery profiles for configuration-based integrations. These are sent in the install/update payload under discoveryProfiles. (see [below for nested schema](#nestedatt--discovery_profiles))
 - `display_name` (String) The display name of the integration.
 - `inbound` (Attributes) Inbound integration configuration. Used for event-based integrations that receive data via webhook. (see [below for nested schema](#nestedatt--inbound))
+- `ip_address` (String) The target endpoint IP address for configuration-based integrations (for example, VMWARE).
 - `outbound` (Attributes) Outbound integration configuration. Used for integrations that push data to external systems. (see [below for nested schema](#nestedatt--outbound))
 - `profile_id` (String) The gateway/profile UUID to associate with this app installation.
 
@@ -34,6 +37,62 @@ Manages an OpsRamp Integration. Supports event-based integrations (inbound), cus
 
 - `id` (String) The unique identifier of the installed integration (e.g. INTG-...).
 - `status` (String) The current status of the integration (e.g. enabled, disabled).
+
+<a id="nestedatt--discovery_profiles"></a>
+### Nested Schema for `discovery_profiles`
+
+Required:
+
+- `mgmt_profile_uuid` (String) Management profile UUID used for discovery.
+
+Optional:
+
+- `name` (String) Display name of the discovery profile.
+- `policy` (Attributes) Discovery policy for deciding which discovered entities are managed. (see [below for nested schema](#nestedatt--discovery_profiles--policy))
+- `scan_now` (Boolean) Whether to run discovery immediately after creating/updating the profile.
+- `schedule` (Attributes) Discovery schedule configuration. (see [below for nested schema](#nestedatt--discovery_profiles--schedule))
+
+<a id="nestedatt--discovery_profiles--policy"></a>
+### Nested Schema for `discovery_profiles.policy`
+
+Required:
+
+- `entity_type` (String) Entity type targeted by the policy (for example, `ALL`, `ANY`).
+- `match_type` (String) Rule match type (for example, ANY or ALL).
+
+Optional:
+
+- `actions` (Attributes List) Discovery actions applied when rules match. (see [below for nested schema](#nestedatt--discovery_profiles--policy--actions))
+- `rules` (Attributes List) Discovery filter rules. (see [below for nested schema](#nestedatt--discovery_profiles--policy--rules))
+
+<a id="nestedatt--discovery_profiles--policy--actions"></a>
+### Nested Schema for `discovery_profiles.policy.actions`
+
+Required:
+
+- `action` (String) Action value to apply (for example, `MANAGE DEVICE`).
+
+
+<a id="nestedatt--discovery_profiles--policy--rules"></a>
+### Nested Schema for `discovery_profiles.policy.rules`
+
+Optional:
+
+- `filter_type` (String) Filter type (for example, ANY_CLOUD_RESOURCE).
+- `resource_type` (List of String) Optional resource types used by the filter.
+
+
+
+<a id="nestedatt--discovery_profiles--schedule"></a>
+### Nested Schema for `discovery_profiles.schedule`
+
+Required:
+
+- `pattern` (String) Schedule pattern value used by pattern_type.
+- `pattern_type` (String) Schedule pattern type (for example, MONTHLY, DAILY, HOURLY).
+- `start_time` (String) Discovery start time as expected by OpsRamp (for example, 18).
+
+
 
 <a id="nestedatt--inbound"></a>
 ### Nested Schema for `inbound`

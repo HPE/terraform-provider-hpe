@@ -4,8 +4,11 @@ package instance
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -16,12 +19,20 @@ import (
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
+// DeleteErrorStatuses are the instance statuses that mean a removal has failed
+// and will not complete on its own.
+//
+// "stopped" and "suspended" are deliberately absent. Morpheus's container-to-
+// instance status sync writes them onto an instance that is "removing" whenever
+// all of its containers are in that state, so both are transient during a
+// normal teardown; treating them as failures is the race MORPH-4733 reported.
+// "warning" is present because it is the status Morpheus sets when the removal
+// job itself fails, with the reason in statusMessage.
 var DeleteErrorStatuses = []string{
 	"denied",
 	"cancelled",
 	"failed",
-	"stopped",
-	"suspended",
+	"warning",
 	"restoring",
 }
 
@@ -56,7 +67,7 @@ func (g *Resource) Delete(
 	ctx, cancel := context.WithTimeout(ctx, deleteTimeout)
 	defer cancel()
 
-	id := data.Id
+	id := data.Id.ValueInt64()
 	client, err := g.NewClient(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("creating client failed", err.Error())
@@ -65,7 +76,7 @@ func (g *Resource) Delete(
 	}
 
 	// Get instance
-	ret, hresp, err := client.InstancesAPI.GetInstance(ctx, id.ValueInt64()).Execute()
+	ret, hresp, err := client.InstancesAPI.GetInstance(ctx, id).Execute()
 	if err != nil {
 		if hresp == nil || hresp.StatusCode != http.StatusNotFound {
 			resp.Diagnostics.AddError(
@@ -246,7 +257,7 @@ func (g *Resource) Delete(
 	}
 
 	// If we get here, all servers have been deleted successfully.  Now we can delete the instance itself.
-	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id.ValueInt64()).Force("on").
+	deleteReq := client.InstancesAPI.DeleteInstance(ctx, id).Force("on").
 		RemoveVolumes("on").ReleaseEIPs("on").ReleaseFloatingIps("on")
 	_, hresp, err = deleteReq.Execute()
 	if err != nil {
@@ -261,7 +272,7 @@ func (g *Resource) Delete(
 	}
 
 	waitForDeleted := func() (*sdk.GetInstance200Response, error) {
-		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, data.Id.ValueInt64()).Execute()
+		resp, hresp, err := client.InstancesAPI.GetInstance(ctx, id).Execute()
 		if err != nil {
 			if hresp == nil || hresp.StatusCode != http.StatusNotFound {
 				return nil, backoff.Permanent(err)
@@ -282,11 +293,7 @@ func (g *Resource) Delete(
 			return nil, backoff.Permanent(fmt.Errorf("instance %d: GET returned empty status", id))
 		}
 
-		return resp, checkStatusDone(
-			*instance.Status,
-			nil,
-			DeleteErrorStatuses,
-		)
+		return resp, checkDeleteStatusDone(*instance.Status, instance.StatusMessage.Get())
 	}
 
 	if _, err := backoff.Retry(
@@ -300,4 +307,23 @@ func (g *Resource) Delete(
 			fmt.Sprintf("instance %d: DELETE failed ", id)+err.Error(),
 		)
 	}
+}
+
+// checkDeleteStatusDone classifies the status of an instance still present after
+// its DELETE. Anything outside DeleteErrorStatuses keeps polling — the instance
+// is expected to disappear, and the caller treats a 404 as success before
+// reaching here. An error status is terminal, and the error carries Morpheus's
+// statusMessage when there is one: for a failed removal that is the only place
+// the reason is recorded ("Unable to remove instance: ...").
+func checkDeleteStatusDone(status string, statusMessage *string) error {
+	if !slices.Contains(DeleteErrorStatuses, status) {
+		return backoff.RetryAfter(5)
+	}
+
+	reason := "reached error status: " + status
+	if statusMessage != nil && strings.TrimSpace(*statusMessage) != "" {
+		reason += " (" + strings.TrimSpace(*statusMessage) + ")"
+	}
+
+	return backoff.Permanent(errors.New(reason))
 }

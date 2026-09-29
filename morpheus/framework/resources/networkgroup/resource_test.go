@@ -2,6 +2,7 @@ package networkgroup_test
 
 import (
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -89,6 +90,7 @@ func TestAccMorpheusNetworkGroupResourceUpdateOk(t *testing.T) {
 
 	providerConfig := testhelpers.ProviderBlock()
 	name := acctest.RandomWithPrefix(t.Name())
+	visibility := testhelpers.TenantVisibility(t)
 
 	createConfig, err := networkgroup.RenderNetworkGroupConfig(t, map[string]string{
 		"Name": name,
@@ -101,7 +103,7 @@ func TestAccMorpheusNetworkGroupResourceUpdateOk(t *testing.T) {
 resource "hpe_morpheus_network_group" "example" {
   name        = "` + name + `"
   description = "Network group for updated production workloads"
-  visibility  = "public"
+  visibility  = "` + visibility + `"
   active      = false
 }
 `
@@ -118,7 +120,7 @@ resource "hpe_morpheus_network_group" "example" {
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "description", "Network group for updated production workloads"),
-		resource.TestCheckResourceAttr(resourceName, "visibility", "public"),
+		resource.TestCheckResourceAttr(resourceName, "visibility", visibility),
 		resource.TestCheckResourceAttr(resourceName, "active", "false"),
 	)
 
@@ -144,6 +146,48 @@ resource "hpe_morpheus_network_group" "example" {
 				Config:             providerConfig + updateConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+// TestAccMorpheusNetworkGroupVisibilityPublicRequiresMasterTenant_MORPH16419
+// verifies that a sub-tenant caller setting visibility = "public" is rejected
+// at plan time with a clear message. It skips on the master tenant.
+func TestAccMorpheusNetworkGroupVisibilityPublicRequiresMasterTenant_MORPH16419(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("visibility = \"public\" is allowed for the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	t.Parallel()
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	resourceConfig, err := networkgroup.RenderNetworkGroupConfig(t, map[string]string{
+		"Name":       name,
+		"Visibility": "public",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
 			},
 		},
 	})

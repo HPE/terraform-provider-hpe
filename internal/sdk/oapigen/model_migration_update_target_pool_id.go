@@ -51,8 +51,15 @@ func (dst *MigrationUpdateTargetPoolId) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into Int32
 	err = json.Unmarshal(data, &dst.Int32)
 	if err == nil {
-		jsonInt32, _ := json.Marshal(dst.Int32)
-		if string(jsonInt32) == "{}" { // empty struct
+		jsonInt32, merrInt32 := json.Marshal(dst.Int32)
+		var zeroInt32 int32
+		jsonZeroInt32, _ := json.Marshal(&zeroInt32)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrInt32 != nil || string(jsonInt32) == "{}" || (len(jsonInt32) > 0 && jsonInt32[0] == '{' && string(jsonInt32) == string(jsonZeroInt32)) {
 			dst.Int32 = nil
 		} else {
 			return nil // data stored in dst.Int32, return on the first match
@@ -64,8 +71,15 @@ func (dst *MigrationUpdateTargetPoolId) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into String
 	err = json.Unmarshal(data, &dst.String)
 	if err == nil {
-		jsonString, _ := json.Marshal(dst.String)
-		if string(jsonString) == "{}" { // empty struct
+		jsonString, merrString := json.Marshal(dst.String)
+		var zeroString string
+		jsonZeroString, _ := json.Marshal(&zeroString)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrString != nil || string(jsonString) == "{}" || (len(jsonString) > 0 && jsonString[0] == '{' && string(jsonString) == string(jsonZeroString)) {
 			dst.String = nil
 		} else {
 			return nil // data stored in dst.String, return on the first match
@@ -74,6 +88,12 @@ func (dst *MigrationUpdateTargetPoolId) UnmarshalJSON(data []byte) error {
 		dst.String = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(MigrationUpdateTargetPoolId)")
 }
 
@@ -87,7 +107,7 @@ func (src MigrationUpdateTargetPoolId) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.String)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableMigrationUpdateTargetPoolId struct {

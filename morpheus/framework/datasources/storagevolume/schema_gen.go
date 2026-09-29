@@ -164,10 +164,11 @@ func StorageVolumeDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the storage volume. Conflicts with id.",
-				MarkdownDescription: "The name of the storage volume. Conflicts with id.",
+				Description:         "The name of the storage volume. Conflicts with id. Must not be empty.",
+				MarkdownDescription: "The name of the storage volume. Conflicts with id. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"namespace": schema.StringAttribute{

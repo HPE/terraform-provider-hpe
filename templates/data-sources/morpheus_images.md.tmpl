@@ -8,8 +8,65 @@ description: |-
 
 {{ .Description | trimspace }}
 
+Finds virtual images — user-uploaded, cloud-synced and system alike — and returns the full
+record for each. Its usual purpose is resolving the id to give `config_hvm.image_id` or
+`config_vmware.image_id` on `hpe_morpheus_instance`.
+
+~> **Narrow this data source server-side.** Every image the server-side filters admit is
+downloaded before anything else happens. On an appliance with a large image library —
+several thousand images is not unusual once cloud-synced and system images are counted —
+an unnarrowed read can take a long time, and Terraform performs it on refresh, plan and
+apply alike. Reach for at least one of the server-side arguments below before relying on
+`filter` blocks.
+
+## What narrows the download
+
+The arguments in the first group are passed to the API, so they reduce what is fetched.
+Everything else is applied by the provider afterwards, on whatever the first group
+returned.
+
+| Argument | Applied | Effect on the download |
+|---|---|---|
+| `image_id` | server-side | Smallest possible read. Prefer it when the ids are known. |
+| `image_type` | server-side | Usually the most effective. Accepts several values. |
+| `phrase` | server-side | Substring of the name. |
+| `description` | server-side | Accepts several values. |
+| `labels`, `all_labels` | server-side | |
+| `system_image`, `include_system_image` | server-side | |
+| `filter_type` | server-side | See the note below — the default is deliberately broad. |
+| `filter` blocks | **client-side** | **Usually no effect on the download** — see below. |
+| `sort`, `direction` | server-side | Affect page order only, not volume. |
+
+!> A configuration using only `filter` blocks generally downloads the **entire** image
+library before the first block is evaluated. The blocks are worth having — they take
+regular expressions, which the API cannot — but they are a way to express a match, not
+usually a way to fetch less.
+
+-> **One exception.** A single-valued `filter` block on `name` whose expression *starts
+with a literal* is used to narrow the fetch as well: `^ubuntu`, `ubuntu.*` and
+`^rhel[0-9]` all contribute `ubuntu`, `ubuntu` and `rhel` respectively, and the server is
+asked for names containing that. Expressions that begin with a pattern — `.*ubuntu`,
+`[a-z]+`, or an alternation such as `ubuntu|debian` — offer nothing to narrow with, and
+the whole library is fetched. Setting `phrase` yourself always takes precedence.
+
+-> `filter_type` defaults to `All`, unlike the API, which returns only user-uploaded
+images. That default is chosen so synced and system images are visible, since those are
+the ones most instances are provisioned from — but it also means the default is the
+broadest possible read. Setting it to `User`, `Synced` or `System` narrows the fetch
+considerably where that suits.
+
+## Choosing between this and `hpe_morpheus_image`
+
+Use the singular [`hpe_morpheus_image`](image) to resolve one known image: it matches
+`image_type` exactly, so it can distinguish images that share a name and differ only by
+type.
+
+Use this data source to discover images. Here `image_type` follows the API's aliasing —
+`vmware` also matches `ovf` and `vmdk`, `virtualbox` also matches `vdi` — so a single
+value can cover a hypervisor's several formats.
+
 ## Example Usage
 
-{{tffile "examples/data-sources/morpheus_images/data-source.tf"}}
+{{ tffile "examples/data-sources/morpheus_images/example.tf" }}
 
 {{ .SchemaMarkdown | trimspace }}

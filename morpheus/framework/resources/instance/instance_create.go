@@ -20,6 +20,8 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/containerip"
 	errfmt "github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/provisionhint"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -172,6 +174,10 @@ func (g *Resource) Create(
 			configHvm.KvmHostId = plan.ConfigHvm.KvmHostId.ValueInt64Pointer()
 		}
 
+		if !plan.ConfigHvm.ImageId.IsNull() && !plan.ConfigHvm.ImageId.IsUnknown() {
+			configHvm.ImageId = plan.ConfigHvm.ImageId.ValueInt64Pointer()
+		}
+
 		if !plan.ConfigHvm.AffinityGroupId.IsNull() &&
 			!plan.ConfigHvm.AffinityGroupId.IsUnknown() {
 			// The config.affinityGroup field records membership in the group, while host
@@ -202,6 +208,10 @@ func (g *Resource) Create(
 		if !config.ConfigVmware.CreateUser.IsNull() && !config.ConfigVmware.CreateUser.IsUnknown() {
 			createUser := plan.ConfigVmware.CreateUser.ValueBool()
 			configVMware.CreateUser = *sdk.NewNullableBool(&createUser)
+		}
+
+		if !plan.ConfigVmware.ImageId.IsNull() && !plan.ConfigVmware.ImageId.IsUnknown() {
+			configVMware.ImageId = plan.ConfigVmware.ImageId.ValueInt64Pointer()
 		}
 
 		if !plan.ConfigVmware.AffinityGroupId.IsNull() &&
@@ -547,7 +557,24 @@ func (g *Resource) Create(
 		AddInstanceRequest(*reqInstance).
 		Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError("error creating instance", errfmt.ErrMsg(err, httpResp))
+		// ErrorBody takes the body from the SDK error, or reads httpResp.Body
+		// and puts it back, so ErrMsg below still sees the full response. When
+		// Morpheus rejected a network as "Invalid network", say which network,
+		// which pool it belongs to and which pool was requested — the response
+		// itself says none of that. Any failure to explain leaves the API's
+		// error as it is.
+		body := provisionhint.ErrorBody(err, httpResp)
+		msg := errfmt.ErrMsg(err, httpResp)
+
+		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
+			CloudID:    getsafe.Get(reqInstance.ZoneId),
+			Config:     reqInstance.Config,
+			Interfaces: reqInstance.NetworkInterfaces,
+		}); hint != "" {
+			msg += "\n\n" + hint
+		}
+
+		resp.Diagnostics.AddError("error creating instance", msg)
 
 		return
 	}

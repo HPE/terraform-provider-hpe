@@ -21,6 +21,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
@@ -179,6 +180,19 @@ func getRouteAsState(
 		return state, diags
 	}
 
+	return mapRouteToState(route, plan), diags
+}
+
+// mapRouteToState maps a fetched network router route into resource state. It is the
+// pure half of getRouteAsState, split out so the null-safety of the optional fields
+// (description, network_mtu) can be unit-tested without a live API. RouterId is carried
+// from the plan because the API response does not echo it.
+func mapRouteToState(
+	route *sdk.GetNetworkRouterRoute200ResponseNetworkRoute,
+	plan NetworkRouterRouteModel,
+) NetworkRouterRouteModel {
+	var state NetworkRouterRouteModel
+
 	if route.Id != nil {
 		state.Id = types.Int64Value(*route.Id)
 	}
@@ -191,7 +205,7 @@ func getRouteAsState(
 		state.Name = types.StringNull()
 	}
 
-	if route.Description.IsSet() {
+	if route.Description.IsSet() && route.Description.Get() != nil {
 		state.Description = types.StringValue(*route.Description.Get())
 	} else {
 		state.Description = types.StringNull()
@@ -213,7 +227,7 @@ func getRouteAsState(
 		state.Enabled = types.BoolValue(*route.Enabled)
 	}
 
-	if route.NetworkMtu.IsSet() {
+	if route.NetworkMtu.IsSet() && route.NetworkMtu.Get() != nil {
 		state.NetworkMtu = types.Float64Value(float64(*route.NetworkMtu.Get()))
 	} else {
 		state.NetworkMtu = types.Float64Null()
@@ -221,7 +235,7 @@ func getRouteAsState(
 
 	state.Priority = convert.StrToType(route.Priority.Get())
 
-	return state, diags
+	return state
 }
 
 func (r *Resource) Read(
@@ -250,6 +264,12 @@ func (r *Resource) Read(
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, NetworkRouterRouteResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 // Update — not supported, all mutable fields use RequiresReplace

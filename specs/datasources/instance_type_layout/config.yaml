@@ -27,8 +27,9 @@ instance_type_layout:
       computed_optional_required: computed_optional
       description: Morpheus ID of the instance layout
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the Morpheus instance layout
+      description: The name of the Morpheus instance layout. Must not be empty.
       conflicts_with: [id]
     code:
       description: Optional code for use with policies

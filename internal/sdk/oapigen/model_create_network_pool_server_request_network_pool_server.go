@@ -65,8 +65,15 @@ func (dst *CreateNetworkPoolServerRequestNetworkPoolServer) UnmarshalJSON(data [
 	// try to unmarshal JSON data into BluecatNetworkPoolServer
 	err = json.Unmarshal(data, &dst.BluecatNetworkPoolServer)
 	if err == nil {
-		jsonBluecatNetworkPoolServer, _ := json.Marshal(dst.BluecatNetworkPoolServer)
-		if string(jsonBluecatNetworkPoolServer) == "{}" { // empty struct
+		jsonBluecatNetworkPoolServer, merrBluecatNetworkPoolServer := json.Marshal(dst.BluecatNetworkPoolServer)
+		var zeroBluecatNetworkPoolServer BluecatNetworkPoolServer
+		jsonZeroBluecatNetworkPoolServer, _ := json.Marshal(&zeroBluecatNetworkPoolServer)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrBluecatNetworkPoolServer != nil || string(jsonBluecatNetworkPoolServer) == "{}" || (len(jsonBluecatNetworkPoolServer) > 0 && jsonBluecatNetworkPoolServer[0] == '{' && string(jsonBluecatNetworkPoolServer) == string(jsonZeroBluecatNetworkPoolServer)) {
 			dst.BluecatNetworkPoolServer = nil
 		} else {
 			return nil // data stored in dst.BluecatNetworkPoolServer, return on the first match
@@ -78,8 +85,15 @@ func (dst *CreateNetworkPoolServerRequestNetworkPoolServer) UnmarshalJSON(data [
 	// try to unmarshal JSON data into InfobloxNetworkPoolServer
 	err = json.Unmarshal(data, &dst.InfobloxNetworkPoolServer)
 	if err == nil {
-		jsonInfobloxNetworkPoolServer, _ := json.Marshal(dst.InfobloxNetworkPoolServer)
-		if string(jsonInfobloxNetworkPoolServer) == "{}" { // empty struct
+		jsonInfobloxNetworkPoolServer, merrInfobloxNetworkPoolServer := json.Marshal(dst.InfobloxNetworkPoolServer)
+		var zeroInfobloxNetworkPoolServer InfobloxNetworkPoolServer
+		jsonZeroInfobloxNetworkPoolServer, _ := json.Marshal(&zeroInfobloxNetworkPoolServer)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrInfobloxNetworkPoolServer != nil || string(jsonInfobloxNetworkPoolServer) == "{}" || (len(jsonInfobloxNetworkPoolServer) > 0 && jsonInfobloxNetworkPoolServer[0] == '{' && string(jsonInfobloxNetworkPoolServer) == string(jsonZeroInfobloxNetworkPoolServer)) {
 			dst.InfobloxNetworkPoolServer = nil
 		} else {
 			return nil // data stored in dst.InfobloxNetworkPoolServer, return on the first match
@@ -91,8 +105,15 @@ func (dst *CreateNetworkPoolServerRequestNetworkPoolServer) UnmarshalJSON(data [
 	// try to unmarshal JSON data into PhpIPAMNetworkPoolServer
 	err = json.Unmarshal(data, &dst.PhpIPAMNetworkPoolServer)
 	if err == nil {
-		jsonPhpIPAMNetworkPoolServer, _ := json.Marshal(dst.PhpIPAMNetworkPoolServer)
-		if string(jsonPhpIPAMNetworkPoolServer) == "{}" { // empty struct
+		jsonPhpIPAMNetworkPoolServer, merrPhpIPAMNetworkPoolServer := json.Marshal(dst.PhpIPAMNetworkPoolServer)
+		var zeroPhpIPAMNetworkPoolServer PhpIPAMNetworkPoolServer
+		jsonZeroPhpIPAMNetworkPoolServer, _ := json.Marshal(&zeroPhpIPAMNetworkPoolServer)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrPhpIPAMNetworkPoolServer != nil || string(jsonPhpIPAMNetworkPoolServer) == "{}" || (len(jsonPhpIPAMNetworkPoolServer) > 0 && jsonPhpIPAMNetworkPoolServer[0] == '{' && string(jsonPhpIPAMNetworkPoolServer) == string(jsonZeroPhpIPAMNetworkPoolServer)) {
 			dst.PhpIPAMNetworkPoolServer = nil
 		} else {
 			return nil // data stored in dst.PhpIPAMNetworkPoolServer, return on the first match
@@ -104,8 +125,15 @@ func (dst *CreateNetworkPoolServerRequestNetworkPoolServer) UnmarshalJSON(data [
 	// try to unmarshal JSON data into SolarWindsNetworkPoolServer
 	err = json.Unmarshal(data, &dst.SolarWindsNetworkPoolServer)
 	if err == nil {
-		jsonSolarWindsNetworkPoolServer, _ := json.Marshal(dst.SolarWindsNetworkPoolServer)
-		if string(jsonSolarWindsNetworkPoolServer) == "{}" { // empty struct
+		jsonSolarWindsNetworkPoolServer, merrSolarWindsNetworkPoolServer := json.Marshal(dst.SolarWindsNetworkPoolServer)
+		var zeroSolarWindsNetworkPoolServer SolarWindsNetworkPoolServer
+		jsonZeroSolarWindsNetworkPoolServer, _ := json.Marshal(&zeroSolarWindsNetworkPoolServer)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrSolarWindsNetworkPoolServer != nil || string(jsonSolarWindsNetworkPoolServer) == "{}" || (len(jsonSolarWindsNetworkPoolServer) > 0 && jsonSolarWindsNetworkPoolServer[0] == '{' && string(jsonSolarWindsNetworkPoolServer) == string(jsonZeroSolarWindsNetworkPoolServer)) {
 			dst.SolarWindsNetworkPoolServer = nil
 		} else {
 			return nil // data stored in dst.SolarWindsNetworkPoolServer, return on the first match
@@ -114,6 +142,12 @@ func (dst *CreateNetworkPoolServerRequestNetworkPoolServer) UnmarshalJSON(data [
 		dst.SolarWindsNetworkPoolServer = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(CreateNetworkPoolServerRequestNetworkPoolServer)")
 }
 
@@ -135,7 +169,7 @@ func (src CreateNetworkPoolServerRequestNetworkPoolServer) MarshalJSON() ([]byte
 		return json.Marshal(&src.SolarWindsNetworkPoolServer)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableCreateNetworkPoolServerRequestNetworkPoolServer struct {

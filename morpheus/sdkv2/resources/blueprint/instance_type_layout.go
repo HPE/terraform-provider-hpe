@@ -293,11 +293,16 @@ func resourceInstanceTypeLayoutCreate(ctx context.Context, d *schema.ResourceDat
 	switch technology {
 	case "alibaba", "amazon", "azure", "maas", "docker", "esxi", "fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix", "opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "upcloud", "vcd.vapp", "vcd", "vmware", "xen":
 		instanceLayout["containerTypes"] = d.Get("node_type_ids")
-	case "arm", "cloudFormation", "terraform":
-		instanceLayout["specTemplates"] = d.Get("spec_template_ids")
 	case "workflow":
 		break
 	}
+
+	// MORPH-16395: spec_template_ids must be sent for ALL technologies (the
+	// OpenAPI request model declares SpecTemplates unconditionally). Gating it
+	// to arm/cloudFormation/terraform meant vmware layouts never persisted the
+	// IDs, so post-read they were dropped (read back as 0). Send it whenever
+	// configured; containerTypes gating above is unchanged.
+	instanceLayout["specTemplates"] = d.Get("spec_template_ids")
 
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {
@@ -649,11 +654,16 @@ func resourceInstanceTypeLayoutUpdate(ctx context.Context, d *schema.ResourceDat
 	switch technology {
 	case "alibaba", "amazon", "azure", "maas", "docker", "esxi", "fusion", "google", "huawei", "hyperv", "kubernetes", "kvm", "nutanix", "opentelekom", "openstack", "oraclecloud", "oraclevm", "scvmm", "upcloud", "vcd.vapp", "vcd", "vmware", "xen":
 		instanceLayout["containerTypes"] = d.Get("node_type_ids")
-	case "arm", "cloudFormation", "terraform":
-		instanceLayout["specTemplates"] = d.Get("spec_template_ids")
 	case "workflow":
 		break
 	}
+
+	// MORPH-16395: spec_template_ids must be sent for ALL technologies (the
+	// OpenAPI request model declares SpecTemplates unconditionally). Gating it
+	// to arm/cloudFormation/terraform meant vmware layouts never persisted the
+	// IDs, so post-read they were dropped (read back as 0). Send it whenever
+	// configured; containerTypes gating above is unchanged.
+	instanceLayout["specTemplates"] = d.Get("spec_template_ids")
 
 	labelsPayload := make([]string, 0)
 	if attr, ok := d.GetOk("labels"); ok {

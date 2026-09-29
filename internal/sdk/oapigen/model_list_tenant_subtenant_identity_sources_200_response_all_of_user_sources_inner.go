@@ -93,8 +93,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf, return on the first match
@@ -106,8 +113,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf1, return on the first match
@@ -119,8 +133,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2, return on the first match
@@ -132,8 +153,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3, return on the first match
@@ -145,8 +173,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf4, return on the first match
@@ -158,8 +193,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf5, return on the first match
@@ -171,8 +213,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf6, return on the first match
@@ -184,8 +233,15 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 	// try to unmarshal JSON data into ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7
 	err = json.Unmarshal(data, &dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)
 	if err == nil {
-		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7, _ := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)
-		if string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7) == "{}" { // empty struct
+		jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7, merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7 := json.Marshal(dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)
+		var zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7 ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7
+		jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7, _ := json.Marshal(&zeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7 != nil || string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7) == "{}" || (len(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7) > 0 && jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7[0] == '{' && string(jsonListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7) == string(jsonZeroListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)) {
 			dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7 = nil
 		} else {
 			return nil // data stored in dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7, return on the first match
@@ -194,6 +250,12 @@ func (dst *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) U
 		dst.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner)")
 }
 
@@ -231,7 +293,7 @@ func (src ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner) Ma
 		return json.Marshal(&src.ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOf7)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInner struct {

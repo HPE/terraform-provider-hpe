@@ -18,8 +18,7 @@ Manages an OpsRamp Metric Alert Definition. Creates alert definitions based on P
 
 - `alert_threshold_data` (Attributes) The threshold data for the alert definition, including warning and critical conditions. (see [below for nested schema](#nestedatt--alert_threshold_data))
 - `alert_threshold_type` (String) The threshold type (`STATIC_THRESHOLD`, `FORECAST`, `DYNAMIC_CHANGE_DETECTION`, `DYNAMIC_THRESHOLD`).
-- `attributes` (Attributes List) Resource attributes for the alert. Each entry must have name as `name`, `host`, `ip`, or `uuid`. (see [below for nested schema](#nestedatt--attributes))
-- `entity_type` (List of String) The entity type for the alert (e.g. `["RESOURCE"]`).
+- `entity_type` (String) The entity type for the alert (e.g. `RESOURCE`, `CLIENT`).
 - `name` (String) The name of the alert definition. Must be unique across the client.
 - `query` (String) The PromQL query for the alert definition.
 
@@ -27,12 +26,13 @@ Manages an OpsRamp Metric Alert Definition. Creates alert definitions based on P
 
 - `alert_trigger_duration` (String) Duration the threshold must be breached before alerting (e.g. `0m`, `5m`, `30s`).
 - `alert_type` (String) The alert type (`METRICS`, `TRACE`).
+- `attributes` (Attributes List) Resource attributes for the alert. Required when entity_type is `RESOURCE`. Each entry must have name as `name`, `host`, `ip`, or `uuid`. (see [below for nested schema](#nestedatt--attributes))
 - `client` (String) The unique ID of the client (sub-tenant). If not provided, the alert definition is created at the provider tenant level.
-- `component` (List of String) The alert component identifiers (e.g. `["$ip"]`).
+- `component` (String) The alert component identifiers (e.g. `$ip`, `$__name__`, `$hostname`).
 - `description` (String) The alert description. Supports tokens like `{{$host}}`.
 - `is_obsolete` (Boolean) If true, all alerts generated on this definition become Obsolete. Only used on update.
 - `labels` (Attributes List) Metric labels included in the alert. (see [below for nested schema](#nestedatt--labels))
-- `no_data_condition` (String) Action when no data is received. Required when alert_threshold_type is STATIC_THRESHOLD or DYNAMIC_THRESHOLD. (e.g.: `NO_DATA_ALERT`, `WARNING_ALERT`, `CRITICAL_ALERT`).
+- `no_data_condition` (String) Action when no data is received (e.g.: `NO_DATA_ALERT`, `WARNING_ALERT`, `CRITICAL_ALERT`). Applicable to STATIC_THRESHOLD and DYNAMIC_THRESHOLD, and defaults to `NO_DATA_ALERT` when omitted.
 - `status` (Boolean) Whether alerts are generated. Defaults to `true`.
 - `subject` (String) The alert subject. Supports tokens like `{{$host}}`.
 

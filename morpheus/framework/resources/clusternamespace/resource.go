@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -21,6 +22,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 var (
@@ -201,7 +203,68 @@ func (r *clusterNamespaceResource) Read(ctx context.Context, req resource.ReadRe
 		state.ResourcePermissions = priorRP
 	}
 
+	// The single-namespace GET does not return `active`, so on import it is
+	// null after mapping. Look it up from the namespace list, which does expose
+	// it, so a genuinely inactive namespace imports correctly rather than being
+	// forced to the schema default. If the lookup fails, leave `active` for
+	// schemadefaults.Apply below to fill. MORPH-16158.
+	if state.Active.IsNull() {
+		if active, ok := lookupNamespaceActive(ctx, client, clusterID, id); ok {
+			state.Active = types.BoolValue(active)
+		} else {
+			tflog.Warn(ctx,
+				"could not determine cluster namespace 'active' from the "+
+					"namespace list; falling back to schema default",
+				map[string]any{
+					"cluster_id": clusterID,
+					"id":         id,
+				})
+		}
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, ClusterNamespaceResourceSchema(ctx), &resp.State)...,
+	)
+}
+
+// lookupNamespaceActive returns the `active` flag for the namespace with the
+// given id from the cluster namespace list endpoint, which (unlike the single
+// GET) exposes it. The second return is false if the list call fails or the id
+// is not found. MORPH-16158.
+func lookupNamespaceActive(
+	ctx context.Context,
+	client *sdk.APIClient,
+	clusterID int64,
+	id int64,
+) (bool, bool) {
+	rs, hresp, err := client.ClustersAPI.GetClusterNamespaces(ctx, clusterID).Execute()
+	if rs == nil || err != nil || hresp.StatusCode != http.StatusOK {
+		return false, false
+	}
+
+	return activeFromNamespaceList(rs.Namespaces, id)
+}
+
+// activeFromNamespaceList finds the namespace with the given id in a namespace
+// list and returns its `active` flag. The second return is false if the id is
+// not found or the entry has no active value. Split out so it can be unit
+// tested without a live API. MORPH-16158.
+func activeFromNamespaceList(
+	items []sdk.GetClusterNamespaces200ResponseAllOfNamespacesInner,
+	id int64,
+) (bool, bool) {
+	for i := range items {
+		inner := items[i]
+		if inner.Id != nil && *inner.Id == id && inner.Active != nil {
+			return *inner.Active, true
+		}
+	}
+
+	return false, false
 }
 
 func (r *clusterNamespaceResource) Update(
@@ -443,7 +506,9 @@ func mapGetResponseToModel(
 	} else {
 		model.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
-	// NOTE: Active is not in the API GET at all. Config value is preserved in state.
+	// NOTE: `active` is not returned by the single-namespace GET at all. On
+	// refresh the config/prior value is preserved; on import it is looked up
+	// from the namespace list (which does expose it). MORPH-16158.
 
 	return diags
 }

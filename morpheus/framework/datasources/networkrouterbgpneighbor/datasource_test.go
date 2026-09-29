@@ -23,16 +23,6 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-const providerConfigOffline = `
-provider "hpe" {
-  morpheus {
-    url          = ""
-    username     = ""
-    password     = ""
-  }
-}
-`
-
 // existingTier0RouterID is a pre-provisioned, fully-realized NSX-T tier-0 gateway
 // (BGP enabled, with an associated edge cluster and local AS) on integration 5.
 // BGP neighbors attach to the tier-0's locale-services, which are only populated
@@ -178,7 +168,11 @@ func TestAccMorpheusFindNetworkRouterBgpNeighborNoSearchAttrs(t *testing.T) {
 
 	t.Parallel()
 
-	config := providerConfigOffline + `
+	// A real connection is used so the data source Read runs and returns the
+	// "no valid search terms" error; with an unconfigured provider the mux
+	// provider fails earlier with a connection error and the validation path is
+	// never reached.
+	config := testhelpers.ProviderBlock() + `
       data "hpe_morpheus_network_router_bgp_neighbor" "test" {
         router_id = 1
       }`

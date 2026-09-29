@@ -85,6 +85,8 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 	// nolint: goconst
 	providerConfig := testhelpers.ProviderBlock()
 
+	dependenciesConfig := testhelpers.WhoamiBlock()
+
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := user.RenderUserConfig(t, map[string]string{
@@ -189,7 +191,7 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + resourceConfig,
+				Config:   providerConfig + dependenciesConfig + resourceConfig,
 				Check:    checkFn,
 				PlanOnly: false,
 			},
@@ -219,22 +221,21 @@ func TestAccMorpheusUserResourceUpdateTestIdOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
 	role_ids = [3]
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 }`,
-				Check: resource.TestCheckResourceAttr(
-					"hpe_morpheus_user.foo",
-					"tenant_id",
-					"1",
+				Check: resource.TestCheckResourceAttrPair(
+					"hpe_morpheus_user.foo", "tenant_id",
+					"data.hpe_morpheus_whoami.current", "tenant_id",
 				),
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	username = "` + name + `"
 	email = "foo@testacc.com"
@@ -386,10 +387,9 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	baseChecks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_user.foo", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -493,10 +493,9 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 
 	expectedUpdateRoles := map[string]struct{}{"1": {}}
 	updateChecks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_user.foo", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -588,10 +587,10 @@ func TestAccMorpheusUserResourceUpdateOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -612,10 +611,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -637,10 +636,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -662,10 +661,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects first_name change
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -687,10 +686,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects last_name change to null
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -712,10 +711,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects last_name change
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -737,10 +736,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects password_wo_version to null
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -762,10 +761,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects no change if only password_wo is changed
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	# changed
@@ -787,10 +786,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed role_ids
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -812,10 +811,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed username
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	# changed
 	username = "` + name + `Updated"
 	email = "foo@testacc.com"
@@ -837,10 +836,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed windows username
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -862,10 +861,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed linux username
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -887,10 +886,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed linux password version
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -912,10 +911,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed windows password version
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -937,10 +936,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed linux key pair id
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -962,10 +961,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects changed receive_notifications
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -987,10 +986,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks apply of changes to all changeable fields
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	# changed
 	username = "` + name + `Updated"
 	# changed
@@ -1026,10 +1025,10 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	# changed
 	username = "` + name + `Updated"
 	# changed
@@ -1278,7 +1277,7 @@ func TestAccMorpheusUserResourceUpdateNoTenantIdOk(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# create
 	username = "` + name + `"
@@ -1301,7 +1300,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# post create plan
 	username = "` + name + `"
@@ -1325,7 +1324,7 @@ resource "hpe_morpheus_user" "foo" {
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan has no effect
 resource "hpe_morpheus_user" "foo" {
 	# update 1
@@ -1349,7 +1348,7 @@ resource "hpe_morpheus_user" "foo" {
 				Check: checkUpdateFn,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 # checks plan detects first_name change to null
 resource "hpe_morpheus_user" "foo" {
 	# post update 1 plan
@@ -1373,7 +1372,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly:           true,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# update 2
 	username = "` + name + `"
@@ -1403,7 +1402,7 @@ resource "hpe_morpheus_user" "foo" {
 				PlanOnly: false,
 			},
 			{
-				Config: providerConfig + `
+				Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# post update 2 plan
 	username = "` + name + `"
@@ -1453,7 +1452,7 @@ func TestAccMorpheusUserResourceAllAttrsOk(t *testing.T) {
 #}
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -1474,10 +1473,9 @@ resource "hpe_morpheus_user" "foo" {
 	expectedRoles := map[string]struct{}{"3": {}, "1": {}}
 
 	baseChecks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_user.foo", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1600,7 +1598,7 @@ resource "hpe_morpheus_user" "foo" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + resourceCfg,
+				Config:   providerConfig + testhelpers.WhoamiBlock() + resourceCfg,
 				Check:    checkFn,
 				PlanOnly: false,
 			},
@@ -1810,7 +1808,7 @@ func TestAccMorpheusUserResourceImportOk(t *testing.T) {
 	resourceCfgWithPassword := `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
 	password_wo = "Secret123!"
@@ -1828,7 +1826,7 @@ resource "hpe_morpheus_user" "foo" {
 	resourceCfgNoPassword := `
 resource "hpe_morpheus_user" "foo" {
 	# Assumes tenant_id 1 pre-exists
-	tenant_id = 1
+	tenant_id = data.hpe_morpheus_whoami.current.tenant_id
 	username = "` + name + `"
 	email = "foo@testacc.com"
         #password_wo = "Secret123!"
@@ -1867,10 +1865,9 @@ destroy = false
 }
 `
 	baseChecks := []resource.TestCheckFunc{
-		resource.TestCheckResourceAttr(
-			"hpe_morpheus_user.foo",
-			"tenant_id",
-			"1",
+		resource.TestCheckResourceAttrPair(
+			"hpe_morpheus_user.foo", "tenant_id",
+			"data.hpe_morpheus_whoami.current", "tenant_id",
 		),
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_user.foo",
@@ -1945,7 +1942,7 @@ destroy = false
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + resourceCfgWithPassword,
+				Config: providerConfig + testhelpers.WhoamiBlock() + resourceCfgWithPassword,
 				Check: resource.ComposeTestCheckFunc(
 					func(s *terraform.State) error {
 						// Cache ID for use later
@@ -1969,7 +1966,7 @@ destroy = false
 		},
 	})
 
-	importCfg := providerConfig + resourceCfgNoPassword + `
+	importCfg := providerConfig + testhelpers.WhoamiBlock() + resourceCfgNoPassword + `
 	import {
 	  to = hpe_morpheus_user.foo
 	  id = ` + cachedID + `
@@ -2005,7 +2002,7 @@ destroy = false
 			},
 			{
 				// check that a plan after import detects no changes
-				Config:             providerConfig + resourceCfgNoPassword,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + resourceCfgNoPassword,
 				PlanOnly:           true,
 				ExpectNonEmptyPlan: false,
 			},
@@ -2035,7 +2032,7 @@ func TestAccMorpheusUserResourceUpdateLastNameWithoutTenantIdOk(t *testing.T) {
 			ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
-					Config: providerConfig + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is NOT set - uses "state for unknown"
 	username = "` + name + `"
@@ -2095,7 +2092,7 @@ resource "hpe_morpheus_user" "foo" {
 					),
 				},
 				{
-					Config: providerConfig + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"
@@ -2167,7 +2164,7 @@ resource "hpe_morpheus_user" "foo" {
 				},
 				{
 					// Verify the plan shows no changes after the update
-					Config: providerConfig + `
+					Config: providerConfig + testhelpers.WhoamiBlock() + `
 resource "hpe_morpheus_user" "foo" {
 	# Note: tenant_id is still NOT set - uses "state for unknown"
 	username = "` + name + `"

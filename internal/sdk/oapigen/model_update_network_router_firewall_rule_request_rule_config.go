@@ -20,7 +20,7 @@ var _ MappedNullable = &UpdateNetworkRouterFirewallRuleRequestRuleConfig{}
 
 // UpdateNetworkRouterFirewallRuleRequestRuleConfig Network-router-type-specific rule configuration.
 type UpdateNetworkRouterFirewallRuleRequestRuleConfig struct {
-	// External id of the parent firewall rule group (required by NSX-T).
+	// External id of the parent firewall rule group (required by NSX-T). Must be in the format \"group-{id}\", where {id} is the id of the firewall rule group - for example \"group-123\". Any other format is rejected.
 	ParentId             *string                `json:"parentId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

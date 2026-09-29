@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -299,4 +300,42 @@ func checkOtherMemberSurvived(otherID int64) resource.TestCheckFunc {
 				"longer a member after apply; members are %v. Membership managed "+
 				"elsewhere must not be evicted", otherID, groupID, members)
 	}
+}
+
+// TestAccMorpheusClusterAffinityGroupMemberInvalidParent asserts Create surfaces
+// a not-found parent as a hard error rather than silently producing no state,
+// which Terraform reports as "Missing Resource State After Create"
+// (MORPH-16734).
+//
+// Gating rationale: this is an error-path test. It only needs the affinity
+// groups API to return 404 for a bogus affinity_group_id, which the live
+// appliance does regardless of whether an HVM affinity cluster is provisioned.
+// So it gates on capabilities.All with literal bogus ids, rather than
+// capabilities.AffinityGroup / AffinityClusterID / seedServerID — those would
+// make it skip whenever the affinity_group capability or the affinity env vars
+// are absent, which is exactly the common configuration here.
+func TestAccMorpheusClusterAffinityGroupMemberInvalidParent(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.All)
+
+	t.Parallel()
+
+	config := testhelpers.ProviderBlock() + `
+resource "hpe_morpheus_cluster_affinity_group_member" "test" {
+  cluster_id        = 1
+  affinity_group_id = 999999999
+  server_id         = 1
+}
+`
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      config,
+				ExpectError: regexp.MustCompile("cluster or affinity group not found"),
+			},
+		},
+	})
 }

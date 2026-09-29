@@ -1,0 +1,153 @@
+tenants:
+  templates:
+    ids:
+      list:
+        computed_optional_required: computed
+        description: The IDs of the matching tenants, ordered by id.
+        element_type:
+          int64: {}
+    sort_ascending:
+      bool:
+        computed_optional_required: optional
+        description: Whether to sort the ids and tenants lists by id in ascending order. Defaults to true.
+    # tenants is injected as a list_nested (not the spec-derived set) so the
+    # delivered schema is a ListNestedAttribute whose order tracks sort_ascending.
+    tenants:
+      list_nested:
+        computed_optional_required: computed
+        description: The list of tenants matching the supplied filters.
+        nested_object:
+          attributes:
+            - name: id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the tenant.
+            - name: name
+              string:
+                computed_optional_required: computed
+                description: The name of the tenant.
+            - name: description
+              string:
+                computed_optional_required: computed
+                description: The description of the tenant.
+            - name: enabled
+              bool:
+                computed_optional_required: computed
+                description: Whether the tenant is enabled. Disabled tenants cannot be logged into.
+            - name: subdomain
+              string:
+                computed_optional_required: computed
+                description: The custom login subdomain (login URL prefix) for sub-tenant users. May contain only letters, numbers, and hyphens, must not start or end with a hyphen, must be 1-63 characters long, cannot be entirely numeric, and must be globally unique across all tenants.
+            - name: currency
+              string:
+                computed_optional_required: computed
+                description: Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP).
+            - name: account_number
+              string:
+                computed_optional_required: computed
+                description: An optional field that can be used for billing and accounting.
+            - name: account_name
+              string:
+                computed_optional_required: computed
+                description: An optional field that can be used for billing and accounting.
+            - name: customer_number
+              string:
+                computed_optional_required: computed
+                description: An optional field that can be used for billing and accounting.
+            - name: external_id
+              string:
+                computed_optional_required: computed
+                description: The external ID of the tenant.
+            - name: master
+              bool:
+                computed_optional_required: computed
+                description: Whether this is the master tenant.
+            - name: base_role_id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the tenant's base role, which restricts the access available to this tenant's roles and users.
+            - name: base_role_name
+              string:
+                computed_optional_required: computed
+                description: The authority (name) of the tenant's base role.
+            - name: parent_id
+              int64:
+                computed_optional_required: computed
+                description: The ID of the parent tenant.
+            - name: parent_name
+              string:
+                computed_optional_required: computed
+                description: The name of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+            - name: parent_subdomain
+              string:
+                computed_optional_required: computed
+                description: The subdomain of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+            - name: instance_count
+              int64:
+                computed_optional_required: computed
+                description: The number of instances in the tenant.
+            - name: user_count
+              int64:
+                computed_optional_required: computed
+                description: The number of users in the tenant.
+            - name: date_created
+              string:
+                computed_optional_required: computed
+                description: The date the tenant was created.
+            - name: last_updated
+              string:
+                computed_optional_required: computed
+                description: The date the tenant was last updated.
+
+  blocks:
+    filter:
+      set_nested:
+        description: >-
+          Filter block. Repeat to apply multiple filters (all ANDed together).
+          Filter values are case-sensitive and support Go regular expressions
+          (https://regex101.com/).
+        nested_object:
+          attributes:
+            - name: name
+              string:
+                computed_optional_required: required
+                description: >-
+                  The field to filter on. Valid names are: name, subdomain,
+                  currency, external_id, enabled, master, account_name,
+                  account_number, customer_number.
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+                      schema_definition: stringvalidator.OneOf("name", "subdomain", "currency", "external_id", "enabled", "master", "account_name", "account_number", "customer_number")
+            - name: values
+              set:
+                element_type:
+                  string: {}
+                computed_optional_required: required
+                description: >-
+                  The filter values. A tenant matches the block if the chosen
+                  field matches ANY value (case-sensitive Go regular expression,
+                  https://regex101.com/).
+                validators:
+                  - custom:
+                      imports:
+                        - path: github.com/hashicorp/terraform-plugin-framework-validators/setvalidator
+                      schema_definition: setvalidator.SizeAtLeast(1)
+
+  moves:
+    - accounts: tenants_spec              # rename the spec-derived array out of the way (replaced by template list) (components/schemas/tenant.yaml)
+    - template-ids: ids                   # inject list of matching tenant IDs
+    - template-sort_ascending: sort_ascending # inject sort toggle
+    - template-tenants: tenants           # inject list_nested tenants (ListNestedAttribute)
+
+  removes:
+    - max                                 # (query parameter) pagination
+    - offset                              # (query parameter) pagination
+    - sort                                # (query parameter) sorting
+    - direction                           # (query parameter) sorting
+    - name                                # (query parameter) filter
+    - phrase                              # (query parameter) search
+    - last_updated                        # (query parameter) filter
+    - meta                                # (response envelope) pagination metadata
+    - tenants_spec                        # spec-derived accounts array, replaced by template-injected tenants list (components/schemas/tenant.yaml)

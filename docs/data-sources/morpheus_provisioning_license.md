@@ -28,7 +28,7 @@ data "hpe_morpheus_provisioning_license" "example" {
 ### Optional
 
 - `id` (Number) The ID of the provisioning license.
-- `name` (String) The name of the provisioning license.
+- `name` (String) The name of the provisioning license. Must not be empty.
 
 ### Read-Only
 

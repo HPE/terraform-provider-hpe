@@ -14,6 +14,7 @@ import (
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
+	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
 
 func (r *backupHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -39,6 +40,12 @@ func (r *backupHostResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	// Fill any schema-declared default the API omitted (null in state) so an
+	// imported resource does not plan a change nobody made. MORPH-16192.
+	resp.Diagnostics.Append(
+		schemadefaults.Apply(ctx, BackupHostResourceSchema(ctx), &resp.State)...,
+	)
 }
 
 // getBackupAsState performs a read of the backup by ID and returns the
@@ -83,9 +90,18 @@ func getBackupAsState(
 		state.JobId = convert.Int64ToType(b.Job.Id)
 	}
 
+	// The GET response does not echo storageProvider for server/host (directory)
+	// backups even though it was associated on create (from the "target" field).
+	// Preserve the planned/prior value when the API omits it, otherwise a
+	// configured storage_provider_id would read back null and cause an
+	// "inconsistent result after apply" error. The IsUnknown guard (via
+	// Int64OrPlan) matters because storage_provider_id is Optional+Computed.
+	// MORPH-14631, MORPH-16232.
+	var storageProviderID *int64
 	if b.StorageProvider != nil {
-		state.StorageProviderId = convert.Int64ToType(b.StorageProvider.Id)
+		storageProviderID = b.StorageProvider.Id
 	}
+	state.StorageProviderId = convert.Int64OrPlan(storageProviderID, plan.StorageProviderId)
 
 	// host_id and path are not present on every backup type, so fall back to the
 	// planned value when the API omits them.

@@ -86,8 +86,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into ElasticSearchConfig5
 	err = json.Unmarshal(data, &dst.ElasticSearchConfig5)
 	if err == nil {
-		jsonElasticSearchConfig5, _ := json.Marshal(dst.ElasticSearchConfig5)
-		if string(jsonElasticSearchConfig5) == "{}" { // empty struct
+		jsonElasticSearchConfig5, merrElasticSearchConfig5 := json.Marshal(dst.ElasticSearchConfig5)
+		var zeroElasticSearchConfig5 ElasticSearchConfig5
+		jsonZeroElasticSearchConfig5, _ := json.Marshal(&zeroElasticSearchConfig5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrElasticSearchConfig5 != nil || string(jsonElasticSearchConfig5) == "{}" || (len(jsonElasticSearchConfig5) > 0 && jsonElasticSearchConfig5[0] == '{' && string(jsonElasticSearchConfig5) == string(jsonZeroElasticSearchConfig5)) {
 			dst.ElasticSearchConfig5 = nil
 		} else {
 			return nil // data stored in dst.ElasticSearchConfig5, return on the first match
@@ -99,8 +106,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into SNMPConfig5
 	err = json.Unmarshal(data, &dst.SNMPConfig5)
 	if err == nil {
-		jsonSNMPConfig5, _ := json.Marshal(dst.SNMPConfig5)
-		if string(jsonSNMPConfig5) == "{}" { // empty struct
+		jsonSNMPConfig5, merrSNMPConfig5 := json.Marshal(dst.SNMPConfig5)
+		var zeroSNMPConfig5 SNMPConfig5
+		jsonZeroSNMPConfig5, _ := json.Marshal(&zeroSNMPConfig5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrSNMPConfig5 != nil || string(jsonSNMPConfig5) == "{}" || (len(jsonSNMPConfig5) > 0 && jsonSNMPConfig5[0] == '{' && string(jsonSNMPConfig5) == string(jsonZeroSNMPConfig5)) {
 			dst.SNMPConfig5 = nil
 		} else {
 			return nil // data stored in dst.SNMPConfig5, return on the first match
@@ -112,8 +126,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into SQLConfig5
 	err = json.Unmarshal(data, &dst.SQLConfig5)
 	if err == nil {
-		jsonSQLConfig5, _ := json.Marshal(dst.SQLConfig5)
-		if string(jsonSQLConfig5) == "{}" { // empty struct
+		jsonSQLConfig5, merrSQLConfig5 := json.Marshal(dst.SQLConfig5)
+		var zeroSQLConfig5 SQLConfig5
+		jsonZeroSQLConfig5, _ := json.Marshal(&zeroSQLConfig5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrSQLConfig5 != nil || string(jsonSQLConfig5) == "{}" || (len(jsonSQLConfig5) > 0 && jsonSQLConfig5[0] == '{' && string(jsonSQLConfig5) == string(jsonZeroSQLConfig5)) {
 			dst.SQLConfig5 = nil
 		} else {
 			return nil // data stored in dst.SQLConfig5, return on the first match
@@ -125,8 +146,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into SocketConfig5
 	err = json.Unmarshal(data, &dst.SocketConfig5)
 	if err == nil {
-		jsonSocketConfig5, _ := json.Marshal(dst.SocketConfig5)
-		if string(jsonSocketConfig5) == "{}" { // empty struct
+		jsonSocketConfig5, merrSocketConfig5 := json.Marshal(dst.SocketConfig5)
+		var zeroSocketConfig5 SocketConfig5
+		jsonZeroSocketConfig5, _ := json.Marshal(&zeroSocketConfig5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrSocketConfig5 != nil || string(jsonSocketConfig5) == "{}" || (len(jsonSocketConfig5) > 0 && jsonSocketConfig5[0] == '{' && string(jsonSocketConfig5) == string(jsonZeroSocketConfig5)) {
 			dst.SocketConfig5 = nil
 		} else {
 			return nil // data stored in dst.SocketConfig5, return on the first match
@@ -138,8 +166,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into UpdateChecks200ResponseAllOfCheckConfigAnyOf
 	err = json.Unmarshal(data, &dst.UpdateChecks200ResponseAllOfCheckConfigAnyOf)
 	if err == nil {
-		jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf, _ := json.Marshal(dst.UpdateChecks200ResponseAllOfCheckConfigAnyOf)
-		if string(jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf) == "{}" { // empty struct
+		jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf, merrUpdateChecks200ResponseAllOfCheckConfigAnyOf := json.Marshal(dst.UpdateChecks200ResponseAllOfCheckConfigAnyOf)
+		var zeroUpdateChecks200ResponseAllOfCheckConfigAnyOf UpdateChecks200ResponseAllOfCheckConfigAnyOf
+		jsonZeroUpdateChecks200ResponseAllOfCheckConfigAnyOf, _ := json.Marshal(&zeroUpdateChecks200ResponseAllOfCheckConfigAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateChecks200ResponseAllOfCheckConfigAnyOf != nil || string(jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf) == "{}" || (len(jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf) > 0 && jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf[0] == '{' && string(jsonUpdateChecks200ResponseAllOfCheckConfigAnyOf) == string(jsonZeroUpdateChecks200ResponseAllOfCheckConfigAnyOf)) {
 			dst.UpdateChecks200ResponseAllOfCheckConfigAnyOf = nil
 		} else {
 			return nil // data stored in dst.UpdateChecks200ResponseAllOfCheckConfigAnyOf, return on the first match
@@ -151,8 +186,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into WebGetConfig5
 	err = json.Unmarshal(data, &dst.WebGetConfig5)
 	if err == nil {
-		jsonWebGetConfig5, _ := json.Marshal(dst.WebGetConfig5)
-		if string(jsonWebGetConfig5) == "{}" { // empty struct
+		jsonWebGetConfig5, merrWebGetConfig5 := json.Marshal(dst.WebGetConfig5)
+		var zeroWebGetConfig5 WebGetConfig5
+		jsonZeroWebGetConfig5, _ := json.Marshal(&zeroWebGetConfig5)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrWebGetConfig5 != nil || string(jsonWebGetConfig5) == "{}" || (len(jsonWebGetConfig5) > 0 && jsonWebGetConfig5[0] == '{' && string(jsonWebGetConfig5) == string(jsonZeroWebGetConfig5)) {
 			dst.WebGetConfig5 = nil
 		} else {
 			return nil // data stored in dst.WebGetConfig5, return on the first match
@@ -164,8 +206,15 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -174,6 +223,12 @@ func (dst *UpdateChecks200ResponseAllOfCheckConfig) UnmarshalJSON(data []byte) e
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(UpdateChecks200ResponseAllOfCheckConfig)")
 }
 
@@ -207,7 +262,7 @@ func (src UpdateChecks200ResponseAllOfCheckConfig) MarshalJSON() ([]byte, error)
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableUpdateChecks200ResponseAllOfCheckConfig struct {

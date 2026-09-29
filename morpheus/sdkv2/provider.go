@@ -32,7 +32,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/setting"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/task"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/template"
-	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/tenant"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/trust"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/usergroup"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/wiki"
@@ -50,7 +49,6 @@ import (
 	cypherds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/cypher"
 	environmentds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/environment"
 	groupds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/group"
-	imageds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/image"
 	integrationds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/integration"
 	jobds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/job"
 	networkds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/network"
@@ -61,7 +59,6 @@ import (
 	storageds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/storage"
 	taskds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/task"
 	templateds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/template"
-	tenantds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/tenant"
 	trustds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/trust"
 	usergroupds "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/usergroup"
 	vdids "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/datasources/vdi"
@@ -158,7 +155,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_task_shell_script":                task.ResourceTaskShellScript(),
 			"hpe_morpheus_task_vro":                         task.ResourceTaskVRO(),
 			"hpe_morpheus_task_write_attributes":            task.ResourceTaskWriteAttributes(),
-			"hpe_morpheus_tenant":                           tenant.ResourceTenant(),
 			"hpe_morpheus_user_group":                       usergroup.ResourceUserGroup(),
 			"hpe_morpheus_wiki_page":                        wiki.ResourceWikiPage(),
 			"hpe_morpheus_workflow_operational":             workflow.ResourceWorkflowOperational(),
@@ -181,7 +177,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_execute_schedule":           automationds.DataSourceExecuteSchedule(),
 			"hpe_morpheus_file_template":              templateds.DataSourceFileTemplate(),
 			"hpe_morpheus_groups":                     groupds.DataSourceGroups(),
-			"hpe_morpheus_images":                     imageds.DataSourceImages(),
 			"hpe_morpheus_instance_type":              blueprintds.DataSourceInstanceType(),
 			"hpe_morpheus_integration":                integrationds.DataSourceIntegration(),
 			"hpe_morpheus_integration_git":            integrationds.DataSourceIntegrationGit(),
@@ -207,8 +202,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_storage_volume_type":        storageds.DataSourceStorageVolumeType(),
 			"hpe_morpheus_task":                       taskds.DataSourceTask(),
 			"hpe_morpheus_tasks":                      taskds.DataSourceTasks(),
-			"hpe_morpheus_tenant":                     tenantds.DataSourceTenant(),
-			"hpe_morpheus_tenants":                    tenantds.DataSourceTenants(),
 			"hpe_morpheus_user_group":                 usergroupds.DataSourceUserGroup(),
 			"hpe_morpheus_user_groups":                usergroupds.DataSourceUserGroups(),
 			"hpe_morpheus_vdi_pool":                   vdids.DataSourceVDIPool(),

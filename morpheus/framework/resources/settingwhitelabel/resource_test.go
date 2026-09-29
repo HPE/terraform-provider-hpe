@@ -35,17 +35,32 @@ func TestAccMorpheusSettingWhitelabelResourceExampleOk(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 	applianceName := acctest.RandomWithPrefix(t.Name())
 
+	// appliance_name is a master-account-only setting; a sub-tenant caller must
+	// omit it (MORPH-16546). Pass it only when running as the master tenant.
+	isMaster := testhelpers.IsMasterTenant(t)
+	applianceNameOverride := ""
+	if isMaster {
+		applianceNameOverride = applianceName
+	}
+
 	resourceConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
-		"ApplianceName": applianceName,
+		"ApplianceName": applianceNameOverride,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	applianceNameCheck := resource.TestCheckNoResourceAttr(
+		"hpe_morpheus_setting_whitelabel.example", "appliance_name")
+	if isMaster {
+		applianceNameCheck = resource.TestCheckResourceAttr(
+			"hpe_morpheus_setting_whitelabel.example", "appliance_name", applianceName)
+	}
+
 	checks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet("hpe_morpheus_setting_whitelabel.example", "id"),
 		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "enabled", "true"),
-		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "appliance_name", applianceName),
+		applianceNameCheck,
 		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "primary_color", "#1a73e8"),
 		resource.TestCheckResourceAttr("hpe_morpheus_setting_whitelabel.example", "secondary_color", "#ffffff"),
 	)
@@ -80,15 +95,25 @@ func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
 	applianceName := acctest.RandomWithPrefix(t.Name())
 	updatedApplianceName := applianceName + "-updated"
 
+	// appliance_name is a master-account-only setting; omit it for a sub-tenant
+	// caller (MORPH-16546).
+	isMaster := testhelpers.IsMasterTenant(t)
+	createApplianceName := ""
+	updateApplianceName := ""
+	if isMaster {
+		createApplianceName = applianceName
+		updateApplianceName = updatedApplianceName
+	}
+
 	createConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
-		"ApplianceName": applianceName,
+		"ApplianceName": createApplianceName,
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	updateConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
-		"ApplianceName":  updatedApplianceName,
+		"ApplianceName":  updateApplianceName,
 		"PrimaryColor":   "#0f62fe",
 		"SecondaryColor": "#161616",
 	})
@@ -97,17 +122,25 @@ func TestAccMorpheusSettingWhitelabelResourceUpdateOk(t *testing.T) {
 	}
 
 	resourceName := "hpe_morpheus_setting_whitelabel.example"
+
+	createApplianceNameCheck := resource.TestCheckNoResourceAttr(resourceName, "appliance_name")
+	updateApplianceNameCheck := resource.TestCheckNoResourceAttr(resourceName, "appliance_name")
+	if isMaster {
+		createApplianceNameCheck = resource.TestCheckResourceAttr(resourceName, "appliance_name", applianceName)
+		updateApplianceNameCheck = resource.TestCheckResourceAttr(resourceName, "appliance_name", updatedApplianceName)
+	}
+
 	createChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(resourceName, "appliance_name", applianceName),
+		createApplianceNameCheck,
 		resource.TestCheckResourceAttr(resourceName, "primary_color", "#1a73e8"),
 		resource.TestCheckResourceAttr(resourceName, "secondary_color", "#ffffff"),
 	)
 	updateChecks := resource.ComposeAggregateTestCheckFunc(
 		resource.TestCheckResourceAttrSet(resourceName, "id"),
 		resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
-		resource.TestCheckResourceAttr(resourceName, "appliance_name", updatedApplianceName),
+		updateApplianceNameCheck,
 		resource.TestCheckResourceAttr(resourceName, "primary_color", "#0f62fe"),
 		resource.TestCheckResourceAttr(resourceName, "secondary_color", "#161616"),
 	)
@@ -248,6 +281,46 @@ resource "hpe_morpheus_setting_whitelabel" "images" {
 			{Config: withImages, ExpectNonEmptyPlan: false, PlanOnly: true},
 			{Config: withoutImages, Check: clearedChecks},
 			{Config: withoutImages, ExpectNonEmptyPlan: false, PlanOnly: true},
+		},
+	})
+}
+
+// TestAccMorpheusSettingWhitelabelApplianceNameRequiresMasterTenant_MORPH16546
+// verifies that a sub-tenant caller setting appliance_name is rejected at plan
+// time with a clear message, instead of Morpheus silently discarding the value.
+// It only runs as a sub-tenant; on the master tenant it skips (master callers
+// are allowed to set appliance_name). Non-parallel: whitelabel is a singleton.
+func TestAccMorpheusSettingWhitelabelApplianceNameRequiresMasterTenant_MORPH16546(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	if testhelpers.IsMasterTenant(t) {
+		t.Skip("appliance_name is settable by the master tenant; " +
+			"this negative test only applies to sub-tenant callers")
+	}
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resourceConfig, err := settingwhitelabel.RenderSettingWhitelabelConfig(t, map[string]string{
+		"ApplianceName": acctest.RandomWithPrefix(t.Name()),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), nil),
+		Steps: []resource.TestStep{
+			{
+				Config:      providerConfig + resourceConfig,
+				PlanOnly:    true,
+				ExpectError: regexp.MustCompile("master tenant"),
+			},
 		},
 	})
 }

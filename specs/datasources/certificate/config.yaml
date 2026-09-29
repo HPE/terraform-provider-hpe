@@ -12,7 +12,8 @@ certificate:
       computed_optional_required: computed_optional
       conflicts_with: ["name"]
     name:
-      description: The name of the certificate.
+      string_length_at_least: 1
+      description: The name of the certificate. Must not be empty.
       computed_optional_required: computed_optional
       conflicts_with: ["id"]
     account_id:

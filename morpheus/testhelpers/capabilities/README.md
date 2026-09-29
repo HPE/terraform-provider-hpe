@@ -18,7 +18,7 @@ go test ./morpheus/...
 To run all tests, explicitly enable all capabilities:
 
 ```bash
-export TF_ACC_CAPABILITIES="all,vmware,alletra,nsxt,nsxv,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="all,vmware,alletra,nsxt,nsxv,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible,master_tenant"
 go test ./morpheus/...
 ```
 
@@ -120,6 +120,12 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 |------------|-----------|-------------|
 | `PCE` | `pce` | A live PCE (Private Cloud Enterprise) instance reachable via GreenLake IAM. Gates the end-to-end `pce_identity` auth-flow test, which authenticates through GreenLake rather than the main appliance credentials. The test skips unless `TF_VAR_testacc_pce_identity_client_id`, `_client_secret`, `_issuer_url`, `_location`, `_space` and `TF_ACC_PCE_IDENTITY_CLOUD_NAME` are all set |
 
+### Tenancy
+
+| Capability | Env Value | Description |
+|------------|-----------|-------------|
+| `MasterTenant` | `master_tenant` | Master-tenant-only operations that no grantable role permission can enable for a subtenant (e.g. OsType creation, nominating a tenant's `parent_id`). Include it when the test credentials belong to the master tenant; omit it for subtenant runs so these tests skip instead of failing |
+
 ### Special Capabilities
 
 | Capability | Env Value | Description |
@@ -155,7 +161,7 @@ go test ./morpheus/...
 
 ```bash
 # Include all tests
-export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,kubernetes,ansible,master_tenant"
 go test ./morpheus/...
 ```
 
@@ -269,7 +275,7 @@ Exit codes:
 export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv"
 
 # Full test suite
-export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible"
+export TF_ACC_CAPABILITIES="vmware,alletra,nsxt,nsxv,all,hvm,affinity_group,aws,azure,gcp,kubernetes,ansible,master_tenant"
 
 # Debug: see which tests are being skipped
 export TF_ACC_CAPABILITIES_VERBOSE=1

@@ -98,10 +98,11 @@ func OsTypeDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the OS type",
-				MarkdownDescription: "The name of the OS type",
+				Description:         "The name of the OS type. Must not be empty.",
+				MarkdownDescription: "The name of the OS type. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"os_codename": schema.StringAttribute{

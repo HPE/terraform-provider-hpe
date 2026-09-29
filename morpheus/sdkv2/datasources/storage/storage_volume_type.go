@@ -1,4 +1,4 @@
-// (C) Copyright 2025 Hewlett Packard Enterprise Development LP
+// (C) Copyright 2025-2026 Hewlett Packard Enterprise Development LP
 
 package storage
 
@@ -45,6 +45,46 @@ func DataSourceStorageVolumeType() *schema.Resource {
 				Type:        schema.TypeString,
 				Description: "The category of the storage volume type. When set alongside name, the lookup is filtered to this category.",
 				Optional:    true,
+				Computed:    true,
+			},
+			"description": {
+				Type:        schema.TypeString,
+				Description: "The description of the storage volume type",
+				Computed:    true,
+			},
+			"enabled": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type is enabled",
+				Computed:    true,
+			},
+			"default_type": {
+				Type:        schema.TypeBool,
+				Description: "Whether this is a default storage volume type",
+				Computed:    true,
+			},
+			"has_datastore": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type is backed by a datastore",
+				Computed:    true,
+			},
+			"configurable_iops": {
+				Type:        schema.TypeBool,
+				Description: "Whether IOPS are configurable for the storage volume type",
+				Computed:    true,
+			},
+			"custom_size": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type supports a custom size",
+				Computed:    true,
+			},
+			"custom_label": {
+				Type:        schema.TypeBool,
+				Description: "Whether the storage volume type supports a custom label",
+				Computed:    true,
+			},
+			"display_order": {
+				Type:        schema.TypeInt,
+				Description: "The display order of the storage volume type",
 				Computed:    true,
 			},
 		},
@@ -104,7 +144,9 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 		if resp != nil && resp.StatusCode == 404 {
 			log.Printf("API 404: %s - %v", resp, err)
 
-			return nil
+			// MORPH-16205: a non-existent id/name must surface an error rather
+			// than silently returning no state.
+			return diag.Errorf("storage volume type not found (id=%d, name=%q)", id, name)
 		}
 
 		log.Printf("API FAILURE: %s - %v", resp, err)
@@ -133,6 +175,14 @@ func dataSourceStorageVolumeTypeRead(ctx context.Context, d *schema.ResourceData
 	d.Set("name", storageVolumeType.Name)
 	d.Set("code", storageVolumeType.Code)
 	d.Set("category", storageVolumeType.Category)
+	d.Set("description", storageVolumeType.Description)
+	d.Set("enabled", storageVolumeType.Enabled)
+	d.Set("default_type", storageVolumeType.DefaultType)
+	d.Set("has_datastore", storageVolumeType.HasDatastore)
+	d.Set("configurable_iops", storageVolumeType.ConfigurableIOPS)
+	d.Set("custom_size", storageVolumeType.CustomSize)
+	d.Set("custom_label", storageVolumeType.CustomLabel)
+	d.Set("display_order", storageVolumeType.DisplayOrder)
 
 	return diags
 }

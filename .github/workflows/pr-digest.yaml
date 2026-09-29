@@ -1,0 +1,129 @@
+# Copyright 2026 Hewlett Packard Enterprise Development LP
+
+name: Open PR digest
+
+# Posts a daily digest of this repo's open pull requests to Slack.
+#
+# Delivery is via a Slack Workflow Builder *webhook trigger* (a
+# https://hooks.slack.com/triggers/... URL), which needs no Slack app.
+# Note that a https://slack.com/shortcuts/... link trigger will NOT work:
+# link triggers can only be started from inside Slack.
+
+on:
+  schedule:
+    # cron is UTC only, so 08:00 Europe/Dublin needs both entries; the guard
+    # step below drops whichever one is not currently 08:00 local time.
+    - cron: '0 7 * * 1-5' # 08:00 IST (summer, UTC+1)
+    - cron: '0 8 * * 1-5' # 08:00 GMT (winter, UTC+0)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the digest instead of posting to Slack'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: pr-digest
+  cancel-in-progress: false
+
+env:
+  TZ_NAME: Europe/Dublin
+  MAX_PRS: '20'
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Guard to 08:00 ${{ env.TZ_NAME }}
+        id: guard
+        run: |
+          set -euo pipefail
+          hour=$(TZ="$TZ_NAME" date +%H)
+          if [ "${{ github.event_name }}" = 'schedule' ] && [ "$hour" != '08' ]; then
+            echo "Local time is ${hour}:00 in ${TZ_NAME}; not 08:00. Skipping."
+            echo 'skip=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "Proceeding (local hour ${hour}, event ${{ github.event_name }})."
+          fi
+
+      - name: Build and post digest
+        if: steps.guard.outputs.skip != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # github.event.inputs (not inputs) so this also resolves on schedule
+          # runs, where the workflow_dispatch input is absent; || false pins the
+          # scheduled default rather than leaving it empty.
+          DRY_RUN: ${{ github.event.inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+
+          # Drop drafts only. Bot PRs (dependabot, renovate, ...) are included
+          # deliberately: a dependency bump still needs a human to review and
+          # merge it, and those are exactly the ones that rot unnoticed.
+          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+                  --json title,url,isDraft \
+                | jq -c '[ .[] | select(.isDraft | not) ]')
+
+          count=$(jq -r 'length' <<<"$prs")
+
+          if [ "$count" -eq 0 ]; then
+            body='None open'
+          else
+            body=$(jq -r --argjson max "${MAX_PRS}" '
+                     length as $n
+                     | (.[:$max] | map("• \(.title) — \(.url)") | join("\n"))
+                       + (if $n > $max
+                          then "\n• …and \($n - $max) more"
+                          else "" end)
+                   ' <<<"$prs")
+          fi
+
+          # All headings, bold and blockquotes live in the Slack "Send a
+          # message" composer, because Workflow Builder ESCAPES the contents of
+          # a variable: *bold*, _italic_, <url|label>, <url> and > blockquote
+          # all render as literal characters when passed through one. Only the
+          # PR lines travel as variables, so they must stay plain text with
+          # bare URLs. Do not reintroduce mrkdwn here.
+          #
+          # Slack rejects the request if a variable declared on the trigger is
+          # missing from the body, so these keys must match the trigger exactly:
+          # prs_repo, prs_list, prs_count. The repo travels as a variable, so a
+          # single Slack webhook/trigger can serve every repo that posts to it.
+          payload=$(jq -n \
+                      --arg repo  "$GITHUB_REPOSITORY" \
+                      --arg list  "$body" \
+                      --arg count "$count" \
+                      '{prs_repo: $repo, prs_list: $list, prs_count: $count}')
+
+          jq -r 'to_entries[] | "\(.key):\n\(.value)\n"' <<<"$payload"
+
+          if [ "${DRY_RUN:-false}" = 'true' ]; then
+            echo 'Dry run - not posting to Slack.'
+            exit 0
+          fi
+
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo '::error::SLACK_WEBHOOK_URL is not set. Add it under' \
+                 'Settings > Secrets and variables > Actions.'
+            exit 1
+          fi
+
+          case "$SLACK_WEBHOOK_URL" in
+            https://hooks.slack.com/triggers/*) ;;
+            *)
+              echo '::error::SLACK_WEBHOOK_URL must be a Workflow Builder webhook' \
+                   'trigger (https://hooks.slack.com/triggers/...). A' \
+                   'https://slack.com/shortcuts/... link trigger cannot be' \
+                   'started from outside Slack.'
+              exit 1
+              ;;
+          esac
+
+          curl -sS --fail-with-body -X POST \
+               -H 'Content-Type: application/json' \
+               --data "$payload" "$SLACK_WEBHOOK_URL"

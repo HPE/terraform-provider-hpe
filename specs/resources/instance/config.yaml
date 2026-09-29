@@ -143,6 +143,20 @@ instance:
         computed_optional_required: computed_optional
         nested_object:
           attributes:
+          - name: actual_size
+            int64:
+              computed_optional_required: computed
+              description: |-
+                The size in GB that Morpheus actually provisioned for this volume.
+
+                This can exceed `size`. A request smaller than the image's minimum disk
+                is rejected outright, but a request that clears the minimum while falling
+                short of the image's own size is rounded up to fit — so asking for 10GB
+                with an image occupying a little over 10GB yields an 11GB volume.
+                `size` keeps the request; this reports what exists.
+
+                This is also where an out-of-band resize becomes visible: a disk grown
+                outside Terraform is reflected here on the next refresh.
           - name: controller_mount_point
             string:
               computed_optional_required: computed_optional
@@ -178,8 +192,22 @@ instance:
               description: If set to false then a non-root LV will be created.
           - name: size
             int64:
-              computed_optional_required: optional
-              description: Size of the LV to be created in GBs.  Uses default from service plan.
+              computed_optional_required: computed_optional
+              description: |-
+                Size of the LV to be created in GBs.  Uses default from service plan.
+
+                This records the size that was *requested*. Morpheus rounds a request up
+                when the image needs more room, in which case `actual_size` reports the
+                volume that was really created and this attribute is left as the request;
+                a difference between the two is normal and produces no plan diff. Note a
+                request below the image's minimum disk is rejected rather than rounded.
+                Lowering this below the size already provisioned has no effect, as the
+                platform cannot shrink a disk in place.
+              plan_modifiers:
+              - custom:
+                  imports:
+                  - path: github.com/HPE/terraform-provider-hpe/utils/modifiers
+                  schema_definition: modifiers.RetainWhenStateSatisfiesRequest()
           - name: size_id
             int64:
               computed_optional_required: optional
@@ -506,7 +534,7 @@ instance:
     resourcePoolId:
       string:
         computed_optional_required: required
-        description: The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+        description: The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
     securityGroups:
       list_nested:
         computed_optional_required: required
@@ -534,6 +562,19 @@ instance:
 
           On HVM an empty group is accepted, but placement is only enforced
           when the cluster has dynamic placement enabled.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.RequiresReplace()
+    virtualImageId:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          The id of the virtual image to provision the instance from.
+          Overrides the image configured on the instance type layout, so it is
+          only needed when the layout default is not the wanted image.
+          Create-only: changing it replaces the instance.
         plan_modifiers:
         - custom:
             imports:
@@ -573,6 +614,7 @@ instance:
     - template-resourcePoolId: config_hvm.resource_pool_id
     - template-kvmHostId: config_hvm.kvm_host_id
     - template-affinityGroupId: config_hvm.affinity_group_id
+    - template-virtualImageId: config_hvm.image_id
     - template-configVMware: config_vmware
     - template-createUser: config_vmware.create_user
     - template-noAgent: config_vmware.no_agent
@@ -580,6 +622,7 @@ instance:
     - template-resourcePoolId: config_vmware.resource_pool_id
     - template-vmwareFolderID: config_vmware.vmware_folder_id
     - template-affinityGroupId: config_vmware.affinity_group_id
+    - template-virtualImageId: config_vmware.image_id
     - template-configAWS: config_aws
     - template-availabilityId: config_aws.availability_zone_id
     - template-instanceProfile: config_aws.instance_profile
@@ -667,6 +710,15 @@ instance:
     config_azure:
       computed_optional_required: optional
       requires_replace: true
+    config_hvm.resource_pool_id:
+      description: |-
+        The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the
+        pool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source
+        as `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the
+        cloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`
+        cannot find it by name. A network belongs to the pool of the cluster it was discovered on; a
+        pool that does not contain the requested network fails with `Invalid network`.
+      computed_optional_required: required
     config_azure.resource_pool_id:
       description: The id of the Azure resource group to provision the instance in, can be prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its ID with 'poolGroup-'.
       computed_optional_required: required

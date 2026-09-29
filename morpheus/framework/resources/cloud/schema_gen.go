@@ -671,8 +671,8 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the cloud (private or public)",
-				MarkdownDescription: "The visibility of the cloud (private or public)",
+				Description:         "The visibility of the cloud (private or public). Setting \"public\" requires the master tenant.",
+				MarkdownDescription: "The visibility of the cloud (private or public). Setting \"public\" requires the master tenant.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"private",

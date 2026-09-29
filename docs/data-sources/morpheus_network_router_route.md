@@ -36,7 +36,7 @@ data "hpe_morpheus_network_router_route" "example" {
 ### Optional
 
 - `id` (Number) The ID of the Network router route.
-- `name` (String) The name of the Network router route.
+- `name` (String) The name of the Network router route. Must not be empty.
 
 ### Read-Only
 

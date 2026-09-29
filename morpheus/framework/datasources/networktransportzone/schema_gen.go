@@ -64,10 +64,11 @@ func NetworkTransportZoneDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network transport zone",
-				MarkdownDescription: "The name of the network transport zone",
+				Description:         "The name of the network transport zone. Must not be empty.",
+				MarkdownDescription: "The name of the network transport zone. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_server_id": schema.Int64Attribute{

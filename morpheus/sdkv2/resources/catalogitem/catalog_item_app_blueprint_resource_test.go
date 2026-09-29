@@ -27,11 +27,13 @@ func TestAccMorpheusCatalogItemAppBlueprintExampleOk(t *testing.T) {
 	}
 
 	providerConfig := testhelpers.ProviderBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := catalogitem.RenderCatalogItemAppBlueprintConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -119,7 +121,7 @@ func TestAccMorpheusCatalogItemAppBlueprintExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_catalog_item_app_blueprint.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 	}
 
@@ -138,6 +140,19 @@ func TestAccMorpheusCatalogItemAppBlueprintExampleOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+			// Import: verifies visibility now round-trips on Read (MORPH-8541).
+			// logo_image_path / dark_logo_image_path are write-only upload
+			// inputs (the GET returns a transformed storage URL, not the
+			// supplied file path), so they cannot round-trip and are ignored.
+			{
+				ResourceName:      "hpe_morpheus_catalog_item_app_blueprint.tf_example_app_blueprint_catalog_item",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"logo_image_path",
+					"dark_logo_image_path",
+				},
 			},
 		},
 	})

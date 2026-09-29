@@ -58,8 +58,15 @@ func (dst *UpdateCatalogItemTypeRequestCatalogItemType) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf
 	err = json.Unmarshal(data, &dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf)
 	if err == nil {
-		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf, _ := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf)
-		if string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf) == "{}" { // empty struct
+		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf, merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf)
+		var zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf
+		jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf, _ := json.Marshal(&zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf != nil || string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf) == "{}" || (len(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf) > 0 && jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf[0] == '{' && string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf) == string(jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf)) {
 			dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf = nil
 		} else {
 			return nil // data stored in dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf, return on the first match
@@ -71,8 +78,15 @@ func (dst *UpdateCatalogItemTypeRequestCatalogItemType) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1
 	err = json.Unmarshal(data, &dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1)
 	if err == nil {
-		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1, _ := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1)
-		if string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1) == "{}" { // empty struct
+		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1, merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1 := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1)
+		var zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1 UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1
+		jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1, _ := json.Marshal(&zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1 != nil || string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1) == "{}" || (len(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1) > 0 && jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1[0] == '{' && string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1) == string(jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1)) {
 			dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf1, return on the first match
@@ -84,8 +98,15 @@ func (dst *UpdateCatalogItemTypeRequestCatalogItemType) UnmarshalJSON(data []byt
 	// try to unmarshal JSON data into UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2
 	err = json.Unmarshal(data, &dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)
 	if err == nil {
-		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2, _ := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)
-		if string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2) == "{}" { // empty struct
+		jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2, merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2 := json.Marshal(dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)
+		var zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2 UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2
+		jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2, _ := json.Marshal(&zeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2 != nil || string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2) == "{}" || (len(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2) > 0 && jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2[0] == '{' && string(jsonUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2) == string(jsonZeroUpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)) {
 			dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2, return on the first match
@@ -94,6 +115,12 @@ func (dst *UpdateCatalogItemTypeRequestCatalogItemType) UnmarshalJSON(data []byt
 		dst.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(UpdateCatalogItemTypeRequestCatalogItemType)")
 }
 
@@ -111,7 +138,7 @@ func (src UpdateCatalogItemTypeRequestCatalogItemType) MarshalJSON() ([]byte, er
 		return json.Marshal(&src.UpdateCatalogItemTypeRequestCatalogItemTypeAnyOf2)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableUpdateCatalogItemTypeRequestCatalogItemType struct {

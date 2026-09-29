@@ -98,8 +98,8 @@ func NetworkGroupResourceSchema(ctx context.Context) schema.Schema {
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the network group (public or private).",
-				MarkdownDescription: "The visibility of the network group (public or private).",
+				Description:         "The visibility of the network group (public or private). Setting \"public\" requires the master tenant.",
+				MarkdownDescription: "The visibility of the network group (public or private). Setting \"public\" requires the master tenant.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

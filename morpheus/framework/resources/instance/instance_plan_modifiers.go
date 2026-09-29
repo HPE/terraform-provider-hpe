@@ -81,10 +81,16 @@ var restoreRules = []restoreRule{
 		triggers:  []string{"network_interfaces"},
 	},
 
-	// Volume identity is stable unless the volumes are reconfigured.
+	// Volume identity is stable unless the volumes are reconfigured, as is the
+	// size the platform actually provisioned. actual_size is gated on the same
+	// trigger, so a change to volumes leaves it unknown and whatever the resize
+	// produces is accepted; an unrelated edit carries it forward rather than
+	// showing "(known after apply)" for a disk nobody touched. Drift is
+	// unaffected — an out-of-band resize is picked up by the refresh that
+	// precedes the plan, not by this.
 	{
 		attribute: "volumes",
-		fields:    []string{"id"},
+		fields:    []string{"id", "actual_size"},
 		triggers:  []string{"volumes"},
 	},
 

@@ -26,8 +26,8 @@ func RenderResourcePoolGroupConfig(t *testing.T, overrides map[string]string) (s
 		"AllGroupAccess":     "true",
 		"GroupAccessGroupId": "2",
 		"GroupAccessDefault": "true",
-		"Visibility":         "public",
-		"TenantIds":          "[1, 2]",
+		"Visibility":         "private",
+		"TenantIds":          "[" + testhelpers.WhoamiTenantIDRef + ", 2]",
 	}
 
 	// Apply overrides to defaults

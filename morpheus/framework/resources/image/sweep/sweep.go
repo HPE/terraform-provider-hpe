@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"sync"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	testsweep "github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/sweep"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/getsafe"
+	"github.com/HPE/terraform-provider-hpe/utils/paging"
 )
 
 const sweeperName = "hpe_morpheus_image"
@@ -27,12 +29,48 @@ func init() {
 			*http.Response,
 			error,
 		) {
-			resp, hresp, err := client.LibraryAPI.ListVirtualImages(ctx).Execute()
-			if resp == nil {
-				return nil, hresp, err
-			}
+			// The caller distinguishes "nothing to sweep" from "the sweep
+			// failed" by the list status, so one response has to come back
+			// with the items.
+			//
+			// Only the first page's response is kept. Later pages are fetched
+			// concurrently, so assigning from every one of them would be a
+			// data race — and it would gain nothing: a 403 or 404 arrives on
+			// the first request, before any wave is launched, and every
+			// response after it on a successful walk is a 200.
+			var (
+				firstResp *http.Response
+				once      sync.Once
+			)
 
-			return getsafe.Get(&resp.VirtualImages), hresp, err
+			items, err := paging.Collect(
+				ctx,
+				func(ctx context.Context, offset, max int64) (
+					[]sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner,
+					int64,
+					error,
+				) {
+					resp, hresp, err := client.LibraryAPI.ListVirtualImages(ctx).
+						Max(max).
+						Offset(offset).
+						Execute()
+
+					once.Do(func() { firstResp = hresp })
+
+					if resp == nil {
+						return nil, 0, err
+					}
+
+					var total int64
+					if resp.Meta != nil && resp.Meta.Total != nil {
+						total = *resp.Meta.Total
+					}
+
+					return getsafe.Get(&resp.VirtualImages), total, err
+				},
+			)
+
+			return items, firstResp, err
 		},
 		// Is this a test image?
 		func(item sdk.ListVirtualImages200ResponseAllOfVirtualImagesInner) bool {

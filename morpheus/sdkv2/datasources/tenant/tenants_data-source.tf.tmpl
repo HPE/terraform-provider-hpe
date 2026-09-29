@@ -1,7 +1,0 @@
-data "hpe_morpheus_tenants" "example" {
-  sort_ascending = {{.SortAscending}}
-  filter {
-    name   = "{{.Name}}"
-    values = [{{.Values}}]
-  }
-}

@@ -40,7 +40,7 @@ data "hpe_morpheus_load_balancer_profile" "example" {
 ### Optional
 
 - `id` (Number) The ID of the load balancer profile. One of id or name is required.
-- `name` (String) The name of the load balancer profile. One of id or name is required.
+- `name` (String) The name of the load balancer profile. One of id or name is required. Must not be empty.
 
 ### Read-Only
 

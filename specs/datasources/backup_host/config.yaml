@@ -22,7 +22,8 @@ backup_host:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
-      description: Name of the Host Backup
+      string_length_at_least: 1
+      description: Name of the Host Backup. Must not be empty.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     backup_provider:

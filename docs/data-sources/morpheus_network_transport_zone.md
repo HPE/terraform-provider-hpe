@@ -40,7 +40,7 @@ data "hpe_morpheus_network_transport_zone" "example" {
 ### Optional
 
 - `id` (Number) The ID of the network transport zone
-- `name` (String) The name of the network transport zone
+- `name` (String) The name of the network transport zone. Must not be empty.
 
 ### Read-Only
 

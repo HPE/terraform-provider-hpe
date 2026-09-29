@@ -20,6 +20,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/environment"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/group"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/image"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/images"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instance"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancesnapshot"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/instancetypelayout"
@@ -57,7 +58,10 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolume"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/storagevolumes"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/subnettype"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/tenant"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/tenants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/user"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/whoami"
 
 	// missing-data-sources — new data sources (Groups A/B/C)
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/datasources/backuphost"
@@ -109,6 +113,7 @@ func (p *MorpheusProvider) DataSources(
 		instance.NewDataSource,
 		instancetypelayout.NewDataSource,
 		image.NewDataSource,
+		images.NewDataSource,
 		loadbalancer.NewDataSource,
 		loadbalancermonitor.NewDataSource,
 		loadbalancerpool.NewDataSource,
@@ -134,7 +139,11 @@ func (p *MorpheusProvider) DataSources(
 		storageservers.NewDataSource,
 		storagevolume.NewDataSource,
 		storagevolumes.NewDataSource,
+		// tenant data sources ported from sdkv2 (MORPH-16405 / MORPH-17438)
+		tenant.NewDataSource,
+		tenants.NewDataSource,
 		user.NewDataSource,
+		whoami.NewDataSource,
 		// hpegl VMaaS parity data sources
 		networkserver.NewDataSource,
 		networkedgecluster.NewDataSource,

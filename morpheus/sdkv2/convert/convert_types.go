@@ -43,7 +43,7 @@ func BoolValue(v *bool) bool {
 func BoolSlice(src []bool) []*bool {
 	dst := make([]*bool, len(src))
 	for i := 0; i < len(src); i++ {
-		dst[i] = &(src[i])
+		dst[i] = &src[i]
 	}
 
 	return dst
@@ -55,7 +55,7 @@ func BoolValueSlice(src []*bool) []bool {
 	dst := make([]bool, len(src))
 	for i := 0; i < len(src); i++ {
 		if src[i] != nil {
-			dst[i] = *(src[i])
+			dst[i] = *src[i]
 		}
 	}
 

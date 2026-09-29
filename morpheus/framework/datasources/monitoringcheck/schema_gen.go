@@ -102,10 +102,11 @@ func MonitoringCheckDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the monitoring check.",
-				MarkdownDescription: "The name of the monitoring check.",
+				Description:         "The name of the monitoring check. Must not be empty.",
+				MarkdownDescription: "The name of the monitoring check. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"severity": schema.StringAttribute{

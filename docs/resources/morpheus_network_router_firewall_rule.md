@@ -50,9 +50,9 @@ appliance.
 - `direction` (String) Direction (ingress or egress)
 - `enabled` (Boolean) Whether the firewall rule is enabled
 - `policy` (String) Policy action (accept, block, reject)
-- `port_range` (String) Port range
+- `port_range` (String) Port range (for example "80" or "8000-8080"). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.
 - `priority` (Number) Priority of the firewall rule
-- `protocol` (String) Protocol
+- `protocol` (String) Protocol (for example tcp, udp, icmp). Accepted on create and update but not reliably returned by the Morpheus API, so the configured value is preserved in state and cannot be used for drift detection. On NSX-T routers the effective service is selected via `application`.
 - `source_type` (String) Source match type (for example cidr, group, tier, all)
 
 ### Read-Only

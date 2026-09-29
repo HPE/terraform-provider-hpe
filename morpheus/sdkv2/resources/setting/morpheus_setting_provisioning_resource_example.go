@@ -11,22 +11,24 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate../../../../bin/render -out examples/resources/morpheus_setting_provisioning/resource.tf morpheus_setting_provisioning_resource.tf.tmpl AllowZoneSelection false AllowHostSelection false RequireEnvironments false ShowPricing true HideDatastoreStats true CrossTenantNamingPolicies false CloudinitUsername cloudinit CloudinitPassword Pa55w0rd! WindowsPassword Pa55w0rd! PxeRootPassword Pa55w0rd!
+//go:generate../../../../bin/render -out examples/resources/morpheus_setting_provisioning/resource.tf morpheus_setting_provisioning_resource.tf.tmpl AllowZoneSelection false AllowHostSelection false RequireEnvironments false ShowPricing true HideDatastoreStats true CrossTenantNamingPolicies false ReuseSequence false ShowConsoleKeyboardSettings false CloudinitUsername cloudinit CloudinitPassword Pa55w0rd! WindowsPassword Pa55w0rd! PxeRootPassword Pa55w0rd!
 
 func RenderSettingProvisioningConfig(t *testing.T, overrides map[string]string) (string, error) {
 	t.Helper()
 
 	defaults := map[string]string{
-		"AllowZoneSelection":        "false",
-		"AllowHostSelection":        "false",
-		"RequireEnvironments":       "false",
-		"ShowPricing":               "true",
-		"HideDatastoreStats":        "true",
-		"CrossTenantNamingPolicies": "false",
-		"CloudinitUsername":         "cloudinit",
-		"CloudinitPassword":         "Pa55w0rd!",
-		"WindowsPassword":           "Pa55w0rd!",
-		"PxeRootPassword":           "Pa55w0rd!",
+		"AllowZoneSelection":          "false",
+		"AllowHostSelection":          "false",
+		"RequireEnvironments":         "false",
+		"ShowPricing":                 "true",
+		"HideDatastoreStats":          "true",
+		"CrossTenantNamingPolicies":   "false",
+		"ReuseSequence":               "false",
+		"ShowConsoleKeyboardSettings": "false",
+		"CloudinitUsername":           "cloudinit",
+		"CloudinitPassword":           "Pa55w0rd!",
+		"WindowsPassword":             "Pa55w0rd!",
+		"PxeRootPassword":             "Pa55w0rd!",
 	}
 
 	for key, value := range overrides {

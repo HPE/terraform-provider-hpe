@@ -28,7 +28,7 @@ data "hpe_morpheus_container_script" "example" {
 ### Optional
 
 - `id` (Number) The ID of the library container script.
-- `name` (String) The name of the library container script.
+- `name` (String) The name of the library container script. Must not be empty.
 
 ### Read-Only
 

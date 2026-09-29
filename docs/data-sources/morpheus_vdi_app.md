@@ -28,7 +28,7 @@ data "hpe_morpheus_vdi_app" "example" {
 ### Optional
 
 - `id` (Number) The ID of the VDI app.
-- `name` (String) The name of the VDI app.
+- `name` (String) The name of the VDI app. Must not be empty.
 
 ### Read-Only
 

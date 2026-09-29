@@ -36,7 +36,7 @@ data "hpe_morpheus_cluster_namespace" "example" {
 ### Optional
 
 - `id` (Number) The ID of the cluster namespace.
-- `name` (String) The name of the cluster namespace.
+- `name` (String) The name of the cluster namespace. Must not be empty.
 
 ### Read-Only
 

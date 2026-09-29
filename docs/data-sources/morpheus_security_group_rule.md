@@ -36,7 +36,7 @@ data "hpe_morpheus_security_group_rule" "example" {
 ### Optional
 
 - `id` (Number) The ID of the security group rule.
-- `name` (String) The name of the security group rule.
+- `name` (String) The name of the security group rule. Must not be empty.
 
 ### Read-Only
 

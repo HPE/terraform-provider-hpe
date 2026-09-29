@@ -8,6 +8,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 )
@@ -99,9 +102,9 @@ func TestDecideAllowsAtOrAboveConstraint(t *testing.T) {
 }
 
 // TestDecideFailsOpenWhenVersionUnknown is the deliberate policy choice: if the
-// appliance version cannot be read — most plausibly because the API token lacks
-// the admin-health permission that GET /api/health requires — the gate steps
-// aside rather than blocking a possibly healthy appliance.
+// appliance version cannot be read — a proxy blocking GET /api/whoami, a
+// transient outage, or a response the SDK cannot decode — the gate steps aside
+// rather than blocking a possibly healthy appliance.
 func TestDecideFailsOpenWhenVersionUnknown(t *testing.T) {
 	ctx := context.Background()
 
@@ -161,6 +164,133 @@ func TestAffinityGroupMinVersionIsDocumentedValue(t *testing.T) {
 			"AffinityGroupMinVersion = %q, want %q; the affinity group doc "+
 				"templates state 8.0.10 and must be updated together with this",
 			constants.AffinityGroupMinVersion, ">= 8.0.10",
+		)
+	}
+}
+
+const parentFeature = "Nominated parent tenants (parent_id)"
+
+// TestDecideAttributeBlocksBelowConstraint: the attribute-scoped gate must
+// refuse exactly like Decide, and the refusal must be pinned to the attribute
+// so Terraform highlights parent_id rather than the whole resource block.
+func TestDecideAttributeBlocksBelowConstraint(t *testing.T) {
+	ctx := context.Background()
+	attr := path.Root("parent_id")
+
+	for _, build := range []string{"8.0.13", "8.0.13.2", "8.0.10", "7.0.11"} {
+		t.Run(build, func(t *testing.T) {
+			diags := versioncheck.DecideAttribute(
+				ctx, attr, parentFeature, constants.TenantParentMinVersion,
+				mustParse(t, build), nil,
+			)
+
+			if !diags.HasError() {
+				t.Fatalf("DecideAttribute(%q, %q) allowed the operation, want an error",
+					build, constants.TenantParentMinVersion)
+			}
+
+			if len(diags) != 1 {
+				t.Fatalf("DecideAttribute(%q) produced %d diagnostics, want 1", build, len(diags))
+			}
+
+			withPath, ok := diags[0].(diag.DiagnosticWithPath)
+			if !ok {
+				t.Fatalf("diagnostic %T does not carry an attribute path", diags[0])
+			}
+
+			if !withPath.Path().Equal(attr) {
+				t.Errorf("diagnostic path = %s, want %s", withPath.Path(), attr)
+			}
+
+			detail := diags[0].Detail()
+
+			if !strings.Contains(detail, constants.TenantParentMinVersion) {
+				t.Errorf("detail %q does not name the required version %q",
+					detail, constants.TenantParentMinVersion)
+			}
+
+			if !strings.Contains(detail, build) {
+				t.Errorf("detail %q does not name the appliance version %q", detail, build)
+			}
+
+			if !strings.Contains(diags[0].Summary(), parentFeature) {
+				t.Errorf("summary %q does not name the feature %q",
+					diags[0].Summary(), parentFeature)
+			}
+		})
+	}
+}
+
+// TestDecideAttributeAllowsAtOrAboveConstraint covers the 8.1.0 boundary and
+// the releases the tenant hierarchy has shipped in since.
+func TestDecideAttributeAllowsAtOrAboveConstraint(t *testing.T) {
+	ctx := context.Background()
+
+	for _, build := range []string{"8.1.0", "8.1.0.3", "8.1.2", "9.0.0", "9.0.2.18", "9.1.0"} {
+		t.Run(build, func(t *testing.T) {
+			diags := versioncheck.DecideAttribute(
+				ctx, path.Root("parent_id"), parentFeature, constants.TenantParentMinVersion,
+				mustParse(t, build), nil,
+			)
+
+			if diags.HasError() {
+				t.Errorf("DecideAttribute(%q, %q) blocked the operation: %v",
+					build, constants.TenantParentMinVersion, diags)
+			}
+		})
+	}
+}
+
+// TestDecideAttributeFailsOpen: the attribute gate inherits Decide's fail-open
+// policy — an unreadable version or a malformed constraint never refuses.
+func TestDecideAttributeFailsOpen(t *testing.T) {
+	ctx := context.Background()
+	attr := path.Root("parent_id")
+
+	cases := []struct {
+		name       string
+		constraint string
+		version    *versioncheck.Version
+		lookupErr  error
+	}{
+		{
+			name:       "lookup failed",
+			constraint: constants.TenantParentMinVersion,
+			lookupErr:  errors.New("query appliance version: 403 Forbidden"),
+		},
+		{
+			name:       "no version and no error",
+			constraint: constants.TenantParentMinVersion,
+		},
+		{
+			name:       "malformed constraint",
+			constraint: "not-a-constraint",
+			version:    mustParse(t, "8.0.13"),
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			diags := versioncheck.DecideAttribute(
+				ctx, attr, parentFeature, tc.constraint, tc.version, tc.lookupErr,
+			)
+
+			if len(diags) != 0 {
+				t.Errorf("DecideAttribute fail-open case produced diagnostics, want none: %v", diags)
+			}
+		})
+	}
+}
+
+// TestTenantParentMinVersionIsDocumentedValue guards the number quoted in the
+// tenant schema descriptions and doc template ("Morpheus 8.1.0 or later"). If
+// the gate moves, this fails and the descriptions must move with it.
+func TestTenantParentMinVersionIsDocumentedValue(t *testing.T) {
+	if constants.TenantParentMinVersion != ">= 8.1.0" {
+		t.Errorf(
+			"TenantParentMinVersion = %q, want %q; the tenant schema descriptions "+
+				"and doc template state 8.1.0 and must be updated together with this",
+			constants.TenantParentMinVersion, ">= 8.1.0",
 		)
 	}
 }

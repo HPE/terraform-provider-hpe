@@ -58,8 +58,15 @@ func (dst *GetJobs200ResponseAllOfJob) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GetJobs200ResponseAllOfJobAnyOf
 	err = json.Unmarshal(data, &dst.GetJobs200ResponseAllOfJobAnyOf)
 	if err == nil {
-		jsonGetJobs200ResponseAllOfJobAnyOf, _ := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf)
-		if string(jsonGetJobs200ResponseAllOfJobAnyOf) == "{}" { // empty struct
+		jsonGetJobs200ResponseAllOfJobAnyOf, merrGetJobs200ResponseAllOfJobAnyOf := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf)
+		var zeroGetJobs200ResponseAllOfJobAnyOf GetJobs200ResponseAllOfJobAnyOf
+		jsonZeroGetJobs200ResponseAllOfJobAnyOf, _ := json.Marshal(&zeroGetJobs200ResponseAllOfJobAnyOf)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGetJobs200ResponseAllOfJobAnyOf != nil || string(jsonGetJobs200ResponseAllOfJobAnyOf) == "{}" || (len(jsonGetJobs200ResponseAllOfJobAnyOf) > 0 && jsonGetJobs200ResponseAllOfJobAnyOf[0] == '{' && string(jsonGetJobs200ResponseAllOfJobAnyOf) == string(jsonZeroGetJobs200ResponseAllOfJobAnyOf)) {
 			dst.GetJobs200ResponseAllOfJobAnyOf = nil
 		} else {
 			return nil // data stored in dst.GetJobs200ResponseAllOfJobAnyOf, return on the first match
@@ -71,8 +78,15 @@ func (dst *GetJobs200ResponseAllOfJob) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GetJobs200ResponseAllOfJobAnyOf1
 	err = json.Unmarshal(data, &dst.GetJobs200ResponseAllOfJobAnyOf1)
 	if err == nil {
-		jsonGetJobs200ResponseAllOfJobAnyOf1, _ := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf1)
-		if string(jsonGetJobs200ResponseAllOfJobAnyOf1) == "{}" { // empty struct
+		jsonGetJobs200ResponseAllOfJobAnyOf1, merrGetJobs200ResponseAllOfJobAnyOf1 := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf1)
+		var zeroGetJobs200ResponseAllOfJobAnyOf1 GetJobs200ResponseAllOfJobAnyOf1
+		jsonZeroGetJobs200ResponseAllOfJobAnyOf1, _ := json.Marshal(&zeroGetJobs200ResponseAllOfJobAnyOf1)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGetJobs200ResponseAllOfJobAnyOf1 != nil || string(jsonGetJobs200ResponseAllOfJobAnyOf1) == "{}" || (len(jsonGetJobs200ResponseAllOfJobAnyOf1) > 0 && jsonGetJobs200ResponseAllOfJobAnyOf1[0] == '{' && string(jsonGetJobs200ResponseAllOfJobAnyOf1) == string(jsonZeroGetJobs200ResponseAllOfJobAnyOf1)) {
 			dst.GetJobs200ResponseAllOfJobAnyOf1 = nil
 		} else {
 			return nil // data stored in dst.GetJobs200ResponseAllOfJobAnyOf1, return on the first match
@@ -84,8 +98,15 @@ func (dst *GetJobs200ResponseAllOfJob) UnmarshalJSON(data []byte) error {
 	// try to unmarshal JSON data into GetJobs200ResponseAllOfJobAnyOf2
 	err = json.Unmarshal(data, &dst.GetJobs200ResponseAllOfJobAnyOf2)
 	if err == nil {
-		jsonGetJobs200ResponseAllOfJobAnyOf2, _ := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf2)
-		if string(jsonGetJobs200ResponseAllOfJobAnyOf2) == "{}" { // empty struct
+		jsonGetJobs200ResponseAllOfJobAnyOf2, merrGetJobs200ResponseAllOfJobAnyOf2 := json.Marshal(dst.GetJobs200ResponseAllOfJobAnyOf2)
+		var zeroGetJobs200ResponseAllOfJobAnyOf2 GetJobs200ResponseAllOfJobAnyOf2
+		jsonZeroGetJobs200ResponseAllOfJobAnyOf2, _ := json.Marshal(&zeroGetJobs200ResponseAllOfJobAnyOf2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrGetJobs200ResponseAllOfJobAnyOf2 != nil || string(jsonGetJobs200ResponseAllOfJobAnyOf2) == "{}" || (len(jsonGetJobs200ResponseAllOfJobAnyOf2) > 0 && jsonGetJobs200ResponseAllOfJobAnyOf2[0] == '{' && string(jsonGetJobs200ResponseAllOfJobAnyOf2) == string(jsonZeroGetJobs200ResponseAllOfJobAnyOf2)) {
 			dst.GetJobs200ResponseAllOfJobAnyOf2 = nil
 		} else {
 			return nil // data stored in dst.GetJobs200ResponseAllOfJobAnyOf2, return on the first match
@@ -94,6 +115,12 @@ func (dst *GetJobs200ResponseAllOfJob) UnmarshalJSON(data []byte) error {
 		dst.GetJobs200ResponseAllOfJobAnyOf2 = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(GetJobs200ResponseAllOfJob)")
 }
 
@@ -111,7 +138,7 @@ func (src GetJobs200ResponseAllOfJob) MarshalJSON() ([]byte, error) {
 		return json.Marshal(&src.GetJobs200ResponseAllOfJobAnyOf2)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableGetJobs200ResponseAllOfJob struct {

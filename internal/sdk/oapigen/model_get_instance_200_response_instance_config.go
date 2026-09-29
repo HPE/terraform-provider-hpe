@@ -169,7 +169,7 @@ func (o GetInstance200ResponseInstanceConfig) ToMap() (map[string]interface{}, e
 	if !IsNil(o.MemoryDisplay) {
 		toSerialize["memoryDisplay"] = o.MemoryDisplay
 	}
-	if !IsNil(o.Expose) {
+	if o.Expose != nil {
 		toSerialize["expose"] = o.Expose
 	}
 	if !IsNil(o.CreateBackup) {

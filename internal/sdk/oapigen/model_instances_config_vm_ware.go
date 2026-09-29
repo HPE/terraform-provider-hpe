@@ -36,6 +36,8 @@ type InstancesConfigVMWare struct {
 	VmwareFolderId *string `json:"vmwareFolderId,omitempty"`
 	// Create user
 	CreateUser NullableBool `json:"createUser,omitempty"`
+	// The id of the virtual image to provision the instance from. Takes precedence over the image configured on the instance type layout, and over `template`.
+	ImageId *int64 `json:"imageId,omitempty"`
 	// Image ID. This is the ID of a Virtual Image.
 	Template             *int64                 `json:"template,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -76,6 +78,9 @@ func (o InstancesConfigVMWare) ToMap() (map[string]interface{}, error) {
 	}
 	if o.CreateUser.IsSet() {
 		toSerialize["createUser"] = o.CreateUser.Get()
+	}
+	if !IsNil(o.ImageId) {
+		toSerialize["imageId"] = o.ImageId
 	}
 	if !IsNil(o.Template) {
 		toSerialize["template"] = o.Template

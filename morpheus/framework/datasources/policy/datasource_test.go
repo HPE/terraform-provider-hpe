@@ -743,7 +743,7 @@ resource "hpe_morpheus_group" "test" {
 
 resource "hpe_morpheus_cloud" "test" {
   name = "` + cloudName + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id = hpe_morpheus_group.test.id
   code = "` + cloudName + `"
   cloud_type_code = "standard"
@@ -933,11 +933,11 @@ data "hpe_morpheus_policy" "user_policy" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 			},
 			{
-				Config:             providerConfig + dependencyConfig + resourceConfig + dataSourceConfig,
+				Config:             providerConfig + testhelpers.WhoamiBlock() + dependencyConfig + resourceConfig + dataSourceConfig,
 				ExpectNonEmptyPlan: false,
 				Check:              checkFn,
 			},

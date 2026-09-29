@@ -48,6 +48,25 @@ type Price struct {
 	Account interface{} `json:"account"`
 }
 
+// AccountID returns the tenant/account id associated with the price and whether
+// an account was set. The API serialises "account" as null (no tenant) or as an
+// object {"id":...,"name":...}, so the field is typed as interface{}. This
+// helper decodes the id without disturbing that backwards-compatible JSON.
+// Price values are only ever populated by encoding/json, which decodes JSON
+// numbers held in an interface{} as float64.
+func (p *Price) AccountID() (int64, bool) {
+	acct, ok := p.Account.(map[string]interface{})
+	if !ok {
+		return 0, false
+	}
+	id, ok := acct["id"].(float64)
+	if !ok {
+		return 0, false
+	}
+
+	return int64(id), true
+}
+
 // ListPricesResult structure parses the list prices response payload
 type ListPricesResult struct {
 	Prices *[]Price    `json:"prices"`

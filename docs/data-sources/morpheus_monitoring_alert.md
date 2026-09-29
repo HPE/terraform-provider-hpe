@@ -28,7 +28,7 @@ data "hpe_morpheus_monitoring_alert" "example" {
 ### Optional
 
 - `id` (Number) The ID of the monitoring alert.
-- `name` (String) The name of the monitoring alert.
+- `name` (String) The name of the monitoring alert. Must not be empty.
 
 ### Read-Only
 

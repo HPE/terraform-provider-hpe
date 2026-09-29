@@ -104,7 +104,13 @@ func TestAccMorpheusNetworkRouterNatResourceExampleOk(t *testing.T) {
 			{
 				ImportState:       true,
 				ImportStateVerify: true,
-				ResourceName:      "hpe_morpheus_network_router_nat.example",
+				// action/firewall/service are WriteOnly and Read hard-sets them
+				// to null, so they are never in state and cannot produce an
+				// ImportStateVerify diff -- not ignored here. protocol is not set
+				// in the example config; the rule persists as null and Read also
+				// normalizes an empty persisted value to null, so it round-trips
+				// as null on both sides. No ignores.
+				ResourceName: "hpe_morpheus_network_router_nat.example",
 				ImportStateIdFunc: func(s *terraform.State) (string, error) {
 					rs, ok := s.RootModule().Resources["hpe_morpheus_network_router_nat.example"]
 					if !ok {
@@ -167,9 +173,10 @@ resource "hpe_morpheus_network_router_nat" "example" {
 		resource.TestCheckResourceAttr(resourceName, "name", name),
 		resource.TestCheckResourceAttr(resourceName, "source_network", "10.1.0.0/24"),
 		resource.TestCheckResourceAttr(resourceName, "description", "Updated SNAT rule"),
-		// protocol is deprecated and dropped by the API; verify the configured
-		// value still round-trips (regression guard for the inconsistent-result
-		// -after-apply defect).
+		// protocol is deprecated but still persisted; verify the configured
+		// value is present in state after the update apply (regression guard for
+		// the inconsistent-result-after-apply defect). This is a state check
+		// during apply, not an import round-trip assertion.
 		resource.TestCheckResourceAttr(resourceName, "protocol", "tcp"),
 	)
 
@@ -185,6 +192,24 @@ resource "hpe_morpheus_network_router_nat" "example" {
 			{Config: providerConfig + routerConfig + createConfig, Check: createChecks},
 			{Config: providerConfig + routerConfig + updateConfig, Check: updateChecks, ConfigPlanChecks: checkInPlaceUpdate},
 			{Config: providerConfig + routerConfig + updateConfig, ExpectNonEmptyPlan: false, PlanOnly: true},
+			// Import after update: action/firewall/service are WriteOnly and
+			// never in state. protocol is set to "tcp" by updateConfig; no
+			// server-side path rewrites it (verified against the NSX-T create
+			// and sync layers), so the configured value round-trips on import
+			// and is verified here rather than ignored.
+			{
+				ImportState:       true,
+				ImportStateVerify: true,
+				ResourceName:      resourceName,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found")
+					}
+
+					return rs.Primary.Attributes["router_id"] + "." + rs.Primary.Attributes["id"], nil
+				},
+			},
 		},
 	})
 }

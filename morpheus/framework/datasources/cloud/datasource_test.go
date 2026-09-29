@@ -63,12 +63,14 @@ func TestAccMorpheusFindCloudById(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
   # Required fields
   name      = "` + name + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id  = 1
 
 
@@ -78,7 +80,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "` + visibility + `"
 
   # Agent and provisioning settings
   agent_install_mode       = "ssh"
@@ -116,6 +118,26 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 			"name",
 			name,
 		),
+		// config is read back from the API rather than echoed from the
+		// resource, so these assert the round trip: certificateProvider and
+		// enableNetworkTypeSelection come from the config_hvm block on the
+		// resource above, and applianceUrl from a top-level attribute the
+		// provider folds into the config object.
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.certificateProvider",
+			"internal",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.enableNetworkTypeSelection",
+			"off",
+		),
+		resource.TestCheckResourceAttr(
+			"data.hpe_morpheus_cloud.example",
+			"config.applianceUrl",
+			"https://somewhere.com",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
@@ -124,7 +146,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},
@@ -148,12 +170,14 @@ func TestAccMorpheusFindCloudByName(t *testing.T) {
 	name := acctest.RandomWithPrefix(t.Name())
 
 	providerConfig := testhelpers.ProviderBlock()
+	dependenciesConfig := testhelpers.WhoamiBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	cloudResourceConfig := `
 resource "hpe_morpheus_cloud" "test_cloud" {
   # Required fields
   name      = "` + name + `"
-  tenant_id = 1
+  tenant_id = data.hpe_morpheus_whoami.current.tenant_id
   group_id  = 1
 
 
@@ -163,7 +187,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
   data_center_name = "aDatacenter"
   enabled          = true
   location         = "somewhere"
-  visibility       = "public"
+  visibility       = "` + visibility + `"
 
   # Agent and provisioning settings
   agent_install_mode       = "ssh"
@@ -209,7 +233,7 @@ resource "hpe_morpheus_cloud" "test_cloud" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: providerConfig + cloudResourceConfig + dataSourceConfig,
+				Config: providerConfig + dependenciesConfig + cloudResourceConfig + dataSourceConfig,
 				Check:  checkFn,
 			},
 		},

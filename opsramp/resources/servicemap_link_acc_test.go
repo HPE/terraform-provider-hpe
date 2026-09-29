@@ -39,7 +39,7 @@ func TestAccServicemapLinkResource(t *testing.T) {
 						),
 					),
 				},
-				// ImportState testing — import ID is <parent_id>:<link_id>
+				// ImportState testing - import ID is <parent_id>:<link_id>
 				{
 					ResourceName: "hpe_opsramp_servicemap_link.test_link",
 					ImportState:  true,

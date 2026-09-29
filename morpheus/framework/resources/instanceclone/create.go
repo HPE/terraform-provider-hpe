@@ -17,6 +17,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/provisionhint"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 )
@@ -117,11 +118,23 @@ func (r *Resource) Create(
 		CloneInstanceRequest(cloneReq).
 		Execute()
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"create instance clone",
-			fmt.Sprintf("clone request failed for instance %d: %s",
-				sourceID, errfmt.ErrMsg(err, hresp)),
-		)
+		// ErrorBody takes the body from the SDK error, or reads hresp.Body and
+		// puts it back, so ErrMsg below still sees the full response. When
+		// Morpheus rejected a network as "Invalid network", say which network,
+		// which pool it belongs to and which pool was requested. A clone
+		// carries no cloud of its own, so the cloud check is skipped. Any
+		// failure to explain leaves the API's error as it is.
+		body := provisionhint.ErrorBody(err, hresp)
+		msg := fmt.Sprintf("clone request failed for instance %d: %s", sourceID, errfmt.ErrMsg(err, hresp))
+
+		if hint := provisionhint.InvalidNetwork(ctx, client, body, provisionhint.Request{
+			Config:     cloneReq.Config,
+			Interfaces: cloneReq.NetworkInterfaces,
+		}); hint != "" {
+			msg += "\n\n" + hint
+		}
+
+		resp.Diagnostics.AddError("create instance clone", msg)
 
 		return
 	}
@@ -174,6 +187,17 @@ func (r *Resource) Create(
 		// appear. Without this the poll runs for the full timeout after a
 		// failure that was known within seconds.
 		if failure := cloneProcessFailure(ctx, client, sourceID); failure != "" {
+			// The clone request is only enqueued, so a network Morpheus will
+			// not select is reported here, by the failed process, not by the
+			// request. Explain it the same way; on failure to explain, the
+			// process's own text stands.
+			if hint := provisionhint.InvalidNetworkReason(ctx, client, failure, provisionhint.Request{
+				Config:     cloneReq.Config,
+				Interfaces: cloneReq.NetworkInterfaces,
+			}); hint != "" {
+				failure += "\n\n" + hint
+			}
+
 			return nil, backoff.Permanent(fmt.Errorf(
 				"clone of instance %d failed: %s", sourceID, failure))
 		}

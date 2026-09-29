@@ -38,7 +38,7 @@ data "hpe_morpheus_compute_server" "example" {
 ### Optional
 
 - `id` (Number) The ID of the compute server. Conflicts with name.
-- `name` (String) The name of the compute server. Conflicts with id.
+- `name` (String) The name of the compute server. Conflicts with id. Must not be empty.
 
 ### Read-Only
 

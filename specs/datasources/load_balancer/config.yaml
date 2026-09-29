@@ -15,7 +15,8 @@ load_balancer:
       conflicts_with: ["name"]
       computed_optional_required: computed_optional
     name:
-      description: The name of the load balancer
+      string_length_at_least: 1
+      description: The name of the load balancer. Must not be empty.
       conflicts_with: ["id"]
       computed_optional_required: computed_optional
     tenant_id:

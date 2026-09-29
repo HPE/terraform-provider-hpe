@@ -430,6 +430,32 @@ func resourceOptionListRESTRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("request_script", optionList.RequestScript)
 	d.Set("source_url", optionList.SourceURL)
 	d.Set("source_method", optionList.SourceMethod)
+	// ignore_ssl_errors is returned by the GET (OptionList.ignoreSSLErrors) but
+	// was previously not written to state, so it did not round-trip on import
+	// (MORPH-8851).
+	d.Set("ignore_ssl_errors", optionList.IgnoreSSLErrors)
+	// inject_system_authorization_header maps to the API's
+	// injectExecutionLeaseAuth field; both it and use_owner_auth are returned
+	// by the GET and are now written to state so they round-trip on import
+	// (MORPH-8851).
+	d.Set("inject_system_authorization_header", optionList.InjectExecutionLeaseAuth)
+	d.Set("use_owner_auth", optionList.UseOwnerAuth)
+
+	// source_headers is returned by the GET under config.sourceHeaders. The API
+	// masks a header value only when that header was saved with masked=true;
+	// this provider does not expose a "masked" attribute and never sends it, so
+	// values come back in clear text and round-trip on import (MORPH-8851). Only
+	// name/value are represented in the schema, matching the create payload.
+	// Set unconditionally from an empty, non-nil slice so state resets cleanly
+	// if the headers are removed out-of-band in the API.
+	sourceHeaders := make([]map[string]any, 0, len(optionList.Config.SourceHeaders))
+	for _, h := range optionList.Config.SourceHeaders {
+		sourceHeaders = append(sourceHeaders, map[string]any{
+			"name":  h.Name,
+			"value": h.Value,
+		})
+	}
+	d.Set("source_headers", sourceHeaders)
 
 	return diags
 }

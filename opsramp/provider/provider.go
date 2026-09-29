@@ -159,6 +159,7 @@ func (p *OpsRampProvider) DataSources(ctx context.Context) []func() datasource.D
 		data.NewResourceLookupDataSource,
 		data.NewResourceTenantDataSource,
 		data.NewDataRoleSource,
+		data.NewManagementProfileDataSource,
 		data.NewCustomEventAlertSourceDataSource,
 		data.NewServiceDeskUrgencyDataSource,
 		data.NewServiceDeskBusinessImpactDataSource,

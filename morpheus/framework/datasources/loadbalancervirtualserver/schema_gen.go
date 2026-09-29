@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
@@ -255,8 +257,11 @@ func LoadBalancerVirtualServerDataSourceSchema(ctx context.Context) schema.Schem
 			"vip_name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "VIP Name",
-				MarkdownDescription: "VIP Name",
+				Description:         "VIP Name. Must not be empty.",
+				MarkdownDescription: "VIP Name. Must not be empty.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			"vip_pool": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{},

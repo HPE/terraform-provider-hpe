@@ -34,6 +34,7 @@ image:
         - name
         - image_type
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
     image_type:
       computed_optional_required: computed_optional

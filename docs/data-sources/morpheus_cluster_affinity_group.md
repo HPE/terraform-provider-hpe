@@ -48,7 +48,7 @@ data "hpe_morpheus_cluster_affinity_group" "example" {
 ### Optional
 
 - `id` (Number) The ID of the cluster affinity group.
-- `name` (String) The name of the cluster affinity group.
+- `name` (String) The name of the cluster affinity group. Must not be empty.
 
 ### Read-Only
 

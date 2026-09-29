@@ -34,7 +34,7 @@ data "hpe_morpheus_backup" "example" {
 ### Optional
 
 - `id` (Number) ID of the Backup
-- `name` (String) Name of the Backup
+- `name` (String) Name of the Backup. Must not be empty.
 
 ### Read-Only
 

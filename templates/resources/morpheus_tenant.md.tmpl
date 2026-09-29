@@ -10,12 +10,44 @@ description: |-
 
 ## Example Usage
 
-{{tffile "examples/resources/morpheus_tenant/resource.tf"}}
+{{ tffile "examples/resources/morpheus_tenant/example.tf" }}
+
+### Creating a subtenant under a specific parent
+
+By default a tenant is created under the caller's own tenant. To create a
+subtenant under a specific parent tenant — which is only permitted when
+authenticated as the master tenant — set `parent_id`. The example below
+resolves the parent's ID by name with the `hpe_morpheus_tenant` data source.
+Changing `parent_id` forces a new resource.
+
+{{ tffile "examples/resources/morpheus_tenant/example_subtenant.tf" }}
+
+~> **Note** `parent_id` requires **Morpheus 8.1.0 or later**, which introduced
+the tenant hierarchy. Earlier appliances silently ignore a nominated parent, so
+the provider refuses a configuration that sets `parent_id` at plan time on
+those versions; omit it, and the tenant is created under the caller's own
+tenant as before. On appliances older than 8.1.0 the read-only `parent_id`,
+`parent_name` and `parent_subdomain` attributes are always `null`. Everything
+else the resource does is supported on all Morpheus versions the provider
+supports.
 
 {{ .SchemaMarkdown | trimspace }}
 
 ## Import
 
-Import is supported using the following syntax:
+Import is supported using the numeric tenant ID.
 
-{{codefile "shell" "examples/resources/morpheus_tenant/import.sh" }}
+~> **Note** `remove_resources` is a delete-time-only flag that the Morpheus API
+does not return, so it is `null` immediately after an import. Re-apply your
+configuration to reconcile it.
+
+-> **Note** The master tenant can be imported and, when authenticated as the
+master tenant, updated — but Morpheus does not allow it to be disabled, has no
+base role for it, and rejects deleting it. Setting `enabled = false` or
+`base_role_id` on it, or destroying it, returns a diagnostic naming the
+restriction; use `terraform state rm` to stop managing an imported master
+tenant.
+
+```bash
+terraform import hpe_morpheus_tenant.example 123
+```

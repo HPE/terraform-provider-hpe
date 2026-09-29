@@ -32,7 +32,7 @@ data "hpe_morpheus_environment" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the Object being referenced
-- `name` (String) The name of the Morpheus environment
+- `name` (String) The name of the Morpheus environment. Must not be empty.
 
 ### Read-Only
 

@@ -59,9 +59,10 @@ func ResourceTaskAnsiblePlaybook() *schema.Resource {
 				Optional:    true,
 			},
 			"playbook": {
-				Type:        schema.TypeString,
-				Description: "The name of the ansible playbook to execute",
-				Required:    true,
+				Type:         schema.TypeString,
+				Description:  "The name of the ansible playbook to execute",
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
 			},
 			"tags": {
 				Type:        schema.TypeString,

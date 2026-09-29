@@ -24,4 +24,18 @@ names the hypervisor a guest runs on.
 
 {{ tffile "examples/data-sources/morpheus_cluster/example-name.tf" }}
 
+### Provisioning into an HVM cluster
+
+Morpheus creates a resource pool for every HVM cluster and binds the cluster's networks to it.
+That pool is the one to provision into, and it is exposed here as
+`permissions.resource_pool`. Because the pool is attached to the cluster rather than to the
+cloud, the cloud's resource-pool listing does not include it, so `hpe_morpheus_resource_pool`
+cannot find it by name — read it from the cluster instead:
+
+{{ tffile "examples/data-sources/morpheus_cluster/example-hvm-pool.tf" }}
+
+An instance whose `resource_pool_id` names a different pool — for example one created by
+hand in the cloud — fails to create with `Invalid network`, because the networks belong to the
+cluster's pool.
+
 {{ .SchemaMarkdown | trimspace }}

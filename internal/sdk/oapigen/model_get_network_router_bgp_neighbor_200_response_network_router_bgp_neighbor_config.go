@@ -58,8 +58,15 @@ func (dst *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig)
 	// try to unmarshal JSON data into NSXTBGPNeighborConfig2
 	err = json.Unmarshal(data, &dst.NSXTBGPNeighborConfig2)
 	if err == nil {
-		jsonNSXTBGPNeighborConfig2, _ := json.Marshal(dst.NSXTBGPNeighborConfig2)
-		if string(jsonNSXTBGPNeighborConfig2) == "{}" { // empty struct
+		jsonNSXTBGPNeighborConfig2, merrNSXTBGPNeighborConfig2 := json.Marshal(dst.NSXTBGPNeighborConfig2)
+		var zeroNSXTBGPNeighborConfig2 NSXTBGPNeighborConfig2
+		jsonZeroNSXTBGPNeighborConfig2, _ := json.Marshal(&zeroNSXTBGPNeighborConfig2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXTBGPNeighborConfig2 != nil || string(jsonNSXTBGPNeighborConfig2) == "{}" || (len(jsonNSXTBGPNeighborConfig2) > 0 && jsonNSXTBGPNeighborConfig2[0] == '{' && string(jsonNSXTBGPNeighborConfig2) == string(jsonZeroNSXTBGPNeighborConfig2)) {
 			dst.NSXTBGPNeighborConfig2 = nil
 		} else {
 			return nil // data stored in dst.NSXTBGPNeighborConfig2, return on the first match
@@ -71,8 +78,15 @@ func (dst *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig)
 	// try to unmarshal JSON data into NSXVBGPNeighborConfig2
 	err = json.Unmarshal(data, &dst.NSXVBGPNeighborConfig2)
 	if err == nil {
-		jsonNSXVBGPNeighborConfig2, _ := json.Marshal(dst.NSXVBGPNeighborConfig2)
-		if string(jsonNSXVBGPNeighborConfig2) == "{}" { // empty struct
+		jsonNSXVBGPNeighborConfig2, merrNSXVBGPNeighborConfig2 := json.Marshal(dst.NSXVBGPNeighborConfig2)
+		var zeroNSXVBGPNeighborConfig2 NSXVBGPNeighborConfig2
+		jsonZeroNSXVBGPNeighborConfig2, _ := json.Marshal(&zeroNSXVBGPNeighborConfig2)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNSXVBGPNeighborConfig2 != nil || string(jsonNSXVBGPNeighborConfig2) == "{}" || (len(jsonNSXVBGPNeighborConfig2) > 0 && jsonNSXVBGPNeighborConfig2[0] == '{' && string(jsonNSXVBGPNeighborConfig2) == string(jsonZeroNSXVBGPNeighborConfig2)) {
 			dst.NSXVBGPNeighborConfig2 = nil
 		} else {
 			return nil // data stored in dst.NSXVBGPNeighborConfig2, return on the first match
@@ -84,8 +98,15 @@ func (dst *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig)
 	// try to unmarshal JSON data into MapmapOfStringAny
 	err = json.Unmarshal(data, &dst.MapmapOfStringAny)
 	if err == nil {
-		jsonMapmapOfStringAny, _ := json.Marshal(dst.MapmapOfStringAny)
-		if string(jsonMapmapOfStringAny) == "{}" { // empty struct
+		jsonMapmapOfStringAny, merrMapmapOfStringAny := json.Marshal(dst.MapmapOfStringAny)
+		var zeroMapmapOfStringAny map[string]interface{}
+		jsonZeroMapmapOfStringAny, _ := json.Marshal(&zeroMapmapOfStringAny)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrMapmapOfStringAny != nil || string(jsonMapmapOfStringAny) == "{}" || (len(jsonMapmapOfStringAny) > 0 && jsonMapmapOfStringAny[0] == '{' && string(jsonMapmapOfStringAny) == string(jsonZeroMapmapOfStringAny)) {
 			dst.MapmapOfStringAny = nil
 		} else {
 			return nil // data stored in dst.MapmapOfStringAny, return on the first match
@@ -94,6 +115,12 @@ func (dst *GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig)
 		dst.MapmapOfStringAny = nil
 	}
 
+	// An empty object (or empty payload) legitimately matches no variant;
+	// treat it as "no data" rather than a hard validation error so that an
+	// empty value round-trips cleanly instead of failing to unmarshal.
+	if string(data) == "{}" || string(data) == "" {
+		return nil
+	}
 	return NewResponseValidationError("data failed to match schemas in anyOf(GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig)")
 }
 
@@ -111,7 +138,7 @@ func (src GetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig) 
 		return json.Marshal(&src.MapmapOfStringAny)
 	}
 
-	return nil, nil // no data in anyOf schemas
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
 type NullableGetNetworkRouterBgpNeighbor200ResponseNetworkRouterBgpNeighborConfig struct {

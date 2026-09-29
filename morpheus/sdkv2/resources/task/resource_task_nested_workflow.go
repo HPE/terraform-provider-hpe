@@ -51,8 +51,7 @@ func ResourceTaskNestedWorkflow() *schema.Resource {
 			"operational_workflow_id": {
 				Type:        schema.TypeString,
 				Description: "The ID of the operational workflow",
-				Optional:    true,
-				Computed:    true,
+				Required:    true,
 			},
 			"operational_workflow_name": {
 				Type:        schema.TypeString,
@@ -131,6 +130,12 @@ func resourceTaskNestedWorkflowCreate(ctx context.Context, d *schema.ResourceDat
 		operationalWorkflowName = operationalWorkflowNameValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("operational_workflow_name", d.Get("operational_workflow_name")))
+	}
+	// The API requires a non-blank operationalWorkflowName and overwrites it with
+	// the canonical name of the referenced workflow, so a placeholder is safe when
+	// the name is not explicitly set.
+	if operationalWorkflowName == "" {
+		operationalWorkflowName = operationalWorkflowId
 	}
 	taskOptions["operationalWorkflowName"] = operationalWorkflowName
 
@@ -344,6 +349,12 @@ func resourceTaskNestedWorkflowUpdate(ctx context.Context, d *schema.ResourceDat
 		operationalWorkflowName = operationalWorkflowNameValue
 	} else {
 		return diag.FromErr(helpers.TypeAssertFailError("operational_workflow_name", d.Get("operational_workflow_name")))
+	}
+	// The API requires a non-blank operationalWorkflowName and overwrites it with
+	// the canonical name of the referenced workflow, so a placeholder is safe when
+	// the name is not explicitly set.
+	if operationalWorkflowName == "" {
+		operationalWorkflowName = operationalWorkflowId
 	}
 	taskOptions["operationalWorkflowName"] = operationalWorkflowName
 

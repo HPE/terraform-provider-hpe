@@ -4,4 +4,8 @@ resource "hpe_morpheus_instance_type_layout" "example" {
   labels           = {{.Labels}}
   version          = "{{.Version}}"
   technology       = "{{.Technology}}"
-}
+{{if .SpecTemplateIds}}  spec_template_ids = {{.SpecTemplateIds}}
+{{end}}{{if .NodeTypeIds}}  node_type_ids = {{.NodeTypeIds}}
+{{end}}{{if .OptionTypeIds}}  option_type_ids = {{.OptionTypeIds}}
+{{end}}{{if .PriceSetIds}}  price_set_ids = {{.PriceSetIds}}
+{{end}}}

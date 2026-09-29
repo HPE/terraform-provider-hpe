@@ -68,6 +68,45 @@ func TestAccRoleDataSource(t *testing.T) {
 	})
 }
 
+func TestAccManagementProfileDataSource(t *testing.T) {
+	acctest.SkipIfNotClient(t)
+	clientOverride := acctest.RequireClientScope(t)
+
+	t.Run("happy path", func(t *testing.T) {
+		profileName := acctest.RandomName("ds-mgmt-profile")
+		description := acctest.RandomName("ds-mgmt-desc")
+
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 acctest.PreCheck(t),
+			ProtoV6ProviderFactories: acctest.ProtoV6ProviderFactories(),
+			Steps: []resource.TestStep{
+				{
+					Config: testAccManagementProfileDataSourceConfig(profileName, description, clientOverride),
+					Check: resource.ComposeAggregateTestCheckFunc(
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_management_profile.test", "id"),
+						resource.TestCheckResourceAttrSet("data.hpe_opsramp_management_profile.test", "uuid"),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_management_profile.test", "name", profileName),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_management_profile.test", "description", description),
+						resource.TestCheckResourceAttr("data.hpe_opsramp_management_profile.test", "type", "Gateway"),
+						resource.TestCheckResourceAttrPair(
+							"data.hpe_opsramp_management_profile.test",
+							"id",
+							"hpe_opsramp_management_profile.ds_test",
+							"id",
+						),
+						resource.TestCheckResourceAttrPair(
+							"data.hpe_opsramp_management_profile.test",
+							"uuid",
+							"hpe_opsramp_management_profile.ds_test",
+							"uuid",
+						),
+					),
+				},
+			},
+		})
+	})
+}
+
 func TestAccResourceLookupDataSource(t *testing.T) {
 	acctest.SkipIfNotClient(t)
 	clientOverride := acctest.RequireClientScope(t)
@@ -174,6 +213,24 @@ data "hpe_opsramp_role" "test" {
 	name = "%s"
 }
 `, acctest.ProviderConfigHCL(), clientAttr, name)
+}
+
+func testAccManagementProfileDataSourceConfig(name string, description string, clientOverride string) string {
+	clientAttr := acctest.ClientAttrHCL(clientOverride)
+
+	return fmt.Sprintf(`
+%s
+resource "hpe_opsramp_management_profile" "ds_test" {
+	name        = %q
+	description = %q
+	%s
+}
+
+data "hpe_opsramp_management_profile" "test" {
+	name = hpe_opsramp_management_profile.ds_test.name
+	%s
+}
+`, acctest.ProviderConfigHCL(), name, description, clientAttr, clientAttr)
 }
 
 func testAccResourceLookupDataSourceConfig(resourceName string, clientOverride string) string {

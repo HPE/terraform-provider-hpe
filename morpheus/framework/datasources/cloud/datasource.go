@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -89,6 +90,41 @@ func getCloudByID(
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
 
+	if err := setConfig(ctx, data, cloud.Config); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// setConfig maps the cloud's config object onto the model.
+//
+// The SDK models config as an anyOf over the typed per-cloud-type variants and
+// a generic map. Its MarshalJSON emits whichever variant is populated, so
+// marshalling the wrapper flattens all five cases without the data source
+// needing to know which cloud type it is looking at.
+//
+// A cloud with no config is left null rather than treated as an error: config
+// is optional on the API, and a data source should report what is there.
+//
+// config arrives as an any wrapping a concrete pointer type — *sdk.ZoneConfig
+// by id, *sdk.ListClouds200ResponseAllOfZonesInnerConfig by name — so an absent
+// config is a typed nil that a plain config == nil would miss. sdk.IsNil
+// unwraps it.
+func setConfig(ctx context.Context, data *CloudModel, config any) error {
+	if sdk.IsNil(config) {
+		data.Config = types.DynamicNull()
+
+		return nil
+	}
+
+	cfg, err := convert.StructToDynamic(ctx, config)
+	if err != nil {
+		return fmt.Errorf("could not read cloud config: %w", err)
+	}
+
+	data.Config = cfg
+
 	return nil
 }
 
@@ -144,6 +180,10 @@ func getCloudByName(
 		}
 	}
 	data.GroupIds = convert.Int64SliceToSet(groupIDs)
+
+	if err := setConfig(ctx, data, cloud.Config); err != nil {
+		return err
+	}
 
 	return nil
 }

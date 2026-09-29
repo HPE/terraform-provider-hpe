@@ -28,7 +28,7 @@ data "hpe_morpheus_subnet_type" "example" {
 ### Optional
 
 - `id` (Number) The ID of the subnet type
-- `name` (String) The name of the subnet type
+- `name` (String) The name of the subnet type. Must not be empty.
 
 ### Read-Only
 

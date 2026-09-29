@@ -5,6 +5,7 @@ package optionlist
 import (
 	"context"
 
+	"github.com/HPE/terraform-provider-hpe/utils/validators"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -23,6 +24,9 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The API type of the option list.",
 				MarkdownDescription: "The API type of the option list.",
+				Validators: []validator.String{
+					validators.RequiredWhenSiblingEquals("type", "api"),
+				},
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -53,9 +57,13 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 				Optional:            true,
 				Description:         "The source URL for the option list.",
 				MarkdownDescription: "The source URL for the option list.",
+				Validators: []validator.String{
+					validators.RequiredWhenSiblingEqualsOrNull("type", "rest"),
+				},
 			},
 			"type": schema.StringAttribute{
 				Optional:            true,
+				Computed:            true,
 				Description:         "The type of the option list (rest, manual, ldap, api).",
 				MarkdownDescription: "The type of the option list (rest, manual, ldap, api).",
 				Validators: []validator.String{
@@ -66,12 +74,13 @@ func OptionListResourceSchema(ctx context.Context) schema.Schema {
 						"manual",
 					),
 				},
+				Default: stringdefault.StaticString("rest"),
 			},
 			"visibility": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The visibility of the option type list.",
-				MarkdownDescription: "The visibility of the option type list.",
+				Description:         "The visibility of the option type list. Setting \"public\" requires the master tenant.",
+				MarkdownDescription: "The visibility of the option type list. Setting \"public\" requires the master tenant.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
 						"private",

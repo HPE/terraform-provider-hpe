@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -418,7 +419,7 @@ func getClusterByName(
 
 	var matchingClusters []sdk.ListClusters200ResponseAllOfClustersInner
 	for _, c := range clustersResp.Clusters {
-		if c.Name != nil && *c.Name == name {
+		if c.Name != nil && strings.EqualFold(*c.Name, name) {
 			matchingClusters = append(matchingClusters, c)
 		}
 	}

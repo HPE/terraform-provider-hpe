@@ -28,7 +28,7 @@ func TestMain(m *testing.M) {
 func TestAccMorpheusOsTypeImageResourceExampleOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All, capabilities.MasterTenant)
 
 	t.Parallel()
 
@@ -138,7 +138,7 @@ resource "hpe_morpheus_os_type" "test" {
 func TestAccMorpheusOsTypeImageResourceRequiredAttrsOk(t *testing.T) {
 	defer testhelpers.RecordResult(t)
 
-	capabilities.MustHaveOrSkip(t, capabilities.All)
+	capabilities.MustHaveOrSkip(t, capabilities.All, capabilities.MasterTenant)
 
 	t.Parallel()
 	if testing.Short() {

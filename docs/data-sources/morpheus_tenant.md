@@ -2,17 +2,17 @@
 page_title: "hpe_morpheus_tenant Data Source - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus tenant data source.
+  
 ---
 # hpe_morpheus_tenant (Data Source)
 
-Provides a Morpheus tenant data source.
+
 
 ## Example Usage
 
 ```terraform
 data "hpe_morpheus_tenant" "example" {
-  name = "Demo"
+  name = "tenant name"
 }
 ```
 
@@ -21,11 +21,26 @@ data "hpe_morpheus_tenant" "example" {
 
 ### Optional
 
-- `name` (String) The name of the Morpheus tenant.
+- `id` (Number) The ID of the tenant.
+- `name` (String) The name of the tenant. Must not be empty.
 
 ### Read-Only
 
-- `account_name` (String) An optional field that can be used for billing and accounting
-- `account_number` (String) An optional field that can be used for billing and accounting
-- `customer_number` (String) An optional field that can be used for billing and accounting
-- `id` (Number) The ID of this resource.
+- `account_name` (String) An optional field that can be used for billing and accounting.
+- `account_number` (String) An optional field that can be used for billing and accounting.
+- `base_role_id` (Number) The ID of the tenant's base role, which restricts the access available to this tenant's roles and users.
+- `base_role_name` (String) The authority (name) of the tenant's base role.
+- `currency` (String) Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP).
+- `customer_number` (String) An optional field that can be used for billing and accounting.
+- `date_created` (String) The date the tenant was created.
+- `description` (String) The description of the tenant.
+- `enabled` (Boolean) Whether the tenant is enabled. Disabled tenants cannot be logged into.
+- `external_id` (String) The external ID of the tenant.
+- `instance_count` (Number) The number of instances in the tenant.
+- `last_updated` (String) The date the tenant was last updated.
+- `master` (Boolean) Whether this is the master tenant.
+- `parent_id` (Number) The ID of the parent tenant.
+- `parent_name` (String) The name of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+- `parent_subdomain` (String) The subdomain of the parent tenant. Null on Morpheus versions before 8.1.0, which have no tenant hierarchy.
+- `subdomain` (String) The custom login subdomain (login URL prefix) for sub-tenant users. May contain only letters, numbers, and hyphens, must not start or end with a hyphen, must be 1-63 characters long, cannot be entirely numeric, and must be globally unique across all tenants.
+- `user_count` (Number) The number of users in the tenant.

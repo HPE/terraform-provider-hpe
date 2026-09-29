@@ -32,7 +32,7 @@ data "hpe_morpheus_group" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the Object being referenced
-- `name` (String) The name of the Morpheus group
+- `name` (String) The name of the Morpheus group. Must not be empty.
 
 ### Read-Only
 

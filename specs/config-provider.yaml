@@ -1609,6 +1609,10 @@ data_sources:
     read:
       path: /api/accounts/{id}
       method: GET
+  tenants:
+    read:
+      path: /api/accounts
+      method: GET
   user:
     read:
       path: /api/users/{id}
@@ -1628,6 +1632,10 @@ data_sources:
   image:
     read:
       path: /api/virtual-images/{virtualImageId}
+      method: GET
+  images:
+    read:
+      path: /api/virtual-images
       method: GET
   instance:
     read:
@@ -1676,4 +1684,8 @@ data_sources:
   network_pool_server:
     read:
       path: /api/networks/pool-servers/{id}
+      method: GET
+  whoami:
+    read:
+      path: /api/whoami
       method: GET

@@ -32,11 +32,13 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 	// t.Skip("Skipping due to mismatch between Morpheus API and Terraform schema")
 
 	providerConfig := testhelpers.ProviderBlock()
+	visibility := testhelpers.TenantVisibility(t)
 
 	name := acctest.RandomWithPrefix(t.Name())
 
 	resourceConfig, err := task.RenderTaskAnsibleTowerConfig(t, map[string]string{
-		"Name": name,
+		"Name":       name,
+		"Visibility": visibility,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -130,7 +132,7 @@ func TestAccMorpheusTaskAnsibleTowerExampleOk(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"hpe_morpheus_task_ansible_tower.example",
 			"visibility",
-			"public",
+			visibility,
 		),
 	}
 

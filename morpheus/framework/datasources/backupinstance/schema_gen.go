@@ -156,10 +156,11 @@ func BackupInstanceDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "Name of the Instance Backup",
-				MarkdownDescription: "Name of the Instance Backup",
+				Description:         "Name of the Instance Backup. Must not be empty.",
+				MarkdownDescription: "Name of the Instance Backup. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"retention_count": schema.Int64Attribute{

@@ -482,6 +482,11 @@ resource "hpe_morpheus_instance" "example" {
     no_agent              = true
     create_user           = false
     vmware_folder_id      = "group-v79"
+
+    # image_id overrides the image configured on the layout. Omit it to take the
+    # layout default. Changing it replaces the instance, because the image is
+    # only applied at provision time.
+    # image_id = data.hpe_morpheus_image.vmware.id
   }
 
   timeouts = {
@@ -1087,7 +1092,7 @@ Read-Only:
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
 - `security_groups` (Attributes List) a list of objects containing the ids of the AWS security groups to assign the instance to. (see [below for nested schema](#nestedatt--config_aws--security_groups))
 
 Optional:
@@ -1152,7 +1157,12 @@ disabled, provisioning falls back to a single disk if RAID1 is unavailable.
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The resource pool to provision the instance into, as `pool-<id>`. For an HVM cluster this is the
+pool Morpheus created for the cluster: read it from the `hpe_morpheus_cluster` data source
+as `permissions.resource_pool.id`. That pool is attached to the cluster rather than to the
+cloud, so the cloud's resource-pool listing does not include it and `hpe_morpheus_resource_pool`
+cannot find it by name. A network belongs to the pool of the cluster it was discovered on; a
+pool that does not contain the requested network fails with `Invalid network`.
 
 Optional:
 
@@ -1168,6 +1178,10 @@ removed with terraform destroy because it never started.
 On HVM an empty group is accepted, but placement is only enforced
 when the cluster has dynamic placement enabled.
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `image_id` (Number) The id of the virtual image to provision the instance from.
+Overrides the image configured on the instance type layout, so it is
+only needed when the layout default is not the wanted image.
+Create-only: changing it replaces the instance.
 - `kvm_host_id` (Number) The id of the KVM host to use for provisioning.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
@@ -1179,7 +1193,7 @@ when the cluster has dynamic placement enabled.
 
 Required:
 
-- `resource_pool_id` (String) The id of the resource group to be used, can be prefixed with 'pool-'.  A resource pool group can be specified instead by prefixing its ID wih 'poolGroup-'.
+- `resource_pool_id` (String) The id of the resource pool to provision into, optionally prefixed with 'pool-'. A resource pool group can be specified instead by prefixing its id with 'poolGroup-'.
 
 Optional:
 
@@ -1195,6 +1209,10 @@ removed with terraform destroy because it never started.
 On HVM an empty group is accepted, but placement is only enforced
 when the cluster has dynamic placement enabled.
 - `create_user` (Boolean) Whether to create a user when provisioning the instance.  The default is 'false'
+- `image_id` (Number) The id of the virtual image to provision the instance from.
+Overrides the image configured on the instance type layout, so it is
+only needed when the layout default is not the wanted image.
+Create-only: changing it replaces the instance.
 - `nested_virtualization` (String) Enable nested virtualization on the instance. Can be a number of valid string values:
    "on", "off", "0", "1", "true", "false", "yes", "no", "".  The default is "off".
 - `no_agent` (Boolean) Whether to skip installing the Morpheus agent on the instance.  The default is 'true'
@@ -1270,6 +1288,14 @@ Use /api/provision-types?code=vmware to see the available controllerTypes for vm
 - `name` (String) Name/type of the LV being created.
 - `root_volume` (Boolean) If set to false then a non-root LV will be created.
 - `size` (Number) Size of the LV to be created in GBs.  Uses default from service plan.
+
+This records the size that was *requested*. Morpheus rounds a request up
+when the image needs more room, in which case `actual_size` reports the
+volume that was really created and this attribute is left as the request;
+a difference between the two is normal and produces no plan diff. Note a
+request below the image's minimum disk is rejected rather than rounded.
+Lowering this below the size already provisioned has no effect, as the
+platform cannot shrink a disk in place.
 - `size_id` (Number) Can be used to select pre-existing LV choices from Morpheus.
 - `storage_profile` (String) Storage profile code for the volume. The available codes depend on the
 provision type; query `/api/provision-types` to list the `storageProfiles`
@@ -1279,4 +1305,14 @@ for a type. For example, KVM/HVM volumes use cache-mode profiles such as
 
 Read-Only:
 
+- `actual_size` (Number) The size in GB that Morpheus actually provisioned for this volume.
+
+This can exceed `size`. A request smaller than the image's minimum disk
+is rejected outright, but a request that clears the minimum while falling
+short of the image's own size is rounded up to fit — so asking for 10GB
+with an image occupying a little over 10GB yields an 11GB volume.
+`size` keeps the request; this reports what exists.
+
+This is also where an out-of-band resize becomes visible: a disk grown
+outside Terraform is reflected here on the next refresh.
 - `id` (Number) The id for the LV configuration being created.

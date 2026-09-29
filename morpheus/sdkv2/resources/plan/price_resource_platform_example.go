@@ -27,7 +27,7 @@ func RenderPricePlatformConfig(t *testing.T, overrides map[string]string) (strin
 		"Platform":     "linux",
 		"PriceType":    "platform",
 		"PriceUnit":    "minute",
-		"TenantId":     "1",
+		"TenantId":     testhelpers.WhoamiTenantIDRef,
 	}
 
 	// Apply overrides to defaults

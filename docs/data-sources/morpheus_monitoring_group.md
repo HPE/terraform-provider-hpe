@@ -28,7 +28,7 @@ data "hpe_morpheus_monitoring_group" "example" {
 ### Optional
 
 - `id` (Number) The ID of the monitoring group.
-- `name` (String) The name of the monitoring group.
+- `name` (String) The name of the monitoring group. Must not be empty.
 
 ### Read-Only
 

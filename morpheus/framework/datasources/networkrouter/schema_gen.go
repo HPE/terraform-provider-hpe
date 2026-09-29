@@ -85,6 +85,15 @@ func NetworkRouterDataSourceSchema(ctx context.Context) schema.Schema {
 						"cidr": schema.StringAttribute{
 							Computed: true,
 						},
+						"config": schema.SingleNestedAttribute{
+							Attributes: map[string]schema.Attribute{},
+							CustomType: ConfigType{
+								ObjectType: types.ObjectType{
+									AttrTypes: ConfigValue{}.AttributeTypes(ctx),
+								},
+							},
+							Computed: true,
+						},
 						"id": schema.Int64Attribute{
 							Computed: true,
 						},
@@ -105,10 +114,11 @@ func NetworkRouterDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the network router.",
-				MarkdownDescription: "The name of the network router.",
+				Description:         "The name of the network router. Must not be empty.",
+				MarkdownDescription: "The name of the network router. Must not be empty.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.Expressions{path.MatchRoot("id")}...),
+					stringvalidator.LengthAtLeast(1),
 				},
 			},
 			"network_integration": schema.SingleNestedAttribute{
@@ -1047,6 +1057,24 @@ func (t InterfacesType) ValueFromObject(ctx context.Context, in basetypes.Object
 			fmt.Sprintf(`cidr expected to be basetypes.StringValue, was: %T`, cidrAttribute))
 	}
 
+	configAttribute, ok := attributes["config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`config is missing from object`)
+
+		return nil, diags
+	}
+
+	configVal, ok := configAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`config expected to be basetypes.ObjectValue, was: %T`, configAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -1089,6 +1117,7 @@ func (t InterfacesType) ValueFromObject(ctx context.Context, in basetypes.Object
 
 	return InterfacesValue{
 		Cidr:      cidrVal,
+		Config:    configVal,
 		Id:        idVal,
 		IpAddress: ipAddressVal,
 		state:     attr.ValueStateKnown,
@@ -1176,6 +1205,24 @@ func NewInterfacesValue(attributeTypes map[string]attr.Type, attributes map[stri
 			fmt.Sprintf(`cidr expected to be basetypes.StringValue, was: %T`, cidrAttribute))
 	}
 
+	configAttribute, ok := attributes["config"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`config is missing from object`)
+
+		return NewInterfacesValueUnknown(), diags
+	}
+
+	configVal, ok := configAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`config expected to be basetypes.ObjectValue, was: %T`, configAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -1218,6 +1265,7 @@ func NewInterfacesValue(attributeTypes map[string]attr.Type, attributes map[stri
 
 	return InterfacesValue{
 		Cidr:      cidrVal,
+		Config:    configVal,
 		Id:        idVal,
 		IpAddress: ipAddressVal,
 		state:     attr.ValueStateKnown,
@@ -1291,18 +1339,22 @@ var _ basetypes.ObjectValuable = InterfacesValue{}
 
 type InterfacesValue struct {
 	Cidr      basetypes.StringValue `tfsdk:"cidr"`
+	Config    basetypes.ObjectValue `tfsdk:"config"`
 	Id        basetypes.Int64Value  `tfsdk:"id"`
 	IpAddress basetypes.StringValue `tfsdk:"ip_address"`
 	state     attr.ValueState
 }
 
 func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 3)
+	attrTypes := make(map[string]tftypes.Type, 4)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["cidr"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["config"] = basetypes.ObjectType{
+		AttrTypes: ConfigValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["ip_address"] = basetypes.StringType{}.TerraformType(ctx)
 
@@ -1310,7 +1362,7 @@ func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 3)
+		vals := make(map[string]tftypes.Value, 4)
 
 		val, err = v.Cidr.ToTerraformValue(ctx)
 		if err != nil {
@@ -1318,6 +1370,13 @@ func (v InterfacesValue) ToTerraformValue(ctx context.Context) (tftypes.Value, e
 		}
 
 		vals["cidr"] = val
+
+		val, err = v.Config.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["config"] = val
 
 		val, err = v.Id.ToTerraformValue(ctx)
 		if err != nil {
@@ -1362,8 +1421,32 @@ func (v InterfacesValue) String() string {
 func (v InterfacesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
 
+	var configVal basetypes.ObjectValue
+
+	if v.Config.IsNull() {
+		configVal = types.ObjectNull(
+			ConfigValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.Config.IsUnknown() {
+		configVal = types.ObjectUnknown(
+			ConfigValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.Config.IsNull() && !v.Config.IsUnknown() {
+		configVal = types.ObjectValueMust(
+			ConfigValue{}.AttributeTypes(ctx),
+			v.Config.Attributes(),
+		)
+	}
+
 	attributeTypes := map[string]attr.Type{
-		"cidr":       basetypes.StringType{},
+		"cidr": basetypes.StringType{},
+		"config": basetypes.ObjectType{
+			AttrTypes: ConfigValue{}.AttributeTypes(ctx),
+		},
 		"id":         basetypes.Int64Type{},
 		"ip_address": basetypes.StringType{},
 	}
@@ -1380,6 +1463,7 @@ func (v InterfacesValue) ToObjectValue(ctx context.Context) (basetypes.ObjectVal
 		attributeTypes,
 		map[string]attr.Value{
 			"cidr":       v.Cidr,
+			"config":     configVal,
 			"id":         v.Id,
 			"ip_address": v.IpAddress,
 		})
@@ -1406,6 +1490,10 @@ func (v InterfacesValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.Config.Equal(other.Config) {
+		return false
+	}
+
 	if !v.Id.Equal(other.Id) {
 		return false
 	}
@@ -1427,10 +1515,271 @@ func (v InterfacesValue) Type(ctx context.Context) attr.Type {
 
 func (v InterfacesValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
-		"cidr":       basetypes.StringType{},
+		"cidr": basetypes.StringType{},
+		"config": basetypes.ObjectType{
+			AttrTypes: ConfigValue{}.AttributeTypes(ctx),
+		},
 		"id":         basetypes.Int64Type{},
 		"ip_address": basetypes.StringType{},
 	}
+}
+
+var _ basetypes.ObjectTypable = ConfigType{}
+
+type ConfigType struct {
+	basetypes.ObjectType
+}
+
+func (t ConfigType) Equal(o attr.Type) bool {
+	other, ok := o.(ConfigType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t ConfigType) String() string {
+	return "ConfigType"
+}
+
+func (t ConfigType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return ConfigValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigValueNull() ConfigValue {
+	return ConfigValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewConfigValueUnknown() ConfigValue {
+	return ConfigValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewConfigValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (ConfigValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing ConfigValue Attribute Value",
+				"While creating a ConfigValue value, a missing attribute value was detected. "+
+					"A ConfigValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid ConfigValue Attribute Type",
+				"While creating a ConfigValue value, an invalid attribute value was detected. "+
+					"A ConfigValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("ConfigValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra ConfigValue Attribute Value",
+				"While creating a ConfigValue value, an extra attribute value was detected. "+
+					"A ConfigValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra ConfigValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewConfigValueUnknown(), diags
+	}
+
+	if diags.HasError() {
+		return NewConfigValueUnknown(), diags
+	}
+
+	return ConfigValue{
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewConfigValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) ConfigValue {
+	object, diags := NewConfigValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewConfigValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t ConfigType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewConfigValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewConfigValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewConfigValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewConfigValueMust(ConfigValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t ConfigType) ValueType(ctx context.Context) attr.Value {
+	return ConfigValue{}
+}
+
+var _ basetypes.ObjectValuable = ConfigValue{}
+
+type ConfigValue struct {
+	state attr.ValueState
+}
+
+func (v ConfigValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 0)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 0)
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v ConfigValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v ConfigValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v ConfigValue) String() string {
+	return "ConfigValue"
+}
+
+func (v ConfigValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{})
+
+	return objVal, diags
+}
+
+func (v ConfigValue) Equal(o attr.Value) bool {
+	other, ok := o.(ConfigValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	return true
+}
+
+func (v ConfigValue) Type(ctx context.Context) attr.Type {
+	return ConfigType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v ConfigValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{}
 }
 
 var _ basetypes.ObjectTypable = NetworkIntegrationType{}

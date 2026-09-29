@@ -1,5 +1,12 @@
 cloud:
   templates:
+    config:
+      dynamic:
+        computed_optional_required: computed
+        description: >-
+          The cloud's configuration object as returned by the API. Contents vary
+          by cloud type, and include values Morpheus discovers from the target
+          system rather than ones supplied at creation.
     group_ids:
       set:
         computed_optional_required: computed
@@ -21,14 +28,16 @@ cloud:
     - zone: "" # unnest zone to root
     - timezone: time_zone
     - template-group_ids: group_ids
+    - template-config: config
   overrides:
     id:
       computed_optional_required: computed_optional
       description: Morpheus ID of the Object being referenced
       conflicts_with: [name]
     name:
+      string_length_at_least: 1
       computed_optional_required: computed_optional
-      description: The name of the Morpheus cloud
+      description: The name of the Morpheus cloud. Must not be empty.
       conflicts_with: [id]
     code:
       description: Optional code for use with policies

@@ -30,7 +30,7 @@ data "hpe_morpheus_role" "example" {
 ### Optional
 
 - `id` (Number) Morpheus ID of the Object being referenced
-- `name` (String) The name of the Morpheus role
+- `name` (String) The name of the Morpheus role. Must not be empty.
 
 ### Read-Only
 

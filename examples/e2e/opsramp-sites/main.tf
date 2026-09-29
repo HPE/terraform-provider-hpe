@@ -67,7 +67,7 @@ resource "hpe_opsramp_site" "vmware_site_barcelona" {
   country      = "Spain"
   zip          = "08018"
   state        = "Barcelona"
-  city         = "Sant Martí"
+  city         = "Sant Marti"
   search_query = format("uuid = \"%s\"", hpe_opsramp_resource.resource2.uuid)
   resources = [
     hpe_opsramp_resource.resource3.uuid
