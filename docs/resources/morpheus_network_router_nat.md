@@ -37,18 +37,18 @@ resource "hpe_morpheus_network_router_nat" "example" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `action_version` (Number, Deprecated) Deprecated. Changes to action are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends action.
+needed and will be removed in the 2.6 release. Changing it still re-sends action.
 - `description` (String) Description of the NAT rule
 - `destination_network` (String) Destination network
 - `enabled` (Boolean) Whether the NAT rule is enabled
 - `firewall` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The firewall match applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment firewall_version to apply a change.
 - `firewall_version` (Number, Deprecated) Deprecated. Changes to firewall are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends firewall.
+needed and will be removed in the 2.6 release. Changing it still re-sends firewall.
 - `priority` (Number) Priority of the NAT rule
 - `protocol` (String, Deprecated) Deprecated: use service instead. Protocol for the NAT rule, retained for backward compatibility.
 - `service` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service (protocol) applied to the NAT rule (nested under config). The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment service_version to apply a change.
 - `service_version` (Number, Deprecated) Deprecated. Changes to service are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends service.
+needed and will be removed in the 2.6 release. Changing it still re-sends service.
 - `source_network` (String) Source network
 - `translated_network` (String) Translated network
 - `translated_ports` (String) Translated ports for the NAT rule

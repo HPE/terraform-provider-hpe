@@ -42,7 +42,7 @@ resource "hpe_morpheus_backup_host" "example" {
 - `path` (String) The file or directory path on the target host to back up.
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only). Required if the Host was provisioned without providing SSH username/password at creation via Morpheus. Also requires ssh_username to be set.
 - `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.
 - `ssh_username` (String) SSH username. Required if the Host was provisioned without providing SSH username/password at creation via Morpheus.
 - `storage_provider_id` (Number) The ID of the storage provider (Bucket or File Share) to save backups to. If omitted, uses the system default.
 

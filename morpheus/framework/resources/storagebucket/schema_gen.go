@@ -31,9 +31,9 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"access_key_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				MarkdownDescription: "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				DeprecationMessage:  "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"bucket_name": schema.StringAttribute{
 				Optional:            true,
@@ -98,9 +98,9 @@ func StorageBucketResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"secret_key_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				MarkdownDescription: "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				DeprecationMessage:  "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"write_only_revision": schema.Int64Attribute{
 				Computed:            true,

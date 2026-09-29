@@ -50,8 +50,8 @@ backup_host:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.
-        deprecation_message: "No longer needed: changes to ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.
+        deprecation_message: "No longer needed: changes to ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     write_only_revision:
       int64:
         computed_optional_required: computed

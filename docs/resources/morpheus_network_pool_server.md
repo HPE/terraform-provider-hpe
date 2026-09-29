@@ -215,7 +215,7 @@ resource "hpe_morpheus_network_pool_server" "with_credential" {
 - `network_filter` (String) Filter expression for which networks to sync from the pool server.
 - `service_mode` (String) The service mode (e.g. "static" or "dhcp"). Applies to Infoblox.
 - `service_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for authentication. Conflicts with credential_id.
-- `service_password_wo_version` (Number, Deprecated) Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `service_password_wo_version` (Number, Deprecated) Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `service_throttle_rate` (Number) Rate limit (in milliseconds) for API requests to the pool server.
 - `service_url` (String) The service URL for the IPAM integration.
 - `service_username` (String) The service username for authentication. Conflicts with credential_id.

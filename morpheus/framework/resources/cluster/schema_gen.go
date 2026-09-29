@@ -307,9 +307,9 @@ func ClusterResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"ssh_password_wo_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.3 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
-						MarkdownDescription: "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.3 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
-						DeprecationMessage:  "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+						Description:         "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.6 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						MarkdownDescription: "Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is\nno longer needed and will be removed in the 2.6 release. The SSH password cannot be changed\nafter the cluster is created, so a change replaces the cluster.",
+						DeprecationMessage:  "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"ssh_port": schema.Int64Attribute{
 						Optional:            true,

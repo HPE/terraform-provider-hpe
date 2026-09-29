@@ -34,7 +34,7 @@ resource "hpe_morpheus_provisioning_license" "example" {
 
 - `description` (String) The description of the provisioning license.
 - `license_key_wo_version` (Number, Deprecated) Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends license_key_wo.
 - `tenants` (List of Number) List of tenant IDs associated with the license.
 - `virtual_images` (List of Number) List of virtual image IDs associated with the license.
 

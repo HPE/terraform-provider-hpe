@@ -94,10 +94,10 @@ resource "hpe_morpheus_load_balancer" "haproxy_generic" {
 - `enabled` (Boolean) Whether the load balancer is enabled
 - `group_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the group associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment group_id_version to force replacement into the new group.
 - `group_id_version` (Number, Deprecated) Deprecated. Changes to group_id are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `network_server_id` (Number, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The ID of the network server associated with the load balancer. The API never returns this value, so it is write-only and not stored in state. Changing it alone produces no plan diff; increment network_server_id_version to force replacement against the new network server.
 - `network_server_id_version` (Number, Deprecated) Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `permissions` (Attributes) Resource permissions for the load balancer (see [below for nested schema](#nestedatt--permissions))
 - `tenants` (Attributes Set) Array of tenant account ids that are allowed access (see [below for nested schema](#nestedatt--tenants))
 - `type_code` (String) The type code of the load balancer (e.g. haproxyContainer)

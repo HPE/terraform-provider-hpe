@@ -31,13 +31,13 @@ resource "hpe_morpheus_storage_bucket" "example" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `access_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The access key for the storage bucket.
-- `access_key_version` (Number, Deprecated) Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `access_key_version` (Number, Deprecated) Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `bucket_name` (String) The name of the bucket.
 - `default_backup_target` (Boolean) Whether this is the default backup target.
 - `endpoint` (String) The endpoint URL for the storage bucket.
 - `retention_days` (Number) The number of days to retain files before deletion.
 - `secret_key` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret key for the storage bucket.
-- `secret_key_version` (Number, Deprecated) Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `secret_key_version` (Number, Deprecated) Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 
 ### Read-Only
 

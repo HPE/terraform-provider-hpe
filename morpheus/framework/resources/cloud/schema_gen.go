@@ -321,9 +321,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"client_secret_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-						MarkdownDescription: "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-						DeprecationMessage:  "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+						Description:         "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						MarkdownDescription: "Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						DeprecationMessage:  "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"cloud_type": schema.StringAttribute{
 						Optional:            true,
@@ -489,9 +489,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					},
 					"password_version": schema.Int64Attribute{
 						Optional:            true,
-						Description:         "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-						MarkdownDescription: "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-						DeprecationMessage:  "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+						Description:         "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						MarkdownDescription: "Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+						DeprecationMessage:  "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 					},
 					"resource_pool": schema.StringAttribute{
 						Optional:            true,

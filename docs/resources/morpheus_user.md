@@ -49,16 +49,16 @@ resource "hpe_morpheus_user" "example" {
 - `linux_key_pair_id` (Number) Linux key pair id (optional)
 - `linux_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Linux password (Write Only)
 - `linux_password_wo_version` (Number, Deprecated) Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends linux_password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.
 - `linux_username` (String) Linux username
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user (Write Only)
 - `password_wo_version` (Number, Deprecated) Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
 - `receive_notifications` (Boolean) Receive Notifications?
 - `tenant_id` (Number) Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
 - `windows_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
 - `windows_password_wo_version` (Number, Deprecated) Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends windows_password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.
 - `windows_username` (String) Windows username
 
 ### Read-Only

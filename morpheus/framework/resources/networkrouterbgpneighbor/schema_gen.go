@@ -173,9 +173,9 @@ func NetworkRouterBgpNeighborResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends password_wo.",
-				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends password_wo.",
-				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"protocol_address": schema.StringAttribute{
 				Optional:            true,

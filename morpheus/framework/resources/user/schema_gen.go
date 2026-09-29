@@ -69,9 +69,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"linux_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends linux_password_wo.",
-				MarkdownDescription: "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends linux_password_wo.",
-				DeprecationMessage:  "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"linux_username": schema.StringAttribute{
 				Optional:            true,
@@ -97,9 +97,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends password_wo.",
-				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends password_wo.",
-				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				MarkdownDescription: "Deprecated. Changes to password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends password_wo.",
+				DeprecationMessage:  "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"receive_notifications": schema.BoolAttribute{
 				Optional:            true,
@@ -139,9 +139,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"windows_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends windows_password_wo.",
-				MarkdownDescription: "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends windows_password_wo.",
-				DeprecationMessage:  "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"windows_username": schema.StringAttribute{
 				Optional:            true,

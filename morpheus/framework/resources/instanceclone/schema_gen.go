@@ -459,9 +459,9 @@ func InstanceCloneResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"source_instance_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				MarkdownDescription: "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				DeprecationMessage:  "No longer needed: changes to source_instance_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to source_instance_id are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"status": schema.StringAttribute{
 				Computed:            true,

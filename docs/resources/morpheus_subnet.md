@@ -74,7 +74,7 @@ resource "hpe_morpheus_subnet" "azure_example" {
 - `cidr` (String) The CIDR of the subnet. Used directly by subnet types with cidrEditable (e.g. Google). For Azure subnets, this is derived from config.subnetCidr.
 - `config` (Dynamic, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Configuration object. Settings vary by subnet type. This attribute is write-only and not stored in state.
 - `config_version` (Number, Deprecated) Deprecated. Changes to config are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `description` (String) The description of the subnet.
 - `dhcp_server` (Boolean) Whether DHCP server is enabled.
 - `labels` (Set of String) Labels for the subnet.

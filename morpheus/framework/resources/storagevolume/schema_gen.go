@@ -113,15 +113,15 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_alletramp_bmaas_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				MarkdownDescription: "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				DeprecationMessage:  "No longer needed: changes to config_alletramp_bmaas are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to config_alletramp_bmaas are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to config_alletramp_bmaas are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"config_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,

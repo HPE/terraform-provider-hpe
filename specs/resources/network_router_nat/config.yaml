@@ -25,22 +25,22 @@ network_router_nat:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to action are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends action.
-        deprecation_message: "No longer needed: changes to action are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends action.
+        deprecation_message: "No longer needed: changes to action are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     firewall_version:
       int64:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to firewall are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends firewall.
-        deprecation_message: "No longer needed: changes to firewall are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends firewall.
+        deprecation_message: "No longer needed: changes to firewall are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     service_version:
       int64:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to service are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends service.
-        deprecation_message: "No longer needed: changes to service are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends service.
+        deprecation_message: "No longer needed: changes to service are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     write_only_revision:
       int64:
         computed_optional_required: computed

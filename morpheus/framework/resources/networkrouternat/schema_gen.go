@@ -28,9 +28,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"action_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends action.",
-				MarkdownDescription: "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends action.",
-				DeprecationMessage:  "No longer needed: changes to action are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends action.",
+				MarkdownDescription: "Deprecated. Changes to action are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends action.",
+				DeprecationMessage:  "No longer needed: changes to action are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,
@@ -70,9 +70,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"firewall_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends firewall.",
-				MarkdownDescription: "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends firewall.",
-				DeprecationMessage:  "No longer needed: changes to firewall are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends firewall.",
+				MarkdownDescription: "Deprecated. Changes to firewall are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends firewall.",
+				DeprecationMessage:  "No longer needed: changes to firewall are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed:            true,
@@ -117,9 +117,9 @@ func NetworkRouterNatResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends service.",
-				MarkdownDescription: "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends service.",
-				DeprecationMessage:  "No longer needed: changes to service are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends service.",
+				MarkdownDescription: "Deprecated. Changes to service are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends service.",
+				DeprecationMessage:  "No longer needed: changes to service are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"source_network": schema.StringAttribute{
 				Optional:            true,

@@ -63,9 +63,9 @@ func SubnetResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"config_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to config are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to config are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"description": schema.StringAttribute{
 				Optional:            true,

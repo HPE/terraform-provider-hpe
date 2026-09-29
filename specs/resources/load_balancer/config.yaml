@@ -53,15 +53,15 @@ load_balancer:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to group_id are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
-        deprecation_message: "No longer needed: changes to group_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+        deprecation_message: "No longer needed: changes to group_id are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     network_server_id_version:
       int64:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
-        deprecation_message: "No longer needed: changes to network_server_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+        deprecation_message: "No longer needed: changes to network_server_id are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     permissions_all:
       bool:
         computed_optional_required: computed_optional

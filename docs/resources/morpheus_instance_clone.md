@@ -359,7 +359,7 @@ combined with a typed config_* block.
 - `group_id` (Number) The ID of the group to clone into. Defaults to the source instance's group.
 - `plan_id` (Number) The ID of the service plan override for the clone. Defaults to the source instance's service plan.
 - `source_instance_id_version` (Number, Deprecated) Deprecated. Changes to source_instance_id are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
+needed and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_group` (Number) The id of the user group to associate with the clone. Can only be set at clone time; changing it forces replacement.
 

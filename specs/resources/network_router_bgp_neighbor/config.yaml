@@ -42,8 +42,8 @@ network_router_bgp_neighbor:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
-        deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
+        deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     write_only_revision:
       int64:
         computed_optional_required: computed

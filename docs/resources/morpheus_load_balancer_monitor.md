@@ -104,7 +104,7 @@ resource "hpe_morpheus_load_balancer_monitor" "nsxv" {
 - `monitor_interval` (Number) The interval in seconds at which the monitor checks target health
 - `monitor_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password for authenticated health checks (Write Only)
 - `monitor_password_wo_version` (Number, Deprecated) Deprecated. Changes to monitor_password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends monitor_password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends monitor_password_wo.
 - `monitor_timeout` (Number) The maximum time in seconds to wait for a health check response before marking as failed
 - `monitor_type` (String) The monitor protocol type. Valid values are: dns, http, https, icmp, ldap, mssql, passive, tcp, udp. The provider maps these to the appropriate load-balancer-specific value based on the load balancer type (e.g. http becomes LBHttpMonitorProfile for NSX-T).
 - `monitor_username` (String) The username for authenticated health checks

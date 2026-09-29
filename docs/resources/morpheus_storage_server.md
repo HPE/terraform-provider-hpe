@@ -74,7 +74,7 @@ set for your environment with `GET /api/storage-server-types`.
 - `enabled` (Boolean) Whether the storage server is enabled.
 - `service_host` (String) The host address of the storage server.
 - `service_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The service password for the storage server. Conflicts with credential_id.
-- `service_password_wo_version` (Number, Deprecated) Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `service_password_wo_version` (Number, Deprecated) Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `service_url` (String) The service URL of the storage server.
 - `service_username` (String) The service username for the storage server. Conflicts with credential_id.
 - `tenants` (List of Number) List of tenant account IDs that are allowed access to this storage server.

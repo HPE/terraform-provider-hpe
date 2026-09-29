@@ -86,9 +86,9 @@ func BackupHostResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"ssh_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.",
-				MarkdownDescription: "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.",
-				DeprecationMessage:  "No longer needed: changes to ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.",
+				MarkdownDescription: "Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.",
+				DeprecationMessage:  "No longer needed: changes to ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"ssh_username": schema.StringAttribute{
 				Optional:            true,

@@ -18,8 +18,8 @@ storage_bucket:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to access_key are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends access_key.
-        deprecation_message: "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends access_key.
+        deprecation_message: "No longer needed: changes to access_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     secret_key:
       string:
         computed_optional_required: optional
@@ -37,8 +37,8 @@ storage_bucket:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to secret_key are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends secret_key.
-        deprecation_message: "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends secret_key.
+        deprecation_message: "No longer needed: changes to secret_key are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     endpoint:
       string:
         computed_optional_required: optional
@@ -89,7 +89,7 @@ storage_bucket:
       write_only: true
     access_key_version:
       computed_optional_required: optional
-      description: Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+      description: Deprecated. Changes to access_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     bucket_name:
       computed_optional_required: optional
       description: The name of the bucket.
@@ -120,4 +120,4 @@ storage_bucket:
       write_only: true
     secret_key_version:
       computed_optional_required: optional
-      description: Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+      description: Deprecated. Changes to secret_key are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.

@@ -65,8 +65,8 @@ user:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to linux_password_wo are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends linux_password_wo.
-        deprecation_message: "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends linux_password_wo.
+        deprecation_message: "No longer needed: changes to linux_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     windows_username:
       string:
         computed_optional_required: computed_optional
@@ -89,8 +89,8 @@ user:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends windows_password_wo.
-        deprecation_message: "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends windows_password_wo.
+        deprecation_message: "No longer needed: changes to windows_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     password_wo:
       string:
         computed_optional_required: optional
@@ -108,8 +108,8 @@ user:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
-        deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
+        deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     write_only_revision:
       int64:
         computed_optional_required: computed

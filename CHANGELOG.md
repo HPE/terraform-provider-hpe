@@ -136,7 +136,7 @@ For a migrated resource:
 - **`*_wo_version` is deprecated.** It still works for the whole 2.2 line — changing it re-sends the
   value as before — but every plan warns that it is no longer needed. Remove the attribute from
   your configuration: the removal is one in-place update, after which the plan is empty. The
-  attributes will be removed in the 2.3 release.
+  attributes will be removed in the 2.6 release.
 - **A new read-only `write_only_revision`** records the time of the last apply that sent a
   write-only value. It is the visible trace of "a write-only value was re-sent on this apply".
 - **Upgrading from 2.1:** the first plan after upgrading shows one in-place update per resource

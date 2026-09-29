@@ -275,7 +275,7 @@ Required:
 
 Optional:
 
-- `client_secret_version` (Number, Deprecated) Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `client_secret_version` (Number, Deprecated) Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `cloud_type` (String) The Azure cloud type (global, usgov, german, china)
 - `cmdb_discovery` (Boolean) Whether to enable CMDB discovery on the cloud
 - `import_existing` (String) Whether to import existing resources from the cloud (on, off)
@@ -312,7 +312,7 @@ Optional:
 - `enable_vnc` (Boolean) Enable VNC access to the console.
 - `hide_host_selection` (Boolean) Whether to hide the ability to select the vSphere host from the user during provisioning.
 - `password` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password to apply to the user
-- `password_version` (Number, Deprecated) Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+- `password_version` (Number, Deprecated) Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
 - `resource_pool` (String) The name of the vSphere resource pool
 - `rpc_mode` (String) The method for interacting with cloud workloads (guestexec (VMware Tools) or rpc (SSH/WinRM))
 - `username` (String) Username.

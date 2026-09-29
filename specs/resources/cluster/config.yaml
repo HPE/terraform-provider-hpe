@@ -121,9 +121,9 @@ cluster:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to server.ssh_password_wo are detected automatically; this attribute is
-          no longer needed and will be removed in the 2.3 release. The SSH password cannot be changed
+          no longer needed and will be removed in the 2.6 release. The SSH password cannot be changed
           after the cluster is created, so a change replaces the cluster.
-        deprecation_message: "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+        deprecation_message: "No longer needed: changes to server.ssh_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     dynamic_placement:
       bool:
         computed_optional_required: optional

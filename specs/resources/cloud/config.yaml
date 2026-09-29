@@ -21,15 +21,15 @@ cloud:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends config_vmware.password.
-        deprecation_message: "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends config_vmware.password.
+        deprecation_message: "No longer needed: changes to config_vmware.password are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     azure_client_secret_version:
       int64:
         computed_optional_required: optional
         description: |-
           Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer
-          needed and will be removed in the 2.3 release. Changing it still re-sends config_azure.client_secret.
-        deprecation_message: "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.3 release."
+          needed and will be removed in the 2.6 release. Changing it still re-sends config_azure.client_secret.
+        deprecation_message: "No longer needed: changes to config_azure.client_secret are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
     write_only_revision:
       int64:
         computed_optional_required: computed
@@ -282,7 +282,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_azure.client_secret_version:
       computed_optional_required: optional
-      description: Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+      description: Deprecated. Changes to config_azure.client_secret are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     config_azure.resource_group:
       description: The Azure resource group
       computed_optional_required: required
@@ -318,7 +318,7 @@ cloud:
               modifiers.NullableStringUpdateModifier{}
     config_vmware.password_version:
       computed_optional_required: optional
-      description: Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.
+      description: Deprecated. Changes to config_vmware.password are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.
     costing_mode:
       description: Whether to enable costing on the cloud (off, costing, reservations, full)
       one_of: [off, costing, reservations, full]

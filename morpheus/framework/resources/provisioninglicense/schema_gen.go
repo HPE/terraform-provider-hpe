@@ -37,9 +37,9 @@ func ProvisioningLicenseResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"license_key_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.",
-				MarkdownDescription: "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still re-sends license_key_wo.",
-				DeprecationMessage:  "No longer needed: changes to license_key_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends license_key_wo.",
+				MarkdownDescription: "Deprecated. Changes to license_key_wo are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still re-sends license_key_wo.",
+				DeprecationMessage:  "No longer needed: changes to license_key_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"license_type": schema.StringAttribute{
 				Required:            true,

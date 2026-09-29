@@ -77,7 +77,7 @@ resource "hpe_morpheus_image" "example_image" {
 - `os_type_id` (Number) ID of the OS Type
 - `ssh_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) SSH password (Write Only)
 - `ssh_password_wo_version` (Number, Deprecated) Deprecated. Changes to ssh_password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends ssh_password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends ssh_password_wo.
 - `ssh_username` (String) SSH Username
 - `storage_provider_id` (Number) ID of the storage provider where the image will be uploaded
 - `sysprep` (Boolean) Sysprep Enabled?

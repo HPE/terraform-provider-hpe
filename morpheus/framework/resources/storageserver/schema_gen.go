@@ -76,9 +76,9 @@ func StorageServerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"service_password_wo_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				MarkdownDescription: "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.3 release.",
-				DeprecationMessage:  "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				MarkdownDescription: "Deprecated. Changes to service_password_wo are detected automatically; this attribute is no longer needed and will be removed in the 2.6 release.",
+				DeprecationMessage:  "No longer needed: changes to service_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"service_url": schema.StringAttribute{
 				Optional:            true,

@@ -49,7 +49,7 @@ resource "hpe_morpheus_network_router_bgp_neighbor" "example" {
 - `keep_alive` (Number) Keep-alive interval in seconds
 - `password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password (Write Only)
 - `password_wo_version` (Number, Deprecated) Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
-needed and will be removed in the 2.3 release. Changing it still re-sends password_wo.
+needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
 - `protocol_address` (String) Protocol address (NSX-V distributed router)
 - `remote_as` (String) Remote AS number
 - `restart_mode` (String) Graceful restart mode (e.g. HELPER_ONLY, GR_AND_HELPER, DISABLE)

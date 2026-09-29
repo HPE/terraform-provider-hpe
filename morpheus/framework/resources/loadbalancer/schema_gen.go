@@ -159,9 +159,9 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"group_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				MarkdownDescription: "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				DeprecationMessage:  "No longer needed: changes to group_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to group_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to group_id are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
@@ -185,9 +185,9 @@ func LoadBalancerResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"network_server_id_version": schema.Int64Attribute{
 				Optional:            true,
-				Description:         "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				MarkdownDescription: "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.3 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
-				DeprecationMessage:  "No longer needed: changes to network_server_id are detected automatically. Remove this attribute; it will be removed in the 2.3 release.",
+				Description:         "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				MarkdownDescription: "Deprecated. Changes to network_server_id are detected automatically; this attribute is no longer\nneeded and will be removed in the 2.6 release. Changing it still replaces the resource, as re-sending a create-only value can only be done by re-creating.",
+				DeprecationMessage:  "No longer needed: changes to network_server_id are detected automatically. Remove this attribute; it will be removed in the 2.6 release.",
 			},
 			"permissions": schema.SingleNestedAttribute{
 				Attributes: map[string]schema.Attribute{
