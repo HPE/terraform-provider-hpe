@@ -10,6 +10,11 @@ Manages a Morpheus load balancer health check monitor. Monitors perform periodic
 
 ~> The `config` attribute is a dynamic object whose accepted fields depend on the load balancer type. Only **NSX Advanced Load Balancer (AVI)** supports the `config.monitor.id` (parent monitor) field. NSX-T, NSX-V, HAProxy, and OpenStack load balancer types do not support it. Additionally, HAProxy load balancers have `createMonitors` disabled and do not support monitor management through the API.
 
+-> Removing `description`, `send_data`, `send_type`, `receive_data`, `receive_code`,
+`monitor_destination` or `extra_config` from the configuration clears it on the monitor.
+`monitor_username` is set when the monitor is created and keeps its value when it is removed; a
+change to it replaces the monitor.
+
 ## Example Usage
 
 ### NSX-T Load Balancer Monitor

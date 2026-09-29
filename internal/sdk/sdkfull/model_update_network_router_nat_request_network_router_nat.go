@@ -24,22 +24,22 @@ var _ MappedNullable = &UpdateNetworkRouterNatRequestNetworkRouterNAT{}
 type UpdateNetworkRouterNatRequestNetworkRouterNAT struct {
 	// Sets name of NAT
 	Name *string `json:"name,omitempty"`
-	// Description of the NAT rule.
-	Description *string `json:"description,omitempty"`
+	// Description of the NAT rule. Null clears it.
+	Description NullableString `json:"description,omitempty"`
 	// Whether the NAT rule is enabled.
 	Enabled *bool `json:"enabled,omitempty"`
-	// Source network for the NAT rule.
-	SourceNetwork *string `json:"sourceNetwork,omitempty"`
-	// Destination network for the NAT rule.
-	DestinationNetwork *string `json:"destinationNetwork,omitempty"`
-	// Translated network for the NAT rule.
-	TranslatedNetwork *string `json:"translatedNetwork,omitempty"`
+	// Source network for the NAT rule. Null clears it.
+	SourceNetwork NullableString `json:"sourceNetwork,omitempty"`
+	// Destination network for the NAT rule. Null clears it.
+	DestinationNetwork NullableString `json:"destinationNetwork,omitempty"`
+	// Translated network for the NAT rule. Null clears it.
+	TranslatedNetwork NullableString `json:"translatedNetwork,omitempty"`
 	// Source ports for the NAT rule.
 	SourcePorts *string `json:"sourcePorts,omitempty"`
 	// Destination ports for the NAT rule.
 	DestinationPorts *string `json:"destinationPorts,omitempty"`
-	// Translated ports for the NAT rule.
-	TranslatedPorts *string `json:"translatedPorts,omitempty"`
+	// Translated ports for the NAT rule. Null clears it.
+	TranslatedPorts NullableString `json:"translatedPorts,omitempty"`
 	// Priority of the NAT rule.
 	Priority *int64 `json:"priority,omitempty"`
 	// Protocol for the NAT rule.
@@ -63,20 +63,20 @@ func (o UpdateNetworkRouterNatRequestNetworkRouterNAT) ToMap() (map[string]inter
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
 	}
-	if !IsNil(o.SourceNetwork) {
-		toSerialize["sourceNetwork"] = o.SourceNetwork
+	if o.SourceNetwork.IsSet() {
+		toSerialize["sourceNetwork"] = o.SourceNetwork.Get()
 	}
-	if !IsNil(o.DestinationNetwork) {
-		toSerialize["destinationNetwork"] = o.DestinationNetwork
+	if o.DestinationNetwork.IsSet() {
+		toSerialize["destinationNetwork"] = o.DestinationNetwork.Get()
 	}
-	if !IsNil(o.TranslatedNetwork) {
-		toSerialize["translatedNetwork"] = o.TranslatedNetwork
+	if o.TranslatedNetwork.IsSet() {
+		toSerialize["translatedNetwork"] = o.TranslatedNetwork.Get()
 	}
 	if !IsNil(o.SourcePorts) {
 		toSerialize["sourcePorts"] = o.SourcePorts
@@ -84,8 +84,8 @@ func (o UpdateNetworkRouterNatRequestNetworkRouterNAT) ToMap() (map[string]inter
 	if !IsNil(o.DestinationPorts) {
 		toSerialize["destinationPorts"] = o.DestinationPorts
 	}
-	if !IsNil(o.TranslatedPorts) {
-		toSerialize["translatedPorts"] = o.TranslatedPorts
+	if o.TranslatedPorts.IsSet() {
+		toSerialize["translatedPorts"] = o.TranslatedPorts.Get()
 	}
 	if !IsNil(o.Priority) {
 		toSerialize["priority"] = o.Priority

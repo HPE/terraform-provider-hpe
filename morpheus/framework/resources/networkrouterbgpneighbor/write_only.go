@@ -3,10 +3,6 @@
 package networkrouterbgpneighbor
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
@@ -19,14 +15,4 @@ var wo = wodigest.Tracker{
 	Attributes: map[string]string{
 		"password_wo": "password_wo_version",
 	},
-}
-
-// ModifyPlan plans an in-place update when a write-only value changed (or a
-// deprecated marker did).
-func (r *Resource) ModifyPlan(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-) {
-	wo.ModifyPlan(ctx, req, resp)
 }

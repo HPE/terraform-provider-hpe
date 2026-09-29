@@ -738,8 +738,9 @@ The `hpe_morpheus_storage_volume_type` data source previously surfaced only `id`
 
 Removing an optional attribute from a resource's configuration **clears it on the appliance**, for
 the resources listed below; the attribute is planned to `null` (or, where Morpheus keeps a value of
-its own afterwards, `(known after apply)`) and read back empty after the apply. Three things are
-not cleared: a boolean keeps its value when it is removed, since there is no empty boolean; a value
+its own afterwards, `(known after apply)`) and read back empty after the apply. As in any other
+update, computed attributes the configuration does not set show as `(known after apply)` in the
+same plan. Three things are not cleared: a boolean keeps its value when it is removed, since there is no empty boolean; a value
 the practitioner never set — one Morpheus filled in, or a cloud sync reported — is left alone; and
 an attribute Morpheus requires, or one whose change replaces the resource, keeps its current value,
 as each resource's documentation says. The provider records, at every apply, which of a resource's
@@ -749,12 +750,26 @@ when it goes: the record starts with the first apply made by this version, so an
 way until its first apply.
 
 In this release the behaviour applies to `hpe_morpheus_network`, `hpe_morpheus_subnet`,
-`hpe_morpheus_group`, `hpe_morpheus_role`, `hpe_morpheus_tenant`, `hpe_morpheus_cluster`,
+`hpe_morpheus_group`, `hpe_morpheus_role`, `hpe_morpheus_tenant`, `hpe_morpheus_user`,
+`hpe_morpheus_cluster`, `hpe_morpheus_cloud`, `hpe_morpheus_image`, `hpe_morpheus_service_plan`,
 `hpe_morpheus_security_group`, `hpe_morpheus_security_group_rule`, `hpe_morpheus_monitoring_check`,
 `hpe_morpheus_monitoring_group`, `hpe_morpheus_vdi_pool`, `hpe_morpheus_vdi_gateway`,
-`hpe_morpheus_vdi_app`, `hpe_morpheus_backup_job`, `hpe_morpheus_backup_host` and
-`hpe_morpheus_instance`. On the other resources a removed optional attribute is still kept, as in
-earlier releases.
+`hpe_morpheus_vdi_app`, `hpe_morpheus_backup_job`, `hpe_morpheus_backup_host`,
+`hpe_morpheus_instance`, `hpe_morpheus_load_balancer`, `hpe_morpheus_load_balancer_profile`,
+`hpe_morpheus_load_balancer_pool`, `hpe_morpheus_load_balancer_monitor`,
+`hpe_morpheus_load_balancer_virtual_server`, `hpe_morpheus_network_router_nat`,
+`hpe_morpheus_network_router_firewall_rule`, `hpe_morpheus_network_router_firewall_rule_group`,
+`hpe_morpheus_network_router_bgp_neighbor`, `hpe_morpheus_network_router_route` (whose `name`,
+`description` and `priority` cannot be edited after create, so removing one replaces the route, as
+a change does), `hpe_morpheus_network_pool_server`, `hpe_morpheus_os_type`,
+`hpe_morpheus_setting_whitelabel`, `hpe_morpheus_storage_server`, `hpe_morpheus_storage_bucket`,
+`hpe_morpheus_network_firewall_rule`, `hpe_morpheus_network_firewall_rule_group`,
+`hpe_morpheus_network_pool`, `hpe_morpheus_network_group`, `hpe_morpheus_task`,
+`hpe_morpheus_container_script`, `hpe_morpheus_budget`, `hpe_morpheus_policy`,
+`hpe_morpheus_provisioning_license`, `hpe_morpheus_option_list`, `hpe_morpheus_certificate`,
+`hpe_morpheus_cluster_namespace`, `hpe_morpheus_deployment` and `hpe_morpheus_power_schedule`. The
+remaining resources have no optional attribute that can be cleared: each is set when the resource
+is created, is a boolean, has a default, or is a value Morpheus requires or derives.
 
 ## Automatic version checking
 

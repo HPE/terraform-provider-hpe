@@ -3,10 +3,6 @@
 package loadbalancer
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
@@ -22,14 +18,4 @@ var wo = wodigest.Tracker{ //nolint:gosec // attribute names, not credentials
 		"network_server_id": "network_server_id_version",
 	},
 	Immutable: []string{"group_id", "network_server_id"},
-}
-
-// ModifyPlan plans a replacement when a write-only value changed (or a
-// deprecated marker did).
-func (r *Resource) ModifyPlan(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-) {
-	wo.ModifyPlan(ctx, req, resp)
 }

@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
@@ -142,7 +143,24 @@ func (r *settingWhitelabelResource) Update(
 		return
 	}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: the strings Morpheus resets with an empty value.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := buildUpdateRequest(&plan)
+	if s := pending.String("appliance_name", plan.ApplianceName); s != nil {
+		body.WhitelabelSettings.ApplianceName = s
+	}
+	if s := pending.String("primary_color", plan.PrimaryColor); s != nil {
+		body.WhitelabelSettings.HeaderBgColor = s
+	}
+	if s := pending.String("secondary_color", plan.SecondaryColor); s != nil {
+		body.WhitelabelSettings.HeaderFgColor = s
+	}
 
 	// Reset a logo/favicon only when Terraform previously tracked a path for it
 	// and the plan now clears it, so an image set outside Terraform (e.g. in the

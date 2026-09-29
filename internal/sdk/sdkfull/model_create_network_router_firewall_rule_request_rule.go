@@ -38,12 +38,12 @@ type CreateNetworkRouterFirewallRuleRequestRule struct {
 	DestinationType *string `json:"destinationType,omitempty"`
 	// Network protocol the rule matches (for example tcp, udp, icmp, any).
 	Protocol *string `json:"protocol,omitempty"`
-	// Port or port range the rule matches (for example 443 or 8080-8090).
-	PortRange *string `json:"portRange,omitempty"`
-	// Application the rule matches, when supported by the network router type.
-	Application *string `json:"application,omitempty"`
-	// Description of the firewall rule.
-	Description          *string                                           `json:"description,omitempty"`
+	// Port or port range the rule matches (for example 443 or 8080-8090). Null clears it.
+	PortRange NullableString `json:"portRange,omitempty"`
+	// Application the rule matches, when supported by the network router type. Null clears it.
+	Application NullableString `json:"application,omitempty"`
+	// Description of the firewall rule. Null clears it.
+	Description          NullableString                                    `json:"description,omitempty"`
 	Config               *CreateNetworkRouterFirewallRuleRequestRuleConfig `json:"config,omitempty"`
 	AdditionalProperties map[string]interface{}                            `json:",remain"`
 }
@@ -82,14 +82,14 @@ func (o CreateNetworkRouterFirewallRuleRequestRule) ToMap() (map[string]interfac
 	if !IsNil(o.Protocol) {
 		toSerialize["protocol"] = o.Protocol
 	}
-	if !IsNil(o.PortRange) {
-		toSerialize["portRange"] = o.PortRange
+	if o.PortRange.IsSet() {
+		toSerialize["portRange"] = o.PortRange.Get()
 	}
-	if !IsNil(o.Application) {
-		toSerialize["application"] = o.Application
+	if o.Application.IsSet() {
+		toSerialize["application"] = o.Application.Get()
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

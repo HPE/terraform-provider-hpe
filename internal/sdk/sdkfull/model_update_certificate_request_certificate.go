@@ -24,8 +24,8 @@ var _ MappedNullable = &UpdateCertificateRequestCertificate{}
 type UpdateCertificateRequestCertificate struct {
 	// A unique name scoped to your account for the key
 	Name *string `json:"name,omitempty"`
-	// A description of the certificate
-	Description *string `json:"description,omitempty"`
+	// A description of the certificate; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// The contents of the certificate file
 	CertFile *string `json:"certFile,omitempty"`
 	// The contents of the key file
@@ -58,8 +58,8 @@ func (o UpdateCertificateRequestCertificate) ToMap() (map[string]interface{}, er
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.CertFile) {
 		toSerialize["certFile"] = o.CertFile

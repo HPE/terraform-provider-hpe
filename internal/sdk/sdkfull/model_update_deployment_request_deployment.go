@@ -24,8 +24,8 @@ var _ MappedNullable = &UpdateDeploymentRequestDeployment{}
 type UpdateDeploymentRequestDeployment struct {
 	// Name, a unique identifier for the deployment
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description          *string                `json:"description,omitempty"`
+	// Description; null clears it
+	Description          NullableString         `json:"description,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -44,8 +44,8 @@ func (o UpdateDeploymentRequestDeployment) ToMap() (map[string]interface{}, erro
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

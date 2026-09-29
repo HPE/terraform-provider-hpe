@@ -26,8 +26,8 @@ type UpdateProvisioningLicenseRequestLicense struct {
 	LicenseVersion *string `json:"licenseVersion,omitempty"`
 	// Copies - The number of times the key can be used.
 	Copies *int64 `json:"copies,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Virtual Images - Array of Virtual Image IDs to associate with license.
 	VirtualImages []int64 `json:"virtualImages,omitempty"`
 	// Tenants - Array of tenants that are allowed to use the key.
@@ -56,8 +56,8 @@ func (o UpdateProvisioningLicenseRequestLicense) ToMap() (map[string]interface{}
 	if !IsNil(o.Copies) {
 		toSerialize["copies"] = o.Copies
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.VirtualImages) {
 		toSerialize["virtualImages"] = o.VirtualImages

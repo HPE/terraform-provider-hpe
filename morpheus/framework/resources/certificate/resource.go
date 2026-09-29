@@ -12,6 +12,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 )
@@ -61,9 +62,7 @@ func (r *certificateResource) Create(ctx context.Context, req resource.CreateReq
 		CertFile: plan.CertFile.ValueStringPointer(),
 		KeyFile:  plan.KeyFile.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	body.Description.Set(plan.Description.ValueStringPointer())
 	if !plan.DomainName.IsNull() {
 		body.DomainName = plan.DomainName.ValueStringPointer()
 	}
@@ -163,14 +162,20 @@ func (r *certificateResource) Update(ctx context.Context, req resource.UpdateReq
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateCertificateRequestCertificate{
 		Name:     plan.Name.ValueStringPointer(),
 		CertFile: plan.CertFile.ValueStringPointer(),
 		KeyFile:  plan.KeyFile.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.DomainName.IsNull() {
 		body.DomainName = plan.DomainName.ValueStringPointer()
 	}

@@ -24,8 +24,8 @@ type UpdateServicePlansRequestServicePlan struct {
 	Name *string `json:"name,omitempty"`
 	// Service plan code, must be unique
 	Code *string `json:"code,omitempty"`
-	// Service plan description
-	Description *string `json:"description,omitempty"`
+	// Service plan description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Can be used to enable / disable the editability of the service plan.
 	Editable *bool `json:"editable,omitempty"`
 	// Max storage size in bytes
@@ -77,8 +77,8 @@ func (o UpdateServicePlansRequestServicePlan) ToMap() (map[string]interface{}, e
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Editable) {
 		toSerialize["editable"] = o.Editable

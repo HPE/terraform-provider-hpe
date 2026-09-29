@@ -24,12 +24,12 @@ var _ MappedNullable = &NetworkRouterBgpNeighborUpdate{}
 type NetworkRouterBgpNeighborUpdate struct {
 	// IP address of the BGP neighbor
 	IpAddress *string `json:"ipAddress,omitempty"`
-	// Description of the BGP neighbor
-	Description *string `json:"description,omitempty"`
-	// Forwarding address (NSX-V distributed router)
-	ForwardingAddress *string `json:"forwardingAddress,omitempty"`
-	// Protocol address (NSX-V distributed router)
-	ProtocolAddress *string `json:"protocolAddress,omitempty"`
+	// Description of the BGP neighbor; null clears it
+	Description NullableString `json:"description,omitempty"`
+	// Forwarding address (NSX-V distributed router); null clears it
+	ForwardingAddress NullableString `json:"forwardingAddress,omitempty"`
+	// Protocol address (NSX-V distributed router); null clears it
+	ProtocolAddress NullableString `json:"protocolAddress,omitempty"`
 	// Remote AS number
 	RemoteAs *string `json:"remoteAs,omitempty"`
 	// Route weight
@@ -42,10 +42,10 @@ type NetworkRouterBgpNeighborUpdate struct {
 	Password *string `json:"password,omitempty"`
 	// Address family for route filtering (e.g. IPV4, IPV6)
 	RouteFilteringType *string `json:"routeFilteringType,omitempty"`
-	// Inbound route filter name
-	RouteFilteringIn *string `json:"routeFilteringIn,omitempty"`
-	// Outbound route filter name
-	RouteFilteringOut *string                                   `json:"routeFilteringOut,omitempty"`
+	// Inbound route filter name; null clears it
+	RouteFilteringIn NullableString `json:"routeFilteringIn,omitempty"`
+	// Outbound route filter name; null clears it
+	RouteFilteringOut NullableString                            `json:"routeFilteringOut,omitempty"`
 	BfdEnabled        *NetworkRouterBgpNeighborUpdateBfdEnabled `json:"bfdEnabled,omitempty"`
 	// BFD interval in milliseconds
 	BfdInterval *int64 `json:"bfdInterval,omitempty"`
@@ -75,14 +75,14 @@ func (o NetworkRouterBgpNeighborUpdate) ToMap() (map[string]interface{}, error) 
 	if !IsNil(o.IpAddress) {
 		toSerialize["ipAddress"] = o.IpAddress
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.ForwardingAddress) {
-		toSerialize["forwardingAddress"] = o.ForwardingAddress
+	if o.ForwardingAddress.IsSet() {
+		toSerialize["forwardingAddress"] = o.ForwardingAddress.Get()
 	}
-	if !IsNil(o.ProtocolAddress) {
-		toSerialize["protocolAddress"] = o.ProtocolAddress
+	if o.ProtocolAddress.IsSet() {
+		toSerialize["protocolAddress"] = o.ProtocolAddress.Get()
 	}
 	if !IsNil(o.RemoteAs) {
 		toSerialize["remoteAs"] = o.RemoteAs
@@ -102,11 +102,11 @@ func (o NetworkRouterBgpNeighborUpdate) ToMap() (map[string]interface{}, error) 
 	if !IsNil(o.RouteFilteringType) {
 		toSerialize["routeFilteringType"] = o.RouteFilteringType
 	}
-	if !IsNil(o.RouteFilteringIn) {
-		toSerialize["routeFilteringIn"] = o.RouteFilteringIn
+	if o.RouteFilteringIn.IsSet() {
+		toSerialize["routeFilteringIn"] = o.RouteFilteringIn.Get()
 	}
-	if !IsNil(o.RouteFilteringOut) {
-		toSerialize["routeFilteringOut"] = o.RouteFilteringOut
+	if o.RouteFilteringOut.IsSet() {
+		toSerialize["routeFilteringOut"] = o.RouteFilteringOut.Get()
 	}
 	if !IsNil(o.BfdEnabled) {
 		toSerialize["bfdEnabled"] = o.BfdEnabled

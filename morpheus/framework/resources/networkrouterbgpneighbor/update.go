@@ -13,6 +13,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -61,17 +62,19 @@ func (r *Resource) Update(
 		neighbor.IpAddress = plan.IpAddress.ValueStringPointer()
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		neighbor.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
 
-	if !plan.ForwardingAddress.IsNull() && !plan.ForwardingAddress.IsUnknown() {
-		neighbor.ForwardingAddress = plan.ForwardingAddress.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &neighbor.Description)
 
-	if !plan.ProtocolAddress.IsNull() && !plan.ProtocolAddress.IsUnknown() {
-		neighbor.ProtocolAddress = plan.ProtocolAddress.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "forwarding_address", plan.ForwardingAddress, &neighbor.ForwardingAddress)
+
+	clearable.NullableString(pending, "protocol_address", plan.ProtocolAddress, &neighbor.ProtocolAddress)
 
 	if !plan.RemoteAs.IsNull() && !plan.RemoteAs.IsUnknown() {
 		neighbor.RemoteAs = plan.RemoteAs.ValueStringPointer()
@@ -100,13 +103,9 @@ func (r *Resource) Update(
 		neighbor.RouteFilteringType = plan.RouteFilteringType.ValueStringPointer()
 	}
 
-	if !plan.RouteFilteringIn.IsNull() && !plan.RouteFilteringIn.IsUnknown() {
-		neighbor.RouteFilteringIn = plan.RouteFilteringIn.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "route_filtering_in", plan.RouteFilteringIn, &neighbor.RouteFilteringIn)
 
-	if !plan.RouteFilteringOut.IsNull() && !plan.RouteFilteringOut.IsUnknown() {
-		neighbor.RouteFilteringOut = plan.RouteFilteringOut.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "route_filtering_out", plan.RouteFilteringOut, &neighbor.RouteFilteringOut)
 
 	if !plan.BfdEnabled.IsNull() && !plan.BfdEnabled.IsUnknown() {
 		bfdVal := sdk.UpdateNetworkRouterBgpNeighborRequestNetworkRouterBgpNeighborBfdEnabled{}
@@ -174,6 +173,7 @@ func (r *Resource) Update(
 	// Always record the digests of the configured values, sent or not.
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &newState)...)
 }
 

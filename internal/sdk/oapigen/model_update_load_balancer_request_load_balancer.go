@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateLoadBalancerRequestLoadBalancer{}
 type UpdateLoadBalancerRequestLoadBalancer struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Activate (true) or disable (false)
 	Enabled *bool `json:"enabled,omitempty"`
 	// Configuration object with parameters that vary by load balancer type.
@@ -51,8 +51,8 @@ func (o UpdateLoadBalancerRequestLoadBalancer) ToMap() (map[string]interface{}, 
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled

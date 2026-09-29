@@ -17,6 +17,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -515,6 +516,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		resp.Diagnostics.AddError(
@@ -553,9 +555,16 @@ func (r *Resource) Update(
 		servicePlan.Code = plan.Code.ValueStringPointer()
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		servicePlan.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &servicePlan.Description)
 
 	if !plan.MaxStorage.IsNull() && !plan.MaxStorage.IsUnknown() {
 		servicePlan.MaxStorage = plan.MaxStorage.ValueInt64Pointer()
@@ -605,18 +614,18 @@ func (r *Resource) Update(
 		servicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
 	}
 
-	if !plan.PriceSetIds.IsNull() && !plan.PriceSetIds.IsUnknown() {
-		var priceSetIDs []int64
-		diags := plan.PriceSetIds.ElementsAs(ctx, &priceSetIDs, false)
-		resp.Diagnostics.Append(diags...)
-		if resp.Diagnostics.HasError() {
-			return
-		}
-		var updatePricesets []sdk.UpdateServicePlansRequestServicePlanPriceSetsInner
+	// The planned price sets when known; an empty list — every price set
+	// removed — when the attribute is being cleared.
+	priceSetIDs, sendPriceSets, psdiags := pending.Int64s(ctx, "price_set_ids", plan.PriceSetIds)
+	resp.Diagnostics.Append(psdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if sendPriceSets {
+		updatePricesets := make([]sdk.UpdateServicePlansRequestServicePlanPriceSetsInner, 0, len(priceSetIDs))
 		for _, psid := range priceSetIDs {
-			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{
-				Id: &psid,
-			})
+			updatePricesets = append(updatePricesets, sdk.UpdateServicePlansRequestServicePlanPriceSetsInner{Id: &psid})
 		}
 		servicePlan.PriceSets = updatePricesets
 	}
@@ -671,6 +680,7 @@ func (r *Resource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &updatedState)...)
 }
 

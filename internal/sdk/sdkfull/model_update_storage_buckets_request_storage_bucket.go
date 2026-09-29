@@ -36,8 +36,8 @@ type UpdateStorageBucketsRequestStorageBucket struct {
 	DefaultVirtualImageTarget *bool `json:"defaultVirtualImageTarget,omitempty"`
 	// Cleanup mode. `backup` - Move old files to a backup provider. `delete` - Delete old files. `none` - Keep all files.
 	RetentionPolicyType *string `json:"retentionPolicyType,omitempty"`
-	// The number of days old a file must be before it is deleted.
-	RetentionPolicyDays *int64 `json:"retentionPolicyDays,omitempty"`
+	// The number of days old a file must be before it is deleted; null clears it
+	RetentionPolicyDays NullableInt64 `json:"retentionPolicyDays,omitempty"`
 	// The backup Storage Bucket where old files are moved to.
 	RetentionProvider *string `json:"retentionProvider,omitempty"`
 	// The name of the bucket. Only applies to `Amazon`, `Azure`, `CIFS`, `NFSv3`, `Openstack Swift`, and `Rackspace CDN`.
@@ -81,8 +81,8 @@ func (o UpdateStorageBucketsRequestStorageBucket) ToMap() (map[string]interface{
 	if !IsNil(o.RetentionPolicyType) {
 		toSerialize["retentionPolicyType"] = o.RetentionPolicyType
 	}
-	if !IsNil(o.RetentionPolicyDays) {
-		toSerialize["retentionPolicyDays"] = o.RetentionPolicyDays
+	if o.RetentionPolicyDays.IsSet() {
+		toSerialize["retentionPolicyDays"] = o.RetentionPolicyDays.Get()
 	}
 	if !IsNil(o.RetentionProvider) {
 		toSerialize["retentionProvider"] = o.RetentionProvider

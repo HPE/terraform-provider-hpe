@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 )
 
@@ -205,6 +206,16 @@ func (r *Resource) ModifyPlan(
 	// Only run validation if we have a plan (not during destroy)
 	if req.Plan.Raw.IsNull() {
 		return
+	}
+
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	if !req.State.Raw.IsNull() {
+		_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+		resp.Diagnostics.Append(cdiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	var plan PolicyModel

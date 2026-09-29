@@ -23,6 +23,10 @@ to remove all leading and trailing whitespace.
 &nbsp;&nbsp;&nbsp;&nbsp;- `image_type`<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- `storage_provider_id`
 
+-> Removing `labels`, `min_disk`, `os_type_id`, `ssh_username`, `user_data` or `tenant_ids` from the
+configuration clears it on the image. `min_ram` keeps its value when it is removed, because Morpheus
+rejects an empty minimum memory; `description` and `storage_provider_id` are set when the image is
+created and keep their value too.
 
 ## Example Usage
 

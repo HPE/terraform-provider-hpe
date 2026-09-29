@@ -8,6 +8,10 @@ description: |-
 
 Manages a Morpheus load balancer virtual server (VIP). A virtual server defines a frontend listener on a load balancer, including the VIP address, port, and protocol.
 
+-> Removing `description`, `vip_hostname`, `ssl_cert`, `ssl_server_cert` or `pool_id` from the
+configuration clears it on the virtual server. `vip_pool` names the pool the VIP address was leased
+from when the virtual server was created; the leased address stays when it is removed.
+
 ## Example Usage — Minimal NSX-T
 
 A minimal NSX-T virtual server with an application profile, a pool, and no persistence or SSL.

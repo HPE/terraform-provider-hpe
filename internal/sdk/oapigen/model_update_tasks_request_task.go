@@ -24,8 +24,8 @@ type UpdateTasksRequestTask struct {
 	AllowCustomConfig *bool `json:"allowCustomConfig,omitempty"`
 	// A unique name for the task
 	Name *string `json:"name,omitempty"`
-	// A unique code for the task
-	Code *string `json:"code,omitempty"`
+	// A unique code for the task; null clears it
+	Code NullableString `json:"code,omitempty"`
 	// Visibility
 	Visibility *string                         `json:"visibility,omitempty"`
 	TaskType   *UpdateTasksRequestTaskTaskType `json:"taskType,omitempty"`
@@ -37,10 +37,10 @@ type UpdateTasksRequestTask struct {
 	ExecuteTarget *string `json:"executeTarget,omitempty"`
 	// If the task should be retried or not.
 	Retryable *bool `json:"retryable,omitempty"`
-	// The number of times to retry.
-	RetryCount *int64 `json:"retryCount,omitempty"`
-	// The delay, between retries.
-	RetryDelaySeconds    *int64                            `json:"retryDelaySeconds,omitempty"`
+	// The number of times to retry; null clears it
+	RetryCount NullableInt64 `json:"retryCount,omitempty"`
+	// The delay, between retries; null clears it
+	RetryDelaySeconds    NullableInt64                     `json:"retryDelaySeconds,omitempty"`
 	File                 *UpdateTasksRequestTaskFile       `json:"file,omitempty"`
 	Credential           *UpdateTasksRequestTaskCredential `json:"credential,omitempty"`
 	AdditionalProperties map[string]interface{}            `json:",remain"`
@@ -64,8 +64,8 @@ func (o UpdateTasksRequestTask) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
+	if o.Code.IsSet() {
+		toSerialize["code"] = o.Code.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
@@ -88,11 +88,11 @@ func (o UpdateTasksRequestTask) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Retryable) {
 		toSerialize["retryable"] = o.Retryable
 	}
-	if !IsNil(o.RetryCount) {
-		toSerialize["retryCount"] = o.RetryCount
+	if o.RetryCount.IsSet() {
+		toSerialize["retryCount"] = o.RetryCount.Get()
 	}
-	if !IsNil(o.RetryDelaySeconds) {
-		toSerialize["retryDelaySeconds"] = o.RetryDelaySeconds
+	if o.RetryDelaySeconds.IsSet() {
+		toSerialize["retryDelaySeconds"] = o.RetryDelaySeconds.Get()
 	}
 	if !IsNil(o.File) {
 		toSerialize["file"] = o.File

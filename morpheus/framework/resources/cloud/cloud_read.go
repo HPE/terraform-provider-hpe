@@ -108,8 +108,8 @@ func getCloudAsState(
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf2
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
+		state.ApplianceUrl = configString(cfg.ApplianceUrl)
+		state.DataCenterName = configString(cfg.DatacenterName)
 
 		attrTypes := ConfigAwsValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -325,11 +325,11 @@ func getCloudAsState(
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-		state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+		state.ApplianceUrl = configString(cfg.ApplianceUrl.Get())
+		state.DataCenterName = configString(cfg.DatacenterName.Get())
+		state.ExternalId = configString(cfg.ExternalId.Get())
+		state.ImportExistingVms = configString(cfg.InventoryLevel.Get())
+		state.KeyboardLayout = configString(cfg.ConsoleKeymap.Get())
 
 		attrTypes := ConfigHvmValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -363,11 +363,11 @@ func getCloudAsState(
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf1
 
 		// Move these common fields up
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl.Get())
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName.Get())
-		state.ExternalId = convert.StrToType(cfg.ExternalId.Get())
-		state.ImportExistingVms = convert.StrToType(cfg.InventoryLevel.Get())
-		state.KeyboardLayout = convert.StrToType(cfg.ConsoleKeymap.Get())
+		state.ApplianceUrl = configString(cfg.ApplianceUrl.Get())
+		state.DataCenterName = configString(cfg.DatacenterName.Get())
+		state.ExternalId = configString(cfg.ExternalId.Get())
+		state.ImportExistingVms = configString(cfg.InventoryLevel.Get())
+		state.KeyboardLayout = configString(cfg.ConsoleKeymap.Get())
 
 		attrTypes := ConfigVmwareValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -487,8 +487,8 @@ func getCloudAsState(
 		// The AnyOf index differs between request/response specs but both are Azure.
 		cfg := cloud.Config.GetClouds200ResponseZoneConfigAnyOf3
 
-		state.ApplianceUrl = convert.StrToType(cfg.ApplianceUrl)
-		state.DataCenterName = convert.StrToType(cfg.DatacenterName)
+		state.ApplianceUrl = configString(cfg.ApplianceUrl)
+		state.DataCenterName = configString(cfg.DatacenterName)
 
 		attrTypes := ConfigAzureValue{}.AttributeTypes(ctx)
 		attrValues := make(map[string]attr.Value)
@@ -584,23 +584,23 @@ func getCloudAsState(
 
 		// Move these common fields up
 		if v, ok := cfgValue["applianceUrl"].(string); ok {
-			state.ApplianceUrl = convert.StrToType(&v)
+			state.ApplianceUrl = configString(&v)
 			delete(cfgValue, "applianceUrl")
 		}
 		if v, ok := cfgValue["datacenterName"].(string); ok {
-			state.DataCenterName = convert.StrToType(&v)
+			state.DataCenterName = configString(&v)
 			delete(cfgValue, "datacenterName")
 		}
 		if v, ok := cfgValue["externalId"].(string); ok {
-			state.ExternalId = convert.StrToType(&v)
+			state.ExternalId = configString(&v)
 			delete(cfgValue, "externalId")
 		}
 		if v, ok := cfgValue["inventoryLevel"].(string); ok {
-			state.ImportExistingVms = convert.StrToType(&v)
+			state.ImportExistingVms = configString(&v)
 			delete(cfgValue, "inventoryLevel")
 		}
 		if v, ok := cfgValue["consoleKeymap"].(string); ok {
-			state.KeyboardLayout = convert.StrToType(&v)
+			state.KeyboardLayout = configString(&v)
 			delete(cfgValue, "consoleKeymap")
 		}
 
@@ -613,23 +613,23 @@ func getCloudAsState(
 
 			// Move these common fields up
 			if v, ok := cfgValue["applianceUrl"].(string); ok {
-				state.ApplianceUrl = convert.StrToType(&v)
+				state.ApplianceUrl = configString(&v)
 				delete(cfgValue, "applianceUrl")
 			}
 			if v, ok := cfgValue["datacenterName"].(string); ok {
-				state.DataCenterName = convert.StrToType(&v)
+				state.DataCenterName = configString(&v)
 				delete(cfgValue, "datacenterName")
 			}
 			if v, ok := cfgValue["externalId"].(string); ok {
-				state.ExternalId = convert.StrToType(&v)
+				state.ExternalId = configString(&v)
 				delete(cfgValue, "externalId")
 			}
 			if v, ok := cfgValue["inventoryLevel"].(string); ok {
-				state.ImportExistingVms = convert.StrToType(&v)
+				state.ImportExistingVms = configString(&v)
 				delete(cfgValue, "inventoryLevel")
 			}
 			if v, ok := cfgValue["consoleKeymap"].(string); ok {
-				state.KeyboardLayout = convert.StrToType(&v)
+				state.KeyboardLayout = configString(&v)
 				delete(cfgValue, "consoleKeymap")
 			}
 
@@ -696,4 +696,17 @@ func (r *Resource) Read(
 	resp.Diagnostics.Append(
 		schemadefaults.Apply(ctx, CloudResourceSchema(ctx), &resp.State)...,
 	)
+}
+
+// configString is the state value of a cloud attribute that lives in the
+// cloud's configuration map. Morpheus keeps a key that was cleared as an
+// empty string rather than dropping it, so an empty value is unset, and reads
+// back as null — the same value the plan holds after the attribute is removed
+// from the configuration.
+func configString(s *string) types.String {
+	if s == nil || *s == "" {
+		return types.StringNull()
+	}
+
+	return types.StringValue(*s)
 }

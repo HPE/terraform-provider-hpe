@@ -52,6 +52,21 @@ const EnvComputeServerCloudID = "TF_VAR_testacc_morpheus_compute_server_cloud_id
 // EnvComputeServerID rather than something derivable from it.
 const EnvComputeServerInstanceID = "TF_VAR_testacc_morpheus_compute_server_instance_id"
 
+// EnvImageStorageBucket is the environment variable that names the storage
+// bucket the image tests upload to. Appliances differ: the QA appliances have
+// "Local Storage", others only "Local Images".
+const EnvImageStorageBucket = "TF_VAR_testacc_morpheus_image_storage_bucket"
+
+// ImageStorageBucket returns the storage bucket name for the image tests,
+// taking EnvImageStorageBucket when set and otherwise the supplied value.
+func ImageStorageBucket(fallback string) string {
+	if v := os.Getenv(EnvImageStorageBucket); v != "" {
+		return v
+	}
+
+	return fallback
+}
+
 // KubernetesClusterID returns the Kubernetes cluster ID to use for
 // namespace/HKS tests, taking TF_VAR_testacc_morpheus_cluster_id when set and
 // otherwise falling back to the supplied value. These tests only execute when

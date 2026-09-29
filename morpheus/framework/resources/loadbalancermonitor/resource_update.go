@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -52,9 +53,16 @@ func (r *Resource) Update(
 		monitor.Name = plan.Name.ValueStringPointer()
 	}
 
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.Description = plan.Description.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "description", plan.Description, &monitor.Description)
 
 	loadBalancerID := currentState.LoadBalancerId.ValueInt64()
 
@@ -116,28 +124,21 @@ func (r *Resource) Update(
 		monitor.MonitorTimeout = plan.MonitorTimeout.ValueInt64Pointer()
 	}
 
-	if !plan.SendData.IsNull() && !plan.SendData.IsUnknown() {
-		monitor.SendData.Set(plan.SendData.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "send_data", plan.SendData, &monitor.SendData)
 
 	if !plan.SendVersion.IsNull() && !plan.SendVersion.IsUnknown() {
 		monitor.SendVersion.Set(plan.SendVersion.ValueStringPointer())
 	}
 
-	if !plan.SendType.IsNull() && !plan.SendType.IsUnknown() {
-		monitor.SendType.Set(plan.SendType.ValueStringPointer())
-	}
-
-	if !plan.ReceiveData.IsNull() && !plan.ReceiveData.IsUnknown() {
-		monitor.ReceiveData.Set(plan.ReceiveData.ValueStringPointer())
-	}
-
-	if !plan.ReceiveCode.IsNull() && !plan.ReceiveCode.IsUnknown() {
-		monitor.ReceiveCode.Set(plan.ReceiveCode.ValueStringPointer())
-	}
-
+	clearable.NullableString(pending, "send_type", plan.SendType, &monitor.SendType)
+	clearable.NullableString(pending, "receive_data", plan.ReceiveData, &monitor.ReceiveData)
+	clearable.NullableString(pending, "receive_code", plan.ReceiveCode, &monitor.ReceiveCode)
+	// monitor_username is not clearable: Morpheus sets it only when the
+	// monitor is created and ignores it on update (a change replaces the
+	// monitor), so it is sent as it stands.
 	if !plan.MonitorUsername.IsNull() && !plan.MonitorUsername.IsUnknown() {
-		monitor.MonitorUsername.Set(plan.MonitorUsername.ValueStringPointer())
+		val := plan.MonitorUsername.ValueString()
+		monitor.MonitorUsername.Set(&val)
 	}
 
 	// monitor_password_wo is re-sent when ModifyPlan marked write_only_revision
@@ -148,9 +149,7 @@ func (r *Resource) Update(
 		monitor.MonitorPassword.Set(config.MonitorPasswordWo.ValueStringPointer())
 	}
 
-	if !plan.MonitorDestination.IsNull() && !plan.MonitorDestination.IsUnknown() {
-		monitor.MonitorDestination.Set(plan.MonitorDestination.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "monitor_destination", plan.MonitorDestination, &monitor.MonitorDestination)
 
 	if !plan.FallCount.IsNull() && !plan.FallCount.IsUnknown() {
 		monitor.FallCount = plan.FallCount.ValueInt64Pointer()
@@ -172,9 +171,7 @@ func (r *Resource) Update(
 		monitor.MaxRetry = plan.MaxRetry.ValueInt64Pointer()
 	}
 
-	if !plan.ExtraConfig.IsNull() && !plan.ExtraConfig.IsUnknown() {
-		monitor.ExtraConfig.Set(plan.ExtraConfig.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "extra_config", plan.ExtraConfig, &monitor.ExtraConfig)
 
 	if !plan.Config.IsNull() && !plan.Config.IsUnknown() {
 		sdkConfig := &sdk.UpdateLoadBalancerMonitorRequestLoadBalancerMonitorConfig{}
@@ -256,5 +253,6 @@ func (r *Resource) Update(
 	// Restore fields the API accepts but does not return.
 	preserveUnreturnedFields(&state, plan)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

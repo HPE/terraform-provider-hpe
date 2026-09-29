@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateLoadBalancerPoolRequestLoadBalancerPool{}
 type UpdateLoadBalancerPoolRequestLoadBalancerPool struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Balance Algorithm
 	VipBalance *string `json:"vipBalance,omitempty"`
 	// Min Active Members
@@ -55,8 +55,8 @@ func (o UpdateLoadBalancerPoolRequestLoadBalancerPool) ToMap() (map[string]inter
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.VipBalance) {
 		toSerialize["vipBalance"] = o.VipBalance

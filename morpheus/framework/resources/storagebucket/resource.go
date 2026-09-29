@@ -14,6 +14,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -248,6 +249,14 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 		accessKey, secretKey = nil, nil
 	}
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateStorageBucketsRequestStorageBucket{
 		Name:         plan.Name.ValueStringPointer(),
 		ProviderType: plan.ProviderType.ValueStringPointer(),
@@ -265,8 +274,8 @@ func (r *storageBucketResource) Update(ctx context.Context, req resource.UpdateR
 	if !plan.DefaultBackupTarget.IsNull() {
 		body.DefaultBackupTarget = plan.DefaultBackupTarget.ValueBoolPointer()
 	}
-	if !plan.RetentionDays.IsNull() {
-		body.RetentionPolicyDays = plan.RetentionDays.ValueInt64Pointer()
+	sent := clearable.NullableInt64(pending, "retention_days", plan.RetentionDays, &body.RetentionPolicyDays)
+	if sent && !plan.RetentionDays.IsNull() {
 		retType := "delete"
 		body.RetentionPolicyType = &retType
 	}

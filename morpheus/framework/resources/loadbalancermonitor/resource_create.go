@@ -12,6 +12,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -46,7 +47,7 @@ func (r *Resource) Create(
 	monitor.Name = plan.Name.ValueStringPointer()
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		monitor.Description = plan.Description.ValueStringPointer()
+		monitor.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	loadBalancerID := plan.LoadBalancerId.ValueInt64()
@@ -277,5 +278,6 @@ func (r *Resource) Create(
 	// Restore fields the API accepts but does not return.
 	preserveUnreturnedFields(&state, plan)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

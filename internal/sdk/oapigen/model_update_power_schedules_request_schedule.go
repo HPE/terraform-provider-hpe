@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdatePowerSchedulesRequestSchedule{}
 type UpdatePowerSchedulesRequestSchedule struct {
 	// A name for the power schedule
 	Name *string `json:"name,omitempty"`
-	// A description for the power schedule
-	Description *string `json:"description,omitempty"`
+	// A description for the power schedule; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Type of schedule `power` on or `power off`
 	ScheduleType *string `json:"scheduleType,omitempty"`
 	// Time Zone eg. America/New_York, Europe/Amsterdam, etc.
@@ -78,8 +78,8 @@ func (o UpdatePowerSchedulesRequestSchedule) ToMap() (map[string]interface{}, er
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.ScheduleType) {
 		toSerialize["scheduleType"] = o.ScheduleType

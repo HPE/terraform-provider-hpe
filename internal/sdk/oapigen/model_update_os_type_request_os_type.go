@@ -40,8 +40,8 @@ type UpdateOsTypeRequestOsType struct {
 	OsFamily NullableString `json:"osFamily,omitempty"`
 	// The bitCount/architecture of the osType.
 	BitCount *int64 `json:"bitCount,omitempty"`
-	// The version of CloudInit being used.
-	CloudInitVersion *string `json:"cloudInitVersion,omitempty"`
+	// The version of CloudInit being used; null clears it.
+	CloudInitVersion NullableString `json:"cloudInitVersion,omitempty"`
 	// Whether the morpheus agent is installed.
 	InstallAgent         NullableBool           `json:"installAgent,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -89,8 +89,8 @@ func (o UpdateOsTypeRequestOsType) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.BitCount) {
 		toSerialize["bitCount"] = o.BitCount
 	}
-	if !IsNil(o.CloudInitVersion) {
-		toSerialize["cloudInitVersion"] = o.CloudInitVersion
+	if o.CloudInitVersion.IsSet() {
+		toSerialize["cloudInitVersion"] = o.CloudInitVersion.Get()
 	}
 	if o.InstallAgent.IsSet() {
 		toSerialize["installAgent"] = o.InstallAgent.Get()

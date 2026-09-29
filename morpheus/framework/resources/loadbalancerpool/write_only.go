@@ -3,10 +3,6 @@
 package loadbalancerpool
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/resource"
-
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
 
@@ -16,13 +12,4 @@ import (
 var wo = wodigest.Tracker{
 	Resource:   "load_balancer_pool",
 	Attributes: map[string]string{"partition": ""},
-}
-
-// ModifyPlan plans an in-place update when partition changed.
-func (r *Resource) ModifyPlan(
-	ctx context.Context,
-	req resource.ModifyPlanRequest,
-	resp *resource.ModifyPlanResponse,
-) {
-	wo.ModifyPlan(ctx, req, resp)
 }

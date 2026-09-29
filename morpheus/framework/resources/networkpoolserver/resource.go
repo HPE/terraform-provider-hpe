@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -264,14 +265,18 @@ func (r *networkPoolServerResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	infobloxUpdate := &sdk.InfobloxNetworkPoolServerUpdate{}
 	infobloxUpdate.Name = plan.Name.ValueStringPointer()
-	if !plan.ServiceUrl.IsNull() {
-		infobloxUpdate.ServiceUrl = *sdk.NewNullableString(plan.ServiceUrl.ValueStringPointer())
-	}
-	if !plan.ServiceUsername.IsNull() {
-		infobloxUpdate.ServiceUsername = *sdk.NewNullableString(plan.ServiceUsername.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "service_url", plan.ServiceUrl, &infobloxUpdate.ServiceUrl)
+	clearable.NullableString(pending, "service_username", plan.ServiceUsername, &infobloxUpdate.ServiceUsername)
 	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
 	// changed, or the deprecated marker did). See write_only.go.
 	if wodigest.Resend(ctx, req.Plan) && !servicePasswordWo.IsNull() && !servicePasswordWo.IsUnknown() {
@@ -283,15 +288,9 @@ func (r *networkPoolServerResource) Update(
 	if !plan.Enabled.IsNull() {
 		infobloxUpdate.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.NetworkFilter.IsNull() {
-		infobloxUpdate.NetworkFilter = *sdk.NewNullableString(plan.NetworkFilter.ValueStringPointer())
-	}
-	if !plan.ZoneFilter.IsNull() {
-		infobloxUpdate.ZoneFilter = *sdk.NewNullableString(plan.ZoneFilter.ValueStringPointer())
-	}
-	if !plan.TenantMatch.IsNull() {
-		infobloxUpdate.TenantMatch = *sdk.NewNullableString(plan.TenantMatch.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "network_filter", plan.NetworkFilter, &infobloxUpdate.NetworkFilter)
+	clearable.NullableString(pending, "zone_filter", plan.ZoneFilter, &infobloxUpdate.ZoneFilter)
+	clearable.NullableString(pending, "tenant_match", plan.TenantMatch, &infobloxUpdate.TenantMatch)
 	if !plan.ServiceMode.IsNull() {
 		infobloxUpdate.ServiceMode = plan.ServiceMode.ValueStringPointer()
 	}

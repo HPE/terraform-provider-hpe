@@ -26,12 +26,12 @@ type UpdateCloudsRequestZone struct {
 	Name string `json:"name"`
 	// Optional description field if you want to put more info there
 	Description *string `json:"description,omitempty"`
-	// Optional code for use with policies
-	Code *string `json:"code,omitempty"`
+	// Optional code for use with policies; null clears it
+	Code NullableString `json:"code,omitempty"`
 	// Array of label strings, can be used for filtering.
 	Labels []string `json:"labels,omitempty"`
-	// Optional location for your cloud
-	Location *string `json:"location,omitempty"`
+	// Optional location for your cloud; null clears it
+	Location NullableString `json:"location,omitempty"`
 	// private or public
 	Visibility *string `json:"visibility,omitempty"`
 	// Map containing code or id of the cloud type
@@ -87,14 +87,14 @@ func (o UpdateCloudsRequestZone) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
+	if o.Code.IsSet() {
+		toSerialize["code"] = o.Code.Get()
 	}
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.Location) {
-		toSerialize["location"] = o.Location
+	if o.Location.IsSet() {
+		toSerialize["location"] = o.Location.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

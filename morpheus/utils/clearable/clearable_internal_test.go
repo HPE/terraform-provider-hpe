@@ -13,9 +13,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 )
 
 // testSchema has one attribute of each kind the classification has to deal
@@ -478,6 +481,34 @@ func TestPlanOnDestroyDoesNothing(t *testing.T) {
 
 	if !resp.Plan.Raw.IsNull() {
 		t.Fatal("the destroy plan was modified")
+	}
+}
+
+func TestNeedsRecordIsFalseForOptionalOnlyAndForThePlanNullModifier(t *testing.T) {
+	plain := schema.StringAttribute{Optional: true, Computed: true}
+	withModifier := schema.StringAttribute{
+		Optional: true, Computed: true, PlanModifiers: []planmodifier.String{modifiers.NullableStringUpdateModifier{}},
+	}
+	intWithModifier := schema.Int64Attribute{
+		Optional: true, Computed: true, PlanModifiers: []planmodifier.Int64{modifiers.NullableInt64UpdateModifier{}},
+	}
+	optionalOnly := schema.StringAttribute{Optional: true}
+
+	if !NeedsRecord(plain) {
+		t.Error("an Optional+Computed attribute needs the record")
+	}
+
+	if NeedsRecord(withModifier) || NeedsRecord(intWithModifier) {
+		t.Error("an attribute whose modifier plans the null needs no record")
+	}
+
+	if NeedsRecord(optionalOnly) {
+		t.Error("an Optional-only attribute needs no record")
+	}
+
+	attrs := map[string]schema.Attribute{"a": plain, "b": withModifier, "c": optionalOnly}
+	if got := Computed(attrs, Attributes{{Name: "a"}, {Name: "b"}, {Name: "c"}}); strings.Join(got, ",") != "a" {
+		t.Errorf("Computed = %v, want [a]", got)
 	}
 }
 

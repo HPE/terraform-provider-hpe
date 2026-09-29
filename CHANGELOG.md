@@ -255,6 +255,55 @@ result after apply*) or a silently ignored removal. The bundled Morpheus SDK sen
 the cluster API rejects an empty label list, so an empty list goes under the key it does accept.
 The provider index documents the behaviour and which resources have it.
 
+### Removing an optional attribute clears it on fourteen more resources (MORPH-17990)
+
+The same fix for `hpe_morpheus_user` (`first_name`, `last_name`, `linux_username`,
+`windows_username`, `linux_key_pair_id`), `hpe_morpheus_service_plan` (`description`,
+`price_set_ids`), `hpe_morpheus_image` (`labels`, `min_disk`, `os_type_id`, `ssh_username`,
+`user_data`, `tenant_ids`), `hpe_morpheus_cloud` (`code`, `labels`, `location`, `appliance_url`,
+`data_center_name`, `external_id`, `import_existing_vms`, `keyboard_layout`),
+`hpe_morpheus_load_balancer`, `hpe_morpheus_load_balancer_profile` and
+`hpe_morpheus_load_balancer_pool` (`description`), `hpe_morpheus_load_balancer_monitor`
+(`description`, `send_data`, `send_type`, `receive_data`, `receive_code`, `monitor_destination`,
+`extra_config`), `hpe_morpheus_load_balancer_virtual_server` (`description`, `vip_hostname`,
+`ssl_cert`, `ssl_server_cert`, `pool_id`), `hpe_morpheus_network_router_nat` (`description`,
+`source_network`, `destination_network`, `translated_network`, `translated_ports`),
+`hpe_morpheus_network_router_firewall_rule` (`description`, `application`, `port_range`),
+`hpe_morpheus_network_router_firewall_rule_group` (`description`, `tenant_ids`),
+`hpe_morpheus_network_router_bgp_neighbor` (`description`, `forwarding_address`,
+`protocol_address`, `route_filtering_in`, `route_filtering_out`) and
+`hpe_morpheus_network_router_route`, whose `name`, `description` and `priority` cannot be edited
+after create: removing one replaces the route, as a change does. Cleared cloud configuration
+values, which Morpheus stores as empty strings, now read back as unset rather than as `""`. Three
+attributes stay as they are when removed, because the Morpheus API cannot clear them:
+`hpe_morpheus_image` `min_ram` (an empty minimum memory is rejected with a server error) and
+`storage_provider_id`, and `hpe_morpheus_load_balancer_monitor` `monitor_username` (both set only
+when the resource is created). The provider index lists the resources that clear a removed
+attribute.
+
+### Removing an optional attribute clears it on nineteen more resources (MORPH-17990)
+
+The same fix completes the provider: `description` on `hpe_morpheus_budget`,
+`hpe_morpheus_certificate`, `hpe_morpheus_deployment`, `hpe_morpheus_power_schedule`,
+`hpe_morpheus_policy` (and its `tenants`), `hpe_morpheus_network_group` and
+`hpe_morpheus_cluster_namespace` (and their `tenant_ids`), `hpe_morpheus_provisioning_license` (and
+its `virtual_images` and `tenants`), `hpe_morpheus_network_firewall_rule_group` (and its
+`tenant_ids`) and `hpe_morpheus_network_firewall_rule` (and its `application` and `profile` lists);
+`description`, `source_url` and `api_type` on `hpe_morpheus_option_list`; `description`,
+`service_host`, `service_url`, `service_username` and `tenants` on `hpe_morpheus_storage_server`;
+`service_url`, `service_username`, `network_filter`, `zone_filter` and `tenant_match` on
+`hpe_morpheus_network_pool_server`; every optional text attribute of
+`hpe_morpheus_os_type` (`description`, `os_family`, `os_version`, `cloud_init_version`, `category`,
+`os_codename`, `os_name`, `vendor`); `code`, `result_type`, `retry_count`, `retry_delay_seconds`
+and `labels` on `hpe_morpheus_task`; `category`, `run_as_user` and `labels` on
+`hpe_morpheus_container_script`; `dns_domain`, `gateway`, `netmask` and `subnet_address` on
+`hpe_morpheus_network_pool`; `retention_days` on `hpe_morpheus_storage_bucket`; and
+`appliance_name`, `primary_color` and `secondary_color` on `hpe_morpheus_setting_whitelabel`, whose
+logos and favicon were already reset when removed. The bundled Morpheus SDK sends null for them,
+or an empty list. The fourteen remaining resources have nothing that can be cleared, and their
+documentation is unchanged; the provider index lists every resource that clears a removed
+attribute. A container script's empty label list now reads back as unset rather than as `[]`.
+
 ### `hpe_morpheus_security_group_rule`: rules with ids of a million or more could not be read
 
 The rule id was sent to the API as a floating-point number, which for ids of 1,000,000 and above

@@ -23,14 +23,15 @@ var _ MappedNullable = &UpdateBudgetsRequestBudget{}
 
 // UpdateBudgetsRequestBudget struct for UpdateBudgetsRequestBudget
 type UpdateBudgetsRequestBudget struct {
-	Name        string     `json:"name"`
-	Description *string    `json:"description,omitempty"`
-	Scope       *string    `json:"scope,omitempty"`
-	Period      *string    `json:"period,omitempty"`
-	Year        *int64     `json:"year,omitempty"`
-	StartDate   *time.Time `json:"startDate,omitempty"`
-	EndDate     *time.Time `json:"endDate,omitempty"`
-	Interval    *string    `json:"interval,omitempty"`
+	Name string `json:"name"`
+	// null clears it
+	Description NullableString `json:"description,omitempty"`
+	Scope       *string        `json:"scope,omitempty"`
+	Period      *string        `json:"period,omitempty"`
+	Year        *int64         `json:"year,omitempty"`
+	StartDate   *time.Time     `json:"startDate,omitempty"`
+	EndDate     *time.Time     `json:"endDate,omitempty"`
+	Interval    *string        `json:"interval,omitempty"`
 	// The Tenant ID to scope to, for use with ``scope``=tenant
 	ScopeTenantId *int64 `json:"scopeTenantId,omitempty"`
 	// The Tenant ID to scope to, for use with ``scope``=group
@@ -58,8 +59,8 @@ func (o UpdateBudgetsRequestBudget) MarshalJSON() ([]byte, error) {
 func (o UpdateBudgetsRequestBudget) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["name"] = o.Name
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Scope) {
 		toSerialize["scope"] = o.Scope

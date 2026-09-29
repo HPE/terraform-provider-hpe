@@ -16,6 +16,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/customtypes"
@@ -166,6 +167,7 @@ func (r *containerScriptResource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -229,21 +231,27 @@ func (r *containerScriptResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateScriptRequestContainerScript{
 		Name: plan.Name.ValueStringPointer(),
 	}
 
-	var labels []string
-	if !plan.Labels.IsNull() && !plan.Labels.IsUnknown() {
-		resp.Diagnostics.Append(plan.Labels.ElementsAs(ctx, &labels, false)...)
+	// labels: the planned list, or an empty list when being cleared
+	if labels, ok, ldiags := pending.Strings(ctx, "labels", plan.Labels); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
 		body.Labels = labels
 	}
-	if !plan.Category.IsNull() && !plan.Category.IsUnknown() {
-		body.Category = plan.Category.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "category", plan.Category, &body.Category)
 	if !plan.ScriptVersion.IsNull() && !plan.ScriptVersion.IsUnknown() {
 		body.ScriptVersion = plan.ScriptVersion.ValueStringPointer()
 	}
@@ -256,9 +264,7 @@ func (r *containerScriptResource) Update(
 	if !plan.Script.IsNull() && !plan.Script.IsUnknown() {
 		body.Script = plan.Script.ValueStringPointer()
 	}
-	if !plan.RunAsUser.IsNull() && !plan.RunAsUser.IsUnknown() {
-		body.RunAsUser = plan.RunAsUser.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "run_as_user", plan.RunAsUser, &body.RunAsUser)
 	if !plan.SudoUser.IsNull() && !plan.SudoUser.IsUnknown() {
 		body.SudoUser = plan.SudoUser.ValueBoolPointer()
 	}
@@ -285,6 +291,7 @@ func (r *containerScriptResource) Update(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -342,7 +349,9 @@ func mapGetResponseToModel(
 	if script.Name != nil {
 		model.Name = types.StringValue(*script.Name)
 	}
-	if script.Labels != nil {
+	// An empty label list reads back as null, like an absent one, so that a
+	// cleared list matches the null Terraform planned.
+	if len(script.Labels) > 0 {
 		labelsList, d := types.ListValueFrom(ctx, types.StringType, script.Labels)
 		diags.Append(d...)
 		model.Labels = labelsList
@@ -461,9 +470,13 @@ func mapGenericScriptToModel(
 				strs = append(strs, s)
 			}
 		}
-		labelsList, d := types.ListValueFrom(ctx, types.StringType, strs)
-		diags.Append(d...)
-		model.Labels = labelsList
+		if len(strs) > 0 {
+			labelsList, d := types.ListValueFrom(ctx, types.StringType, strs)
+			diags.Append(d...)
+			model.Labels = labelsList
+		} else {
+			model.Labels = types.ListNull(types.StringType)
+		}
 	} else {
 		model.Labels = types.ListNull(types.StringType)
 	}

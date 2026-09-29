@@ -14,6 +14,7 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -43,7 +44,7 @@ func (r *Resource) Create(
 	pool.Name = sdk.PtrString(plan.Name.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		pool.Description = sdk.PtrString(plan.Description.ValueString())
+		pool.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	if !plan.VipBalance.IsNull() && !plan.VipBalance.IsUnknown() {
@@ -130,6 +131,7 @@ func (r *Resource) Create(
 	state.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

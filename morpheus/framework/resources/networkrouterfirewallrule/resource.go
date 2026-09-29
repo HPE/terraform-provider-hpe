@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
@@ -103,7 +104,7 @@ func (r *Resource) Create(
 		rule.Protocol = plan.Protocol.ValueStringPointer()
 	}
 	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
-		rule.PortRange = plan.PortRange.ValueStringPointer()
+		rule.PortRange.Set(plan.PortRange.ValueStringPointer())
 	}
 	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
 		rule.SourceType = plan.SourceType.ValueStringPointer()
@@ -112,10 +113,10 @@ func (r *Resource) Create(
 		rule.DestinationType = plan.DestinationType.ValueStringPointer()
 	}
 	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		rule.Application = plan.Application.ValueStringPointer()
+		rule.Application.Set(plan.Application.ValueStringPointer())
 	}
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		rule.Description = plan.Description.ValueStringPointer()
+		rule.Description.Set(plan.Description.ValueStringPointer())
 	}
 	rule.Config = &sdk.CreateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
@@ -169,6 +170,7 @@ func (r *Resource) Create(
 
 	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		taintState()
@@ -387,28 +389,31 @@ func (r *Resource) Update(
 	if !plan.Protocol.IsNull() && !plan.Protocol.IsUnknown() {
 		rule.Protocol = plan.Protocol.ValueStringPointer()
 	}
-	if !plan.PortRange.IsNull() && !plan.PortRange.IsUnknown() {
-		rule.PortRange = plan.PortRange.ValueStringPointer()
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	// Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	clearable.NullableString(pending, "port_range", plan.PortRange, &rule.PortRange)
 	if !plan.SourceType.IsNull() && !plan.SourceType.IsUnknown() {
 		rule.SourceType = plan.SourceType.ValueStringPointer()
 	}
 	if !plan.DestinationType.IsNull() && !plan.DestinationType.IsUnknown() {
 		rule.DestinationType = plan.DestinationType.ValueStringPointer()
 	}
-	if !plan.Application.IsNull() && !plan.Application.IsUnknown() {
-		rule.Application = plan.Application.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "application", plan.Application, &rule.Application)
 	// description is accepted by the API but never returned. Omitting it from
 	// the payload leaves the stored value untouched, so when it has been
-	// removed from the configuration send an empty string to clear it on the
-	// appliance. Only a value Terraform previously set is cleared, so a
+	// removed from the configuration an empty string is sent to clear it on
+	// the appliance. Only a value Terraform previously set is cleared, so a
 	// description set out of band is left alone.
-	switch {
-	case !plan.Description.IsNull() && !plan.Description.IsUnknown():
-		rule.Description = plan.Description.ValueStringPointer()
-	case plan.Description.IsNull() && !priorState.Description.IsNull():
-		rule.Description = convert.PtrString("")
+	if v := pending.String("description", plan.Description); v != nil {
+		rule.Description.Set(v)
 	}
 	rule.Config = &sdk.UpdateNetworkRouterFirewallRuleRequestRuleConfig{
 		ParentId: plan.ParentId.ValueStringPointer(),
@@ -438,6 +443,7 @@ func (r *Resource) Update(
 
 	warnIfFieldsAbsent(&resp.Diagnostics, plan, absent)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

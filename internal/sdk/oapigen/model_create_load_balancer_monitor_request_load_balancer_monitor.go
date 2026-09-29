@@ -22,8 +22,8 @@ var _ MappedNullable = &CreateLoadBalancerMonitorRequestLoadBalancerMonitor{}
 type CreateLoadBalancerMonitorRequestLoadBalancerMonitor struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description          *string                                                    `json:"description,omitempty"`
+	// Description; null clears it
+	Description          NullableString                                             `json:"description,omitempty"`
 	MonitorType          *string                                                    `json:"monitorType,omitempty"`
 	MonitorInterval      *int64                                                     `json:"monitorInterval,omitempty"`
 	MonitorTimeout       *int64                                                     `json:"monitorTimeout,omitempty"`
@@ -61,8 +61,8 @@ func (o CreateLoadBalancerMonitorRequestLoadBalancerMonitor) ToMap() (map[string
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.MonitorType) {
 		toSerialize["monitorType"] = o.MonitorType

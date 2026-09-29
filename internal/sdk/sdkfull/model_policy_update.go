@@ -24,8 +24,8 @@ var _ MappedNullable = &PolicyUpdate{}
 type PolicyUpdate struct {
 	// A name for the policy
 	Name *string `json:"name,omitempty"`
-	// A description for the policy
-	Description *string             `json:"description,omitempty"`
+	// A description for the policy; null clears it
+	Description NullableString      `json:"description,omitempty"`
 	Config      *PolicyUpdateConfig `json:"config,omitempty"`
 	// Set to false to disable
 	Enabled *bool `json:"enabled,omitempty"`
@@ -55,8 +55,8 @@ func (o PolicyUpdate) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Config) {
 		toSerialize["config"] = o.Config

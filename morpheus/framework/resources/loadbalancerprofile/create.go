@@ -37,7 +37,7 @@ func (r *Resource) Create(
 	profile.Name = sdk.PtrString(plan.Name.ValueString())
 
 	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		profile.Description = sdk.PtrString(plan.Description.ValueString())
+		profile.Description.Set(plan.Description.ValueStringPointer())
 	}
 
 	profile.ServiceType = sdk.PtrString(plan.ServiceType.ValueString())

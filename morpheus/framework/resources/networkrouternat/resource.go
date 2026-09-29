@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -175,6 +176,7 @@ func (r *Resource) Create(
 		return
 	}
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		taintState()
@@ -344,24 +346,24 @@ func (r *Resource) Update(
 		Name:   plan.Name.ValueStringPointer(),
 		Config: natConfig,
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		nat.Description = plan.Description.ValueStringPointer()
+
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared: sent when known, null when being cleared, not sent otherwise.
+	// Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	clearable.NullableString(pending, "description", plan.Description, &nat.Description)
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		nat.Enabled = plan.Enabled.ValueBoolPointer()
 	}
-	if !plan.SourceNetwork.IsNull() && !plan.SourceNetwork.IsUnknown() {
-		nat.SourceNetwork = plan.SourceNetwork.ValueStringPointer()
-	}
-	if !plan.DestinationNetwork.IsNull() && !plan.DestinationNetwork.IsUnknown() {
-		nat.DestinationNetwork = plan.DestinationNetwork.ValueStringPointer()
-	}
-	if !plan.TranslatedNetwork.IsNull() && !plan.TranslatedNetwork.IsUnknown() {
-		nat.TranslatedNetwork = plan.TranslatedNetwork.ValueStringPointer()
-	}
-	if !plan.TranslatedPorts.IsNull() && !plan.TranslatedPorts.IsUnknown() {
-		nat.TranslatedPorts = plan.TranslatedPorts.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "source_network", plan.SourceNetwork, &nat.SourceNetwork)
+	clearable.NullableString(pending, "destination_network", plan.DestinationNetwork, &nat.DestinationNetwork)
+	clearable.NullableString(pending, "translated_network", plan.TranslatedNetwork, &nat.TranslatedNetwork)
+	clearable.NullableString(pending, "translated_ports", plan.TranslatedPorts, &nat.TranslatedPorts)
 	if !plan.Priority.IsNull() && !plan.Priority.IsUnknown() {
 		nat.Priority = plan.Priority.ValueInt64Pointer()
 	}
@@ -407,6 +409,7 @@ func (r *Resource) Update(
 	// state move together.
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 

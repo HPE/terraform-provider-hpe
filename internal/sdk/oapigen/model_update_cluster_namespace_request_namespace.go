@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateClusterNamespaceRequestNamespace{}
 type UpdateClusterNamespaceRequestNamespace struct {
 	// Namespace name
 	Name *string `json:"name,omitempty"`
-	// Namespace description
-	Description *string `json:"description,omitempty"`
+	// Namespace description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Namespace active
 	Active *bool `json:"active,omitempty"`
 	// Visibility level (public or private)
@@ -47,8 +47,8 @@ func (o UpdateClusterNamespaceRequestNamespace) ToMap() (map[string]interface{},
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active

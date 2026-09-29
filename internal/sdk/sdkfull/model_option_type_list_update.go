@@ -30,8 +30,8 @@ type OptionTypeListUpdate struct {
 	Labels []string `json:"labels,omitempty"`
 	// Option List Type eg. `rest`, `api`, `ldap` or `manual`.
 	Type *string `json:"type,omitempty"`
-	// Source URL, the http(s) URL to request data from. Required when type is rest.
-	SourceUrl *string `json:"sourceUrl,omitempty"`
+	// Source URL, the http(s) URL to request data from. Required when type is rest; null clears it
+	SourceUrl NullableString `json:"sourceUrl,omitempty"`
 	// Visibility
 	Visibility *string `json:"visibility,omitempty"`
 	// Source Method, the HTTP method.
@@ -81,8 +81,8 @@ func (o OptionTypeListUpdate) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.SourceUrl) {
-		toSerialize["sourceUrl"] = o.SourceUrl
+	if o.SourceUrl.IsSet() {
+		toSerialize["sourceUrl"] = o.SourceUrl.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

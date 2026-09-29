@@ -22,6 +22,12 @@
 // the two lists against the schema so an attribute cannot be left
 // unclassified. ModifyPlan calls Plan, Create and Update call Record after a
 // successful apply, and Update decides what to send with the Pending helpers.
+//
+// A clear that is the only change in a plan is a case the framework does not
+// expect: it marks the other computed attributes "known after apply" only
+// when the proposed plan already differs from the state, and here it does
+// not. Plan does that marking itself (UnknownComputed) so that a status or a
+// timestamp the update changes on the appliance does not fail the apply.
 package clearable
 
 import (
@@ -38,6 +44,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-go/tftypes"
+
+	"github.com/HPE/terraform-provider-hpe/utils/modifiers"
 )
 
 // Mode says what a cleared attribute reads back as.
@@ -203,7 +211,7 @@ func Compute(
 			return pending, diags
 		}
 
-		if sa.IsComputed() && !recorded[a.Name] {
+		if NeedsRecord(sa) && !recorded[a.Name] {
 			continue
 		}
 
@@ -234,18 +242,45 @@ func Compute(
 // the pending set so the resource can decide whether a clear requires
 // replacement. Call it from ModifyPlan; a destroy (null plan) and a create
 // (null state) have nothing to clear and return an empty set.
+//
+// When something is pending, Plan first gives the rest of the plan the
+// treatment any other update gets: every computed attribute the
+// configuration leaves null becomes unknown, subject to its own plan
+// modifiers (see UnknownComputed). The framework skips that when the clear
+// is the only change, and a computed attribute the update then changes on
+// the appliance would otherwise fail the apply. A resource that puts prior
+// values back into the plan to keep it quiet (instance's restore rules)
+// must do so after Plan, or Plan undoes it.
 func Plan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 	attrs Attributes,
 ) (Pending, diag.Diagnostics) {
+	return modifyPlan(ctx, req, resp, req.Private, attrs)
+}
+
+// modifyPlan is Plan with the private state as the package's own interface,
+// so the tests can supply one; the framework's type cannot be built outside
+// the framework.
+func modifyPlan(
+	ctx context.Context,
+	req resource.ModifyPlanRequest,
+	resp *resource.ModifyPlanResponse,
+	private privateState,
+	attrs Attributes,
+) (Pending, diag.Diagnostics) {
 	if req.Plan.Raw.IsNull() {
 		return Pending{}, nil
 	}
 
-	pending, diags := Compute(ctx, req.Config, req.State, req.Private, attrs)
+	pending, diags := Compute(ctx, req.Config, req.State, private, attrs)
 	if diags.HasError() || len(pending) == 0 {
+		return pending, diags
+	}
+
+	diags.Append(UnknownComputed(ctx, req, resp)...)
+	if diags.HasError() {
 		return pending, diags
 	}
 
@@ -442,19 +477,49 @@ func (p Pending) Int64s(ctx context.Context, name string, plan Collection) ([]in
 	return out, true, diags
 }
 
-// Computed returns the names of the clearable attributes that are Computed as
-// well as Optional. A resource with any of them must record what was
-// configured (Record, from Create and Update) and plan the clears itself
-// (Plan, from ModifyPlan), since Terraform proposes the prior state for a
-// computed attribute the configuration leaves out; a resource with none needs
-// neither, because the plan of an Optional-only attribute is its
-// configuration. A resource's unit test asserts which case it is in, so the
-// wiring cannot drift from the classification.
+// NeedsRecord reports whether a removal of the attribute can only be told
+// apart from a server-computed value by the private-state record: the
+// attribute is Computed as well as Optional, so Terraform proposes the prior
+// state when the configuration leaves it out, and nothing else plans the
+// null. An Optional-only attribute needs no record (its plan is its
+// configuration), and neither does a computed one carrying the provider's
+// Nullable*UpdateModifier, which plans the null itself whenever the
+// configuration is null and the state is not — the memory-less approach,
+// right for an attribute only the user ever sets and wrong for one the
+// server fills in, which it would plan away on every run.
+func NeedsRecord(a schema.Attribute) bool {
+	if !a.IsComputed() {
+		return false
+	}
+
+	switch attr := a.(type) {
+	case schema.StringAttribute:
+		for _, m := range attr.PlanModifiers {
+			if _, ok := m.(modifiers.NullableStringUpdateModifier); ok {
+				return false
+			}
+		}
+	case schema.Int64Attribute:
+		for _, m := range attr.PlanModifiers {
+			if _, ok := m.(modifiers.NullableInt64UpdateModifier); ok {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
+// Computed returns the names of the clearable attributes that need the
+// private-state record (NeedsRecord). A resource with any of them must call
+// Record from Create and Update and Plan from ModifyPlan; a resource with
+// none needs neither. A resource's unit test asserts which case it is in, so
+// the wiring cannot drift from the classification.
 func Computed(schemaAttrs map[string]schema.Attribute, clearable Attributes) []string {
 	var names []string
 
 	for _, a := range clearable {
-		if s, ok := schemaAttrs[a.Name]; ok && s.IsComputed() {
+		if s, ok := schemaAttrs[a.Name]; ok && NeedsRecord(s) {
 			names = append(names, a.Name)
 		}
 	}

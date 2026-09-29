@@ -26,20 +26,20 @@ type UpdateStorageServersRequestStorageServer struct {
 	Name *string `json:"name,omitempty"`
 	// The `Storage Type` Code or ID
 	Type *string `json:"type,omitempty"`
-	// description
-	Description *string `json:"description,omitempty"`
+	// description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// The enabled flag
 	Enabled *bool `json:"enabled,omitempty"`
 	// Configuration object with parameters that vary by `type`
 	Config map[string]interface{} `json:"config,omitempty"`
 	// private or public
 	Visibility *string `json:"visibility,omitempty"`
-	// Storage server host
-	ServiceHost *string `json:"serviceHost,omitempty"`
-	// Storage server URL
-	ServiceUrl *string `json:"serviceUrl,omitempty"`
-	// Service username for authentication
-	ServiceUsername *string `json:"serviceUsername,omitempty"`
+	// Storage server host; null clears it
+	ServiceHost NullableString `json:"serviceHost,omitempty"`
+	// Storage server URL; null clears it
+	ServiceUrl NullableString `json:"serviceUrl,omitempty"`
+	// Service username for authentication; null clears it
+	ServiceUsername NullableString `json:"serviceUsername,omitempty"`
 	// Service password for authentication
 	ServicePassword *string `json:"servicePassword,omitempty"`
 	// Service port
@@ -68,8 +68,8 @@ func (o UpdateStorageServersRequestStorageServer) ToMap() (map[string]interface{
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
@@ -80,14 +80,14 @@ func (o UpdateStorageServersRequestStorageServer) ToMap() (map[string]interface{
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
 	}
-	if !IsNil(o.ServiceHost) {
-		toSerialize["serviceHost"] = o.ServiceHost
+	if o.ServiceHost.IsSet() {
+		toSerialize["serviceHost"] = o.ServiceHost.Get()
 	}
-	if !IsNil(o.ServiceUrl) {
-		toSerialize["serviceUrl"] = o.ServiceUrl
+	if o.ServiceUrl.IsSet() {
+		toSerialize["serviceUrl"] = o.ServiceUrl.Get()
 	}
-	if !IsNil(o.ServiceUsername) {
-		toSerialize["serviceUsername"] = o.ServiceUsername
+	if o.ServiceUsername.IsSet() {
+		toSerialize["serviceUsername"] = o.ServiceUsername.Get()
 	}
 	if !IsNil(o.ServicePassword) {
 		toSerialize["servicePassword"] = o.ServicePassword

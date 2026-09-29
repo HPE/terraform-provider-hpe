@@ -10,7 +10,9 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
@@ -77,33 +79,33 @@ func (r *Resource) Update(
 		updateCloud.DefaultSecurityGroupSyncActive = plan.DefaultSecurityGroupSyncActive.ValueBoolPointer()
 	}
 
-	if !plan.Code.IsNull() && !plan.Code.IsUnknown() {
-		updateCloud.Code = plan.Code.ValueStringPointer()
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
 	}
+
+	// Sent when known, null when being cleared, not sent otherwise.
+	clearable.NullableString(pending, "code", plan.Code, &updateCloud.Code)
 
 	if !plan.Enabled.IsNull() && !plan.Enabled.IsUnknown() {
 		updateCloud.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 
-	if plan.Labels.IsNull() || plan.Labels.IsUnknown() {
-		updateCloud.Labels = []string{}
-	} else {
-		labels, err := convert.SetToStrSlice(plan.Labels)
-		if err != nil {
-			resp.Diagnostics.AddError(
-				updateOperation,
-				"cloud "+name+": failed to parse labels: "+err.Error(),
-			)
+	// The planned labels, or an empty list when being cleared.
+	labels, sendLabels, ldiags := pending.Strings(ctx, "labels", plan.Labels)
+	resp.Diagnostics.Append(ldiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 
-			return
-		}
-
+	if sendLabels {
 		updateCloud.Labels = labels
 	}
 
-	if !plan.Location.IsNull() && !plan.Location.IsUnknown() {
-		updateCloud.Location = plan.Location.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "location", plan.Location, &updateCloud.Location)
 
 	if !plan.SecurityMode.IsNull() && !plan.SecurityMode.IsUnknown() {
 		updateCloud.SecurityMode = plan.SecurityMode.ValueStringPointer()
@@ -132,24 +134,21 @@ func (r *Resource) Update(
 
 	updateCloud.Config = make(map[string]any)
 
-	if !plan.ApplianceUrl.IsNull() && !plan.ApplianceUrl.IsUnknown() {
-		updateCloud.Config["applianceUrl"] = plan.ApplianceUrl.ValueString()
-	}
-
-	if !plan.DataCenterName.IsNull() && !plan.DataCenterName.IsUnknown() {
-		updateCloud.Config["datacenterName"] = plan.DataCenterName.ValueString()
-	}
-
-	if !plan.ExternalId.IsNull() && !plan.ExternalId.IsUnknown() {
-		updateCloud.Config["externalId"] = plan.ExternalId.ValueString()
-	}
-
-	if !plan.ImportExistingVms.IsNull() && !plan.ImportExistingVms.IsUnknown() {
-		updateCloud.Config["inventoryLevel"] = plan.ImportExistingVms.ValueString()
-	}
-
-	if !plan.KeyboardLayout.IsNull() && !plan.KeyboardLayout.IsUnknown() {
-		updateCloud.Config["consoleKeymap"] = plan.KeyboardLayout.ValueString()
+	// The configuration-map keys: the planned value when known, an empty
+	// string — which Morpheus stores as unset — when being cleared.
+	for _, key := range []struct {
+		attr, key string
+		plan      types.String
+	}{
+		{"appliance_url", "applianceUrl", plan.ApplianceUrl},
+		{"data_center_name", "datacenterName", plan.DataCenterName},
+		{"external_id", "externalId", plan.ExternalId},
+		{"import_existing_vms", "inventoryLevel", plan.ImportExistingVms},
+		{"keyboard_layout", "consoleKeymap", plan.KeyboardLayout},
+	} {
+		if v := pending.String(key.attr, key.plan); v != nil {
+			updateCloud.Config[key.key] = *v
+		}
 	}
 
 	switch {
@@ -474,7 +473,7 @@ func (r *Resource) Update(
 
 	prior := state
 
-	state, pdiags := getCloudAsState(ctx, newid, client, plan)
+	state, pdiags = getCloudAsState(ctx, newid, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -498,5 +497,6 @@ func (r *Resource) Update(
 	// Always record the digests of the configured values, sent or not.
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

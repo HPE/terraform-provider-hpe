@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateLoadBalancerProfileRequestLoadBalancerProfile{}
 type UpdateLoadBalancerProfileRequestLoadBalancerProfile struct {
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Description
-	Description *string `json:"description,omitempty"`
+	// Description; null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Service Type
 	ServiceType          *string                                                    `json:"serviceType,omitempty"`
 	Config               *UpdateLoadBalancerProfileRequestLoadBalancerProfileConfig `json:"config,omitempty"`
@@ -45,8 +45,8 @@ func (o UpdateLoadBalancerProfileRequestLoadBalancerProfile) ToMap() (map[string
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.ServiceType) {
 		toSerialize["serviceType"] = o.ServiceType

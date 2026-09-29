@@ -18,6 +18,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -246,6 +247,7 @@ func (r *storageServerResource) Create(ctx context.Context, req resource.CreateR
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -321,28 +323,28 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateStorageServersRequestStorageServer{
 		Name: plan.Name.ValueStringPointer(),
 		Type: plan.Type.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() {
-		body.Description = plan.Description.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.Enabled.IsNull() {
 		body.Enabled = plan.Enabled.ValueBoolPointer()
 	}
 	if !plan.Visibility.IsNull() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if !plan.ServiceHost.IsNull() {
-		body.ServiceHost = plan.ServiceHost.ValueStringPointer()
-	}
-	if !plan.ServiceUrl.IsNull() {
-		body.ServiceUrl = plan.ServiceUrl.ValueStringPointer()
-	}
-	if !plan.ServiceUsername.IsNull() {
-		body.ServiceUsername = plan.ServiceUsername.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "service_host", plan.ServiceHost, &body.ServiceHost)
+	clearable.NullableString(pending, "service_url", plan.ServiceUrl, &body.ServiceUrl)
+	clearable.NullableString(pending, "service_username", plan.ServiceUsername, &body.ServiceUsername)
 	// service_password_wo is write-only: its value is only in the configuration.
 	// Re-sent when ModifyPlan marked write_only_revision unknown (its digest
 	// changed, or the deprecated marker did). See write_only.go.
@@ -360,10 +362,9 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 		}
 	}
 
-	// Tenants
-	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
-		var tenantIds []int64
-		resp.Diagnostics.Append(plan.Tenants.ElementsAs(ctx, &tenantIds, false)...)
+	// Tenants: the planned list, or an empty list when being cleared
+	if tenantIds, ok, ldiags := pending.Int64s(ctx, "tenants", plan.Tenants); ok {
+		resp.Diagnostics.Append(ldiags...)
 		if resp.Diagnostics.HasError() {
 			return
 		}
@@ -458,6 +459,7 @@ func (r *storageServerResource) Update(ctx context.Context, req resource.UpdateR
 	}
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
+	resp.Diagnostics.Append(clearable.Record(ctx, req.Config, resp.Private, clearableAttributes)...)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

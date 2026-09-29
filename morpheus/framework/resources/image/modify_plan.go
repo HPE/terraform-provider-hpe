@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 )
 
@@ -29,6 +30,21 @@ func (r *Resource) ModifyPlan(
 		return
 	}
 
+	// A changed write-only value (or deprecated marker) plans an in-place
+	// update; see write_only.go. It runs first, as on every resource that
+	// has both.
+	wo.ModifyPlan(ctx, req, resp)
+
+	// Attributes removed from the configuration since they were last applied
+	// are planned as clears; see clearableAttributes.
+	if !req.State.Raw.IsNull() {
+		_, cdiags := clearable.Plan(ctx, req, resp, clearableAttributes)
+		resp.Diagnostics.Append(cdiags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	// Surface a client construction failure immediately as a diagnostic. The
 	// guard's whoami call still fails open on a tenancy-determination error.
 	client, err := r.NewClient(ctx)
@@ -42,7 +58,4 @@ func (r *Resource) ModifyPlan(
 	}
 
 	tenancy.GuardVisibilityPublic(ctx, client, req.Plan, &resp.Diagnostics)
-
-	// A change to the write-only ssh_password_wo plans an in-place update.
-	wo.ModifyPlan(ctx, req, resp)
 }

@@ -13,6 +13,7 @@ import (
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/configure"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/clearable"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/tenancy"
 	"github.com/HPE/terraform-provider-hpe/utils/cleanup"
@@ -220,24 +221,26 @@ func (r *optionListResource) Update(
 
 	id := plan.Id.ValueInt64()
 
+	// Attributes removed from the configuration since the last apply, to be
+	// cleared. Read before Record, below, overwrites what it reads.
+	pending, pdiags := clearable.Compute(ctx, req.Config, req.State, req.Private, clearableAttributes)
+	resp.Diagnostics.Append(pdiags...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	body := sdk.UpdateOptionListRequestOptionTypeList{
 		Name: plan.Name.ValueStringPointer(),
 	}
-	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
-		body.Description = *sdk.NewNullableString(plan.Description.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "description", plan.Description, &body.Description)
 	if !plan.Type.IsNull() && !plan.Type.IsUnknown() {
 		body.Type = plan.Type.ValueStringPointer()
 	}
-	if !plan.SourceUrl.IsNull() && !plan.SourceUrl.IsUnknown() {
-		body.SourceUrl = plan.SourceUrl.ValueStringPointer()
-	}
+	clearable.NullableString(pending, "source_url", plan.SourceUrl, &body.SourceUrl)
 	if !plan.Visibility.IsNull() && !plan.Visibility.IsUnknown() {
 		body.Visibility = plan.Visibility.ValueStringPointer()
 	}
-	if !plan.ApiType.IsNull() && !plan.ApiType.IsUnknown() {
-		body.ApiType = *sdk.NewNullableString(plan.ApiType.ValueStringPointer())
-	}
+	clearable.NullableString(pending, "api_type", plan.ApiType, &body.ApiType)
 	if !plan.RealTime.IsNull() && !plan.RealTime.IsUnknown() {
 		body.RealTime = plan.RealTime.ValueBoolPointer()
 	}

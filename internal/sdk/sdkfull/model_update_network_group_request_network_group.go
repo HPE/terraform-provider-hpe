@@ -22,8 +22,9 @@ var _ MappedNullable = &UpdateNetworkGroupRequestNetworkGroup{}
 
 // UpdateNetworkGroupRequestNetworkGroup struct for UpdateNetworkGroupRequestNetworkGroup
 type UpdateNetworkGroupRequestNetworkGroup struct {
-	Name        *string `json:"name,omitempty"`
-	Description *string `json:"description,omitempty"`
+	Name *string `json:"name,omitempty"`
+	// null clears it
+	Description NullableString `json:"description,omitempty"`
 	// Visibility level (public or private)
 	Visibility *string `json:"visibility,omitempty"`
 	// Network group active flag
@@ -48,8 +49,8 @@ func (o UpdateNetworkGroupRequestNetworkGroup) ToMap() (map[string]interface{}, 
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Description) {
-		toSerialize["description"] = o.Description
+	if o.Description.IsSet() {
+		toSerialize["description"] = o.Description.Get()
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility
