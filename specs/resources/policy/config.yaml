@@ -206,6 +206,7 @@ policy:
     associated_resource_id:
       description: The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label
       requires_replace: true
+      state_for_unknown: true
     policy_type.code:
       computed_optional_required: required
       requires_replace: true

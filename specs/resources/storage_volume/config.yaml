@@ -167,12 +167,14 @@ storage_volume:
       computed_optional_required: computed_optional
       description: The ID of the storage volume type. Mutually exclusive with type_code.
       requires_replace: true
+      state_for_unknown: true
       at_least_one_of: [type_id, type_code]
       conflicts_with: [type_code]
     type_code:
       computed_optional_required: computed_optional
       description: 'The storage volume type code, which is more stable across environments than type_id (e.g. "3par", "hpealletraMPLUN", "hpealletraMPLUN-active-pp", "hpealletraMPLUN-classic-pp"). Mutually exclusive with type_id.'
       requires_replace: true
+      state_for_unknown: true
       conflicts_with: [type_id]
     storage_group_id:
       computed_optional_required: optional
@@ -181,6 +183,7 @@ storage_volume:
     provision_type:
       computed_optional_required: computed_optional
       requires_replace: true
+      state_for_unknown: true
       description: "Provision type for storage volume types that support it."
       one_of: [FULL, TPVV, SNP, PEER, TDVV]
     config:

@@ -34,6 +34,7 @@ func PolicyResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
 				MarkdownDescription: "The ID of the resource this policy is associated with, e.g. Group, Cloud, User, Role, Network, Plan, Label",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 			},

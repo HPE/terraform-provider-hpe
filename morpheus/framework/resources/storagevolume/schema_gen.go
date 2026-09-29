@@ -155,6 +155,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Provision type for storage volume types that support it.",
 				MarkdownDescription: "Provision type for storage volume types that support it.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -194,6 +195,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
 				MarkdownDescription: "The storage volume type code, which is more stable across environments than type_id (e.g. \"3par\", \"hpealletraMPLUN\", \"hpealletraMPLUN-active-pp\", \"hpealletraMPLUN-classic-pp\"). Mutually exclusive with type_id.",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 				Validators: []validator.String{
@@ -206,6 +208,7 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The ID of the storage volume type. Mutually exclusive with type_code.",
 				MarkdownDescription: "The ID of the storage volume type. Mutually exclusive with type_code.",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 				Validators: []validator.Int64{

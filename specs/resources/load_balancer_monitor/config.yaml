@@ -108,6 +108,7 @@ load_balancer_monitor:
       description: The username for authenticated health checks
       computed_optional_required: computed_optional
       requires_replace: true
+      state_for_unknown: true
     monitor_destination:
       description: The target path or URL for the health check (e.g. /health)
       computed_optional_required: computed_optional

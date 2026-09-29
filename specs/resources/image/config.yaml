@@ -61,6 +61,7 @@ image:
       description: private or public. Setting "public" requires the master tenant.
     description:
       requires_replace: true
+      state_for_unknown: true
     tenant_id:
       computed_optional_required: computed_optional
     os_type_id:
@@ -72,6 +73,7 @@ image:
       computed_optional_required: required
     storage_provider_id:
       requires_replace: true
+      state_for_unknown: true
       description: ID of the storage provider where the image will be uploaded
     tenant_ids:
       description: List of tenant IDs

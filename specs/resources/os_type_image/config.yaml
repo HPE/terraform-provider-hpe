@@ -33,8 +33,10 @@ os_type_image:
     provision_type_id:
       computed_optional_required: computed_optional
       requires_replace: true
+      state_for_unknown: true
       description: ID of the provision type
     cloud_id:
       computed_optional_required: computed_optional
       requires_replace: true
+      state_for_unknown: true
       description: ID of the cloud

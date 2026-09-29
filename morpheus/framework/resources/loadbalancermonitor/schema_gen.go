@@ -155,6 +155,7 @@ func LoadBalancerMonitorResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The username for authenticated health checks",
 				MarkdownDescription: "The username for authenticated health checks",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},

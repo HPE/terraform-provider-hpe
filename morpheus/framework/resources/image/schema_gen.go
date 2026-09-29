@@ -93,6 +93,7 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "A description for the virtual image",
 				MarkdownDescription: "A description for the virtual image",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
@@ -203,6 +204,7 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "ID of the storage provider where the image will be uploaded",
 				MarkdownDescription: "ID of the storage provider where the image will be uploaded",
 				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
 					int64planmodifier.RequiresReplace(),
 				},
 			},

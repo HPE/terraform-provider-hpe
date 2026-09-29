@@ -39,6 +39,7 @@ func NetworkFirewallRuleGroupResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The group layer of the firewall rule group",
 				MarkdownDescription: "The group layer of the firewall rule group",
 				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
 					stringplanmodifier.RequiresReplace(),
 				},
 			},

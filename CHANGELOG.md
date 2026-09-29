@@ -234,6 +234,22 @@ security group and rule ids in the wrong order and could not remove leftover tes
   Morpheus API rejects with an internal error (MORPH-18060). It is now sent as an empty string, which
   Morpheus accepts and stores as unset, so the username is cleared and the following plan is empty.
 
+### Updating a resource no longer replaces it because of an optional attribute left unset
+
+Thirteen optional attributes on seven resources are set when the resource is created and replace it
+when they change: `description` and `storage_provider_id` on `hpe_morpheus_image`,
+`monitor_username` on `hpe_morpheus_load_balancer_monitor`, `group_layer` on
+`hpe_morpheus_network_firewall_rule_group`, `name`, `description` and `priority` on
+`hpe_morpheus_network_router_route`, `cloud_id` and `provision_type_id` on
+`hpe_morpheus_os_type_image`, `associated_resource_id` on `hpe_morpheus_policy`, and `type_id`,
+`type_code` and `provision_type` on `hpe_morpheus_storage_volume`. When one of them was left out of
+the configuration, every update of the resource — a rename, say — was planned as a replacement: the
+plan showed the attribute as known after apply, and the replacement rule counted that as a change.
+Renaming an image created without a `description` destroyed and re-created the image. An
+unconfigured attribute now keeps its value from state, so only a change the practitioner makes
+replaces the resource. A provider-wide unit test keeps the attribute shape that caused this from
+returning.
+
 # v2.1.0 Release Notes
 
 This release hardens the provider for day-two use. It completes the move of the tenant resource and
