@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,18 +20,21 @@ var _ MappedNullable = &AddBaremetalHost200ResponseServerConfig{}
 
 // AddBaremetalHost200ResponseServerConfig struct for AddBaremetalHost200ResponseServerConfig
 type AddBaremetalHost200ResponseServerConfig struct {
-	PoolProviderType     NullableString                                         `json:"poolProviderType,omitempty"`
-	IsVpcSelectable      *bool                                                  `json:"isVpcSelectable,omitempty"`
-	SmbiosAssetTag       NullableString                                         `json:"smbiosAssetTag,omitempty"`
-	IsEC2                *bool                                                  `json:"isEC2,omitempty"`
-	ResourcePoolId       *AddBaremetalHost200ResponseServerConfigResourcePoolId `json:"resourcePoolId,omitempty"`
-	HostId               NullableInt64                                          `json:"hostId,omitempty"`
-	CreateUser           *AddBaremetalHost200ResponseServerConfigCreateUser     `json:"createUser,omitempty"`
-	NestedVirtualization NullableString                                         `json:"nestedVirtualization,omitempty"`
-	VmwareFolderId       *string                                                `json:"vmwareFolderId,omitempty"`
-	NoAgent              *bool                                                  `json:"noAgent,omitempty"`
-	PowerScheduleType    NullableInt64                                          `json:"powerScheduleType,omitempty"`
-	AdditionalProperties map[string]interface{}                                 `json:",remain"`
+	PoolProviderType      NullableString                                         `json:"poolProviderType,omitempty"`
+	IsVpcSelectable       *bool                                                  `json:"isVpcSelectable,omitempty"`
+	SmbiosAssetTag        NullableString                                         `json:"smbiosAssetTag,omitempty"`
+	IsEC2                 *bool                                                  `json:"isEC2,omitempty"`
+	ResourcePoolId        *AddBaremetalHost200ResponseServerConfigResourcePoolId `json:"resourcePoolId,omitempty"`
+	HostId                NullableInt64                                          `json:"hostId,omitempty"`
+	CreateUser            *AddBaremetalHost200ResponseServerConfigCreateUser     `json:"createUser,omitempty"`
+	NestedVirtualization  NullableString                                         `json:"nestedVirtualization,omitempty"`
+	DisableQgaChannel     *bool                                                  `json:"disableQgaChannel,omitempty"`
+	BootToBios            NullableBool                                           `json:"bootToBios,omitempty"`
+	BootToBiosMenuTimeout NullableInt32                                          `json:"bootToBiosMenuTimeout,omitempty"`
+	VmwareFolderId        *string                                                `json:"vmwareFolderId,omitempty"`
+	NoAgent               *bool                                                  `json:"noAgent,omitempty"`
+	PowerScheduleType     NullableInt64                                          `json:"powerScheduleType,omitempty"`
+	AdditionalProperties  map[string]interface{}                                 `json:",remain"`
 }
 
 type _AddBaremetalHost200ResponseServerConfig AddBaremetalHost200ResponseServerConfig
@@ -69,6 +72,15 @@ func (o AddBaremetalHost200ResponseServerConfig) ToMap() (map[string]interface{}
 	}
 	if o.NestedVirtualization.IsSet() {
 		toSerialize["nestedVirtualization"] = o.NestedVirtualization.Get()
+	}
+	if !IsNil(o.DisableQgaChannel) {
+		toSerialize["disableQgaChannel"] = o.DisableQgaChannel
+	}
+	if o.BootToBios.IsSet() {
+		toSerialize["bootToBios"] = o.BootToBios.Get()
+	}
+	if o.BootToBiosMenuTimeout.IsSet() {
+		toSerialize["bootToBiosMenuTimeout"] = o.BootToBiosMenuTimeout.Get()
 	}
 	if !IsNil(o.VmwareFolderId) {
 		toSerialize["vmwareFolderId"] = o.VmwareFolderId

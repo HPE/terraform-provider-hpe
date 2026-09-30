@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,20 +23,22 @@ var _ MappedNullable = &Health{}
 
 // Health struct for Health
 type Health struct {
-	Success              *bool                  `json:"success,omitempty"`
-	StatusMessage        *string                `json:"statusMessage,omitempty"`
-	ApplianceUrl         *string                `json:"applianceUrl,omitempty"`
-	BuildVersion         *string                `json:"buildVersion,omitempty"`
-	Uuid                 *string                `json:"uuid,omitempty"`
-	SetupNeeded          *bool                  `json:"setupNeeded,omitempty"`
-	Date                 *time.Time             `json:"date,omitempty"`
-	Cpu                  *HealthCpu             `json:"cpu,omitempty"`
-	Memory               *HealthMemory          `json:"memory,omitempty"`
-	Threads              *HealthThreads         `json:"threads,omitempty"`
-	Database             *HealthDatabase        `json:"database,omitempty"`
-	Elastic              *HealthElastic         `json:"elastic,omitempty"`
-	Rabbit               *HealthRabbit          `json:"rabbit,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Success              *bool                   `json:"success,omitempty"`
+	StatusMessage        *string                 `json:"statusMessage,omitempty"`
+	ApplianceUrl         *string                 `json:"applianceUrl,omitempty"`
+	BuildVersion         *string                 `json:"buildVersion,omitempty"`
+	Uuid                 *string                 `json:"uuid,omitempty"`
+	SetupNeeded          *bool                   `json:"setupNeeded,omitempty"`
+	Date                 *time.Time              `json:"date,omitempty"`
+	Cpu                  *HealthCpu              `json:"cpu,omitempty"`
+	Memory               *HealthMemory           `json:"memory,omitempty"`
+	Threads              *HealthThreads          `json:"threads,omitempty"`
+	Database             *HealthDatabase         `json:"database,omitempty"`
+	Elastic              *HealthElastic          `json:"elastic,omitempty"`
+	Rabbit               *HealthRabbit           `json:"rabbit,omitempty"`
+	Storage              map[string]interface{}  `json:"storage,omitempty"`
+	Rda                  *map[string]interface{} `json:"rda,omitempty"`
+	AdditionalProperties map[string]interface{}  `json:",remain"`
 }
 
 type _Health Health
@@ -89,6 +91,12 @@ func (o Health) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Rabbit) {
 		toSerialize["rabbit"] = o.Rabbit
+	}
+	if !IsNil(o.Storage) {
+		toSerialize["storage"] = o.Storage
+	}
+	if !IsNil(o.Rda) {
+		toSerialize["rda"] = o.Rda
 	}
 
 	for key, value := range o.AdditionalProperties {

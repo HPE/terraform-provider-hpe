@@ -156,7 +156,7 @@ resource "hpe_morpheus_storage_volume" "generic" {
 
 ### Required
 
-- `name` (String) The name of the storage volume.
+- `name` (String) The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.
 
 ### Optional
 

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,9 +20,15 @@ var _ MappedNullable = &UpdateServicePlans200Response{}
 
 // UpdateServicePlans200Response struct for UpdateServicePlans200Response
 type UpdateServicePlans200Response struct {
-	ServicePlan          *UpdateServicePlans200ResponseAllOfServicePlan `json:"servicePlan,omitempty"`
-	Success              *bool                                          `json:"success,omitempty"`
-	AdditionalProperties map[string]interface{}                         `json:",remain"`
+	// ID of the updated service plan
+	Id *int64 `json:"id,omitempty"`
+	// Success indicator, true when the request succeeded and false when an error occurred
+	Success *bool `json:"success,omitempty"`
+	// Message containing a description of the result, usually a message about the error that occurred
+	Msg NullableString `json:"msg,omitempty"`
+	// Validation errors, with a key for Object containing error messages for each invalid parameter (key)
+	Errors               map[string]interface{} `json:"errors,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdateServicePlans200Response UpdateServicePlans200Response
@@ -37,11 +43,17 @@ func (o UpdateServicePlans200Response) MarshalJSON() ([]byte, error) {
 
 func (o UpdateServicePlans200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.ServicePlan) {
-		toSerialize["servicePlan"] = o.ServicePlan
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
 	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
+	}
+	if o.Msg.IsSet() {
+		toSerialize["msg"] = o.Msg.Get()
+	}
+	if o.Errors != nil {
+		toSerialize["errors"] = o.Errors
 	}
 
 	for key, value := range o.AdditionalProperties {

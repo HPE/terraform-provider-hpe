@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -126,7 +126,7 @@ func (a *SystemsAPIService) AddSystemExecute(r ApiAddSystemRequest) (*AddSystem2
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -137,7 +137,7 @@ func (a *SystemsAPIService) AddSystemExecute(r ApiAddSystemRequest) (*AddSystem2
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -262,7 +262,7 @@ func (a *SystemsAPIService) AddUninitializedSystemExecute(r ApiAddUninitializedS
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -273,7 +273,588 @@ func (a *SystemsAPIService) AddUninitializedSystemExecute(r ApiAddUninitializedS
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiExecuteSystemClusterUpdateRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	clusterId  int64
+	id         int64
+}
+
+func (r ApiExecuteSystemClusterUpdateRequest) Execute() (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	return r.ApiService.ExecuteSystemClusterUpdateExecute(r)
+}
+
+/*
+ExecuteSystemClusterUpdate Execute System Cluster Update
+
+Execute an available update against a cluster that is a registered component of the specified
+system, identified by the update definition id in the path.
+
+The update runs **asynchronously**: this endpoint returns `202 Accepted` with a `pending`
+update operation, and the update then transitions through `pending → running → completed/failed`
+via a background job. This system-scoped endpoint set has **no poll endpoint** — to poll the
+resulting cluster update execution status, use the existing `GET /api/clusters/{id}/updates/{updateId}`
+endpoint (Clusters tag).
+
+See also the non-system-scoped `POST /api/clusters/{id}/execute-update` (Clusters tag), which
+executes the same update for a cluster without requiring system membership. This system-scoped
+variant additionally requires the cluster to be a registered component of the named system
+(else 404), and the update definition must be applicable to the cluster's type (else 400). There
+is no request body.
+
+Requires the `infrastructure-system` permission with full access.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param clusterId The ID of the cluster
+	@param id Morpheus ID of the Object being referenced
+	@return ApiExecuteSystemClusterUpdateRequest
+*/
+func (a *SystemsAPIService) ExecuteSystemClusterUpdate(ctx context.Context, systemId int64, clusterId int64, id int64) ApiExecuteSystemClusterUpdateRequest {
+	return ApiExecuteSystemClusterUpdateRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		clusterId:  clusterId,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ExecuteSystemStorageServerUpdate202Response
+func (a *SystemsAPIService) ExecuteSystemClusterUpdateExecute(r ApiExecuteSystemClusterUpdateRequest) (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ExecuteSystemStorageServerUpdate202Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ExecuteSystemClusterUpdate")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/clusters/{clusterId}/update-definitions/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"clusterId"+"}", url.PathEscape(parameterValueToString(r.clusterId, "clusterId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiExecuteSystemComputeServerUpdateRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+	id         int64
+}
+
+func (r ApiExecuteSystemComputeServerUpdateRequest) Execute() (*ExecuteSystemComputeServerUpdate202Response, *http.Response, error) {
+	return r.ApiService.ExecuteSystemComputeServerUpdateExecute(r)
+}
+
+/*
+ExecuteSystemComputeServerUpdate Execute System Compute Server Update
+
+Execute an available update against a compute server that is a registered component of the
+specified system, identified by the update definition id in the path.
+
+The update runs **asynchronously**: this endpoint returns `202 Accepted` with a `pending`
+update operation, and the update then transitions through `pending → running → completed/failed`
+via a background job. There is currently **no endpoint in this set to poll the update operation
+status**.
+
+The compute server must be a component of the system (else 404), and the update definition must
+be applicable to the compute server's type (else 400). There is no request body.
+
+Requires the `infrastructure-system` permission with full access.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@param id Morpheus ID of the Object being referenced
+	@return ApiExecuteSystemComputeServerUpdateRequest
+*/
+func (a *SystemsAPIService) ExecuteSystemComputeServerUpdate(ctx context.Context, systemId int64, serverId int64, id int64) ApiExecuteSystemComputeServerUpdateRequest {
+	return ApiExecuteSystemComputeServerUpdateRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ExecuteSystemComputeServerUpdate202Response
+func (a *SystemsAPIService) ExecuteSystemComputeServerUpdateExecute(r ApiExecuteSystemComputeServerUpdateRequest) (*ExecuteSystemComputeServerUpdate202Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ExecuteSystemComputeServerUpdate202Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ExecuteSystemComputeServerUpdate")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/servers/{serverId}/update-definitions/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiExecuteSystemNetworkServerUpdateRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+	id         int64
+}
+
+func (r ApiExecuteSystemNetworkServerUpdateRequest) Execute() (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	return r.ApiService.ExecuteSystemNetworkServerUpdateExecute(r)
+}
+
+/*
+ExecuteSystemNetworkServerUpdate Execute System Network Server Update
+
+Execute an available update against a network server that is a registered component of the
+specified system, identified by the update definition id in the path.
+
+The update runs **asynchronously**: this endpoint returns `202 Accepted` with a `pending`
+update operation, and the update then transitions through `pending → running → completed/failed`
+via a background job. There is currently **no endpoint in this set to poll the update operation
+status**.
+
+The network server must be a component of the system (else 404), and the update definition must
+be applicable to the network server's type (else 400). There is no request body.
+
+Requires the `infrastructure-system` permission with full access.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@param id Morpheus ID of the Object being referenced
+	@return ApiExecuteSystemNetworkServerUpdateRequest
+*/
+func (a *SystemsAPIService) ExecuteSystemNetworkServerUpdate(ctx context.Context, systemId int64, serverId int64, id int64) ApiExecuteSystemNetworkServerUpdateRequest {
+	return ApiExecuteSystemNetworkServerUpdateRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ExecuteSystemStorageServerUpdate202Response
+func (a *SystemsAPIService) ExecuteSystemNetworkServerUpdateExecute(r ApiExecuteSystemNetworkServerUpdateRequest) (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ExecuteSystemStorageServerUpdate202Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ExecuteSystemNetworkServerUpdate")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/network-servers/{serverId}/update-definitions/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiExecuteSystemStorageServerUpdateRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+	id         int64
+}
+
+func (r ApiExecuteSystemStorageServerUpdateRequest) Execute() (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	return r.ApiService.ExecuteSystemStorageServerUpdateExecute(r)
+}
+
+/*
+ExecuteSystemStorageServerUpdate Execute System Storage Server Update
+
+Execute an available update against a storage server that is a registered component of the
+specified system, identified by the update definition id in the path. This is the entry point
+for driving storage array updates (for example, Alletra MP firmware upgrades) through the API.
+
+The update runs **asynchronously**: this endpoint returns `202 Accepted` with a `pending`
+update operation, and the update then transitions through `pending → running → completed/failed`
+via a background job. There is currently **no endpoint in this set to poll the update operation
+status**.
+
+Whether the update is online/non-disruptive depends on the storage provider and the specific
+update definition (see the `zeroDowntime` and `requiresMaintenanceMode` flags on the definition);
+Morpheus does not orchestrate host evacuation for storage updates.
+
+The storage server must be a component of the system (else 404), and the update definition must
+be applicable to the storage server's type (else 400). There is no request body.
+
+Requires the `infrastructure-system` permission with full access.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@param id Morpheus ID of the Object being referenced
+	@return ApiExecuteSystemStorageServerUpdateRequest
+*/
+func (a *SystemsAPIService) ExecuteSystemStorageServerUpdate(ctx context.Context, systemId int64, serverId int64, id int64) ApiExecuteSystemStorageServerUpdateRequest {
+	return ApiExecuteSystemStorageServerUpdateRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ExecuteSystemStorageServerUpdate202Response
+func (a *SystemsAPIService) ExecuteSystemStorageServerUpdateExecute(r ApiExecuteSystemStorageServerUpdateRequest) (*ExecuteSystemStorageServerUpdate202Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ExecuteSystemStorageServerUpdate202Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ExecuteSystemStorageServerUpdate")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/storage-servers/{serverId}/update-definitions/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -386,7 +967,7 @@ func (a *SystemsAPIService) GetSystemExecute(r ApiGetSystemRequest) (*GetSystem2
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -397,7 +978,7 @@ func (a *SystemsAPIService) GetSystemExecute(r ApiGetSystemRequest) (*GetSystem2
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -433,7 +1014,7 @@ func (r ApiInitializeSystemRequest) InitializeSystemRequest(initializeSystemRequ
 	return r
 }
 
-func (r ApiInitializeSystemRequest) Execute() (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+func (r ApiInitializeSystemRequest) Execute() (*InitializeSystem200Response, *http.Response, error) {
 	return r.ApiService.InitializeSystemExecute(r)
 }
 
@@ -478,13 +1059,13 @@ func (a *SystemsAPIService) InitializeSystem(ctx context.Context, id int64) ApiI
 
 // Execute executes the request
 //
-//	@return ContainersAttachFloatingIp200Response
-func (a *SystemsAPIService) InitializeSystemExecute(r ApiInitializeSystemRequest) (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+//	@return InitializeSystem200Response
+func (a *SystemsAPIService) InitializeSystemExecute(r ApiInitializeSystemRequest) (*InitializeSystem200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *ContainersAttachFloatingIp200Response
+		localVarReturnValue *InitializeSystem200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.InitializeSystem")
@@ -540,7 +1121,7 @@ func (a *SystemsAPIService) InitializeSystemExecute(r ApiInitializeSystemRequest
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -551,7 +1132,548 @@ func (a *SystemsAPIService) InitializeSystemExecute(r ApiInitializeSystemRequest
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListSystemClusterUpdatesRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	clusterId  int64
+}
+
+func (r ApiListSystemClusterUpdatesRequest) Execute() (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	return r.ApiService.ListSystemClusterUpdatesExecute(r)
+}
+
+/*
+ListSystemClusterUpdates List System Cluster Available Updates
+
+List the update definitions available for a cluster that is a registered component of the
+specified system. The cluster must be a component of the system; if it is not, the request
+returns 404.
+
+This is a read-only operation. The `updateDefinitions` array may be empty when no updates have
+been synced for the cluster's type — an empty list is a normal result, not an error.
+
+See also the non-system-scoped `GET /api/clusters/{id}/available-updates` (Clusters tag), which
+lists the same update definitions for a cluster without requiring system membership. This
+system-scoped variant additionally requires the cluster to be a registered component of the
+named system.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param clusterId The ID of the cluster
+	@return ApiListSystemClusterUpdatesRequest
+*/
+func (a *SystemsAPIService) ListSystemClusterUpdates(ctx context.Context, systemId int64, clusterId int64) ApiListSystemClusterUpdatesRequest {
+	return ApiListSystemClusterUpdatesRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		clusterId:  clusterId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListSystemStorageServerUpdates200Response
+func (a *SystemsAPIService) ListSystemClusterUpdatesExecute(r ApiListSystemClusterUpdatesRequest) (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListSystemStorageServerUpdates200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ListSystemClusterUpdates")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/clusters/{clusterId}/update-definitions"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"clusterId"+"}", url.PathEscape(parameterValueToString(r.clusterId, "clusterId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListSystemComputeServerUpdatesRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+}
+
+func (r ApiListSystemComputeServerUpdatesRequest) Execute() (*ListSystemComputeServerUpdates200Response, *http.Response, error) {
+	return r.ApiService.ListSystemComputeServerUpdatesExecute(r)
+}
+
+/*
+ListSystemComputeServerUpdates List System Compute Server Available Updates
+
+List the update definitions available for a compute server that is a registered component
+of the specified system. The compute server must be a component of the system; if it is not,
+the request returns 404.
+
+This is a read-only operation. The `updateDefinitions` array may be empty when no updates have
+been synced for the compute server's type by its provider/plugin — an empty list is a normal
+result, not an error.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@return ApiListSystemComputeServerUpdatesRequest
+*/
+func (a *SystemsAPIService) ListSystemComputeServerUpdates(ctx context.Context, systemId int64, serverId int64) ApiListSystemComputeServerUpdatesRequest {
+	return ApiListSystemComputeServerUpdatesRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListSystemComputeServerUpdates200Response
+func (a *SystemsAPIService) ListSystemComputeServerUpdatesExecute(r ApiListSystemComputeServerUpdatesRequest) (*ListSystemComputeServerUpdates200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListSystemComputeServerUpdates200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ListSystemComputeServerUpdates")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/servers/{serverId}/update-definitions"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListSystemNetworkServerUpdatesRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+}
+
+func (r ApiListSystemNetworkServerUpdatesRequest) Execute() (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	return r.ApiService.ListSystemNetworkServerUpdatesExecute(r)
+}
+
+/*
+ListSystemNetworkServerUpdates List System Network Server Available Updates
+
+List the update definitions available for a network server that is a registered component
+of the specified system. The network server must be a component of the system; if it is not,
+the request returns 404.
+
+This is a read-only operation. The `updateDefinitions` array may be empty when no updates have
+been synced for the network server's type by its provider/plugin — an empty list is a normal
+result, not an error.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@return ApiListSystemNetworkServerUpdatesRequest
+*/
+func (a *SystemsAPIService) ListSystemNetworkServerUpdates(ctx context.Context, systemId int64, serverId int64) ApiListSystemNetworkServerUpdatesRequest {
+	return ApiListSystemNetworkServerUpdatesRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListSystemStorageServerUpdates200Response
+func (a *SystemsAPIService) ListSystemNetworkServerUpdatesExecute(r ApiListSystemNetworkServerUpdatesRequest) (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListSystemStorageServerUpdates200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ListSystemNetworkServerUpdates")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/network-servers/{serverId}/update-definitions"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListSystemStorageServerUpdatesRequest struct {
+	ctx        context.Context
+	ApiService *SystemsAPIService
+	systemId   int64
+	serverId   int64
+}
+
+func (r ApiListSystemStorageServerUpdatesRequest) Execute() (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	return r.ApiService.ListSystemStorageServerUpdatesExecute(r)
+}
+
+/*
+ListSystemStorageServerUpdates List System Storage Server Available Updates
+
+List the update definitions available for a storage server that is a registered component
+of the specified system. The storage server must be a component of the system; if it is not,
+the request returns 404.
+
+This is a read-only operation. The `updateDefinitions` array may be empty when no updates have
+been synced for the storage server's type by its provider/plugin (for example, an array-firmware
+integration that has not yet discovered an available version) — an empty list is a normal result,
+not an error.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param systemId The ID of the System
+	@param serverId Server ID
+	@return ApiListSystemStorageServerUpdatesRequest
+*/
+func (a *SystemsAPIService) ListSystemStorageServerUpdates(ctx context.Context, systemId int64, serverId int64) ApiListSystemStorageServerUpdatesRequest {
+	return ApiListSystemStorageServerUpdatesRequest{
+		ApiService: a,
+		ctx:        ctx,
+		systemId:   systemId,
+		serverId:   serverId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListSystemStorageServerUpdates200Response
+func (a *SystemsAPIService) ListSystemStorageServerUpdatesExecute(r ApiListSystemStorageServerUpdatesRequest) (*ListSystemStorageServerUpdates200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListSystemStorageServerUpdates200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.ListSystemStorageServerUpdates")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/infrastructure/systems/{systemId}/storage-servers/{serverId}/update-definitions"
+	localVarPath = strings.Replace(localVarPath, "{"+"systemId"+"}", url.PathEscape(parameterValueToString(r.systemId, "systemId")), -1)
+	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -672,7 +1794,7 @@ func (a *SystemsAPIService) ListSystemTypeLayoutsExecute(r ApiListSystemTypeLayo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -683,7 +1805,7 @@ func (a *SystemsAPIService) ListSystemTypeLayoutsExecute(r ApiListSystemTypeLayo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -796,7 +1918,7 @@ func (a *SystemsAPIService) ListSystemTypesExecute(r ApiListSystemTypesRequest) 
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -807,7 +1929,7 @@ func (a *SystemsAPIService) ListSystemTypesExecute(r ApiListSystemTypesRequest) 
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -916,7 +2038,7 @@ func (a *SystemsAPIService) ListSystemsExecute(r ApiListSystemsRequest) (*ListSy
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -927,7 +2049,7 @@ func (a *SystemsAPIService) ListSystemsExecute(r ApiListSystemsRequest) (*ListSy
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1040,7 +2162,7 @@ func (a *SystemsAPIService) RemoveSystemExecute(r ApiRemoveSystemRequest) (*Remo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1051,7 +2173,7 @@ func (a *SystemsAPIService) RemoveSystemExecute(r ApiRemoveSystemRequest) (*Remo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1087,7 +2209,7 @@ func (r ApiUpdateSystemRequest) UpdateSystemRequest(updateSystemRequest UpdateSy
 	return r
 }
 
-func (r ApiUpdateSystemRequest) Execute() (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+func (r ApiUpdateSystemRequest) Execute() (*UpdateSystem200Response, *http.Response, error) {
 	return r.ApiService.UpdateSystemExecute(r)
 }
 
@@ -1130,13 +2252,13 @@ func (a *SystemsAPIService) UpdateSystem(ctx context.Context, id int64) ApiUpdat
 
 // Execute executes the request
 //
-//	@return ContainersAttachFloatingIp200Response
-func (a *SystemsAPIService) UpdateSystemExecute(r ApiUpdateSystemRequest) (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+//	@return UpdateSystem200Response
+func (a *SystemsAPIService) UpdateSystemExecute(r ApiUpdateSystemRequest) (*UpdateSystem200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *ContainersAttachFloatingIp200Response
+		localVarReturnValue *UpdateSystem200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "SystemsAPIService.UpdateSystem")
@@ -1192,7 +2314,7 @@ func (a *SystemsAPIService) UpdateSystemExecute(r ApiUpdateSystemRequest) (*Cont
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1203,7 +2325,7 @@ func (a *SystemsAPIService) UpdateSystemExecute(r ApiUpdateSystemRequest) (*Cont
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1325,7 +2447,7 @@ func (a *SystemsAPIService) ValidateSystemExecute(r ApiValidateSystemRequest) (*
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1336,7 +2458,7 @@ func (a *SystemsAPIService) ValidateSystemExecute(r ApiValidateSystemRequest) (*
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

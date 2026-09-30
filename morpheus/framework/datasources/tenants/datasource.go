@@ -175,8 +175,8 @@ func fieldValue(a *sdk.ListTenants200ResponseAllOfAccountsInner, field string) (
 			return strconv.FormatBool(*a.Master), true
 		}
 	case "account_name":
-		if a.AccountName != nil {
-			return *a.AccountName, true
+		if v := a.AccountName.Get(); v != nil {
+			return *v, true
 		}
 	case "account_number":
 		if v := a.AccountNumber.Get(); v != nil {
@@ -262,7 +262,7 @@ func tenantToValue(
 	return NewTenantsValue(
 		TenantsValue{}.AttributeTypes(ctx),
 		map[string]attr.Value{
-			"account_name":     convert.StrToType(a.AccountName),
+			"account_name":     convert.StrToType(a.AccountName.Get()),
 			"account_number":   convert.StrToType(a.AccountNumber.Get()),
 			"base_role_id":     baseRoleID,
 			"base_role_name":   baseRoleName,

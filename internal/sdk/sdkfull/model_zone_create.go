@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -63,7 +63,9 @@ type ZoneCreate struct {
 	// Linked Account ID (enter commercial ID to get costing for AWS Govcloud)
 	LinkedAccountId *int64 `json:"linkedAccountId,omitempty"`
 	// host firewall. `off` or `internal`. a.k.a. \"local firewall\"
-	SecurityMode         *string                `json:"securityMode,omitempty"`
+	SecurityMode *string `json:"securityMode,omitempty"`
+	// Array of backup provider (integration) IDs to assign to this cloud.
+	BackupProviders      []int64                `json:"backupProviders,omitempty"`
 	Credential           *ZoneCreateCredential  `json:"credential,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
@@ -137,6 +139,9 @@ func (o ZoneCreate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.SecurityMode) {
 		toSerialize["securityMode"] = o.SecurityMode
+	}
+	if !IsNil(o.BackupProviders) {
+		toSerialize["backupProviders"] = o.BackupProviders
 	}
 	if !IsNil(o.Credential) {
 		toSerialize["credential"] = o.Credential

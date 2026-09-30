@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,11 @@ var _ MappedNullable = &RolePermissionCatalogItemType{}
 // RolePermissionCatalogItemType struct for RolePermissionCatalogItemType
 type RolePermissionCatalogItemType struct {
 	// `id` of the catalog item type
-	CatalogItemTypeId int32 `json:"catalogItemTypeId"`
+	CatalogItemTypeId *int32 `json:"catalogItemTypeId,omitempty"`
+	// Catalog item type name (alternative to id). Alias of `catalogItemTypeName`.
+	Name *string `json:"name,omitempty"`
+	// Alias for `name`
+	CatalogItemTypeName *string `json:"catalogItemTypeName,omitempty"`
 	// The new access level.
 	Access               string                 `json:"access"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,7 +45,15 @@ func (o RolePermissionCatalogItemType) MarshalJSON() ([]byte, error) {
 
 func (o RolePermissionCatalogItemType) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["catalogItemTypeId"] = o.CatalogItemTypeId
+	if !IsNil(o.CatalogItemTypeId) {
+		toSerialize["catalogItemTypeId"] = o.CatalogItemTypeId
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.CatalogItemTypeName) {
+		toSerialize["catalogItemTypeName"] = o.CatalogItemTypeName
+	}
 	toSerialize["access"] = o.Access
 
 	for key, value := range o.AdditionalProperties {

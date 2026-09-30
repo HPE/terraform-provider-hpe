@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,25 +23,25 @@ var _ MappedNullable = &GetTasks200ResponseAllOfTask{}
 
 // GetTasks200ResponseAllOfTask struct for GetTasks200ResponseAllOfTask
 type GetTasks200ResponseAllOfTask struct {
-	Id                   *int64                                   `json:"id,omitempty"`
-	AccountId            *int64                                   `json:"accountId,omitempty"`
-	Name                 *string                                  `json:"name,omitempty"`
-	Code                 NullableString                           `json:"code,omitempty"`
-	TaskType             *GetTasks200ResponseAllOfTaskTaskType    `json:"taskType,omitempty"`
-	Labels               []string                                 `json:"labels,omitempty"`
-	Visibility           *string                                  `json:"visibility,omitempty"`
-	TaskOptions          *GetTasks200ResponseAllOfTaskTaskOptions `json:"taskOptions,omitempty"`
-	File                 *GetTasks200ResponseAllOfTaskFile        `json:"file,omitempty"`
-	ResultType           NullableString                           `json:"resultType,omitempty"`
-	ExecuteTarget        *string                                  `json:"executeTarget,omitempty"`
-	Retryable            *bool                                    `json:"retryable,omitempty"`
-	RetryCount           *int64                                   `json:"retryCount,omitempty"`
-	RetryDelaySeconds    *int64                                   `json:"retryDelaySeconds,omitempty"`
-	AllowCustomConfig    *bool                                    `json:"allowCustomConfig,omitempty"`
-	Credential           *GetTasks200ResponseAllOfTaskCredential  `json:"credential,omitempty"`
-	DateCreated          *time.Time                               `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                               `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                   `json:",remain"`
+	Id                   *int64                                       `json:"id,omitempty"`
+	AccountId            *int64                                       `json:"accountId,omitempty"`
+	Name                 *string                                      `json:"name,omitempty"`
+	Code                 NullableString                               `json:"code,omitempty"`
+	TaskType             NullableGetTasks200ResponseAllOfTaskTaskType `json:"taskType,omitempty"`
+	Labels               []string                                     `json:"labels,omitempty"`
+	Visibility           *string                                      `json:"visibility,omitempty"`
+	TaskOptions          *GetTasks200ResponseAllOfTaskTaskOptions     `json:"taskOptions,omitempty"`
+	File                 *GetTasks200ResponseAllOfTaskFile            `json:"file,omitempty"`
+	ResultType           NullableString                               `json:"resultType,omitempty"`
+	ExecuteTarget        *string                                      `json:"executeTarget,omitempty"`
+	Retryable            *bool                                        `json:"retryable,omitempty"`
+	RetryCount           *int64                                       `json:"retryCount,omitempty"`
+	RetryDelaySeconds    *int64                                       `json:"retryDelaySeconds,omitempty"`
+	AllowCustomConfig    *bool                                        `json:"allowCustomConfig,omitempty"`
+	Credential           *GetTasks200ResponseAllOfTaskCredential      `json:"credential,omitempty"`
+	DateCreated          *time.Time                                   `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                   `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                       `json:",remain"`
 }
 
 type _GetTasks200ResponseAllOfTask GetTasks200ResponseAllOfTask
@@ -68,8 +68,8 @@ func (o GetTasks200ResponseAllOfTask) ToMap() (map[string]interface{}, error) {
 	if o.Code.IsSet() {
 		toSerialize["code"] = o.Code.Get()
 	}
-	if !IsNil(o.TaskType) {
-		toSerialize["taskType"] = o.TaskType
+	if o.TaskType.IsSet() {
+		toSerialize["taskType"] = o.TaskType.Get()
 	}
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels

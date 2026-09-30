@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -36,7 +36,7 @@ type ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResource struct {
 	Account              NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceAccount      `json:"account,omitempty"`
 	Owner                *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceOwner               `json:"owner,omitempty"`
 	Zone                 NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceZone         `json:"zone,omitempty"`
-	Plan                 *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourcePlan                `json:"plan,omitempty"`
+	Plan                 NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourcePlan         `json:"plan,omitempty"`
 	ComputeServerType    *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceComputeServerType   `json:"computeServerType,omitempty"`
 	Visibility           *string                                                                        `json:"visibility,omitempty"`
 	Description          NullableString                                                                 `json:"description,omitempty"`
@@ -79,7 +79,7 @@ type ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResource struct {
 	MaxStorage           *int64                                                                         `json:"maxStorage,omitempty"`
 	MaxCpu               NullableString                                                                 `json:"maxCpu,omitempty"`
 	HourlyPrice          *float32                                                                       `json:"hourlyPrice,omitempty"`
-	SourceImage          *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage         `json:"sourceImage,omitempty"`
+	SourceImage          NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage  `json:"sourceImage,omitempty"`
 	ServerOs             *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceServerOs            `json:"serverOs,omitempty"`
 	Volumes              []ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceVolumesInner       `json:"volumes,omitempty"`
 	Controllers          []ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner   `json:"controllers,omitempty"`
@@ -143,8 +143,8 @@ func (o ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResource) ToMap() (map
 	if o.Zone.IsSet() {
 		toSerialize["zone"] = o.Zone.Get()
 	}
-	if !IsNil(o.Plan) {
-		toSerialize["plan"] = o.Plan
+	if o.Plan.IsSet() {
+		toSerialize["plan"] = o.Plan.Get()
 	}
 	if !IsNil(o.ComputeServerType) {
 		toSerialize["computeServerType"] = o.ComputeServerType
@@ -272,8 +272,8 @@ func (o ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResource) ToMap() (map
 	if !IsNil(o.HourlyPrice) {
 		toSerialize["hourlyPrice"] = o.HourlyPrice
 	}
-	if !IsNil(o.SourceImage) {
-		toSerialize["sourceImage"] = o.SourceImage
+	if o.SourceImage.IsSet() {
+		toSerialize["sourceImage"] = o.SourceImage.Get()
 	}
 	if !IsNil(o.ServerOs) {
 		toSerialize["serverOs"] = o.ServerOs

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,6 +53,51 @@ func (o GetTasks200ResponseAllOfTaskTaskType) ToMap() (map[string]interface{}, e
 	}
 
 	return toSerialize, nil
+}
+
+type NullableGetTasks200ResponseAllOfTaskTaskType struct {
+	value *GetTasks200ResponseAllOfTaskTaskType
+	isSet bool
+}
+
+func (v NullableGetTasks200ResponseAllOfTaskTaskType) Get() *GetTasks200ResponseAllOfTaskTaskType {
+	return v.value
+}
+
+func (v *NullableGetTasks200ResponseAllOfTaskTaskType) Set(val *GetTasks200ResponseAllOfTaskTaskType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableGetTasks200ResponseAllOfTaskTaskType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableGetTasks200ResponseAllOfTaskTaskType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableGetTasks200ResponseAllOfTaskTaskType(val *GetTasks200ResponseAllOfTaskTaskType) *NullableGetTasks200ResponseAllOfTaskTaskType {
+	return &NullableGetTasks200ResponseAllOfTaskTaskType{value: val, isSet: true}
+}
+
+func (v NullableGetTasks200ResponseAllOfTaskTaskType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableGetTasks200ResponseAllOfTaskTaskType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableGetTasks200ResponseAllOfTaskTaskType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *GetTasks200ResponseAllOfTaskTaskType) UnmarshalJSON(data []byte) (err error) {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -119,7 +119,7 @@ func (a *PriceSetsAPIService) AddPriceSetsExecute(r ApiAddPriceSetsRequest) (*Ad
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -130,7 +130,7 @@ func (a *PriceSetsAPIService) AddPriceSetsExecute(r ApiAddPriceSetsRequest) (*Ad
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -160,7 +160,7 @@ type ApiDeactivatePriceSetsRequest struct {
 	id         int64
 }
 
-func (r ApiDeactivatePriceSetsRequest) Execute() (*RemoveExecuteSchedules200Response, *http.Response, error) {
+func (r ApiDeactivatePriceSetsRequest) Execute() (*DeactivatePriceSets200Response, *http.Response, error) {
 	return r.ApiService.DeactivatePriceSetsExecute(r)
 }
 
@@ -183,13 +183,13 @@ func (a *PriceSetsAPIService) DeactivatePriceSets(ctx context.Context, id int64)
 
 // Execute executes the request
 //
-//	@return RemoveExecuteSchedules200Response
-func (a *PriceSetsAPIService) DeactivatePriceSetsExecute(r ApiDeactivatePriceSetsRequest) (*RemoveExecuteSchedules200Response, *http.Response, error) {
+//	@return DeactivatePriceSets200Response
+func (a *PriceSetsAPIService) DeactivatePriceSetsExecute(r ApiDeactivatePriceSetsRequest) (*DeactivatePriceSets200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *RemoveExecuteSchedules200Response
+		localVarReturnValue *DeactivatePriceSets200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PriceSetsAPIService.DeactivatePriceSets")
@@ -243,7 +243,7 @@ func (a *PriceSetsAPIService) DeactivatePriceSetsExecute(r ApiDeactivatePriceSet
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -254,7 +254,7 @@ func (a *PriceSetsAPIService) DeactivatePriceSetsExecute(r ApiDeactivatePriceSet
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -367,7 +367,7 @@ func (a *PriceSetsAPIService) GetPriceSetsExecute(r ApiGetPriceSetsRequest) (*Ge
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -378,7 +378,7 @@ func (a *PriceSetsAPIService) GetPriceSetsExecute(r ApiGetPriceSetsRequest) (*Ge
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -408,11 +408,13 @@ type ApiListPriceSetsRequest struct {
 	max             *int64
 	offset          *int64
 	sort            *string
-	direction       *string
+	order           *string
 	phrase          *string
 	name            *string
+	code            *string
 	includeInactive *bool
 	type_           *string
+	priceUnit       *string
 }
 
 // Maximum number of records to return
@@ -434,8 +436,8 @@ func (r ApiListPriceSetsRequest) Sort(sort string) ApiListPriceSetsRequest {
 }
 
 // Sort direction, use &#39;desc&#39; to reverse sort
-func (r ApiListPriceSetsRequest) Direction(direction string) ApiListPriceSetsRequest {
-	r.direction = &direction
+func (r ApiListPriceSetsRequest) Order(order string) ApiListPriceSetsRequest {
+	r.order = &order
 	return r
 }
 
@@ -451,15 +453,27 @@ func (r ApiListPriceSetsRequest) Name(name string) ApiListPriceSetsRequest {
 	return r
 }
 
+// If specified will return an exact match on code
+func (r ApiListPriceSetsRequest) Code(code string) ApiListPriceSetsRequest {
+	r.code = &code
+	return r
+}
+
 // If true, include inactive prices in the results
 func (r ApiListPriceSetsRequest) IncludeInactive(includeInactive bool) ApiListPriceSetsRequest {
 	r.includeInactive = &includeInactive
 	return r
 }
 
-// Filter by type code
+// Filter by price set type. May be specified multiple times.
 func (r ApiListPriceSetsRequest) Type_(type_ string) ApiListPriceSetsRequest {
 	r.type_ = &type_
+	return r
+}
+
+// Filter by price unit. May be specified multiple times.
+func (r ApiListPriceSetsRequest) PriceUnit(priceUnit string) ApiListPriceSetsRequest {
+	r.priceUnit = &priceUnit
 	return r
 }
 
@@ -522,11 +536,11 @@ func (a *PriceSetsAPIService) ListPriceSetsExecute(r ApiListPriceSetsRequest) (*
 		var defaultValue string = "name"
 		r.sort = &defaultValue
 	}
-	if r.direction != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "direction", r.direction, "form", "")
+	if r.order != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "order", r.order, "form", "")
 	} else {
 		var defaultValue string = "asc"
-		r.direction = &defaultValue
+		r.order = &defaultValue
 	}
 	if r.phrase != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
@@ -534,11 +548,17 @@ func (a *PriceSetsAPIService) ListPriceSetsExecute(r ApiListPriceSetsRequest) (*
 	if r.name != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
 	}
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
+	}
 	if r.includeInactive != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "includeInactive", r.includeInactive, "form", "")
 	}
 	if r.type_ != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "type", r.type_, "form", "")
+	}
+	if r.priceUnit != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "priceUnit", r.priceUnit, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -579,7 +599,7 @@ func (a *PriceSetsAPIService) ListPriceSetsExecute(r ApiListPriceSetsRequest) (*
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -590,7 +610,7 @@ func (a *PriceSetsAPIService) ListPriceSetsExecute(r ApiListPriceSetsRequest) (*
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -634,6 +654,9 @@ func (r ApiUpdatePriceSetsRequest) Execute() (*UpdatePriceSets200Response, *http
 UpdatePriceSets Updates a Price Set
 
 Updates a price set.
+
+Only the fields below are applied by the API. Other price set attributes
+(code, type, priceUnit, regionCode, zone, zonePool) are not updated on PUT.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -711,7 +734,7 @@ func (a *PriceSetsAPIService) UpdatePriceSetsExecute(r ApiUpdatePriceSetsRequest
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -722,7 +745,7 @@ func (a *PriceSetsAPIService) UpdatePriceSetsExecute(r ApiUpdatePriceSetsRequest
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

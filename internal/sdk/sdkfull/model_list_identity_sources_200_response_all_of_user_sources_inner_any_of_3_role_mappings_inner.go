@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,7 +24,7 @@ var _ MappedNullable = &ListIdentitySources200ResponseAllOfUserSourcesInnerAnyOf
 type ListIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3RoleMappingsInner struct {
 	SourceRoleName       *string                                                                               `json:"sourceRoleName,omitempty"`
 	SourceRoleFqn        *string                                                                               `json:"sourceRoleFqn,omitempty"`
-	MappedRole           *ListIdentitySources200ResponseAllOfUserSourcesInnerAnyOf2RoleMappingsInnerMappedRole `json:"mappedRole,omitempty"`
+	MappedRole           *ListIdentitySources200ResponseAllOfUserSourcesInnerAnyOf3RoleMappingsInnerMappedRole `json:"mappedRole,omitempty"`
 	AdditionalProperties map[string]interface{}                                                                `json:",remain"`
 }
 

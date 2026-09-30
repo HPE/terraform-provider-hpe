@@ -235,12 +235,12 @@ func storageServerFieldValue(
 			return *ss.Name, true
 		}
 	case "type_id":
-		if ss.Type != nil && ss.Type.Id != nil {
-			return strconv.FormatInt(*ss.Type.Id, 10), true
+		if t := ss.Type.Get(); t != nil && t.Id != nil {
+			return strconv.FormatInt(*t.Id, 10), true
 		}
 	case "type_code":
-		if ss.Type != nil && ss.Type.Code != nil {
-			return *ss.Type.Code, true
+		if t := ss.Type.Get(); t != nil && t.Code != nil {
+			return *t.Code, true
 		}
 	case "cloud_id":
 		if id, ok := cloudID(ss); ok {
@@ -279,10 +279,10 @@ func storageServerInnerToValue(
 	typeID := types.Int64Null()
 	typeCode := types.StringNull()
 	typeName := types.StringNull()
-	if ss.Type != nil {
-		typeID = convert.Int64ToType(ss.Type.Id)
-		typeCode = convert.StrToType(ss.Type.Code)
-		typeName = convert.StrToType(ss.Type.Name)
+	if t := ss.Type.Get(); t != nil {
+		typeID = convert.Int64ToType(t.Id)
+		typeCode = convert.StrToType(t.Code)
+		typeName = convert.StrToType(t.Name)
 	}
 
 	cloudIDVal := types.Int64Null()

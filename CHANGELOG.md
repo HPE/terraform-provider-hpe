@@ -220,6 +220,23 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_storage_volume`: resizing works, and a rename replaces the volume (MORPH-18280)
+
+The resource's update sent the new name and size to `PUT /api/storage-volumes/{id}`, which never
+applied either — the API has no rename for a volume, and from Morpheus 9.1.0 that endpoint transfers
+the volume to another tenant. A change to `max_storage` now calls the resize endpoint, and `name`
+cannot be changed after the volume is created: a change replaces the volume, which the plan shows.
+
+### The bundled Morpheus SDK follows the 9.1.0 API (MORPH-18280)
+
+The SDK is regenerated from the 9.1.0 API description. No resource attribute changes; the provider
+reads the sub-objects the API can now omit (an instance's plan, a policy's or task's type, a
+router's cloud, a cloud's type, a storage server's type, a tenant's account name) as unset rather
+than failing, and sends the inputs the API accepts in several forms (a role's default persona, a
+tenant's role and parent, a user's roles and key pair, a licence's type and images) in the form it
+did before.
+
+
 ### `hpe_morpheus_network`: removing an optional attribute clears it (MORPH-17990)
 
 Removing an optional attribute from a network's configuration used to do one of two wrong things.

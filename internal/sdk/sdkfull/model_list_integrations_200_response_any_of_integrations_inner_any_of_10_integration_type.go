@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType)
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType struct {
+	value *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType
+	isSet bool
+}
+
+func (v NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) Get() *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType {
+	return v.value
+}
+
+func (v *NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) Set(val *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType(val *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) *NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType {
+	return &NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType{value: val, isSet: true}
+}
+
+func (v NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf10IntegrationType) UnmarshalJSON(data []byte) (err error) {

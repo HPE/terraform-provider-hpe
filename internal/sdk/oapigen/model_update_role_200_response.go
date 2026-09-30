@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -44,6 +44,7 @@ type UpdateRole200Response struct {
 	TaskSetPermissions          []UpdateRole200ResponseAllOfTaskSetPermissionsInner         `json:"taskSetPermissions,omitempty"`
 	GlobalClusterTypeAccess     *string                                                     `json:"globalClusterTypeAccess,omitempty"`
 	ClusterTypePermissions      []UpdateRole200ResponseAllOfClusterTypePermissionsInner     `json:"clusterTypePermissions,omitempty"`
+	TenantCopiesMeta            *UpdateRole200ResponseAllOfTenantCopiesMeta                 `json:"tenantCopiesMeta,omitempty"`
 	Success                     *bool                                                       `json:"success,omitempty"`
 	AdditionalProperties        map[string]interface{}                                      `json:",remain"`
 }
@@ -131,6 +132,9 @@ func (o UpdateRole200Response) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ClusterTypePermissions) {
 		toSerialize["clusterTypePermissions"] = o.ClusterTypePermissions
+	}
+	if !IsNil(o.TenantCopiesMeta) {
+		toSerialize["tenantCopiesMeta"] = o.TenantCopiesMeta
 	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,10 @@ var _ MappedNullable = &UpdatePricesRequest{}
 
 // UpdatePricesRequest struct for UpdatePricesRequest
 type UpdatePricesRequest struct {
-	Price                UpdatePricesRequestPrice `json:"price"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Price UpdatePricesRequestPrice `json:"price"`
+	// When true (or the string `on`) and the update succeeds, triggers asynchronous reprocessing of price usage changes. Request-root field (not inside `price`).
+	RestartUsage         *bool                  `json:"restartUsage,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdatePricesRequest UpdatePricesRequest
@@ -39,6 +41,9 @@ func (o UpdatePricesRequest) MarshalJSON() ([]byte, error) {
 func (o UpdatePricesRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["price"] = o.Price
+	if !IsNil(o.RestartUsage) {
+		toSerialize["restartUsage"] = o.RestartUsage
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value

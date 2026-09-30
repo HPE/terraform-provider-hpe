@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,22 +22,22 @@ var _ MappedNullable = &ListPoliciesGroup200ResponseAllOfPoliciesInner{}
 
 // ListPoliciesGroup200ResponseAllOfPoliciesInner struct for ListPoliciesGroup200ResponseAllOfPoliciesInner
 type ListPoliciesGroup200ResponseAllOfPoliciesInner struct {
-	Id                   *int64                                                      `json:"id,omitempty"`
-	Name                 *string                                                     `json:"name,omitempty"`
-	Description          NullableString                                              `json:"description,omitempty"`
-	PolicyType           *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType   `json:"policyType,omitempty"`
-	Zone                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerZone         `json:"zone,omitempty"`
-	Site                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerSite         `json:"site,omitempty"`
-	User                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerUser         `json:"user,omitempty"`
-	Role                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerRole         `json:"role,omitempty"`
-	RefType              NullableString                                              `json:"refType,omitempty"`
-	RefId                NullableInt64                                               `json:"refId,omitempty"`
-	EachUser             NullableBool                                                `json:"eachUser,omitempty"`
-	Config               *ListPoliciesGroup200ResponseAllOfPoliciesInnerConfig       `json:"config,omitempty"`
-	Enabled              *bool                                                       `json:"enabled,omitempty"`
-	Owner                NullableListPoliciesGroup200ResponseAllOfPoliciesInnerOwner `json:"owner,omitempty"`
-	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner    `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                      `json:",remain"`
+	Id                   *int64                                                           `json:"id,omitempty"`
+	Name                 *string                                                          `json:"name,omitempty"`
+	Description          NullableString                                                   `json:"description,omitempty"`
+	PolicyType           NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType `json:"policyType,omitempty"`
+	Zone                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerZone              `json:"zone,omitempty"`
+	Site                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerSite              `json:"site,omitempty"`
+	User                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerUser              `json:"user,omitempty"`
+	Role                 *ListPoliciesGroup200ResponseAllOfPoliciesInnerRole              `json:"role,omitempty"`
+	RefType              NullableString                                                   `json:"refType,omitempty"`
+	RefId                NullableInt64                                                    `json:"refId,omitempty"`
+	EachUser             NullableBool                                                     `json:"eachUser,omitempty"`
+	Config               *ListPoliciesGroup200ResponseAllOfPoliciesInnerConfig            `json:"config,omitempty"`
+	Enabled              *bool                                                            `json:"enabled,omitempty"`
+	Owner                NullableListPoliciesGroup200ResponseAllOfPoliciesInnerOwner      `json:"owner,omitempty"`
+	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner         `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{}                                           `json:",remain"`
 }
 
 type _ListPoliciesGroup200ResponseAllOfPoliciesInner ListPoliciesGroup200ResponseAllOfPoliciesInner
@@ -61,8 +61,8 @@ func (o ListPoliciesGroup200ResponseAllOfPoliciesInner) ToMap() (map[string]inte
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone

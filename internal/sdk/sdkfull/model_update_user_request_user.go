@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,27 +20,43 @@ import (
 // checks if the UpdateUserRequestUser type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateUserRequestUser{}
 
-// UpdateUserRequestUser struct for UpdateUserRequestUser
+// UpdateUserRequestUser Payload for updating an existing user. All fields optional except as required by business rules when changing password or roles.
 type UpdateUserRequestUser struct {
 	// First Name
 	FirstName NullableString `json:"firstName,omitempty"`
 	// Last Name
 	LastName NullableString `json:"lastName,omitempty"`
 	// Username (unique per tenant).
-	Username        *string        `json:"username,omitempty"`
-	LinuxUsername   NullableString `json:"linuxUsername,omitempty"`
-	LinuxPassword   NullableString `json:"linuxPassword,omitempty"`
-	LinuxKeyPairId  NullableInt64  `json:"linuxKeyPairId,omitempty"`
-	WindowsUsername NullableString `json:"windowsUsername,omitempty"`
-	WindowsPassword NullableString `json:"windowsPassword,omitempty"`
+	Username *string `json:"username,omitempty"`
 	// Email address
 	Email *string `json:"email,omitempty"`
-	// Password
+	// New password (omit to leave unchanged)
 	Password *string `json:"password,omitempty"`
-	// List of Roles
+	// Optional. If omitted when `password` is set, the API auto-confirms. If provided (including empty string), it is validated against `password`.
+	PasswordConfirmation *string `json:"passwordConfirmation,omitempty"`
+	// Roles to assign. Accepts role id integers and/or ReferenceObjects with `id`. Singular `role` is also accepted.
 	Roles []UpdateUserRequestUserRolesInner `json:"roles,omitempty"`
+	Role  *UpdateUserRequestUserRole        `json:"role,omitempty"`
 	// Receive Notifications?
-	ReceiveNotifications *bool                  `json:"receiveNotifications,omitempty"`
+	ReceiveNotifications *bool `json:"receiveNotifications,omitempty"`
+	// Whether the user account is enabled
+	Enabled *bool `json:"enabled,omitempty"`
+	// Whether the user account is locked
+	AccountLocked *bool `json:"accountLocked,omitempty"`
+	// Force password change on next login
+	PasswordExpired *bool          `json:"passwordExpired,omitempty"`
+	LinuxUsername   NullableString `json:"linuxUsername,omitempty"`
+	// Set or clear linux password. Masked values (`********`) are ignored.
+	LinuxPassword             NullableString                              `json:"linuxPassword,omitempty"`
+	LinuxPasswordConfirmation NullableString                              `json:"linuxPasswordConfirmation,omitempty"`
+	LinuxKeyPairId            NullableUpdateUserRequestUserLinuxKeyPairId `json:"linuxKeyPairId,omitempty"`
+	WindowsUsername           NullableString                              `json:"windowsUsername,omitempty"`
+	// Set or clear windows password. Masked values (`********`) are ignored.
+	WindowsPassword             NullableString                              `json:"windowsPassword,omitempty"`
+	WindowsPasswordConfirmation NullableString                              `json:"windowsPasswordConfirmation,omitempty"`
+	DefaultPersona              NullableUpdateUserRequestUserDefaultPersona `json:"defaultPersona,omitempty"`
+	// Alias for default persona id
+	DefaultPersonaId     NullableInt64          `json:"defaultPersonaId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -65,11 +81,41 @@ func (o UpdateUserRequestUser) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Username) {
 		toSerialize["username"] = o.Username
 	}
+	if !IsNil(o.Email) {
+		toSerialize["email"] = o.Email
+	}
+	if !IsNil(o.Password) {
+		toSerialize["password"] = o.Password
+	}
+	if !IsNil(o.PasswordConfirmation) {
+		toSerialize["passwordConfirmation"] = o.PasswordConfirmation
+	}
+	if !IsNil(o.Roles) {
+		toSerialize["roles"] = o.Roles
+	}
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
+	}
+	if !IsNil(o.ReceiveNotifications) {
+		toSerialize["receiveNotifications"] = o.ReceiveNotifications
+	}
+	if !IsNil(o.Enabled) {
+		toSerialize["enabled"] = o.Enabled
+	}
+	if !IsNil(o.AccountLocked) {
+		toSerialize["accountLocked"] = o.AccountLocked
+	}
+	if !IsNil(o.PasswordExpired) {
+		toSerialize["passwordExpired"] = o.PasswordExpired
+	}
 	if o.LinuxUsername.IsSet() {
 		toSerialize["linuxUsername"] = o.LinuxUsername.Get()
 	}
 	if o.LinuxPassword.IsSet() {
 		toSerialize["linuxPassword"] = o.LinuxPassword.Get()
+	}
+	if o.LinuxPasswordConfirmation.IsSet() {
+		toSerialize["linuxPasswordConfirmation"] = o.LinuxPasswordConfirmation.Get()
 	}
 	if o.LinuxKeyPairId.IsSet() {
 		toSerialize["linuxKeyPairId"] = o.LinuxKeyPairId.Get()
@@ -80,17 +126,14 @@ func (o UpdateUserRequestUser) ToMap() (map[string]interface{}, error) {
 	if o.WindowsPassword.IsSet() {
 		toSerialize["windowsPassword"] = o.WindowsPassword.Get()
 	}
-	if !IsNil(o.Email) {
-		toSerialize["email"] = o.Email
+	if o.WindowsPasswordConfirmation.IsSet() {
+		toSerialize["windowsPasswordConfirmation"] = o.WindowsPasswordConfirmation.Get()
 	}
-	if !IsNil(o.Password) {
-		toSerialize["password"] = o.Password
+	if o.DefaultPersona.IsSet() {
+		toSerialize["defaultPersona"] = o.DefaultPersona.Get()
 	}
-	if !IsNil(o.Roles) {
-		toSerialize["roles"] = o.Roles
-	}
-	if !IsNil(o.ReceiveNotifications) {
-		toSerialize["receiveNotifications"] = o.ReceiveNotifications
+	if o.DefaultPersonaId.IsSet() {
+		toSerialize["defaultPersonaId"] = o.DefaultPersonaId.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

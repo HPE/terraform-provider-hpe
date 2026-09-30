@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,9 +23,10 @@ var _ fmt.Stringer
 
 // ClusterDatastoreCreateConfig struct for ClusterDatastoreCreateConfig
 type ClusterDatastoreCreateConfig struct {
-	AlletraMPHVMDatastoreConfiguration2 *AlletraMPHVMDatastoreConfiguration2
-	GFS2DatastoreConfiguration2         *GFS2DatastoreConfiguration2
-	NFSDatastoreConfiguration2          *NFSDatastoreConfiguration2
+	AlletraMPHVMDatastoreConfiguration4 *AlletraMPHVMDatastoreConfiguration4
+	DatastoreGroupConfiguration2        *DatastoreGroupConfiguration2
+	GFS2DatastoreConfiguration4         *GFS2DatastoreConfiguration4
+	NFSDatastoreConfiguration4          *NFSDatastoreConfiguration4
 	MapmapOfStringAny                   *map[string]interface{}
 }
 
@@ -34,22 +35,28 @@ func (dst *ClusterDatastoreCreateConfig) UnmarshalMapstructure(data any) (any, e
 		dst = &ClusterDatastoreCreateConfig{}
 	}
 
-	mapstructDecode(data, &dst.AlletraMPHVMDatastoreConfiguration2)
+	mapstructDecode(data, &dst.AlletraMPHVMDatastoreConfiguration4)
 
-	if IsEmpty(dst.AlletraMPHVMDatastoreConfiguration2) {
-		dst.AlletraMPHVMDatastoreConfiguration2 = nil
+	if IsEmpty(dst.AlletraMPHVMDatastoreConfiguration4) {
+		dst.AlletraMPHVMDatastoreConfiguration4 = nil
 	}
 
-	mapstructDecode(data, &dst.GFS2DatastoreConfiguration2)
+	mapstructDecode(data, &dst.DatastoreGroupConfiguration2)
 
-	if IsEmpty(dst.GFS2DatastoreConfiguration2) {
-		dst.GFS2DatastoreConfiguration2 = nil
+	if IsEmpty(dst.DatastoreGroupConfiguration2) {
+		dst.DatastoreGroupConfiguration2 = nil
 	}
 
-	mapstructDecode(data, &dst.NFSDatastoreConfiguration2)
+	mapstructDecode(data, &dst.GFS2DatastoreConfiguration4)
 
-	if IsEmpty(dst.NFSDatastoreConfiguration2) {
-		dst.NFSDatastoreConfiguration2 = nil
+	if IsEmpty(dst.GFS2DatastoreConfiguration4) {
+		dst.GFS2DatastoreConfiguration4 = nil
+	}
+
+	mapstructDecode(data, &dst.NFSDatastoreConfiguration4)
+
+	if IsEmpty(dst.NFSDatastoreConfiguration4) {
+		dst.NFSDatastoreConfiguration4 = nil
 	}
 
 	mapstructDecode(data, &dst.MapmapOfStringAny)
@@ -64,64 +71,84 @@ func (dst *ClusterDatastoreCreateConfig) UnmarshalMapstructure(data any) (any, e
 // Unmarshal JSON data into any of the pointers in the struct
 func (dst *ClusterDatastoreCreateConfig) UnmarshalJSON(data []byte) error {
 	var err error
-	// try to unmarshal JSON data into AlletraMPHVMDatastoreConfiguration2
-	err = json.Unmarshal(data, &dst.AlletraMPHVMDatastoreConfiguration2)
+	// try to unmarshal JSON data into AlletraMPHVMDatastoreConfiguration4
+	err = json.Unmarshal(data, &dst.AlletraMPHVMDatastoreConfiguration4)
 	if err == nil {
-		jsonAlletraMPHVMDatastoreConfiguration2, merrAlletraMPHVMDatastoreConfiguration2 := json.Marshal(dst.AlletraMPHVMDatastoreConfiguration2)
-		var zeroAlletraMPHVMDatastoreConfiguration2 AlletraMPHVMDatastoreConfiguration2
-		jsonZeroAlletraMPHVMDatastoreConfiguration2, _ := json.Marshal(&zeroAlletraMPHVMDatastoreConfiguration2)
+		jsonAlletraMPHVMDatastoreConfiguration4, merrAlletraMPHVMDatastoreConfiguration4 := json.Marshal(dst.AlletraMPHVMDatastoreConfiguration4)
+		var zeroAlletraMPHVMDatastoreConfiguration4 AlletraMPHVMDatastoreConfiguration4
+		jsonZeroAlletraMPHVMDatastoreConfiguration4, _ := json.Marshal(&zeroAlletraMPHVMDatastoreConfiguration4)
 		// Reject a candidate variant when marshalling fails, when it is the
 		// empty object, or when an OBJECT-valued variant round-trips to its
 		// zero value (a false match on a struct with required fields). A
 		// primitive variant (whose JSON does not start with '{') is never
 		// rejected by the zero-value compare, so false/0/"" are preserved.
-		if merrAlletraMPHVMDatastoreConfiguration2 != nil || string(jsonAlletraMPHVMDatastoreConfiguration2) == "{}" || (len(jsonAlletraMPHVMDatastoreConfiguration2) > 0 && jsonAlletraMPHVMDatastoreConfiguration2[0] == '{' && string(jsonAlletraMPHVMDatastoreConfiguration2) == string(jsonZeroAlletraMPHVMDatastoreConfiguration2)) {
-			dst.AlletraMPHVMDatastoreConfiguration2 = nil
+		if merrAlletraMPHVMDatastoreConfiguration4 != nil || string(jsonAlletraMPHVMDatastoreConfiguration4) == "{}" || (len(jsonAlletraMPHVMDatastoreConfiguration4) > 0 && jsonAlletraMPHVMDatastoreConfiguration4[0] == '{' && string(jsonAlletraMPHVMDatastoreConfiguration4) == string(jsonZeroAlletraMPHVMDatastoreConfiguration4)) {
+			dst.AlletraMPHVMDatastoreConfiguration4 = nil
 		} else {
-			return nil // data stored in dst.AlletraMPHVMDatastoreConfiguration2, return on the first match
+			return nil // data stored in dst.AlletraMPHVMDatastoreConfiguration4, return on the first match
 		}
 	} else {
-		dst.AlletraMPHVMDatastoreConfiguration2 = nil
+		dst.AlletraMPHVMDatastoreConfiguration4 = nil
 	}
 
-	// try to unmarshal JSON data into GFS2DatastoreConfiguration2
-	err = json.Unmarshal(data, &dst.GFS2DatastoreConfiguration2)
+	// try to unmarshal JSON data into DatastoreGroupConfiguration2
+	err = json.Unmarshal(data, &dst.DatastoreGroupConfiguration2)
 	if err == nil {
-		jsonGFS2DatastoreConfiguration2, merrGFS2DatastoreConfiguration2 := json.Marshal(dst.GFS2DatastoreConfiguration2)
-		var zeroGFS2DatastoreConfiguration2 GFS2DatastoreConfiguration2
-		jsonZeroGFS2DatastoreConfiguration2, _ := json.Marshal(&zeroGFS2DatastoreConfiguration2)
+		jsonDatastoreGroupConfiguration2, merrDatastoreGroupConfiguration2 := json.Marshal(dst.DatastoreGroupConfiguration2)
+		var zeroDatastoreGroupConfiguration2 DatastoreGroupConfiguration2
+		jsonZeroDatastoreGroupConfiguration2, _ := json.Marshal(&zeroDatastoreGroupConfiguration2)
 		// Reject a candidate variant when marshalling fails, when it is the
 		// empty object, or when an OBJECT-valued variant round-trips to its
 		// zero value (a false match on a struct with required fields). A
 		// primitive variant (whose JSON does not start with '{') is never
 		// rejected by the zero-value compare, so false/0/"" are preserved.
-		if merrGFS2DatastoreConfiguration2 != nil || string(jsonGFS2DatastoreConfiguration2) == "{}" || (len(jsonGFS2DatastoreConfiguration2) > 0 && jsonGFS2DatastoreConfiguration2[0] == '{' && string(jsonGFS2DatastoreConfiguration2) == string(jsonZeroGFS2DatastoreConfiguration2)) {
-			dst.GFS2DatastoreConfiguration2 = nil
+		if merrDatastoreGroupConfiguration2 != nil || string(jsonDatastoreGroupConfiguration2) == "{}" || (len(jsonDatastoreGroupConfiguration2) > 0 && jsonDatastoreGroupConfiguration2[0] == '{' && string(jsonDatastoreGroupConfiguration2) == string(jsonZeroDatastoreGroupConfiguration2)) {
+			dst.DatastoreGroupConfiguration2 = nil
 		} else {
-			return nil // data stored in dst.GFS2DatastoreConfiguration2, return on the first match
+			return nil // data stored in dst.DatastoreGroupConfiguration2, return on the first match
 		}
 	} else {
-		dst.GFS2DatastoreConfiguration2 = nil
+		dst.DatastoreGroupConfiguration2 = nil
 	}
 
-	// try to unmarshal JSON data into NFSDatastoreConfiguration2
-	err = json.Unmarshal(data, &dst.NFSDatastoreConfiguration2)
+	// try to unmarshal JSON data into GFS2DatastoreConfiguration4
+	err = json.Unmarshal(data, &dst.GFS2DatastoreConfiguration4)
 	if err == nil {
-		jsonNFSDatastoreConfiguration2, merrNFSDatastoreConfiguration2 := json.Marshal(dst.NFSDatastoreConfiguration2)
-		var zeroNFSDatastoreConfiguration2 NFSDatastoreConfiguration2
-		jsonZeroNFSDatastoreConfiguration2, _ := json.Marshal(&zeroNFSDatastoreConfiguration2)
+		jsonGFS2DatastoreConfiguration4, merrGFS2DatastoreConfiguration4 := json.Marshal(dst.GFS2DatastoreConfiguration4)
+		var zeroGFS2DatastoreConfiguration4 GFS2DatastoreConfiguration4
+		jsonZeroGFS2DatastoreConfiguration4, _ := json.Marshal(&zeroGFS2DatastoreConfiguration4)
 		// Reject a candidate variant when marshalling fails, when it is the
 		// empty object, or when an OBJECT-valued variant round-trips to its
 		// zero value (a false match on a struct with required fields). A
 		// primitive variant (whose JSON does not start with '{') is never
 		// rejected by the zero-value compare, so false/0/"" are preserved.
-		if merrNFSDatastoreConfiguration2 != nil || string(jsonNFSDatastoreConfiguration2) == "{}" || (len(jsonNFSDatastoreConfiguration2) > 0 && jsonNFSDatastoreConfiguration2[0] == '{' && string(jsonNFSDatastoreConfiguration2) == string(jsonZeroNFSDatastoreConfiguration2)) {
-			dst.NFSDatastoreConfiguration2 = nil
+		if merrGFS2DatastoreConfiguration4 != nil || string(jsonGFS2DatastoreConfiguration4) == "{}" || (len(jsonGFS2DatastoreConfiguration4) > 0 && jsonGFS2DatastoreConfiguration4[0] == '{' && string(jsonGFS2DatastoreConfiguration4) == string(jsonZeroGFS2DatastoreConfiguration4)) {
+			dst.GFS2DatastoreConfiguration4 = nil
 		} else {
-			return nil // data stored in dst.NFSDatastoreConfiguration2, return on the first match
+			return nil // data stored in dst.GFS2DatastoreConfiguration4, return on the first match
 		}
 	} else {
-		dst.NFSDatastoreConfiguration2 = nil
+		dst.GFS2DatastoreConfiguration4 = nil
+	}
+
+	// try to unmarshal JSON data into NFSDatastoreConfiguration4
+	err = json.Unmarshal(data, &dst.NFSDatastoreConfiguration4)
+	if err == nil {
+		jsonNFSDatastoreConfiguration4, merrNFSDatastoreConfiguration4 := json.Marshal(dst.NFSDatastoreConfiguration4)
+		var zeroNFSDatastoreConfiguration4 NFSDatastoreConfiguration4
+		jsonZeroNFSDatastoreConfiguration4, _ := json.Marshal(&zeroNFSDatastoreConfiguration4)
+		// Reject a candidate variant when marshalling fails, when it is the
+		// empty object, or when an OBJECT-valued variant round-trips to its
+		// zero value (a false match on a struct with required fields). A
+		// primitive variant (whose JSON does not start with '{') is never
+		// rejected by the zero-value compare, so false/0/"" are preserved.
+		if merrNFSDatastoreConfiguration4 != nil || string(jsonNFSDatastoreConfiguration4) == "{}" || (len(jsonNFSDatastoreConfiguration4) > 0 && jsonNFSDatastoreConfiguration4[0] == '{' && string(jsonNFSDatastoreConfiguration4) == string(jsonZeroNFSDatastoreConfiguration4)) {
+			dst.NFSDatastoreConfiguration4 = nil
+		} else {
+			return nil // data stored in dst.NFSDatastoreConfiguration4, return on the first match
+		}
+	} else {
+		dst.NFSDatastoreConfiguration4 = nil
 	}
 
 	// try to unmarshal JSON data into MapmapOfStringAny
@@ -155,16 +182,20 @@ func (dst *ClusterDatastoreCreateConfig) UnmarshalJSON(data []byte) error {
 
 // Marshal data from the first non-nil pointers in the struct to JSON
 func (src ClusterDatastoreCreateConfig) MarshalJSON() ([]byte, error) {
-	if src.AlletraMPHVMDatastoreConfiguration2 != nil {
-		return json.Marshal(&src.AlletraMPHVMDatastoreConfiguration2)
+	if src.AlletraMPHVMDatastoreConfiguration4 != nil {
+		return json.Marshal(&src.AlletraMPHVMDatastoreConfiguration4)
 	}
 
-	if src.GFS2DatastoreConfiguration2 != nil {
-		return json.Marshal(&src.GFS2DatastoreConfiguration2)
+	if src.DatastoreGroupConfiguration2 != nil {
+		return json.Marshal(&src.DatastoreGroupConfiguration2)
 	}
 
-	if src.NFSDatastoreConfiguration2 != nil {
-		return json.Marshal(&src.NFSDatastoreConfiguration2)
+	if src.GFS2DatastoreConfiguration4 != nil {
+		return json.Marshal(&src.GFS2DatastoreConfiguration4)
+	}
+
+	if src.NFSDatastoreConfiguration4 != nil {
+		return json.Marshal(&src.NFSDatastoreConfiguration4)
 	}
 
 	if src.MapmapOfStringAny != nil {

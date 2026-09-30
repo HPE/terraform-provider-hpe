@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -40,7 +40,7 @@ type ListClusterVolumes200ResponseAllOfVolumesInner struct {
 	RefId                *int64                                                          `json:"refId,omitempty"`
 	DiskMode             *string                                                         `json:"diskMode,omitempty"`
 	DiskType             *string                                                         `json:"diskType,omitempty"`
-	Type                 *ListClusterVolumes200ResponseAllOfVolumesInnerType             `json:"type,omitempty"`
+	Type                 NullableListClusterVolumes200ResponseAllOfVolumesInnerType      `json:"type,omitempty"`
 	TypeId               *int64                                                          `json:"typeId,omitempty"`
 	Category             *string                                                         `json:"category,omitempty"`
 	Status               *string                                                         `json:"status,omitempty"`
@@ -154,8 +154,8 @@ func (o ListClusterVolumes200ResponseAllOfVolumesInner) ToMap() (map[string]inte
 	if !IsNil(o.DiskType) {
 		toSerialize["diskType"] = o.DiskType
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.TypeId) {
 		toSerialize["typeId"] = o.TypeId

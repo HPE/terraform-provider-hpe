@@ -1519,7 +1519,7 @@ func (r *Resource) Create(
 
 	// optional
 	if !plan.DefaultPersonaCode.IsUnknown() && !plan.DefaultPersonaCode.IsNull() {
-		addRole.DefaultPersona.Set(plan.DefaultPersonaCode.ValueStringPointer())
+		addRole.DefaultPersona.Set(&sdk.AddRolesRequestRoleDefaultPersona{String: plan.DefaultPersonaCode.ValueStringPointer()})
 	}
 
 	if !plan.Description.IsUnknown() {
@@ -2055,7 +2055,14 @@ func (r *Resource) Update(
 		return
 	}
 
-	clearable.NullableString(pending, "default_persona_code", plan.DefaultPersonaCode, &updateRole.DefaultPersona)
+	// default_persona_code: the API takes the persona as a code, an id or an
+	// object; the provider sends the code, and null to clear it.
+	switch {
+	case pending.Clears("default_persona_code"):
+		updateRole.DefaultPersona.Set(nil)
+	case !plan.DefaultPersonaCode.IsNull() && !plan.DefaultPersonaCode.IsUnknown():
+		updateRole.DefaultPersona.Set(&sdk.UpdateRoleRequestRoleDefaultPersona{String: plan.DefaultPersonaCode.ValueStringPointer()})
+	}
 	clearable.NullableString(pending, "description", plan.Description, &updateRole.Description)
 	clearable.NullableString(pending, "landing_url", plan.LandingUrl, &updateRole.LandingUrl)
 

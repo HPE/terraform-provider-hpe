@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -27,7 +27,7 @@ type UpdatePricesRequestPrice struct {
 	// Price code, must be unique
 	Code    *string                          `json:"code,omitempty"`
 	Account *UpdatePricesRequestPriceAccount `json:"account,omitempty"`
-	// Restricts query to only load only prices with specified priceType. * `fixed` - Everything * `compute` - Memory + CPU * `memory` - Memory * `cores` - Cores * `storage` - Storage * `datastore` - Datastore * `platform` - Platform * `software` - Software * `load_balancer` - Load Balancer * `load_balancer_virtual_server` - Load Balancer Virtual Server
+	// Restricts query to only load only prices with specified priceType. * `fixed` - Everything * `compute` - Memory + CPU * `memory` - Memory * `cores` - Cores * `storage` - Storage * `datastore` - Datastore * `platform` - Platform * `software` - Software (accepted alias; stored as software_or_service) * `software_or_service` - Software or service * `load_balancer` - Load Balancer * `load_balancer_virtual_server` - Load Balancer Virtual Server
 	PriceType *string `json:"priceType,omitempty"`
 	// The unit of pricing
 	PriceUnit *string `json:"priceUnit,omitempty"`
@@ -47,10 +47,12 @@ type UpdatePricesRequestPrice struct {
 	CustomPrice *float32 `json:"customPrice,omitempty"`
 	// Platform.  Required for `platform` price type
 	Platform *string `json:"platform,omitempty"`
-	// Software.  Required for software price type
-	Software   *string                             `json:"software,omitempty"`
-	VolumeType *UpdatePricesRequestPriceVolumeType `json:"volumeType,omitempty"`
-	Datastore  *UpdatePricesRequestPriceDatastore  `json:"datastore,omitempty"`
+	// Software or service name for software prices. Accepted as an alias for `softwareOrService`; when `priceType` is `software`, the API stores type `software_or_service`.
+	Software *string `json:"software,omitempty"`
+	// Software or service name. Required when price type is software / software_or_service.
+	SoftwareOrService *string                             `json:"softwareOrService,omitempty"`
+	VolumeType        *UpdatePricesRequestPriceVolumeType `json:"volumeType,omitempty"`
+	Datastore         *UpdatePricesRequestPriceDatastore  `json:"datastore,omitempty"`
 	// Apply price across clouds, optional true/false flag for datastore price type
 	CrossCloudApply      *bool                  `json:"crossCloudApply,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -109,6 +111,9 @@ func (o UpdatePricesRequestPrice) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Software) {
 		toSerialize["software"] = o.Software
+	}
+	if !IsNil(o.SoftwareOrService) {
+		toSerialize["softwareOrService"] = o.SoftwareOrService
 	}
 	if !IsNil(o.VolumeType) {
 		toSerialize["volumeType"] = o.VolumeType

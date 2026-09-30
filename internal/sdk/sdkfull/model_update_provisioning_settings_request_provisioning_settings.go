@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -47,9 +47,21 @@ type UpdateProvisioningSettingsRequestProvisioningSettings struct {
 	// Windows administrator password
 	WindowsPassword *string `json:"windowsPassword,omitempty"`
 	// PXE Boot default root password
-	PxeRootPassword      *string                                                                   `json:"pxeRootPassword,omitempty"`
-	DefaultTemplateType  *UpdateProvisioningSettingsRequestProvisioningSettingsDefaultTemplateType `json:"defaultTemplateType,omitempty"`
-	AdditionalProperties map[string]interface{}                                                    `json:",remain"`
+	PxeRootPassword     *string                                                                   `json:"pxeRootPassword,omitempty"`
+	DefaultTemplateType *UpdateProvisioningSettingsRequestProvisioningSettingsDefaultTemplateType `json:"defaultTemplateType,omitempty"`
+	// Enable or disable catalog provisioning
+	EnableCatalog *bool `json:"enableCatalog,omitempty"`
+	// Enable or disable apps provisioning
+	EnableApps *bool `json:"enableApps,omitempty"`
+	// Enable or disable instances provisioning
+	EnableInstances *bool `json:"enableInstances,omitempty"`
+	// Provisioning navigation order (dash-separated values)
+	ProvisioningOrder *string `json:"provisioningOrder,omitempty"`
+	// Terraform execution mode
+	TerraformMode *string `json:"terraformMode,omitempty"`
+	// Terraform version
+	TerraformVersion     *string                `json:"terraformVersion,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdateProvisioningSettingsRequestProvisioningSettings UpdateProvisioningSettingsRequestProvisioningSettings
@@ -108,6 +120,24 @@ func (o UpdateProvisioningSettingsRequestProvisioningSettings) ToMap() (map[stri
 	}
 	if !IsNil(o.DefaultTemplateType) {
 		toSerialize["defaultTemplateType"] = o.DefaultTemplateType
+	}
+	if !IsNil(o.EnableCatalog) {
+		toSerialize["enableCatalog"] = o.EnableCatalog
+	}
+	if !IsNil(o.EnableApps) {
+		toSerialize["enableApps"] = o.EnableApps
+	}
+	if !IsNil(o.EnableInstances) {
+		toSerialize["enableInstances"] = o.EnableInstances
+	}
+	if !IsNil(o.ProvisioningOrder) {
+		toSerialize["provisioningOrder"] = o.ProvisioningOrder
+	}
+	if !IsNil(o.TerraformMode) {
+		toSerialize["terraformMode"] = o.TerraformMode
+	}
+	if !IsNil(o.TerraformVersion) {
+		toSerialize["terraformVersion"] = o.TerraformVersion
 	}
 
 	for key, value := range o.AdditionalProperties {

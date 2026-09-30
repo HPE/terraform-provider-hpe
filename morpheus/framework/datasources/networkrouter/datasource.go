@@ -115,13 +115,13 @@ func setCloudState(
 	state *NetworkRouterModel,
 	router *sdk.GetNetworkRouter200ResponseNetworkRouter,
 ) error {
-	if router.Zone != nil {
+	if zone := router.Zone.Get(); zone != nil {
 		cloud, diags := NewCloudValue(
 			CloudValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"id":   convert.Int64ToType(router.Zone.Id),
-				"code": convert.StrToType(router.Zone.Code),
-				"name": convert.StrToType(router.Zone.Name),
+				"id":   convert.Int64ToType(zone.Id),
+				"code": convert.StrToType(zone.Code),
+				"name": convert.StrToType(zone.Name),
 			},
 		)
 		if diags.HasError() {

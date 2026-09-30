@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -13,51 +13,131 @@ package sdk
 
 import (
 	"encoding/json"
+	"fmt"
+
+	"gopkg.in/validator.v2"
 )
 
-// checks if the UpdateUserRequestUserRolesInner type satisfies the MappedNullable interface at compile time
-var _ MappedNullable = &UpdateUserRequestUserRolesInner{}
+// very silly way of avoiding `"fmt" imported and not used` errors
+var _ fmt.Stringer
 
-// UpdateUserRequestUserRolesInner A simple object to represent a specific resource, typically an id and name.
+// UpdateUserRequestUserRolesInner - struct for UpdateUserRequestUserRolesInner
 type UpdateUserRequestUserRolesInner struct {
-	// Resource ID
-	Id int64 `json:"id"`
-	// Resource name
-	Name *string `json:"name,omitempty"`
-	// Resource code
-	Code                 *string                `json:"code,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	UpdateUserRequestUserRolesInnerOneOf *UpdateUserRequestUserRolesInnerOneOf
+	Int64                                *int64
 }
 
-type _UpdateUserRequestUserRolesInner UpdateUserRequestUserRolesInner
-
-func (o UpdateUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
-	toSerialize, err := o.ToMap()
-	if err != nil {
-		return []byte{}, err
+func (dst *UpdateUserRequestUserRolesInner) UnmarshalMapstructure(data any) (any, error) {
+	if dst == nil {
+		dst = &UpdateUserRequestUserRolesInner{}
 	}
-	return json.Marshal(toSerialize)
+
+	mapstructDecode(data, &dst.UpdateUserRequestUserRolesInnerOneOf)
+
+	if IsEmpty(dst.UpdateUserRequestUserRolesInnerOneOf) {
+		dst.UpdateUserRequestUserRolesInnerOneOf = nil
+	}
+
+	mapstructDecode(data, &dst.Int64)
+
+	if IsEmpty(dst.Int64) {
+		dst.Int64 = nil
+	}
+
+	return dst, nil
 }
 
-func (o UpdateUserRequestUserRolesInner) ToMap() (map[string]interface{}, error) {
-	toSerialize := map[string]interface{}{}
-	toSerialize["id"] = o.Id
-	if !IsNil(o.Name) {
-		toSerialize["name"] = o.Name
-	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
+// Unmarshal JSON data into one of the pointers in the struct
+func (dst *UpdateUserRequestUserRolesInner) UnmarshalJSON(data []byte) error {
+	var err error
+	match := 0
+	// try to unmarshal data into UpdateUserRequestUserRolesInnerOneOf
+	err = newStrictDecoder(data).Decode(&dst.UpdateUserRequestUserRolesInnerOneOf)
+	if err == nil {
+		jsonUpdateUserRequestUserRolesInnerOneOf, _ := json.Marshal(dst.UpdateUserRequestUserRolesInnerOneOf)
+		if string(jsonUpdateUserRequestUserRolesInnerOneOf) == "{}" { // empty struct
+			dst.UpdateUserRequestUserRolesInnerOneOf = nil
+		} else {
+			if err = validator.Validate(dst.UpdateUserRequestUserRolesInnerOneOf); err != nil {
+				dst.UpdateUserRequestUserRolesInnerOneOf = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.UpdateUserRequestUserRolesInnerOneOf = nil
 	}
 
-	for key, value := range o.AdditionalProperties {
-		toSerialize[key] = value
+	// try to unmarshal data into Int64
+	err = newStrictDecoder(data).Decode(&dst.Int64)
+	if err == nil {
+		jsonInt64, _ := json.Marshal(dst.Int64)
+		if string(jsonInt64) == "{}" { // empty struct
+			dst.Int64 = nil
+		} else {
+			if err = validator.Validate(dst.Int64); err != nil {
+				dst.Int64 = nil
+			} else {
+				match++
+			}
+		}
+	} else {
+		dst.Int64 = nil
 	}
 
-	return toSerialize, nil
+	if match > 1 { // more than 1 match
+		// reset to nil
+		dst.UpdateUserRequestUserRolesInnerOneOf = nil
+		dst.Int64 = nil
+
+		return NewResponseValidationError("data matches more than one schema in oneOf(UpdateUserRequestUserRolesInner)")
+	} else if match == 1 {
+		return nil // exactly one match
+	} else { // no match
+		return NewResponseValidationError("data failed to match schemas in oneOf(UpdateUserRequestUserRolesInner)")
+	}
 }
 
-func (o *UpdateUserRequestUserRolesInner) UnmarshalJSON(data []byte) (err error) {
-	return decode(data, &o)
+// Marshal data from the first non-nil pointers in the struct to JSON
+func (src UpdateUserRequestUserRolesInner) MarshalJSON() ([]byte, error) {
+	if src.UpdateUserRequestUserRolesInnerOneOf != nil {
+		return json.Marshal(&src.UpdateUserRequestUserRolesInnerOneOf)
+	}
+
+	if src.Int64 != nil {
+		return json.Marshal(&src.Int64)
+	}
+
+	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
 }
 
-// - model_simple.mustache
+// Get the actual instance
+func (obj *UpdateUserRequestUserRolesInner) GetActualInstance() interface{} {
+	if obj == nil {
+		return nil
+	}
+	if obj.UpdateUserRequestUserRolesInnerOneOf != nil {
+		return obj.UpdateUserRequestUserRolesInnerOneOf
+	}
+
+	if obj.Int64 != nil {
+		return obj.Int64
+	}
+
+	// all schemas are nil
+	return nil
+}
+
+// Get the actual instance value
+func (obj UpdateUserRequestUserRolesInner) GetActualInstanceValue() interface{} {
+	if obj.UpdateUserRequestUserRolesInnerOneOf != nil {
+		return *obj.UpdateUserRequestUserRolesInnerOneOf
+	}
+
+	if obj.Int64 != nil {
+		return *obj.Int64
+	}
+
+	// all schemas are nil
+	return nil
+}

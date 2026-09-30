@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &ListVirtualImageLocations200ResponseAllOfLocationsInner{
 // ListVirtualImageLocations200ResponseAllOfLocationsInner struct for ListVirtualImageLocations200ResponseAllOfLocationsInner
 type ListVirtualImageLocations200ResponseAllOfLocationsInner struct {
 	Id                   *int64                                                               `json:"id,omitempty"`
-	Cloud                *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud        `json:"cloud,omitempty"`
+	Cloud                NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud `json:"cloud,omitempty"`
 	Code                 *string                                                              `json:"code,omitempty"`
 	InternalId           NullableString                                                       `json:"internalId,omitempty"`
 	ExternalId           *string                                                              `json:"externalId,omitempty"`
@@ -65,8 +65,8 @@ func (o ListVirtualImageLocations200ResponseAllOfLocationsInner) ToMap() (map[st
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.Cloud) {
-		toSerialize["cloud"] = o.Cloud
+	if o.Cloud.IsSet() {
+		toSerialize["cloud"] = o.Cloud.Get()
 	}
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code

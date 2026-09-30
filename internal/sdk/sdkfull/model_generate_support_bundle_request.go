@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,6 +23,8 @@ var _ MappedNullable = &GenerateSupportBundleRequest{}
 
 // GenerateSupportBundleRequest struct for GenerateSupportBundleRequest
 type GenerateSupportBundleRequest struct {
+	// Optional unique name for the support bundle. When omitted, a name is generated automatically.
+	Name *string `json:"name,omitempty"`
 	// ID of the storage provider (storage bucket) where the bundle should be saved. Defaults to the storage bucket configured as the default support bundle target. If no default is configured, the bundle is saved to the appliance's local storage. If provided, this ID must reference an existing storage provider or the request returns `404`.
 	StorageProviderId *int64 `json:"storageProviderId,omitempty"`
 	// ISO 8601 start of the log collection window (e.g. `2026-01-15T00:00:00Z`). Required. Appliance logs are collected starting from this time.
@@ -46,6 +48,9 @@ func (o GenerateSupportBundleRequest) MarshalJSON() ([]byte, error) {
 
 func (o GenerateSupportBundleRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
 	if !IsNil(o.StorageProviderId) {
 		toSerialize["storageProviderId"] = o.StorageProviderId
 	}

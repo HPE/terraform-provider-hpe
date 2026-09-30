@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -42,9 +42,21 @@ type ListProvisioningSettings200ResponseProvisioningSettings struct {
 	PxeRootPassword     NullableString `json:"pxeRootPassword,omitempty"`
 	// SHA-256 hash of the PXE boot root password, or null if no password is set. `pxeRootPassword` itself is returned masked.
 	PxeRootPasswordHash   NullableString                                                                       `json:"pxeRootPasswordHash,omitempty"`
-	DefaultTemplateType   *ListProvisioningSettings200ResponseProvisioningSettingsDefaultTemplateType          `json:"defaultTemplateType,omitempty"`
+	DefaultTemplateType   NullableListProvisioningSettings200ResponseProvisioningSettingsDefaultTemplateType   `json:"defaultTemplateType,omitempty"`
 	DeployStorageProvider NullableListProvisioningSettings200ResponseProvisioningSettingsDeployStorageProvider `json:"deployStorageProvider,omitempty"`
-	AdditionalProperties  map[string]interface{}                                                               `json:",remain"`
+	// Whether catalog provisioning is enabled
+	EnableCatalog *bool `json:"enableCatalog,omitempty"`
+	// Whether apps provisioning is enabled
+	EnableApps *bool `json:"enableApps,omitempty"`
+	// Whether instances provisioning is enabled
+	EnableInstances *bool `json:"enableInstances,omitempty"`
+	// Provisioning navigation order (dash-separated)
+	ProvisioningOrder NullableString `json:"provisioningOrder,omitempty"`
+	// Terraform execution mode
+	TerraformMode NullableString `json:"terraformMode,omitempty"`
+	// Terraform version
+	TerraformVersion     NullableString         `json:"terraformVersion,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _ListProvisioningSettings200ResponseProvisioningSettings ListProvisioningSettings200ResponseProvisioningSettings
@@ -107,11 +119,29 @@ func (o ListProvisioningSettings200ResponseProvisioningSettings) ToMap() (map[st
 	if o.PxeRootPasswordHash.IsSet() {
 		toSerialize["pxeRootPasswordHash"] = o.PxeRootPasswordHash.Get()
 	}
-	if !IsNil(o.DefaultTemplateType) {
-		toSerialize["defaultTemplateType"] = o.DefaultTemplateType
+	if o.DefaultTemplateType.IsSet() {
+		toSerialize["defaultTemplateType"] = o.DefaultTemplateType.Get()
 	}
 	if o.DeployStorageProvider.IsSet() {
 		toSerialize["deployStorageProvider"] = o.DeployStorageProvider.Get()
+	}
+	if !IsNil(o.EnableCatalog) {
+		toSerialize["enableCatalog"] = o.EnableCatalog
+	}
+	if !IsNil(o.EnableApps) {
+		toSerialize["enableApps"] = o.EnableApps
+	}
+	if !IsNil(o.EnableInstances) {
+		toSerialize["enableInstances"] = o.EnableInstances
+	}
+	if o.ProvisioningOrder.IsSet() {
+		toSerialize["provisioningOrder"] = o.ProvisioningOrder.Get()
+	}
+	if o.TerraformMode.IsSet() {
+		toSerialize["terraformMode"] = o.TerraformMode.Get()
+	}
+	if o.TerraformVersion.IsSet() {
+		toSerialize["terraformVersion"] = o.TerraformVersion.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

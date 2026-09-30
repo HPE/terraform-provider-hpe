@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,9 +22,13 @@ var _ MappedNullable = &WhitelabelSettings{}
 
 // WhitelabelSettings struct for WhitelabelSettings
 type WhitelabelSettings struct {
+	Account                   *WhitelabelSettingsAccount                `json:"account,omitempty"`
 	Enabled                   *bool                                     `json:"enabled,omitempty"`
 	ApplianceName             *string                                   `json:"applianceName,omitempty"`
 	DisableSupportMenu        *bool                                     `json:"disableSupportMenu,omitempty"`
+	SupportsThemes            *bool                                     `json:"supportsThemes,omitempty"`
+	SecurityBanner            *string                                   `json:"securityBanner,omitempty"`
+	ExternalLegalText         *string                                   `json:"externalLegalText,omitempty"`
 	HeaderLogo                *string                                   `json:"headerLogo,omitempty"`
 	FooterLogo                *string                                   `json:"footerLogo,omitempty"`
 	LoginLogo                 *string                                   `json:"loginLogo,omitempty"`
@@ -61,6 +65,9 @@ func (o WhitelabelSettings) MarshalJSON() ([]byte, error) {
 
 func (o WhitelabelSettings) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
+	}
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
 	}
@@ -69,6 +76,15 @@ func (o WhitelabelSettings) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.DisableSupportMenu) {
 		toSerialize["disableSupportMenu"] = o.DisableSupportMenu
+	}
+	if !IsNil(o.SupportsThemes) {
+		toSerialize["supportsThemes"] = o.SupportsThemes
+	}
+	if !IsNil(o.SecurityBanner) {
+		toSerialize["securityBanner"] = o.SecurityBanner
+	}
+	if !IsNil(o.ExternalLegalText) {
+		toSerialize["externalLegalText"] = o.ExternalLegalText
 	}
 	if !IsNil(o.HeaderLogo) {
 		toSerialize["headerLogo"] = o.HeaderLogo

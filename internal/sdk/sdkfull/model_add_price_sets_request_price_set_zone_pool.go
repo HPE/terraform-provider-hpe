@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,7 +20,7 @@ import (
 // checks if the AddPriceSetsRequestPriceSetZonePool type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddPriceSetsRequestPriceSetZonePool{}
 
-// AddPriceSetsRequestPriceSetZonePool struct for AddPriceSetsRequestPriceSetZonePool
+// AddPriceSetsRequestPriceSetZonePool Optional resource pool scope
 type AddPriceSetsRequestPriceSetZonePool struct {
 	// Resource Pool ID
 	Id                   *int64                 `json:"id,omitempty"`

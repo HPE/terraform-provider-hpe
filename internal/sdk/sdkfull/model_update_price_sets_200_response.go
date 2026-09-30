@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,11 +20,15 @@ import (
 // checks if the UpdatePriceSets200Response type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdatePriceSets200Response{}
 
-// UpdatePriceSets200Response struct for UpdatePriceSets200Response
+// UpdatePriceSets200Response A response object
 type UpdatePriceSets200Response struct {
-	Budget               *UpdatePriceSets200ResponseAllOfBudget `json:"budget,omitempty"`
-	Success              *bool                                  `json:"success,omitempty"`
-	AdditionalProperties map[string]interface{}                 `json:",remain"`
+	// Success indicator, true when the request succeeded and false when an error occurred
+	Success *bool `json:"success,omitempty"`
+	// Message containing a description of the result, usually a message about the error that occurred
+	Msg NullableString `json:"msg,omitempty"`
+	// Validation errors, with a key for Object containing error messages for each invalid parameter (key)
+	Errors               map[string]interface{} `json:"errors,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdatePriceSets200Response UpdatePriceSets200Response
@@ -39,11 +43,14 @@ func (o UpdatePriceSets200Response) MarshalJSON() ([]byte, error) {
 
 func (o UpdatePriceSets200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Budget) {
-		toSerialize["budget"] = o.Budget
-	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
+	}
+	if o.Msg.IsSet() {
+		toSerialize["msg"] = o.Msg.Get()
+	}
+	if o.Errors != nil {
+		toSerialize["errors"] = o.Errors
 	}
 
 	for key, value := range o.AdditionalProperties {

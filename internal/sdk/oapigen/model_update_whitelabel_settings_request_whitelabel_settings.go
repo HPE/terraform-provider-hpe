@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,7 +25,10 @@ type UpdateWhitelabelSettingsRequestWhitelabelSettings struct {
 	// Appliance name. Master account only
 	ApplianceName *string `json:"applianceName,omitempty"`
 	// Can be used to disable support menu
-	DisableSupportMenu *bool `json:"disableSupportMenu,omitempty"`
+	DisableSupportMenu *bool   `json:"disableSupportMenu,omitempty"`
+	SupportsThemes     *bool   `json:"supportsThemes,omitempty"`
+	SecurityBanner     *string `json:"securityBanner,omitempty"`
+	ExternalLegalText  *string `json:"externalLegalText,omitempty"`
 	// Resets header logo to default header logo
 	ResetHeaderLogo *bool `json:"resetHeaderLogo,omitempty"`
 	// Resets footer logo to default footer logo
@@ -90,6 +93,15 @@ func (o UpdateWhitelabelSettingsRequestWhitelabelSettings) ToMap() (map[string]i
 	}
 	if !IsNil(o.DisableSupportMenu) {
 		toSerialize["disableSupportMenu"] = o.DisableSupportMenu
+	}
+	if !IsNil(o.SupportsThemes) {
+		toSerialize["supportsThemes"] = o.SupportsThemes
+	}
+	if !IsNil(o.SecurityBanner) {
+		toSerialize["securityBanner"] = o.SecurityBanner
+	}
+	if !IsNil(o.ExternalLegalText) {
+		toSerialize["externalLegalText"] = o.ExternalLegalText
 	}
 	if !IsNil(o.ResetHeaderLogo) {
 		toSerialize["resetHeaderLogo"] = o.ResetHeaderLogo

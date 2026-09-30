@@ -142,8 +142,11 @@ func StorageVolumeResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
-				Description:         "The name of the storage volume.",
-				MarkdownDescription: "The name of the storage volume.",
+				Description:         "The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.",
+				MarkdownDescription: "The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"provision_type": schema.StringAttribute{
 				Optional:            true,

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,17 +24,12 @@ var _ MappedNullable = &UpdatePriceSetsRequestPriceSet{}
 type UpdatePriceSetsRequestPriceSet struct {
 	// Price set name
 	Name *string `json:"name,omitempty"`
-	// Price set code. Must be unique.
-	Code *string `json:"code,omitempty"`
-	// Price set region code
-	RegionCode *string                                 `json:"regionCode,omitempty"`
-	Zone       *UpdatePriceSetsRequestPriceSetZone     `json:"zone,omitempty"`
-	ZonePool   *UpdatePriceSetsRequestPriceSetZonePool `json:"zonePool,omitempty"`
-	// Price Unit
-	PriceUnit *string `json:"priceUnit,omitempty"`
-	// Price set type
-	Type                 *string                `json:"type,omitempty"`
-	Prices               []int64                `json:"prices,omitempty"`
+	// Full set of prices that should remain on the price set. Items are matched by price ID; omitted prices are removed and new IDs are added.
+	Prices []UpdatePriceSetsRequestPriceSetPricesInner `json:"prices,omitempty"`
+	// When set to false on an active price set, deactivates the price set (same effect as the deactivate endpoint).
+	Active *bool `json:"active,omitempty"`
+	// When true and the update succeeds, triggers asynchronous reprocessing of price usage changes.
+	RestartUsage         *bool                  `json:"restartUsage,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -53,26 +48,14 @@ func (o UpdatePriceSetsRequestPriceSet) ToMap() (map[string]interface{}, error) 
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Code) {
-		toSerialize["code"] = o.Code
-	}
-	if !IsNil(o.RegionCode) {
-		toSerialize["regionCode"] = o.RegionCode
-	}
-	if !IsNil(o.Zone) {
-		toSerialize["zone"] = o.Zone
-	}
-	if !IsNil(o.ZonePool) {
-		toSerialize["zonePool"] = o.ZonePool
-	}
-	if !IsNil(o.PriceUnit) {
-		toSerialize["priceUnit"] = o.PriceUnit
-	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
-	}
 	if !IsNil(o.Prices) {
 		toSerialize["prices"] = o.Prices
+	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
+	}
+	if !IsNil(o.RestartUsage) {
+		toSerialize["restartUsage"] = o.RestartUsage
 	}
 
 	for key, value := range o.AdditionalProperties {

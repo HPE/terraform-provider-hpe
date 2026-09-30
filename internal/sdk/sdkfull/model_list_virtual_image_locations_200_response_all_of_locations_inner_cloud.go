@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) ToMap() (m
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud struct {
+	value *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud
+	isSet bool
+}
+
+func (v NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) Get() *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud {
+	return v.value
+}
+
+func (v *NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) Set(val *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud(val *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) *NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud {
+	return &NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud{value: val, isSet: true}
+}
+
+func (v NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListVirtualImageLocations200ResponseAllOfLocationsInnerCloud) UnmarshalJSON(data []byte) (err error) {

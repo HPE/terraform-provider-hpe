@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,11 +22,11 @@ var _ MappedNullable = &ListJobExecutions200ResponseAllOfJobExecutionsInnerJob{}
 
 // ListJobExecutions200ResponseAllOfJobExecutionsInnerJob struct for ListJobExecutions200ResponseAllOfJobExecutionsInnerJob
 type ListJobExecutions200ResponseAllOfJobExecutionsInnerJob struct {
-	Id                   *int64                                                      `json:"id,omitempty"`
-	Name                 *string                                                     `json:"name,omitempty"`
-	Description          NullableString                                              `json:"description,omitempty"`
-	Type                 *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType `json:"type,omitempty"`
-	AdditionalProperties map[string]interface{}                                      `json:",remain"`
+	Id                   *int64                                                             `json:"id,omitempty"`
+	Name                 *string                                                            `json:"name,omitempty"`
+	Description          NullableString                                                     `json:"description,omitempty"`
+	Type                 NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType `json:"type,omitempty"`
+	AdditionalProperties map[string]interface{}                                             `json:",remain"`
 }
 
 type _ListJobExecutions200ResponseAllOfJobExecutionsInnerJob ListJobExecutions200ResponseAllOfJobExecutionsInnerJob
@@ -50,8 +50,8 @@ func (o ListJobExecutions200ResponseAllOfJobExecutionsInnerJob) ToMap() (map[str
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,15 +22,15 @@ var _ MappedNullable = &AddCloudResourcePool200ResponseResourcePoolAllOfResource
 
 // AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission struct for AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission
 type AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission struct {
-	DefaultStore         NullableBool                                                                `json:"defaultStore,omitempty"`
-	DefaultTarget        NullableBool                                                                `json:"defaultTarget,omitempty"`
-	CanManage            NullableBool                                                                `json:"canManage,omitempty"`
-	All                  *bool                                                                       `json:"all,omitempty"`
-	Account              *ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsAccount     `json:"account,omitempty"`
-	Sites                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsSitesInner `json:"sites,omitempty"`
-	AllPlans             NullableBool                                                                `json:"allPlans,omitempty"`
-	Plans                []ListCloudFolders200ResponseAllOfFoldersInnerResourcePermissionsPlansInner `json:"plans,omitempty"`
-	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
+	DefaultStore         NullableBool                                                                   `json:"defaultStore,omitempty"`
+	DefaultTarget        NullableBool                                                                   `json:"defaultTarget,omitempty"`
+	CanManage            NullableBool                                                                   `json:"canManage,omitempty"`
+	All                  *bool                                                                          `json:"all,omitempty"`
+	Account              *AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermissionAccount     `json:"account,omitempty"`
+	Sites                []AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermissionSitesInner `json:"sites,omitempty"`
+	AllPlans             NullableBool                                                                   `json:"allPlans,omitempty"`
+	Plans                []AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermissionPlansInner `json:"plans,omitempty"`
+	AdditionalProperties map[string]interface{}                                                         `json:",remain"`
 }
 
 type _AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission

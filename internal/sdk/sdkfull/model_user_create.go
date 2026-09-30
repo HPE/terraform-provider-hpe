@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -32,20 +32,35 @@ type UserCreate struct {
 	Email string `json:"email"`
 	// Password to apply to the user
 	Password string `json:"password"`
-	// Array of objects with id of the role(s) to assign to the user.
+	// Optional. If omitted when `password` is set, the API auto-confirms. If provided (including empty string), it is validated against `password`.
+	PasswordConfirmation *string `json:"passwordConfirmation,omitempty"`
+	// Roles to assign. Accepts an array of role id integers, ReferenceObjects with `id`, and/or a singular `role` field (see `role` property). Flattened server-side.
 	Roles []UserCreateRolesInner `json:"roles"`
+	Role  *UserCreateRole        `json:"role,omitempty"`
 	// Receive Notifications?
 	ReceiveNotifications *bool `json:"receiveNotifications,omitempty"`
+	// Whether the user account is enabled
+	Enabled *bool `json:"enabled,omitempty"`
+	// Whether the user account is locked
+	AccountLocked *bool `json:"accountLocked,omitempty"`
+	// Force password change on next login
+	PasswordExpired *bool `json:"passwordExpired,omitempty"`
 	// Linux Username, user settings for provisioning
 	LinuxUsername *string `json:"linuxUsername,omitempty"`
 	// Linux Password, user settings for provisioning
 	LinuxPassword *string `json:"linuxPassword,omitempty"`
-	// Linux SSH Key, user settings for provisioning
-	LinuxKeyPairId *int64 `json:"linuxKeyPairId,omitempty"`
+	// Optional confirmation for linuxPassword (auto-confirmed if omitted)
+	LinuxPasswordConfirmation *string                          `json:"linuxPasswordConfirmation,omitempty"`
+	LinuxKeyPairId            NullableUserCreateLinuxKeyPairId `json:"linuxKeyPairId,omitempty"`
 	// Windows Username, user settings for provisioning
 	WindowsUsername *string `json:"windowsUsername,omitempty"`
 	// Windows Password, user settings for provisioning
-	WindowsPassword      *string                `json:"windowsPassword,omitempty"`
+	WindowsPassword *string `json:"windowsPassword,omitempty"`
+	// Optional confirmation for windowsPassword (auto-confirmed if omitted)
+	WindowsPasswordConfirmation *string                          `json:"windowsPasswordConfirmation,omitempty"`
+	DefaultPersona              NullableUserCreateDefaultPersona `json:"defaultPersona,omitempty"`
+	// Alias for default persona id
+	DefaultPersonaId     NullableInt64          `json:"defaultPersonaId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -70,9 +85,24 @@ func (o UserCreate) ToMap() (map[string]interface{}, error) {
 	toSerialize["username"] = o.Username
 	toSerialize["email"] = o.Email
 	toSerialize["password"] = o.Password
+	if !IsNil(o.PasswordConfirmation) {
+		toSerialize["passwordConfirmation"] = o.PasswordConfirmation
+	}
 	toSerialize["roles"] = o.Roles
+	if !IsNil(o.Role) {
+		toSerialize["role"] = o.Role
+	}
 	if !IsNil(o.ReceiveNotifications) {
 		toSerialize["receiveNotifications"] = o.ReceiveNotifications
+	}
+	if !IsNil(o.Enabled) {
+		toSerialize["enabled"] = o.Enabled
+	}
+	if !IsNil(o.AccountLocked) {
+		toSerialize["accountLocked"] = o.AccountLocked
+	}
+	if !IsNil(o.PasswordExpired) {
+		toSerialize["passwordExpired"] = o.PasswordExpired
 	}
 	if !IsNil(o.LinuxUsername) {
 		toSerialize["linuxUsername"] = o.LinuxUsername
@@ -80,14 +110,26 @@ func (o UserCreate) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.LinuxPassword) {
 		toSerialize["linuxPassword"] = o.LinuxPassword
 	}
-	if !IsNil(o.LinuxKeyPairId) {
-		toSerialize["linuxKeyPairId"] = o.LinuxKeyPairId
+	if !IsNil(o.LinuxPasswordConfirmation) {
+		toSerialize["linuxPasswordConfirmation"] = o.LinuxPasswordConfirmation
+	}
+	if o.LinuxKeyPairId.IsSet() {
+		toSerialize["linuxKeyPairId"] = o.LinuxKeyPairId.Get()
 	}
 	if !IsNil(o.WindowsUsername) {
 		toSerialize["windowsUsername"] = o.WindowsUsername
 	}
 	if !IsNil(o.WindowsPassword) {
 		toSerialize["windowsPassword"] = o.WindowsPassword
+	}
+	if !IsNil(o.WindowsPasswordConfirmation) {
+		toSerialize["windowsPasswordConfirmation"] = o.WindowsPasswordConfirmation
+	}
+	if o.DefaultPersona.IsSet() {
+		toSerialize["defaultPersona"] = o.DefaultPersona.Get()
+	}
+	if o.DefaultPersonaId.IsSet() {
+		toSerialize["defaultPersonaId"] = o.DefaultPersonaId.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

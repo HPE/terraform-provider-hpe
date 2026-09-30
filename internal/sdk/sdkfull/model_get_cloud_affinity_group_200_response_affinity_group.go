@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,10 +25,12 @@ type GetCloudAffinityGroup200ResponseAffinityGroup struct {
 	Id *int64 `json:"id,omitempty"`
 	// Name
 	Name *string `json:"name,omitempty"`
-	// Affinity Type
+	// Affinity Type. KEEP_TOGETHER / KEEP_SEPARATE express a preferred (SHOULD) placement, while the KEEP_TOGETHER_MUST / KEEP_SEPARATE_MUST variants express a mandatory (MUST) placement constraint.
 	AffinityType *string `json:"affinityType,omitempty"`
 	// Source
 	Source *string `json:"source,omitempty"`
+	// Identifier of the corresponding rule on the underlying platform
+	ExternalId *string `json:"externalId,omitempty"`
 	// Reference Type for the Affinity Group. Can be ComputeZone or ComputeServerGroup for cloud or cluster respectively
 	RefType *string `json:"refType,omitempty"`
 	// Reference ID for the Affinity Group. The ID of the Cloud or Clusterfor cloud or cluster respectively
@@ -36,8 +38,11 @@ type GetCloudAffinityGroup200ResponseAffinityGroup struct {
 	// Active
 	Active *bool                                              `json:"active,omitempty"`
 	Pool   *GetCloudAffinityGroup200ResponseAffinityGroupPool `json:"pool,omitempty"`
-	// List of Servers in the Affinity Group
+	// List of Servers in the Affinity Group. Populated only for a legacy VM-to-VM rule; always empty for a combined VM-to-Host rule.
 	Servers    []GetCloudAffinityGroup200ResponseAffinityGroupServersInner `json:"servers,omitempty"`
+	Owner      *GetCloudAffinityGroup200ResponseAffinityGroupOwner         `json:"owner,omitempty"`
+	VmGroup    *GetCloudAffinityGroup200ResponseAffinityGroupVmGroup       `json:"vmGroup,omitempty"`
+	HostGroup  *GetCloudAffinityGroup200ResponseAffinityGroupHostGroup     `json:"hostGroup,omitempty"`
 	Visibility *string                                                     `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
 	Tenants              []GetCloudAffinityGroup200ResponseAffinityGroupTenantsInner       `json:"tenants,omitempty"`
@@ -69,6 +74,9 @@ func (o GetCloudAffinityGroup200ResponseAffinityGroup) ToMap() (map[string]inter
 	if !IsNil(o.Source) {
 		toSerialize["source"] = o.Source
 	}
+	if !IsNil(o.ExternalId) {
+		toSerialize["externalId"] = o.ExternalId
+	}
 	if !IsNil(o.RefType) {
 		toSerialize["refType"] = o.RefType
 	}
@@ -83,6 +91,15 @@ func (o GetCloudAffinityGroup200ResponseAffinityGroup) ToMap() (map[string]inter
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers
+	}
+	if !IsNil(o.Owner) {
+		toSerialize["owner"] = o.Owner
+	}
+	if !IsNil(o.VmGroup) {
+		toSerialize["vmGroup"] = o.VmGroup
+	}
+	if !IsNil(o.HostGroup) {
+		toSerialize["hostGroup"] = o.HostGroup
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

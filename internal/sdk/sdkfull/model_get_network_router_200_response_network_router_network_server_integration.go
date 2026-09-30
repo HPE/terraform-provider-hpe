@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,25 +23,25 @@ var _ MappedNullable = &GetNetworkRouter200ResponseNetworkRouterNetworkServerInt
 
 // GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration struct for GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration
 type GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration struct {
-	Id                   *int64                                                                           `json:"id,omitempty"`
-	Name                 *string                                                                          `json:"name,omitempty"`
-	Enabled              *bool                                                                            `json:"enabled,omitempty"`
-	Type                 *string                                                                          `json:"type,omitempty"`
-	IntegrationType      *GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegrationIntegrationType `json:"integrationType,omitempty"`
-	Url                  *string                                                                          `json:"url,omitempty"`
-	Port                 *string                                                                          `json:"port,omitempty"`
-	Username             *string                                                                          `json:"username,omitempty"`
-	Password             *string                                                                          `json:"password,omitempty"`
-	RefType              *string                                                                          `json:"refType,omitempty"`
-	RefId                *string                                                                          `json:"refId,omitempty"`
-	IsPlugin             *bool                                                                            `json:"isPlugin,omitempty"`
-	Config               map[string]interface{}                                                           `json:"config,omitempty"`
-	Status               *string                                                                          `json:"status,omitempty"`
-	StatusDate           *time.Time                                                                       `json:"statusDate,omitempty"`
-	StatusMessage        *string                                                                          `json:"statusMessage,omitempty"`
-	LastSync             *time.Time                                                                       `json:"lastSync,omitempty"`
-	LastSyncDuration     *int64                                                                           `json:"lastSyncDuration,omitempty"`
-	AdditionalProperties map[string]interface{}                                                           `json:",remain"`
+	Id                   *int64                                                                                  `json:"id,omitempty"`
+	Name                 *string                                                                                 `json:"name,omitempty"`
+	Enabled              *bool                                                                                   `json:"enabled,omitempty"`
+	Type                 *string                                                                                 `json:"type,omitempty"`
+	IntegrationType      NullableGetNetworkRouter200ResponseNetworkRouterNetworkServerIntegrationIntegrationType `json:"integrationType,omitempty"`
+	Url                  *string                                                                                 `json:"url,omitempty"`
+	Port                 *string                                                                                 `json:"port,omitempty"`
+	Username             *string                                                                                 `json:"username,omitempty"`
+	Password             *string                                                                                 `json:"password,omitempty"`
+	RefType              *string                                                                                 `json:"refType,omitempty"`
+	RefId                *string                                                                                 `json:"refId,omitempty"`
+	IsPlugin             *bool                                                                                   `json:"isPlugin,omitempty"`
+	Config               map[string]interface{}                                                                  `json:"config,omitempty"`
+	Status               *string                                                                                 `json:"status,omitempty"`
+	StatusDate           *time.Time                                                                              `json:"statusDate,omitempty"`
+	StatusMessage        *string                                                                                 `json:"statusMessage,omitempty"`
+	LastSync             *time.Time                                                                              `json:"lastSync,omitempty"`
+	LastSyncDuration     *int64                                                                                  `json:"lastSyncDuration,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                  `json:",remain"`
 }
 
 type _GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration
@@ -68,8 +68,8 @@ func (o GetNetworkRouter200ResponseNetworkRouterNetworkServerIntegration) ToMap(
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.IntegrationType) {
-		toSerialize["integrationType"] = o.IntegrationType
+	if o.IntegrationType.IsSet() {
+		toSerialize["integrationType"] = o.IntegrationType.Get()
 	}
 	if !IsNil(o.Url) {
 		toSerialize["url"] = o.Url

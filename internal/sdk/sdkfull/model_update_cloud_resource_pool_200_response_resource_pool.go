@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,7 +24,7 @@ var _ MappedNullable = &UpdateCloudResourcePool200ResponseResourcePool{}
 type UpdateCloudResourcePool200ResponseResourcePool struct {
 	Id                   *int64                                                                 `json:"id,omitempty"`
 	Description          NullableString                                                         `json:"description,omitempty"`
-	Zone                 NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfZone        `json:"zone,omitempty"`
+	Zone                 *UpdateCloudResourcePool200ResponseResourcePoolAllOfZone               `json:"zone,omitempty"`
 	Parent               *UpdateCloudResourcePool200ResponseResourcePoolAllOfParent             `json:"parent,omitempty"`
 	Type                 *string                                                                `json:"type,omitempty"`
 	ExternalId           *string                                                                `json:"externalId,omitempty"`
@@ -36,7 +36,7 @@ type UpdateCloudResourcePool200ResponseResourcePool struct {
 	Active               *bool                                                                  `json:"active,omitempty"`
 	Status               *string                                                                `json:"status,omitempty"`
 	Inventory            *bool                                                                  `json:"inventory,omitempty"`
-	Config               *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig             `json:"config,omitempty"`
+	Config               NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig      `json:"config,omitempty"`
 	Name                 *string                                                                `json:"name,omitempty"`
 	DisplayName          NullableString                                                         `json:"displayName,omitempty"`
 	Tenants              []UpdateCloudResourcePool200ResponseResourcePoolAllOfTenantsInner      `json:"tenants,omitempty"`
@@ -64,8 +64,8 @@ func (o UpdateCloudResourcePool200ResponseResourcePool) ToMap() (map[string]inte
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if o.Zone.IsSet() {
-		toSerialize["zone"] = o.Zone.Get()
+	if !IsNil(o.Zone) {
+		toSerialize["zone"] = o.Zone
 	}
 	if !IsNil(o.Parent) {
 		toSerialize["parent"] = o.Parent
@@ -100,8 +100,8 @@ func (o UpdateCloudResourcePool200ResponseResourcePool) ToMap() (map[string]inte
 	if !IsNil(o.Inventory) {
 		toSerialize["inventory"] = o.Inventory
 	}
-	if !IsNil(o.Config) {
-		toSerialize["config"] = o.Config
+	if o.Config.IsSet() {
+		toSerialize["config"] = o.Config.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name

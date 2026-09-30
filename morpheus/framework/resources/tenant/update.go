@@ -95,7 +95,7 @@ func (r *Resource) Update(
 	}
 	if !plan.BaseRoleId.IsNull() && !plan.BaseRoleId.IsUnknown() {
 		account.Role = &sdk.UpdateTenantRequestAccountRole{
-			Id: plan.BaseRoleId.ValueInt64Pointer(),
+			Id: &sdk.UpdateTenantRequestAccountRoleId{Int64: plan.BaseRoleId.ValueInt64Pointer()},
 		}
 	}
 	clearable.NullableString(pending, "account_number", plan.AccountNumber, &account.AccountNumber)

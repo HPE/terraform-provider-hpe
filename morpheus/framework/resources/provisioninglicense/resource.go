@@ -79,7 +79,7 @@ func (r *provisioningLicenseResource) Create(
 
 	body := sdk.AddProvisioningLicenseRequestLicense{
 		Name:        plan.Name.ValueString(),
-		LicenseType: plan.LicenseType.ValueString(),
+		LicenseType: sdk.AddProvisioningLicenseRequestLicenseLicenseType{String: plan.LicenseType.ValueStringPointer()},
 		LicenseKey:  config.LicenseKeyWo.ValueString(),
 	}
 	if !plan.Description.IsNull() {
@@ -91,7 +91,10 @@ func (r *provisioningLicenseResource) Create(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		body.VirtualImages = images
+		body.VirtualImages = make([]sdk.AddProvisioningLicenseRequestLicenseVirtualImagesInner, 0, len(images))
+		for i := range images {
+			body.VirtualImages = append(body.VirtualImages, sdk.AddProvisioningLicenseRequestLicenseVirtualImagesInner{Int64: &images[i]})
+		}
 	}
 	if !plan.Tenants.IsNull() && !plan.Tenants.IsUnknown() {
 		var tenants []int64
@@ -104,7 +107,7 @@ func (r *provisioningLicenseResource) Create(
 
 	result, httpResp, err := client.ProvisioningLicensesAPI.AddProvisioningLicense(ctx).
 		AddProvisioningLicenseRequest(sdk.AddProvisioningLicenseRequest{
-			License: &body,
+			License: body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpCreate, "provisioning_license", plan.Name.ValueString(), err, httpResp)
@@ -261,7 +264,10 @@ func (r *provisioningLicenseResource) Update(
 		if resp.Diagnostics.HasError() {
 			return
 		}
-		body.VirtualImages = images
+		body.VirtualImages = make([]sdk.UpdateProvisioningLicenseRequestLicenseVirtualImagesInner, 0, len(images))
+		for i := range images {
+			body.VirtualImages = append(body.VirtualImages, sdk.UpdateProvisioningLicenseRequestLicenseVirtualImagesInner{Int64: &images[i]})
+		}
 	}
 	if tenants, ok, ldiags := pending.Int64s(ctx, "tenants", plan.Tenants); ok {
 		resp.Diagnostics.Append(ldiags...)
@@ -282,7 +288,7 @@ func (r *provisioningLicenseResource) Update(
 
 	_, httpResp, err := client.ProvisioningLicensesAPI.UpdateProvisioningLicense(ctx, id).
 		UpdateProvisioningLicenseRequest(sdk.UpdateProvisioningLicenseRequest{
-			License: &body,
+			License: body,
 		}).Execute()
 	if err := errfmt.CheckResponse(err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpUpdate, "provisioning_license", plan.Name.ValueString(), err, httpResp)

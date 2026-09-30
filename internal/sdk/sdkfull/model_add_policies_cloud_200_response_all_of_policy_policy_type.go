@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o AddPoliciesCloud200ResponseAllOfPolicyPolicyType) ToMap() (map[string]in
 	}
 
 	return toSerialize, nil
+}
+
+type NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType struct {
+	value *AddPoliciesCloud200ResponseAllOfPolicyPolicyType
+	isSet bool
+}
+
+func (v NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) Get() *AddPoliciesCloud200ResponseAllOfPolicyPolicyType {
+	return v.value
+}
+
+func (v *NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) Set(val *AddPoliciesCloud200ResponseAllOfPolicyPolicyType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType(val *AddPoliciesCloud200ResponseAllOfPolicyPolicyType) *NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType {
+	return &NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType{value: val, isSet: true}
+}
+
+func (v NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableAddPoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *AddPoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalJSON(data []byte) (err error) {

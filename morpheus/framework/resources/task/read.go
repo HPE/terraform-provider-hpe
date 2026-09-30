@@ -84,8 +84,8 @@ func getTaskAsState(
 	state.Code = convert.StrToType(task.Code.Get())
 
 	var typeCode string
-	if task.TaskType != nil && task.TaskType.Code != nil {
-		typeCode = *task.TaskType.Code
+	if tt := task.TaskType.Get(); tt != nil && tt.Code != nil {
+		typeCode = *tt.Code
 	}
 	// config
 	state.Config = basetypes.NewDynamicNull()
@@ -179,7 +179,7 @@ func getTaskAsState(
 	state.Retryable = convert.BoolToType(task.Retryable)
 
 	// task_type_code
-	state.TaskTypeCode = taskTypeCodeToState(task.TaskType)
+	state.TaskTypeCode = taskTypeCodeToState(task.TaskType.Get())
 
 	// visibility
 	state.Visibility = convert.StrToType(task.Visibility)

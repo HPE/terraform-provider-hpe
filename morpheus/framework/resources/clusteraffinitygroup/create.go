@@ -89,7 +89,10 @@ func (r *clusterAffinityGroupResource) Create(
 			if resp.Diagnostics.HasError() {
 				return
 			}
-			rp.Sites = buildSitesPayload(groups)
+			rp.Sites = buildSitesPayload(groups,
+				func(id *int64, dflt *bool) sdk.UpdateAffinityGroupRequestAffinityGroupAllOfResourcePermissionsSitesInner {
+					return sdk.UpdateAffinityGroupRequestAffinityGroupAllOfResourcePermissionsSitesInner{Id: id, Default: dflt}
+				})
 		}
 		ag.ResourcePermissions = &rp
 	}

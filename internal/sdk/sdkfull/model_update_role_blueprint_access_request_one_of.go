@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,12 @@ var _ MappedNullable = &UpdateRoleBlueprintAccessRequestOneOf{}
 
 // UpdateRoleBlueprintAccessRequestOneOf struct for UpdateRoleBlueprintAccessRequestOneOf
 type UpdateRoleBlueprintAccessRequestOneOf struct {
-	// `id` of the blueprint (appTemplate)
-	AppTemplateId int32 `json:"appTemplateId"`
+	// `id` of the blueprint (appTemplate). Alias of `blueprintId`.
+	AppTemplateId *int32 `json:"appTemplateId,omitempty"`
+	// Alias for `appTemplateId`
+	BlueprintId *int32 `json:"blueprintId,omitempty"`
+	// Alias for `appTemplateId`
+	BluePrintId *int32 `json:"bluePrintId,omitempty"`
 	// The new access level.
 	Access               string                 `json:"access"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,7 +45,15 @@ func (o UpdateRoleBlueprintAccessRequestOneOf) MarshalJSON() ([]byte, error) {
 
 func (o UpdateRoleBlueprintAccessRequestOneOf) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["appTemplateId"] = o.AppTemplateId
+	if !IsNil(o.AppTemplateId) {
+		toSerialize["appTemplateId"] = o.AppTemplateId
+	}
+	if !IsNil(o.BlueprintId) {
+		toSerialize["blueprintId"] = o.BlueprintId
+	}
+	if !IsNil(o.BluePrintId) {
+		toSerialize["bluePrintId"] = o.BluePrintId
+	}
 	toSerialize["access"] = o.Access
 
 	for key, value := range o.AdditionalProperties {

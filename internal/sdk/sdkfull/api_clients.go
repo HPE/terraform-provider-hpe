@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -42,9 +42,13 @@ func (r ApiAddClientRequest) Execute() (*AddClient200Response, *http.Response, e
 }
 
 /*
-AddClient Create an Oauth Client
+AddClient Create an OAuth client
 
-Create a new Oauth Client.
+Creates a new OAuth client.
+
+Request body must include a `client` object. Writable fields:
+`clientId` (required), `clientSecret`, `accessTokenValiditySeconds`,
+`refreshTokenValiditySeconds`, `redirectUris`, `requireConsent`.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiAddClientRequest
@@ -77,6 +81,9 @@ func (a *ClientsAPIService) AddClientExecute(r ApiAddClientRequest) (*AddClient2
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.addClientRequest == nil {
+		return localVarReturnValue, nil, reportError("addClientRequest is required and must be specified")
+	}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -119,7 +126,7 @@ func (a *ClientsAPIService) AddClientExecute(r ApiAddClientRequest) (*AddClient2
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -130,7 +137,7 @@ func (a *ClientsAPIService) AddClientExecute(r ApiAddClientRequest) (*AddClient2
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -165,9 +172,9 @@ func (r ApiGetClientsRequest) Execute() (*GetClients200Response, *http.Response,
 }
 
 /*
-GetClients Retrieves a Specific Oauth Client
+GetClients Get an OAuth client
 
-Retrieves a specific oauth client.
+Retrieves a specific OAuth client by id.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -243,7 +250,7 @@ func (a *ClientsAPIService) GetClientsExecute(r ApiGetClientsRequest) (*GetClien
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -254,7 +261,7 @@ func (a *ClientsAPIService) GetClientsExecute(r ApiGetClientsRequest) (*GetClien
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -287,6 +294,7 @@ type ApiListClientsRequest struct {
 	direction  *string
 	phrase     *string
 	clientId   *string
+	system     *string
 }
 
 // Maximum number of records to return
@@ -301,7 +309,7 @@ func (r ApiListClientsRequest) Offset(offset int64) ApiListClientsRequest {
 	return r
 }
 
-// Sort order, the name of the property to sort by
+// Property name to sort by
 func (r ApiListClientsRequest) Sort(sort string) ApiListClientsRequest {
 	r.sort = &sort
 	return r
@@ -313,15 +321,21 @@ func (r ApiListClientsRequest) Direction(direction string) ApiListClientsRequest
 	return r
 }
 
-// Search phrase for partial matches on clientId
+// Case-insensitive partial match on clientId
 func (r ApiListClientsRequest) Phrase(phrase string) ApiListClientsRequest {
 	r.phrase = &phrase
 	return r
 }
 
-// Search phrase for partial matches on clientId
+// Exact match on clientId. When provided, the service also sets phrase from this value for partial matching behavior used by some clients.
 func (r ApiListClientsRequest) ClientId(clientId string) ApiListClientsRequest {
 	r.clientId = &clientId
+	return r
+}
+
+// Filter by system client flag. When the parameter is present, &#x60;true&#x60; or empty string selects system clients (&#x60;removable &#x3D;&#x3D; false&#x60;); other values select removable clients.
+func (r ApiListClientsRequest) System(system string) ApiListClientsRequest {
+	r.system = &system
 	return r
 }
 
@@ -330,9 +344,17 @@ func (r ApiListClientsRequest) Execute() (*ListClients200Response, *http.Respons
 }
 
 /*
-ListClients Get All Oauth Clients
+ListClients List OAuth clients
 
-This endpoint retrieves a paginated list of oauth clients.
+Returns a paginated list of OAuth clients.
+
+List filters are applied by `ClientService.loadClientList`:
+- `phrase` — case-insensitive partial match on `clientId`
+- `clientId` — exact match on `clientId` (also copied into `phrase` for partial match when used as a search term)
+- `system` — when present, filters system vs removable clients (`true`/empty string → system only)
+
+Default page size is 25. Default sort is `clientId` ascending.
+Response includes `clients`, `meta`, and may include `viewConfig` from the caller's data view preferences.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListClientsRequest
@@ -396,6 +418,9 @@ func (a *ClientsAPIService) ListClientsExecute(r ApiListClientsRequest) (*ListCl
 	if r.clientId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "clientId", r.clientId, "form", "")
 	}
+	if r.system != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "system", r.system, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -435,7 +460,7 @@ func (a *ClientsAPIService) ListClientsExecute(r ApiListClientsRequest) (*ListCl
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -446,7 +471,7 @@ func (a *ClientsAPIService) ListClientsExecute(r ApiListClientsRequest) (*ListCl
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -481,9 +506,9 @@ func (r ApiRemoveClientsRequest) Execute() (*RemoveExecuteSchedules200Response, 
 }
 
 /*
-RemoveClients Deletes an Oauth Client
+RemoveClients Delete an OAuth client
 
-Deletes a specified oauth client.
+Deletes a specified OAuth client. System clients cannot be deleted.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -559,7 +584,7 @@ func (a *ClientsAPIService) RemoveClientsExecute(r ApiRemoveClientsRequest) (*Re
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -570,7 +595,7 @@ func (a *ClientsAPIService) RemoveClientsExecute(r ApiRemoveClientsRequest) (*Re
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -606,14 +631,20 @@ func (r ApiUpdateClientsRequest) UpdateClientsRequest(updateClientsRequest Updat
 	return r
 }
 
-func (r ApiUpdateClientsRequest) Execute() (*AddClient200Response, *http.Response, error) {
+func (r ApiUpdateClientsRequest) Execute() (*UpdateClients200Response, *http.Response, error) {
 	return r.ApiService.UpdateClientsExecute(r)
 }
 
 /*
-UpdateClients Updates an Oauth Client
+UpdateClients Update an OAuth client
 
-Updates an oauth client.
+Updates an OAuth client.
+
+Request body must include a `client` object. For removable clients, writable fields are
+`clientId`, `clientSecret`, `accessTokenValiditySeconds`, `refreshTokenValiditySeconds`,
+`redirectUris`, and `requireConsent`. System clients only accept token validity fields.
+
+On update, a `clientSecret` value starting with `********` leaves the existing secret unchanged.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -629,13 +660,13 @@ func (a *ClientsAPIService) UpdateClients(ctx context.Context, id int64) ApiUpda
 
 // Execute executes the request
 //
-//	@return AddClient200Response
-func (a *ClientsAPIService) UpdateClientsExecute(r ApiUpdateClientsRequest) (*AddClient200Response, *http.Response, error) {
+//	@return UpdateClients200Response
+func (a *ClientsAPIService) UpdateClientsExecute(r ApiUpdateClientsRequest) (*UpdateClients200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *AddClient200Response
+		localVarReturnValue *UpdateClients200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClientsAPIService.UpdateClients")
@@ -649,6 +680,9 @@ func (a *ClientsAPIService) UpdateClientsExecute(r ApiUpdateClientsRequest) (*Ad
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
+	if r.updateClientsRequest == nil {
+		return localVarReturnValue, nil, reportError("updateClientsRequest is required and must be specified")
+	}
 
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -691,7 +725,7 @@ func (a *ClientsAPIService) UpdateClientsExecute(r ApiUpdateClientsRequest) (*Ad
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -702,7 +736,7 @@ func (a *ClientsAPIService) UpdateClientsExecute(r ApiUpdateClientsRequest) (*Ad
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

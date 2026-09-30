@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -40,7 +40,7 @@ func (r ApiCancelSupportBundleRequest) Execute() (*CancelSupportBundle200Respons
 /*
 CancelSupportBundle Cancel a Support Bundle
 
-Cancel a specific support bundle. If the bundle is PENDING it transitions immediately to CANCELLED. If IN_PROGRESS it transitions to CANCELLING and generation stops at the next checkpoint. Returns an error if the bundle is already in a terminal state (COMPLETED or FAILED). Calling cancel on an already CANCELLING or CANCELLED bundle is a no-op success.
+Cancel a specific support bundle. If the bundle is PENDING it transitions immediately to CANCELLED. If IN_PROGRESS it transitions to CANCELLING and generation stops at the next checkpoint. Returns an error if the bundle is already in a terminal state (COMPLETED, WARNING, or FAILED). Calling cancel on an already CANCELLING or CANCELLED bundle is a no-op success.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -116,7 +116,7 @@ func (a *SupportBundlesAPIService) CancelSupportBundleExecute(r ApiCancelSupport
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -127,7 +127,7 @@ func (a *SupportBundlesAPIService) CancelSupportBundleExecute(r ApiCancelSupport
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -166,7 +166,7 @@ DownloadSupportBundle Downloads a Support Bundle
 
 Downloads a specific support bundle as a file attachment.
 
-The bundle must be in `COMPLETED` status before it can be downloaded. The returned archive type depends on the appliance support bundle archive setting.
+The bundle must be in `COMPLETED` or `WARNING` status before it can be downloaded. The returned archive type depends on the appliance support bundle archive setting.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -253,7 +253,7 @@ func (a *SupportBundlesAPIService) DownloadSupportBundleExecute(r ApiDownloadSup
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -264,7 +264,7 @@ func (a *SupportBundlesAPIService) DownloadSupportBundleExecute(r ApiDownloadSup
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -306,7 +306,7 @@ func (r ApiGenerateSupportBundleRequest) Execute() (*GenerateSupportBundle200Res
 /*
 GenerateSupportBundle Generates a Support Bundle
 
-Generates a new support bundle. The bundle is created asynchronously — poll `GET /api/support-bundles/{id}` until `status` is `COMPLETED` or `FAILED`.
+Generates a new support bundle. The bundle is created asynchronously — poll `GET /api/support-bundles/{id}` until `status` is terminal (`COMPLETED`, `WARNING`, `FAILED`, or `CANCELLED`).
 
 The request accepts an optional flat `contents` array describing which support bundle content entries to include. Each entry must provide either a content type `code` or `typeId`, and may optionally provide a `resourceId` for resource-backed content types.
 
@@ -393,7 +393,7 @@ func (a *SupportBundlesAPIService) GenerateSupportBundleExecute(r ApiGenerateSup
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -404,7 +404,7 @@ func (a *SupportBundlesAPIService) GenerateSupportBundleExecute(r ApiGenerateSup
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -517,7 +517,7 @@ func (a *SupportBundlesAPIService) GetSupportBundleExecute(r ApiGetSupportBundle
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -528,7 +528,7 @@ func (a *SupportBundlesAPIService) GetSupportBundleExecute(r ApiGetSupportBundle
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -560,6 +560,7 @@ type ApiListSupportBundlesRequest struct {
 	sort       *string
 	direction  *string
 	phrase     *string
+	status     *string
 }
 
 // Maximum number of records to return
@@ -589,6 +590,12 @@ func (r ApiListSupportBundlesRequest) Direction(direction string) ApiListSupport
 // Search phrase for partial matches on name or description
 func (r ApiListSupportBundlesRequest) Phrase(phrase string) ApiListSupportBundlesRequest {
 	r.phrase = &phrase
+	return r
+}
+
+// Filter by support bundle generation status
+func (r ApiListSupportBundlesRequest) Status(status string) ApiListSupportBundlesRequest {
+	r.status = &status
 	return r
 }
 
@@ -660,6 +667,9 @@ func (a *SupportBundlesAPIService) ListSupportBundlesExecute(r ApiListSupportBun
 	if r.phrase != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
 	}
+	if r.status != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "status", r.status, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -699,7 +709,7 @@ func (a *SupportBundlesAPIService) ListSupportBundlesExecute(r ApiListSupportBun
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -710,7 +720,7 @@ func (a *SupportBundlesAPIService) ListSupportBundlesExecute(r ApiListSupportBun
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -834,7 +844,7 @@ func (a *SupportBundlesAPIService) RemoveSupportBundleExecute(r ApiRemoveSupport
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -845,7 +855,7 @@ func (a *SupportBundlesAPIService) RemoveSupportBundleExecute(r ApiRemoveSupport
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,20 +25,20 @@ type AddTenantRequestAccount struct {
 	// Name
 	Name string `json:"name"`
 	// Description
-	Description   NullableString                        `json:"description,omitempty"`
+	Description NullableString `json:"description,omitempty"`
+	// Whether the tenant is active
+	Active        *bool                                 `json:"active,omitempty"`
 	ParentAccount *AddTenantRequestAccountParentAccount `json:"parentAccount,omitempty"`
 	Role          *AddTenantRequestAccountRole          `json:"role,omitempty"`
 	// The subdomain. This will be part of the login URL and username for sub tenant users.
 	Subdomain NullableString `json:"subdomain,omitempty"`
-	// Currency ISO 4217 code for the tenant (e.g. USD, EUR, GBP). Must be a currency enabled on the target appliance; see the `currencies` option source (GET /api/options/currencies) for the live set. See CurrencyCode for the canonical ISO 4217 list.
+	// Currency Code (ISO 4217)
 	Currency *string `json:"currency,omitempty"`
-	// Whether the tenant is enabled. Disabled tenants cannot be logged into.
-	Active *bool `json:"active,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Account number
 	AccountNumber NullableString `json:"accountNumber,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Account name
 	AccountName NullableString `json:"accountName,omitempty"`
-	// An optional field that can be used for billing and accounting.
+	// Customer number
 	CustomerNumber       NullableString         `json:"customerNumber,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
@@ -59,6 +59,9 @@ func (o AddTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
+	if !IsNil(o.Active) {
+		toSerialize["active"] = o.Active
+	}
 	if !IsNil(o.ParentAccount) {
 		toSerialize["parentAccount"] = o.ParentAccount
 	}
@@ -70,9 +73,6 @@ func (o AddTenantRequestAccount) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Currency) {
 		toSerialize["currency"] = o.Currency
-	}
-	if !IsNil(o.Active) {
-		toSerialize["active"] = o.Active
 	}
 	if o.AccountNumber.IsSet() {
 		toSerialize["accountNumber"] = o.AccountNumber.Get()

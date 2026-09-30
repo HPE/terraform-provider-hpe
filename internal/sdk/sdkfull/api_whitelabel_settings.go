@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -116,7 +116,7 @@ func (a *WhitelabelSettingsAPIService) GetWhitelabelImageExecute(r ApiGetWhitela
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -127,7 +127,7 @@ func (a *WhitelabelSettingsAPIService) GetWhitelabelImageExecute(r ApiGetWhitela
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -236,7 +236,7 @@ func (a *WhitelabelSettingsAPIService) ListWhitelabelSettingsExecute(r ApiListWh
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -247,7 +247,7 @@ func (a *WhitelabelSettingsAPIService) ListWhitelabelSettingsExecute(r ApiListWh
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -360,7 +360,7 @@ func (a *WhitelabelSettingsAPIService) RemoveWhitelabelImageExecute(r ApiRemoveW
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -371,7 +371,7 @@ func (a *WhitelabelSettingsAPIService) RemoveWhitelabelImageExecute(r ApiRemoveW
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -396,21 +396,21 @@ func (a *WhitelabelSettingsAPIService) RemoveWhitelabelImageExecute(r ApiRemoveW
 }
 
 type ApiUpdateWhitelabelImagesRequest struct {
-	ctx              context.Context
-	ApiService       *WhitelabelSettingsAPIService
-	headerLogoFile   *os.File
-	resetHeaderLogo  *bool
-	footerLogoFile   *os.File
-	resetFooterLogo  *bool
-	loginLogoFile    *os.File
-	resetLoginLogo   *bool
-	faviconFile      *os.File
-	resetFaviconLogo *bool
+	ctx             context.Context
+	ApiService      *WhitelabelSettingsAPIService
+	headerLogo      *os.File
+	resetHeaderLogo *bool
+	footerLogo      *os.File
+	resetFooterLogo *bool
+	loginLogo       *os.File
+	resetLoginLogo  *bool
+	favicon         *os.File
+	resetFavicon    *bool
 }
 
 // Header logo image file, valid image types &#x60;png|jpg|svg&#x60;
-func (r ApiUpdateWhitelabelImagesRequest) HeaderLogoFile(headerLogoFile *os.File) ApiUpdateWhitelabelImagesRequest {
-	r.headerLogoFile = headerLogoFile
+func (r ApiUpdateWhitelabelImagesRequest) HeaderLogo(headerLogo *os.File) ApiUpdateWhitelabelImagesRequest {
+	r.headerLogo = headerLogo
 	return r
 }
 
@@ -421,8 +421,8 @@ func (r ApiUpdateWhitelabelImagesRequest) ResetHeaderLogo(resetHeaderLogo bool) 
 }
 
 // Footer logo image file, valid image types &#x60;png|jpg|svg&#x60;
-func (r ApiUpdateWhitelabelImagesRequest) FooterLogoFile(footerLogoFile *os.File) ApiUpdateWhitelabelImagesRequest {
-	r.footerLogoFile = footerLogoFile
+func (r ApiUpdateWhitelabelImagesRequest) FooterLogo(footerLogo *os.File) ApiUpdateWhitelabelImagesRequest {
+	r.footerLogo = footerLogo
 	return r
 }
 
@@ -433,8 +433,8 @@ func (r ApiUpdateWhitelabelImagesRequest) ResetFooterLogo(resetFooterLogo bool) 
 }
 
 // Login logo image file, valid image types &#x60;png|jpg|svg&#x60;
-func (r ApiUpdateWhitelabelImagesRequest) LoginLogoFile(loginLogoFile *os.File) ApiUpdateWhitelabelImagesRequest {
-	r.loginLogoFile = loginLogoFile
+func (r ApiUpdateWhitelabelImagesRequest) LoginLogo(loginLogo *os.File) ApiUpdateWhitelabelImagesRequest {
+	r.loginLogo = loginLogo
 	return r
 }
 
@@ -445,18 +445,18 @@ func (r ApiUpdateWhitelabelImagesRequest) ResetLoginLogo(resetLoginLogo bool) Ap
 }
 
 // Favicon image file, valid image type ico
-func (r ApiUpdateWhitelabelImagesRequest) FaviconFile(faviconFile *os.File) ApiUpdateWhitelabelImagesRequest {
-	r.faviconFile = faviconFile
+func (r ApiUpdateWhitelabelImagesRequest) Favicon(favicon *os.File) ApiUpdateWhitelabelImagesRequest {
+	r.favicon = favicon
 	return r
 }
 
-// Resets favicon logo to default
-func (r ApiUpdateWhitelabelImagesRequest) ResetFaviconLogo(resetFaviconLogo bool) ApiUpdateWhitelabelImagesRequest {
-	r.resetFaviconLogo = &resetFaviconLogo
+// Resets favicon to default
+func (r ApiUpdateWhitelabelImagesRequest) ResetFavicon(resetFavicon bool) ApiUpdateWhitelabelImagesRequest {
+	r.resetFavicon = &resetFavicon
 	return r
 }
 
-func (r ApiUpdateWhitelabelImagesRequest) Execute() (*SetApplianceSettingsMaintenanceMode200Response, *http.Response, error) {
+func (r ApiUpdateWhitelabelImagesRequest) Execute() (*UpdateWhitelabelImages200Response, *http.Response, error) {
 	return r.ApiService.UpdateWhitelabelImagesExecute(r)
 }
 
@@ -477,13 +477,13 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImages(ctx context.Contex
 
 // Execute executes the request
 //
-//	@return SetApplianceSettingsMaintenanceMode200Response
-func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImagesExecute(r ApiUpdateWhitelabelImagesRequest) (*SetApplianceSettingsMaintenanceMode200Response, *http.Response, error) {
+//	@return UpdateWhitelabelImages200Response
+func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImagesExecute(r ApiUpdateWhitelabelImagesRequest) (*UpdateWhitelabelImages200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *SetApplianceSettingsMaintenanceMode200Response
+		localVarReturnValue *UpdateWhitelabelImages200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WhitelabelSettingsAPIService.UpdateWhitelabelImages")
@@ -514,77 +514,77 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImagesExecute(r ApiUpdate
 	if localVarHTTPHeaderAccept != "" {
 		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
 	}
-	var headerLogoFileLocalVarFormFileName string
-	var headerLogoFileLocalVarFileName string
-	var headerLogoFileLocalVarFileBytes []byte
+	var headerLogoLocalVarFormFileName string
+	var headerLogoLocalVarFileName string
+	var headerLogoLocalVarFileBytes []byte
 
-	headerLogoFileLocalVarFormFileName = "headerLogo.file"
-	headerLogoFileLocalVarFile := r.headerLogoFile
+	headerLogoLocalVarFormFileName = "headerLogo"
+	headerLogoLocalVarFile := r.headerLogo
 
-	if headerLogoFileLocalVarFile != nil {
-		fbs, _ := io.ReadAll(headerLogoFileLocalVarFile)
+	if headerLogoLocalVarFile != nil {
+		fbs, _ := io.ReadAll(headerLogoLocalVarFile)
 
-		headerLogoFileLocalVarFileBytes = fbs
-		headerLogoFileLocalVarFileName = headerLogoFileLocalVarFile.Name()
-		headerLogoFileLocalVarFile.Close()
-		formFiles = append(formFiles, formFile{fileBytes: headerLogoFileLocalVarFileBytes, fileName: headerLogoFileLocalVarFileName, formFileName: headerLogoFileLocalVarFormFileName})
+		headerLogoLocalVarFileBytes = fbs
+		headerLogoLocalVarFileName = headerLogoLocalVarFile.Name()
+		headerLogoLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: headerLogoLocalVarFileBytes, fileName: headerLogoLocalVarFileName, formFileName: headerLogoLocalVarFormFileName})
 	}
 	if r.resetHeaderLogo != nil {
 		parameterAddToHeaderOrQuery(localVarFormParams, "resetHeaderLogo", r.resetHeaderLogo, "", "")
 	}
-	var footerLogoFileLocalVarFormFileName string
-	var footerLogoFileLocalVarFileName string
-	var footerLogoFileLocalVarFileBytes []byte
+	var footerLogoLocalVarFormFileName string
+	var footerLogoLocalVarFileName string
+	var footerLogoLocalVarFileBytes []byte
 
-	footerLogoFileLocalVarFormFileName = "footerLogo.file"
-	footerLogoFileLocalVarFile := r.footerLogoFile
+	footerLogoLocalVarFormFileName = "footerLogo"
+	footerLogoLocalVarFile := r.footerLogo
 
-	if footerLogoFileLocalVarFile != nil {
-		fbs, _ := io.ReadAll(footerLogoFileLocalVarFile)
+	if footerLogoLocalVarFile != nil {
+		fbs, _ := io.ReadAll(footerLogoLocalVarFile)
 
-		footerLogoFileLocalVarFileBytes = fbs
-		footerLogoFileLocalVarFileName = footerLogoFileLocalVarFile.Name()
-		footerLogoFileLocalVarFile.Close()
-		formFiles = append(formFiles, formFile{fileBytes: footerLogoFileLocalVarFileBytes, fileName: footerLogoFileLocalVarFileName, formFileName: footerLogoFileLocalVarFormFileName})
+		footerLogoLocalVarFileBytes = fbs
+		footerLogoLocalVarFileName = footerLogoLocalVarFile.Name()
+		footerLogoLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: footerLogoLocalVarFileBytes, fileName: footerLogoLocalVarFileName, formFileName: footerLogoLocalVarFormFileName})
 	}
 	if r.resetFooterLogo != nil {
 		parameterAddToHeaderOrQuery(localVarFormParams, "resetFooterLogo", r.resetFooterLogo, "", "")
 	}
-	var loginLogoFileLocalVarFormFileName string
-	var loginLogoFileLocalVarFileName string
-	var loginLogoFileLocalVarFileBytes []byte
+	var loginLogoLocalVarFormFileName string
+	var loginLogoLocalVarFileName string
+	var loginLogoLocalVarFileBytes []byte
 
-	loginLogoFileLocalVarFormFileName = "loginLogo.file"
-	loginLogoFileLocalVarFile := r.loginLogoFile
+	loginLogoLocalVarFormFileName = "loginLogo"
+	loginLogoLocalVarFile := r.loginLogo
 
-	if loginLogoFileLocalVarFile != nil {
-		fbs, _ := io.ReadAll(loginLogoFileLocalVarFile)
+	if loginLogoLocalVarFile != nil {
+		fbs, _ := io.ReadAll(loginLogoLocalVarFile)
 
-		loginLogoFileLocalVarFileBytes = fbs
-		loginLogoFileLocalVarFileName = loginLogoFileLocalVarFile.Name()
-		loginLogoFileLocalVarFile.Close()
-		formFiles = append(formFiles, formFile{fileBytes: loginLogoFileLocalVarFileBytes, fileName: loginLogoFileLocalVarFileName, formFileName: loginLogoFileLocalVarFormFileName})
+		loginLogoLocalVarFileBytes = fbs
+		loginLogoLocalVarFileName = loginLogoLocalVarFile.Name()
+		loginLogoLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: loginLogoLocalVarFileBytes, fileName: loginLogoLocalVarFileName, formFileName: loginLogoLocalVarFormFileName})
 	}
 	if r.resetLoginLogo != nil {
 		parameterAddToHeaderOrQuery(localVarFormParams, "resetLoginLogo", r.resetLoginLogo, "", "")
 	}
-	var faviconFileLocalVarFormFileName string
-	var faviconFileLocalVarFileName string
-	var faviconFileLocalVarFileBytes []byte
+	var faviconLocalVarFormFileName string
+	var faviconLocalVarFileName string
+	var faviconLocalVarFileBytes []byte
 
-	faviconFileLocalVarFormFileName = "favicon.file"
-	faviconFileLocalVarFile := r.faviconFile
+	faviconLocalVarFormFileName = "favicon"
+	faviconLocalVarFile := r.favicon
 
-	if faviconFileLocalVarFile != nil {
-		fbs, _ := io.ReadAll(faviconFileLocalVarFile)
+	if faviconLocalVarFile != nil {
+		fbs, _ := io.ReadAll(faviconLocalVarFile)
 
-		faviconFileLocalVarFileBytes = fbs
-		faviconFileLocalVarFileName = faviconFileLocalVarFile.Name()
-		faviconFileLocalVarFile.Close()
-		formFiles = append(formFiles, formFile{fileBytes: faviconFileLocalVarFileBytes, fileName: faviconFileLocalVarFileName, formFileName: faviconFileLocalVarFormFileName})
+		faviconLocalVarFileBytes = fbs
+		faviconLocalVarFileName = faviconLocalVarFile.Name()
+		faviconLocalVarFile.Close()
+		formFiles = append(formFiles, formFile{fileBytes: faviconLocalVarFileBytes, fileName: faviconLocalVarFileName, formFileName: faviconLocalVarFormFileName})
 	}
-	if r.resetFaviconLogo != nil {
-		parameterAddToHeaderOrQuery(localVarFormParams, "resetFaviconLogo", r.resetFaviconLogo, "", "")
+	if r.resetFavicon != nil {
+		parameterAddToHeaderOrQuery(localVarFormParams, "resetFavicon", r.resetFavicon, "", "")
 	}
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
@@ -608,7 +608,7 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImagesExecute(r ApiUpdate
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -619,7 +619,7 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelImagesExecute(r ApiUpdate
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -654,7 +654,7 @@ func (r ApiUpdateWhitelabelSettingsRequest) UpdateWhitelabelSettingsRequest(upda
 	return r
 }
 
-func (r ApiUpdateWhitelabelSettingsRequest) Execute() (*SetApplianceSettingsMaintenanceMode200Response, *http.Response, error) {
+func (r ApiUpdateWhitelabelSettingsRequest) Execute() (*UpdateWhitelabelSettings200Response, *http.Response, error) {
 	return r.ApiService.UpdateWhitelabelSettingsExecute(r)
 }
 
@@ -675,13 +675,13 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelSettings(ctx context.Cont
 
 // Execute executes the request
 //
-//	@return SetApplianceSettingsMaintenanceMode200Response
-func (a *WhitelabelSettingsAPIService) UpdateWhitelabelSettingsExecute(r ApiUpdateWhitelabelSettingsRequest) (*SetApplianceSettingsMaintenanceMode200Response, *http.Response, error) {
+//	@return UpdateWhitelabelSettings200Response
+func (a *WhitelabelSettingsAPIService) UpdateWhitelabelSettingsExecute(r ApiUpdateWhitelabelSettingsRequest) (*UpdateWhitelabelSettings200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *SetApplianceSettingsMaintenanceMode200Response
+		localVarReturnValue *UpdateWhitelabelSettings200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "WhitelabelSettingsAPIService.UpdateWhitelabelSettings")
@@ -736,7 +736,7 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelSettingsExecute(r ApiUpda
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -747,7 +747,7 @@ func (a *WhitelabelSettingsAPIService) UpdateWhitelabelSettingsExecute(r ApiUpda
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

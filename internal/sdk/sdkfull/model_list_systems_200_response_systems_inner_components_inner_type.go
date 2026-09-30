@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListSystems200ResponseSystemsInnerComponentsInnerType) ToMap() (map[stri
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListSystems200ResponseSystemsInnerComponentsInnerType struct {
+	value *ListSystems200ResponseSystemsInnerComponentsInnerType
+	isSet bool
+}
+
+func (v NullableListSystems200ResponseSystemsInnerComponentsInnerType) Get() *ListSystems200ResponseSystemsInnerComponentsInnerType {
+	return v.value
+}
+
+func (v *NullableListSystems200ResponseSystemsInnerComponentsInnerType) Set(val *ListSystems200ResponseSystemsInnerComponentsInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListSystems200ResponseSystemsInnerComponentsInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListSystems200ResponseSystemsInnerComponentsInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListSystems200ResponseSystemsInnerComponentsInnerType(val *ListSystems200ResponseSystemsInnerComponentsInnerType) *NullableListSystems200ResponseSystemsInnerComponentsInnerType {
+	return &NullableListSystems200ResponseSystemsInnerComponentsInnerType{value: val, isSet: true}
+}
+
+func (v NullableListSystems200ResponseSystemsInnerComponentsInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListSystems200ResponseSystemsInnerComponentsInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListSystems200ResponseSystemsInnerComponentsInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListSystems200ResponseSystemsInnerComponentsInnerType) UnmarshalJSON(data []byte) (err error) {

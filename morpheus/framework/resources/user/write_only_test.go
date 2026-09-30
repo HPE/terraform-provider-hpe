@@ -260,7 +260,9 @@ func importFixture(t *testing.T, name, password string) (userID, roleID int64) {
 	userResp, _, err := client.UsersAPI.AddUser(ctx).AddUserRequest(sdk.AddUserRequest{
 		User: sdk.AddUserRequestUser{
 			Username: name, Email: name + "@testacc.com", Password: password,
-			Roles: []sdk.AddUserRequestUserRolesInner{{Id: sdk.PtrInt64(roleID)}},
+			Roles: []sdk.AddUserRequestUserRolesInner{{
+				AddUserRequestUserRolesInnerOneOf: &sdk.AddUserRequestUserRolesInnerOneOf{Id: sdk.PtrInt64(roleID)},
+			}},
 		},
 	}).Execute()
 	if err != nil || userResp == nil || userResp.User == nil || userResp.User.Id == nil {

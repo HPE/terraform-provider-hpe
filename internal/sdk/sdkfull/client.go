@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -43,7 +43,7 @@ var (
 	queryDescape    = strings.NewReplacer("%5B", "[", "%5D", "]")
 )
 
-// APIClient manages communication with the Morpheus API API v9.0.0
+// APIClient manages communication with the Morpheus API API v9.1.0
 // In most cases there should be only one, shared, APIClient.
 type APIClient struct {
 	cfg    *Configuration
@@ -52,6 +52,8 @@ type APIClient struct {
 	// API Services
 
 	ActivityAPI *ActivityAPIService
+
+	AffinityGroupsAPI *AffinityGroupsAPIService
 
 	AlertsAPI *AlertsAPIService
 
@@ -118,6 +120,8 @@ type APIClient struct {
 	HealthAPI *HealthAPIService
 
 	HistoryAPI *HistoryAPIService
+
+	HostProfilesAPI *HostProfilesAPIService
 
 	HostsAPI *HostsAPIService
 
@@ -213,6 +217,8 @@ type APIClient struct {
 
 	VDIAPI *VDIAPIService
 
+	VirtualSwitchesAPI *VirtualSwitchesAPIService
+
 	WhitelabelSettingsAPI *WhitelabelSettingsAPIService
 
 	WikiAPI *WikiAPIService
@@ -235,6 +241,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 
 	// API Services
 	c.ActivityAPI = (*ActivityAPIService)(&c.common)
+	c.AffinityGroupsAPI = (*AffinityGroupsAPIService)(&c.common)
 	c.AlertsAPI = (*AlertsAPIService)(&c.common)
 	c.ApplianceSettingsAPI = (*ApplianceSettingsAPIService)(&c.common)
 	c.ApprovalsAPI = (*ApprovalsAPIService)(&c.common)
@@ -268,6 +275,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.GuidanceSettingsAPI = (*GuidanceSettingsAPIService)(&c.common)
 	c.HealthAPI = (*HealthAPIService)(&c.common)
 	c.HistoryAPI = (*HistoryAPIService)(&c.common)
+	c.HostProfilesAPI = (*HostProfilesAPIService)(&c.common)
 	c.HostsAPI = (*HostsAPIService)(&c.common)
 	c.IdentitySourcesAPI = (*IdentitySourcesAPIService)(&c.common)
 	c.ImageBuildsAPI = (*ImageBuildsAPIService)(&c.common)
@@ -315,6 +323,7 @@ func NewAPIClient(cfg *Configuration) *APIClient {
 	c.UserSettingsAPI = (*UserSettingsAPIService)(&c.common)
 	c.UsersAPI = (*UsersAPIService)(&c.common)
 	c.VDIAPI = (*VDIAPIService)(&c.common)
+	c.VirtualSwitchesAPI = (*VirtualSwitchesAPIService)(&c.common)
 	c.WhitelabelSettingsAPI = (*WhitelabelSettingsAPIService)(&c.common)
 	c.WikiAPI = (*WikiAPIService)(&c.common)
 

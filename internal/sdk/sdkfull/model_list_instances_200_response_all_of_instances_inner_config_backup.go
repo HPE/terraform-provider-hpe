@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,7 +25,7 @@ type ListInstances200ResponseAllOfInstancesInnerConfigBackup struct {
 	CreateBackup         *bool                  `json:"createBackup,omitempty"`
 	JobAction            *string                `json:"jobAction,omitempty"`
 	JobRetentionCount    *string                `json:"jobRetentionCount,omitempty"`
-	ProviderBackupType   *int64                 `json:"providerBackupType,omitempty"`
+	ProviderBackupType   NullableInt64          `json:"providerBackupType,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -50,8 +50,8 @@ func (o ListInstances200ResponseAllOfInstancesInnerConfigBackup) ToMap() (map[st
 	if !IsNil(o.JobRetentionCount) {
 		toSerialize["jobRetentionCount"] = o.JobRetentionCount
 	}
-	if !IsNil(o.ProviderBackupType) {
-		toSerialize["providerBackupType"] = o.ProviderBackupType
+	if o.ProviderBackupType.IsSet() {
+		toSerialize["providerBackupType"] = o.ProviderBackupType.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

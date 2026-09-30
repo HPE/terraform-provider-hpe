@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,6 +51,51 @@ func (o BackupSettingsDefaultStorageBucket) ToMap() (map[string]interface{}, err
 	}
 
 	return toSerialize, nil
+}
+
+type NullableBackupSettingsDefaultStorageBucket struct {
+	value *BackupSettingsDefaultStorageBucket
+	isSet bool
+}
+
+func (v NullableBackupSettingsDefaultStorageBucket) Get() *BackupSettingsDefaultStorageBucket {
+	return v.value
+}
+
+func (v *NullableBackupSettingsDefaultStorageBucket) Set(val *BackupSettingsDefaultStorageBucket) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableBackupSettingsDefaultStorageBucket) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableBackupSettingsDefaultStorageBucket) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableBackupSettingsDefaultStorageBucket(val *BackupSettingsDefaultStorageBucket) *NullableBackupSettingsDefaultStorageBucket {
+	return &NullableBackupSettingsDefaultStorageBucket{value: val, isSet: true}
+}
+
+func (v NullableBackupSettingsDefaultStorageBucket) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableBackupSettingsDefaultStorageBucket) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableBackupSettingsDefaultStorageBucket) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *BackupSettingsDefaultStorageBucket) UnmarshalJSON(data []byte) (err error) {

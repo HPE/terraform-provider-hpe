@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,11 +22,11 @@ var _ MappedNullable = &GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeI
 
 // GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInner struct for GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInner
 type GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInner struct {
-	Id           *int64                                                                                       `json:"id,omitempty"`
-	InstanceType *GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerInstanceType `json:"instanceType,omitempty"`
-	Account      *GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerAccount      `json:"account,omitempty"`
-	Code         *string                                                                                      `json:"code,omitempty"`
-	Name         *string                                                                                      `json:"name,omitempty"`
+	Id           *int64                                                                                              `json:"id,omitempty"`
+	InstanceType NullableGetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerInstanceType `json:"instanceType,omitempty"`
+	Account      *GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayoutsInnerAccount             `json:"account,omitempty"`
+	Code         *string                                                                                             `json:"code,omitempty"`
+	Name         *string                                                                                             `json:"name,omitempty"`
 	// Array of label strings, can be used for filtering.
 	Labels                   []string                                                                                             `json:"labels,omitempty"`
 	InstanceVersion          *string                                                                                              `json:"instanceVersion,omitempty"`
@@ -64,8 +64,8 @@ func (o GetInstanceTypeProvisioning200ResponseAllOfInstanceTypeInstanceTypeLayou
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
 	}
-	if !IsNil(o.InstanceType) {
-		toSerialize["instanceType"] = o.InstanceType
+	if o.InstanceType.IsSet() {
+		toSerialize["instanceType"] = o.InstanceType.Get()
 	}
 	if !IsNil(o.Account) {
 		toSerialize["account"] = o.Account

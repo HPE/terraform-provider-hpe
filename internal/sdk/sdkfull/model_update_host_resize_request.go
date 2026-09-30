@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -26,6 +26,8 @@ type UpdateHostResizeRequest struct {
 	ServicePlanOptions *UpdateHostResizeRequestServicePlanOptions `json:"servicePlanOptions,omitempty"`
 	// List of volumes with their new sizes.
 	Volumes []UpdateHostResizeRequestVolumesInner `json:"volumes,omitempty"`
+	// Optional array of storage controller configurations representing the full desired controller state of the host after resize. Include every existing controller (by `id`) that should be preserved, plus any new controllers to add. Existing controllers omitted from the array are treated as deletes; controllers with volumes attached cannot be deleted and will fail the resize.  Must be sent alongside the `volumes` array in the same request — controller changes are only processed when `volumes` is present in the payload. Supported on VMware and MVM.
+	StorageControllers []UpdateHostResizeRequestStorageControllersInner `json:"storageControllers,omitempty"`
 	// Delete the original volumes after resizing. (Amazon only)
 	DeleteOriginalVolumes *bool `json:"deleteOriginalVolumes,omitempty"`
 	// Key for network configurations. Include id to update an existing interface.
@@ -53,6 +55,9 @@ func (o UpdateHostResizeRequest) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Volumes) {
 		toSerialize["volumes"] = o.Volumes
+	}
+	if !IsNil(o.StorageControllers) {
+		toSerialize["storageControllers"] = o.StorageControllers
 	}
 	if !IsNil(o.DeleteOriginalVolumes) {
 		toSerialize["deleteOriginalVolumes"] = o.DeleteOriginalVolumes

@@ -149,7 +149,7 @@ func (r *Resource) Create(
 	var roles []sdk.AddUserRequestUserRolesInner
 	for _, roleID := range roleIDs {
 		rolevalue := sdk.AddUserRequestUserRolesInner{
-			Id: &roleID,
+			AddUserRequestUserRolesInnerOneOf: &sdk.AddUserRequestUserRolesInnerOneOf{Id: &roleID},
 		}
 		roles = append(roles, rolevalue)
 	}
@@ -189,7 +189,7 @@ func (r *Resource) Create(
 		addUser.WindowsPassword = plan.WindowsPasswordWo.ValueStringPointer()
 	}
 	if !plan.LinuxKeyPairId.IsUnknown() {
-		addUser.LinuxKeyPairId = plan.LinuxKeyPairId.ValueInt64Pointer()
+		addUser.LinuxKeyPairId.Set(&sdk.AddUserRequestUserLinuxKeyPairId{Int64: plan.LinuxKeyPairId.ValueInt64Pointer()})
 	}
 	if !plan.ReceiveNotifications.IsUnknown() {
 		addUser.ReceiveNotifications = plan.ReceiveNotifications.ValueBoolPointer()
@@ -315,7 +315,7 @@ func (r *Resource) Update(
 	var roles []sdk.UpdateUserRequestUserRolesInner
 	for _, roleID := range roleIDs {
 		rolevalue := sdk.UpdateUserRequestUserRolesInner{
-			Id: roleID,
+			UpdateUserRequestUserRolesInnerOneOf: &sdk.UpdateUserRequestUserRolesInnerOneOf{Id: roleID},
 		}
 		roles = append(roles, rolevalue)
 	}
@@ -359,7 +359,7 @@ func (r *Resource) Update(
 	if plan.LinuxKeyPairId.IsUnknown() || plan.LinuxKeyPairId.IsNull() {
 		updateUser.LinuxKeyPairId.Set(nil)
 	} else {
-		updateUser.LinuxKeyPairId.Set(plan.LinuxKeyPairId.ValueInt64Pointer())
+		updateUser.LinuxKeyPairId.Set(&sdk.UpdateUserRequestUserLinuxKeyPairId{Int64: plan.LinuxKeyPairId.ValueInt64Pointer()})
 	}
 
 	// A username removed from the configuration is planned as null (see

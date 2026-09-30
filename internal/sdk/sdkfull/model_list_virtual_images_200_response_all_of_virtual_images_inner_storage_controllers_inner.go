@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,17 +22,17 @@ var _ MappedNullable = &ListVirtualImages200ResponseAllOfVirtualImagesInnerStora
 
 // ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct for ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
 type ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner struct {
-	Id                   *int64                                                                          `json:"id,omitempty"`
-	Name                 *string                                                                         `json:"name,omitempty"`
-	Active               *bool                                                                           `json:"active,omitempty"`
-	Type                 *ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType `json:"type,omitempty"`
-	BusNumber            *int64                                                                          `json:"busNumber,omitempty"`
-	MaxDevices           *int64                                                                          `json:"maxDevices,omitempty"`
-	Removable            *bool                                                                           `json:"removable,omitempty"`
-	Editable             *bool                                                                           `json:"editable,omitempty"`
-	ReservedUnitNumber   *int64                                                                          `json:"reservedUnitNumber,omitempty"`
-	Category             *string                                                                         `json:"category,omitempty"`
-	AdditionalProperties map[string]interface{}                                                          `json:",remain"`
+	Id                   *int64                                                                                 `json:"id,omitempty"`
+	Name                 *string                                                                                `json:"name,omitempty"`
+	Active               *bool                                                                                  `json:"active,omitempty"`
+	Type                 NullableListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInnerType `json:"type,omitempty"`
+	BusNumber            *int64                                                                                 `json:"busNumber,omitempty"`
+	MaxDevices           *int64                                                                                 `json:"maxDevices,omitempty"`
+	Removable            *bool                                                                                  `json:"removable,omitempty"`
+	Editable             *bool                                                                                  `json:"editable,omitempty"`
+	ReservedUnitNumber   *int64                                                                                 `json:"reservedUnitNumber,omitempty"`
+	Category             *string                                                                                `json:"category,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                 `json:",remain"`
 }
 
 type _ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInner
@@ -56,8 +56,8 @@ func (o ListVirtualImages200ResponseAllOfVirtualImagesInnerStorageControllersInn
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.BusNumber) {
 		toSerialize["busNumber"] = o.BusNumber

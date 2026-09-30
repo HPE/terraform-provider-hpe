@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o AddImageBuild200ResponseAllOfImageBuildType) ToMap() (map[string]interfa
 	}
 
 	return toSerialize, nil
+}
+
+type NullableAddImageBuild200ResponseAllOfImageBuildType struct {
+	value *AddImageBuild200ResponseAllOfImageBuildType
+	isSet bool
+}
+
+func (v NullableAddImageBuild200ResponseAllOfImageBuildType) Get() *AddImageBuild200ResponseAllOfImageBuildType {
+	return v.value
+}
+
+func (v *NullableAddImageBuild200ResponseAllOfImageBuildType) Set(val *AddImageBuild200ResponseAllOfImageBuildType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableAddImageBuild200ResponseAllOfImageBuildType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableAddImageBuild200ResponseAllOfImageBuildType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableAddImageBuild200ResponseAllOfImageBuildType(val *AddImageBuild200ResponseAllOfImageBuildType) *NullableAddImageBuild200ResponseAllOfImageBuildType {
+	return &NullableAddImageBuild200ResponseAllOfImageBuildType{value: val, isSet: true}
+}
+
+func (v NullableAddImageBuild200ResponseAllOfImageBuildType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableAddImageBuild200ResponseAllOfImageBuildType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableAddImageBuild200ResponseAllOfImageBuildType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *AddImageBuild200ResponseAllOfImageBuildType) UnmarshalJSON(data []byte) (err error) {

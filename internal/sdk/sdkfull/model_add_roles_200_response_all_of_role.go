@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -30,13 +30,13 @@ type AddRoles200ResponseAllOfRole struct {
 	Authority   *string        `json:"authority,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
-	LandingUrl        NullableString `json:"landingUrl,omitempty"`
-	Scope             *string        `json:"scope,omitempty"`
-	RoleType          *string        `json:"roleType,omitempty"`
-	Multitenant       *bool          `json:"multitenant,omitempty"`
-	MultitenantLocked *bool          `json:"multitenantLocked,omitempty"`
-	ParentRoleId      NullableString `json:"parentRoleId,omitempty"`
-	Diverged          *bool          `json:"diverged,omitempty"`
+	LandingUrl        NullableString                                   `json:"landingUrl,omitempty"`
+	Scope             *string                                          `json:"scope,omitempty"`
+	RoleType          *string                                          `json:"roleType,omitempty"`
+	Multitenant       *bool                                            `json:"multitenant,omitempty"`
+	MultitenantLocked *bool                                            `json:"multitenantLocked,omitempty"`
+	ParentRoleId      NullableAddRoles200ResponseAllOfRoleParentRoleId `json:"parentRoleId,omitempty"`
+	Diverged          *bool                                            `json:"diverged,omitempty"`
 	// The per-tenant copies of a multitenant master role, each identifying a subtenant and the id of the role copy propagated into it. Populated only for multitenant=true master roles on Morpheus 9.0.2 and later; empty or absent otherwise.
 	TenantCopies         []AddRoles200ResponseAllOfRoleTenantCopiesInner `json:"tenantCopies,omitempty"`
 	OwnerId              *int64                                          `json:"ownerId,omitempty"`

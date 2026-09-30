@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,7 +22,7 @@ var _ MappedNullable = &AddUserGroupRequestUserGroup{}
 
 // AddUserGroupRequestUserGroup struct for AddUserGroupRequestUserGroup
 type AddUserGroupRequestUserGroup struct {
-	Name        *string        `json:"name,omitempty"`
+	Name        string         `json:"name"`
 	Description NullableString `json:"description,omitempty"`
 	SudoUser    *bool          `json:"sudoUser,omitempty"`
 	ServerGroup NullableString `json:"serverGroup,omitempty"`
@@ -43,9 +43,7 @@ func (o AddUserGroupRequestUserGroup) MarshalJSON() ([]byte, error) {
 
 func (o AddUserGroupRequestUserGroup) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Name) {
-		toSerialize["name"] = o.Name
-	}
+	toSerialize["name"] = o.Name
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}

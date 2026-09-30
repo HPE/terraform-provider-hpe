@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,16 +24,20 @@ var _ MappedNullable = &ClusterAffinityGroupUpdate{}
 type ClusterAffinityGroupUpdate struct {
 	// Name
 	Name *string `json:"name,omitempty"`
+	// Affinity Type. KEEP_TOGETHER / KEEP_SEPARATE express a preferred (SHOULD) placement, while the KEEP_TOGETHER_MUST / KEEP_SEPARATE_MUST variants express a mandatory (MUST) placement constraint.
+	AffinityType *string `json:"affinityType,omitempty"`
 	// Active
 	Active *bool `json:"active,omitempty"`
-	// List of Server IDs to include in the Affinity Group
-	Servers []int64 `json:"servers,omitempty"`
+	// List of Server IDs to include in the Affinity Group. Use this for a legacy VM-to-VM rule. Mutually exclusive with `vmGroup`/`hostGroup` — send either `servers`, or both `vmGroup` and `hostGroup`, never both shapes at once.
+	Servers   []int64                                                  `json:"servers,omitempty"`
+	VmGroup   *UpdateClusterAffinityGroupRequestAffinityGroupVmGroup   `json:"vmGroup,omitempty"`
+	HostGroup *UpdateClusterAffinityGroupRequestAffinityGroupHostGroup `json:"hostGroup,omitempty"`
 	// Visibility - Set to public to allow all tenants
 	Visibility *string `json:"visibility,omitempty"`
 	// Array of tenant account ids that are allowed access
-	Tenants              []ClusterAffinityGroupUpdateTenantsInner       `json:"tenants,omitempty"`
-	ResourcePermissions  *ClusterAffinityGroupUpdateResourcePermissions `json:"resourcePermissions,omitempty"`
-	AdditionalProperties map[string]interface{}                         `json:",remain"`
+	Tenants              []UpdateClusterAffinityGroupRequestAffinityGroupTenantsInner       `json:"tenants,omitempty"`
+	ResourcePermissions  *UpdateClusterAffinityGroupRequestAffinityGroupResourcePermissions `json:"resourcePermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                                             `json:",remain"`
 }
 
 type _ClusterAffinityGroupUpdate ClusterAffinityGroupUpdate
@@ -51,11 +55,20 @@ func (o ClusterAffinityGroupUpdate) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
+	if !IsNil(o.AffinityType) {
+		toSerialize["affinityType"] = o.AffinityType
+	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active
 	}
 	if !IsNil(o.Servers) {
 		toSerialize["servers"] = o.Servers
+	}
+	if !IsNil(o.VmGroup) {
+		toSerialize["vmGroup"] = o.VmGroup
+	}
+	if !IsNil(o.HostGroup) {
+		toSerialize["hostGroup"] = o.HostGroup
 	}
 	if !IsNil(o.Visibility) {
 		toSerialize["visibility"] = o.Visibility

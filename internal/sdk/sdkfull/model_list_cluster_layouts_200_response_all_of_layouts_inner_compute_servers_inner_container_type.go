@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,22 +22,22 @@ var _ MappedNullable = &ListClusterLayouts200ResponseAllOfLayoutsInnerComputeSer
 
 // ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType struct for ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType
 type ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType struct {
-	Id                   *int64                                                                                       `json:"id,omitempty"`
-	Account              NullableString                                                                               `json:"account,omitempty"`
-	Name                 *string                                                                                      `json:"name,omitempty"`
-	Labels               []string                                                                                     `json:"labels,omitempty"`
-	ShortName            *string                                                                                      `json:"shortName,omitempty"`
-	Code                 *string                                                                                      `json:"code,omitempty"`
-	ContainerVersion     *string                                                                                      `json:"containerVersion,omitempty"`
-	ProvisionType        *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeProvisionType `json:"provisionType,omitempty"`
-	VirtualImage         *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeVirtualImage  `json:"virtualImage,omitempty"`
-	Category             *string                                                                                      `json:"category,omitempty"`
-	Config               map[string]interface{}                                                                       `json:"config,omitempty"`
-	ContainerPorts       []map[string]interface{}                                                                     `json:"containerPorts,omitempty"`
-	ContainerScripts     []map[string]interface{}                                                                     `json:"containerScripts,omitempty"`
-	ContainerTemplates   []map[string]interface{}                                                                     `json:"containerTemplates,omitempty"`
-	EnvironmentVariables []map[string]interface{}                                                                     `json:"environmentVariables,omitempty"`
-	AdditionalProperties map[string]interface{}                                                                       `json:",remain"`
+	Id                   *int64                                                                                              `json:"id,omitempty"`
+	Account              NullableString                                                                                      `json:"account,omitempty"`
+	Name                 *string                                                                                             `json:"name,omitempty"`
+	Labels               []string                                                                                            `json:"labels,omitempty"`
+	ShortName            *string                                                                                             `json:"shortName,omitempty"`
+	Code                 *string                                                                                             `json:"code,omitempty"`
+	ContainerVersion     *string                                                                                             `json:"containerVersion,omitempty"`
+	ProvisionType        NullableListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeProvisionType `json:"provisionType,omitempty"`
+	VirtualImage         *ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerTypeVirtualImage         `json:"virtualImage,omitempty"`
+	Category             *string                                                                                             `json:"category,omitempty"`
+	Config               map[string]interface{}                                                                              `json:"config,omitempty"`
+	ContainerPorts       []map[string]interface{}                                                                            `json:"containerPorts,omitempty"`
+	ContainerScripts     []map[string]interface{}                                                                            `json:"containerScripts,omitempty"`
+	ContainerTemplates   []map[string]interface{}                                                                            `json:"containerTemplates,omitempty"`
+	EnvironmentVariables []map[string]interface{}                                                                            `json:"environmentVariables,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                              `json:",remain"`
 }
 
 type _ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContainerType
@@ -73,8 +73,8 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerComputeServersInnerContain
 	if !IsNil(o.ContainerVersion) {
 		toSerialize["containerVersion"] = o.ContainerVersion
 	}
-	if !IsNil(o.ProvisionType) {
-		toSerialize["provisionType"] = o.ProvisionType
+	if o.ProvisionType.IsSet() {
+		toSerialize["provisionType"] = o.ProvisionType.Get()
 	}
 	if !IsNil(o.VirtualImage) {
 		toSerialize["virtualImage"] = o.VirtualImage

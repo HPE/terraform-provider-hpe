@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &AlletraMPHVMDatastoreConfiguration{}
 // AlletraMPHVMDatastoreConfiguration AlletraMP HVM Datastore Configuration
 type AlletraMPHVMDatastoreConfiguration struct {
 	// Enable ransomware protection for this datastore
-	Enableransomware *string `json:"enableransomware,omitempty"`
+	Enableransomware string `json:"enableransomware"`
 	// Storage protocol to use, can be 'iSCSI' or 'FC'
 	ProtocolType         string                 `json:"protocolType"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,9 +41,7 @@ func (o AlletraMPHVMDatastoreConfiguration) MarshalJSON() ([]byte, error) {
 
 func (o AlletraMPHVMDatastoreConfiguration) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Enableransomware) {
-		toSerialize["enableransomware"] = o.Enableransomware
-	}
+	toSerialize["enableransomware"] = o.Enableransomware
 	toSerialize["protocolType"] = o.ProtocolType
 
 	for key, value := range o.AdditionalProperties {

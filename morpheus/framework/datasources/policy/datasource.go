@@ -830,13 +830,13 @@ func getPolicyByID(
 	}
 
 	// Handle PolicyType
-	if policy.PolicyType != nil {
+	if policyType := policy.PolicyType.Get(); policyType != nil {
 		policyTypeValue, policyTypeDiags := NewPolicyTypeValue(
 			PolicyTypeValue{}.AttributeTypes(ctx),
 			map[string]attr.Value{
-				"id":   convert.Int64ToType(policy.PolicyType.Id),
-				"code": convert.StrToType(policy.PolicyType.Code),
-				"name": convert.StrToType(policy.PolicyType.Name),
+				"id":   convert.Int64ToType(policyType.Id),
+				"code": convert.StrToType(policyType.Code),
+				"name": convert.StrToType(policyType.Name),
 			},
 		)
 		if policyTypeDiags.HasError() {

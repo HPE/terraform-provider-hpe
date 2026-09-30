@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,9 +22,10 @@ var _ MappedNullable = &AddPrices200Response{}
 
 // AddPrices200Response struct for AddPrices200Response
 type AddPrices200Response struct {
-	Price                *AddPrices200ResponseAllOfPrice `json:"price,omitempty"`
-	Success              *bool                           `json:"success,omitempty"`
-	AdditionalProperties map[string]interface{}          `json:",remain"`
+	// ID of the created price
+	Id                   *int64                 `json:"id,omitempty"`
+	Success              *bool                  `json:"success,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _AddPrices200Response AddPrices200Response
@@ -39,8 +40,8 @@ func (o AddPrices200Response) MarshalJSON() ([]byte, error) {
 
 func (o AddPrices200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Price) {
-		toSerialize["price"] = o.Price
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
 	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success

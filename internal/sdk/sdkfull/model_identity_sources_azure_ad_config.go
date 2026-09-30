@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,27 +23,27 @@ var _ MappedNullable = &IdentitySourcesAzureADConfig{}
 
 // IdentitySourcesAzureADConfig struct for IdentitySourcesAzureADConfig
 type IdentitySourcesAzureADConfig struct {
-	Id                   *int64                                                          `json:"id,omitempty"`
-	Name                 *string                                                         `json:"name,omitempty"`
-	Description          *string                                                         `json:"description,omitempty"`
-	Code                 *string                                                         `json:"code,omitempty"`
-	Type                 *string                                                         `json:"type,omitempty"`
-	Active               *bool                                                           `json:"active,omitempty"`
-	Deleted              *bool                                                           `json:"deleted,omitempty"`
-	AutoSyncOnLogin      *bool                                                           `json:"autoSyncOnLogin,omitempty"`
-	ExternalLogin        *bool                                                           `json:"externalLogin,omitempty"`
-	AllowCustomMappings  *bool                                                           `json:"allowCustomMappings,omitempty"`
-	ManualRoleAssignment *bool                                                           `json:"manualRoleAssignment,omitempty"`
-	Account              *AddIdentitySources200ResponseAllOfTaskOneOf6Account            `json:"account,omitempty"`
-	DefaultAccountRole   *AddIdentitySources200ResponseAllOfTaskOneOf6DefaultAccountRole `json:"defaultAccountRole,omitempty"`
-	Config               *AddIdentitySources200ResponseAllOfTaskOneOf6Config             `json:"config,omitempty"`
-	RoleMappings         []AddIdentitySources200ResponseAllOfTaskOneOf6RoleMappingsInner `json:"roleMappings,omitempty"`
-	Subdomain            *string                                                         `json:"subdomain,omitempty"`
-	LoginURL             *string                                                         `json:"loginURL,omitempty"`
-	ProviderSettings     *AddIdentitySources200ResponseAllOfTaskOneOf6ProviderSettings   `json:"providerSettings,omitempty"`
-	DateCreated          *time.Time                                                      `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                                      `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                                          `json:",remain"`
+	Id                   *int64                                          `json:"id,omitempty"`
+	Name                 *string                                         `json:"name,omitempty"`
+	Description          *string                                         `json:"description,omitempty"`
+	Code                 *string                                         `json:"code,omitempty"`
+	Type                 *string                                         `json:"type,omitempty"`
+	Active               *bool                                           `json:"active,omitempty"`
+	Deleted              *bool                                           `json:"deleted,omitempty"`
+	AutoSyncOnLogin      *bool                                           `json:"autoSyncOnLogin,omitempty"`
+	ExternalLogin        *bool                                           `json:"externalLogin,omitempty"`
+	AllowCustomMappings  *bool                                           `json:"allowCustomMappings,omitempty"`
+	ManualRoleAssignment *bool                                           `json:"manualRoleAssignment,omitempty"`
+	Account              *IdentitySourcesAzureADConfigAccount            `json:"account,omitempty"`
+	DefaultAccountRole   *IdentitySourcesAzureADConfigDefaultAccountRole `json:"defaultAccountRole,omitempty"`
+	Config               *IdentitySourcesAzureADConfigConfig             `json:"config,omitempty"`
+	RoleMappings         []IdentitySourcesAzureADConfigRoleMappingsInner `json:"roleMappings,omitempty"`
+	Subdomain            *string                                         `json:"subdomain,omitempty"`
+	LoginURL             *string                                         `json:"loginURL,omitempty"`
+	ProviderSettings     *IdentitySourcesAzureADConfigProviderSettings   `json:"providerSettings,omitempty"`
+	DateCreated          *time.Time                                      `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                      `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _IdentitySourcesAzureADConfig IdentitySourcesAzureADConfig

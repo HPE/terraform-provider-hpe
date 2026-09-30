@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -32,7 +32,7 @@ type ListPriceSets200ResponseAllOfPriceSetsInnerPricesInner struct {
 	Price                NullableFloat32                                                   `json:"price,omitempty"`
 	CustomPrice          NullableFloat32                                                   `json:"customPrice,omitempty"`
 	MarkupType           NullableString                                                    `json:"markupType,omitempty"`
-	Markup               *int64                                                            `json:"markup,omitempty"`
+	Markup               NullableFloat32                                                   `json:"markup,omitempty"`
 	MarkupPercent        NullableFloat32                                                   `json:"markupPercent,omitempty"`
 	Cost                 NullableFloat32                                                   `json:"cost,omitempty"`
 	Currency             NullableString                                                    `json:"currency,omitempty"`
@@ -40,9 +40,9 @@ type ListPriceSets200ResponseAllOfPriceSetsInnerPricesInner struct {
 	Platform             NullableString                                                    `json:"platform,omitempty"`
 	Software             NullableString                                                    `json:"software,omitempty"`
 	VolumeType           *ListPriceSets200ResponseAllOfPriceSetsInnerPricesInnerVolumeType `json:"volumeType,omitempty"`
-	Datastore            NullableString                                                    `json:"datastore,omitempty"`
+	Datastore            *ListPriceSets200ResponseAllOfPriceSetsInnerPricesInnerDatastore  `json:"datastore,omitempty"`
 	CrossCloudApply      NullableBool                                                      `json:"crossCloudApply,omitempty"`
-	Account              NullableString                                                    `json:"account,omitempty"`
+	Account              *ListPriceSets200ResponseAllOfPriceSetsInnerPricesInnerAccount    `json:"account,omitempty"`
 	AdditionalProperties map[string]interface{}                                            `json:",remain"`
 }
 
@@ -88,8 +88,8 @@ func (o ListPriceSets200ResponseAllOfPriceSetsInnerPricesInner) ToMap() (map[str
 	if o.MarkupType.IsSet() {
 		toSerialize["markupType"] = o.MarkupType.Get()
 	}
-	if !IsNil(o.Markup) {
-		toSerialize["markup"] = o.Markup
+	if o.Markup.IsSet() {
+		toSerialize["markup"] = o.Markup.Get()
 	}
 	if o.MarkupPercent.IsSet() {
 		toSerialize["markupPercent"] = o.MarkupPercent.Get()
@@ -112,14 +112,14 @@ func (o ListPriceSets200ResponseAllOfPriceSetsInnerPricesInner) ToMap() (map[str
 	if !IsNil(o.VolumeType) {
 		toSerialize["volumeType"] = o.VolumeType
 	}
-	if o.Datastore.IsSet() {
-		toSerialize["datastore"] = o.Datastore.Get()
+	if !IsNil(o.Datastore) {
+		toSerialize["datastore"] = o.Datastore
 	}
 	if o.CrossCloudApply.IsSet() {
 		toSerialize["crossCloudApply"] = o.CrossCloudApply.Get()
 	}
-	if o.Account.IsSet() {
-		toSerialize["account"] = o.Account.Get()
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 
 	for key, value := range o.AdditionalProperties {

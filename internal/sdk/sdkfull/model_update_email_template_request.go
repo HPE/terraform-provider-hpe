@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &UpdateEmailTemplateRequest{}
 
 // UpdateEmailTemplateRequest struct for UpdateEmailTemplateRequest
 type UpdateEmailTemplateRequest struct {
-	Policy               *UpdateEmailTemplateRequestAllOfPolicy `json:"policy,omitempty"`
-	AdditionalProperties map[string]interface{}                 `json:",remain"`
+	EmailTemplate        *UpdateEmailTemplateRequestAllOfEmailTemplate `json:"emailTemplate,omitempty"`
+	AdditionalProperties map[string]interface{}                        `json:",remain"`
 }
 
 type _UpdateEmailTemplateRequest UpdateEmailTemplateRequest
@@ -38,8 +38,8 @@ func (o UpdateEmailTemplateRequest) MarshalJSON() ([]byte, error) {
 
 func (o UpdateEmailTemplateRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Policy) {
-		toSerialize["policy"] = o.Policy
+	if !IsNil(o.EmailTemplate) {
+		toSerialize["emailTemplate"] = o.EmailTemplate
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -36,7 +36,7 @@ type ListCloudResourcePools200ResponseAllOfResourcePoolsInner struct {
 	Active               *bool                                                                       `json:"active,omitempty"`
 	Status               *string                                                                     `json:"status,omitempty"`
 	Inventory            *bool                                                                       `json:"inventory,omitempty"`
-	Config               *ListCloudResourcePools200ResponseAllOfResourcePoolsInnerConfig             `json:"config,omitempty"`
+	Config               NullableListCloudResourcePools200ResponseAllOfResourcePoolsInnerConfig      `json:"config,omitempty"`
 	Name                 *string                                                                     `json:"name,omitempty"`
 	DisplayName          NullableString                                                              `json:"displayName,omitempty"`
 	Tenants              []ListCloudResourcePools200ResponseAllOfResourcePoolsInnerTenantsInner      `json:"tenants,omitempty"`
@@ -99,8 +99,8 @@ func (o ListCloudResourcePools200ResponseAllOfResourcePoolsInner) ToMap() (map[s
 	if !IsNil(o.Inventory) {
 		toSerialize["inventory"] = o.Inventory
 	}
-	if !IsNil(o.Config) {
-		toSerialize["config"] = o.Config
+	if o.Config.IsSet() {
+		toSerialize["config"] = o.Config.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name

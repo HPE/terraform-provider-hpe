@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,11 +28,11 @@ type ListPriceSets200ResponseAllOfPriceSetsInner struct {
 	Active               *bool                                                    `json:"active,omitempty"`
 	PriceUnit            *string                                                  `json:"priceUnit,omitempty"`
 	Type                 *string                                                  `json:"type,omitempty"`
-	RegionCode           *string                                                  `json:"regionCode,omitempty"`
+	RegionCode           NullableString                                           `json:"regionCode,omitempty"`
 	SystemCreated        *bool                                                    `json:"systemCreated,omitempty"`
-	Zone                 NullableString                                           `json:"zone,omitempty"`
-	ZonePool             NullableString                                           `json:"zonePool,omitempty"`
-	Account              NullableString                                           `json:"account,omitempty"`
+	Zone                 *ListPriceSets200ResponseAllOfPriceSetsInnerZone         `json:"zone,omitempty"`
+	ZonePool             *ListPriceSets200ResponseAllOfPriceSetsInnerZonePool     `json:"zonePool,omitempty"`
+	Account              *ListPriceSets200ResponseAllOfPriceSetsInnerAccount      `json:"account,omitempty"`
 	Prices               []ListPriceSets200ResponseAllOfPriceSetsInnerPricesInner `json:"prices,omitempty"`
 	AdditionalProperties map[string]interface{}                                   `json:",remain"`
 }
@@ -67,20 +67,20 @@ func (o ListPriceSets200ResponseAllOfPriceSetsInner) ToMap() (map[string]interfa
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.RegionCode) {
-		toSerialize["regionCode"] = o.RegionCode
+	if o.RegionCode.IsSet() {
+		toSerialize["regionCode"] = o.RegionCode.Get()
 	}
 	if !IsNil(o.SystemCreated) {
 		toSerialize["systemCreated"] = o.SystemCreated
 	}
-	if o.Zone.IsSet() {
-		toSerialize["zone"] = o.Zone.Get()
+	if !IsNil(o.Zone) {
+		toSerialize["zone"] = o.Zone
 	}
-	if o.ZonePool.IsSet() {
-		toSerialize["zonePool"] = o.ZonePool.Get()
+	if !IsNil(o.ZonePool) {
+		toSerialize["zonePool"] = o.ZonePool
 	}
-	if o.Account.IsSet() {
-		toSerialize["account"] = o.Account.Get()
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 	if !IsNil(o.Prices) {
 		toSerialize["prices"] = o.Prices

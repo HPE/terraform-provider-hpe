@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,14 +22,15 @@ var _ MappedNullable = &HealthElastic{}
 
 // HealthElastic struct for HealthElastic
 type HealthElastic struct {
-	Success              *bool                     `json:"success,omitempty"`
-	Status               *string                   `json:"status,omitempty"`
-	Master               *HealthElasticMaster      `json:"master,omitempty"`
-	Nodes                []HealthElasticNodesInner `json:"nodes,omitempty"`
-	Stats                *HealthElasticStats       `json:"stats,omitempty"`
-	Indices              []map[string]interface{}  `json:"indices,omitempty"`
-	BadIndices           []map[string]interface{}  `json:"badIndices,omitempty"`
-	AdditionalProperties map[string]interface{}    `json:",remain"`
+	NoticeMessage        *string                                           `json:"noticeMessage,omitempty"`
+	Success              *bool                                             `json:"success,omitempty"`
+	Status               *string                                           `json:"status,omitempty"`
+	Master               *GetLiveHealth200ResponseHealthElasticMaster      `json:"master,omitempty"`
+	Nodes                []GetLiveHealth200ResponseHealthElasticNodesInner `json:"nodes,omitempty"`
+	Stats                *GetLiveHealth200ResponseHealthElasticStats       `json:"stats,omitempty"`
+	Indices              []map[string]interface{}                          `json:"indices,omitempty"`
+	BadIndices           []map[string]interface{}                          `json:"badIndices,omitempty"`
+	AdditionalProperties map[string]interface{}                            `json:",remain"`
 }
 
 type _HealthElastic HealthElastic
@@ -44,6 +45,9 @@ func (o HealthElastic) MarshalJSON() ([]byte, error) {
 
 func (o HealthElastic) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.NoticeMessage) {
+		toSerialize["noticeMessage"] = o.NoticeMessage
+	}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
 	}

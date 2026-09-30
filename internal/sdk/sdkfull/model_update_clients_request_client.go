@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,13 +20,20 @@ import (
 // checks if the UpdateClientsRequestClient type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateClientsRequestClient{}
 
-// UpdateClientsRequestClient struct for UpdateClientsRequestClient
+// UpdateClientsRequestClient Writable client fields for create/update under the required `client` object. Create binds: clientId, clientSecret, accessTokenValiditySeconds, refreshTokenValiditySeconds, requireConsent, redirectUris. Update binds the same fields when the client is removable; system clients only accept accessTokenValiditySeconds and refreshTokenValiditySeconds. Pass a masked secret value starting with `********` on update to leave the existing secret unchanged.
 type UpdateClientsRequestClient struct {
-	ClientId                    *string `json:"clientId,omitempty"`
-	AccessTokenValiditySeconds  *int64  `json:"accessTokenValiditySeconds,omitempty"`
-	RefreshTokenValiditySeconds *int64  `json:"refreshTokenValiditySeconds,omitempty"`
-	// List of Redirect URIs for use with the OpenID Authorization Code Flow
-	RedirectUris         []string               `json:"redirectUris,omitempty"`
+	// OAuth client identifier (required on create)
+	ClientId *string `json:"clientId,omitempty"`
+	// Client secret. On update, values starting with `********` are ignored so the existing secret is retained.
+	ClientSecret *string `json:"clientSecret,omitempty"`
+	// Access token lifetime in seconds (must be greater than 0 when provided)
+	AccessTokenValiditySeconds *int64 `json:"accessTokenValiditySeconds,omitempty"`
+	// Refresh token lifetime in seconds (must be greater than 0 when provided)
+	RefreshTokenValiditySeconds *int64 `json:"refreshTokenValiditySeconds,omitempty"`
+	// Redirect URIs for the authorization code flow
+	RedirectUris []string `json:"redirectUris,omitempty"`
+	// Whether the client requires user consent
+	RequireConsent       *bool                  `json:"requireConsent,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -45,6 +52,9 @@ func (o UpdateClientsRequestClient) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ClientId) {
 		toSerialize["clientId"] = o.ClientId
 	}
+	if !IsNil(o.ClientSecret) {
+		toSerialize["clientSecret"] = o.ClientSecret
+	}
 	if !IsNil(o.AccessTokenValiditySeconds) {
 		toSerialize["accessTokenValiditySeconds"] = o.AccessTokenValiditySeconds
 	}
@@ -53,6 +63,9 @@ func (o UpdateClientsRequestClient) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.RedirectUris) {
 		toSerialize["redirectUris"] = o.RedirectUris
+	}
+	if !IsNil(o.RequireConsent) {
+		toSerialize["requireConsent"] = o.RequireConsent
 	}
 
 	for key, value := range o.AdditionalProperties {

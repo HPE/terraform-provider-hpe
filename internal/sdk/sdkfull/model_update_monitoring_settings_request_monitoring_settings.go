@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,15 +23,12 @@ var _ MappedNullable = &UpdateMonitoringSettingsRequestMonitoringSettings{}
 // UpdateMonitoringSettingsRequestMonitoringSettings struct for UpdateMonitoringSettingsRequestMonitoringSettings
 type UpdateMonitoringSettingsRequestMonitoringSettings struct {
 	// Auto Create Checks
-	AutoManageChecks *bool `json:"autoManageChecks,omitempty"`
-	// Availability Time Frame. The number of days availability should be calculated for. Changes will not take effect until your checks have passed their check interval.
-	AvailabilityTimeFrame NullableInt32 `json:"availabilityTimeFrame,omitempty"`
-	// Availability Precision. The number of decimal places availability should be displayed in. Can be anywhere between 0 and 5.
-	AvailabilityPrecision NullableInt32 `json:"availabilityPrecision,omitempty"`
-	// Default Check Interval. The number of minutes to use as the default interval to use when creating new checks.
-	DefaultCheckInterval NullableInt32                                                `json:"defaultCheckInterval,omitempty"`
-	ServiceNow           *UpdateMonitoringSettingsRequestMonitoringSettingsServiceNow `json:"serviceNow,omitempty"`
-	AdditionalProperties map[string]interface{}                                       `json:",remain"`
+	AutoManageChecks      *bool                                                                          `json:"autoManageChecks,omitempty"`
+	AvailabilityTimeFrame NullableUpdateMonitoringSettingsRequestMonitoringSettingsAvailabilityTimeFrame `json:"availabilityTimeFrame,omitempty"`
+	AvailabilityPrecision NullableUpdateMonitoringSettingsRequestMonitoringSettingsAvailabilityPrecision `json:"availabilityPrecision,omitempty"`
+	DefaultCheckInterval  NullableUpdateMonitoringSettingsRequestMonitoringSettingsDefaultCheckInterval  `json:"defaultCheckInterval,omitempty"`
+	ServiceNow            *UpdateMonitoringSettingsRequestMonitoringSettingsServiceNow                   `json:"serviceNow,omitempty"`
+	AdditionalProperties  map[string]interface{}                                                         `json:",remain"`
 }
 
 type _UpdateMonitoringSettingsRequestMonitoringSettings UpdateMonitoringSettingsRequestMonitoringSettings

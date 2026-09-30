@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,22 +23,22 @@ var _ MappedNullable = &ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf{}
 
 // ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf struct for ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf
 type ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf struct {
-	Id                   *int64                                                                   `json:"id,omitempty"`
-	Name                 *string                                                                  `json:"name,omitempty"`
-	Enabled              *bool                                                                    `json:"enabled,omitempty"`
-	Type                 *string                                                                  `json:"type,omitempty"`
-	IntegrationType      *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfIntegrationType   `json:"integrationType,omitempty"`
-	Url                  *string                                                                  `json:"url,omitempty"`
-	ServiceKey           NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfServiceKey `json:"serviceKey,omitempty"`
-	IsPlugin             *bool                                                                    `json:"isPlugin,omitempty"`
-	Config               *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfConfig            `json:"config,omitempty"`
-	Status               *string                                                                  `json:"status,omitempty"`
-	StatusDate           *time.Time                                                               `json:"statusDate,omitempty"`
-	StatusMessage        NullableString                                                           `json:"statusMessage,omitempty"`
-	LastSync             NullableString                                                           `json:"lastSync,omitempty"`
-	LastSyncDuration     NullableInt64                                                            `json:"lastSyncDuration,omitempty"`
-	Credential           *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfCredential        `json:"credential,omitempty"`
-	AdditionalProperties map[string]interface{}                                                   `json:",remain"`
+	Id                   *int64                                                                        `json:"id,omitempty"`
+	Name                 *string                                                                       `json:"name,omitempty"`
+	Enabled              *bool                                                                         `json:"enabled,omitempty"`
+	Type                 *string                                                                       `json:"type,omitempty"`
+	IntegrationType      NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfIntegrationType `json:"integrationType,omitempty"`
+	Url                  *string                                                                       `json:"url,omitempty"`
+	ServiceKey           NullableListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfServiceKey      `json:"serviceKey,omitempty"`
+	IsPlugin             *bool                                                                         `json:"isPlugin,omitempty"`
+	Config               *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfConfig                 `json:"config,omitempty"`
+	Status               *string                                                                       `json:"status,omitempty"`
+	StatusDate           *time.Time                                                                    `json:"statusDate,omitempty"`
+	StatusMessage        NullableString                                                                `json:"statusMessage,omitempty"`
+	LastSync             NullableString                                                                `json:"lastSync,omitempty"`
+	LastSyncDuration     NullableInt64                                                                 `json:"lastSyncDuration,omitempty"`
+	Credential           *ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOfCredential             `json:"credential,omitempty"`
+	AdditionalProperties map[string]interface{}                                                        `json:",remain"`
 }
 
 type _ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf
@@ -65,8 +65,8 @@ func (o ListIntegrations200ResponseAnyOfIntegrationsInnerAnyOf) ToMap() (map[str
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.IntegrationType) {
-		toSerialize["integrationType"] = o.IntegrationType
+	if o.IntegrationType.IsSet() {
+		toSerialize["integrationType"] = o.IntegrationType.Get()
 	}
 	if !IsNil(o.Url) {
 		toSerialize["url"] = o.Url

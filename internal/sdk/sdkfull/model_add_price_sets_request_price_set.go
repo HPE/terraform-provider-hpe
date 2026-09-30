@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -33,9 +33,10 @@ type AddPriceSetsRequestPriceSet struct {
 	// Price Unit
 	PriceUnit string `json:"priceUnit"`
 	// Price set type
-	Type                 string                 `json:"type"`
-	Prices               []int64                `json:"prices,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Type string `json:"type"`
+	// Prices to include in the price set
+	Prices               []AddPriceSetsRequestPriceSetPricesInner `json:"prices,omitempty"`
+	AdditionalProperties map[string]interface{}                   `json:",remain"`
 }
 
 type _AddPriceSetsRequestPriceSet AddPriceSetsRequestPriceSet

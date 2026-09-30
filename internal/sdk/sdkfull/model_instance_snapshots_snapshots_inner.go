@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,14 +23,16 @@ var _ MappedNullable = &InstanceSnapshotsSnapshotsInner{}
 
 // InstanceSnapshotsSnapshotsInner struct for InstanceSnapshotsSnapshotsInner
 type InstanceSnapshotsSnapshotsInner struct {
-	Id                   *int64                                              `json:"id,omitempty"`
-	Name                 *string                                             `json:"name,omitempty"`
-	Description          NullableString                                      `json:"description,omitempty"`
-	ExternalId           NullableString                                      `json:"externalId,omitempty"`
-	Status               *string                                             `json:"status,omitempty"`
-	State                NullableString                                      `json:"state,omitempty"`
-	SnapshotType         *string                                             `json:"snapshotType,omitempty"`
-	SnapshotCreated      NullableTime                                        `json:"snapshotCreated,omitempty"`
+	Id              *int64         `json:"id,omitempty"`
+	Name            *string        `json:"name,omitempty"`
+	Description     NullableString `json:"description,omitempty"`
+	ExternalId      NullableString `json:"externalId,omitempty"`
+	Status          *string        `json:"status,omitempty"`
+	State           NullableString `json:"state,omitempty"`
+	SnapshotType    *string        `json:"snapshotType,omitempty"`
+	SnapshotCreated NullableTime   `json:"snapshotCreated,omitempty"`
+	// Total size of the snapshot in bytes. Null when not populated.
+	MaxStorage           NullableInt64                                       `json:"maxStorage,omitempty"`
 	Zone                 *InstanceSnapshotsSnapshotsInnerZone                `json:"zone,omitempty"`
 	Datastore            NullableString                                      `json:"datastore,omitempty"`
 	ParentSnapshot       NullableString                                      `json:"parentSnapshot,omitempty"`
@@ -78,6 +80,9 @@ func (o InstanceSnapshotsSnapshotsInner) ToMap() (map[string]interface{}, error)
 	}
 	if o.SnapshotCreated.IsSet() {
 		toSerialize["snapshotCreated"] = o.SnapshotCreated.Get()
+	}
+	if o.MaxStorage.IsSet() {
+		toSerialize["maxStorage"] = o.MaxStorage.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerType) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListClusterLayouts200ResponseAllOfLayoutsInnerType struct {
+	value *ListClusterLayouts200ResponseAllOfLayoutsInnerType
+	isSet bool
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerType {
+	return v.value
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerType(val *ListClusterLayouts200ResponseAllOfLayoutsInnerType) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerType {
+	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerType{value: val, isSet: true}
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerType) UnmarshalJSON(data []byte) (err error) {

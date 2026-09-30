@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -32,7 +32,7 @@ type ApiCancelProcessRequest struct {
 	id         int64
 }
 
-func (r ApiCancelProcessRequest) Execute() (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+func (r ApiCancelProcessRequest) Execute() (*CancelProcess200Response, *http.Response, error) {
 	return r.ApiService.CancelProcessExecute(r)
 }
 
@@ -55,13 +55,13 @@ func (a *HistoryAPIService) CancelProcess(ctx context.Context, id int64) ApiCanc
 
 // Execute executes the request
 //
-//	@return ContainersAttachFloatingIp200Response
-func (a *HistoryAPIService) CancelProcessExecute(r ApiCancelProcessRequest) (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+//	@return CancelProcess200Response
+func (a *HistoryAPIService) CancelProcessExecute(r ApiCancelProcessRequest) (*CancelProcess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *ContainersAttachFloatingIp200Response
+		localVarReturnValue *CancelProcess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "HistoryAPIService.CancelProcess")
@@ -115,7 +115,7 @@ func (a *HistoryAPIService) CancelProcessExecute(r ApiCancelProcessRequest) (*Co
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -126,7 +126,7 @@ func (a *HistoryAPIService) CancelProcessExecute(r ApiCancelProcessRequest) (*Co
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -239,7 +239,7 @@ func (a *HistoryAPIService) GetHistoryExecute(r ApiGetHistoryRequest) (*GetHisto
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -250,7 +250,7 @@ func (a *HistoryAPIService) GetHistoryExecute(r ApiGetHistoryRequest) (*GetHisto
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -419,7 +419,7 @@ func (a *HistoryAPIService) ListHistoryExecute(r ApiListHistoryRequest) (*ListHi
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -430,7 +430,7 @@ func (a *HistoryAPIService) ListHistoryExecute(r ApiListHistoryRequest) (*ListHi
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -460,7 +460,7 @@ type ApiRetryProcessRequest struct {
 	id         int64
 }
 
-func (r ApiRetryProcessRequest) Execute() (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+func (r ApiRetryProcessRequest) Execute() (*RetryProcess200Response, *http.Response, error) {
 	return r.ApiService.RetryProcessExecute(r)
 }
 
@@ -483,13 +483,13 @@ func (a *HistoryAPIService) RetryProcess(ctx context.Context, id int64) ApiRetry
 
 // Execute executes the request
 //
-//	@return ContainersAttachFloatingIp200Response
-func (a *HistoryAPIService) RetryProcessExecute(r ApiRetryProcessRequest) (*ContainersAttachFloatingIp200Response, *http.Response, error) {
+//	@return RetryProcess200Response
+func (a *HistoryAPIService) RetryProcessExecute(r ApiRetryProcessRequest) (*RetryProcess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPost
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *ContainersAttachFloatingIp200Response
+		localVarReturnValue *RetryProcess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "HistoryAPIService.RetryProcess")
@@ -543,7 +543,7 @@ func (a *HistoryAPIService) RetryProcessExecute(r ApiRetryProcessRequest) (*Cont
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -554,7 +554,7 @@ func (a *HistoryAPIService) RetryProcessExecute(r ApiRetryProcessRequest) (*Cont
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

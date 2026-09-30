@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,6 +28,7 @@ type ZoneType struct {
 	AutoCapacity                  *bool                                              `json:"autoCapacity,omitempty"`
 	MigrationTarget               *bool                                              `json:"migrationTarget,omitempty"`
 	HasAffinityGroups             *bool                                              `json:"hasAffinityGroups,omitempty"`
+	HasHostVmGroups               *bool                                              `json:"hasHostVmGroups,omitempty"`
 	HasDatastores                 *bool                                              `json:"hasDatastores,omitempty"`
 	HasNetworks                   *bool                                              `json:"hasNetworks,omitempty"`
 	HasResourcePools              *bool                                              `json:"hasResourcePools,omitempty"`
@@ -92,6 +93,9 @@ func (o ZoneType) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.HasAffinityGroups) {
 		toSerialize["hasAffinityGroups"] = o.HasAffinityGroups
+	}
+	if !IsNil(o.HasHostVmGroups) {
+		toSerialize["hasHostVmGroups"] = o.HasHostVmGroups
 	}
 	if !IsNil(o.HasDatastores) {
 		toSerialize["hasDatastores"] = o.HasDatastores

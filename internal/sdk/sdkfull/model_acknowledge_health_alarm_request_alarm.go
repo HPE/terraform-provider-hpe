@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,7 @@ var _ MappedNullable = &AcknowledgeHealthAlarmRequestAlarm{}
 
 // AcknowledgeHealthAlarmRequestAlarm struct for AcknowledgeHealthAlarmRequestAlarm
 type AcknowledgeHealthAlarmRequestAlarm struct {
-	// Pass `true` to ackowledge an alarm, or pass `false` to unacknowledge it.
-	Acknowledged         bool                   `json:"acknowledged"`
+	Acknowledged         *bool                  `json:"acknowledged,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -39,7 +38,9 @@ func (o AcknowledgeHealthAlarmRequestAlarm) MarshalJSON() ([]byte, error) {
 
 func (o AcknowledgeHealthAlarmRequestAlarm) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["acknowledged"] = o.Acknowledged
+	if !IsNil(o.Acknowledged) {
+		toSerialize["acknowledged"] = o.Acknowledged
+	}
 
 	for key, value := range o.AdditionalProperties {
 		toSerialize[key] = value

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,19 +22,19 @@ var _ MappedNullable = &PolicyType{}
 
 // PolicyType struct for PolicyType
 type PolicyType struct {
-	Id                   *int64                       `json:"id,omitempty"`
-	Code                 *string                      `json:"code,omitempty"`
-	Name                 *string                      `json:"name,omitempty"`
-	Description          NullableString               `json:"description,omitempty"`
-	Category             *string                      `json:"category,omitempty"`
-	LoadMethod           NullableString               `json:"loadMethod,omitempty"`
-	EnforceMethod        NullableString               `json:"enforceMethod,omitempty"`
-	PrepareMethod        NullableString               `json:"prepareMethod,omitempty"`
-	ValidateMethod       NullableString               `json:"validateMethod,omitempty"`
-	EnforceOnProvision   *bool                        `json:"enforceOnProvision,omitempty"`
-	EnforceOnManaged     *bool                        `json:"enforceOnManaged,omitempty"`
-	OptionTypes          []PolicyTypeOptionTypesInner `json:"optionTypes,omitempty"`
-	AdditionalProperties map[string]interface{}       `json:",remain"`
+	Id                   *int64                                               `json:"id,omitempty"`
+	Code                 *string                                              `json:"code,omitempty"`
+	Name                 *string                                              `json:"name,omitempty"`
+	Description          NullableString                                       `json:"description,omitempty"`
+	Category             *string                                              `json:"category,omitempty"`
+	LoadMethod           NullableString                                       `json:"loadMethod,omitempty"`
+	EnforceMethod        NullableString                                       `json:"enforceMethod,omitempty"`
+	PrepareMethod        NullableString                                       `json:"prepareMethod,omitempty"`
+	ValidateMethod       NullableString                                       `json:"validateMethod,omitempty"`
+	EnforceOnProvision   *bool                                                `json:"enforceOnProvision,omitempty"`
+	EnforceOnManaged     *bool                                                `json:"enforceOnManaged,omitempty"`
+	OptionTypes          []GetPolicyType200ResponsePolicyTypeOptionTypesInner `json:"optionTypes,omitempty"`
+	AdditionalProperties map[string]interface{}                               `json:",remain"`
 }
 
 type _PolicyType PolicyType

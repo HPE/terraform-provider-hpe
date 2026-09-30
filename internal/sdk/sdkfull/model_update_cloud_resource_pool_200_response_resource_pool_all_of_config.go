@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -57,6 +57,11 @@ func (dst *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) UnmarshalM
 // Unmarshal JSON data into any of the pointers in the struct
 func (dst *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) UnmarshalJSON(data []byte) error {
 	var err error
+	// this object is nullable so check if the payload is null or empty string
+	if string(data) == "" || string(data) == "{}" {
+		return nil
+	}
+
 	// try to unmarshal JSON data into UpdateCloudResourcePool200ResponseResourcePoolAllOfConfigAnyOf
 	err = json.Unmarshal(data, &dst.UpdateCloudResourcePool200ResponseResourcePoolAllOfConfigAnyOf)
 	if err == nil {
@@ -141,4 +146,49 @@ func (src UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) MarshalJSON
 	}
 
 	return []byte("{}"), nil // no variant set: marshal an empty object rather than returning (nil,nil), which encoding/json rejects as "unexpected end of JSON input"
+}
+
+type NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig struct {
+	value *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig
+	isSet bool
+}
+
+func (v NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) Get() *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig {
+	return v.value
+}
+
+func (v *NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) Set(val *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig(val *UpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) *NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig {
+	return &NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig{value: val, isSet: true}
+}
+
+func (v NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableUpdateCloudResourcePool200ResponseResourcePoolAllOfConfig) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }

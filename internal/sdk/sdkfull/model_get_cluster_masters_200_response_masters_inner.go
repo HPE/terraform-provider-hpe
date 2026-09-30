@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,78 +23,78 @@ var _ MappedNullable = &GetClusterMasters200ResponseMastersInner{}
 
 // GetClusterMasters200ResponseMastersInner struct for GetClusterMasters200ResponseMastersInner
 type GetClusterMasters200ResponseMastersInner struct {
-	Id                       *int64                                                     `json:"id,omitempty"`
-	Uuid                     *string                                                    `json:"uuid,omitempty"`
-	ExternalId               *string                                                    `json:"externalId,omitempty"`
-	InternalId               NullableString                                             `json:"internalId,omitempty"`
-	ExternalUniqueId         NullableString                                             `json:"externalUniqueId,omitempty"`
-	Name                     *string                                                    `json:"name,omitempty"`
-	ExternalName             *string                                                    `json:"externalName,omitempty"`
-	Hostname                 *string                                                    `json:"hostname,omitempty"`
-	AccountId                *int64                                                     `json:"accountId,omitempty"`
-	Account                  NullableGetClusterMasters200ResponseMastersInnerAccount    `json:"account,omitempty"`
-	Owner                    *GetClusterMasters200ResponseMastersInnerOwner             `json:"owner,omitempty"`
-	Zone                     NullableGetClusterMasters200ResponseMastersInnerZone       `json:"zone,omitempty"`
-	Plan                     *GetClusterMasters200ResponseMastersInnerPlan              `json:"plan,omitempty"`
-	ComputeServerType        *GetClusterMasters200ResponseMastersInnerComputeServerType `json:"computeServerType,omitempty"`
-	Visibility               *string                                                    `json:"visibility,omitempty"`
-	Description              *string                                                    `json:"description,omitempty"`
-	ZoneId                   *int64                                                     `json:"zoneId,omitempty"`
-	SiteId                   *int64                                                     `json:"siteId,omitempty"`
-	ResourcePoolId           *int64                                                     `json:"resourcePoolId,omitempty"`
-	FolderId                 NullableString                                             `json:"folderId,omitempty"`
-	SshHost                  *string                                                    `json:"sshHost,omitempty"`
-	SshPort                  *int64                                                     `json:"sshPort,omitempty"`
-	ExternalIp               *string                                                    `json:"externalIp,omitempty"`
-	InternalIp               *string                                                    `json:"internalIp,omitempty"`
-	VolumeId                 NullableString                                             `json:"volumeId,omitempty"`
-	Platform                 *string                                                    `json:"platform,omitempty"`
-	PlatformVersion          *string                                                    `json:"platformVersion,omitempty"`
-	SshUsername              *string                                                    `json:"sshUsername,omitempty"`
-	SshPassword              *string                                                    `json:"sshPassword,omitempty"`
-	SshPasswordHash          *string                                                    `json:"sshPasswordHash,omitempty"`
-	OsDevice                 *string                                                    `json:"osDevice,omitempty"`
-	OsType                   *string                                                    `json:"osType,omitempty"`
-	DataDevice               *string                                                    `json:"dataDevice,omitempty"`
-	LvmEnabled               *bool                                                      `json:"lvmEnabled,omitempty"`
-	ApiKey                   *string                                                    `json:"apiKey,omitempty"`
-	SoftwareRaid             *bool                                                      `json:"softwareRaid,omitempty"`
-	DateCreated              *time.Time                                                 `json:"dateCreated,omitempty"`
-	LastUpdated              *time.Time                                                 `json:"lastUpdated,omitempty"`
-	Stats                    *GetClusterMasters200ResponseMastersInnerStats             `json:"stats,omitempty"`
-	Status                   *string                                                    `json:"status,omitempty"`
-	StatusMessage            NullableString                                             `json:"statusMessage,omitempty"`
-	ErrorMessage             NullableString                                             `json:"errorMessage,omitempty"`
-	StatusDate               NullableString                                             `json:"statusDate,omitempty"`
-	StatusPercent            NullableString                                             `json:"statusPercent,omitempty"`
-	StatusEta                NullableString                                             `json:"statusEta,omitempty"`
-	PowerState               *string                                                    `json:"powerState,omitempty"`
-	AgentInstalled           *bool                                                      `json:"agentInstalled,omitempty"`
-	LastAgentUpdate          *time.Time                                                 `json:"lastAgentUpdate,omitempty"`
-	AgentVersion             *string                                                    `json:"agentVersion,omitempty"`
-	MaxCores                 *int64                                                     `json:"maxCores,omitempty"`
-	CoresPerSocket           NullableString                                             `json:"coresPerSocket,omitempty"`
-	MaxMemory                *int64                                                     `json:"maxMemory,omitempty"`
-	MaxStorage               *int64                                                     `json:"maxStorage,omitempty"`
-	MaxCpu                   *int64                                                     `json:"maxCpu,omitempty"`
-	HourlyPrice              *float32                                                   `json:"hourlyPrice,omitempty"`
-	SourceImage              *GetClusterMasters200ResponseMastersInnerSourceImage       `json:"sourceImage,omitempty"`
-	ServerOs                 NullableString                                             `json:"serverOs,omitempty"`
-	Volumes                  []GetClusterMasters200ResponseMastersInnerVolumesInner     `json:"volumes,omitempty"`
-	Controllers              []map[string]interface{}                                   `json:"controllers,omitempty"`
-	Interfaces               []GetClusterMasters200ResponseMastersInnerInterfacesInner  `json:"interfaces,omitempty"`
-	Labels                   []string                                                   `json:"labels,omitempty"`
-	Tags                     []GetClusterMasters200ResponseMastersInnerTagsInner        `json:"tags,omitempty"`
-	Enabled                  *bool                                                      `json:"enabled,omitempty"`
-	TagCompliant             NullableBool                                               `json:"tagCompliant,omitempty"`
-	Containers               []int64                                                    `json:"containers,omitempty"`
-	GuestConsolePreferred    *bool                                                      `json:"guestConsolePreferred,omitempty"`
-	GuestConsoleType         NullableString                                             `json:"guestConsoleType,omitempty"`
-	GuestConsoleUsername     NullableString                                             `json:"guestConsoleUsername,omitempty"`
-	GuestConsolePassword     NullableString                                             `json:"guestConsolePassword,omitempty"`
-	GuestConsolePasswordHash NullableString                                             `json:"guestConsolePasswordHash,omitempty"`
-	GuestConsolePort         NullableString                                             `json:"guestConsolePort,omitempty"`
-	AdditionalProperties     map[string]interface{}                                     `json:",remain"`
+	Id                       *int64                                                      `json:"id,omitempty"`
+	Uuid                     *string                                                     `json:"uuid,omitempty"`
+	ExternalId               *string                                                     `json:"externalId,omitempty"`
+	InternalId               NullableString                                              `json:"internalId,omitempty"`
+	ExternalUniqueId         NullableString                                              `json:"externalUniqueId,omitempty"`
+	Name                     *string                                                     `json:"name,omitempty"`
+	ExternalName             *string                                                     `json:"externalName,omitempty"`
+	Hostname                 *string                                                     `json:"hostname,omitempty"`
+	AccountId                *int64                                                      `json:"accountId,omitempty"`
+	Account                  NullableGetClusterMasters200ResponseMastersInnerAccount     `json:"account,omitempty"`
+	Owner                    *GetClusterMasters200ResponseMastersInnerOwner              `json:"owner,omitempty"`
+	Zone                     NullableGetClusterMasters200ResponseMastersInnerZone        `json:"zone,omitempty"`
+	Plan                     NullableGetClusterMasters200ResponseMastersInnerPlan        `json:"plan,omitempty"`
+	ComputeServerType        *GetClusterMasters200ResponseMastersInnerComputeServerType  `json:"computeServerType,omitempty"`
+	Visibility               *string                                                     `json:"visibility,omitempty"`
+	Description              *string                                                     `json:"description,omitempty"`
+	ZoneId                   *int64                                                      `json:"zoneId,omitempty"`
+	SiteId                   *int64                                                      `json:"siteId,omitempty"`
+	ResourcePoolId           *int64                                                      `json:"resourcePoolId,omitempty"`
+	FolderId                 NullableString                                              `json:"folderId,omitempty"`
+	SshHost                  *string                                                     `json:"sshHost,omitempty"`
+	SshPort                  *int64                                                      `json:"sshPort,omitempty"`
+	ExternalIp               *string                                                     `json:"externalIp,omitempty"`
+	InternalIp               *string                                                     `json:"internalIp,omitempty"`
+	VolumeId                 NullableString                                              `json:"volumeId,omitempty"`
+	Platform                 *string                                                     `json:"platform,omitempty"`
+	PlatformVersion          *string                                                     `json:"platformVersion,omitempty"`
+	SshUsername              *string                                                     `json:"sshUsername,omitempty"`
+	SshPassword              *string                                                     `json:"sshPassword,omitempty"`
+	SshPasswordHash          *string                                                     `json:"sshPasswordHash,omitempty"`
+	OsDevice                 *string                                                     `json:"osDevice,omitempty"`
+	OsType                   *string                                                     `json:"osType,omitempty"`
+	DataDevice               *string                                                     `json:"dataDevice,omitempty"`
+	LvmEnabled               *bool                                                       `json:"lvmEnabled,omitempty"`
+	ApiKey                   *string                                                     `json:"apiKey,omitempty"`
+	SoftwareRaid             *bool                                                       `json:"softwareRaid,omitempty"`
+	DateCreated              *time.Time                                                  `json:"dateCreated,omitempty"`
+	LastUpdated              *time.Time                                                  `json:"lastUpdated,omitempty"`
+	Stats                    *GetClusterMasters200ResponseMastersInnerStats              `json:"stats,omitempty"`
+	Status                   *string                                                     `json:"status,omitempty"`
+	StatusMessage            NullableString                                              `json:"statusMessage,omitempty"`
+	ErrorMessage             NullableString                                              `json:"errorMessage,omitempty"`
+	StatusDate               NullableString                                              `json:"statusDate,omitempty"`
+	StatusPercent            NullableString                                              `json:"statusPercent,omitempty"`
+	StatusEta                NullableString                                              `json:"statusEta,omitempty"`
+	PowerState               *string                                                     `json:"powerState,omitempty"`
+	AgentInstalled           *bool                                                       `json:"agentInstalled,omitempty"`
+	LastAgentUpdate          *time.Time                                                  `json:"lastAgentUpdate,omitempty"`
+	AgentVersion             *string                                                     `json:"agentVersion,omitempty"`
+	MaxCores                 *int64                                                      `json:"maxCores,omitempty"`
+	CoresPerSocket           NullableString                                              `json:"coresPerSocket,omitempty"`
+	MaxMemory                *int64                                                      `json:"maxMemory,omitempty"`
+	MaxStorage               *int64                                                      `json:"maxStorage,omitempty"`
+	MaxCpu                   *int64                                                      `json:"maxCpu,omitempty"`
+	HourlyPrice              *float32                                                    `json:"hourlyPrice,omitempty"`
+	SourceImage              NullableGetClusterMasters200ResponseMastersInnerSourceImage `json:"sourceImage,omitempty"`
+	ServerOs                 NullableString                                              `json:"serverOs,omitempty"`
+	Volumes                  []GetClusterMasters200ResponseMastersInnerVolumesInner      `json:"volumes,omitempty"`
+	Controllers              []map[string]interface{}                                    `json:"controllers,omitempty"`
+	Interfaces               []GetClusterMasters200ResponseMastersInnerInterfacesInner   `json:"interfaces,omitempty"`
+	Labels                   []string                                                    `json:"labels,omitempty"`
+	Tags                     []GetClusterMasters200ResponseMastersInnerTagsInner         `json:"tags,omitempty"`
+	Enabled                  *bool                                                       `json:"enabled,omitempty"`
+	TagCompliant             NullableBool                                                `json:"tagCompliant,omitempty"`
+	Containers               []int64                                                     `json:"containers,omitempty"`
+	GuestConsolePreferred    *bool                                                       `json:"guestConsolePreferred,omitempty"`
+	GuestConsoleType         NullableString                                              `json:"guestConsoleType,omitempty"`
+	GuestConsoleUsername     NullableString                                              `json:"guestConsoleUsername,omitempty"`
+	GuestConsolePassword     NullableString                                              `json:"guestConsolePassword,omitempty"`
+	GuestConsolePasswordHash NullableString                                              `json:"guestConsolePasswordHash,omitempty"`
+	GuestConsolePort         NullableString                                              `json:"guestConsolePort,omitempty"`
+	AdditionalProperties     map[string]interface{}                                      `json:",remain"`
 }
 
 type _GetClusterMasters200ResponseMastersInner GetClusterMasters200ResponseMastersInner
@@ -145,8 +145,8 @@ func (o GetClusterMasters200ResponseMastersInner) ToMap() (map[string]interface{
 	if o.Zone.IsSet() {
 		toSerialize["zone"] = o.Zone.Get()
 	}
-	if !IsNil(o.Plan) {
-		toSerialize["plan"] = o.Plan
+	if o.Plan.IsSet() {
+		toSerialize["plan"] = o.Plan.Get()
 	}
 	if !IsNil(o.ComputeServerType) {
 		toSerialize["computeServerType"] = o.ComputeServerType
@@ -274,8 +274,8 @@ func (o GetClusterMasters200ResponseMastersInner) ToMap() (map[string]interface{
 	if !IsNil(o.HourlyPrice) {
 		toSerialize["hourlyPrice"] = o.HourlyPrice
 	}
-	if !IsNil(o.SourceImage) {
-		toSerialize["sourceImage"] = o.SourceImage
+	if o.SourceImage.IsSet() {
+		toSerialize["sourceImage"] = o.SourceImage.Get()
 	}
 	if o.ServerOs.IsSet() {
 		toSerialize["serverOs"] = o.ServerOs.Get()

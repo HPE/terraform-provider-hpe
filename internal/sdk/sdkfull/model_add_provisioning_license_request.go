@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,9 @@ var _ MappedNullable = &AddProvisioningLicenseRequest{}
 
 // AddProvisioningLicenseRequest struct for AddProvisioningLicenseRequest
 type AddProvisioningLicenseRequest struct {
-	License              *AddProvisioningLicenseRequestLicense `json:"license,omitempty"`
-	AdditionalProperties map[string]interface{}                `json:",remain"`
+	License              AddProvisioningLicenseRequestLicense            `json:"license"`
+	TenantPermissions    *AddProvisioningLicenseRequestTenantPermissions `json:"tenantPermissions,omitempty"`
+	AdditionalProperties map[string]interface{}                          `json:",remain"`
 }
 
 type _AddProvisioningLicenseRequest AddProvisioningLicenseRequest
@@ -38,8 +39,9 @@ func (o AddProvisioningLicenseRequest) MarshalJSON() ([]byte, error) {
 
 func (o AddProvisioningLicenseRequest) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.License) {
-		toSerialize["license"] = o.License
+	toSerialize["license"] = o.License
+	if !IsNil(o.TenantPermissions) {
+		toSerialize["tenantPermissions"] = o.TenantPermissions
 	}
 
 	for key, value := range o.AdditionalProperties {

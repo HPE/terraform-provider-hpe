@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,21 +20,23 @@ var _ MappedNullable = &AddRolesRequestRole{}
 
 // AddRolesRequestRole Payload for creating a new role
 type AddRolesRequestRole struct {
-	// Authority (Name)
+	// Authority (Name). Alias of `name`.
 	Authority string `json:"authority"`
+	// Alias for `authority`
+	Name *string `json:"name,omitempty"`
 	// Description
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
 	LandingUrl NullableString `json:"landingUrl,omitempty"`
 	// Role type
 	RoleType *string `json:"roleType,omitempty"`
-	// Base Role ID. Create the new role with the same permissions and access levels that the specified base role has. If this is not passed, the role is create without any permissions.
+	// Base Role ID. Create the new role with the same permissions and access levels as the specified base role. If omitted, the role is created without copied permissions.
 	BaseRoleId *int64 `json:"baseRoleId,omitempty"`
-	// Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant, only applies to user roles*
+	// Multitenant roles are copied to all tenant accounts and kept in sync until a sub-tenant user modifies their copy of the role. *Only available to master tenant, only applies to user roles*.
 	Multitenant *bool `json:"multitenant,omitempty"`
-	// Multitenant Locked, prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant, only applies to user roles*
-	MultitenantLocked *bool          `json:"multitenantLocked,omitempty"`
-	DefaultPersona    NullableString `json:"defaultPersona,omitempty"`
+	// Multitenant Locked, prevents sub-tenant users from modifying their copy of multitenant roles. *Only available to master tenant, only applies to user roles*.
+	MultitenantLocked *bool                                     `json:"multitenantLocked,omitempty"`
+	DefaultPersona    NullableAddRolesRequestRoleDefaultPersona `json:"defaultPersona,omitempty"`
 	// Set the access level for the specified permissions.
 	FeaturePermissions []AddRolesRequestRoleFeaturePermissionsInner `json:"featurePermissions,omitempty"`
 	// Set the default access level for for groups (sites). Only applies to user roles.
@@ -81,8 +83,12 @@ type AddRolesRequestRole struct {
 	GlobalClusterTypeAccess *string `json:"globalClusterTypeAccess,omitempty"`
 	// Set the access level for the specified cluster types
 	ClusterTypePermissions []AddRolesRequestRoleClusterTypePermissionsInner `json:"clusterTypePermissions,omitempty"`
-	// Set the role owner (tenant) by ID. *Only available to master tenant*
-	Owner                *int64                 `json:"owner,omitempty"`
+	// Set the role owner (tenant) by ID. *Only available to master tenant*. Aliases: `tenant`, `tenantId`.
+	Owner *int64 `json:"owner,omitempty"`
+	// Alias for `owner`
+	Tenant *int64 `json:"tenant,omitempty"`
+	// Alias for `owner` / `tenant` (accepted via `tenantId` field binding)
+	TenantId             *int64                 `json:"tenantId,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -99,6 +105,9 @@ func (o AddRolesRequestRole) MarshalJSON() ([]byte, error) {
 func (o AddRolesRequestRole) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	toSerialize["authority"] = o.Authority
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
@@ -191,6 +200,12 @@ func (o AddRolesRequestRole) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Owner) {
 		toSerialize["owner"] = o.Owner
+	}
+	if !IsNil(o.Tenant) {
+		toSerialize["tenant"] = o.Tenant
+	}
+	if !IsNil(o.TenantId) {
+		toSerialize["tenantId"] = o.TenantId
 	}
 
 	for key, value := range o.AdditionalProperties {

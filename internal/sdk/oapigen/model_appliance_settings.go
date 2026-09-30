@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,43 +20,70 @@ var _ MappedNullable = &ApplianceSettings{}
 
 // ApplianceSettings struct for ApplianceSettings
 type ApplianceSettings struct {
-	Uuid                      *string                                  `json:"uuid,omitempty"`
-	ApplianceId               *string                                  `json:"applianceId,omitempty"`
-	ApplianceUrl              *string                                  `json:"applianceUrl,omitempty"`
-	InternalApplianceUrl      *string                                  `json:"internalApplianceUrl,omitempty"`
-	CorsAllowed               *string                                  `json:"corsAllowed,omitempty"`
-	RegistrationEnabled       *bool                                    `json:"registrationEnabled,omitempty"`
-	DefaultRoleId             *string                                  `json:"defaultRoleId,omitempty"`
-	DefaultUserRoleId         NullableString                           `json:"defaultUserRoleId,omitempty"`
-	DockerPrivilegedMode      *bool                                    `json:"dockerPrivilegedMode,omitempty"`
-	ExpirePwdDays             NullableString                           `json:"expirePwdDays,omitempty"`
-	DisableAfterAttempts      NullableString                           `json:"disableAfterAttempts,omitempty"`
-	DisableAfterDaysInactive  NullableString                           `json:"disableAfterDaysInactive,omitempty"`
-	WarnUserDaysBefore        NullableString                           `json:"warnUserDaysBefore,omitempty"`
-	SmtpMailFrom              NullableString                           `json:"smtpMailFrom,omitempty"`
-	SmtpServer                NullableString                           `json:"smtpServer,omitempty"`
-	SmtpPort                  NullableString                           `json:"smtpPort,omitempty"`
-	SmtpSSL                   *bool                                    `json:"smtpSSL,omitempty"`
-	SmtpTLS                   *bool                                    `json:"smtpTLS,omitempty"`
-	SmtpUser                  NullableString                           `json:"smtpUser,omitempty"`
-	SmtpPassword              NullableString                           `json:"smtpPassword,omitempty"`
-	SmtpPasswordHash          NullableString                           `json:"smtpPasswordHash,omitempty"`
-	ProxyHost                 NullableString                           `json:"proxyHost,omitempty"`
-	ProxyPort                 NullableString                           `json:"proxyPort,omitempty"`
-	ProxyUser                 NullableString                           `json:"proxyUser,omitempty"`
-	ProxyPassword             NullableString                           `json:"proxyPassword,omitempty"`
-	ProxyPasswordHash         NullableString                           `json:"proxyPasswordHash,omitempty"`
-	ProxyDomain               NullableString                           `json:"proxyDomain,omitempty"`
-	ProxyWorkstation          NullableString                           `json:"proxyWorkstation,omitempty"`
-	CurrencyProvider          NullableString                           `json:"currencyProvider,omitempty"`
-	CurrencyKey               NullableString                           `json:"currencyKey,omitempty"`
-	EnabledZoneTypes          []ApplianceSettingsEnabledZoneTypesInner `json:"enabledZoneTypes,omitempty"`
-	StatsRetainmentPeriod     *int64                                   `json:"statsRetainmentPeriod,omitempty"`
-	DashboardsToDisplay       NullableString                           `json:"dashboardsToDisplay,omitempty"`
-	VmeAppliance              *bool                                    `json:"vmeAppliance,omitempty"`
-	LatestWindowsAgentVersion *string                                  `json:"latestWindowsAgentVersion,omitempty"`
-	LatestLinuxAgentVersion   *string                                  `json:"latestLinuxAgentVersion,omitempty"`
-	AdditionalProperties      map[string]interface{}                   `json:",remain"`
+	Uuid                       *string                                        `json:"uuid,omitempty"`
+	ApplianceId                *string                                        `json:"applianceId,omitempty"`
+	ApplianceUrl               *string                                        `json:"applianceUrl,omitempty"`
+	InternalApplianceUrl       *string                                        `json:"internalApplianceUrl,omitempty"`
+	CorsAllowed                *string                                        `json:"corsAllowed,omitempty"`
+	RegistrationEnabled        *bool                                          `json:"registrationEnabled,omitempty"`
+	DefaultRoleId              *string                                        `json:"defaultRoleId,omitempty"`
+	DefaultUserRoleId          NullableString                                 `json:"defaultUserRoleId,omitempty"`
+	DockerPrivilegedMode       *bool                                          `json:"dockerPrivilegedMode,omitempty"`
+	CloudSyncIntervalSeconds   NullableString                                 `json:"cloudSyncIntervalSeconds,omitempty"`
+	ClusterSyncIntervalSeconds NullableString                                 `json:"clusterSyncIntervalSeconds,omitempty"`
+	UsageRetainmentPeriod      NullableString                                 `json:"usageRetainmentPeriod,omitempty"`
+	InvoiceRetainmentPeriod    NullableString                                 `json:"invoiceRetainmentPeriod,omitempty"`
+	IncidentRetainmentPeriod   NullableString                                 `json:"incidentRetainmentPeriod,omitempty"`
+	StatsRetainmentPeriod      NullableApplianceSettingsStatsRetainmentPeriod `json:"statsRetainmentPeriod,omitempty"`
+	ReportsRetainmentPeriod    NullableString                                 `json:"reportsRetainmentPeriod,omitempty"`
+	HttpBlacklistHosts         NullableString                                 `json:"httpBlacklistHosts,omitempty"`
+	HttpApprovelistHosts       NullableString                                 `json:"httpApprovelistHosts,omitempty"`
+	ExchangeUrl                NullableString                                 `json:"exchangeUrl,omitempty"`
+	NoAgent                    *bool                                          `json:"noAgent,omitempty"`
+	AgentSSLVerify             *bool                                          `json:"agentSSLVerify,omitempty"`
+	DisableSSHPasswordAuth     *bool                                          `json:"disableSSHPasswordAuth,omitempty"`
+	DefaultLocale              NullableString                                 `json:"defaultLocale,omitempty"`
+	DefaultVdiGateway          NullableString                                 `json:"defaultVdiGateway,omitempty"`
+	MaxOptionListSize          NullableString                                 `json:"maxOptionListSize,omitempty"`
+	PasswordMinLength          NullableString                                 `json:"passwordMinLength,omitempty"`
+	PasswordMinUpperCase       NullableString                                 `json:"passwordMinUpperCase,omitempty"`
+	PasswordMinNumbers         NullableString                                 `json:"passwordMinNumbers,omitempty"`
+	PasswordMinSymbols         NullableString                                 `json:"passwordMinSymbols,omitempty"`
+	UserBrowserSessionTimeout  NullableString                                 `json:"userBrowserSessionTimeout,omitempty"`
+	UserBrowserSessionWarning  NullableString                                 `json:"userBrowserSessionWarning,omitempty"`
+	ExpirePwdDays              NullableString                                 `json:"expirePwdDays,omitempty"`
+	DisableAfterAttempts       NullableString                                 `json:"disableAfterAttempts,omitempty"`
+	DisableAfterDaysInactive   NullableString                                 `json:"disableAfterDaysInactive,omitempty"`
+	WarnUserDaysBefore         NullableString                                 `json:"warnUserDaysBefore,omitempty"`
+	SmtpMailFrom               NullableString                                 `json:"smtpMailFrom,omitempty"`
+	SmtpServer                 NullableString                                 `json:"smtpServer,omitempty"`
+	SmtpPort                   NullableString                                 `json:"smtpPort,omitempty"`
+	SmtpSSL                    *bool                                          `json:"smtpSSL,omitempty"`
+	SmtpTLS                    *bool                                          `json:"smtpTLS,omitempty"`
+	SmtpUser                   NullableString                                 `json:"smtpUser,omitempty"`
+	SmtpPassword               NullableString                                 `json:"smtpPassword,omitempty"`
+	SmtpPasswordHash           NullableString                                 `json:"smtpPasswordHash,omitempty"`
+	TwilioAccountSid           NullableString                                 `json:"twilioAccountSid,omitempty"`
+	TwilioSmsFrom              NullableString                                 `json:"twilioSmsFrom,omitempty"`
+	TwilioAuthToken            NullableString                                 `json:"twilioAuthToken,omitempty"`
+	ProxyHost                  NullableString                                 `json:"proxyHost,omitempty"`
+	ProxyPort                  NullableString                                 `json:"proxyPort,omitempty"`
+	ProxyUser                  NullableString                                 `json:"proxyUser,omitempty"`
+	ProxyPassword              NullableString                                 `json:"proxyPassword,omitempty"`
+	ProxyPasswordHash          NullableString                                 `json:"proxyPasswordHash,omitempty"`
+	ProxyDomain                NullableString                                 `json:"proxyDomain,omitempty"`
+	ProxyWorkstation           NullableString                                 `json:"proxyWorkstation,omitempty"`
+	NoProxy                    NullableString                                 `json:"noProxy,omitempty"`
+	CurrencyProvider           NullableString                                 `json:"currencyProvider,omitempty"`
+	CurrencyKey                NullableString                                 `json:"currencyKey,omitempty"`
+	MaintenanceMode            *bool                                          `json:"maintenanceMode,omitempty"`
+	EnabledZoneTypes           []ApplianceSettingsEnabledZoneTypesInner       `json:"enabledZoneTypes,omitempty"`
+	DashboardsToDisplay        NullableString                                 `json:"dashboardsToDisplay,omitempty"`
+	EnableMurph                *bool                                          `json:"enableMurph,omitempty"`
+	VmeAppliance               *bool                                          `json:"vmeAppliance,omitempty"`
+	LatestWindowsAgentVersion  *string                                        `json:"latestWindowsAgentVersion,omitempty"`
+	LatestLinuxAgentVersion    *string                                        `json:"latestLinuxAgentVersion,omitempty"`
+	AdditionalProperties       map[string]interface{}                         `json:",remain"`
 }
 
 type _ApplianceSettings ApplianceSettings
@@ -98,6 +125,72 @@ func (o ApplianceSettings) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.DockerPrivilegedMode) {
 		toSerialize["dockerPrivilegedMode"] = o.DockerPrivilegedMode
 	}
+	if o.CloudSyncIntervalSeconds.IsSet() {
+		toSerialize["cloudSyncIntervalSeconds"] = o.CloudSyncIntervalSeconds.Get()
+	}
+	if o.ClusterSyncIntervalSeconds.IsSet() {
+		toSerialize["clusterSyncIntervalSeconds"] = o.ClusterSyncIntervalSeconds.Get()
+	}
+	if o.UsageRetainmentPeriod.IsSet() {
+		toSerialize["usageRetainmentPeriod"] = o.UsageRetainmentPeriod.Get()
+	}
+	if o.InvoiceRetainmentPeriod.IsSet() {
+		toSerialize["invoiceRetainmentPeriod"] = o.InvoiceRetainmentPeriod.Get()
+	}
+	if o.IncidentRetainmentPeriod.IsSet() {
+		toSerialize["incidentRetainmentPeriod"] = o.IncidentRetainmentPeriod.Get()
+	}
+	if o.StatsRetainmentPeriod.IsSet() {
+		toSerialize["statsRetainmentPeriod"] = o.StatsRetainmentPeriod.Get()
+	}
+	if o.ReportsRetainmentPeriod.IsSet() {
+		toSerialize["reportsRetainmentPeriod"] = o.ReportsRetainmentPeriod.Get()
+	}
+	if o.HttpBlacklistHosts.IsSet() {
+		toSerialize["httpBlacklistHosts"] = o.HttpBlacklistHosts.Get()
+	}
+	if o.HttpApprovelistHosts.IsSet() {
+		toSerialize["httpApprovelistHosts"] = o.HttpApprovelistHosts.Get()
+	}
+	if o.ExchangeUrl.IsSet() {
+		toSerialize["exchangeUrl"] = o.ExchangeUrl.Get()
+	}
+	if !IsNil(o.NoAgent) {
+		toSerialize["noAgent"] = o.NoAgent
+	}
+	if !IsNil(o.AgentSSLVerify) {
+		toSerialize["agentSSLVerify"] = o.AgentSSLVerify
+	}
+	if !IsNil(o.DisableSSHPasswordAuth) {
+		toSerialize["disableSSHPasswordAuth"] = o.DisableSSHPasswordAuth
+	}
+	if o.DefaultLocale.IsSet() {
+		toSerialize["defaultLocale"] = o.DefaultLocale.Get()
+	}
+	if o.DefaultVdiGateway.IsSet() {
+		toSerialize["defaultVdiGateway"] = o.DefaultVdiGateway.Get()
+	}
+	if o.MaxOptionListSize.IsSet() {
+		toSerialize["maxOptionListSize"] = o.MaxOptionListSize.Get()
+	}
+	if o.PasswordMinLength.IsSet() {
+		toSerialize["passwordMinLength"] = o.PasswordMinLength.Get()
+	}
+	if o.PasswordMinUpperCase.IsSet() {
+		toSerialize["passwordMinUpperCase"] = o.PasswordMinUpperCase.Get()
+	}
+	if o.PasswordMinNumbers.IsSet() {
+		toSerialize["passwordMinNumbers"] = o.PasswordMinNumbers.Get()
+	}
+	if o.PasswordMinSymbols.IsSet() {
+		toSerialize["passwordMinSymbols"] = o.PasswordMinSymbols.Get()
+	}
+	if o.UserBrowserSessionTimeout.IsSet() {
+		toSerialize["userBrowserSessionTimeout"] = o.UserBrowserSessionTimeout.Get()
+	}
+	if o.UserBrowserSessionWarning.IsSet() {
+		toSerialize["userBrowserSessionWarning"] = o.UserBrowserSessionWarning.Get()
+	}
 	if o.ExpirePwdDays.IsSet() {
 		toSerialize["expirePwdDays"] = o.ExpirePwdDays.Get()
 	}
@@ -134,6 +227,15 @@ func (o ApplianceSettings) ToMap() (map[string]interface{}, error) {
 	if o.SmtpPasswordHash.IsSet() {
 		toSerialize["smtpPasswordHash"] = o.SmtpPasswordHash.Get()
 	}
+	if o.TwilioAccountSid.IsSet() {
+		toSerialize["twilioAccountSid"] = o.TwilioAccountSid.Get()
+	}
+	if o.TwilioSmsFrom.IsSet() {
+		toSerialize["twilioSmsFrom"] = o.TwilioSmsFrom.Get()
+	}
+	if o.TwilioAuthToken.IsSet() {
+		toSerialize["twilioAuthToken"] = o.TwilioAuthToken.Get()
+	}
 	if o.ProxyHost.IsSet() {
 		toSerialize["proxyHost"] = o.ProxyHost.Get()
 	}
@@ -155,20 +257,26 @@ func (o ApplianceSettings) ToMap() (map[string]interface{}, error) {
 	if o.ProxyWorkstation.IsSet() {
 		toSerialize["proxyWorkstation"] = o.ProxyWorkstation.Get()
 	}
+	if o.NoProxy.IsSet() {
+		toSerialize["noProxy"] = o.NoProxy.Get()
+	}
 	if o.CurrencyProvider.IsSet() {
 		toSerialize["currencyProvider"] = o.CurrencyProvider.Get()
 	}
 	if o.CurrencyKey.IsSet() {
 		toSerialize["currencyKey"] = o.CurrencyKey.Get()
 	}
+	if !IsNil(o.MaintenanceMode) {
+		toSerialize["maintenanceMode"] = o.MaintenanceMode
+	}
 	if o.EnabledZoneTypes != nil {
 		toSerialize["enabledZoneTypes"] = o.EnabledZoneTypes
 	}
-	if !IsNil(o.StatsRetainmentPeriod) {
-		toSerialize["statsRetainmentPeriod"] = o.StatsRetainmentPeriod
-	}
 	if o.DashboardsToDisplay.IsSet() {
 		toSerialize["dashboardsToDisplay"] = o.DashboardsToDisplay.Get()
+	}
+	if !IsNil(o.EnableMurph) {
+		toSerialize["enableMurph"] = o.EnableMurph
 	}
 	if !IsNil(o.VmeAppliance) {
 		toSerialize["vmeAppliance"] = o.VmeAppliance

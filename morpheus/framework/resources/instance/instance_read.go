@@ -421,7 +421,11 @@ func getInstanceAsState(
 	state.UserGroup = userGroupId
 
 	// plan_id
-	state.PlanId = convert.Int64ToType(instance.Plan.Id)
+	if plan := instance.Plan.Get(); plan != nil {
+		state.PlanId = convert.Int64ToType(plan.Id)
+	} else {
+		state.PlanId = types.Int64Null()
+	}
 
 	// ports
 	// Ports are carried from the plan rather than read from the API. They are

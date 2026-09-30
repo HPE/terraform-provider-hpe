@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,20 +20,20 @@ import (
 // checks if the GetUserPermissions200ResponseAccess type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &GetUserPermissions200ResponseAccess{}
 
-// GetUserPermissions200ResponseAccess struct for GetUserPermissions200ResponseAccess
+// GetUserPermissions200ResponseAccess Full access map returned by GET /api/users/{id}/permissions and optionally embedded on user when includeAccess=true
 type GetUserPermissions200ResponseAccess struct {
-	Features             []map[string]interface{} `json:"features,omitempty"`
-	Zones                []map[string]interface{} `json:"zones,omitempty"`
-	Sites                []map[string]interface{} `json:"sites,omitempty"`
-	InstanceTypes        []map[string]interface{} `json:"instanceTypes,omitempty"`
-	AppTemplates         []map[string]interface{} `json:"appTemplates,omitempty"`
-	CatalogItemTypes     []map[string]interface{} `json:"catalogItemTypes,omitempty"`
-	Personas             []map[string]interface{} `json:"personas,omitempty"`
-	VdiPools             []map[string]interface{} `json:"vdiPools,omitempty"`
-	ReportTypes          []map[string]interface{} `json:"reportTypes,omitempty"`
-	Tasks                []map[string]interface{} `json:"tasks,omitempty"`
-	TaskSets             []map[string]interface{} `json:"taskSets,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Features             []GetUserPermissions200ResponseAccessFeaturesInner         `json:"features,omitempty"`
+	Zones                []GetUserPermissions200ResponseAccessZonesInner            `json:"zones,omitempty"`
+	Sites                []GetUserPermissions200ResponseAccessSitesInner            `json:"sites,omitempty"`
+	InstanceTypes        []GetUserPermissions200ResponseAccessInstanceTypesInner    `json:"instanceTypes,omitempty"`
+	AppTemplates         []GetUserPermissions200ResponseAccessAppTemplatesInner     `json:"appTemplates,omitempty"`
+	CatalogItemTypes     []GetUserPermissions200ResponseAccessCatalogItemTypesInner `json:"catalogItemTypes,omitempty"`
+	Personas             []GetUserPermissions200ResponseAccessPersonasInner         `json:"personas,omitempty"`
+	VdiPools             []GetUserPermissions200ResponseAccessVdiPoolsInner         `json:"vdiPools,omitempty"`
+	ReportTypes          []GetUserPermissions200ResponseAccessReportTypesInner      `json:"reportTypes,omitempty"`
+	Tasks                []GetUserPermissions200ResponseAccessTasksInner            `json:"tasks,omitempty"`
+	TaskSets             []GetUserPermissions200ResponseAccessTaskSetsInner         `json:"taskSets,omitempty"`
+	AdditionalProperties map[string]interface{}                                     `json:",remain"`
 }
 
 type _GetUserPermissions200ResponseAccess GetUserPermissions200ResponseAccess

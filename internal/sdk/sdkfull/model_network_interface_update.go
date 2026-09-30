@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,10 @@ var _ MappedNullable = &NetworkInterfaceUpdate{}
 
 // NetworkInterfaceUpdate struct for NetworkInterfaceUpdate
 type NetworkInterfaceUpdate struct {
-	// Desired Name for the Network Interface
-	Name                 *string                `json:"name,omitempty"`
+	// Desired Name for the Network Interface. Optional.
+	Name *string `json:"name,omitempty"`
+	// Optional. Controls the NIC link status. Setting to true brings the network interface link status up (connected); setting to false brings the link status down (disconnected).
+	Connected            *bool                  `json:"connected,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -41,6 +43,9 @@ func (o NetworkInterfaceUpdate) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Connected) {
+		toSerialize["connected"] = o.Connected
 	}
 
 	for key, value := range o.AdditionalProperties {

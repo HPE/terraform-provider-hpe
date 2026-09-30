@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListClusterVolumes200ResponseAllOfVolumesInnerType) ToMap() (map[string]
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListClusterVolumes200ResponseAllOfVolumesInnerType struct {
+	value *ListClusterVolumes200ResponseAllOfVolumesInnerType
+	isSet bool
+}
+
+func (v NullableListClusterVolumes200ResponseAllOfVolumesInnerType) Get() *ListClusterVolumes200ResponseAllOfVolumesInnerType {
+	return v.value
+}
+
+func (v *NullableListClusterVolumes200ResponseAllOfVolumesInnerType) Set(val *ListClusterVolumes200ResponseAllOfVolumesInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListClusterVolumes200ResponseAllOfVolumesInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListClusterVolumes200ResponseAllOfVolumesInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListClusterVolumes200ResponseAllOfVolumesInnerType(val *ListClusterVolumes200ResponseAllOfVolumesInnerType) *NullableListClusterVolumes200ResponseAllOfVolumesInnerType {
+	return &NullableListClusterVolumes200ResponseAllOfVolumesInnerType{value: val, isSet: true}
+}
+
+func (v NullableListClusterVolumes200ResponseAllOfVolumesInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListClusterVolumes200ResponseAllOfVolumesInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListClusterVolumes200ResponseAllOfVolumesInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListClusterVolumes200ResponseAllOfVolumesInnerType) UnmarshalJSON(data []byte) (err error) {

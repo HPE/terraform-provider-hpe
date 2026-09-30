@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -53,6 +53,51 @@ func (o ListLoadBalancers200ResponseAllOfLoadBalancersInnerType) ToMap() (map[st
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType struct {
+	value *ListLoadBalancers200ResponseAllOfLoadBalancersInnerType
+	isSet bool
+}
+
+func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) Get() *ListLoadBalancers200ResponseAllOfLoadBalancersInnerType {
+	return v.value
+}
+
+func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) Set(val *ListLoadBalancers200ResponseAllOfLoadBalancersInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType(val *ListLoadBalancers200ResponseAllOfLoadBalancersInnerType) *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType {
+	return &NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType{value: val, isSet: true}
+}
+
+func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListLoadBalancers200ResponseAllOfLoadBalancersInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListLoadBalancers200ResponseAllOfLoadBalancersInnerType) UnmarshalJSON(data []byte) (err error) {

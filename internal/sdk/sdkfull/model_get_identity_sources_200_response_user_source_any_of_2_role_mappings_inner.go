@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,8 @@ var _ MappedNullable = &GetIdentitySources200ResponseUserSourceAnyOf2RoleMapping
 
 // GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInner struct for GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInner
 type GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInner struct {
-	SourceRoleName       *string                                                                   `json:"sourceRoleName,omitempty"`
-	SourceRoleFqn        *string                                                                   `json:"sourceRoleFqn,omitempty"`
+	SourceRoleName       NullableString                                                            `json:"sourceRoleName,omitempty"`
+	SourceRoleFqn        NullableString                                                            `json:"sourceRoleFqn,omitempty"`
 	MappedRole           *GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInnerMappedRole `json:"mappedRole,omitempty"`
 	AdditionalProperties map[string]interface{}                                                    `json:",remain"`
 }
@@ -40,11 +40,11 @@ func (o GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInner) MarshalJ
 
 func (o GetIdentitySources200ResponseUserSourceAnyOf2RoleMappingsInner) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.SourceRoleName) {
-		toSerialize["sourceRoleName"] = o.SourceRoleName
+	if o.SourceRoleName.IsSet() {
+		toSerialize["sourceRoleName"] = o.SourceRoleName.Get()
 	}
-	if !IsNil(o.SourceRoleFqn) {
-		toSerialize["sourceRoleFqn"] = o.SourceRoleFqn
+	if o.SourceRoleFqn.IsSet() {
+		toSerialize["sourceRoleFqn"] = o.SourceRoleFqn.Get()
 	}
 	if !IsNil(o.MappedRole) {
 		toSerialize["mappedRole"] = o.MappedRole

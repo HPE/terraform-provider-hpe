@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,29 +23,29 @@ var _ MappedNullable = &GetNetworkRouters200ResponseNetworkRoutersInner{}
 
 // GetNetworkRouters200ResponseNetworkRoutersInner struct for GetNetworkRouters200ResponseNetworkRoutersInner
 type GetNetworkRouters200ResponseNetworkRoutersInner struct {
-	Id                   *int64                                                           `json:"id,omitempty"`
-	Code                 *string                                                          `json:"code,omitempty"`
-	Name                 *string                                                          `json:"name,omitempty"`
-	Description          NullableString                                                   `json:"description,omitempty"`
-	Category             *string                                                          `json:"category,omitempty"`
-	DateCreated          *time.Time                                                       `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                                       `json:"lastUpdated,omitempty"`
-	RouterType           *string                                                          `json:"routerType,omitempty"`
-	Status               *string                                                          `json:"status,omitempty"`
-	Enabled              *bool                                                            `json:"enabled,omitempty"`
-	EnableBgp            *bool                                                            `json:"enableBgp,omitempty"`
-	ExternalIp           NullableString                                                   `json:"externalIp,omitempty"`
-	ExternalId           *string                                                          `json:"externalId,omitempty"`
-	ProviderId           NullableString                                                   `json:"providerId,omitempty"`
-	Type                 *GetNetworkRouters200ResponseNetworkRoutersInnerType             `json:"type,omitempty"`
-	NetworkServer        *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer    `json:"networkServer,omitempty"`
-	Zone                 *GetNetworkRouters200ResponseNetworkRoutersInnerZone             `json:"zone,omitempty"`
-	Instance             NullableString                                                   `json:"instance,omitempty"`
-	ExternalNetwork      *GetNetworkRouters200ResponseNetworkRoutersInnerExternalNetwork  `json:"externalNetwork,omitempty"`
-	Site                 *GetNetworkRouters200ResponseNetworkRoutersInnerSite             `json:"site,omitempty"`
-	Interfaces           []GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner `json:"interfaces,omitempty"`
-	Config               map[string]interface{}                                           `json:"config,omitempty"`
-	AdditionalProperties map[string]interface{}                                           `json:",remain"`
+	Id                   *int64                                                                 `json:"id,omitempty"`
+	Code                 *string                                                                `json:"code,omitempty"`
+	Name                 *string                                                                `json:"name,omitempty"`
+	Description          NullableString                                                         `json:"description,omitempty"`
+	Category             *string                                                                `json:"category,omitempty"`
+	DateCreated          *time.Time                                                             `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                                             `json:"lastUpdated,omitempty"`
+	RouterType           *string                                                                `json:"routerType,omitempty"`
+	Status               *string                                                                `json:"status,omitempty"`
+	Enabled              *bool                                                                  `json:"enabled,omitempty"`
+	EnableBgp            *bool                                                                  `json:"enableBgp,omitempty"`
+	ExternalIp           NullableString                                                         `json:"externalIp,omitempty"`
+	ExternalId           *string                                                                `json:"externalId,omitempty"`
+	ProviderId           NullableString                                                         `json:"providerId,omitempty"`
+	Type                 *GetNetworkRouters200ResponseNetworkRoutersInnerType                   `json:"type,omitempty"`
+	NetworkServer        *GetNetworkRouters200ResponseNetworkRoutersInnerNetworkServer          `json:"networkServer,omitempty"`
+	Zone                 NullableGetNetworkRouters200ResponseNetworkRoutersInnerZone            `json:"zone,omitempty"`
+	Instance             NullableString                                                         `json:"instance,omitempty"`
+	ExternalNetwork      NullableGetNetworkRouters200ResponseNetworkRoutersInnerExternalNetwork `json:"externalNetwork,omitempty"`
+	Site                 *GetNetworkRouters200ResponseNetworkRoutersInnerSite                   `json:"site,omitempty"`
+	Interfaces           []GetNetworkRouters200ResponseNetworkRoutersInnerInterfacesInner       `json:"interfaces,omitempty"`
+	Config               map[string]interface{}                                                 `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}                                                 `json:",remain"`
 }
 
 type _GetNetworkRouters200ResponseNetworkRoutersInner GetNetworkRouters200ResponseNetworkRoutersInner
@@ -108,14 +108,14 @@ func (o GetNetworkRouters200ResponseNetworkRoutersInner) ToMap() (map[string]int
 	if !IsNil(o.NetworkServer) {
 		toSerialize["networkServer"] = o.NetworkServer
 	}
-	if !IsNil(o.Zone) {
-		toSerialize["zone"] = o.Zone
+	if o.Zone.IsSet() {
+		toSerialize["zone"] = o.Zone.Get()
 	}
 	if o.Instance.IsSet() {
 		toSerialize["instance"] = o.Instance.Get()
 	}
-	if !IsNil(o.ExternalNetwork) {
-		toSerialize["externalNetwork"] = o.ExternalNetwork
+	if o.ExternalNetwork.IsSet() {
+		toSerialize["externalNetwork"] = o.ExternalNetwork.Get()
 	}
 	if !IsNil(o.Site) {
 		toSerialize["site"] = o.Site

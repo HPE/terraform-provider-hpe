@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,21 +22,21 @@ var _ MappedNullable = &HealthDatabase{}
 
 // HealthDatabase struct for HealthDatabase
 type HealthDatabase struct {
-	Success              *bool                            `json:"success,omitempty"`
-	ConnectionList       []map[string]interface{}         `json:"connectionList,omitempty"`
-	BusyConnections      []*string                        `json:"busyConnections,omitempty"`
-	MaxConnections       *int64                           `json:"maxConnections,omitempty"`
-	MaxUsedConnections   *int64                           `json:"maxUsedConnections,omitempty"`
-	UsedConnections      *int64                           `json:"usedConnections,omitempty"`
-	AbortedConnections   *int64                           `json:"abortedConnections,omitempty"`
-	InnodbStatus         NullableString                   `json:"innodbStatus,omitempty"`
-	Stats                *HealthDatabaseStats             `json:"stats,omitempty"`
-	Scans                *HealthDatabaseScans             `json:"scans,omitempty"`
-	SlowQueries          []HealthDatabaseSlowQueriesInner `json:"slowQueries,omitempty"`
-	InnodbStats          *HealthDatabaseInnodbStats       `json:"innodbStats,omitempty"`
-	ScanPercent          *float32                         `json:"scanPercent,omitempty"`
-	Status               *string                          `json:"status,omitempty"`
-	AdditionalProperties map[string]interface{}           `json:",remain"`
+	Success              *bool                                                    `json:"success,omitempty"`
+	ConnectionList       []map[string]interface{}                                 `json:"connectionList,omitempty"`
+	BusyConnections      []*string                                                `json:"busyConnections,omitempty"`
+	MaxConnections       *int64                                                   `json:"maxConnections,omitempty"`
+	MaxUsedConnections   *int64                                                   `json:"maxUsedConnections,omitempty"`
+	UsedConnections      *int64                                                   `json:"usedConnections,omitempty"`
+	AbortedConnections   *int64                                                   `json:"abortedConnections,omitempty"`
+	InnodbStatus         NullableString                                           `json:"innodbStatus,omitempty"`
+	Stats                *GetLiveHealth200ResponseHealthDatabaseStats             `json:"stats,omitempty"`
+	Scans                *GetLiveHealth200ResponseHealthDatabaseScans             `json:"scans,omitempty"`
+	SlowQueries          []GetLiveHealth200ResponseHealthDatabaseSlowQueriesInner `json:"slowQueries,omitempty"`
+	InnodbStats          *GetLiveHealth200ResponseHealthDatabaseInnodbStats       `json:"innodbStats,omitempty"`
+	ScanPercent          *float32                                                 `json:"scanPercent,omitempty"`
+	Status               *string                                                  `json:"status,omitempty"`
+	AdditionalProperties map[string]interface{}                                   `json:",remain"`
 }
 
 type _HealthDatabase HealthDatabase

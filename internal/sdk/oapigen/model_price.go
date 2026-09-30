@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,28 +20,28 @@ var _ MappedNullable = &Price{}
 
 // Price struct for Price
 type Price struct {
-	Id                   *int64                                    `json:"id,omitempty"`
-	Name                 *string                                   `json:"name,omitempty"`
-	Code                 *string                                   `json:"code,omitempty"`
-	Active               *bool                                     `json:"active,omitempty"`
-	PriceType            *string                                   `json:"priceType,omitempty"`
-	PriceUnit            *string                                   `json:"priceUnit,omitempty"`
-	AdditionalPriceUnit  NullableString                            `json:"additionalPriceUnit,omitempty"`
-	Price                NullableFloat32                           `json:"price,omitempty"`
-	CustomPrice          NullableFloat32                           `json:"customPrice,omitempty"`
-	MarkupType           NullableString                            `json:"markupType,omitempty"`
-	Markup               NullableFloat32                           `json:"markup,omitempty"`
-	MarkupPercent        NullableFloat32                           `json:"markupPercent,omitempty"`
-	Cost                 NullableFloat32                           `json:"cost,omitempty"`
-	Currency             *string                                   `json:"currency,omitempty"`
-	IncurCharges         *string                                   `json:"incurCharges,omitempty"`
-	Platform             NullableString                            `json:"platform,omitempty"`
-	Software             NullableString                            `json:"software,omitempty"`
-	VolumeType           *AddPrices200ResponseAllOfPriceVolumeType `json:"volumeType,omitempty"`
-	Datastore            *AddPrices200ResponseAllOfPriceDatastore  `json:"datastore,omitempty"`
-	CrossCloudApply      NullableBool                              `json:"crossCloudApply,omitempty"`
-	Account              NullableString                            `json:"account,omitempty"`
-	AdditionalProperties map[string]interface{}                    `json:",remain"`
+	Id                   *int64                               `json:"id,omitempty"`
+	Name                 *string                              `json:"name,omitempty"`
+	Code                 *string                              `json:"code,omitempty"`
+	Active               *bool                                `json:"active,omitempty"`
+	PriceType            *string                              `json:"priceType,omitempty"`
+	PriceUnit            *string                              `json:"priceUnit,omitempty"`
+	AdditionalPriceUnit  NullableString                       `json:"additionalPriceUnit,omitempty"`
+	Price                NullableFloat32                      `json:"price,omitempty"`
+	CustomPrice          NullableFloat32                      `json:"customPrice,omitempty"`
+	MarkupType           NullableString                       `json:"markupType,omitempty"`
+	Markup               NullableFloat32                      `json:"markup,omitempty"`
+	MarkupPercent        NullableFloat32                      `json:"markupPercent,omitempty"`
+	Cost                 NullableFloat32                      `json:"cost,omitempty"`
+	Currency             *string                              `json:"currency,omitempty"`
+	IncurCharges         *string                              `json:"incurCharges,omitempty"`
+	Platform             NullableString                       `json:"platform,omitempty"`
+	Software             NullableString                       `json:"software,omitempty"`
+	VolumeType           *GetPrices200ResponsePriceVolumeType `json:"volumeType,omitempty"`
+	Datastore            *GetPrices200ResponsePriceDatastore  `json:"datastore,omitempty"`
+	CrossCloudApply      NullableBool                         `json:"crossCloudApply,omitempty"`
+	Account              *GetPrices200ResponsePriceAccount    `json:"account,omitempty"`
+	AdditionalProperties map[string]interface{}               `json:",remain"`
 }
 
 type _Price Price
@@ -116,8 +116,8 @@ func (o Price) ToMap() (map[string]interface{}, error) {
 	if o.CrossCloudApply.IsSet() {
 		toSerialize["crossCloudApply"] = o.CrossCloudApply.Get()
 	}
-	if o.Account.IsSet() {
-		toSerialize["account"] = o.Account.Get()
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 
 	for key, value := range o.AdditionalProperties {

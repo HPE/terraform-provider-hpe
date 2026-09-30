@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -29,12 +29,19 @@ type ApiAddUserRequest struct {
 	ctx            context.Context
 	ApiService     *UsersAPIService
 	accountId      *int64
+	tenantId       *int64
 	addUserRequest *AddUserRequest
 }
 
 // Tenant ID, create user in a sub tenant account instead of your own.
 func (r ApiAddUserRequest) AccountId(accountId int64) ApiAddUserRequest {
 	r.accountId = &accountId
+	return r
+}
+
+// Alias of &#x60;accountId&#x60; for target tenant when creating a user.
+func (r ApiAddUserRequest) TenantId(tenantId int64) ApiAddUserRequest {
+	r.tenantId = &tenantId
 	return r
 }
 
@@ -51,6 +58,14 @@ func (r ApiAddUserRequest) Execute() (*AddUser200Response, *http.Response, error
 AddUser Create a New User
 
 Create a new user.
+
+Password confirmation fields (`passwordConfirmation`, `linuxPasswordConfirmation`,
+`windowsPasswordConfirmation`) are optional for API callers. If a password is supplied
+and the matching confirmation key is omitted entirely, the API auto-confirms it.
+An explicitly provided confirmation value (including empty string) is validated as-is.
+
+Tenant may be selected with query `accountId` or `tenantId` (master-tenant users with
+`admin-accounts` only). Nested route `POST /api/accounts/{accountId}/users` is equivalent.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiAddUserRequest
@@ -86,6 +101,9 @@ func (a *UsersAPIService) AddUserExecute(r ApiAddUserRequest) (*AddUser200Respon
 
 	if r.accountId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "accountId", r.accountId, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
@@ -128,7 +146,7 @@ func (a *UsersAPIService) AddUserExecute(r ApiAddUserRequest) (*AddUser200Respon
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -139,7 +157,7 @@ func (a *UsersAPIService) AddUserExecute(r ApiAddUserRequest) (*AddUser200Respon
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -167,6 +185,20 @@ type ApiDeleteUserRequest struct {
 	ctx        context.Context
 	ApiService *UsersAPIService
 	id         int64
+	accountId  *int64
+	tenantId   *int64
+}
+
+// Scope delete to a tenant (alias &#x60;tenantId&#x60; also accepted).
+func (r ApiDeleteUserRequest) AccountId(accountId int64) ApiDeleteUserRequest {
+	r.accountId = &accountId
+	return r
+}
+
+// Alias of &#x60;accountId&#x60; for tenant-scoped user delete.
+func (r ApiDeleteUserRequest) TenantId(tenantId int64) ApiDeleteUserRequest {
+	r.tenantId = &tenantId
+	return r
 }
 
 func (r ApiDeleteUserRequest) Execute() (*DeleteUser200Response, *http.Response, error) {
@@ -213,6 +245,12 @@ func (a *UsersAPIService) DeleteUserExecute(r ApiDeleteUserRequest) (*DeleteUser
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.accountId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "accountId", r.accountId, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -252,7 +290,7 @@ func (a *UsersAPIService) DeleteUserExecute(r ApiDeleteUserRequest) (*DeleteUser
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -263,7 +301,7 @@ func (a *UsersAPIService) DeleteUserExecute(r ApiDeleteUserRequest) (*DeleteUser
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -292,11 +330,25 @@ type ApiGetUserRequest struct {
 	ApiService    *UsersAPIService
 	id            int64
 	includeAccess *bool
+	accountId     *int64
+	tenantId      *int64
 }
 
 // Include &#x60;access&#x60; information in the response. This is the permissions, clouds, instanceTypes, etc. that the user is authorized for based on their assigned Role(s).
 func (r ApiGetUserRequest) IncludeAccess(includeAccess bool) ApiGetUserRequest {
 	r.includeAccess = &includeAccess
+	return r
+}
+
+// Scope lookup to a tenant (alias &#x60;tenantId&#x60; also accepted).
+func (r ApiGetUserRequest) AccountId(accountId int64) ApiGetUserRequest {
+	r.accountId = &accountId
+	return r
+}
+
+// Alias of &#x60;accountId&#x60; for tenant-scoped user lookup.
+func (r ApiGetUserRequest) TenantId(tenantId int64) ApiGetUserRequest {
+	r.tenantId = &tenantId
 	return r
 }
 
@@ -307,7 +359,8 @@ func (r ApiGetUserRequest) Execute() (*GetUser200Response, *http.Response, error
 /*
 GetUser Get a Specific User
 
-This endpoint will retrieve a specific user by id if the user has permission to access the user.
+Retrieve a specific user by id if the caller has permission to access the user.
+Pass `includeAccess=true` to embed the full access map on the user object.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -347,6 +400,12 @@ func (a *UsersAPIService) GetUserExecute(r ApiGetUserRequest) (*GetUser200Respon
 	if r.includeAccess != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "includeAccess", r.includeAccess, "form", "")
 	}
+	if r.accountId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "accountId", r.accountId, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -386,7 +445,7 @@ func (a *UsersAPIService) GetUserExecute(r ApiGetUserRequest) (*GetUser200Respon
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -397,7 +456,7 @@ func (a *UsersAPIService) GetUserExecute(r ApiGetUserRequest) (*GetUser200Respon
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -422,19 +481,25 @@ func (a *UsersAPIService) GetUserExecute(r ApiGetUserRequest) (*GetUser200Respon
 }
 
 type ApiListUsersRequest struct {
-	ctx         context.Context
-	ApiService  *UsersAPIService
-	max         *int64
-	offset      *int64
-	sort        *string
-	direction   *string
-	phrase      *string
-	username    *string
-	email       *string
-	roleId      *int64
-	lastUpdated *time.Time
-	accountId   *int64
-	global      *bool
+	ctx            context.Context
+	ApiService     *UsersAPIService
+	max            *int64
+	offset         *int64
+	sort           *string
+	direction      *string
+	phrase         *string
+	username       *string
+	email          *string
+	roleId         *int64
+	role           *string
+	authority      *string
+	accountId      *int64
+	tenantId       *int64
+	global         *bool
+	includeTenants *bool
+	lastLoginDate  *time.Time
+	dateCreated    *time.Time
+	lastUpdated    *time.Time
 }
 
 // Maximum number of records to return
@@ -461,7 +526,7 @@ func (r ApiListUsersRequest) Direction(direction string) ApiListUsersRequest {
 	return r
 }
 
-// Search phrase for partial matches on username or email
+// Search phrase for partial matches on username, email, first name, or last name. Multi-word phrases also attempt first name + last name matching.
 func (r ApiListUsersRequest) Phrase(phrase string) ApiListUsersRequest {
 	r.phrase = &phrase
 	return r
@@ -485,9 +550,15 @@ func (r ApiListUsersRequest) RoleId(roleId int64) ApiListUsersRequest {
 	return r
 }
 
-// Date filter, restricts query to only load resources updated more recently than the date specified (ISO 8601)
-func (r ApiListUsersRequest) LastUpdated(lastUpdated time.Time) ApiListUsersRequest {
-	r.lastUpdated = &lastUpdated
+// Filter by Role authority (supports multiple values)
+func (r ApiListUsersRequest) Role(role string) ApiListUsersRequest {
+	r.role = &role
+	return r
+}
+
+// Filter by role authority (alias of &#x60;role&#x60;; supports multiple values)
+func (r ApiListUsersRequest) Authority(authority string) ApiListUsersRequest {
+	r.authority = &authority
 	return r
 }
 
@@ -497,9 +568,39 @@ func (r ApiListUsersRequest) AccountId(accountId int64) ApiListUsersRequest {
 	return r
 }
 
+// Filter by Tenant ID (alias of &#x60;accountId&#x60;). Master-tenant users with tenant access only.
+func (r ApiListUsersRequest) TenantId(tenantId int64) ApiListUsersRequest {
+	r.tenantId = &tenantId
+	return r
+}
+
 // Global (All Tenants), load users from all tenants. The default is to only see your own tenant. This is only available to master tenant users with permission to manage tenants and users.
 func (r ApiListUsersRequest) Global(global bool) ApiListUsersRequest {
 	r.global = &global
+	return r
+}
+
+// Alias of &#x60;global&#x60;. Include users across tenants when permitted.
+func (r ApiListUsersRequest) IncludeTenants(includeTenants bool) ApiListUsersRequest {
+	r.includeTenants = &includeTenants
+	return r
+}
+
+// Filter users with last login on or after this date
+func (r ApiListUsersRequest) LastLoginDate(lastLoginDate time.Time) ApiListUsersRequest {
+	r.lastLoginDate = &lastLoginDate
+	return r
+}
+
+// Date filter accepted by the API (applied as a lower bound on last login date)
+func (r ApiListUsersRequest) DateCreated(dateCreated time.Time) ApiListUsersRequest {
+	r.dateCreated = &dateCreated
+	return r
+}
+
+// Date filter, restricts query to only load resources updated more recently than the date specified (ISO 8601)
+func (r ApiListUsersRequest) LastUpdated(lastUpdated time.Time) ApiListUsersRequest {
+	r.lastUpdated = &lastUpdated
 	return r
 }
 
@@ -510,7 +611,7 @@ func (r ApiListUsersRequest) Execute() (*ListUsers200Response, *http.Response, e
 /*
 ListUsers List All Users
 
-This endpoint retrieves all users in the current user's tenant account. Master tenant users with permission to manage subtenants can use `global=true` to find users across all tenants.
+This endpoint retrieves all users in the current user's tenant account. Master tenant users with permission to manage subtenants can use `global=true` (or `includeTenants=true`) to find users across tenants.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@return ApiListUsersRequest
@@ -577,17 +678,38 @@ func (a *UsersAPIService) ListUsersExecute(r ApiListUsersRequest) (*ListUsers200
 	if r.roleId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "roleId", r.roleId, "form", "")
 	}
-	if r.lastUpdated != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "lastUpdated", r.lastUpdated, "form", "")
+	if r.role != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "role", r.role, "form", "")
+	}
+	if r.authority != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "authority", r.authority, "form", "")
 	}
 	if r.accountId != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "accountId", r.accountId, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
 	}
 	if r.global != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "global", r.global, "form", "")
 	} else {
 		var defaultValue bool = false
 		r.global = &defaultValue
+	}
+	if r.includeTenants != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "includeTenants", r.includeTenants, "form", "")
+	} else {
+		var defaultValue bool = false
+		r.includeTenants = &defaultValue
+	}
+	if r.lastLoginDate != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "lastLoginDate", r.lastLoginDate, "form", "")
+	}
+	if r.dateCreated != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "dateCreated", r.dateCreated, "form", "")
+	}
+	if r.lastUpdated != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "lastUpdated", r.lastUpdated, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -628,7 +750,7 @@ func (a *UsersAPIService) ListUsersExecute(r ApiListUsersRequest) (*ListUsers200
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -639,7 +761,7 @@ func (a *UsersAPIService) ListUsersExecute(r ApiListUsersRequest) (*ListUsers200
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -667,7 +789,21 @@ type ApiUpdateUserRequest struct {
 	ctx               context.Context
 	ApiService        *UsersAPIService
 	id                int64
+	accountId         *int64
+	tenantId          *int64
 	updateUserRequest *UpdateUserRequest
+}
+
+// Scope update to a tenant (alias &#x60;tenantId&#x60; also accepted).
+func (r ApiUpdateUserRequest) AccountId(accountId int64) ApiUpdateUserRequest {
+	r.accountId = &accountId
+	return r
+}
+
+// Alias of &#x60;accountId&#x60; for tenant-scoped user update.
+func (r ApiUpdateUserRequest) TenantId(tenantId int64) ApiUpdateUserRequest {
+	r.tenantId = &tenantId
+	return r
 }
 
 func (r ApiUpdateUserRequest) UpdateUserRequest(updateUserRequest UpdateUserRequest) ApiUpdateUserRequest {
@@ -683,6 +819,11 @@ func (r ApiUpdateUserRequest) Execute() (*UpdateUser200Response, *http.Response,
 UpdateUser Update user
 
 Update an existing user.
+
+Password confirmation fields are optional for API callers when the matching password
+is supplied and the confirmation key is omitted. Explicit confirmation values are validated as-is.
+
+Query `accountId` / `tenantId` may scope the target user for master-tenant operators.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -719,6 +860,12 @@ func (a *UsersAPIService) UpdateUserExecute(r ApiUpdateUserRequest) (*UpdateUser
 	localVarQueryParams := url.Values{}
 	localVarFormParams := url.Values{}
 
+	if r.accountId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "accountId", r.accountId, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{"application/json"}
 
@@ -760,7 +907,7 @@ func (a *UsersAPIService) UpdateUserExecute(r ApiUpdateUserRequest) (*UpdateUser
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -771,7 +918,7 @@ func (a *UsersAPIService) UpdateUserExecute(r ApiUpdateUserRequest) (*UpdateUser
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

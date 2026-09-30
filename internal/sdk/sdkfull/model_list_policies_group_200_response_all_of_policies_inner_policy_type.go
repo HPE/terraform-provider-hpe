@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) ToMap() (map[s
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType struct {
+	value *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType
+	isSet bool
+}
+
+func (v NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) Get() *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType {
+	return v.value
+}
+
+func (v *NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) Set(val *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType(val *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) *NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType {
+	return &NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType{value: val, isSet: true}
+}
+
+func (v NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListPoliciesGroup200ResponseAllOfPoliciesInnerPolicyType) UnmarshalJSON(data []byte) (err error) {

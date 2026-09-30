@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListClusterJobs200ResponseAllOfJobsInnerType) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListClusterJobs200ResponseAllOfJobsInnerType struct {
+	value *ListClusterJobs200ResponseAllOfJobsInnerType
+	isSet bool
+}
+
+func (v NullableListClusterJobs200ResponseAllOfJobsInnerType) Get() *ListClusterJobs200ResponseAllOfJobsInnerType {
+	return v.value
+}
+
+func (v *NullableListClusterJobs200ResponseAllOfJobsInnerType) Set(val *ListClusterJobs200ResponseAllOfJobsInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListClusterJobs200ResponseAllOfJobsInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListClusterJobs200ResponseAllOfJobsInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListClusterJobs200ResponseAllOfJobsInnerType(val *ListClusterJobs200ResponseAllOfJobsInnerType) *NullableListClusterJobs200ResponseAllOfJobsInnerType {
+	return &NullableListClusterJobs200ResponseAllOfJobsInnerType{value: val, isSet: true}
+}
+
+func (v NullableListClusterJobs200ResponseAllOfJobsInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListClusterJobs200ResponseAllOfJobsInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListClusterJobs200ResponseAllOfJobsInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListClusterJobs200ResponseAllOfJobsInnerType) UnmarshalJSON(data []byte) (err error) {

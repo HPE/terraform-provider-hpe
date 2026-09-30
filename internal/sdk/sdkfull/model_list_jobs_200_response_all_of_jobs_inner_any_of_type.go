@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListJobs200ResponseAllOfJobsInnerAnyOfType) ToMap() (map[string]interfac
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListJobs200ResponseAllOfJobsInnerAnyOfType struct {
+	value *ListJobs200ResponseAllOfJobsInnerAnyOfType
+	isSet bool
+}
+
+func (v NullableListJobs200ResponseAllOfJobsInnerAnyOfType) Get() *ListJobs200ResponseAllOfJobsInnerAnyOfType {
+	return v.value
+}
+
+func (v *NullableListJobs200ResponseAllOfJobsInnerAnyOfType) Set(val *ListJobs200ResponseAllOfJobsInnerAnyOfType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListJobs200ResponseAllOfJobsInnerAnyOfType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListJobs200ResponseAllOfJobsInnerAnyOfType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListJobs200ResponseAllOfJobsInnerAnyOfType(val *ListJobs200ResponseAllOfJobsInnerAnyOfType) *NullableListJobs200ResponseAllOfJobsInnerAnyOfType {
+	return &NullableListJobs200ResponseAllOfJobsInnerAnyOfType{value: val, isSet: true}
+}
+
+func (v NullableListJobs200ResponseAllOfJobsInnerAnyOfType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListJobs200ResponseAllOfJobsInnerAnyOfType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListJobs200ResponseAllOfJobsInnerAnyOfType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListJobs200ResponseAllOfJobsInnerAnyOfType) UnmarshalJSON(data []byte) (err error) {

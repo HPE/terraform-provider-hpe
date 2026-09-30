@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -27,7 +27,6 @@ type ListClouds200ResponseAllOfZonesInnerConfigAnyOf struct {
 	ExternalId                 NullableString                                                `json:"externalId,omitempty"`
 	InventoryLevel             NullableString                                                `json:"inventoryLevel,omitempty"`
 	ConsoleKeymap              NullableString                                                `json:"consoleKeymap,omitempty"`
-	BackupMode                 NullableString                                                `json:"backupMode,omitempty"`
 	CertificateProvider        NullableString                                                `json:"certificateProvider,omitempty"`
 	ConfigCmdbDiscovery        *bool                                                         `json:"configCmdbDiscovery,omitempty"`
 	EnableNetworkTypeSelection NullableString                                                `json:"enableNetworkTypeSelection,omitempty"`
@@ -65,9 +64,6 @@ func (o ListClouds200ResponseAllOfZonesInnerConfigAnyOf) ToMap() (map[string]int
 	}
 	if o.ConsoleKeymap.IsSet() {
 		toSerialize["consoleKeymap"] = o.ConsoleKeymap.Get()
-	}
-	if o.BackupMode.IsSet() {
-		toSerialize["backupMode"] = o.BackupMode.Get()
 	}
 	if o.CertificateProvider.IsSet() {
 		toSerialize["certificateProvider"] = o.CertificateProvider.Get()

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -35,7 +35,7 @@ type InstanceCreateSuccessInstance struct {
 	Servers                          []int64                                                       `json:"servers,omitempty"`
 	ConnectionInfo                   []AddInstance200ResponseAllOfOneOfInstanceConnectionInfoInner `json:"connectionInfo,omitempty"`
 	Layout                           *InstanceCreateSuccessInstanceLayout                          `json:"layout,omitempty"`
-	Plan                             *InstanceCreateSuccessInstancePlan                            `json:"plan,omitempty"`
+	Plan                             NullableInstanceCreateSuccessInstancePlan                     `json:"plan,omitempty"`
 	Name                             *string                                                       `json:"name,omitempty"`
 	DisplayName                      *string                                                       `json:"displayName,omitempty"`
 	Description                      NullableString                                                `json:"description,omitempty"`
@@ -156,8 +156,8 @@ func (o InstanceCreateSuccessInstance) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Layout) {
 		toSerialize["layout"] = o.Layout
 	}
-	if !IsNil(o.Plan) {
-		toSerialize["plan"] = o.Plan
+	if o.Plan.IsSet() {
+		toSerialize["plan"] = o.Plan.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name

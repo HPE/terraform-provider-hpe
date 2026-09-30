@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -21,7 +21,7 @@ var _ MappedNullable = &ListUsers200Response{}
 // ListUsers200Response struct for ListUsers200Response
 type ListUsers200Response struct {
 	Users []ListUsers200ResponseAllOfUsersInner `json:"users,omitempty"`
-	Meta  *ListApprovals200ResponseAllOfMeta    `json:"meta,omitempty"`
+	Meta  *ListUsers200ResponseAllOfMeta        `json:"meta,omitempty"`
 	// Global (All Tenants), load users from all tenants. The default is to only see your own tenant. This is only available to master tenant users with permission to manage tenants and users.
 	Global               *bool                  `json:"global,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`

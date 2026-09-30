@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,8 +23,8 @@ var _ MappedNullable = &MonitoringSettingsServiceNow{}
 // MonitoringSettingsServiceNow Service Now Settings
 type MonitoringSettingsServiceNow struct {
 	// Enabled
-	Enabled     *bool                                    `json:"enabled,omitempty"`
-	Integration *MonitoringSettingsServiceNowIntegration `json:"integration,omitempty"`
+	Enabled     *bool                                           `json:"enabled,omitempty"`
+	Integration NullableMonitoringSettingsServiceNowIntegration `json:"integration,omitempty"`
 	// New Incident Action
 	NewIncidentAction *string `json:"newIncidentAction,omitempty"`
 	// Close Incident Action
@@ -53,8 +53,8 @@ func (o MonitoringSettingsServiceNow) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Enabled) {
 		toSerialize["enabled"] = o.Enabled
 	}
-	if !IsNil(o.Integration) {
-		toSerialize["integration"] = o.Integration
+	if o.Integration.IsSet() {
+		toSerialize["integration"] = o.Integration.Get()
 	}
 	if !IsNil(o.NewIncidentAction) {
 		toSerialize["newIncidentAction"] = o.NewIncidentAction

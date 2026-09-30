@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,18 +22,18 @@ var _ MappedNullable = &StorageDatastoreCreateResourcePermissions{}
 
 // StorageDatastoreCreateResourcePermissions struct for StorageDatastoreCreateResourcePermissions
 type StorageDatastoreCreateResourcePermissions struct {
-	AllGroups            *bool                                                        `json:"allGroups,omitempty"`
-	DefaultStore         *bool                                                        `json:"defaultStore,omitempty"`
-	AllPlans             *bool                                                        `json:"allPlans,omitempty"`
-	DefaultTarget        *bool                                                        `json:"defaultTarget,omitempty"`
-	MorpheusResourceType *string                                                      `json:"morpheusResourceType,omitempty"`
-	MorpheusResourceId   *int64                                                       `json:"morpheusResourceId,omitempty"`
-	CanManage            *bool                                                        `json:"canManage,omitempty"`
-	All                  *bool                                                        `json:"all,omitempty"`
-	Account              *SaveDatastoreRequestDatastoreResourcePermissionsAccount     `json:"account,omitempty"`
-	Sites                []SaveDatastoreRequestDatastoreResourcePermissionsSitesInner `json:"sites,omitempty"`
-	Plans                []SaveDatastoreRequestDatastoreResourcePermissionsPlansInner `json:"plans,omitempty"`
-	AdditionalProperties map[string]interface{}                                       `json:",remain"`
+	AllGroups            *bool                                                 `json:"allGroups,omitempty"`
+	DefaultStore         *bool                                                 `json:"defaultStore,omitempty"`
+	AllPlans             *bool                                                 `json:"allPlans,omitempty"`
+	DefaultTarget        *bool                                                 `json:"defaultTarget,omitempty"`
+	MorpheusResourceType *string                                               `json:"morpheusResourceType,omitempty"`
+	MorpheusResourceId   *int64                                                `json:"morpheusResourceId,omitempty"`
+	CanManage            *bool                                                 `json:"canManage,omitempty"`
+	All                  *bool                                                 `json:"all,omitempty"`
+	Account              *StorageDatastoreCreateResourcePermissionsAccount     `json:"account,omitempty"`
+	Sites                []StorageDatastoreCreateResourcePermissionsSitesInner `json:"sites,omitempty"`
+	Plans                []StorageDatastoreCreateResourcePermissionsPlansInner `json:"plans,omitempty"`
+	AdditionalProperties map[string]interface{}                                `json:",remain"`
 }
 
 type _StorageDatastoreCreateResourcePermissions StorageDatastoreCreateResourcePermissions

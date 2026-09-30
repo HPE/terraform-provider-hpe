@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,70 +23,72 @@ var _ MappedNullable = &ListClouds200ResponseAllOfZonesInner{}
 
 // ListClouds200ResponseAllOfZonesInner struct for ListClouds200ResponseAllOfZonesInner
 type ListClouds200ResponseAllOfZonesInner struct {
-	Id                             *int64                                              `json:"id,omitempty"`
-	Uuid                           *string                                             `json:"uuid,omitempty"`
-	ExternalId                     NullableString                                      `json:"externalId,omitempty"`
-	Name                           *string                                             `json:"name,omitempty"`
-	Code                           *string                                             `json:"code,omitempty"`
-	Labels                         []string                                            `json:"labels,omitempty"`
-	Location                       NullableString                                      `json:"location,omitempty"`
-	Owner                          NullableListClouds200ResponseAllOfZonesInnerOwner   `json:"owner,omitempty"`
-	AccountId                      *int64                                              `json:"accountId,omitempty"`
-	Account                        NullableListClouds200ResponseAllOfZonesInnerAccount `json:"account,omitempty"`
-	Visibility                     *string                                             `json:"visibility,omitempty"`
-	Enabled                        *bool                                               `json:"enabled,omitempty"`
-	Status                         *string                                             `json:"status,omitempty"`
-	StatusMessage                  NullableString                                      `json:"statusMessage,omitempty"`
-	StatusDate                     NullableTime                                        `json:"statusDate,omitempty"`
-	CostStatus                     NullableString                                      `json:"costStatus,omitempty"`
-	CostStatusMessage              NullableString                                      `json:"costStatusMessage,omitempty"`
-	CostStatusDate                 NullableTime                                        `json:"costStatusDate,omitempty"`
-	CostLastSyncDuration           NullableInt64                                       `json:"costLastSyncDuration,omitempty"`
-	CostLastSync                   NullableTime                                        `json:"costLastSync,omitempty"`
-	ZoneType                       *ListClouds200ResponseAllOfZonesInnerZoneType       `json:"zoneType,omitempty"`
-	ZoneTypeId                     *int64                                              `json:"zoneTypeId,omitempty"`
-	GuidanceMode                   NullableString                                      `json:"guidanceMode,omitempty"`
-	StorageMode                    *string                                             `json:"storageMode,omitempty"`
-	AgentMode                      *string                                             `json:"agentMode,omitempty"`
-	UserDataLinux                  NullableString                                      `json:"userDataLinux,omitempty"`
-	UserDataWindows                NullableString                                      `json:"userDataWindows,omitempty"`
-	ConsoleKeymap                  NullableString                                      `json:"consoleKeymap,omitempty"`
-	ContainerMode                  *string                                             `json:"containerMode,omitempty"`
-	CostingMode                    NullableString                                      `json:"costingMode,omitempty"`
-	ServiceVersion                 NullableString                                      `json:"serviceVersion,omitempty"`
-	SecurityMode                   *string                                             `json:"securityMode,omitempty"`
-	InventoryLevel                 *string                                             `json:"inventoryLevel,omitempty"`
-	Timezone                       NullableString                                      `json:"timezone,omitempty"`
-	ApiProxy                       NullableString                                      `json:"apiProxy,omitempty"`
-	ProvisioningProxy              NullableString                                      `json:"provisioningProxy,omitempty"`
-	NetworkDomain                  *ListClouds200ResponseAllOfZonesInnerNetworkDomain  `json:"networkDomain,omitempty"`
-	DomainName                     *string                                             `json:"domainName,omitempty"`
-	RegionCode                     NullableString                                      `json:"regionCode,omitempty"`
-	AutoRecoverPowerState          *bool                                               `json:"autoRecoverPowerState,omitempty"`
-	ScalePriority                  *int64                                              `json:"scalePriority,omitempty"`
-	DefaultDatastoreSyncActive     *bool                                               `json:"defaultDatastoreSyncActive,omitempty"`
-	DefaultNetworkSyncActive       *bool                                               `json:"defaultNetworkSyncActive,omitempty"`
-	DefaultFolderSyncActive        *bool                                               `json:"defaultFolderSyncActive,omitempty"`
-	DefaultSecurityGroupSyncActive *bool                                               `json:"defaultSecurityGroupSyncActive,omitempty"`
-	DefaultPoolSyncActive          *bool                                               `json:"defaultPoolSyncActive,omitempty"`
-	DefaultPlanSyncActive          *bool                                               `json:"defaultPlanSyncActive,omitempty"`
-	Config                         *ListClouds200ResponseAllOfZonesInnerConfig         `json:"config,omitempty"`
-	Credential                     *ListClouds200ResponseAllOfZonesInnerCredential     `json:"credential,omitempty"`
+	Id                             *int64                                               `json:"id,omitempty"`
+	Uuid                           *string                                              `json:"uuid,omitempty"`
+	ExternalId                     NullableString                                       `json:"externalId,omitempty"`
+	Name                           *string                                              `json:"name,omitempty"`
+	Code                           *string                                              `json:"code,omitempty"`
+	Labels                         []string                                             `json:"labels,omitempty"`
+	Location                       NullableString                                       `json:"location,omitempty"`
+	Owner                          NullableListClouds200ResponseAllOfZonesInnerOwner    `json:"owner,omitempty"`
+	AccountId                      *int64                                               `json:"accountId,omitempty"`
+	Account                        NullableListClouds200ResponseAllOfZonesInnerAccount  `json:"account,omitempty"`
+	Visibility                     *string                                              `json:"visibility,omitempty"`
+	Enabled                        *bool                                                `json:"enabled,omitempty"`
+	Status                         *string                                              `json:"status,omitempty"`
+	StatusMessage                  NullableString                                       `json:"statusMessage,omitempty"`
+	StatusDate                     NullableTime                                         `json:"statusDate,omitempty"`
+	CostStatus                     NullableString                                       `json:"costStatus,omitempty"`
+	CostStatusMessage              NullableString                                       `json:"costStatusMessage,omitempty"`
+	CostStatusDate                 NullableTime                                         `json:"costStatusDate,omitempty"`
+	CostLastSyncDuration           NullableInt64                                        `json:"costLastSyncDuration,omitempty"`
+	CostLastSync                   NullableTime                                         `json:"costLastSync,omitempty"`
+	ZoneType                       NullableListClouds200ResponseAllOfZonesInnerZoneType `json:"zoneType,omitempty"`
+	ZoneTypeId                     *int64                                               `json:"zoneTypeId,omitempty"`
+	GuidanceMode                   NullableString                                       `json:"guidanceMode,omitempty"`
+	StorageMode                    *string                                              `json:"storageMode,omitempty"`
+	AgentMode                      *string                                              `json:"agentMode,omitempty"`
+	UserDataLinux                  NullableString                                       `json:"userDataLinux,omitempty"`
+	UserDataWindows                NullableString                                       `json:"userDataWindows,omitempty"`
+	ConsoleKeymap                  NullableString                                       `json:"consoleKeymap,omitempty"`
+	ContainerMode                  *string                                              `json:"containerMode,omitempty"`
+	CostingMode                    NullableString                                       `json:"costingMode,omitempty"`
+	ServiceVersion                 NullableString                                       `json:"serviceVersion,omitempty"`
+	SecurityMode                   *string                                              `json:"securityMode,omitempty"`
+	InventoryLevel                 *string                                              `json:"inventoryLevel,omitempty"`
+	Timezone                       NullableString                                       `json:"timezone,omitempty"`
+	ApiProxy                       NullableString                                       `json:"apiProxy,omitempty"`
+	ProvisioningProxy              NullableString                                       `json:"provisioningProxy,omitempty"`
+	NetworkDomain                  *ListClouds200ResponseAllOfZonesInnerNetworkDomain   `json:"networkDomain,omitempty"`
+	DomainName                     *string                                              `json:"domainName,omitempty"`
+	RegionCode                     NullableString                                       `json:"regionCode,omitempty"`
+	AutoRecoverPowerState          *bool                                                `json:"autoRecoverPowerState,omitempty"`
+	ScalePriority                  *int64                                               `json:"scalePriority,omitempty"`
+	DefaultDatastoreSyncActive     *bool                                                `json:"defaultDatastoreSyncActive,omitempty"`
+	DefaultNetworkSyncActive       *bool                                                `json:"defaultNetworkSyncActive,omitempty"`
+	DefaultFolderSyncActive        *bool                                                `json:"defaultFolderSyncActive,omitempty"`
+	DefaultSecurityGroupSyncActive *bool                                                `json:"defaultSecurityGroupSyncActive,omitempty"`
+	DefaultPoolSyncActive          *bool                                                `json:"defaultPoolSyncActive,omitempty"`
+	DefaultPlanSyncActive          *bool                                                `json:"defaultPlanSyncActive,omitempty"`
+	Config                         *ListClouds200ResponseAllOfZonesInnerConfig          `json:"config,omitempty"`
+	Credential                     *ListClouds200ResponseAllOfZonesInnerCredential      `json:"credential,omitempty"`
 	// Logo image URL
 	ImagePath NullableString `json:"imagePath,omitempty"`
 	// Dark logo image URL
-	DarkImagePath        NullableString                                      `json:"darkImagePath,omitempty"`
-	DateCreated          *time.Time                                          `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                          `json:"lastUpdated,omitempty"`
-	LastSync             NullableTime                                        `json:"lastSync,omitempty"`
-	LastSyncDuration     NullableInt64                                       `json:"lastSyncDuration,omitempty"`
-	NextRunDate          NullableTime                                        `json:"nextRunDate,omitempty"`
-	Groups               []ListClouds200ResponseAllOfZonesInnerGroupsInner   `json:"groups,omitempty"`
-	SecurityServer       *ListClouds200ResponseAllOfZonesInnerSecurityServer `json:"securityServer,omitempty"`
-	NetworkServer        *ListClouds200ResponseAllOfZonesInnerNetworkServer  `json:"networkServer,omitempty"`
-	Stats                *ListClouds200ResponseAllOfZonesInnerStats          `json:"stats,omitempty"`
-	ServerCount          *int64                                              `json:"serverCount,omitempty"`
-	AdditionalProperties map[string]interface{}                              `json:",remain"`
+	DarkImagePath    NullableString                                      `json:"darkImagePath,omitempty"`
+	DateCreated      *time.Time                                          `json:"dateCreated,omitempty"`
+	LastUpdated      *time.Time                                          `json:"lastUpdated,omitempty"`
+	LastSync         NullableTime                                        `json:"lastSync,omitempty"`
+	LastSyncDuration NullableInt64                                       `json:"lastSyncDuration,omitempty"`
+	NextRunDate      NullableTime                                        `json:"nextRunDate,omitempty"`
+	Groups           []ListClouds200ResponseAllOfZonesInnerGroupsInner   `json:"groups,omitempty"`
+	SecurityServer   *ListClouds200ResponseAllOfZonesInnerSecurityServer `json:"securityServer,omitempty"`
+	NetworkServer    *ListClouds200ResponseAllOfZonesInnerNetworkServer  `json:"networkServer,omitempty"`
+	Stats            *ListClouds200ResponseAllOfZonesInnerStats          `json:"stats,omitempty"`
+	ServerCount      *int64                                              `json:"serverCount,omitempty"`
+	// Array of backup provider (integration) IDs assigned to this cloud.
+	BackupProviders      []int64                `json:"backupProviders,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _ListClouds200ResponseAllOfZonesInner ListClouds200ResponseAllOfZonesInner
@@ -161,8 +163,8 @@ func (o ListClouds200ResponseAllOfZonesInner) ToMap() (map[string]interface{}, e
 	if o.CostLastSync.IsSet() {
 		toSerialize["costLastSync"] = o.CostLastSync.Get()
 	}
-	if !IsNil(o.ZoneType) {
-		toSerialize["zoneType"] = o.ZoneType
+	if o.ZoneType.IsSet() {
+		toSerialize["zoneType"] = o.ZoneType.Get()
 	}
 	if !IsNil(o.ZoneTypeId) {
 		toSerialize["zoneTypeId"] = o.ZoneTypeId
@@ -283,6 +285,9 @@ func (o ListClouds200ResponseAllOfZonesInner) ToMap() (map[string]interface{}, e
 	}
 	if !IsNil(o.ServerCount) {
 		toSerialize["serverCount"] = o.ServerCount
+	}
+	if !IsNil(o.BackupProviders) {
+		toSerialize["backupProviders"] = o.BackupProviders
 	}
 
 	for key, value := range o.AdditionalProperties {

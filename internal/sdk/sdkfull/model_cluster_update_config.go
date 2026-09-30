@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,8 +23,12 @@ var _ MappedNullable = &ClusterUpdateConfig{}
 // ClusterUpdateConfig Configuration object with parameters that vary by `type`. Only the specified config properties will be updated, other existing config properties will be left unchanged.
 type ClusterUpdateConfig struct {
 	// Dynamic Placement
-	DynamicPlacementMode *string                `json:"dynamicPlacementMode,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	DynamicPlacementMode *string `json:"dynamicPlacementMode,omitempty"`
+	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
+	MigrationConcurrencyLimit *string `json:"migrationConcurrencyLimit,omitempty"`
+	// When enabled, Morpheus automatically sizes maintenance mode migration concurrency based on available bandwidth and VM count, using Migration Concurrency (if set) as an upper bound. When disabled, Migration Concurrency runs as a fixed number of parallel migrations at all times.
+	MigrationConcurrencyAutoMode *string                `json:"migrationConcurrencyAutoMode,omitempty"`
+	AdditionalProperties         map[string]interface{} `json:",remain"`
 }
 
 type _ClusterUpdateConfig ClusterUpdateConfig
@@ -41,6 +45,12 @@ func (o ClusterUpdateConfig) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.DynamicPlacementMode) {
 		toSerialize["dynamicPlacementMode"] = o.DynamicPlacementMode
+	}
+	if !IsNil(o.MigrationConcurrencyLimit) {
+		toSerialize["migrationConcurrencyLimit"] = o.MigrationConcurrencyLimit
+	}
+	if !IsNil(o.MigrationConcurrencyAutoMode) {
+		toSerialize["migrationConcurrencyAutoMode"] = o.MigrationConcurrencyAutoMode
 	}
 
 	for key, value := range o.AdditionalProperties {

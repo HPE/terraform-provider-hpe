@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,17 +20,31 @@ import (
 // checks if the Client type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &Client{}
 
-// Client struct for Client
+// Client OAuth client.
 type Client struct {
-	Id                          *int64                 `json:"id,omitempty"`
-	ClientId                    *string                `json:"clientId,omitempty"`
-	AccessTokenValiditySeconds  *int64                 `json:"accessTokenValiditySeconds,omitempty"`
-	RefreshTokenValiditySeconds *int64                 `json:"refreshTokenValiditySeconds,omitempty"`
-	Authorities                 []string               `json:"authorities,omitempty"`
-	AuthorizedGrantTypes        []string               `json:"authorizedGrantTypes,omitempty"`
-	Scopes                      []string               `json:"scopes,omitempty"`
-	RedirectUris                []string               `json:"redirectUris,omitempty"`
-	AdditionalProperties        map[string]interface{} `json:",remain"`
+	// Client database id
+	Id *int64 `json:"id,omitempty"`
+	// OAuth client identifier
+	ClientId *string `json:"clientId,omitempty"`
+	// Masked client secret when a secret is set. Omitted when no secret is configured.
+	ClientSecret *string `json:"clientSecret,omitempty"`
+	// Hash of the client secret when a secret is set. Omitted when no secret is configured.
+	ClientSecretHash *string `json:"clientSecretHash,omitempty"`
+	// Access token lifetime in seconds
+	AccessTokenValiditySeconds NullableInt64 `json:"accessTokenValiditySeconds,omitempty"`
+	// Refresh token lifetime in seconds
+	RefreshTokenValiditySeconds NullableInt64 `json:"refreshTokenValiditySeconds,omitempty"`
+	// Grant types configured on the client. Set by the server on create (defaults include authorization_code, refresh_token, password). Not writable via create/update payload.
+	AuthorizedGrantTypes []string `json:"authorizedGrantTypes,omitempty"`
+	// OAuth scopes on the client. Set by the server on create (defaults include write, openid). Not writable via create/update payload.
+	Scopes []string `json:"scopes,omitempty"`
+	// Redirect URIs for the authorization code flow
+	RedirectUris []string `json:"redirectUris,omitempty"`
+	// Whether the client requires user consent
+	RequireConsent *bool `json:"requireConsent,omitempty"`
+	// True when the client is a system client (`removable != true`). System clients cannot be deleted and have restricted editable fields.
+	System               *bool                  `json:"system,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _Client Client
@@ -51,14 +65,17 @@ func (o Client) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.ClientId) {
 		toSerialize["clientId"] = o.ClientId
 	}
-	if !IsNil(o.AccessTokenValiditySeconds) {
-		toSerialize["accessTokenValiditySeconds"] = o.AccessTokenValiditySeconds
+	if !IsNil(o.ClientSecret) {
+		toSerialize["clientSecret"] = o.ClientSecret
 	}
-	if !IsNil(o.RefreshTokenValiditySeconds) {
-		toSerialize["refreshTokenValiditySeconds"] = o.RefreshTokenValiditySeconds
+	if !IsNil(o.ClientSecretHash) {
+		toSerialize["clientSecretHash"] = o.ClientSecretHash
 	}
-	if !IsNil(o.Authorities) {
-		toSerialize["authorities"] = o.Authorities
+	if o.AccessTokenValiditySeconds.IsSet() {
+		toSerialize["accessTokenValiditySeconds"] = o.AccessTokenValiditySeconds.Get()
+	}
+	if o.RefreshTokenValiditySeconds.IsSet() {
+		toSerialize["refreshTokenValiditySeconds"] = o.RefreshTokenValiditySeconds.Get()
 	}
 	if !IsNil(o.AuthorizedGrantTypes) {
 		toSerialize["authorizedGrantTypes"] = o.AuthorizedGrantTypes
@@ -68,6 +85,12 @@ func (o Client) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.RedirectUris) {
 		toSerialize["redirectUris"] = o.RedirectUris
+	}
+	if !IsNil(o.RequireConsent) {
+		toSerialize["requireConsent"] = o.RequireConsent
+	}
+	if !IsNil(o.System) {
+		toSerialize["system"] = o.System
 	}
 
 	for key, value := range o.AdditionalProperties {

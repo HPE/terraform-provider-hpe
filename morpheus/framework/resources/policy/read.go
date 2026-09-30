@@ -694,20 +694,20 @@ func getPolicyAsState(
 	}
 
 	// Set PolicyType
-	if p.PolicyType != nil {
+	if p.PolicyType.Get() != nil {
 		policyTypeAttrs := map[string]attr.Value{}
-		if p.PolicyType.Code != nil {
-			policyTypeAttrs["code"] = types.StringValue(*p.PolicyType.Code)
+		if p.PolicyType.Get().Code != nil {
+			policyTypeAttrs["code"] = types.StringValue(*p.PolicyType.Get().Code)
 		} else {
 			policyTypeAttrs["code"] = types.StringNull()
 		}
-		if p.PolicyType.Id != nil {
-			policyTypeAttrs["id"] = types.Int64Value(*p.PolicyType.Id)
+		if p.PolicyType.Get().Id != nil {
+			policyTypeAttrs["id"] = types.Int64Value(*p.PolicyType.Get().Id)
 		} else {
 			policyTypeAttrs["id"] = types.Int64Null()
 		}
-		if p.PolicyType.Name != nil {
-			policyTypeAttrs["name"] = types.StringValue(*p.PolicyType.Name)
+		if p.PolicyType.Get().Name != nil {
+			policyTypeAttrs["name"] = types.StringValue(*p.PolicyType.Get().Name)
 		} else {
 			policyTypeAttrs["name"] = types.StringNull()
 		}
@@ -735,8 +735,8 @@ func getPolicyAsState(
 			// User is using static config fields - populate them from API response
 			// Get policy type code for mapping (required field, but API could return nil)
 			policyTypeCode := ""
-			if p.PolicyType != nil && p.PolicyType.Code != nil {
-				policyTypeCode = *p.PolicyType.Code
+			if p.PolicyType.Get() != nil && p.PolicyType.Get().Code != nil {
+				policyTypeCode = *p.PolicyType.Get().Code
 			}
 
 			// Map API config to static schema fields

@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -127,7 +127,7 @@ func (a *RolesAPIService) AddRolesExecute(r ApiAddRolesRequest) (*AddRoles200Res
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -138,7 +138,7 @@ func (a *RolesAPIService) AddRolesExecute(r ApiAddRolesRequest) (*AddRoles200Res
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -168,7 +168,7 @@ type ApiDeleteRoleRequest struct {
 	id         int64
 }
 
-func (r ApiDeleteRoleRequest) Execute() (*UpdateApprovalsItem200Response, *http.Response, error) {
+func (r ApiDeleteRoleRequest) Execute() (*DeleteRole200Response, *http.Response, error) {
 	return r.ApiService.DeleteRoleExecute(r)
 }
 
@@ -191,13 +191,13 @@ func (a *RolesAPIService) DeleteRole(ctx context.Context, id int64) ApiDeleteRol
 
 // Execute executes the request
 //
-//	@return UpdateApprovalsItem200Response
-func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateApprovalsItem200Response, *http.Response, error) {
+//	@return DeleteRole200Response
+func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*DeleteRole200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodDelete
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateApprovalsItem200Response
+		localVarReturnValue *DeleteRole200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.DeleteRole")
@@ -262,7 +262,7 @@ func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateAppr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -273,7 +273,7 @@ func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateAppr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -302,11 +302,32 @@ type ApiGetRoleRequest struct {
 	ApiService           *RolesAPIService
 	id                   int64
 	includeDefaultAccess *bool
+	max                  *int32
+	offset               *int32
+	tenantId             *GetRoleTenantIdParameter
 }
 
 // Pass true to include all resource permissions in the response including those with access set to &#x60;default&#x60;. Only resources with access specific levels are returned by default. eg. &#x60;full&#x60;, &#x60;read&#x60; or &#x60;none&#x60;
 func (r ApiGetRoleRequest) IncludeDefaultAccess(includeDefaultAccess bool) ApiGetRoleRequest {
 	r.includeDefaultAccess = &includeDefaultAccess
+	return r
+}
+
+// Page size for &#x60;tenantCopies&#x60; on multitenant master roles (default 10, max 1000)
+func (r ApiGetRoleRequest) Max(max int32) ApiGetRoleRequest {
+	r.max = &max
+	return r
+}
+
+// Offset for &#x60;tenantCopies&#x60; paging
+func (r ApiGetRoleRequest) Offset(offset int32) ApiGetRoleRequest {
+	r.offset = &offset
+	return r
+}
+
+// Filter &#x60;tenantCopies&#x60; to a specific tenant/account ID. Integer or string accepted.
+func (r ApiGetRoleRequest) TenantId(tenantId GetRoleTenantIdParameter) ApiGetRoleRequest {
+	r.tenantId = &tenantId
 	return r
 }
 
@@ -357,6 +378,15 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 	if r.includeDefaultAccess != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "includeDefaultAccess", r.includeDefaultAccess, "form", "")
 	}
+	if r.max != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
+	}
+	if r.offset != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -396,7 +426,7 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -407,7 +437,7 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -432,15 +462,20 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 }
 
 type ApiListRolesRequest struct {
-	ctx        context.Context
-	ApiService *RolesAPIService
-	phrase     *string
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	authority  *string
-	roleType   *string
+	ctx         context.Context
+	ApiService  *RolesAPIService
+	phrase      *string
+	max         *int64
+	offset      *int64
+	sort        *string
+	direction   *string
+	id          *ListRolesIdParameter
+	authority   *string
+	name        *string
+	description *string
+	roleType    *string
+	owner       *ListRolesOwnerParameter
+	tenant      *ListRolesTenantParameter
 }
 
 // Search phrase for partial matches on name or description
@@ -473,15 +508,45 @@ func (r ApiListRolesRequest) Direction(direction string) ApiListRolesRequest {
 	return r
 }
 
-// Filter by authority
+// Filter by one or more role IDs (integer or string forms accepted)
+func (r ApiListRolesRequest) Id(id ListRolesIdParameter) ApiListRolesRequest {
+	r.id = &id
+	return r
+}
+
+// Filter by authority (exact match, case-insensitive)
 func (r ApiListRolesRequest) Authority(authority string) ApiListRolesRequest {
 	r.authority = &authority
+	return r
+}
+
+// Alias for &#x60;authority&#x60;
+func (r ApiListRolesRequest) Name(name string) ApiListRolesRequest {
+	r.name = &name
+	return r
+}
+
+// Filter by description (exact match, case-insensitive)
+func (r ApiListRolesRequest) Description(description string) ApiListRolesRequest {
+	r.description = &description
 	return r
 }
 
 // Filter by roleType
 func (r ApiListRolesRequest) RoleType(roleType string) ApiListRolesRequest {
 	r.roleType = &roleType
+	return r
+}
+
+// Tenant/account ID whose roles to list. Master tenants may load a child tenant&#39;s roles. Alias of &#x60;tenant&#x60;. Integer or string accepted.
+func (r ApiListRolesRequest) Owner(owner ListRolesOwnerParameter) ApiListRolesRequest {
+	r.owner = &owner
+	return r
+}
+
+// Alias for &#x60;owner&#x60;. Integer or string accepted.
+func (r ApiListRolesRequest) Tenant(tenant ListRolesTenantParameter) ApiListRolesRequest {
+	r.tenant = &tenant
 	return r
 }
 
@@ -553,11 +618,26 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 		var defaultValue string = "asc"
 		r.direction = &defaultValue
 	}
+	if r.id != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "id", r.id, "form", "")
+	}
 	if r.authority != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "authority", r.authority, "form", "")
 	}
+	if r.name != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
+	}
+	if r.description != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "description", r.description, "form", "")
+	}
 	if r.roleType != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "roleType", r.roleType, "form", "")
+	}
+	if r.owner != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "owner", r.owner, "form", "")
+	}
+	if r.tenant != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenant", r.tenant, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -598,7 +678,7 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -609,7 +689,7 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -740,7 +820,7 @@ func (a *RolesAPIService) UpdateRoleExecute(r ApiUpdateRoleRequest) (*UpdateRole
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -751,7 +831,7 @@ func (a *RolesAPIService) UpdateRoleExecute(r ApiUpdateRoleRequest) (*UpdateRole
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

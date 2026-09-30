@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,12 +22,7 @@ var _ MappedNullable = &AcknowledgeHealthAlarmsRequestAlarm{}
 
 // AcknowledgeHealthAlarmsRequestAlarm struct for AcknowledgeHealthAlarmsRequestAlarm
 type AcknowledgeHealthAlarmsRequestAlarm struct {
-	// Pass `true` to ackowledge an alarm, or pass `false` to unacknowledge it.
-	Acknowledged bool `json:"acknowledged"`
-	// Array of Alarm ID(s)to be updated.
-	Ids []int64 `json:"ids,omitempty"`
-	// Pass `true` to update all alarms instead of passing ids. This will update any active alarm that is not already acknowledged.
-	All                  *bool                  `json:"all,omitempty"`
+	Acknowledged         *bool                  `json:"acknowledged,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -43,12 +38,8 @@ func (o AcknowledgeHealthAlarmsRequestAlarm) MarshalJSON() ([]byte, error) {
 
 func (o AcknowledgeHealthAlarmsRequestAlarm) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["acknowledged"] = o.Acknowledged
-	if !IsNil(o.Ids) {
-		toSerialize["ids"] = o.Ids
-	}
-	if !IsNil(o.All) {
-		toSerialize["all"] = o.All
+	if !IsNil(o.Acknowledged) {
+		toSerialize["acknowledged"] = o.Acknowledged
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,25 +22,25 @@ var _ MappedNullable = &ListUserSettings200ResponseAllOfUser{}
 
 // ListUserSettings200ResponseAllOfUser struct for ListUserSettings200ResponseAllOfUser
 type ListUserSettings200ResponseAllOfUser struct {
-	Id                   *int64                                                   `json:"id,omitempty"`
-	Username             *string                                                  `json:"username,omitempty"`
-	FirstName            *string                                                  `json:"firstName,omitempty"`
-	LastName             *string                                                  `json:"lastName,omitempty"`
-	Email                *string                                                  `json:"email,omitempty"`
-	LinuxUsername        *string                                                  `json:"linuxUsername,omitempty"`
-	LinuxPassword        *string                                                  `json:"linuxPassword,omitempty"`
-	LinuxKeyPairId       NullableInt64                                            `json:"linuxKeyPairId,omitempty"`
-	WindowsUsername      *string                                                  `json:"windowsUsername,omitempty"`
-	WindowsPassword      *string                                                  `json:"windowsPassword,omitempty"`
-	Avatar               *string                                                  `json:"avatar,omitempty"`
-	DesktopBackground    *string                                                  `json:"desktopBackground,omitempty"`
-	ReceiveNotifications *bool                                                    `json:"receiveNotifications,omitempty"`
-	DefaultGroup         NullableListUserSettings200ResponseAllOfUserDefaultGroup `json:"defaultGroup,omitempty"`
-	DefaultCloud         NullableListUserSettings200ResponseAllOfUserDefaultCloud `json:"defaultCloud,omitempty"`
-	DefaultPersona       *ListUserSettings200ResponseAllOfUserDefaultPersona      `json:"defaultPersona,omitempty"`
-	IsUsing2FA           *bool                                                    `json:"isUsing2FA,omitempty"`
-	Tenant               NullableListUserSettings200ResponseAllOfUserTenant       `json:"tenant,omitempty"`
-	AdditionalProperties map[string]interface{}                                   `json:",remain"`
+	Id                   *int64                                                     `json:"id,omitempty"`
+	Username             *string                                                    `json:"username,omitempty"`
+	FirstName            *string                                                    `json:"firstName,omitempty"`
+	LastName             *string                                                    `json:"lastName,omitempty"`
+	Email                *string                                                    `json:"email,omitempty"`
+	LinuxUsername        *string                                                    `json:"linuxUsername,omitempty"`
+	LinuxPassword        *string                                                    `json:"linuxPassword,omitempty"`
+	LinuxKeyPairId       NullableInt64                                              `json:"linuxKeyPairId,omitempty"`
+	WindowsUsername      *string                                                    `json:"windowsUsername,omitempty"`
+	WindowsPassword      *string                                                    `json:"windowsPassword,omitempty"`
+	Avatar               *string                                                    `json:"avatar,omitempty"`
+	DesktopBackground    *string                                                    `json:"desktopBackground,omitempty"`
+	ReceiveNotifications *bool                                                      `json:"receiveNotifications,omitempty"`
+	DefaultGroup         NullableListUserSettings200ResponseAllOfUserDefaultGroup   `json:"defaultGroup,omitempty"`
+	DefaultCloud         NullableListUserSettings200ResponseAllOfUserDefaultCloud   `json:"defaultCloud,omitempty"`
+	DefaultPersona       NullableListUserSettings200ResponseAllOfUserDefaultPersona `json:"defaultPersona,omitempty"`
+	IsUsing2FA           *bool                                                      `json:"isUsing2FA,omitempty"`
+	Tenant               NullableListUserSettings200ResponseAllOfUserTenant         `json:"tenant,omitempty"`
+	AdditionalProperties map[string]interface{}                                     `json:",remain"`
 }
 
 type _ListUserSettings200ResponseAllOfUser ListUserSettings200ResponseAllOfUser
@@ -100,8 +100,8 @@ func (o ListUserSettings200ResponseAllOfUser) ToMap() (map[string]interface{}, e
 	if o.DefaultCloud.IsSet() {
 		toSerialize["defaultCloud"] = o.DefaultCloud.Get()
 	}
-	if !IsNil(o.DefaultPersona) {
-		toSerialize["defaultPersona"] = o.DefaultPersona
+	if o.DefaultPersona.IsSet() {
+		toSerialize["defaultPersona"] = o.DefaultPersona.Get()
 	}
 	if !IsNil(o.IsUsing2FA) {
 		toSerialize["isUsing2FA"] = o.IsUsing2FA

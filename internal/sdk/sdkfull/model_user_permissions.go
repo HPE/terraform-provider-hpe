@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,20 +20,20 @@ import (
 // checks if the UserPermissions type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UserPermissions{}
 
-// UserPermissions struct for UserPermissions
+// UserPermissions Full access map returned by GET /api/users/{id}/permissions and optionally embedded on user when includeAccess=true
 type UserPermissions struct {
-	Features             []map[string]interface{} `json:"features,omitempty"`
-	Zones                []map[string]interface{} `json:"zones,omitempty"`
-	Sites                []map[string]interface{} `json:"sites,omitempty"`
-	InstanceTypes        []map[string]interface{} `json:"instanceTypes,omitempty"`
-	AppTemplates         []map[string]interface{} `json:"appTemplates,omitempty"`
-	CatalogItemTypes     []map[string]interface{} `json:"catalogItemTypes,omitempty"`
-	Personas             []map[string]interface{} `json:"personas,omitempty"`
-	VdiPools             []map[string]interface{} `json:"vdiPools,omitempty"`
-	ReportTypes          []map[string]interface{} `json:"reportTypes,omitempty"`
-	Tasks                []map[string]interface{} `json:"tasks,omitempty"`
-	TaskSets             []map[string]interface{} `json:"taskSets,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Features             []UserPermissionsFeaturesInner         `json:"features,omitempty"`
+	Zones                []UserPermissionsZonesInner            `json:"zones,omitempty"`
+	Sites                []UserPermissionsSitesInner            `json:"sites,omitempty"`
+	InstanceTypes        []UserPermissionsInstanceTypesInner    `json:"instanceTypes,omitempty"`
+	AppTemplates         []UserPermissionsAppTemplatesInner     `json:"appTemplates,omitempty"`
+	CatalogItemTypes     []UserPermissionsCatalogItemTypesInner `json:"catalogItemTypes,omitempty"`
+	Personas             []UserPermissionsPersonasInner         `json:"personas,omitempty"`
+	VdiPools             []UserPermissionsVdiPoolsInner         `json:"vdiPools,omitempty"`
+	ReportTypes          []UserPermissionsReportTypesInner      `json:"reportTypes,omitempty"`
+	Tasks                []UserPermissionsTasksInner            `json:"tasks,omitempty"`
+	TaskSets             []UserPermissionsTaskSetsInner         `json:"taskSets,omitempty"`
+	AdditionalProperties map[string]interface{}                 `json:",remain"`
 }
 
 type _UserPermissions UserPermissions

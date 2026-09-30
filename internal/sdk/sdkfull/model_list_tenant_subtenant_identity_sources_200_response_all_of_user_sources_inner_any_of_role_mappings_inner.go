@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &ListTenantSubtenantIdentitySources200ResponseAllOfUserSo
 // ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOfRoleMappingsInner struct for ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOfRoleMappingsInner
 type ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOfRoleMappingsInner struct {
 	SourceRoleName       NullableString                                                                                      `json:"sourceRoleName,omitempty"`
-	SourceRoleFqn        *string                                                                                             `json:"sourceRoleFqn,omitempty"`
+	SourceRoleFqn        NullableString                                                                                      `json:"sourceRoleFqn,omitempty"`
 	MappedRole           *ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOfRoleMappingsInnerMappedRole `json:"mappedRole,omitempty"`
 	AdditionalProperties map[string]interface{}                                                                              `json:",remain"`
 }
@@ -43,8 +43,8 @@ func (o ListTenantSubtenantIdentitySources200ResponseAllOfUserSourcesInnerAnyOfR
 	if o.SourceRoleName.IsSet() {
 		toSerialize["sourceRoleName"] = o.SourceRoleName.Get()
 	}
-	if !IsNil(o.SourceRoleFqn) {
-		toSerialize["sourceRoleFqn"] = o.SourceRoleFqn
+	if o.SourceRoleFqn.IsSet() {
+		toSerialize["sourceRoleFqn"] = o.SourceRoleFqn.Get()
 	}
 	if !IsNil(o.MappedRole) {
 		toSerialize["mappedRole"] = o.MappedRole

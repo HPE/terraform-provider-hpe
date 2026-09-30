@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) ToM
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout struct {
+	value *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout
+	isSet bool
+}
+
+func (v NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) Get() *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout {
+	return v.value
+}
+
+func (v *NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) Set(val *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout(val *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) *NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout {
+	return &NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout{value: val, isSet: true}
+}
+
+func (v NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout) UnmarshalJSON(data []byte) (err error) {

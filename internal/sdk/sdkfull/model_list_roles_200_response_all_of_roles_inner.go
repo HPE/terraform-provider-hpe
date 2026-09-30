@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -30,19 +30,21 @@ type ListRoles200ResponseAllOfRolesInner struct {
 	Authority   *string        `json:"authority,omitempty"`
 	Description NullableString `json:"description,omitempty"`
 	// An optional override for the default landing page after login for a user.
-	LandingUrl           NullableString                                     `json:"landingUrl,omitempty"`
-	Scope                *string                                            `json:"scope,omitempty"`
-	RoleType             *string                                            `json:"roleType,omitempty"`
-	Multitenant          *bool                                              `json:"multitenant,omitempty"`
-	MultitenantLocked    *bool                                              `json:"multitenantLocked,omitempty"`
-	ParentRoleId         NullableString                                     `json:"parentRoleId,omitempty"`
-	Diverged             *bool                                              `json:"diverged,omitempty"`
-	OwnerId              *int64                                             `json:"ownerId,omitempty"`
-	Owner                NullableListRoles200ResponseAllOfRolesInnerOwner   `json:"owner,omitempty"`
-	DefaultPersona       *ListRoles200ResponseAllOfRolesInnerDefaultPersona `json:"defaultPersona,omitempty"`
-	DateCreated          *time.Time                                         `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                         `json:"lastUpdated,omitempty"`
-	AdditionalProperties map[string]interface{}                             `json:",remain"`
+	LandingUrl        NullableString                                     `json:"landingUrl,omitempty"`
+	Scope             *string                                            `json:"scope,omitempty"`
+	RoleType          *string                                            `json:"roleType,omitempty"`
+	Multitenant       *bool                                              `json:"multitenant,omitempty"`
+	MultitenantLocked *bool                                              `json:"multitenantLocked,omitempty"`
+	ParentRoleId      NullableInt64                                      `json:"parentRoleId,omitempty"`
+	Diverged          *bool                                              `json:"diverged,omitempty"`
+	OwnerId           *int64                                             `json:"ownerId,omitempty"`
+	Owner             NullableListRoles200ResponseAllOfRolesInnerOwner   `json:"owner,omitempty"`
+	DefaultPersona    *ListRoles200ResponseAllOfRolesInnerDefaultPersona `json:"defaultPersona,omitempty"`
+	DateCreated       *time.Time                                         `json:"dateCreated,omitempty"`
+	// True when the role has full `admin-export-import` permission
+	CanExport            *bool                  `json:"canExport,omitempty"`
+	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _ListRoles200ResponseAllOfRolesInner ListRoles200ResponseAllOfRolesInner
@@ -101,6 +103,9 @@ func (o ListRoles200ResponseAllOfRolesInner) ToMap() (map[string]interface{}, er
 	}
 	if !IsNil(o.DateCreated) {
 		toSerialize["dateCreated"] = o.DateCreated
+	}
+	if !IsNil(o.CanExport) {
+		toSerialize["canExport"] = o.CanExport
 	}
 	if !IsNil(o.LastUpdated) {
 		toSerialize["lastUpdated"] = o.LastUpdated

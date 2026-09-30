@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,13 +22,13 @@ var _ MappedNullable = &ListIntegrationObjects200ResponseObjectsInnerLayout{}
 
 // ListIntegrationObjects200ResponseObjectsInnerLayout struct for ListIntegrationObjects200ResponseObjectsInnerLayout
 type ListIntegrationObjects200ResponseObjectsInnerLayout struct {
-	Id                   *int64                                                            `json:"id,omitempty"`
-	Name                 *string                                                           `json:"name,omitempty"`
-	Code                 *string                                                           `json:"code,omitempty"`
-	ProvisionType        *ListIntegrationObjects200ResponseObjectsInnerLayoutProvisionType `json:"provisionType,omitempty"`
-	InstanceType         *ListIntegrationObjects200ResponseObjectsInnerLayoutInstanceType  `json:"instanceType,omitempty"`
-	InstanceVersion      *string                                                           `json:"instanceVersion,omitempty"`
-	AdditionalProperties map[string]interface{}                                            `json:",remain"`
+	Id                   *int64                                                                   `json:"id,omitempty"`
+	Name                 *string                                                                  `json:"name,omitempty"`
+	Code                 *string                                                                  `json:"code,omitempty"`
+	ProvisionType        NullableListIntegrationObjects200ResponseObjectsInnerLayoutProvisionType `json:"provisionType,omitempty"`
+	InstanceType         NullableListIntegrationObjects200ResponseObjectsInnerLayoutInstanceType  `json:"instanceType,omitempty"`
+	InstanceVersion      *string                                                                  `json:"instanceVersion,omitempty"`
+	AdditionalProperties map[string]interface{}                                                   `json:",remain"`
 }
 
 type _ListIntegrationObjects200ResponseObjectsInnerLayout ListIntegrationObjects200ResponseObjectsInnerLayout
@@ -52,11 +52,11 @@ func (o ListIntegrationObjects200ResponseObjectsInnerLayout) ToMap() (map[string
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}
-	if !IsNil(o.ProvisionType) {
-		toSerialize["provisionType"] = o.ProvisionType
+	if o.ProvisionType.IsSet() {
+		toSerialize["provisionType"] = o.ProvisionType.Get()
 	}
-	if !IsNil(o.InstanceType) {
-		toSerialize["instanceType"] = o.InstanceType
+	if o.InstanceType.IsSet() {
+		toSerialize["instanceType"] = o.InstanceType.Get()
 	}
 	if !IsNil(o.InstanceVersion) {
 		toSerialize["instanceVersion"] = o.InstanceVersion

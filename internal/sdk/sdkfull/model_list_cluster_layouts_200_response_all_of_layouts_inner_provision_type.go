@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) ToMap() (ma
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType struct {
+	value *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType
+	isSet bool
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) Get() *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType {
+	return v.value
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) Set(val *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType(val *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) *NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType {
+	return &NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType{value: val, isSet: true}
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListClusterLayouts200ResponseAllOfLayoutsInnerProvisionType) UnmarshalJSON(data []byte) (err error) {

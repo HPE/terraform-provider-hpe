@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,9 +22,13 @@ var _ MappedNullable = &ListClients200Response{}
 
 // ListClients200Response struct for ListClients200Response
 type ListClients200Response struct {
-	Clients              []ListClients200ResponseAllOfClientsInner `json:"clients,omitempty"`
-	Meta                 *ListApprovals200ResponseAllOfMeta        `json:"meta,omitempty"`
-	AdditionalProperties map[string]interface{}                    `json:",remain"`
+	Clients []ListClients200ResponseAllOfClientsInner `json:"clients,omitempty"`
+	// Optional caller data-view configuration for the clients list
+	ViewConfig map[string]interface{} `json:"viewConfig,omitempty"`
+	// Optional total count when included by the list renderer
+	Count                *int32                             `json:"count,omitempty"`
+	Meta                 *ListApprovals200ResponseAllOfMeta `json:"meta,omitempty"`
+	AdditionalProperties map[string]interface{}             `json:",remain"`
 }
 
 type _ListClients200Response ListClients200Response
@@ -41,6 +45,12 @@ func (o ListClients200Response) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Clients) {
 		toSerialize["clients"] = o.Clients
+	}
+	if !IsNil(o.ViewConfig) {
+		toSerialize["viewConfig"] = o.ViewConfig
+	}
+	if !IsNil(o.Count) {
+		toSerialize["count"] = o.Count
 	}
 	if !IsNil(o.Meta) {
 		toSerialize["meta"] = o.Meta

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,13 +22,13 @@ var _ MappedNullable = &ListSystems200ResponseSystemsInnerComponentsInner{}
 
 // ListSystems200ResponseSystemsInnerComponentsInner struct for ListSystems200ResponseSystemsInnerComponentsInner
 type ListSystems200ResponseSystemsInnerComponentsInner struct {
-	Id                   *int64                                                 `json:"id,omitempty"`
-	Name                 *string                                                `json:"name,omitempty"`
-	Type                 *ListSystems200ResponseSystemsInnerComponentsInnerType `json:"type,omitempty"`
-	Status               *string                                                `json:"status,omitempty"`
-	ExternalId           NullableString                                         `json:"externalId,omitempty"`
-	Config               *map[string]interface{}                                `json:"config,omitempty"`
-	AdditionalProperties map[string]interface{}                                 `json:",remain"`
+	Id                   *int64                                                        `json:"id,omitempty"`
+	Name                 *string                                                       `json:"name,omitempty"`
+	Type                 NullableListSystems200ResponseSystemsInnerComponentsInnerType `json:"type,omitempty"`
+	Status               *string                                                       `json:"status,omitempty"`
+	ExternalId           NullableString                                                `json:"externalId,omitempty"`
+	Config               *map[string]interface{}                                       `json:"config,omitempty"`
+	AdditionalProperties map[string]interface{}                                        `json:",remain"`
 }
 
 type _ListSystems200ResponseSystemsInnerComponentsInner ListSystems200ResponseSystemsInnerComponentsInner
@@ -49,8 +49,8 @@ func (o ListSystems200ResponseSystemsInnerComponentsInner) ToMap() (map[string]i
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.Status) {
 		toSerialize["status"] = o.Status

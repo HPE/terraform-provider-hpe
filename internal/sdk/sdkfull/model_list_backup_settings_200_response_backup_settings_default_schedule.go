@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListBackupSettings200ResponseBackupSettingsDefaultSchedule) ToMap() (map
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule struct {
+	value *ListBackupSettings200ResponseBackupSettingsDefaultSchedule
+	isSet bool
+}
+
+func (v NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) Get() *ListBackupSettings200ResponseBackupSettingsDefaultSchedule {
+	return v.value
+}
+
+func (v *NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) Set(val *ListBackupSettings200ResponseBackupSettingsDefaultSchedule) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListBackupSettings200ResponseBackupSettingsDefaultSchedule(val *ListBackupSettings200ResponseBackupSettingsDefaultSchedule) *NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule {
+	return &NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule{value: val, isSet: true}
+}
+
+func (v NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListBackupSettings200ResponseBackupSettingsDefaultSchedule) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListBackupSettings200ResponseBackupSettingsDefaultSchedule) UnmarshalJSON(data []byte) (err error) {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,10 @@ import (
 // checks if the AddPoliciesRequestPolicyPolicyType type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &AddPoliciesRequestPolicyPolicyType{}
 
-// AddPoliciesRequestPolicyPolicyType struct for AddPoliciesRequestPolicyPolicyType
+// AddPoliciesRequestPolicyPolicyType Policy type. Accepts `{ id }` or `{ code }`.
 type AddPoliciesRequestPolicyPolicyType struct {
+	// Policy type ID
+	Id *int64 `json:"id,omitempty"`
 	// The policy type code. See `Retrieves all Policy Types` endpoint for listing.
 	Code                 *string                `json:"code,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -39,6 +41,9 @@ func (o AddPoliciesRequestPolicyPolicyType) MarshalJSON() ([]byte, error) {
 
 func (o AddPoliciesRequestPolicyPolicyType) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
+	if !IsNil(o.Id) {
+		toSerialize["id"] = o.Id
+	}
 	if !IsNil(o.Code) {
 		toSerialize["code"] = o.Code
 	}

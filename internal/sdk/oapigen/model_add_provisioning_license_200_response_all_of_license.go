@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,8 +20,20 @@ var _ MappedNullable = &AddProvisioningLicense200ResponseAllOfLicense{}
 
 // AddProvisioningLicense200ResponseAllOfLicense struct for AddProvisioningLicense200ResponseAllOfLicense
 type AddProvisioningLicense200ResponseAllOfLicense struct {
-	Id                   *int64                 `json:"id,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	Id                   *int64                                                            `json:"id,omitempty"`
+	Name                 *string                                                           `json:"name,omitempty"`
+	Description          *string                                                           `json:"description,omitempty"`
+	LicenseType          *AddProvisioningLicense200ResponseAllOfLicenseLicenseType         `json:"licenseType,omitempty"`
+	LicenseKey           *string                                                           `json:"licenseKey,omitempty"`
+	OrgName              *string                                                           `json:"orgName,omitempty"`
+	FullName             *string                                                           `json:"fullName,omitempty"`
+	LicenseVersion       *string                                                           `json:"licenseVersion,omitempty"`
+	Copies               *int64                                                            `json:"copies,omitempty"`
+	ReservationCount     *int64                                                            `json:"reservationCount,omitempty"`
+	Tenants              []AddProvisioningLicense200ResponseAllOfLicenseTenantsInner       `json:"tenants,omitempty"`
+	VirtualImages        []AddProvisioningLicense200ResponseAllOfLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
+	Account              *AddProvisioningLicense200ResponseAllOfLicenseAccount             `json:"account,omitempty"`
+	AdditionalProperties map[string]interface{}                                            `json:",remain"`
 }
 
 type _AddProvisioningLicense200ResponseAllOfLicense AddProvisioningLicense200ResponseAllOfLicense
@@ -38,6 +50,42 @@ func (o AddProvisioningLicense200ResponseAllOfLicense) ToMap() (map[string]inter
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Id) {
 		toSerialize["id"] = o.Id
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.Description) {
+		toSerialize["description"] = o.Description
+	}
+	if !IsNil(o.LicenseType) {
+		toSerialize["licenseType"] = o.LicenseType
+	}
+	if !IsNil(o.LicenseKey) {
+		toSerialize["licenseKey"] = o.LicenseKey
+	}
+	if !IsNil(o.OrgName) {
+		toSerialize["orgName"] = o.OrgName
+	}
+	if !IsNil(o.FullName) {
+		toSerialize["fullName"] = o.FullName
+	}
+	if !IsNil(o.LicenseVersion) {
+		toSerialize["licenseVersion"] = o.LicenseVersion
+	}
+	if !IsNil(o.Copies) {
+		toSerialize["copies"] = o.Copies
+	}
+	if !IsNil(o.ReservationCount) {
+		toSerialize["reservationCount"] = o.ReservationCount
+	}
+	if !IsNil(o.Tenants) {
+		toSerialize["tenants"] = o.Tenants
+	}
+	if !IsNil(o.VirtualImages) {
+		toSerialize["virtualImages"] = o.VirtualImages
+	}
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 
 	for key, value := range o.AdditionalProperties {

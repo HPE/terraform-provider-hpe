@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,27 +22,27 @@ var _ MappedNullable = &ZoneResourcePool{}
 
 // ZoneResourcePool struct for ZoneResourcePool
 type ZoneResourcePool struct {
-	Id                   *int64                              `json:"id,omitempty"`
-	Description          NullableString                      `json:"description,omitempty"`
-	Zone                 NullableZoneResourcePoolZone        `json:"zone,omitempty"`
-	Parent               *ZoneResourcePoolParent             `json:"parent,omitempty"`
-	Type                 *string                             `json:"type,omitempty"`
-	ExternalId           *string                             `json:"externalId,omitempty"`
-	RegionCode           NullableString                      `json:"regionCode,omitempty"`
-	IacId                NullableString                      `json:"iacId,omitempty"`
-	Visibility           *string                             `json:"visibility,omitempty"`
-	ReadOnly             *bool                               `json:"readOnly,omitempty"`
-	DefaultPool          *bool                               `json:"defaultPool,omitempty"`
-	Active               *bool                               `json:"active,omitempty"`
-	Status               *string                             `json:"status,omitempty"`
-	Inventory            *bool                               `json:"inventory,omitempty"`
-	Config               *ZoneResourcePoolConfig             `json:"config,omitempty"`
-	Name                 *string                             `json:"name,omitempty"`
-	DisplayName          NullableString                      `json:"displayName,omitempty"`
-	Tenants              []ZoneResourcePoolTenantsInner      `json:"tenants,omitempty"`
-	ResourcePermission   *ZoneResourcePoolResourcePermission `json:"resourcePermission,omitempty"`
-	Depth                *int64                              `json:"depth,omitempty"`
-	AdditionalProperties map[string]interface{}              `json:",remain"`
+	Id                   *int64                                                              `json:"id,omitempty"`
+	Description          NullableString                                                      `json:"description,omitempty"`
+	Zone                 *AddCloudResourcePool200ResponseResourcePoolAllOfZone               `json:"zone,omitempty"`
+	Parent               *AddCloudResourcePool200ResponseResourcePoolAllOfParent             `json:"parent,omitempty"`
+	Type                 *string                                                             `json:"type,omitempty"`
+	ExternalId           *string                                                             `json:"externalId,omitempty"`
+	RegionCode           NullableString                                                      `json:"regionCode,omitempty"`
+	IacId                NullableString                                                      `json:"iacId,omitempty"`
+	Visibility           *string                                                             `json:"visibility,omitempty"`
+	ReadOnly             *bool                                                               `json:"readOnly,omitempty"`
+	DefaultPool          *bool                                                               `json:"defaultPool,omitempty"`
+	Active               *bool                                                               `json:"active,omitempty"`
+	Status               *string                                                             `json:"status,omitempty"`
+	Inventory            *bool                                                               `json:"inventory,omitempty"`
+	Config               NullableAddCloudResourcePool200ResponseResourcePoolAllOfConfig      `json:"config,omitempty"`
+	Name                 *string                                                             `json:"name,omitempty"`
+	DisplayName          NullableString                                                      `json:"displayName,omitempty"`
+	Tenants              []AddCloudResourcePool200ResponseResourcePoolAllOfTenantsInner      `json:"tenants,omitempty"`
+	ResourcePermission   *AddCloudResourcePool200ResponseResourcePoolAllOfResourcePermission `json:"resourcePermission,omitempty"`
+	Depth                *int64                                                              `json:"depth,omitempty"`
+	AdditionalProperties map[string]interface{}                                              `json:",remain"`
 }
 
 type _ZoneResourcePool ZoneResourcePool
@@ -63,8 +63,8 @@ func (o ZoneResourcePool) ToMap() (map[string]interface{}, error) {
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if o.Zone.IsSet() {
-		toSerialize["zone"] = o.Zone.Get()
+	if !IsNil(o.Zone) {
+		toSerialize["zone"] = o.Zone
 	}
 	if !IsNil(o.Parent) {
 		toSerialize["parent"] = o.Parent
@@ -99,8 +99,8 @@ func (o ZoneResourcePool) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Inventory) {
 		toSerialize["inventory"] = o.Inventory
 	}
-	if !IsNil(o.Config) {
-		toSerialize["config"] = o.Config
+	if o.Config.IsSet() {
+		toSerialize["config"] = o.Config.Get()
 	}
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name

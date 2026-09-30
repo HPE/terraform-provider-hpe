@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,6 +25,7 @@ type SaveCloudDatastoreRequestDatastore struct {
 	Name *string `json:"name,omitempty"`
 	// The code of the datastoreType
 	DatastoreType        *string                                                `json:"datastoreType,omitempty"`
+	Config               *SaveCloudDatastoreRequestDatastoreConfig              `json:"config,omitempty"`
 	StorageServer        *SaveCloudDatastoreRequestDatastoreStorageServer       `json:"storageServer,omitempty"`
 	Visibility           *string                                                `json:"visibility,omitempty"`
 	Active               *bool                                                  `json:"active,omitempty"`
@@ -52,6 +53,9 @@ func (o SaveCloudDatastoreRequestDatastore) ToMap() (map[string]interface{}, err
 	}
 	if !IsNil(o.DatastoreType) {
 		toSerialize["datastoreType"] = o.DatastoreType
+	}
+	if !IsNil(o.Config) {
+		toSerialize["config"] = o.Config
 	}
 	if !IsNil(o.StorageServer) {
 		toSerialize["storageServer"] = o.StorageServer

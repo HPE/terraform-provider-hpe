@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,11 +22,14 @@ var _ MappedNullable = &LogSettings{}
 
 // LogSettings struct for LogSettings
 type LogSettings struct {
-	Enabled              *bool                    `json:"enabled,omitempty"`
-	RetentionDays        *string                  `json:"retentionDays,omitempty"`
-	SyslogRules          []map[string]interface{} `json:"syslogRules,omitempty"`
-	Integrations         []map[string]interface{} `json:"integrations,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// Log retention period in days
+	RetentionDays   *int64                        `json:"retentionDays,omitempty"`
+	MinimumLogLevel NullableString                `json:"minimumLogLevel,omitempty"`
+	SyslogRules     []LogSettingsSyslogRulesInner `json:"syslogRules,omitempty"`
+	// Log forwarding integrations (product-dependent; may be empty)
+	Integrations         []LogSettingsIntegrationsInner `json:"integrations,omitempty"`
+	AdditionalProperties map[string]interface{}         `json:",remain"`
 }
 
 type _LogSettings LogSettings
@@ -47,10 +50,13 @@ func (o LogSettings) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.RetentionDays) {
 		toSerialize["retentionDays"] = o.RetentionDays
 	}
-	if o.SyslogRules != nil {
+	if o.MinimumLogLevel.IsSet() {
+		toSerialize["minimumLogLevel"] = o.MinimumLogLevel.Get()
+	}
+	if !IsNil(o.SyslogRules) {
 		toSerialize["syslogRules"] = o.SyslogRules
 	}
-	if o.Integrations != nil {
+	if !IsNil(o.Integrations) {
 		toSerialize["integrations"] = o.Integrations
 	}
 

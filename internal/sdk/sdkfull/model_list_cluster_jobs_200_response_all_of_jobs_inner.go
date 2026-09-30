@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,28 +23,28 @@ var _ MappedNullable = &ListClusterJobs200ResponseAllOfJobsInner{}
 
 // ListClusterJobs200ResponseAllOfJobsInner struct for ListClusterJobs200ResponseAllOfJobsInner
 type ListClusterJobs200ResponseAllOfJobsInner struct {
-	Id                   *int64                                             `json:"id,omitempty"`
-	Name                 *string                                            `json:"name,omitempty"`
-	Labels               []string                                           `json:"labels,omitempty"`
-	Type                 *ListClusterJobs200ResponseAllOfJobsInnerType      `json:"type,omitempty"`
-	JobSummary           NullableString                                     `json:"jobSummary,omitempty"`
-	ScheduleMode         NullableString                                     `json:"scheduleMode,omitempty"`
-	DateTime             NullableTime                                       `json:"dateTime,omitempty"`
-	Status               NullableString                                     `json:"status,omitempty"`
-	Namespace            NullableString                                     `json:"namespace,omitempty"`
-	Category             *string                                            `json:"category,omitempty"`
-	Description          NullableString                                     `json:"description,omitempty"`
-	Enabled              *bool                                              `json:"enabled,omitempty"`
-	DateCreated          *time.Time                                         `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                         `json:"lastUpdated,omitempty"`
-	LastRun              NullableTime                                       `json:"lastRun,omitempty"`
-	LastResult           NullableString                                     `json:"lastResult,omitempty"`
-	CreatedBy            *ListClusterJobs200ResponseAllOfJobsInnerCreatedBy `json:"createdBy,omitempty"`
-	TargetType           NullableString                                     `json:"targetType,omitempty"`
-	Targets              []map[string]interface{}                           `json:"targets,omitempty"`
-	CustomConfig         map[string]interface{}                             `json:"customConfig,omitempty"`
-	CustomOptions        map[string]interface{}                             `json:"customOptions,omitempty"`
-	AdditionalProperties map[string]interface{}                             `json:",remain"`
+	Id                   *int64                                               `json:"id,omitempty"`
+	Name                 *string                                              `json:"name,omitempty"`
+	Labels               []string                                             `json:"labels,omitempty"`
+	Type                 NullableListClusterJobs200ResponseAllOfJobsInnerType `json:"type,omitempty"`
+	JobSummary           NullableString                                       `json:"jobSummary,omitempty"`
+	ScheduleMode         NullableString                                       `json:"scheduleMode,omitempty"`
+	DateTime             NullableTime                                         `json:"dateTime,omitempty"`
+	Status               NullableString                                       `json:"status,omitempty"`
+	Namespace            NullableString                                       `json:"namespace,omitempty"`
+	Category             *string                                              `json:"category,omitempty"`
+	Description          NullableString                                       `json:"description,omitempty"`
+	Enabled              *bool                                                `json:"enabled,omitempty"`
+	DateCreated          *time.Time                                           `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                           `json:"lastUpdated,omitempty"`
+	LastRun              NullableTime                                         `json:"lastRun,omitempty"`
+	LastResult           NullableString                                       `json:"lastResult,omitempty"`
+	CreatedBy            *ListClusterJobs200ResponseAllOfJobsInnerCreatedBy   `json:"createdBy,omitempty"`
+	TargetType           NullableString                                       `json:"targetType,omitempty"`
+	Targets              []map[string]interface{}                             `json:"targets,omitempty"`
+	CustomConfig         map[string]interface{}                               `json:"customConfig,omitempty"`
+	CustomOptions        map[string]interface{}                               `json:"customOptions,omitempty"`
+	AdditionalProperties map[string]interface{}                               `json:",remain"`
 }
 
 type _ListClusterJobs200ResponseAllOfJobsInner ListClusterJobs200ResponseAllOfJobsInner
@@ -68,8 +68,8 @@ func (o ListClusterJobs200ResponseAllOfJobsInner) ToMap() (map[string]interface{
 	if !IsNil(o.Labels) {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if o.JobSummary.IsSet() {
 		toSerialize["jobSummary"] = o.JobSummary.Get()

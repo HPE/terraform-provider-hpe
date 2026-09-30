@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -25,7 +25,7 @@ type AddPoliciesGroup200ResponseAllOfPolicy struct {
 	Id                   *int64                                                   `json:"id,omitempty"`
 	Name                 *string                                                  `json:"name,omitempty"`
 	Description          NullableString                                           `json:"description,omitempty"`
-	PolicyType           *AddPoliciesGroup200ResponseAllOfPolicyPolicyType        `json:"policyType,omitempty"`
+	PolicyType           NullableAddPoliciesGroup200ResponseAllOfPolicyPolicyType `json:"policyType,omitempty"`
 	Zone                 *AddPoliciesGroup200ResponseAllOfPolicyZone              `json:"zone,omitempty"`
 	Site                 *AddPoliciesGroup200ResponseAllOfPolicySite              `json:"site,omitempty"`
 	User                 *AddPoliciesGroup200ResponseAllOfPolicyUser              `json:"user,omitempty"`
@@ -61,8 +61,8 @@ func (o AddPoliciesGroup200ResponseAllOfPolicy) ToMap() (map[string]interface{},
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone

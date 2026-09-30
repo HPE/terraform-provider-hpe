@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,34 +23,34 @@ var _ MappedNullable = &Whoami200ResponseUser{}
 
 // Whoami200ResponseUser struct for Whoami200ResponseUser
 type Whoami200ResponseUser struct {
-	Id                   *int64                                             `json:"id,omitempty"`
-	AccountId            *int64                                             `json:"accountId,omitempty"`
-	Username             *string                                            `json:"username,omitempty"`
-	DisplayName          *string                                            `json:"displayName,omitempty"`
-	Email                *string                                            `json:"email,omitempty"`
-	FirstName            *string                                            `json:"firstName,omitempty"`
-	LastName             *string                                            `json:"lastName,omitempty"`
-	Enabled              *bool                                              `json:"enabled,omitempty"`
-	ReceiveNotifications *bool                                              `json:"receiveNotifications,omitempty"`
-	IsUsing2FA           *bool                                              `json:"isUsing2FA,omitempty"`
-	AccountExpired       *bool                                              `json:"accountExpired,omitempty"`
-	AccountLocked        *bool                                              `json:"accountLocked,omitempty"`
-	PasswordExpired      *bool                                              `json:"passwordExpired,omitempty"`
-	LoginCount           *int64                                             `json:"loginCount,omitempty"`
-	LoginAttempts        *int64                                             `json:"loginAttempts,omitempty"`
-	LastLoginDate        *time.Time                                         `json:"lastLoginDate,omitempty"`
-	Roles                []ListUsers200ResponseAllOfUsersInnerRolesInner    `json:"roles,omitempty"`
-	Account              *ListUsers200ResponseAllOfUsersInnerAccount        `json:"account,omitempty"`
-	LinuxUsername        NullableString                                     `json:"linuxUsername,omitempty"`
-	LinuxPassword        NullableString                                     `json:"linuxPassword,omitempty"`
-	LinuxKeyPairId       NullableInt64                                      `json:"linuxKeyPairId,omitempty"`
-	WindowsUsername      NullableString                                     `json:"windowsUsername,omitempty"`
-	WindowsPassword      NullableString                                     `json:"windowsPassword,omitempty"`
-	DefaultPersona       *ListUsers200ResponseAllOfUsersInnerDefaultPersona `json:"defaultPersona,omitempty"`
-	DateCreated          *time.Time                                         `json:"dateCreated,omitempty"`
-	LastUpdated          *time.Time                                         `json:"lastUpdated,omitempty"`
-	Access               *ListUsers200ResponseAllOfUsersInnerAccess         `json:"access,omitempty"`
-	AdditionalProperties map[string]interface{}                             `json:",remain"`
+	Id                   *int64                                           `json:"id,omitempty"`
+	AccountId            *int64                                           `json:"accountId,omitempty"`
+	Username             *string                                          `json:"username,omitempty"`
+	DisplayName          *string                                          `json:"displayName,omitempty"`
+	Email                *string                                          `json:"email,omitempty"`
+	FirstName            *string                                          `json:"firstName,omitempty"`
+	LastName             *string                                          `json:"lastName,omitempty"`
+	Enabled              *bool                                            `json:"enabled,omitempty"`
+	ReceiveNotifications *bool                                            `json:"receiveNotifications,omitempty"`
+	IsUsing2FA           *bool                                            `json:"isUsing2FA,omitempty"`
+	AccountExpired       *bool                                            `json:"accountExpired,omitempty"`
+	AccountLocked        *bool                                            `json:"accountLocked,omitempty"`
+	PasswordExpired      *bool                                            `json:"passwordExpired,omitempty"`
+	LoginCount           *int64                                           `json:"loginCount,omitempty"`
+	LoginAttempts        *int64                                           `json:"loginAttempts,omitempty"`
+	LastLoginDate        *time.Time                                       `json:"lastLoginDate,omitempty"`
+	Roles                []AddUserTenant200ResponseAllOfUserRolesInner    `json:"roles,omitempty"`
+	Account              *AddUserTenant200ResponseAllOfUserAccount        `json:"account,omitempty"`
+	LinuxUsername        NullableString                                   `json:"linuxUsername,omitempty"`
+	LinuxPassword        NullableString                                   `json:"linuxPassword,omitempty"`
+	LinuxKeyPairId       NullableInt64                                    `json:"linuxKeyPairId,omitempty"`
+	WindowsUsername      NullableString                                   `json:"windowsUsername,omitempty"`
+	WindowsPassword      NullableString                                   `json:"windowsPassword,omitempty"`
+	DefaultPersona       *AddUserTenant200ResponseAllOfUserDefaultPersona `json:"defaultPersona,omitempty"`
+	DateCreated          *time.Time                                       `json:"dateCreated,omitempty"`
+	LastUpdated          *time.Time                                       `json:"lastUpdated,omitempty"`
+	Access               *AddUserTenant200ResponseAllOfUserAccess         `json:"access,omitempty"`
+	AdditionalProperties map[string]interface{}                           `json:",remain"`
 }
 
 type _Whoami200ResponseUser Whoami200ResponseUser

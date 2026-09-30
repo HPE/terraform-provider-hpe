@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -51,51 +51,6 @@ func (o AddCloudResourcePool200ResponseResourcePoolAllOfZone) ToMap() (map[strin
 	}
 
 	return toSerialize, nil
-}
-
-type NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone struct {
-	value *AddCloudResourcePool200ResponseResourcePoolAllOfZone
-	isSet bool
-}
-
-func (v NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) Get() *AddCloudResourcePool200ResponseResourcePoolAllOfZone {
-	return v.value
-}
-
-func (v *NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) Set(val *AddCloudResourcePool200ResponseResourcePoolAllOfZone) {
-	v.value = val
-	v.isSet = true
-}
-
-func (v NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) IsSet() bool {
-	return v.isSet
-}
-
-func (v *NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) Unset() {
-	v.value = nil
-	v.isSet = false
-}
-
-func NewNullableAddCloudResourcePool200ResponseResourcePoolAllOfZone(val *AddCloudResourcePool200ResponseResourcePoolAllOfZone) *NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone {
-	return &NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone{value: val, isSet: true}
-}
-
-func (v NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) MarshalJSON() ([]byte, error) {
-	return json.Marshal(v.value)
-}
-
-func (v *NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) UnmarshalJSON(src []byte) error {
-	v.isSet = true
-	return json.Unmarshal(src, &v.value)
-}
-
-func (v NullableAddCloudResourcePool200ResponseResourcePoolAllOfZone) UnmarshalMapstructure(data any) (any, error) {
-	if err := mapstructDecode(data, &v.value); err != nil {
-		return nil, err
-	}
-	v.isSet = true
-
-	return v, nil
 }
 
 func (o *AddCloudResourcePool200ResponseResourcePoolAllOfZone) UnmarshalJSON(data []byte) (err error) {

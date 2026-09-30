@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -37,7 +37,7 @@ type GetNetworkRouter200ResponseNetworkRouter struct {
 	ProviderId           *string                                                   `json:"providerId,omitempty"`
 	Type                 *GetNetworkRouter200ResponseNetworkRouterType             `json:"type,omitempty"`
 	NetworkServer        *GetNetworkRouter200ResponseNetworkRouterNetworkServer    `json:"networkServer,omitempty"`
-	Zone                 *GetNetworkRouter200ResponseNetworkRouterZone             `json:"zone,omitempty"`
+	Zone                 NullableGetNetworkRouter200ResponseNetworkRouterZone      `json:"zone,omitempty"`
 	Instance             NullableString                                            `json:"instance,omitempty"`
 	ExternalNetwork      NullableString                                            `json:"externalNetwork,omitempty"`
 	Site                 *GetNetworkRouter200ResponseNetworkRouterSite             `json:"site,omitempty"`
@@ -110,8 +110,8 @@ func (o GetNetworkRouter200ResponseNetworkRouter) ToMap() (map[string]interface{
 	if !IsNil(o.NetworkServer) {
 		toSerialize["networkServer"] = o.NetworkServer
 	}
-	if !IsNil(o.Zone) {
-		toSerialize["zone"] = o.Zone
+	if o.Zone.IsSet() {
+		toSerialize["zone"] = o.Zone.Get()
 	}
 	if o.Instance.IsSet() {
 		toSerialize["instance"] = o.Instance.Get()

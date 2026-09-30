@@ -577,11 +577,11 @@ func parseAsData(
 
 	// plan
 	data.Plan = NewPlanValueNull()
-	if instance.Plan != nil {
+	if plan := instance.Plan.Get(); plan != nil {
 		data.Plan = PlanValue{
-			Code:  convert.StrToType(instance.Plan.Code),
-			Id:    convert.Int64ToType(instance.Plan.Id),
-			Name:  convert.StrToType(instance.Plan.Name),
+			Code:  convert.StrToType(plan.Code),
+			Id:    convert.Int64ToType(plan.Id),
+			Name:  convert.StrToType(plan.Name),
 			state: attr.ValueStateKnown,
 		}
 	}

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,7 +22,9 @@ var _ MappedNullable = &SetApplianceSettingsMaintenanceMode200Response{}
 
 // SetApplianceSettingsMaintenanceMode200Response struct for SetApplianceSettingsMaintenanceMode200Response
 type SetApplianceSettingsMaintenanceMode200Response struct {
-	Success              *bool                  `json:"success,omitempty"`
+	Success *bool `json:"success,omitempty"`
+	// Whether maintenance mode is enabled after the toggle
+	Enabled              *bool                  `json:"enabled,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -40,6 +42,9 @@ func (o SetApplianceSettingsMaintenanceMode200Response) ToMap() (map[string]inte
 	toSerialize := map[string]interface{}{}
 	if !IsNil(o.Success) {
 		toSerialize["success"] = o.Success
+	}
+	if !IsNil(o.Enabled) {
+		toSerialize["enabled"] = o.Enabled
 	}
 
 	for key, value := range o.AdditionalProperties {

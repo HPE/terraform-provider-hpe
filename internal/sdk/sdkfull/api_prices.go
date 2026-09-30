@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -119,7 +119,7 @@ func (a *PricesAPIService) AddPricesExecute(r ApiAddPricesRequest) (*AddPrices20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -130,7 +130,7 @@ func (a *PricesAPIService) AddPricesExecute(r ApiAddPricesRequest) (*AddPrices20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -243,7 +243,7 @@ func (a *PricesAPIService) DeactivatePricesExecute(r ApiDeactivatePricesRequest)
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -254,7 +254,7 @@ func (a *PricesAPIService) DeactivatePricesExecute(r ApiDeactivatePricesRequest)
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -367,7 +367,7 @@ func (a *PricesAPIService) GetPricesExecute(r ApiGetPricesRequest) (*GetPrices20
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -378,7 +378,127 @@ func (a *PricesAPIService) GetPricesExecute(r ApiGetPricesRequest) (*GetPrices20
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListPriceCurrenciesRequest struct {
+	ctx        context.Context
+	ApiService *PricesAPIService
+}
+
+func (r ApiListPriceCurrenciesRequest) Execute() (*ListPriceCurrencies200Response, *http.Response, error) {
+	return r.ApiService.ListPriceCurrenciesExecute(r)
+}
+
+/*
+ListPriceCurrencies List price currencies
+
+Lists ISO currency codes available when creating or updating prices.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListPriceCurrenciesRequest
+*/
+func (a *PricesAPIService) ListPriceCurrencies(ctx context.Context) ApiListPriceCurrenciesRequest {
+	return ApiListPriceCurrenciesRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListPriceCurrencies200Response
+func (a *PricesAPIService) ListPriceCurrenciesExecute(r ApiListPriceCurrenciesRequest) (*ListPriceCurrencies200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListPriceCurrencies200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PricesAPIService.ListPriceCurrencies")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/prices/currencies"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -409,13 +529,15 @@ type ApiListPricesRequest struct {
 	offset          *int64
 	sort            *string
 	direction       *string
+	order           *string
 	phrase          *string
 	name            *string
+	code            *string
 	includeInactive *bool
 	priceType       *string
 	platform        *string
 	currency        *string
-	type_           *string
+	priceUnit       *string
 }
 
 // Maximum number of records to return
@@ -442,6 +564,12 @@ func (r ApiListPricesRequest) Direction(direction string) ApiListPricesRequest {
 	return r
 }
 
+// Sort direction, use &#39;desc&#39; to reverse sort
+func (r ApiListPricesRequest) Order(order string) ApiListPricesRequest {
+	r.order = &order
+	return r
+}
+
 // Search phrase for partial matches on name or description
 func (r ApiListPricesRequest) Phrase(phrase string) ApiListPricesRequest {
 	r.phrase = &phrase
@@ -454,13 +582,19 @@ func (r ApiListPricesRequest) Name(name string) ApiListPricesRequest {
 	return r
 }
 
+// If specified will return an exact match on code
+func (r ApiListPricesRequest) Code(code string) ApiListPricesRequest {
+	r.code = &code
+	return r
+}
+
 // If true, include inactive prices in the results
 func (r ApiListPricesRequest) IncludeInactive(includeInactive bool) ApiListPricesRequest {
 	r.includeInactive = &includeInactive
 	return r
 }
 
-// Restricts query to only load only prices with specified priceType. * &#x60;fixed&#x60; - Everything * &#x60;compute&#x60; - Memory + CPU * &#x60;memory&#x60; - Memory * &#x60;cores&#x60; - Cores * &#x60;storage&#x60; - Storage * &#x60;datastore&#x60; - Datastore * &#x60;platform&#x60; - Platform * &#x60;software&#x60; - Software
+// Restricts query to only load only prices with specified priceType. * &#x60;fixed&#x60; - Everything * &#x60;compute&#x60; - Memory + CPU * &#x60;memory&#x60; - Memory * &#x60;cores&#x60; - Cores * &#x60;storage&#x60; - Storage * &#x60;datastore&#x60; - Datastore * &#x60;platform&#x60; - Platform * &#x60;software&#x60; - Software (response alias for software_or_service) * &#x60;software_or_service&#x60; - Software or service * &#x60;load_balancer&#x60; - Load Balancer * &#x60;load_balancer_virtual_server&#x60; - Load Balancer Virtual Server
 func (r ApiListPricesRequest) PriceType(priceType string) ApiListPricesRequest {
 	r.priceType = &priceType
 	return r
@@ -478,9 +612,9 @@ func (r ApiListPricesRequest) Currency(currency string) ApiListPricesRequest {
 	return r
 }
 
-// Filter by type code
-func (r ApiListPricesRequest) Type_(type_ string) ApiListPricesRequest {
-	r.type_ = &type_
+// Filter by price unit (repeatable)
+func (r ApiListPricesRequest) PriceUnit(priceUnit string) ApiListPricesRequest {
+	r.priceUnit = &priceUnit
 	return r
 }
 
@@ -549,11 +683,20 @@ func (a *PricesAPIService) ListPricesExecute(r ApiListPricesRequest) (*ListPrice
 		var defaultValue string = "asc"
 		r.direction = &defaultValue
 	}
+	if r.order != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "order", r.order, "form", "")
+	} else {
+		var defaultValue string = "asc"
+		r.order = &defaultValue
+	}
 	if r.phrase != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
 	}
 	if r.name != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
+	}
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
 	}
 	if r.includeInactive != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "includeInactive", r.includeInactive, "form", "")
@@ -567,8 +710,8 @@ func (a *PricesAPIService) ListPricesExecute(r ApiListPricesRequest) (*ListPrice
 	if r.currency != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "currency", r.currency, "form", "")
 	}
-	if r.type_ != nil {
-		parameterAddToHeaderOrQuery(localVarQueryParams, "type", r.type_, "form", "")
+	if r.priceUnit != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "priceUnit", r.priceUnit, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -609,7 +752,7 @@ func (a *PricesAPIService) ListPricesExecute(r ApiListPricesRequest) (*ListPrice
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -620,7 +763,7 @@ func (a *PricesAPIService) ListPricesExecute(r ApiListPricesRequest) (*ListPrice
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -656,7 +799,7 @@ func (r ApiUpdatePricesRequest) UpdatePricesRequest(updatePricesRequest UpdatePr
 	return r
 }
 
-func (r ApiUpdatePricesRequest) Execute() (*UpdatePrices200Response, *http.Response, error) {
+func (r ApiUpdatePricesRequest) Execute() (*RemoveExecuteSchedules200Response, *http.Response, error) {
 	return r.ApiService.UpdatePricesExecute(r)
 }
 
@@ -664,6 +807,10 @@ func (r ApiUpdatePricesRequest) Execute() (*UpdatePrices200Response, *http.Respo
 UpdatePrices Updates a Price
 
 Updates a price.
+
+`code` and `account` on the request are ignored; the existing price values are kept.
+Software prices may send `software` or `softwareOrService`. Request `priceType`
+value `software` is stored as `software_or_service`.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -679,13 +826,13 @@ func (a *PricesAPIService) UpdatePrices(ctx context.Context, id int64) ApiUpdate
 
 // Execute executes the request
 //
-//	@return UpdatePrices200Response
-func (a *PricesAPIService) UpdatePricesExecute(r ApiUpdatePricesRequest) (*UpdatePrices200Response, *http.Response, error) {
+//	@return RemoveExecuteSchedules200Response
+func (a *PricesAPIService) UpdatePricesExecute(r ApiUpdatePricesRequest) (*RemoveExecuteSchedules200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdatePrices200Response
+		localVarReturnValue *RemoveExecuteSchedules200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "PricesAPIService.UpdatePrices")
@@ -741,7 +888,7 @@ func (a *PricesAPIService) UpdatePricesExecute(r ApiUpdatePricesRequest) (*Updat
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -752,7 +899,7 @@ func (a *PricesAPIService) UpdatePricesExecute(r ApiUpdatePricesRequest) (*Updat
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,11 +22,11 @@ var _ MappedNullable = &ListImageBuilds200ResponseAllOfImageBuildsInnerConfigIns
 
 // ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance struct for ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance
 type ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance struct {
-	Layout               *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout `json:"layout,omitempty"`
-	Site                 *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceSite   `json:"site,omitempty"`
-	Name                 *string                                                              `json:"name,omitempty"`
-	Type                 *string                                                              `json:"type,omitempty"`
-	AdditionalProperties map[string]interface{}                                               `json:",remain"`
+	Layout               NullableListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceLayout `json:"layout,omitempty"`
+	Site                 *ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstanceSite          `json:"site,omitempty"`
+	Name                 *string                                                                     `json:"name,omitempty"`
+	Type                 *string                                                                     `json:"type,omitempty"`
+	AdditionalProperties map[string]interface{}                                                      `json:",remain"`
 }
 
 type _ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance
@@ -41,8 +41,8 @@ func (o ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance) MarshalJS
 
 func (o ListImageBuilds200ResponseAllOfImageBuildsInnerConfigInstance) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	if !IsNil(o.Layout) {
-		toSerialize["layout"] = o.Layout
+	if o.Layout.IsSet() {
+		toSerialize["layout"] = o.Layout.Get()
 	}
 	if !IsNil(o.Site) {
 		toSerialize["site"] = o.Site

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,7 +24,7 @@ var _ MappedNullable = &AddImageBuild200ResponseAllOfImageBuild{}
 type AddImageBuild200ResponseAllOfImageBuild struct {
 	Id                   *int64                                                 `json:"id,omitempty"`
 	Account              NullableAddImageBuild200ResponseAllOfImageBuildAccount `json:"account,omitempty"`
-	Type                 *AddImageBuild200ResponseAllOfImageBuildType           `json:"type,omitempty"`
+	Type                 NullableAddImageBuild200ResponseAllOfImageBuildType    `json:"type,omitempty"`
 	Site                 NullableAddImageBuild200ResponseAllOfImageBuildSite    `json:"site,omitempty"`
 	Zone                 NullableAddImageBuild200ResponseAllOfImageBuildZone    `json:"zone,omitempty"`
 	Name                 *string                                                `json:"name,omitempty"`
@@ -65,8 +65,8 @@ func (o AddImageBuild200ResponseAllOfImageBuild) ToMap() (map[string]interface{}
 	if o.Account.IsSet() {
 		toSerialize["account"] = o.Account.Get()
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if o.Site.IsSet() {
 		toSerialize["site"] = o.Site.Get()

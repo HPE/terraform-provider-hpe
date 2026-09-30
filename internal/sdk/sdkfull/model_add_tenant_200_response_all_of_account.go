@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -31,7 +31,7 @@ type AddTenant200ResponseAllOfAccount struct {
 	ExternalId           NullableString                          `json:"externalId,omitempty"`
 	CustomerNumber       NullableString                          `json:"customerNumber,omitempty"`
 	AccountNumber        NullableString                          `json:"accountNumber,omitempty"`
-	AccountName          *string                                 `json:"accountName,omitempty"`
+	AccountName          NullableString                          `json:"accountName,omitempty"`
 	Active               *bool                                   `json:"active,omitempty"`
 	Master               *bool                                   `json:"master,omitempty"`
 	Parent               *AddTenant200ResponseAllOfAccountParent `json:"parent,omitempty"`
@@ -78,8 +78,8 @@ func (o AddTenant200ResponseAllOfAccount) ToMap() (map[string]interface{}, error
 	if o.AccountNumber.IsSet() {
 		toSerialize["accountNumber"] = o.AccountNumber.Get()
 	}
-	if !IsNil(o.AccountName) {
-		toSerialize["accountName"] = o.AccountName
+	if o.AccountName.IsSet() {
+		toSerialize["accountName"] = o.AccountName.Get()
 	}
 	if !IsNil(o.Active) {
 		toSerialize["active"] = o.Active

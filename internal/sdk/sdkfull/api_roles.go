@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -129,7 +129,7 @@ func (a *RolesAPIService) AddRolesExecute(r ApiAddRolesRequest) (*AddRoles200Res
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -140,7 +140,7 @@ func (a *RolesAPIService) AddRolesExecute(r ApiAddRolesRequest) (*AddRoles200Res
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -170,7 +170,7 @@ type ApiDeleteRoleRequest struct {
 	id         int64
 }
 
-func (r ApiDeleteRoleRequest) Execute() (*UpdateApprovalsItem200Response, *http.Response, error) {
+func (r ApiDeleteRoleRequest) Execute() (*DeleteRole200Response, *http.Response, error) {
 	return r.ApiService.DeleteRoleExecute(r)
 }
 
@@ -193,13 +193,13 @@ func (a *RolesAPIService) DeleteRole(ctx context.Context, id int64) ApiDeleteRol
 
 // Execute executes the request
 //
-//	@return UpdateApprovalsItem200Response
-func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateApprovalsItem200Response, *http.Response, error) {
+//	@return DeleteRole200Response
+func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*DeleteRole200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodDelete
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateApprovalsItem200Response
+		localVarReturnValue *DeleteRole200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.DeleteRole")
@@ -264,7 +264,7 @@ func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateAppr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -275,7 +275,7 @@ func (a *RolesAPIService) DeleteRoleExecute(r ApiDeleteRoleRequest) (*UpdateAppr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -304,11 +304,32 @@ type ApiGetRoleRequest struct {
 	ApiService           *RolesAPIService
 	id                   int64
 	includeDefaultAccess *bool
+	max                  *int32
+	offset               *int32
+	tenantId             *GetRoleTenantIdParameter
 }
 
 // Pass true to include all resource permissions in the response including those with access set to &#x60;default&#x60;. Only resources with access specific levels are returned by default. eg. &#x60;full&#x60;, &#x60;read&#x60; or &#x60;none&#x60;
 func (r ApiGetRoleRequest) IncludeDefaultAccess(includeDefaultAccess bool) ApiGetRoleRequest {
 	r.includeDefaultAccess = &includeDefaultAccess
+	return r
+}
+
+// Page size for &#x60;tenantCopies&#x60; on multitenant master roles (default 10, max 1000)
+func (r ApiGetRoleRequest) Max(max int32) ApiGetRoleRequest {
+	r.max = &max
+	return r
+}
+
+// Offset for &#x60;tenantCopies&#x60; paging
+func (r ApiGetRoleRequest) Offset(offset int32) ApiGetRoleRequest {
+	r.offset = &offset
+	return r
+}
+
+// Filter &#x60;tenantCopies&#x60; to a specific tenant/account ID. Integer or string accepted.
+func (r ApiGetRoleRequest) TenantId(tenantId GetRoleTenantIdParameter) ApiGetRoleRequest {
+	r.tenantId = &tenantId
 	return r
 }
 
@@ -359,6 +380,15 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 	if r.includeDefaultAccess != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "includeDefaultAccess", r.includeDefaultAccess, "form", "")
 	}
+	if r.max != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
+	}
+	if r.offset != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
+	}
+	if r.tenantId != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenantId", r.tenantId, "form", "")
+	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
 
@@ -398,7 +428,7 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -409,7 +439,127 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiListRolePersonasRequest struct {
+	ctx        context.Context
+	ApiService *RolesAPIService
+}
+
+func (r ApiListRolePersonasRequest) Execute() (*ListRolePersonas200Response, *http.Response, error) {
+	return r.ApiService.ListRolePersonasExecute(r)
+}
+
+/*
+ListRolePersonas List personas available for roles
+
+Personas the current account can view, for role defaultPersona assignment.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiListRolePersonasRequest
+*/
+func (a *RolesAPIService) ListRolePersonas(ctx context.Context) ApiListRolePersonasRequest {
+	return ApiListRolePersonasRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListRolePersonas200Response
+func (a *RolesAPIService) ListRolePersonasExecute(r ApiListRolePersonasRequest) (*ListRolePersonas200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListRolePersonas200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.ListRolePersonas")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/roles/personas"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -434,15 +584,20 @@ func (a *RolesAPIService) GetRoleExecute(r ApiGetRoleRequest) (*GetRole200Respon
 }
 
 type ApiListRolesRequest struct {
-	ctx        context.Context
-	ApiService *RolesAPIService
-	phrase     *string
-	max        *int64
-	offset     *int64
-	sort       *string
-	direction  *string
-	authority  *string
-	roleType   *string
+	ctx         context.Context
+	ApiService  *RolesAPIService
+	phrase      *string
+	max         *int64
+	offset      *int64
+	sort        *string
+	direction   *string
+	id          *ListRolesIdParameter
+	authority   *string
+	name        *string
+	description *string
+	roleType    *string
+	owner       *ListRolesOwnerParameter
+	tenant      *ListRolesTenantParameter
 }
 
 // Search phrase for partial matches on name or description
@@ -475,15 +630,45 @@ func (r ApiListRolesRequest) Direction(direction string) ApiListRolesRequest {
 	return r
 }
 
-// Filter by authority
+// Filter by one or more role IDs (integer or string forms accepted)
+func (r ApiListRolesRequest) Id(id ListRolesIdParameter) ApiListRolesRequest {
+	r.id = &id
+	return r
+}
+
+// Filter by authority (exact match, case-insensitive)
 func (r ApiListRolesRequest) Authority(authority string) ApiListRolesRequest {
 	r.authority = &authority
+	return r
+}
+
+// Alias for &#x60;authority&#x60;
+func (r ApiListRolesRequest) Name(name string) ApiListRolesRequest {
+	r.name = &name
+	return r
+}
+
+// Filter by description (exact match, case-insensitive)
+func (r ApiListRolesRequest) Description(description string) ApiListRolesRequest {
+	r.description = &description
 	return r
 }
 
 // Filter by roleType
 func (r ApiListRolesRequest) RoleType(roleType string) ApiListRolesRequest {
 	r.roleType = &roleType
+	return r
+}
+
+// Tenant/account ID whose roles to list. Master tenants may load a child tenant&#39;s roles. Alias of &#x60;tenant&#x60;. Integer or string accepted.
+func (r ApiListRolesRequest) Owner(owner ListRolesOwnerParameter) ApiListRolesRequest {
+	r.owner = &owner
+	return r
+}
+
+// Alias for &#x60;owner&#x60;. Integer or string accepted.
+func (r ApiListRolesRequest) Tenant(tenant ListRolesTenantParameter) ApiListRolesRequest {
+	r.tenant = &tenant
 	return r
 }
 
@@ -555,11 +740,26 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 		var defaultValue string = "asc"
 		r.direction = &defaultValue
 	}
+	if r.id != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "id", r.id, "form", "")
+	}
 	if r.authority != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "authority", r.authority, "form", "")
 	}
+	if r.name != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
+	}
+	if r.description != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "description", r.description, "form", "")
+	}
 	if r.roleType != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "roleType", r.roleType, "form", "")
+	}
+	if r.owner != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "owner", r.owner, "form", "")
+	}
+	if r.tenant != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "tenant", r.tenant, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}
@@ -600,7 +800,7 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -611,7 +811,7 @@ func (a *RolesAPIService) ListRolesExecute(r ApiListRolesRequest) (*ListRoles200
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -742,7 +942,7 @@ func (a *RolesAPIService) UpdateRoleExecute(r ApiUpdateRoleRequest) (*UpdateRole
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -753,7 +953,140 @@ func (a *RolesAPIService) UpdateRoleExecute(r ApiUpdateRoleRequest) (*UpdateRole
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateRoleAppTemplateAccessRequest struct {
+	ctx                                context.Context
+	ApiService                         *RolesAPIService
+	id                                 int64
+	updateRoleAppTemplateAccessRequest *UpdateRoleAppTemplateAccessRequest
+}
+
+func (r ApiUpdateRoleAppTemplateAccessRequest) UpdateRoleAppTemplateAccessRequest(updateRoleAppTemplateAccessRequest UpdateRoleAppTemplateAccessRequest) ApiUpdateRoleAppTemplateAccessRequest {
+	r.updateRoleAppTemplateAccessRequest = &updateRoleAppTemplateAccessRequest
+	return r
+}
+
+func (r ApiUpdateRoleAppTemplateAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
+	return r.ApiService.UpdateRoleAppTemplateAccessExecute(r)
+}
+
+/*
+UpdateRoleAppTemplateAccess Customizing App Template Access
+
+Alias of `PUT /api/roles/{id}/update-blueprint`. Same request body and behavior (blueprint / app template resource grants).
+Body accepts `appTemplateId`, `blueprintId` / `bluePrintId`, or `allAppTemplates` / `allBlueprints` with `access`. Use `access: default` to clear the grant.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiUpdateRoleAppTemplateAccessRequest
+*/
+func (a *RolesAPIService) UpdateRoleAppTemplateAccess(ctx context.Context, id int64) ApiUpdateRoleAppTemplateAccessRequest {
+	return ApiUpdateRoleAppTemplateAccessRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleAppTemplateAccessExecute(r ApiUpdateRoleAppTemplateAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleAppTemplateAccess")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/roles/{id}/update-app-template"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateRoleAppTemplateAccessRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -796,7 +1129,9 @@ func (r ApiUpdateRoleBlueprintAccessRequest) Execute() (*UpdateRoleBlueprintAcce
 /*
 UpdateRoleBlueprintAccess Customizing Blueprint Access
 
-Customizing Blueprint Access
+Customizing Blueprint (App Template) Access.
+Equivalent alias: `PUT /api/roles/{id}/update-app-template`.
+Body accepts `appTemplateId`, `blueprintId` / `bluePrintId`, or `allAppTemplates` / `allBlueprints` with `access`. Use `access: default` to clear the grant.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -874,7 +1209,7 @@ func (a *RolesAPIService) UpdateRoleBlueprintAccessExecute(r ApiUpdateRoleBluepr
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -885,7 +1220,7 @@ func (a *RolesAPIService) UpdateRoleBlueprintAccessExecute(r ApiUpdateRoleBluepr
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -921,7 +1256,7 @@ func (r ApiUpdateRoleCatalogItemTypeAccessRequest) UpdateRoleCatalogItemTypeAcce
 	return r
 }
 
-func (r ApiUpdateRoleCatalogItemTypeAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleCatalogItemTypeAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleCatalogItemTypeAccessExecute(r)
 }
 
@@ -944,13 +1279,13 @@ func (a *RolesAPIService) UpdateRoleCatalogItemTypeAccess(ctx context.Context, i
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleCatalogItemTypeAccessExecute(r ApiUpdateRoleCatalogItemTypeAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleCatalogItemTypeAccessExecute(r ApiUpdateRoleCatalogItemTypeAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleCatalogItemTypeAccess")
@@ -1006,7 +1341,7 @@ func (a *RolesAPIService) UpdateRoleCatalogItemTypeAccessExecute(r ApiUpdateRole
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1017,7 +1352,7 @@ func (a *RolesAPIService) UpdateRoleCatalogItemTypeAccessExecute(r ApiUpdateRole
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1053,7 +1388,7 @@ func (r ApiUpdateRoleCloudAccessRequest) UpdateRoleCloudAccessRequest(updateRole
 	return r
 }
 
-func (r ApiUpdateRoleCloudAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleCloudAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleCloudAccessExecute(r)
 }
 
@@ -1076,13 +1411,13 @@ func (a *RolesAPIService) UpdateRoleCloudAccess(ctx context.Context, id int64) A
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleCloudAccessExecute(r ApiUpdateRoleCloudAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleCloudAccessExecute(r ApiUpdateRoleCloudAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleCloudAccess")
@@ -1138,7 +1473,7 @@ func (a *RolesAPIService) UpdateRoleCloudAccessExecute(r ApiUpdateRoleCloudAcces
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1149,7 +1484,7 @@ func (a *RolesAPIService) UpdateRoleCloudAccessExecute(r ApiUpdateRoleCloudAcces
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1185,7 +1520,7 @@ func (r ApiUpdateRoleClusterTypeAccessRequest) UpdateRoleClusterTypeAccessReques
 	return r
 }
 
-func (r ApiUpdateRoleClusterTypeAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleClusterTypeAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleClusterTypeAccessExecute(r)
 }
 
@@ -1208,13 +1543,13 @@ func (a *RolesAPIService) UpdateRoleClusterTypeAccess(ctx context.Context, id in
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleClusterTypeAccessExecute(r ApiUpdateRoleClusterTypeAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleClusterTypeAccessExecute(r ApiUpdateRoleClusterTypeAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleClusterTypeAccess")
@@ -1270,7 +1605,7 @@ func (a *RolesAPIService) UpdateRoleClusterTypeAccessExecute(r ApiUpdateRoleClus
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1281,7 +1616,7 @@ func (a *RolesAPIService) UpdateRoleClusterTypeAccessExecute(r ApiUpdateRoleClus
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1317,7 +1652,7 @@ func (r ApiUpdateRoleGroupAccessRequest) UpdateRoleGroupAccessRequest(updateRole
 	return r
 }
 
-func (r ApiUpdateRoleGroupAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleGroupAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleGroupAccessExecute(r)
 }
 
@@ -1340,13 +1675,13 @@ func (a *RolesAPIService) UpdateRoleGroupAccess(ctx context.Context, id int64) A
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleGroupAccessExecute(r ApiUpdateRoleGroupAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleGroupAccessExecute(r ApiUpdateRoleGroupAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleGroupAccess")
@@ -1402,7 +1737,7 @@ func (a *RolesAPIService) UpdateRoleGroupAccessExecute(r ApiUpdateRoleGroupAcces
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1413,7 +1748,7 @@ func (a *RolesAPIService) UpdateRoleGroupAccessExecute(r ApiUpdateRoleGroupAcces
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1449,7 +1784,7 @@ func (r ApiUpdateRoleInstanceTypeAccessRequest) UpdateRoleInstanceTypeAccessRequ
 	return r
 }
 
-func (r ApiUpdateRoleInstanceTypeAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleInstanceTypeAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleInstanceTypeAccessExecute(r)
 }
 
@@ -1472,13 +1807,13 @@ func (a *RolesAPIService) UpdateRoleInstanceTypeAccess(ctx context.Context, id i
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleInstanceTypeAccessExecute(r ApiUpdateRoleInstanceTypeAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleInstanceTypeAccessExecute(r ApiUpdateRoleInstanceTypeAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleInstanceTypeAccess")
@@ -1534,7 +1869,7 @@ func (a *RolesAPIService) UpdateRoleInstanceTypeAccessExecute(r ApiUpdateRoleIns
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1545,7 +1880,7 @@ func (a *RolesAPIService) UpdateRoleInstanceTypeAccessExecute(r ApiUpdateRoleIns
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1581,14 +1916,14 @@ func (r ApiUpdateRolePermissionRequest) UpdateRolePermissionRequest(updateRolePe
 	return r
 }
 
-func (r ApiUpdateRolePermissionRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRolePermissionRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRolePermissionExecute(r)
 }
 
 /*
 UpdateRolePermission Updating Role Permissions
 
-Update a feature permission or default permission category (group, cloud, persona, ect.)
+Update a single feature/default-category permission on the role via `permissionCode` + `access` (also accepted as query params). Resource-specific grants use the dedicated `/update-group`, `/update-cloud`, `/update-instance-type`, etc. endpoints.
 
 	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
 	@param id Morpheus ID of the Object being referenced
@@ -1604,13 +1939,13 @@ func (a *RolesAPIService) UpdateRolePermission(ctx context.Context, id int64) Ap
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRolePermissionExecute(r ApiUpdateRolePermissionRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRolePermissionExecute(r ApiUpdateRolePermissionRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRolePermission")
@@ -1666,7 +2001,7 @@ func (a *RolesAPIService) UpdateRolePermissionExecute(r ApiUpdateRolePermissionR
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1677,7 +2012,7 @@ func (a *RolesAPIService) UpdateRolePermissionExecute(r ApiUpdateRolePermissionR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1713,7 +2048,7 @@ func (r ApiUpdateRolePersonaAccessRequest) UpdateRolePersonaAccessRequest(update
 	return r
 }
 
-func (r ApiUpdateRolePersonaAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRolePersonaAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRolePersonaAccessExecute(r)
 }
 
@@ -1736,13 +2071,13 @@ func (a *RolesAPIService) UpdateRolePersonaAccess(ctx context.Context, id int64)
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRolePersonaAccessExecute(r ApiUpdateRolePersonaAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRolePersonaAccessExecute(r ApiUpdateRolePersonaAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRolePersonaAccess")
@@ -1798,7 +2133,7 @@ func (a *RolesAPIService) UpdateRolePersonaAccessExecute(r ApiUpdateRolePersonaA
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1809,7 +2144,7 @@ func (a *RolesAPIService) UpdateRolePersonaAccessExecute(r ApiUpdateRolePersonaA
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1845,7 +2180,7 @@ func (r ApiUpdateRoleReportTypeAccessRequest) UpdateRoleReportTypeAccessRequest(
 	return r
 }
 
-func (r ApiUpdateRoleReportTypeAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleReportTypeAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleReportTypeAccessExecute(r)
 }
 
@@ -1868,13 +2203,13 @@ func (a *RolesAPIService) UpdateRoleReportTypeAccess(ctx context.Context, id int
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleReportTypeAccessExecute(r ApiUpdateRoleReportTypeAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleReportTypeAccessExecute(r ApiUpdateRoleReportTypeAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleReportTypeAccess")
@@ -1930,7 +2265,7 @@ func (a *RolesAPIService) UpdateRoleReportTypeAccessExecute(r ApiUpdateRoleRepor
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1941,7 +2276,7 @@ func (a *RolesAPIService) UpdateRoleReportTypeAccessExecute(r ApiUpdateRoleRepor
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -1977,7 +2312,7 @@ func (r ApiUpdateRoleTaskAccessRequest) UpdateRoleTaskAccessRequest(updateRoleTa
 	return r
 }
 
-func (r ApiUpdateRoleTaskAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleTaskAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleTaskAccessExecute(r)
 }
 
@@ -2000,13 +2335,13 @@ func (a *RolesAPIService) UpdateRoleTaskAccess(ctx context.Context, id int64) Ap
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleTaskAccessExecute(r ApiUpdateRoleTaskAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleTaskAccessExecute(r ApiUpdateRoleTaskAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleTaskAccess")
@@ -2062,7 +2397,7 @@ func (a *RolesAPIService) UpdateRoleTaskAccessExecute(r ApiUpdateRoleTaskAccessR
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2073,7 +2408,7 @@ func (a *RolesAPIService) UpdateRoleTaskAccessExecute(r ApiUpdateRoleTaskAccessR
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2109,7 +2444,7 @@ func (r ApiUpdateRoleVDIPoolAccessRequest) UpdateRoleVDIPoolAccessRequest(update
 	return r
 }
 
-func (r ApiUpdateRoleVDIPoolAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleVDIPoolAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleVDIPoolAccessExecute(r)
 }
 
@@ -2132,13 +2467,13 @@ func (a *RolesAPIService) UpdateRoleVDIPoolAccess(ctx context.Context, id int64)
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleVDIPoolAccessExecute(r ApiUpdateRoleVDIPoolAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleVDIPoolAccessExecute(r ApiUpdateRoleVDIPoolAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleVDIPoolAccess")
@@ -2194,7 +2529,7 @@ func (a *RolesAPIService) UpdateRoleVDIPoolAccessExecute(r ApiUpdateRoleVDIPoolA
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2205,7 +2540,7 @@ func (a *RolesAPIService) UpdateRoleVDIPoolAccessExecute(r ApiUpdateRoleVDIPoolA
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2241,7 +2576,7 @@ func (r ApiUpdateRoleWorkflowAccessRequest) UpdateRoleWorkflowAccessRequest(upda
 	return r
 }
 
-func (r ApiUpdateRoleWorkflowAccessRequest) Execute() (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+func (r ApiUpdateRoleWorkflowAccessRequest) Execute() (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	return r.ApiService.UpdateRoleWorkflowAccessExecute(r)
 }
 
@@ -2264,13 +2599,13 @@ func (a *RolesAPIService) UpdateRoleWorkflowAccess(ctx context.Context, id int64
 
 // Execute executes the request
 //
-//	@return UpdateRoleCatalogItemTypeAccess200Response
-func (a *RolesAPIService) UpdateRoleWorkflowAccessExecute(r ApiUpdateRoleWorkflowAccessRequest) (*UpdateRoleCatalogItemTypeAccess200Response, *http.Response, error) {
+//	@return UpdateRoleAppTemplateAccess200Response
+func (a *RolesAPIService) UpdateRoleWorkflowAccessExecute(r ApiUpdateRoleWorkflowAccessRequest) (*UpdateRoleAppTemplateAccess200Response, *http.Response, error) {
 	var (
 		localVarHTTPMethod  = http.MethodPut
 		localVarPostBody    interface{}
 		formFiles           []formFile
-		localVarReturnValue *UpdateRoleCatalogItemTypeAccess200Response
+		localVarReturnValue *UpdateRoleAppTemplateAccess200Response
 	)
 
 	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.UpdateRoleWorkflowAccess")
@@ -2326,7 +2661,7 @@ func (a *RolesAPIService) UpdateRoleWorkflowAccessExecute(r ApiUpdateRoleWorkflo
 			body: localVarBody,
 		}
 		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
-			var v ListApplianceSettings4XXResponse
+			var v GetAffinityGroup4XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err
@@ -2337,7 +2672,149 @@ func (a *RolesAPIService) UpdateRoleWorkflowAccessExecute(r ApiUpdateRoleWorkflo
 			return localVarReturnValue, localVarHTTPResponse, newErr
 		}
 		if localVarHTTPResponse.StatusCode >= 500 {
-			var v ListApplianceSettings5XXResponse
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiValidateRoleRequest struct {
+	ctx                 context.Context
+	ApiService          *RolesAPIService
+	validateRoleRequest *ValidateRoleRequest
+}
+
+func (r ApiValidateRoleRequest) ValidateRoleRequest(validateRoleRequest ValidateRoleRequest) ApiValidateRoleRequest {
+	r.validateRoleRequest = &validateRoleRequest
+	return r
+}
+
+func (r ApiValidateRoleRequest) Execute() (*ValidateRole200Response, *http.Response, error) {
+	return r.ApiService.ValidateRoleExecute(r)
+}
+
+/*
+ValidateRole Validate role permissions
+
+Validate role permission payload without persisting. Accepts the same body shape as create role. Returns `success`/`valid` and optional `errors`/`msg`.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiValidateRoleRequest
+*/
+func (a *RolesAPIService) ValidateRole(ctx context.Context) ApiValidateRoleRequest {
+	return ApiValidateRoleRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ValidateRole200Response
+func (a *RolesAPIService) ValidateRoleExecute(r ApiValidateRoleRequest) (*ValidateRole200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ValidateRole200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "RolesAPIService.ValidateRole")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/roles/validate"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+	if r.validateRoleRequest == nil {
+		return localVarReturnValue, nil, reportError("validateRoleRequest is required and must be specified")
+	}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.validateRoleRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode == 400 {
+			var v ValidateRole400Response
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
 			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
 			if err != nil {
 				newErr.err = err

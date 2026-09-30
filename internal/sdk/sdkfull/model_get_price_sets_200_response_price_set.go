@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,19 +22,19 @@ var _ MappedNullable = &GetPriceSets200ResponsePriceSet{}
 
 // GetPriceSets200ResponsePriceSet struct for GetPriceSets200ResponsePriceSet
 type GetPriceSets200ResponsePriceSet struct {
-	Id                   *int64                                          `json:"id,omitempty"`
-	Name                 *string                                         `json:"name,omitempty"`
-	Code                 *string                                         `json:"code,omitempty"`
-	Active               *bool                                           `json:"active,omitempty"`
-	PriceUnit            *string                                         `json:"priceUnit,omitempty"`
-	Type                 *string                                         `json:"type,omitempty"`
-	RegionCode           *string                                         `json:"regionCode,omitempty"`
-	SystemCreated        *bool                                           `json:"systemCreated,omitempty"`
-	Zone                 NullableString                                  `json:"zone,omitempty"`
-	ZonePool             NullableString                                  `json:"zonePool,omitempty"`
-	Account              NullableString                                  `json:"account,omitempty"`
-	Prices               []AddPriceSets200ResponseAllOfBudgetPricesInner `json:"prices,omitempty"`
-	AdditionalProperties map[string]interface{}                          `json:",remain"`
+	Id                   *int64                                       `json:"id,omitempty"`
+	Name                 *string                                      `json:"name,omitempty"`
+	Code                 *string                                      `json:"code,omitempty"`
+	Active               *bool                                        `json:"active,omitempty"`
+	PriceUnit            *string                                      `json:"priceUnit,omitempty"`
+	Type                 *string                                      `json:"type,omitempty"`
+	RegionCode           NullableString                               `json:"regionCode,omitempty"`
+	SystemCreated        *bool                                        `json:"systemCreated,omitempty"`
+	Zone                 *GetPriceSets200ResponsePriceSetZone         `json:"zone,omitempty"`
+	ZonePool             *GetPriceSets200ResponsePriceSetZonePool     `json:"zonePool,omitempty"`
+	Account              *GetPriceSets200ResponsePriceSetAccount      `json:"account,omitempty"`
+	Prices               []GetPriceSets200ResponsePriceSetPricesInner `json:"prices,omitempty"`
+	AdditionalProperties map[string]interface{}                       `json:",remain"`
 }
 
 type _GetPriceSets200ResponsePriceSet GetPriceSets200ResponsePriceSet
@@ -67,20 +67,20 @@ func (o GetPriceSets200ResponsePriceSet) ToMap() (map[string]interface{}, error)
 	if !IsNil(o.Type) {
 		toSerialize["type"] = o.Type
 	}
-	if !IsNil(o.RegionCode) {
-		toSerialize["regionCode"] = o.RegionCode
+	if o.RegionCode.IsSet() {
+		toSerialize["regionCode"] = o.RegionCode.Get()
 	}
 	if !IsNil(o.SystemCreated) {
 		toSerialize["systemCreated"] = o.SystemCreated
 	}
-	if o.Zone.IsSet() {
-		toSerialize["zone"] = o.Zone.Get()
+	if !IsNil(o.Zone) {
+		toSerialize["zone"] = o.Zone
 	}
-	if o.ZonePool.IsSet() {
-		toSerialize["zonePool"] = o.ZonePool.Get()
+	if !IsNil(o.ZonePool) {
+		toSerialize["zonePool"] = o.ZonePool
 	}
-	if o.Account.IsSet() {
-		toSerialize["account"] = o.Account.Get()
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 	if !IsNil(o.Prices) {
 		toSerialize["prices"] = o.Prices

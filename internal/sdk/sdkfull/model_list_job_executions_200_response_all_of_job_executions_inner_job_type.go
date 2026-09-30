@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) ToMap() (map
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType struct {
+	value *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType
+	isSet bool
+}
+
+func (v NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) Get() *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType {
+	return v.value
+}
+
+func (v *NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) Set(val *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType(val *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) *NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType {
+	return &NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType{value: val, isSet: true}
+}
+
+func (v NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListJobExecutions200ResponseAllOfJobExecutionsInnerJobType) UnmarshalJSON(data []byte) (err error) {

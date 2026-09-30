@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -82,6 +82,8 @@ type ApplianceSettingsUpdate struct {
 	ProxyDomain NullableString `json:"proxyDomain,omitempty"`
 	// Proxy workstation
 	ProxyWorkstation NullableString `json:"proxyWorkstation,omitempty"`
+	// Comma-delimited list of hosts that bypass the proxy
+	NoProxy NullableString `json:"noProxy,omitempty"`
 	// Currency provider
 	CurrencyProvider *string `json:"currencyProvider,omitempty"`
 	// Currency provider API key
@@ -131,7 +133,11 @@ type ApplianceSettingsUpdate struct {
 	// Max option list size. Units are x10^3 (thousand). Increasing this value can adversely affect Morpheus performance. Increase with caution.
 	MaxOptionListSize *int64 `json:"maxOptionListSize,omitempty"`
 	// The url used for checking if there is an update for plugins. Default https\\://share.morpheusdata.com
-	ExchangeUrl          *string                `json:"exchangeUrl,omitempty"`
+	ExchangeUrl *string `json:"exchangeUrl,omitempty"`
+	// Comma-delimited dashboard IDs to display
+	DashboardsToDisplay NullableString `json:"dashboardsToDisplay,omitempty"`
+	// Enable Murph AI services
+	EnableMurph          *bool                  `json:"enableMurph,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -237,6 +243,9 @@ func (o ApplianceSettingsUpdate) ToMap() (map[string]interface{}, error) {
 	if o.ProxyWorkstation.IsSet() {
 		toSerialize["proxyWorkstation"] = o.ProxyWorkstation.Get()
 	}
+	if o.NoProxy.IsSet() {
+		toSerialize["noProxy"] = o.NoProxy.Get()
+	}
 	if !IsNil(o.CurrencyProvider) {
 		toSerialize["currencyProvider"] = o.CurrencyProvider
 	}
@@ -311,6 +320,12 @@ func (o ApplianceSettingsUpdate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.ExchangeUrl) {
 		toSerialize["exchangeUrl"] = o.ExchangeUrl
+	}
+	if o.DashboardsToDisplay.IsSet() {
+		toSerialize["dashboardsToDisplay"] = o.DashboardsToDisplay.Get()
+	}
+	if !IsNil(o.EnableMurph) {
+		toSerialize["enableMurph"] = o.EnableMurph
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,12 +22,12 @@ var _ MappedNullable = &ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResour
 
 // ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner struct for ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner
 type ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner struct {
-	Id                   *int64                                                                          `json:"id,omitempty"`
-	Name                 *string                                                                         `json:"name,omitempty"`
-	Type                 *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInnerType `json:"type,omitempty"`
-	MaxDevices           *int64                                                                          `json:"maxDevices,omitempty"`
-	ReservedUnitNumber   *int64                                                                          `json:"reservedUnitNumber,omitempty"`
-	AdditionalProperties map[string]interface{}                                                          `json:",remain"`
+	Id                   *int64                                                                                 `json:"id,omitempty"`
+	Name                 *string                                                                                `json:"name,omitempty"`
+	Type                 NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInnerType `json:"type,omitempty"`
+	MaxDevices           *int64                                                                                 `json:"maxDevices,omitempty"`
+	ReservedUnitNumber   *int64                                                                                 `json:"reservedUnitNumber,omitempty"`
+	AdditionalProperties map[string]interface{}                                                                 `json:",remain"`
 }
 
 type _ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInner
@@ -48,8 +48,8 @@ func (o ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceControllersInn
 	if !IsNil(o.Name) {
 		toSerialize["name"] = o.Name
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.MaxDevices) {
 		toSerialize["maxDevices"] = o.MaxDevices

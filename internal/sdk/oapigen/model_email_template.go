@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -24,9 +24,9 @@ type EmailTemplate struct {
 	// The name of the email template. This is set by morpheus.
 	Name *string `json:"name,omitempty"`
 	// A unique code for the email template. This code is used to reference the email template and as a reference of the templates type.
-	Code     *string                                             `json:"code,omitempty"`
-	Owner    *AddEmailTemplateRequestEmailTemplateOwner          `json:"owner,omitempty"`
-	Accounts []AddEmailTemplateRequestEmailTemplateAccountsInner `json:"accounts,omitempty"`
+	Code     *string                                                 `json:"code,omitempty"`
+	Owner    *AddEmailTemplate200ResponseEmailTemplateOwner          `json:"owner,omitempty"`
+	Accounts []AddEmailTemplate200ResponseEmailTemplateAccountsInner `json:"accounts,omitempty"`
 	// The email template. This is the actual email template that is sent to the user. This uses handlebars notation (not javascript)
 	Template             *string                `json:"template,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`

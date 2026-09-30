@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -26,7 +26,7 @@ type ListJobs200ResponseAllOfJobsInnerAnyOf struct {
 	Id              *int64                                                 `json:"id,omitempty"`
 	Name            *string                                                `json:"name,omitempty"`
 	Labels          []string                                               `json:"labels,omitempty"`
-	Type            *ListJobs200ResponseAllOfJobsInnerAnyOfType            `json:"type,omitempty"`
+	Type            NullableListJobs200ResponseAllOfJobsInnerAnyOfType     `json:"type,omitempty"`
 	Workflow        *ListJobs200ResponseAllOfJobsInnerAnyOfWorkflow        `json:"workflow,omitempty"`
 	Task            *ListJobs200ResponseAllOfJobsInnerAnyOfTask            `json:"task,omitempty"`
 	SecurityPackage *ListJobs200ResponseAllOfJobsInnerAnyOfSecurityPackage `json:"securityPackage,omitempty"`
@@ -75,8 +75,8 @@ func (o ListJobs200ResponseAllOfJobsInnerAnyOf) ToMap() (map[string]interface{},
 	if o.Labels != nil {
 		toSerialize["labels"] = o.Labels
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if !IsNil(o.Workflow) {
 		toSerialize["workflow"] = o.Workflow

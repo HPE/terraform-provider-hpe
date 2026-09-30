@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) ToMap() (map[string
 	}
 
 	return toSerialize, nil
+}
+
+type NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType struct {
+	value *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType
+	isSet bool
+}
+
+func (v NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) Get() *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType {
+	return v.value
+}
+
+func (v *NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) Set(val *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType(val *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) *NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType {
+	return &NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType{value: val, isSet: true}
+}
+
+func (v NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType) UnmarshalJSON(data []byte) (err error) {

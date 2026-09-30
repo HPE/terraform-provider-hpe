@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,11 @@ var _ MappedNullable = &UpdateRoleReportTypeAccessRequestOneOf{}
 // UpdateRoleReportTypeAccessRequestOneOf struct for UpdateRoleReportTypeAccessRequestOneOf
 type UpdateRoleReportTypeAccessRequestOneOf struct {
 	// `id` of the report type
-	ReportTypeId int32 `json:"reportTypeId"`
+	ReportTypeId *int32 `json:"reportTypeId,omitempty"`
+	// Report type name (alternative to id). Alias of `reportTypeName`.
+	Name *string `json:"name,omitempty"`
+	// Alias for `name`
+	ReportTypeName *string `json:"reportTypeName,omitempty"`
 	// The new access level.
 	Access               string                 `json:"access"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,7 +45,15 @@ func (o UpdateRoleReportTypeAccessRequestOneOf) MarshalJSON() ([]byte, error) {
 
 func (o UpdateRoleReportTypeAccessRequestOneOf) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["reportTypeId"] = o.ReportTypeId
+	if !IsNil(o.ReportTypeId) {
+		toSerialize["reportTypeId"] = o.ReportTypeId
+	}
+	if !IsNil(o.Name) {
+		toSerialize["name"] = o.Name
+	}
+	if !IsNil(o.ReportTypeName) {
+		toSerialize["reportTypeName"] = o.ReportTypeName
+	}
 	toSerialize["access"] = o.Access
 
 	for key, value := range o.AdditionalProperties {

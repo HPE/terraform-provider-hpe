@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o GetNetworkSubnets200ResponseAllOfSubnetsInnerType) ToMap() (map[string]i
 	}
 
 	return toSerialize, nil
+}
+
+type NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType struct {
+	value *GetNetworkSubnets200ResponseAllOfSubnetsInnerType
+	isSet bool
+}
+
+func (v NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) Get() *GetNetworkSubnets200ResponseAllOfSubnetsInnerType {
+	return v.value
+}
+
+func (v *NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) Set(val *GetNetworkSubnets200ResponseAllOfSubnetsInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType(val *GetNetworkSubnets200ResponseAllOfSubnetsInnerType) *NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType {
+	return &NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType{value: val, isSet: true}
+}
+
+func (v NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *GetNetworkSubnets200ResponseAllOfSubnetsInnerType) UnmarshalJSON(data []byte) (err error) {

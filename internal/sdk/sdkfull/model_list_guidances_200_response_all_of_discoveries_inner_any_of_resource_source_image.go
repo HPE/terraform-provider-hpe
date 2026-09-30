@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) T
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage struct {
+	value *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage
+	isSet bool
+}
+
+func (v NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) Get() *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage {
+	return v.value
+}
+
+func (v *NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) Set(val *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage(val *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) *NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage {
+	return &NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage{value: val, isSet: true}
+}
+
+func (v NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListGuidances200ResponseAllOfDiscoveriesInnerAnyOfResourceSourceImage) UnmarshalJSON(data []byte) (err error) {

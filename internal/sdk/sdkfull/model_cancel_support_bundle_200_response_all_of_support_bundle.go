@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -28,6 +28,9 @@ type CancelSupportBundle200ResponseAllOfSupportBundle struct {
 	// The current status of the support bundle generation
 	Status        *string        `json:"status,omitempty"`
 	StatusMessage NullableString `json:"statusMessage,omitempty"`
+	Categories    NullableString `json:"categories,omitempty"`
+	StartDate     NullableTime   `json:"startDate,omitempty"`
+	EndDate       NullableTime   `json:"endDate,omitempty"`
 	StartedAt     NullableTime   `json:"startedAt,omitempty"`
 	CompletedAt   NullableTime   `json:"completedAt,omitempty"`
 	// The file path / filename of the generated bundle archive
@@ -35,10 +38,14 @@ type CancelSupportBundle200ResponseAllOfSupportBundle struct {
 	// File size in bytes
 	ContentLength NullableInt64 `json:"contentLength,omitempty"`
 	// MIME type of the bundle file
-	ContentType          NullableString                                                   `json:"contentType,omitempty"`
-	Checksum             NullableString                                                   `json:"checksum,omitempty"`
-	StorageProvider      *CancelSupportBundle200ResponseAllOfSupportBundleStorageProvider `json:"storageProvider,omitempty"`
-	AdditionalProperties map[string]interface{}                                           `json:",remain"`
+	ContentType     NullableString                                                   `json:"contentType,omitempty"`
+	Checksum        NullableString                                                   `json:"checksum,omitempty"`
+	StorageProvider *CancelSupportBundle200ResponseAllOfSupportBundleStorageProvider `json:"storageProvider,omitempty"`
+	// RDA delivery status (only present when Send to HPE is enabled)
+	DeliveryStatus NullableString `json:"deliveryStatus,omitempty"`
+	// Filename of the CMB file delivered to HPE via rda-cas
+	DeliveredFilename    NullableString         `json:"deliveredFilename,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _CancelSupportBundle200ResponseAllOfSupportBundle CancelSupportBundle200ResponseAllOfSupportBundle
@@ -68,6 +75,15 @@ func (o CancelSupportBundle200ResponseAllOfSupportBundle) ToMap() (map[string]in
 	if o.StatusMessage.IsSet() {
 		toSerialize["statusMessage"] = o.StatusMessage.Get()
 	}
+	if o.Categories.IsSet() {
+		toSerialize["categories"] = o.Categories.Get()
+	}
+	if o.StartDate.IsSet() {
+		toSerialize["startDate"] = o.StartDate.Get()
+	}
+	if o.EndDate.IsSet() {
+		toSerialize["endDate"] = o.EndDate.Get()
+	}
 	if o.StartedAt.IsSet() {
 		toSerialize["startedAt"] = o.StartedAt.Get()
 	}
@@ -88,6 +104,12 @@ func (o CancelSupportBundle200ResponseAllOfSupportBundle) ToMap() (map[string]in
 	}
 	if !IsNil(o.StorageProvider) {
 		toSerialize["storageProvider"] = o.StorageProvider
+	}
+	if o.DeliveryStatus.IsSet() {
+		toSerialize["deliveryStatus"] = o.DeliveryStatus.Get()
+	}
+	if o.DeliveredFilename.IsSet() {
+		toSerialize["deliveredFilename"] = o.DeliveredFilename.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

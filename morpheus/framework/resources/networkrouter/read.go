@@ -91,8 +91,8 @@ func getRouterAsState(
 		// import would not match apply.
 		if router.NetworkServer != nil && router.NetworkServer.Id != nil {
 			state.NetworkIntegrationId = convert.Int64ToType(router.NetworkServer.Id)
-		} else if router.Zone != nil && router.Zone.Id != nil {
-			state.CloudId = convert.Int64ToType(router.Zone.Id)
+		} else if zone := router.Zone.Get(); zone != nil && zone.Id != nil {
+			state.CloudId = convert.Int64ToType(zone.Id)
 		}
 
 		// On import, site == null means shared group access

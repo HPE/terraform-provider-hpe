@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -20,13 +20,13 @@ import (
 // checks if the UpdateLogSettingsRequestLogSettings type satisfies the MappedNullable interface at compile time
 var _ MappedNullable = &UpdateLogSettingsRequestLogSettings{}
 
-// UpdateLogSettingsRequestLogSettings struct for UpdateLogSettingsRequestLogSettings
+// UpdateLogSettingsRequestLogSettings Writable log settings fields under the required `logSettings` object on PUT /api/log-settings. Syslog rules and integrations are managed via their dedicated endpoints.
 type UpdateLogSettingsRequestLogSettings struct {
-	Enabled              *bool                    `json:"enabled,omitempty"`
-	RetentionDays        *string                  `json:"retentionDays,omitempty"`
-	SyslogRules          []map[string]interface{} `json:"syslogRules,omitempty"`
-	Integrations         []map[string]interface{} `json:"integrations,omitempty"`
-	AdditionalProperties map[string]interface{}   `json:",remain"`
+	Enabled *bool `json:"enabled,omitempty"`
+	// Log retention period in days
+	RetentionDays        *int64                 `json:"retentionDays,omitempty"`
+	MinimumLogLevel      NullableString         `json:"minimumLogLevel,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UpdateLogSettingsRequestLogSettings UpdateLogSettingsRequestLogSettings
@@ -47,11 +47,8 @@ func (o UpdateLogSettingsRequestLogSettings) ToMap() (map[string]interface{}, er
 	if !IsNil(o.RetentionDays) {
 		toSerialize["retentionDays"] = o.RetentionDays
 	}
-	if o.SyslogRules != nil {
-		toSerialize["syslogRules"] = o.SyslogRules
-	}
-	if o.Integrations != nil {
-		toSerialize["integrations"] = o.Integrations
+	if o.MinimumLogLevel.IsSet() {
+		toSerialize["minimumLogLevel"] = o.MinimumLogLevel.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

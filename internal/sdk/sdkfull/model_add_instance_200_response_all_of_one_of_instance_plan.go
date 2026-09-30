@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o AddInstance200ResponseAllOfOneOfInstancePlan) ToMap() (map[string]interf
 	}
 
 	return toSerialize, nil
+}
+
+type NullableAddInstance200ResponseAllOfOneOfInstancePlan struct {
+	value *AddInstance200ResponseAllOfOneOfInstancePlan
+	isSet bool
+}
+
+func (v NullableAddInstance200ResponseAllOfOneOfInstancePlan) Get() *AddInstance200ResponseAllOfOneOfInstancePlan {
+	return v.value
+}
+
+func (v *NullableAddInstance200ResponseAllOfOneOfInstancePlan) Set(val *AddInstance200ResponseAllOfOneOfInstancePlan) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableAddInstance200ResponseAllOfOneOfInstancePlan) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableAddInstance200ResponseAllOfOneOfInstancePlan) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableAddInstance200ResponseAllOfOneOfInstancePlan(val *AddInstance200ResponseAllOfOneOfInstancePlan) *NullableAddInstance200ResponseAllOfOneOfInstancePlan {
+	return &NullableAddInstance200ResponseAllOfOneOfInstancePlan{value: val, isSet: true}
+}
+
+func (v NullableAddInstance200ResponseAllOfOneOfInstancePlan) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableAddInstance200ResponseAllOfOneOfInstancePlan) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableAddInstance200ResponseAllOfOneOfInstancePlan) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *AddInstance200ResponseAllOfOneOfInstancePlan) UnmarshalJSON(data []byte) (err error) {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -36,6 +36,8 @@ type InstanceCreate struct {
 	SecurityGroups []InstanceCreateSecurityGroupsInner `json:"securityGroups,omitempty"`
 	// The (optional) volumes parameter is for LV configuration, can create additional LVs at provision It should be passed as an array of
 	Volumes []InstanceCreateVolumesInner `json:"volumes,omitempty"`
+	// Optional array of storage controller configurations. When provided, additional disk controllers will be created and volumes may be attached to specific controllers by index. Supported on VMware and MVM.
+	StorageControllers []InstanceCreateStorageControllersInner `json:"storageControllers,omitempty"`
 	// The networkInterfaces parameter is for network configuration.  The Options API `/api/options/zoneNetworkOptions?zoneId=5&provisionTypeId=10` can be used to see which options are available.
 	NetworkInterfaces []InstancesNetworkInterfaces9 `json:"networkInterfaces,omitempty"`
 	Config            InstanceCreateConfig          `json:"config"`
@@ -89,6 +91,9 @@ func (o InstanceCreate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.Volumes) {
 		toSerialize["volumes"] = o.Volumes
+	}
+	if !IsNil(o.StorageControllers) {
+		toSerialize["storageControllers"] = o.StorageControllers
 	}
 	if !IsNil(o.NetworkInterfaces) {
 		toSerialize["networkInterfaces"] = o.NetworkInterfaces

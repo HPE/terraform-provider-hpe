@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -30,8 +30,8 @@ type UpdateProvisioningLicenseRequestLicense struct {
 	Copies *int64 `json:"copies,omitempty"`
 	// Description; null clears it
 	Description NullableString `json:"description,omitempty"`
-	// Virtual Images - Array of Virtual Image IDs to associate with license.
-	VirtualImages []int64 `json:"virtualImages,omitempty"`
+	// Virtual image ids, or objects with `id`. Replaces set when provided.
+	VirtualImages []UpdateProvisioningLicenseRequestLicenseVirtualImagesInner `json:"virtualImages,omitempty"`
 	// Tenants - Array of tenants that are allowed to use the key.
 	Tenants              []int64                `json:"tenants,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`

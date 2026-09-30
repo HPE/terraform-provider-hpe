@@ -164,7 +164,8 @@ storage_volume:
       state_for_unknown: true
     name:
       computed_optional_required: required
-      description: The name of the storage volume.
+      requires_replace: true
+      description: The name of the storage volume. It cannot be changed after the volume is created; a change replaces the volume.
     max_storage:
       computed_optional_required: computed_optional
       description: The storage volume size in GiB. HPE Alletra MP and Alletra 9000 volumes must be between 1 and 65536 GiB.

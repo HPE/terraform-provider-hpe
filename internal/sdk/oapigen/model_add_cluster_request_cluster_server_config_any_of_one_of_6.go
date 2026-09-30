@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,15 +23,19 @@ type AddClusterRequestClusterServerConfigAnyOfOneOf6 struct {
 	CpuArch  *string `json:"cpuArch,omitempty"`
 	CpuModel *string `json:"cpuModel,omitempty"`
 	// When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
-	DynamicPlacementMode *string                `json:"dynamicPlacementMode,omitempty"`
-	PowerPolicy          *string                `json:"powerPolicy,omitempty"`
-	VcpuPlacementMode    *string                `json:"vcpuPlacementMode,omitempty"`
-	StorageInterfaceName *string                `json:"storageInterfaceName,omitempty"`
-	ComputeInterfaceName *string                `json:"computeInterfaceName,omitempty"`
-	ComputeVlans         *string                `json:"computeVlans,omitempty"`
-	OverlayInterfaceName *string                `json:"overlayInterfaceName,omitempty"`
-	CreateUser           *bool                  `json:"createUser,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	DynamicPlacementMode *string `json:"dynamicPlacementMode,omitempty"`
+	PowerPolicy          *string `json:"powerPolicy,omitempty"`
+	VcpuPlacementMode    *string `json:"vcpuPlacementMode,omitempty"`
+	StorageInterfaceName *string `json:"storageInterfaceName,omitempty"`
+	ComputeInterfaceName *string `json:"computeInterfaceName,omitempty"`
+	ComputeVlans         *string `json:"computeVlans,omitempty"`
+	OverlayInterfaceName *string `json:"overlayInterfaceName,omitempty"`
+	CreateUser           *bool   `json:"createUser,omitempty"`
+	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
+	MigrationConcurrencyLimit *string `json:"migrationConcurrencyLimit,omitempty"`
+	// When enabled, Morpheus automatically sizes maintenance mode migration concurrency based on available bandwidth and VM count, using Migration Concurrency (if set) as an upper bound. When disabled, Migration Concurrency runs as a fixed number of parallel migrations at all times.
+	MigrationConcurrencyAutoMode *string                `json:"migrationConcurrencyAutoMode,omitempty"`
+	AdditionalProperties         map[string]interface{} `json:",remain"`
 }
 
 type _AddClusterRequestClusterServerConfigAnyOfOneOf6 AddClusterRequestClusterServerConfigAnyOfOneOf6
@@ -75,6 +79,12 @@ func (o AddClusterRequestClusterServerConfigAnyOfOneOf6) ToMap() (map[string]int
 	}
 	if !IsNil(o.CreateUser) {
 		toSerialize["createUser"] = o.CreateUser
+	}
+	if !IsNil(o.MigrationConcurrencyLimit) {
+		toSerialize["migrationConcurrencyLimit"] = o.MigrationConcurrencyLimit
+	}
+	if !IsNil(o.MigrationConcurrencyAutoMode) {
+		toSerialize["migrationConcurrencyAutoMode"] = o.MigrationConcurrencyAutoMode
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,8 +22,10 @@ var _ MappedNullable = &UpdateRolePersonaAccessRequestOneOf1{}
 
 // UpdateRolePersonaAccessRequestOneOf1 struct for UpdateRolePersonaAccessRequestOneOf1
 type UpdateRolePersonaAccessRequestOneOf1 struct {
-	// Apply to all personas
-	AllPersonas bool `json:"allPersonas"`
+	// Apply to all personas. Alias of `all`.
+	AllPersonas *bool `json:"allPersonas,omitempty"`
+	// Alias for `allPersonas`
+	All *bool `json:"all,omitempty"`
 	// The new access level.
 	Access               string                 `json:"access"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
@@ -41,7 +43,12 @@ func (o UpdateRolePersonaAccessRequestOneOf1) MarshalJSON() ([]byte, error) {
 
 func (o UpdateRolePersonaAccessRequestOneOf1) ToMap() (map[string]interface{}, error) {
 	toSerialize := map[string]interface{}{}
-	toSerialize["allPersonas"] = o.AllPersonas
+	if !IsNil(o.AllPersonas) {
+		toSerialize["allPersonas"] = o.AllPersonas
+	}
+	if !IsNil(o.All) {
+		toSerialize["all"] = o.All
+	}
 	toSerialize["access"] = o.Access
 
 	for key, value := range o.AdditionalProperties {

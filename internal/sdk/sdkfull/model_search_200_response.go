@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ var _ MappedNullable = &Search200Response{}
 // Search200Response struct for Search200Response
 type Search200Response struct {
 	Hits                 []Search200ResponseHitsInner `json:"hits,omitempty"`
-	Query                *string                      `json:"query,omitempty"`
+	Query                NullableString               `json:"query,omitempty"`
 	Took                 *int64                       `json:"took,omitempty"`
 	Meta                 *Search200ResponseMeta       `json:"meta,omitempty"`
 	AdditionalProperties map[string]interface{}       `json:",remain"`
@@ -44,8 +44,8 @@ func (o Search200Response) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.Hits) {
 		toSerialize["hits"] = o.Hits
 	}
-	if !IsNil(o.Query) {
-		toSerialize["query"] = o.Query
+	if o.Query.IsSet() {
+		toSerialize["query"] = o.Query.Get()
 	}
 	if !IsNil(o.Took) {
 		toSerialize["took"] = o.Took

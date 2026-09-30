@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,6 +55,51 @@ func (o ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) ToMap() (map[st
 	}
 
 	return toSerialize, nil
+}
+
+type NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType struct {
+	value *ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType
+	isSet bool
+}
+
+func (v NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) Get() *ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType {
+	return v.value
+}
+
+func (v *NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) Set(val *ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) {
+	v.value = val
+	v.isSet = true
+}
+
+func (v NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) IsSet() bool {
+	return v.isSet
+}
+
+func (v *NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) Unset() {
+	v.value = nil
+	v.isSet = false
+}
+
+func NewNullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType(val *ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) *NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType {
+	return &NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType{value: val, isSet: true}
+}
+
+func (v NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.value)
+}
+
+func (v *NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) UnmarshalJSON(src []byte) error {
+	v.isSet = true
+	return json.Unmarshal(src, &v.value)
+}
+
+func (v NullableListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) UnmarshalMapstructure(data any) (any, error) {
+	if err := mapstructDecode(data, &v.value); err != nil {
+		return nil, err
+	}
+	v.isSet = true
+
+	return v, nil
 }
 
 func (o *ListSpecTemplates200ResponseAllOfSpecTemplatesInnerType) UnmarshalJSON(data []byte) (err error) {

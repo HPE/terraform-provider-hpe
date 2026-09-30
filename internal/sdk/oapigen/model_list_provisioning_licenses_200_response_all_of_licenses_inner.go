@@ -3,7 +3,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -23,7 +23,7 @@ type ListProvisioningLicenses200ResponseAllOfLicensesInner struct {
 	Id                   *int64                                                                    `json:"id,omitempty"`
 	Name                 *string                                                                   `json:"name,omitempty"`
 	Description          *string                                                                   `json:"description,omitempty"`
-	LicenseType          *ListProvisioningLicenses200ResponseAllOfLicensesInnerLicenseType         `json:"licenseType,omitempty"`
+	LicenseType          NullableListProvisioningLicenses200ResponseAllOfLicensesInnerLicenseType  `json:"licenseType,omitempty"`
 	LicenseKey           *string                                                                   `json:"licenseKey,omitempty"`
 	OrgName              *string                                                                   `json:"orgName,omitempty"`
 	FullName             *string                                                                   `json:"fullName,omitempty"`
@@ -57,8 +57,8 @@ func (o ListProvisioningLicenses200ResponseAllOfLicensesInner) ToMap() (map[stri
 	if !IsNil(o.Description) {
 		toSerialize["description"] = o.Description
 	}
-	if !IsNil(o.LicenseType) {
-		toSerialize["licenseType"] = o.LicenseType
+	if o.LicenseType.IsSet() {
+		toSerialize["licenseType"] = o.LicenseType.Get()
 	}
 	if !IsNil(o.LicenseKey) {
 		toSerialize["licenseKey"] = o.LicenseKey

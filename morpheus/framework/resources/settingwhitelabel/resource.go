@@ -300,7 +300,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer headerLogo.Close()
-		imgReq = imgReq.HeaderLogoFile(headerLogo)
+		imgReq = imgReq.HeaderLogo(headerLogo)
 	}
 
 	if !plan.FooterLogo.IsNull() && !plan.FooterLogo.IsUnknown() {
@@ -309,7 +309,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer footerLogo.Close()
-		imgReq = imgReq.FooterLogoFile(footerLogo)
+		imgReq = imgReq.FooterLogo(footerLogo)
 	}
 
 	if !plan.LoginLogo.IsNull() && !plan.LoginLogo.IsUnknown() {
@@ -318,7 +318,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer loginLogo.Close()
-		imgReq = imgReq.LoginLogoFile(loginLogo)
+		imgReq = imgReq.LoginLogo(loginLogo)
 	}
 
 	if !plan.Favicon.IsNull() && !plan.Favicon.IsUnknown() {
@@ -327,7 +327,7 @@ func (r *settingWhitelabelResource) uploadImages(
 			return err
 		}
 		defer favicon.Close()
-		imgReq = imgReq.FaviconFile(favicon)
+		imgReq = imgReq.Favicon(favicon)
 	}
 
 	_, httpResp, err := imgReq.Execute()

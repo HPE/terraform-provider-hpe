@@ -68,7 +68,10 @@ func getCloudAsState(
 	}
 
 	importing := plan.Name.IsNull()
-	cloudType := *cloud.ZoneType.Code
+	cloudType := ""
+	if zt := cloud.ZoneType.Get(); zt != nil && zt.Code != nil {
+		cloudType = *zt.Code
+	}
 
 	if !plan.GroupId.IsNull() && !plan.GroupId.IsUnknown() {
 		state.GroupId = plan.GroupId
@@ -98,7 +101,7 @@ func getCloudAsState(
 	state.Labels = convert.StrSliceToSet(cloud.Labels)
 	state.Location = convert.StrToType(cloud.Location.Get())
 	state.Name = convert.StrToType(cloud.Name)
-	state.CloudTypeCode = convert.StrToType(cloud.ZoneType.Code)
+	state.CloudTypeCode = types.StringValue(cloudType)
 	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
 	state.TenantId = convert.Int64ToType(cloud.AccountId)
 	state.Visibility = convert.StrToType(cloud.Visibility)
@@ -120,8 +123,11 @@ func getCloudAsState(
 			attrValues["access_key"] = types.StringNull()
 		}
 
-		if cfg.BackupMode != nil {
-			attrValues["backup_provider"] = convert.StrToType(cfg.BackupMode)
+		// backupMode left the documented AWS configuration in 9.1.0 (the API
+		// exposes backup providers at the cloud level instead) but is still
+		// stored in the configuration map; read it from the undocumented keys.
+		if v, ok := cfg.AdditionalProperties["backupMode"].(string); ok && v != "" {
+			attrValues["backup_provider"] = types.StringValue(v)
 		} else {
 			attrValues["backup_provider"] = types.StringNull()
 		}

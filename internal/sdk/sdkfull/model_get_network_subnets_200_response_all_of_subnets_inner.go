@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -55,7 +55,7 @@ type GetNetworkSubnets200ResponseAllOfSubnetsInner struct {
 	Status               *GetNetworkSubnets200ResponseAllOfSubnetsInnerStatus             `json:"status,omitempty"`
 	Network              NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerNetwork     `json:"network,omitempty"`
 	Zone                 *GetNetworkSubnets200ResponseAllOfSubnetsInnerZone               `json:"zone,omitempty"`
-	Type                 *GetNetworkSubnets200ResponseAllOfSubnetsInnerType               `json:"type,omitempty"`
+	Type                 NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerType        `json:"type,omitempty"`
 	Account              NullableGetNetworkSubnets200ResponseAllOfSubnetsInnerAccount     `json:"account,omitempty"`
 	SecurityGroups       []map[string]interface{}                                         `json:"securityGroups,omitempty"`
 	Tenants              []GetNetworkSubnets200ResponseAllOfSubnetsInnerTenantsInner      `json:"tenants,omitempty"`
@@ -174,8 +174,8 @@ func (o GetNetworkSubnets200ResponseAllOfSubnetsInner) ToMap() (map[string]inter
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
 	}
-	if !IsNil(o.Type) {
-		toSerialize["type"] = o.Type
+	if o.Type.IsSet() {
+		toSerialize["type"] = o.Type.Get()
 	}
 	if o.Account.IsSet() {
 		toSerialize["account"] = o.Account.Get()

@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,13 +22,17 @@ var _ MappedNullable = &BackupSettings{}
 
 // BackupSettings struct for BackupSettings
 type BackupSettings struct {
-	BackupsEnabled       *bool                               `json:"backupsEnabled,omitempty"`
-	CreateBackups        *bool                               `json:"createBackups,omitempty"`
-	BackupAppliance      *bool                               `json:"backupAppliance,omitempty"`
-	DefaultStorageBucket *BackupSettingsDefaultStorageBucket `json:"defaultStorageBucket,omitempty"`
-	DefaultSchedule      *BackupSettingsDefaultSchedule      `json:"defaultSchedule,omitempty"`
-	RetentionCount       *int64                              `json:"retentionCount,omitempty"`
-	AdditionalProperties map[string]interface{}              `json:",remain"`
+	BackupsEnabled       *bool                                      `json:"backupsEnabled,omitempty"`
+	CreateBackups        *bool                                      `json:"createBackups,omitempty"`
+	BackupAppliance      *bool                                      `json:"backupAppliance,omitempty"`
+	DefaultStorageBucket NullableBackupSettingsDefaultStorageBucket `json:"defaultStorageBucket,omitempty"`
+	DefaultSchedule      NullableBackupSettingsDefaultSchedule      `json:"defaultSchedule,omitempty"`
+	// Maximum number of successful backups to retain
+	RetentionCount NullableInt64 `json:"retentionCount,omitempty"`
+	// Whether synthetic full backups are enabled by default
+	DefaultSyntheticFullBackupsEnabled *bool                                                    `json:"defaultSyntheticFullBackupsEnabled,omitempty"`
+	DefaultSyntheticFullBackupSchedule NullableBackupSettingsDefaultSyntheticFullBackupSchedule `json:"defaultSyntheticFullBackupSchedule,omitempty"`
+	AdditionalProperties               map[string]interface{}                                   `json:",remain"`
 }
 
 type _BackupSettings BackupSettings
@@ -52,14 +56,20 @@ func (o BackupSettings) ToMap() (map[string]interface{}, error) {
 	if !IsNil(o.BackupAppliance) {
 		toSerialize["backupAppliance"] = o.BackupAppliance
 	}
-	if !IsNil(o.DefaultStorageBucket) {
-		toSerialize["defaultStorageBucket"] = o.DefaultStorageBucket
+	if o.DefaultStorageBucket.IsSet() {
+		toSerialize["defaultStorageBucket"] = o.DefaultStorageBucket.Get()
 	}
-	if !IsNil(o.DefaultSchedule) {
-		toSerialize["defaultSchedule"] = o.DefaultSchedule
+	if o.DefaultSchedule.IsSet() {
+		toSerialize["defaultSchedule"] = o.DefaultSchedule.Get()
 	}
-	if !IsNil(o.RetentionCount) {
-		toSerialize["retentionCount"] = o.RetentionCount
+	if o.RetentionCount.IsSet() {
+		toSerialize["retentionCount"] = o.RetentionCount.Get()
+	}
+	if !IsNil(o.DefaultSyntheticFullBackupsEnabled) {
+		toSerialize["defaultSyntheticFullBackupsEnabled"] = o.DefaultSyntheticFullBackupsEnabled
+	}
+	if o.DefaultSyntheticFullBackupSchedule.IsSet() {
+		toSerialize["defaultSyntheticFullBackupSchedule"] = o.DefaultSyntheticFullBackupSchedule.Get()
 	}
 
 	for key, value := range o.AdditionalProperties {

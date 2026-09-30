@@ -5,7 +5,7 @@ Morpheus API
 
 Morpheus is a powerful cloud management tool that provides provisioning, monitoring, logging, backups, and application deployment strategies.  This document describes the Morpheus API protocol and the available endpoints. Sections are organized in the same manner as they appear in the Morpheus UI.
 
-API version: 9.0.0
+API version: 9.1.0
 Contact: dev@morpheusdata.com
 */
 
@@ -22,22 +22,22 @@ var _ MappedNullable = &UpdatePoliciesCloud200ResponseAllOfPolicy{}
 
 // UpdatePoliciesCloud200ResponseAllOfPolicy struct for UpdatePoliciesCloud200ResponseAllOfPolicy
 type UpdatePoliciesCloud200ResponseAllOfPolicy struct {
-	Id                   *int64                                                   `json:"id,omitempty"`
-	Name                 *string                                                  `json:"name,omitempty"`
-	Description          NullableString                                           `json:"description,omitempty"`
-	PolicyType           *UpdatePoliciesCloud200ResponseAllOfPolicyPolicyType     `json:"policyType,omitempty"`
-	Zone                 *UpdatePoliciesCloud200ResponseAllOfPolicyZone           `json:"zone,omitempty"`
-	Site                 *UpdatePoliciesCloud200ResponseAllOfPolicySite           `json:"site,omitempty"`
-	User                 *UpdatePoliciesCloud200ResponseAllOfPolicyUser           `json:"user,omitempty"`
-	Role                 *UpdatePoliciesCloud200ResponseAllOfPolicyRole           `json:"role,omitempty"`
-	RefType              NullableString                                           `json:"refType,omitempty"`
-	RefId                NullableInt64                                            `json:"refId,omitempty"`
-	EachUser             NullableBool                                             `json:"eachUser,omitempty"`
-	Config               *UpdatePoliciesCloud200ResponseAllOfPolicyConfig         `json:"config,omitempty"`
-	Enabled              *bool                                                    `json:"enabled,omitempty"`
-	Owner                NullableUpdatePoliciesCloud200ResponseAllOfPolicyOwner   `json:"owner,omitempty"`
-	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner `json:"accounts,omitempty"`
-	AdditionalProperties map[string]interface{}                                   `json:",remain"`
+	Id                   *int64                                                      `json:"id,omitempty"`
+	Name                 *string                                                     `json:"name,omitempty"`
+	Description          NullableString                                              `json:"description,omitempty"`
+	PolicyType           NullableUpdatePoliciesCloud200ResponseAllOfPolicyPolicyType `json:"policyType,omitempty"`
+	Zone                 *UpdatePoliciesCloud200ResponseAllOfPolicyZone              `json:"zone,omitempty"`
+	Site                 *UpdatePoliciesCloud200ResponseAllOfPolicySite              `json:"site,omitempty"`
+	User                 *UpdatePoliciesCloud200ResponseAllOfPolicyUser              `json:"user,omitempty"`
+	Role                 *UpdatePoliciesCloud200ResponseAllOfPolicyRole              `json:"role,omitempty"`
+	RefType              NullableString                                              `json:"refType,omitempty"`
+	RefId                NullableInt64                                               `json:"refId,omitempty"`
+	EachUser             NullableBool                                                `json:"eachUser,omitempty"`
+	Config               *UpdatePoliciesCloud200ResponseAllOfPolicyConfig            `json:"config,omitempty"`
+	Enabled              *bool                                                       `json:"enabled,omitempty"`
+	Owner                NullableUpdatePoliciesCloud200ResponseAllOfPolicyOwner      `json:"owner,omitempty"`
+	Accounts             []ListPolicies200ResponseAllOfPoliciesInnerAccountsInner    `json:"accounts,omitempty"`
+	AdditionalProperties map[string]interface{}                                      `json:",remain"`
 }
 
 type _UpdatePoliciesCloud200ResponseAllOfPolicy UpdatePoliciesCloud200ResponseAllOfPolicy
@@ -61,8 +61,8 @@ func (o UpdatePoliciesCloud200ResponseAllOfPolicy) ToMap() (map[string]interface
 	if o.Description.IsSet() {
 		toSerialize["description"] = o.Description.Get()
 	}
-	if !IsNil(o.PolicyType) {
-		toSerialize["policyType"] = o.PolicyType
+	if o.PolicyType.IsSet() {
+		toSerialize["policyType"] = o.PolicyType.Get()
 	}
 	if !IsNil(o.Zone) {
 		toSerialize["zone"] = o.Zone
