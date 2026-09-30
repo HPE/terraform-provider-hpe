@@ -24,10 +24,10 @@ security_group_rule:
   overrides:
     destination:
       computed_optional_required: optional
-      description: The destination for the rule.
+      description: The destination for the rule. Required when destination_type is "cidr" (the default); a group or tier destination has no CIDR.
     destination_type:
       computed_optional_required: computed_optional
-      description: The destination type for the rule.
+      description: The destination type for the rule. Defaults to "cidr" on the appliance when not set.
       state_for_unknown: true
     direction:
       computed_optional_required: computed_optional
@@ -46,7 +46,7 @@ security_group_rule:
       default: "accept"
     port_range:
       computed_optional_required: optional
-      description: The port range for the rule.
+      description: The port range for the rule, a port or a range such as "443" or "1024-2048". Required unless protocol is "icmp".
     protocol:
       computed_optional_required: required
       description: The protocol (tcp, udp, icmp, etc.).
@@ -59,8 +59,8 @@ security_group_rule:
       description: The ID of the parent security group.
     source:
       computed_optional_required: optional
-      description: The source for the rule.
+      description: The source for the rule. Required when source_type is "cidr" (the default); a group or tier source has no CIDR.
     source_type:
       computed_optional_required: computed_optional
-      description: The source type for the rule.
+      description: The source type for the rule. Defaults to "cidr" on the appliance when not set.
       state_for_unknown: true

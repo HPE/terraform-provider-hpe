@@ -21,14 +21,14 @@ func SecurityGroupRuleResourceSchema(ctx context.Context) schema.Schema {
 		Attributes: map[string]schema.Attribute{
 			"destination": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The destination for the rule.",
-				MarkdownDescription: "The destination for the rule.",
+				Description:         "The destination for the rule. Required when destination_type is \"cidr\" (the default); a group or tier destination has no CIDR.",
+				MarkdownDescription: "The destination for the rule. Required when destination_type is \"cidr\" (the default); a group or tier destination has no CIDR.",
 			},
 			"destination_type": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The destination type for the rule.",
-				MarkdownDescription: "The destination type for the rule.",
+				Description:         "The destination type for the rule. Defaults to \"cidr\" on the appliance when not set.",
+				MarkdownDescription: "The destination type for the rule. Defaults to \"cidr\" on the appliance when not set.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
@@ -83,8 +83,8 @@ func SecurityGroupRuleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"port_range": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The port range for the rule.",
-				MarkdownDescription: "The port range for the rule.",
+				Description:         "The port range for the rule, a port or a range such as \"443\" or \"1024-2048\". Required unless protocol is \"icmp\".",
+				MarkdownDescription: "The port range for the rule, a port or a range such as \"443\" or \"1024-2048\". Required unless protocol is \"icmp\".",
 			},
 			"protocol": schema.StringAttribute{
 				Required:            true,
@@ -110,14 +110,14 @@ func SecurityGroupRuleResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"source": schema.StringAttribute{
 				Optional:            true,
-				Description:         "The source for the rule.",
-				MarkdownDescription: "The source for the rule.",
+				Description:         "The source for the rule. Required when source_type is \"cidr\" (the default); a group or tier source has no CIDR.",
+				MarkdownDescription: "The source for the rule. Required when source_type is \"cidr\" (the default); a group or tier source has no CIDR.",
 			},
 			"source_type": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The source type for the rule.",
-				MarkdownDescription: "The source type for the rule.",
+				Description:         "The source type for the rule. Defaults to \"cidr\" on the appliance when not set.",
+				MarkdownDescription: "The source type for the rule. Defaults to \"cidr\" on the appliance when not set.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},

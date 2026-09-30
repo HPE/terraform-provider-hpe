@@ -35,14 +35,14 @@ resource "hpe_morpheus_security_group_rule" "example" {
 
 ### Optional
 
-- `destination` (String) The destination for the rule.
-- `destination_type` (String) The destination type for the rule.
+- `destination` (String) The destination for the rule. Required when destination_type is "cidr" (the default); a group or tier destination has no CIDR.
+- `destination_type` (String) The destination type for the rule. Defaults to "cidr" on the appliance when not set.
 - `direction` (String) The direction of the rule (ingress or egress).
 - `name` (String) The name of the rule.
 - `policy` (String) The policy (accept or deny).
-- `port_range` (String) The port range for the rule.
-- `source` (String) The source for the rule.
-- `source_type` (String) The source type for the rule.
+- `port_range` (String) The port range for the rule, a port or a range such as "443" or "1024-2048". Required unless protocol is "icmp".
+- `source` (String) The source for the rule. Required when source_type is "cidr" (the default); a group or tier source has no CIDR.
+- `source_type` (String) The source type for the rule. Defaults to "cidr" on the appliance when not set.
 
 ### Read-Only
 

@@ -328,6 +328,14 @@ it again and failed on a name or VLAN collision.
 - Also fixed on the way: removing an environment variable from `hpe_morpheus_instance` reported
   success on a refusal.
 
+### `hpe_morpheus_security_group_rule` reports a missing source, destination or port range at plan (MORPH-18279)
+
+A rule that left out an attribute Morpheus requires planned cleanly and failed at apply with the API's
+400 (`"source": "Source CIDR required"`, `"portRange": "Port Range required"`). The requirement is
+conditional — `source`/`destination` when the type is `cidr` (the default), `port_range` unless the
+protocol is `icmp` — so the attributes stay optional (an ICMP rule has no ports; a group or tier source
+has no CIDR) and the plan now fails on the attribute with the condition spelled out.
+
 ### `hpe_morpheus_network` (MORPH-17908, MORPH-17909, MORPH-17910)
 
 - Any change to a network with `tenant_ids` unset was planned as a replacement, because the
