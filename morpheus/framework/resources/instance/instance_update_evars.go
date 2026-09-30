@@ -211,10 +211,17 @@ func addEvars(ctx context.Context, client *sdk.APIClient, id int64, envs []sdk.A
 
 // deleteEvar removes one variable by name.
 func deleteEvar(ctx context.Context, client *sdk.APIClient, id int64, name string) error {
-	_, hresp, err := client.InstancesAPI.DeleteEnvVariable(ctx, id, name).Execute()
+	result, hresp, err := client.InstancesAPI.DeleteEnvVariable(ctx, id, name).Execute()
 	if !envsWriteSucceeded(hresp) {
 		return fmt.Errorf("removing environment variable %q from instance %d: %s",
 			name, id, errfmt.ErrMsg(err, hresp))
+	}
+
+	// A 2xx is the signal (see envsWriteSucceeded), but when the echo did
+	// decode, a body saying success:false is a refusal (MORPH-17987). A decode
+	// error leaves result nil, which CheckDeleted treats as not refused.
+	if err := errfmt.CheckDeleted(result, nil, hresp); err != nil {
+		return fmt.Errorf("removing environment variable %q from instance %d: %w", name, id, err)
 	}
 
 	return nil

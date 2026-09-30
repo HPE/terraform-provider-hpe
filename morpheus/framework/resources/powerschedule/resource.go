@@ -332,8 +332,8 @@ func (r *powerScheduleResource) Delete(ctx context.Context, req resource.DeleteR
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.AutomationAPI.RemovePowerSchedules(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "power_schedule", "", err, httpResp)
 
 		return

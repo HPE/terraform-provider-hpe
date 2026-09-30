@@ -230,8 +230,8 @@ func (r *backupJobResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.BackupsAPI.RemoveBackupJobs(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "backup_job", "", err, httpResp)
 
 		return

@@ -217,8 +217,8 @@ func (r *vdiAppResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.VDIAPI.RemoveVDIApps(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_app", "", err, httpResp)
 
 		return

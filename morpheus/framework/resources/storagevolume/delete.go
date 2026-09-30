@@ -33,8 +33,8 @@ func (r *storageVolumeResource) Delete(
 	id := state.Id.ValueInt64()
 	idParam := sdk.UpdateStorageVolumesIdParameter{Int64: &id}
 
-	_, httpResp, err := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.StorageAPI.RemoveStorageVolumes(ctx, idParam).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_volume", "", err, httpResp)
 
 		return

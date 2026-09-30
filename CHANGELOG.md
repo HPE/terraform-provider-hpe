@@ -311,6 +311,23 @@ was formatted in exponent notation (`/rules/1.962589e+06`) and not found: every 
 delete of such a rule failed. The id is now sent as an integer. The rule sweeper also passed the
 security group and rule ids in the wrong order and could not remove leftover test rules.
 
+### A delete Morpheus refuses is now an error, not a success (MORPH-17987)
+
+Morpheus renders a delete it accepted as a request but refused as an operation — a network whose
+host-side removal failed, a resource still in use — as **HTTP 200 with a body of `{"success": false,
+"msg": ...}`**. Every resource judged the DELETE by status code alone, so a refused delete removed the
+resource from Terraform state while it remained on the appliance, and the next plan tried to create
+it again and failed on a name or VLAN collision.
+
+- Every framework resource's delete now reads the body: a refusal fails the destroy with Morpheus's
+  own message (`Morpheus refused the delete: <msg>; <field>: <error>`, or "no reason given"), and the
+  resource stays in state to be retried or removed by hand. `hpe_morpheus_network` keeps its three
+  retries for transient host-side failures. A 404 is still treated as already deleted.
+- The same applies to the SDKv2 resources through the legacy API client, and to any other API call
+  answered that way: a 2xx whose body says `success: false` is a failure carrying the message.
+- Also fixed on the way: removing an environment variable from `hpe_morpheus_instance` reported
+  success on a refusal.
+
 ### `hpe_morpheus_network` (MORPH-17908, MORPH-17909, MORPH-17910)
 
 - Any change to a network with `tenant_ids` unset was planned as a replacement, because the

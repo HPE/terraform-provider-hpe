@@ -4,10 +4,8 @@ package network
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
-	"sort"
 	"strings"
 	"time"
 
@@ -122,66 +120,28 @@ func waitForNetworkSettled(ctx context.Context, client *sdk.APIClient, id int64)
 	return diags
 }
 
-// deleteRefused is a delete Morpheus accepted as a request and refused as an
-// operation. The API renders every failed delete as HTTP 200 with
-// success:false and a message, so the status code alone says nothing; the
-// body has to be read.
-type deleteRefused struct {
-	id  int64
-	msg string
-}
-
-func (e deleteRefused) Error() string {
-	return fmt.Sprintf("network %d: Morpheus refused the delete: %s", e.id, e.msg)
-}
-
 // deleteNetworkAndWait deletes a network and waits until it is gone. A
-// refusal is retried a few times — the network's provider may be doing
-// host-side work that fails transiently — and then reported with Morpheus's
-// own message. Morpheus deletes synchronously, so once it answers success the
-// network is gone or about to be; the wait is a guard, not an expectation.
+// refusal (HTTP 200 with success:false -- see errfmt.CheckDeleted) is retried
+// a few times — the network's provider may be doing host-side work that fails
+// transiently — and then reported with Morpheus's own message. Morpheus
+// deletes synchronously, so once it answers success the network is gone or
+// about to be; the wait is a guard, not an expectation.
 func deleteNetworkAndWait(ctx context.Context, client *sdk.APIClient, id int64, timeout time.Duration) error {
 	deleteOnce := func() error {
 		r, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			return nil
-		}
+		if err := errfmt.CheckDeleted(r, err, hresp); err != nil {
+			if errfmt.IsDeleteRefused(err) {
+				return fmt.Errorf("network %d: %w", id, err)
+			}
 
-		if err != nil || hresp == nil || hresp.StatusCode != http.StatusOK {
-			return fmt.Errorf("network %d DELETE failed: %s", id, errfmt.ErrMsg(err, hresp))
-		}
-
-		if r != nil && r.Success != nil && !*r.Success {
-			return deleteRefused{id: id, msg: refusalMessage(r.AdditionalProperties)}
+			return fmt.Errorf("network %d DELETE failed: %s", id, err)
 		}
 
 		return nil
 	}
 
-	for attempt := 1; ; attempt++ {
-		err := deleteOnce()
-
-		var refused deleteRefused
-		if !errors.As(err, &refused) {
-			if err != nil {
-				return err
-			}
-
-			break
-		}
-
-		if attempt >= deleteAttempts {
-			return refused
-		}
-
-		tflog.Warn(ctx, "network: Morpheus refused the delete; retrying",
-			map[string]any{"id": id, "attempt": attempt, "msg": refused.msg})
-
-		select {
-		case <-ctx.Done():
-			return ctx.Err()
-		case <-time.After(deleteRetryAfter):
-		}
+	if err := errfmt.RetryRefusedDelete(ctx, fmt.Sprintf("network %d", id), deleteAttempts, deleteRetryAfter, deleteOnce); err != nil {
+		return err
 	}
 
 	deadline := time.Now().Add(timeout)
@@ -217,35 +177,6 @@ func deleteNetworkAndWait(ctx context.Context, client *sdk.APIClient, id int64, 
 		case <-time.After(settleInterval):
 		}
 	}
-}
-
-// refusalMessage assembles the message of a refused delete from the body's
-// msg and errors, which the response model keeps as additional properties.
-func refusalMessage(body map[string]any) string {
-	var parts []string
-
-	if m, ok := body["msg"].(string); ok && m != "" {
-		parts = append(parts, m)
-	}
-
-	if errs, ok := body["errors"].(map[string]any); ok {
-		keys := make([]string, 0, len(errs))
-		for k := range errs {
-			keys = append(keys, k)
-		}
-
-		sort.Strings(keys)
-
-		for _, k := range keys {
-			parts = append(parts, fmt.Sprintf("%s: %v", k, errs[k]))
-		}
-	}
-
-	if len(parts) == 0 {
-		return "no reason given"
-	}
-
-	return strings.Join(parts, "; ")
 }
 
 func detail(message string) string {

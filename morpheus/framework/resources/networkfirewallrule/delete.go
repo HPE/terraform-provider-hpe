@@ -36,17 +36,12 @@ func (r *Resource) Delete(
 		return
 	}
 
-	_, httpResp, err := client.NetworksAPI.
+	result, httpResp, err := client.NetworksAPI.
 		DeleteNetworkFirewallRule(ctx, id, networkIntegrationId).Execute()
-	if err != nil || (httpResp != nil && httpResp.StatusCode != http.StatusOK) {
-		// 404 means the resource is already gone — treat as success
-		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting network firewall rule",
-			fmt.Sprintf("network firewall rule %d DELETE failed: ", id)+errfmt.ErrMsg(err, httpResp),
+			fmt.Sprintf("network firewall rule %d DELETE failed: ", id)+err.Error(),
 		)
 
 		return

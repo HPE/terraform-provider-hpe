@@ -441,11 +441,8 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.NetworksAPI.DeleteSubnet(ctx, id).Execute()
-	if errfmt.IsNotFound(httpResp) {
-		return
-	}
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.NetworksAPI.DeleteSubnet(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "subnet", "", err, httpResp)
 
 		return

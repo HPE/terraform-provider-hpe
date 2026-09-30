@@ -223,8 +223,8 @@ func (r *certificateResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.SSLCertificatesAPI.DeleteCertificate(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.SSLCertificatesAPI.DeleteCertificate(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "certificate", "", err, httpResp)
 
 		return

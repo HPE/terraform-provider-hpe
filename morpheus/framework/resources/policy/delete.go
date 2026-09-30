@@ -5,7 +5,6 @@ package policy
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -36,11 +35,11 @@ func (r *Resource) Delete(
 		return
 	}
 
-	_, hresp, err := client.PoliciesAPI.RemovePolicies(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.PoliciesAPI.RemovePolicies(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete policy resource",
-			fmt.Sprintf("policy %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("policy %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

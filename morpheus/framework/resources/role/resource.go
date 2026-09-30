@@ -2313,11 +2313,11 @@ func (r *Resource) Delete(
 
 	id := data.Id.ValueInt64()
 	client, _ := r.NewClient(ctx)
-	_, hresp, err := client.RolesAPI.DeleteRole(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.RolesAPI.DeleteRole(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete role resource",
-			fmt.Sprintf("role %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("role %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

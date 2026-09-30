@@ -31,11 +31,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	deleteReq := client.AutomationAPI.RemoveTasks(ctx, id)
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete task resource",
-			fmt.Sprintf("task %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("task %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

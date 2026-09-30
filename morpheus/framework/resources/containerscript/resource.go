@@ -315,8 +315,8 @@ func (r *containerScriptResource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.LibraryAPI.DeleteScript(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.LibraryAPI.DeleteScript(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "container_script", "", err, httpResp)
 
 		return

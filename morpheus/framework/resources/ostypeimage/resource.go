@@ -259,10 +259,10 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	id := data.Id.ValueInt64()
-	_, hresp, err := client.LibraryAPI.DeleteOsTypeImage(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.LibraryAPI.DeleteOsTypeImage(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError("delete ostypeimage",
-			fmt.Sprintf("DELETE %d failed: %s", id, errfmt.ErrMsg(err, hresp)))
+			fmt.Sprintf("DELETE %d failed: %s", id, err.Error()))
 	}
 }
 

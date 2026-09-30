@@ -46,8 +46,8 @@ func (r *cloudAffinityGroupResource) Delete(
 	cloudID := state.CloudId.ValueInt64()
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.CloudsAPI.DeleteCloudAffinityGroup(ctx, cloudID, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.CloudsAPI.DeleteCloudAffinityGroup(ctx, cloudID, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(
 			&resp.Diagnostics, errfmt.OpDelete, "cloud_affinity_group", "", err, httpResp,
 		)

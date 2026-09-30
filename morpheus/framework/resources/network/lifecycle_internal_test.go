@@ -13,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 )
 
@@ -159,8 +161,8 @@ func TestUnitRefusalMessage(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		if got := refusalMessage(c.body); got != c.want {
-			t.Errorf("refusalMessage(%v) = %q, want %q", c.body, got, c.want)
+		if got := errfmt.RefusalMessage(c.body); got != c.want {
+			t.Errorf("RefusalMessage(%v) = %q, want %q", c.body, got, c.want)
 		}
 	}
 }

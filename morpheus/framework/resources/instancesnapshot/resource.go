@@ -465,17 +465,11 @@ func (r *Resource) Delete(
 
 	snapshotID := state.Id.ValueInt64()
 
-	_, hresp, err := client.InstancesAPI.DeleteSnapshotInstance(ctx, snapshotID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Warn(ctx, fmt.Sprintf("Snapshot %d already gone", snapshotID))
-
-			return
-		}
-
+	result, hresp, err := client.InstancesAPI.DeleteSnapshotInstance(ctx, snapshotID).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete instance snapshot",
-			fmt.Sprintf("snapshot %d DELETE failed: %s", snapshotID, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("snapshot %d DELETE failed: %s", snapshotID, err.Error()),
 		)
 
 		return

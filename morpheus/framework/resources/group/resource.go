@@ -487,11 +487,11 @@ func (r *Resource) Delete(
 
 	client, _ := r.NewClient(ctx)
 
-	_, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.GroupsAPI.RemoveGroups(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete group resource",
-			fmt.Sprintf("group %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("group %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

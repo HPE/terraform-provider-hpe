@@ -36,13 +36,13 @@ func (r *Resource) Delete(
 		return
 	}
 
-	_, httpResp, err := client.LoadBalancersAPI.
+	result, httpResp, err := client.LoadBalancersAPI.
 		DeleteLoadBalancerProfile(ctx, loadBalancerID, id).Execute()
-	if err != nil || httpResp.StatusCode != http.StatusOK {
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting load balancer profile",
 			fmt.Sprintf("load balancer profile %d DELETE failed: ", id)+
-				errfmt.ErrMsg(err, httpResp),
+				err.Error(),
 		)
 
 		return

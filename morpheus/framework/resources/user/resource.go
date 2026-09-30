@@ -528,11 +528,11 @@ func (r *Resource) Delete(
 
 	id := data.Id.ValueInt64()
 	client, _ := r.NewClient(ctx)
-	_, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete user resource",
-			fmt.Sprintf("user %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("user %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

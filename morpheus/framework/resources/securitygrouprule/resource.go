@@ -291,8 +291,8 @@ func (r *securityGroupRuleResource) Delete(
 	sgID := state.SecurityGroupId.ValueInt64()
 	ruleID := state.Id.ValueInt64()
 
-	_, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.SecurityGroupsAPI.RemoveSecurityGroupRules(ctx, sgID, ruleID).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "security_group_rule", "", err, httpResp)
 
 		return

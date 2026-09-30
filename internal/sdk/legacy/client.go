@@ -12,6 +12,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httputil"
+	"sort"
 	"strings"
 	"time"
 )
@@ -423,6 +424,18 @@ func (client *Client) Execute(req *Request) (*Response, error) {
 	resp.JsonData = parsedResult
 	resp.JsonParseError = jsonError
 
+	// Morpheus renders an operation it accepted as a request but refused as
+	// an operation -- a delete that cannot proceed, above all -- as HTTP 200
+	// with a body of {"success": false, "msg": ...}. The status alone would
+	// call that a success, and a caller judging by err would remove a
+	// resource from state that is still on the appliance (MORPH-17987). The
+	// body decides: a 2xx whose body says success:false is a failure carrying
+	// Morpheus's own message.
+	if resp.Success && bodySaysRefused(parsedResult) {
+		resp.Success = false
+		resp.RefusedMessage = refusalMessage(parsedResult)
+	}
+
 	// attempt to parse json into specified result type
 	// arbitrary interface{} data is parsed and stored in here
 	// The result type is specified in the request right now.
@@ -463,6 +476,11 @@ func (client *Client) Execute(req *Request) (*Response, error) {
 
 	// so we can still access the Morpheus Resp body in non-success cases
 	if !resp.Success {
+		if resp.RefusedMessage != "" {
+			return resp, fmt.Errorf("%d (%s): Morpheus refused the request: %s",
+				resp.StatusCode, http.StatusText(resp.StatusCode), resp.RefusedMessage)
+		}
+
 		return resp, errWithBody(nil, httpResp)
 	}
 
@@ -585,4 +603,49 @@ func (client *Client) Logout() (*Response, error) {
 	// create mock response
 	resp := &Response{Success: true, Status: "200 OK", StatusCode: 200}
 	return resp, nil
+}
+
+// bodySaysRefused reports whether a decoded JSON body is an object whose
+// "success" is false.
+func bodySaysRefused(body interface{}) bool {
+	m, ok := body.(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	success, ok := m["success"].(bool)
+
+	return ok && !success
+}
+
+// refusalMessage renders the "msg" and "errors" of a refused response as one
+// line: the message, then each error as "field: text" in field order; "no
+// reason given" when the body has neither.
+func refusalMessage(body interface{}) string {
+	m, _ := body.(map[string]interface{})
+
+	var parts []string
+
+	if msg, ok := m["msg"].(string); ok && msg != "" {
+		parts = append(parts, msg)
+	}
+
+	if errs, ok := m["errors"].(map[string]interface{}); ok {
+		keys := make([]string, 0, len(errs))
+		for k := range errs {
+			keys = append(keys, k)
+		}
+
+		sort.Strings(keys)
+
+		for _, k := range keys {
+			parts = append(parts, fmt.Sprintf("%s: %v", k, errs[k]))
+		}
+	}
+
+	if len(parts) == 0 {
+		return "no reason given"
+	}
+
+	return strings.Join(parts, "; ")
 }

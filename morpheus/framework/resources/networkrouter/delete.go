@@ -5,7 +5,6 @@ package networkrouter
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -36,12 +35,12 @@ func (r *Resource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, hresp, err := client.NetworksAPI.DeleteNetworkRouter(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.NetworksAPI.DeleteNetworkRouter(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router resource",
 			fmt.Sprintf("network router %d DELETE failed: %s",
-				id, errfmt.ErrMsg(err, hresp)),
+				id, err.Error()),
 		)
 	}
 }

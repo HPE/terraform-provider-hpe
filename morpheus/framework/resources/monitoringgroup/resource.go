@@ -254,8 +254,8 @@ func (r *monitoringGroupResource) Delete(
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.ChecksAPI.DeleteCheckGroups(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.ChecksAPI.DeleteCheckGroups(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "monitoring_group", "", err, httpResp)
 
 		return

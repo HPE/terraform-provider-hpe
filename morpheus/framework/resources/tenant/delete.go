@@ -64,12 +64,9 @@ func (r *Resource) Delete(
 	tflog.Debug(ctx, fmt.Sprintf(
 		"Deleting tenant %d (remove_resources=%t)", id, removeResources))
 
-	_, hresp, err := client.TenantsAPI.RemoveTenant(ctx, id).
+	result, hresp, err := client.TenantsAPI.RemoveTenant(ctx, id).
 		RemoveResources(removeResources).Execute()
-	if errfmt.IsNotFound(hresp) {
-		return
-	}
-	if err := errfmt.CheckResponse(err, hresp); err != nil {
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "tenant", "", err, hresp)
 
 		return

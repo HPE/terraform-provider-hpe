@@ -222,8 +222,8 @@ func (r *vdiGatewayResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.VDIAPI.RemoveVDIGateways(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_gateway", "", err, httpResp)
 
 		return

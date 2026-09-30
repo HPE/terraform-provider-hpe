@@ -25,6 +25,11 @@ type Response struct {
 	// This holds any error encountering JsonData
 	JsonParseError error
 
+	// RefusedMessage is set when Morpheus answered a 2xx whose body said
+	// success:false -- a request it accepted and an operation it refused --
+	// and holds its "msg" and "errors" as one line. Success is false then.
+	RefusedMessage string
+
 	Result interface{}
 
 	// the request is stored in here for referencing the http request.

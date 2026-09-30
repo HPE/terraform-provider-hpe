@@ -318,8 +318,8 @@ func (r *vdiPoolResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.VDIAPI.RemoveVDIPools(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.VDIAPI.RemoveVDIPools(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "vdi_pool", "", err, httpResp)
 
 		return

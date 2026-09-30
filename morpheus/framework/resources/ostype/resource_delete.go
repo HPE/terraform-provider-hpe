@@ -33,11 +33,11 @@ func (r *Resource) Delete(
 		return
 	}
 
-	_, httpResp, err := client.LibraryAPI.DeleteOsType(ctx, id).Execute()
-	if err != nil || httpResp.StatusCode != http.StatusOK {
+	result, httpResp, err := client.LibraryAPI.DeleteOsType(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting os type",
-			fmt.Sprintf("os type %d DELETE failed: ", id)+errfmt.ErrMsg(err, httpResp),
+			fmt.Sprintf("os type %d DELETE failed: ", id)+err.Error(),
 		)
 
 		return

@@ -5,7 +5,6 @@ package networkfirewallrulegroup
 import (
 	"context"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -39,18 +38,13 @@ func (r *Resource) Delete(
 		"Deleting network firewall rule group %d", id,
 	))
 
-	_, httpResp, err := client.NetworksAPI.
+	result, httpResp, err := client.NetworksAPI.
 		DeleteNetworkFirewallRuleGroup(ctx, id, serverID).Execute()
-	if err != nil || httpResp.StatusCode != http.StatusOK {
-		// 404 means the resource is already gone — treat as success
-		if httpResp != nil && httpResp.StatusCode == http.StatusNotFound {
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		resp.Diagnostics.AddError(
 			"error deleting network firewall rule group",
 			fmt.Sprintf("network firewall rule group %d DELETE failed: ", id)+
-				errfmt.ErrMsg(err, httpResp),
+				err.Error(),
 		)
 	}
 }

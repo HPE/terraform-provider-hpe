@@ -743,11 +743,11 @@ func (r *Resource) Delete(
 
 	client, _ := r.NewClient(ctx)
 
-	_, hresp, err := client.ServicePlansAPI.RemoveServicePlans(ctx, id).Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := client.ServicePlansAPI.RemoveServicePlans(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete service plan resource",
-			fmt.Sprintf("service plan %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("service plan %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

@@ -46,11 +46,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	// We'll do a force delete so that we can delete
 	// clusters that are in a provisioning state.
 	deleteReq := client.ClustersAPI.DeleteCluster(ctx, id).Force("on")
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete cluster resource",
-			fmt.Sprintf("cluster %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("cluster %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

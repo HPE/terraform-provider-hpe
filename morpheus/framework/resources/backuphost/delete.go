@@ -4,7 +4,6 @@ package backuphost
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 
@@ -27,14 +26,11 @@ func (r *backupHostResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.BackupsAPI.RemoveBackups(ctx, id).Execute()
-	// A 404 means the backup is already gone, so treat it as a successful
-	// delete rather than an error.
-	if errfmt.IsNotFound(httpResp) {
-		return
-	}
-	if err != nil || httpResp.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(deleteOperation, errfmt.ErrMsg(err, httpResp))
+	// A 404 means the backup is already gone, which is a successful delete;
+	// a 200 whose body says success:false is a refusal (MORPH-17987).
+	result, httpResp, err := client.BackupsAPI.RemoveBackups(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
+		resp.Diagnostics.AddError(deleteOperation, err.Error())
 
 		return
 	}

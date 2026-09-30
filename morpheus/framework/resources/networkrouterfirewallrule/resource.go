@@ -473,18 +473,12 @@ func (r *Resource) Delete(
 
 	tflog.Debug(ctx, fmt.Sprintf("Deleting firewall rule %d on router %d", id, routerID))
 
-	_, hresp, err := client.NetworksAPI.
+	result, hresp, err := client.NetworksAPI.
 		DeleteNetworkRouterFirewallRule(ctx, id, routerID).Execute()
-	if err != nil {
-		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
-			tflog.Debug(ctx, fmt.Sprintf("Firewall rule %d already deleted (404)", id))
-
-			return
-		}
-
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete network router firewall rule resource",
-			fmt.Sprintf("firewall rule %d DELETE failed: %s", id, errfmt.ErrMsg(err, hresp)),
+			fmt.Sprintf("firewall rule %d DELETE failed: %s", id, err.Error()),
 		)
 	}
 }

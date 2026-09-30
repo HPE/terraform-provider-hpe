@@ -33,11 +33,11 @@ func (r *Resource) Delete(ctx context.Context, req resource.DeleteRequest, resp 
 	}
 
 	deleteReq := client.LibraryAPI.RemoveVirtualImage(ctx, id)
-	_, hresp, err := deleteReq.Execute()
-	if err != nil || hresp.StatusCode != http.StatusOK {
+	result, hresp, err := deleteReq.Execute()
+	if err := errfmt.CheckDeleted(result, err, hresp); err != nil {
 		resp.Diagnostics.AddError(
 			"delete image resource",
-			fmt.Sprintf("image %d: DELETE failed ", id)+errfmt.ErrMsg(err, hresp),
+			fmt.Sprintf("image %d: DELETE failed ", id)+err.Error(),
 		)
 
 		return

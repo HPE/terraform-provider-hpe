@@ -213,8 +213,8 @@ func (r *deploymentResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.DeploymentsAPI.DeleteDeployment(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "deployment", "", err, httpResp)
 
 		return

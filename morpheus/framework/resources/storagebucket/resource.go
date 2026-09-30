@@ -332,8 +332,8 @@ func (r *storageBucketResource) Delete(ctx context.Context, req resource.DeleteR
 
 	id := state.Id.ValueInt64()
 
-	_, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
-	if err := errfmt.CheckResponse(err, httpResp); err != nil {
+	result, httpResp, err := client.StorageAPI.RemoveStorageBuckets(ctx, id).Execute()
+	if err := errfmt.CheckDeleted(result, err, httpResp); err != nil {
 		errfmt.DiagError(&resp.Diagnostics, errfmt.OpDelete, "storage_bucket", "", err, httpResp)
 
 		return
