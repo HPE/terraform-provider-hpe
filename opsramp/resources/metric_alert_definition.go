@@ -268,7 +268,7 @@ func (r *MetricAlertDefinitionResource) Create(ctx context.Context, req resource
 
 	tenantId := r.getTenantId(plan.Client)
 
-	apiReq, err := r.buildRequest(ctx, &plan)
+	apiReq, err := r.buildRequest(&plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
 
@@ -319,7 +319,7 @@ func (r *MetricAlertDefinitionResource) Update(ctx context.Context, req resource
 
 	tenantId := r.getTenantId(plan.Client)
 
-	apiReq, err := r.buildRequest(ctx, &plan)
+	apiReq, err := r.buildRequest(&plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Build Request Error", err.Error())
 
@@ -367,7 +367,6 @@ func (r *MetricAlertDefinitionResource) Delete(ctx context.Context, req resource
 
 // buildRequest converts the Terraform model to the API request
 func (r *MetricAlertDefinitionResource) buildRequest(
-	ctx context.Context,
 	plan *MetricAlertDefinitionModel,
 ) (*client.MetricAlertDefinitionRequest, error) {
 	apiReq := &client.MetricAlertDefinitionRequest{

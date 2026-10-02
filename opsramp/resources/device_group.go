@@ -4,6 +4,7 @@ package resources
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -395,4 +396,46 @@ func (r *DeviceGroupResource) ModifyPlan(ctx context.Context, req resource.Modif
 		plan.Resources, _ = deviceGroupResourcesSet(ctx, nil)
 		resp.Diagnostics.Append(resp.Plan.Set(ctx, plan)...)
 	}
+}
+
+// ImportState handles importing an existing device group.
+// Import ID format: <policy_id> or <client_id>:<policy_id> (MSP only)
+func (r *DeviceGroupResource) ImportState(
+	ctx context.Context,
+	req resource.ImportStateRequest,
+	resp *resource.ImportStateResponse,
+) {
+	parsed, err := r.ParseImportID(req.ID, 1)
+	if err != nil {
+		resp.Diagnostics.AddError("Invalid Import ID", err.Error())
+
+		return
+	}
+
+	tenantId := r.TenantForImport(parsed)
+	deviceGroupId := parsed.Parts[0]
+
+	existing, err := r.apiClient.GetDeviceGroup(tenantId, deviceGroupId)
+	if err != nil {
+		resp.Diagnostics.AddError("Error Importing Device Group",
+			fmt.Sprintf("Could not import device group with ID '%s': %s", deviceGroupId, err))
+
+		return
+	}
+
+	resources, diags := r.readDeviceGroupResources(ctx, tenantId, existing.Id)
+	resp.Diagnostics.Append(diags...)
+
+	if resp.Diagnostics.HasError() {
+		// Error diagnostics already appended above
+		return
+	}
+
+	state := DeviceGroupModel{Client: parsed.Client}
+
+	mapDeviceGroupResponseToModel(existing, &state)
+	state.Resources = resources
+
+	diags = resp.State.Set(ctx, &state)
+	resp.Diagnostics.Append(diags...)
 }

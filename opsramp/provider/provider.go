@@ -147,6 +147,8 @@ func (p *OpsRampProvider) Resources(ctx context.Context) []func() resource.Resou
 		resources.NewScheduledMaintenance,
 		resources.NewMetricAlertDefinition,
 		resources.NewLogAlertDefinition,
+		resources.NewTemplate,
+		resources.NewDeviceManagementPolicy,
 	}
 }
 
@@ -164,6 +166,10 @@ func (p *OpsRampProvider) DataSources(ctx context.Context) []func() datasource.D
 		data.NewServiceDeskUrgencyDataSource,
 		data.NewServiceDeskBusinessImpactDataSource,
 		data.NewServiceDeskCategoryDataSource,
+		data.NewTemplateDataSource,
+		data.NewMetricDataSource,
+		data.NewAdapterTypeDataSource,
+		data.NewDeviceManagementPolicyDataSource,
 	}
 }
 

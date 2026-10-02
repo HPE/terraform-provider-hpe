@@ -66,7 +66,7 @@ func TestUnitMetricAlertDefinitionBuildRequestWrapsStringInputs(t *testing.T) {
 		Value: types.StringValue("$$__name__"),
 	}})
 
-	request, err := r.buildRequest(context.Background(), &plan)
+	request, err := r.buildRequest(&plan)
 	if err != nil {
 		t.Fatalf("buildRequest returned error: %v", err)
 	}

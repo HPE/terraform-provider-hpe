@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	frameworkprovider "github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/providerserver"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 
 	providerimpl "github.com/HPE/terraform-provider-hpe/opsramp/provider"
 )
@@ -36,6 +38,27 @@ func TestProviderSchemaHasCoreAttributes(t *testing.T) {
 	for _, attr := range requiredAttrs {
 		if _, ok := resp.Schema.Attributes[attr]; !ok {
 			t.Fatalf("expected provider schema to include %q attribute", attr)
+		}
+	}
+}
+
+func TestProviderProtocolSchemaIsValid(t *testing.T) {
+	server, err := providerserver.NewProtocol6WithError(providerimpl.New("test")())()
+	if err != nil {
+		t.Fatalf("could not create provider server: %v", err)
+	}
+
+	response, err := server.GetProviderSchema(
+		context.Background(),
+		&tfprotov6.GetProviderSchemaRequest{},
+	)
+	if err != nil {
+		t.Fatalf("GetProviderSchema() unexpected error: %v", err)
+	}
+
+	for _, diagnostic := range response.Diagnostics {
+		if diagnostic.Severity == tfprotov6.DiagnosticSeverityError {
+			t.Fatalf("GetProviderSchema() error: %s: %s", diagnostic.Summary, diagnostic.Detail)
 		}
 	}
 }

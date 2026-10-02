@@ -32,7 +32,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 						resource.TestCheckResourceAttrSet("hpe_opsramp_metric_alert_definition.test", "id"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "name", name),
 						resource.TestCheckResourceAttr(
-							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_type", "DYNAMIC_CHANGE_DETECTION"),
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_type", "DYNAMIC_CHANGE_DETECTION",
+						),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "entity_type", "RESOURCE"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "component", "$$__name__"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "attributes.0.name", "host"),
@@ -68,7 +69,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "no_data_condition", "NO_DATA_ALERT"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.warning_condition", "50000"),
 						resource.TestCheckResourceAttr(
-							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "30000"),
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "30000",
+						),
 					),
 				},
 				{
@@ -79,7 +81,8 @@ func TestAccMetricAlertDefinitionResource(t *testing.T) {
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "description", "description two"),
 						resource.TestCheckResourceAttr("hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.warning_condition", "40000"),
 						resource.TestCheckResourceAttr(
-							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "20000"),
+							"hpe_opsramp_metric_alert_definition.test", "alert_threshold_data.critical_condition", "20000",
+						),
 					),
 				},
 			},
