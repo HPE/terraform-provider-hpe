@@ -36,8 +36,26 @@ type AddClusterWorkerRequestServerConfigAnyOfOneOf6 struct {
 	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
 	MigrationConcurrencyLimit *string `json:"migrationConcurrencyLimit,omitempty"`
 	// When enabled, Morpheus automatically sizes maintenance mode migration concurrency based on available bandwidth and VM count, using Migration Concurrency (if set) as an upper bound. When disabled, Migration Concurrency runs as a fixed number of parallel migrations at all times.
-	MigrationConcurrencyAutoMode *string                `json:"migrationConcurrencyAutoMode,omitempty"`
-	AdditionalProperties         map[string]interface{} `json:",remain"`
+	MigrationConcurrencyAutoMode *string `json:"migrationConcurrencyAutoMode,omitempty"`
+	// Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.
+	VirtSwitchName *string `json:"virtSwitchName,omitempty"`
+	// Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns1 *string `json:"dns1,omitempty"`
+	// Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns2 *string `json:"dns2,omitempty"`
+	// Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Dns3 *string `json:"dns3,omitempty"`
+	// DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	SearchDomain *string `json:"searchDomain,omitempty"`
+	// Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Ntp1 *string `json:"ntp1,omitempty"`
+	// Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Ntp2 *string `json:"ntp2,omitempty"`
+	// Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+	Proxy *string `json:"proxy,omitempty"`
+	// Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.
+	NoProxy              *string                `json:"noProxy,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _AddClusterWorkerRequestServerConfigAnyOfOneOf6 AddClusterWorkerRequestServerConfigAnyOfOneOf6
@@ -87,6 +105,33 @@ func (o AddClusterWorkerRequestServerConfigAnyOfOneOf6) ToMap() (map[string]inte
 	}
 	if !IsNil(o.MigrationConcurrencyAutoMode) {
 		toSerialize["migrationConcurrencyAutoMode"] = o.MigrationConcurrencyAutoMode
+	}
+	if !IsNil(o.VirtSwitchName) {
+		toSerialize["virtSwitchName"] = o.VirtSwitchName
+	}
+	if !IsNil(o.Dns1) {
+		toSerialize["dns1"] = o.Dns1
+	}
+	if !IsNil(o.Dns2) {
+		toSerialize["dns2"] = o.Dns2
+	}
+	if !IsNil(o.Dns3) {
+		toSerialize["dns3"] = o.Dns3
+	}
+	if !IsNil(o.SearchDomain) {
+		toSerialize["searchDomain"] = o.SearchDomain
+	}
+	if !IsNil(o.Ntp1) {
+		toSerialize["ntp1"] = o.Ntp1
+	}
+	if !IsNil(o.Ntp2) {
+		toSerialize["ntp2"] = o.Ntp2
+	}
+	if !IsNil(o.Proxy) {
+		toSerialize["proxy"] = o.Proxy
+	}
+	if !IsNil(o.NoProxy) {
+		toSerialize["noProxy"] = o.NoProxy
 	}
 
 	for key, value := range o.AdditionalProperties {

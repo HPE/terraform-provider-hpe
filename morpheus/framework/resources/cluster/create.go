@@ -141,6 +141,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 		return
 	}
 
+	// Gate HVM 2.0 network fields on the selected layout's clusterVersion.
+	if !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown() &&
+		!plan.LayoutId.IsNull() && !plan.LayoutId.IsUnknown() {
+		resp.Diagnostics.Append(requireHvm2Layout(
+			ctx, client, plan.LayoutId.ValueInt64(), plan.ConfigHvm,
+		)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	clusterResp, httpResp, err := client.ClustersAPI.AddCluster(ctx).
 		AddClusterRequest(*addClusterReq).Execute()
 	if err != nil || httpResp.StatusCode != http.StatusOK {
@@ -464,6 +475,44 @@ func buildCreateClusterServer(
 
 		if !plan.ConfigHvm.CreateUser.IsNull() && !plan.ConfigHvm.CreateUser.IsUnknown() {
 			cfg.CreateUser = plan.ConfigHvm.CreateUser.ValueBoolPointer()
+		}
+
+		// HVM 2.0 network configuration. Only honoured by Morpheus when the
+		// selected cluster layout has clusterVersion >= 2.0 (see gate.go).
+		if !plan.ConfigHvm.VirtSwitchName.IsNull() && !plan.ConfigHvm.VirtSwitchName.IsUnknown() {
+			cfg.VirtSwitchName = plan.ConfigHvm.VirtSwitchName.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns1.IsNull() && !plan.ConfigHvm.Dns1.IsUnknown() {
+			cfg.Dns1 = plan.ConfigHvm.Dns1.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns2.IsNull() && !plan.ConfigHvm.Dns2.IsUnknown() {
+			cfg.Dns2 = plan.ConfigHvm.Dns2.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Dns3.IsNull() && !plan.ConfigHvm.Dns3.IsUnknown() {
+			cfg.Dns3 = plan.ConfigHvm.Dns3.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.SearchDomain.IsNull() && !plan.ConfigHvm.SearchDomain.IsUnknown() {
+			cfg.SearchDomain = plan.ConfigHvm.SearchDomain.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Ntp1.IsNull() && !plan.ConfigHvm.Ntp1.IsUnknown() {
+			cfg.Ntp1 = plan.ConfigHvm.Ntp1.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Ntp2.IsNull() && !plan.ConfigHvm.Ntp2.IsUnknown() {
+			cfg.Ntp2 = plan.ConfigHvm.Ntp2.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.Proxy.IsNull() && !plan.ConfigHvm.Proxy.IsUnknown() {
+			cfg.Proxy = plan.ConfigHvm.Proxy.ValueStringPointer()
+		}
+
+		if !plan.ConfigHvm.NoProxy.IsNull() && !plan.ConfigHvm.NoProxy.IsUnknown() {
+			cfg.NoProxy = plan.ConfigHvm.NoProxy.ValueStringPointer()
 		}
 
 		cfgAnyOf := sdkfuncs.NewHvmClusterServerConfigAsAnyOf(cfg)

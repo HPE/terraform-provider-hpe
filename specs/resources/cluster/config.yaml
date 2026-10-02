@@ -255,6 +255,12 @@ cluster:
     - config_hks
     - config_hks_hvm
     - config_vsphere
+    # MORPH-13426 cluster migration-concurrency fields: present in the API spec
+    # but out of scope here (no create/read/update wiring yet). Excluded so this
+    # change stays limited to the HVM network-field update behaviour; a later
+    # change can add them with full support.
+    - config_hvm.migration_concurrency_auto_mode
+    - config_hvm.migration_concurrency_limit
     # dont need most of these for create
     - server.network # replaced with management_net_interface
     - server.network_interfaces.network
@@ -372,6 +378,31 @@ cluster:
     config_hvm.storage_interface_name:
       computed_optional_required: optional
     config_hvm.vcpu_placement_mode:
+      computed_optional_required: optional
+    # HVM cluster 2.0 network config (requires a layout with clusterVersion >= 2.0)
+    # virt_switch_name has create/scale-out semantics (virtual switches are
+    # provisioned per host at add time), so a change forces replacement.
+    config_hvm.virt_switch_name:
+      computed_optional_required: optional
+      requires_replace: true
+    # The remaining network settings are reconciled onto the hosts by the daily
+    # cluster drift-correction sync, so a change is an in-place update (it
+    # converges on the next sync) rather than a replacement.
+    config_hvm.dns1:
+      computed_optional_required: optional
+    config_hvm.dns2:
+      computed_optional_required: optional
+    config_hvm.dns3:
+      computed_optional_required: optional
+    config_hvm.search_domain:
+      computed_optional_required: optional
+    config_hvm.ntp1:
+      computed_optional_required: optional
+    config_hvm.ntp2:
+      computed_optional_required: optional
+    config_hvm.proxy:
+      computed_optional_required: optional
+    config_hvm.no_proxy:
       computed_optional_required: optional
     # required
     config_hvm.cpu_arch:

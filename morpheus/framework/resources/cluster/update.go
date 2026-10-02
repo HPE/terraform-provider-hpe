@@ -138,6 +138,48 @@ func (r *Resource) Update(
 			config.AdditionalProperties["powerPolicy"] = plan.ConfigHvm.PowerPolicy.ValueString()
 		}
 
+		// HVM 2.0 network configuration. virt_switch_name is requires_replace
+		// (virtual switches are provisioned per host at create/scale-out time),
+		// so an in-place update never changes it; it is re-sent here only so a
+		// config rebuild does not drop it. The remaining network fields are
+		// reconciled onto the hosts by the daily cluster drift-correction sync,
+		// so a change is an in-place update that converges on the next sync.
+		if !plan.ConfigHvm.VirtSwitchName.IsNull() && !plan.ConfigHvm.VirtSwitchName.IsUnknown() {
+			config.AdditionalProperties["virtSwitchName"] = plan.ConfigHvm.VirtSwitchName.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns1.IsNull() && !plan.ConfigHvm.Dns1.IsUnknown() {
+			config.AdditionalProperties["dns1"] = plan.ConfigHvm.Dns1.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns2.IsNull() && !plan.ConfigHvm.Dns2.IsUnknown() {
+			config.AdditionalProperties["dns2"] = plan.ConfigHvm.Dns2.ValueString()
+		}
+
+		if !plan.ConfigHvm.Dns3.IsNull() && !plan.ConfigHvm.Dns3.IsUnknown() {
+			config.AdditionalProperties["dns3"] = plan.ConfigHvm.Dns3.ValueString()
+		}
+
+		if !plan.ConfigHvm.SearchDomain.IsNull() && !plan.ConfigHvm.SearchDomain.IsUnknown() {
+			config.AdditionalProperties["searchDomain"] = plan.ConfigHvm.SearchDomain.ValueString()
+		}
+
+		if !plan.ConfigHvm.Ntp1.IsNull() && !plan.ConfigHvm.Ntp1.IsUnknown() {
+			config.AdditionalProperties["ntp1"] = plan.ConfigHvm.Ntp1.ValueString()
+		}
+
+		if !plan.ConfigHvm.Ntp2.IsNull() && !plan.ConfigHvm.Ntp2.IsUnknown() {
+			config.AdditionalProperties["ntp2"] = plan.ConfigHvm.Ntp2.ValueString()
+		}
+
+		if !plan.ConfigHvm.Proxy.IsNull() && !plan.ConfigHvm.Proxy.IsUnknown() {
+			config.AdditionalProperties["proxy"] = plan.ConfigHvm.Proxy.ValueString()
+		}
+
+		if !plan.ConfigHvm.NoProxy.IsNull() && !plan.ConfigHvm.NoProxy.IsUnknown() {
+			config.AdditionalProperties["noProxy"] = plan.ConfigHvm.NoProxy.ValueString()
+		}
+
 		cluster.Config = config
 
 	}
@@ -149,6 +191,22 @@ func (r *Resource) Update(
 		resp.Diagnostics.AddError("creating client failed", err.Error())
 
 		return
+	}
+
+	// Gate the HVM 2.0 network fields on the selected layout's clusterVersion.
+	// layout_id is requires_replace, so the layout cannot change in place --
+	// but the network fields (other than virt_switch_name) are now in-place
+	// updatable, so a user could add them to a cluster whose fixed layout
+	// predates clusterVersion 2.0, where Morpheus would silently ignore them.
+	// Refuse that here, mirroring the create-path gate (see create.go).
+	if !plan.ConfigHvm.IsNull() && !plan.ConfigHvm.IsUnknown() &&
+		!plan.LayoutId.IsNull() && !plan.LayoutId.IsUnknown() {
+		resp.Diagnostics.Append(requireHvm2Layout(
+			ctx, client, plan.LayoutId.ValueInt64(), plan.ConfigHvm,
+		)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
 	}
 
 	_, httpResp, err := client.ClustersAPI.UpdateCluster(ctx, id).

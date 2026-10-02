@@ -32,3 +32,8 @@ const (
 	clusterStatusSyncing        = "syncing"
 	clusterStatusWarning        = "warning"
 )
+
+// ClusterHvmVirtSwitchMinLayoutVersion is the minimum cluster-layout
+// clusterVersion that supports HVM 2.0 network configuration
+// (virt_switch_name, dns*, ntp*, proxy, no_proxy).
+const ClusterHvmVirtSwitchMinLayoutVersion = ">= 2.0"

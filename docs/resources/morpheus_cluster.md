@@ -36,6 +36,19 @@ resource "hpe_morpheus_cluster" "example_hvm" {
     cpu_arch          = "x86_64"
     cpu_model         = "host-model"
     power_policy      = "balanced"
+
+    # HVM 2.0 network configuration. Only honoured when the selected cluster
+    # layout has clusterVersion 2.0 or greater; otherwise Morpheus silently
+    # drops these fields.
+    virt_switch_name = "vSwitch0"
+    dns1             = "8.8.8.8"
+    dns2             = "8.8.4.4"
+    dns3             = "1.1.1.1"
+    search_domain    = "example.com"
+    ntp1             = "0.pool.ntp.org"
+    ntp2             = "1.pool.ntp.org"
+    proxy            = "http://proxy.example.com:3128"
+    no_proxy         = "localhost,127.0.0.1,.example.com"
   }
 
   server = {
@@ -76,6 +89,8 @@ resource "hpe_morpheus_cluster" "example_hvm" {
   }
 }
 ```
+
+~> **Terraform 1.14 caveat.** Terraform 1.14 silently ignores unknown attribute names nested inside a single-nested attribute such as `config_hvm`. A misspelled field name (for example `dns_1` instead of `dns1`) passes `terraform validate` and `terraform plan` without any error or warning on affected CLI versions, so the intended value is quietly dropped and the cluster is built without it. Double-check the spelling of `config_hvm` fields against the schema below. (See also the provider README.)
 
 ## Generic Cluster Config using the Dynamic Config
 
@@ -274,10 +289,19 @@ Optional:
 - `compute_interface_name` (String)
 - `compute_vlans` (String)
 - `create_user` (Boolean) Whether to create a user on the cluster's workers. The default is 'false'.
+- `dns1` (String) Primary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `dns2` (String) Secondary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `dns3` (String) Tertiary DNS server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `dynamic_placement` (Boolean) When enabled, Dynamic Placement will automatically balance VMs across cluster hosts based on resource utilization. When disabled, VMs will only migrate to a new host if they are pinned to a specific host or failed over and not running on the preferred host.
+- `no_proxy` (String) Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `ntp1` (String) Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `ntp2` (String) Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `overlay_interface_name` (String)
+- `proxy` (String) Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
+- `search_domain` (String) DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `storage_interface_name` (String)
 - `vcpu_placement_mode` (String)
+- `virt_switch_name` (String) Name of the HVM virtual switch. Requires a cluster layout with clusterVersion 2.0 or greater.
 
 
 <a id="nestedatt--timeouts"></a>
@@ -295,6 +319,18 @@ Optional:
 ~> Update support on `hpe_morpheus_cluster` is limited - only basic cluster information such as name, description, and labels can be updated. Additionally, certain `config` properties can be updated. Refer to the resource schema for full information.
 
 ~> The SSH password (`server.ssh_password_wo`) is set when the cluster is created and cannot be changed afterwards. A change to the configured value therefore plans a **replacement** of the cluster; the read-only `write_only_revision` records when it was last sent. The deprecated `server.ssh_password_wo_version` marker still works for the 2.2 release (changing it plans the same replacement; removing it does not) and will be removed in 2.6.
+
+~> The HVM 2.0 network fields `dns1`, `dns2`, `dns3`, `search_domain`, `ntp1`, `ntp2`, `proxy`, and `no_proxy` can be changed on an existing cluster and are applied as an **in-place update** rather than a replacement. Morpheus reconciles the new values onto the cluster hosts through its daily node-settings drift-correction sync, so the hosts converge within a day. Two caveats follow: (1) convergence is **asynchronous** — `terraform apply` returns before the hosts are reconfigured; and (2) the reconciler only pushes non-empty values, so clearing a field (setting it back to empty) updates Terraform state but does not roll the hosts back on its own. By contrast, `virt_switch_name` has create/scale-out semantics (virtual switches are provisioned per host when a host is added), so a change to it still forces a **replacement**.
+
+## Cluster layout upgrades
+
+~> Changing `layout_id` forces the cluster to be **replaced** (destroyed and recreated). A layout reassignment in Morpheus only re-points the cluster's server group at the new layout; it does not reconfigure, re-provision, or roll the existing hosts, so it is not a safely idempotent in-place update that Terraform can converge to. The provider therefore treats a `layout_id` change as a replacement rather than an in-place update.
+
+-> If a cluster's layout is changed out-of-band (for example, through the Morpheus UI), a subsequent `terraform plan` will detect the changed `layout_id` and propose a destructive replacement. Running `terraform apply -refresh-only` updates Terraform state to the observed `layout_id`, but it does **not** converge on its own: the configuration still specifies the old `layout_id`, so the next plan proposes the replacement again. To durably reconcile without recreating the cluster, either update `layout_id` in your configuration to match the reassigned layout, or add `lifecycle { ignore_changes = [layout_id, config_hvm] }` to the resource.
+
+## Scaling HVM 2.0 clusters
+
+~> The set of cluster hosts is fixed at create time by `server.ssh_hosts`. Changing `server.ssh_hosts` (for example, to add or remove a host) forces the cluster to be **replaced** rather than scaled in place; the provider does not support adding or removing hosts on an existing cluster. Plan host changes accordingly, since a replacement destroys and recreates the cluster.
 
 ## Import
 

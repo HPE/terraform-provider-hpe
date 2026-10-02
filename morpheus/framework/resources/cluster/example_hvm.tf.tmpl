@@ -16,6 +16,19 @@ resource "hpe_morpheus_cluster" "example_hvm" {
     cpu_arch = "{{.CpuArch}}"
     cpu_model = "{{.CpuModel}}"
     power_policy = "{{.PowerPolicy}}"
+
+    # HVM 2.0 network configuration. Only honoured when the selected cluster
+    # layout has clusterVersion 2.0 or greater; otherwise Morpheus silently
+    # drops these fields.
+    virt_switch_name = "vSwitch0"
+    dns1             = "8.8.8.8"
+    dns2             = "8.8.4.4"
+    dns3             = "1.1.1.1"
+    search_domain    = "example.com"
+    ntp1             = "0.pool.ntp.org"
+    ntp2             = "1.pool.ntp.org"
+    proxy            = "http://proxy.example.com:3128"
+    no_proxy         = "localhost,127.0.0.1,.example.com"
   }
 
   server = {

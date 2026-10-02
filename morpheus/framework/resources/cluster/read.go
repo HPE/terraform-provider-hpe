@@ -172,6 +172,52 @@ func getClusterAsState(
 				computeVlansVal = v
 			}
 
+			// HVM 2.0 network configuration, echoed back in the config map.
+			var virtSwitchNameVal string
+			if v, ok := cluster.Config["virtSwitchName"].(string); ok {
+				virtSwitchNameVal = v
+			}
+
+			var dns1Val string
+			if v, ok := cluster.Config["dns1"].(string); ok {
+				dns1Val = v
+			}
+
+			var dns2Val string
+			if v, ok := cluster.Config["dns2"].(string); ok {
+				dns2Val = v
+			}
+
+			var dns3Val string
+			if v, ok := cluster.Config["dns3"].(string); ok {
+				dns3Val = v
+			}
+
+			var searchDomainVal string
+			if v, ok := cluster.Config["searchDomain"].(string); ok {
+				searchDomainVal = v
+			}
+
+			var ntp1Val string
+			if v, ok := cluster.Config["ntp1"].(string); ok {
+				ntp1Val = v
+			}
+
+			var ntp2Val string
+			if v, ok := cluster.Config["ntp2"].(string); ok {
+				ntp2Val = v
+			}
+
+			var proxyVal string
+			if v, ok := cluster.Config["proxy"].(string); ok {
+				proxyVal = v
+			}
+
+			var noProxyVal string
+			if v, ok := cluster.Config["noProxy"].(string); ok {
+				noProxyVal = v
+			}
+
 			// read as many values as possible from API
 			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
 				// can't read createUser from config GET
@@ -184,9 +230,27 @@ func getClusterAsState(
 				"cpu_arch":          convert.StrToType(&cpuArchVal),
 				"cpu_model":         convert.StrToType(&cpuModelVal),
 				"power_policy":      convert.StrToType(&powerPolicyVal),
+				"virt_switch_name":  convert.StrToType(&virtSwitchNameVal),
+				"dns1":              convert.StrToType(&dns1Val),
+				"dns2":              convert.StrToType(&dns2Val),
+				"dns3":              convert.StrToType(&dns3Val),
+				"search_domain":     convert.StrToType(&searchDomainVal),
+				"ntp1":              convert.StrToType(&ntp1Val),
+				"ntp2":              convert.StrToType(&ntp2Val),
+				"proxy":             convert.StrToType(&proxyVal),
+				"no_proxy":          convert.StrToType(&noProxyVal),
 			})
 
 		} else {
+			// Normal (non-import) read. Fields that the config GET does not
+			// echo back reliably -- create_user and vcpu_placement_mode are
+			// never returned, and the HVM 2.0 network fields are
+			// requires_replace so the planned value is authoritative -- are
+			// carried over from plan rather than re-derived from the API map.
+			// Only the import branch above, where there is no prior plan to
+			// trust, sources every field from the config map. Import is
+			// currently unsupported for this resource, so that branch is the
+			// exceptional path.
 			configHvmVal, diags = NewConfigHvmValue(ConfigHvmValue{}.AttributeTypes(ctx), map[string]attr.Value{
 				"create_user":            plan.ConfigHvm.CreateUser,
 				"compute_interface_name": plan.ConfigHvm.ComputeInterfaceName,
@@ -198,6 +262,15 @@ func getClusterAsState(
 				"cpu_arch":               convert.StrToType(&cpuArchVal),
 				"cpu_model":              convert.StrToType(&cpuModelVal),
 				"power_policy":           convert.StrToType(&powerPolicyVal),
+				"virt_switch_name":       plan.ConfigHvm.VirtSwitchName,
+				"dns1":                   plan.ConfigHvm.Dns1,
+				"dns2":                   plan.ConfigHvm.Dns2,
+				"dns3":                   plan.ConfigHvm.Dns3,
+				"search_domain":          plan.ConfigHvm.SearchDomain,
+				"ntp1":                   plan.ConfigHvm.Ntp1,
+				"ntp2":                   plan.ConfigHvm.Ntp2,
+				"proxy":                  plan.ConfigHvm.Proxy,
+				"no_proxy":               plan.ConfigHvm.NoProxy,
 			})
 		}
 
