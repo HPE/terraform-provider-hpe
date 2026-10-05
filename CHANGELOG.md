@@ -232,6 +232,19 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_instance`: a volume's `controller_mount_point` is now sent to Morpheus (MORPH-18424)
+
+Setting `controller_mount_point` on a volume — for example `"-1:1:6:0"` from
+`hpe_morpheus_instance_storage_controller`, to put a data disk on a new SCSI VMware Paravirtual
+controller at bus 1 while the OS disk stays on the LSI Logic controller — had no effect: the value
+was never included in the create or update request, so Morpheus placed the disk on the existing
+controller and the apply failed with *"Provider produced inconsistent result after apply …
+controller_mount_point: was "-1:1:6:0", but now "62383:0:13:1""*. The value is now sent, and the
+controller is created. Because Morpheus identifies a controller by bus and type rather than by the
+`-1` placeholder id, state keeps the configured `-1:…` form once the request has been satisfied, so
+there is no diff on the next plan; a disk that has really moved to another controller is still
+reported as drift.
+
 ### `hpe_morpheus_license`: the installed licence is read back, drift is detected, and destroy is documented (MORPH-18310)
 
 The resource's read called `GET /api/license` and discarded the answer, so it never noticed when the

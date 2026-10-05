@@ -1526,6 +1526,18 @@ func setDatastoreAutoSelectionAndSize(
 			if !refresh && !planVol.StorageProfile.IsNull() && !planVol.StorageProfile.IsUnknown() {
 				apiVol.StorageProfile = planVol.StorageProfile.ValueStringPointer()
 			}
+
+			// controller_mount_point: "-1:bus:type:unit" asks for a controller
+			// to be created, and Morpheus reports back the one it made,
+			// "<id>:bus:type:unit". Morpheus itself never looks at the id — it
+			// matches a controller on bus and type (assignStorageVolumeController)
+			// — so the two forms are the same request. Keep the configured
+			// form when the API agrees on bus:type:unit, on refresh as well:
+			// the request is satisfied, which is not drift. A different tail
+			// means the disk really has moved and is reported as the API has it.
+			apiVol.ControllerMountPoint = reconcileControllerMountPoint(
+				planVol.ControllerMountPoint, apiVol.ControllerMountPoint,
+			)
 		}
 		// If i >= maxIndex, just append the apiVol as-is (unmatched volumes)
 

@@ -62,6 +62,15 @@ func createVolumeMapper(
 		volume.StorageProfile.Set(vol.StorageProfile.ValueStringPointer())
 	}
 
+	// controller_mount_point ("id:busNumber:typeId:unitNumber") is how a volume
+	// asks for a particular controller, including a new one (id -1) — the only
+	// way to put a data disk on, say, a PVSCSI controller at bus 1. Omitting it
+	// lets Morpheus pick the next unit on the existing controller, and the
+	// read-back then disagrees with the plan (MORPH-18424).
+	if !vol.ControllerMountPoint.IsNull() && !vol.ControllerMountPoint.IsUnknown() {
+		volume.ControllerMountPoint = vol.ControllerMountPoint.ValueStringPointer()
+	}
+
 	return volume
 }
 
@@ -112,6 +121,15 @@ func updateVolumeMapper(
 
 	if !vol.StorageProfile.IsNull() && !vol.StorageProfile.IsUnknown() {
 		volume.StorageProfile.Set(vol.StorageProfile.ValueStringPointer())
+	}
+
+	// controller_mount_point ("id:busNumber:typeId:unitNumber") is how a volume
+	// asks for a particular controller, including a new one (id -1) — the only
+	// way to put a data disk on, say, a PVSCSI controller at bus 1. Omitting it
+	// lets Morpheus pick the next unit on the existing controller, and the
+	// read-back then disagrees with the plan (MORPH-18424).
+	if !vol.ControllerMountPoint.IsNull() && !vol.ControllerMountPoint.IsUnknown() {
+		volume.ControllerMountPoint = vol.ControllerMountPoint.ValueStringPointer()
 	}
 
 	return volume
