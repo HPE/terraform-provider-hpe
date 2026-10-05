@@ -220,6 +220,14 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_setting_appliance`: the proxy bypass list can be managed (MORPH-18311)
+
+The resource configured the appliance's proxy (`proxy_host`, `proxy_port`, …) but had no attribute
+for its **No Proxy** list, so a proxied appliance sent its calls to lab-internal hosts — HVM hosts,
+distributed workers, other appliances — through the proxy, and the only remedy was the UI, which
+Terraform then neither read nor preserved. The new `no_proxy` attribute takes the comma-separated
+hosts, domains or CIDR ranges the appliance reaches directly (for example
+`10.0.0.0/8,localhost,127.0.0.1`) and is written and read like the other proxy settings.
 ### `hpe_morpheus_image`, `hpe_morpheus_datastore`, `hpe_morpheus_policy`, `hpe_morpheus_task`: an in-place update no longer replaces the resources that reference them (MORPH-18309)
 
 These four resources planned their `id` as *known after apply* on every in-place update — the one

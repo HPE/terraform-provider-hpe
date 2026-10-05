@@ -11,7 +11,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 )
 
-//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_setting_appliance/resource.tf setting_appliance_resource.tf.tmpl ApiAllowedOrigins 'demo' ApplianceUrl 'https://morpheus.test.local' CurrencyProvider 'fixer' CurrencyProviderApiKey 'example' DefaultRoleId '5' DefaultUserRoleId '10' DockerPrivilegedMode 'false' InternalApplianceUrl 'https://pxemorpheus.test.local' ProxyDomain 'test.local' ProxyHost '10.0.0.100' ProxyPassword 'Password123456' ProxyPort '3128' ProxyUser 'jsmith' ProxyWorkstation 'work123' RegistrationEnabled 'true' SmtpFromAddress 'testemail@test.local' SmtpPassword 'Password12' SmtpPort '465' SmtpServer 'smtp01.test.local' SmtpUseSsl 'true' SmtpUseTls 'true' SmtpUsername 'jsmith'"
+//go:generate sh -c "../../../../bin/render -out examples/resources/morpheus_setting_appliance/resource.tf setting_appliance_resource.tf.tmpl ApiAllowedOrigins 'demo' ApplianceUrl 'https://morpheus.test.local' CurrencyProvider 'fixer' CurrencyProviderApiKey 'example' DefaultRoleId '5' DefaultUserRoleId '10' DockerPrivilegedMode 'false' InternalApplianceUrl 'https://pxemorpheus.test.local' ProxyDomain 'test.local' ProxyHost '10.0.0.100' ProxyPassword 'Password123456' ProxyPort '3128' ProxyUser 'jsmith' ProxyWorkstation 'work123' NoProxy '10.0.0.0/8,localhost,127.0.0.1' RegistrationEnabled 'true' SmtpFromAddress 'testemail@test.local' SmtpPassword 'Password12' SmtpPort '465' SmtpServer 'smtp01.test.local' SmtpUseSsl 'true' SmtpUseTls 'true' SmtpUsername 'jsmith'"
 
 // RenderSettingApplianceConfig generates a Terraform configuration for the tenant resource.
 // It accepts optional overrides for field values. Default values are used if not overridden.
@@ -34,6 +34,7 @@ func RenderSettingApplianceConfig(t *testing.T, overrides map[string]string) (st
 		"ProxyPort":              "3128",
 		"ProxyUser":              "jsmith",
 		"ProxyWorkstation":       "work123",
+		"NoProxy":                "10.0.0.0/8,localhost,127.0.0.1",
 		"RegistrationEnabled":    "true",
 		"SmtpFromAddress":        "testemail@test.local",
 		"SmtpPassword":           "Password12",

@@ -93,6 +93,7 @@ func applianceRestoreBody(s *sdklegacy.ApplianceSettings) map[string]any {
 		"proxyUser":            s.ProxyUser,
 		"proxyDomain":          s.ProxyDomain,
 		"proxyWorkstation":     s.ProxyWorkstation,
+		"noProxy":              s.NoProxy,
 		"currencyProvider":     s.CurrencyProvider,
 		"currencyKey":          s.CurrencyKey,
 	}
@@ -222,6 +223,12 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 			"hpe_morpheus_setting_appliance.example",
 			"proxy_workstation",
 			"work123",
+		),
+
+		resource.TestCheckResourceAttr(
+			"hpe_morpheus_setting_appliance.example",
+			"no_proxy",
+			"10.0.0.0/8,localhost,127.0.0.1",
 		),
 
 		resource.TestCheckResourceAttr(

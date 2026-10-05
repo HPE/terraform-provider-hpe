@@ -41,6 +41,7 @@ type ApplianceSettings struct {
 	ProxyPasswordHash         string `json:"proxyPasswordHash"`
 	ProxyDomain               string `json:"proxyDomain"`
 	ProxyWorkstation          string `json:"proxyWorkstation"`
+	NoProxy                   string `json:"noProxy"`
 	CurrencyProvider          string `json:"currencyProvider"`
 	CurrencyKey               string `json:"currencyKey"`
 	MaintenanceMode           bool   `json:"maintenanceMode"`

@@ -245,6 +245,13 @@ func ResourceSettingAppliance() *schema.Resource {
 				Optional:    true,
 				Computed:    true,
 			},
+			"no_proxy": {
+				Type: schema.TypeString,
+				Description: "Comma-separated hosts, domains or CIDR ranges the appliance reaches directly rather " +
+					"than through the proxy (for example `10.0.0.0/8,localhost,127.0.0.1`)",
+				Optional: true,
+				Computed: true,
+			},
 			"currency_provider": {
 				Type:         schema.TypeString,
 				Description:  "The currency provider (openexchange, fixer)",
@@ -394,6 +401,11 @@ func resourceSettingApplianceCreate(ctx context.Context, d *schema.ResourceData,
 		applianceSettings["proxyWorkstation"] = proxyWorkstation
 	}
 
+	noProxy, noProxyOk := d.GetOk("no_proxy")
+	if noProxyOk {
+		applianceSettings["noProxy"] = noProxy
+	}
+
 	currencyProvider, currencyProviderOk := d.GetOk("currency_provider")
 	if currencyProviderOk {
 		applianceSettings["currencyProvider"] = currencyProvider
@@ -510,6 +522,7 @@ func resourceSettingApplianceRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("proxy_password", applianceSetting.ProxyPasswordHash)
 	d.Set("proxy_domain", applianceSetting.ProxyDomain)
 	d.Set("proxy_workstation", applianceSetting.ProxyWorkstation)
+	d.Set("no_proxy", applianceSetting.NoProxy)
 	d.Set("currency_provider", applianceSetting.CurrencyProvider)
 	d.Set("currency_provider_api_key", applianceSetting.CurrencyKey)
 
@@ -588,6 +601,10 @@ func resourceSettingApplianceUpdate(ctx context.Context, d *schema.ResourceData,
 
 	if d.HasChange("proxy_workstation") {
 		applianceSettings["proxyWorkstation"] = d.Get("proxy_workstation")
+	}
+
+	if d.HasChange("no_proxy") {
+		applianceSettings["noProxy"] = d.Get("no_proxy")
 	}
 
 	if d.HasChange("currency_provider") {

@@ -19,6 +19,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
   proxy_password            = "Password123456"
   proxy_domain              = "test.local"
   proxy_workstation         = "work123"
+  no_proxy                  = "10.0.0.0/8,localhost,127.0.0.1"
   currency_provider         = "fixer"
   currency_provider_api_key = "example"
 }

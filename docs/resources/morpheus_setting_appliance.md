@@ -32,6 +32,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
   proxy_password            = "Password123456"
   proxy_domain              = "test.local"
   proxy_workstation         = "work123"
+  no_proxy                  = "10.0.0.0/8,localhost,127.0.0.1"
   currency_provider         = "fixer"
   currency_provider_api_key = "example"
 }
@@ -50,6 +51,7 @@ resource "hpe_morpheus_setting_appliance" "example" {
 - `default_user_role_id` (String) The ID of the default user role
 - `docker_privileged_mode` (Boolean) Whether Docker privileged mode is enabled
 - `internal_appliance_url` (String) An override for the default appliance URL when PXE boot is utilized
+- `no_proxy` (String) Comma-separated hosts, domains or CIDR ranges the appliance reaches directly rather than through the proxy (for example `10.0.0.0/8,localhost,127.0.0.1`)
 - `proxy_domain` (String) The proxy domain name
 - `proxy_host` (String) The hostname or IP address of the proxy host
 - `proxy_password` (String, Sensitive) The password for authenticating to the proxy
