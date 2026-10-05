@@ -115,6 +115,9 @@ func ImageResourceSchema(ctx context.Context) schema.Schema {
 			},
 			"id": schema.Int64Attribute{
 				Computed: true,
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"image_type": schema.StringAttribute{
 				Required:            true,

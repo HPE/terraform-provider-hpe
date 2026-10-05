@@ -7,7 +7,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
@@ -70,6 +72,14 @@ data "hpe_morpheus_storage_bucket" "test" {
 			plancheck.ExpectResourceAction(
 				"hpe_morpheus_image.example",
 				plancheck.ResourceActionUpdate,
+			),
+			// id must stay known across an in-place update: planned as unknown it
+			// forces the replacement of anything that references it through a
+			// create-only attribute (MORPH-18309).
+			plancheck.ExpectKnownValue(
+				"hpe_morpheus_image.example",
+				tfjsonpath.New("id"),
+				knownvalue.NotNull(),
 			),
 		},
 	}
@@ -272,6 +282,14 @@ data "hpe_morpheus_storage_bucket" "test" {
 			plancheck.ExpectResourceAction(
 				"hpe_morpheus_image.example",
 				plancheck.ResourceActionUpdate,
+			),
+			// id must stay known across an in-place update: planned as unknown it
+			// forces the replacement of anything that references it through a
+			// create-only attribute (MORPH-18309).
+			plancheck.ExpectKnownValue(
+				"hpe_morpheus_image.example",
+				tfjsonpath.New("id"),
+				knownvalue.NotNull(),
 			),
 		},
 	}

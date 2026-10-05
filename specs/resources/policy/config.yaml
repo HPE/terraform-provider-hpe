@@ -198,6 +198,15 @@ policy:
     - config_motd.motdfull_page
 
   overrides:
+    id:
+      # Keep the known id in the plan across in-place updates; without this every
+      # update planned id as unknown and a dependant with a create-only *_id
+      # reference was replaced (MORPH-18309).
+      state_for_unknown: true
+    policy_type.id:
+      # The API description allows `{ id }` or `{ code }`, but the resource sends
+      # policy_type.code only and reads the type's id back, so id stays computed.
+      computed_optional_required: computed
     associated_resource_type: # Add Global, ComputeSite -> Group, ComputeZone -> Cloud
       one_of: ["Global", "Group", "Cloud", "User", "Role", "Network", "Plan", "Label"]
       description: Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'

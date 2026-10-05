@@ -1038,7 +1038,7 @@ resource "hpe_morpheus_policy" "workflow" {
 
 - `associated_resource_type` (String) Type of the resource this policy is associated with, can be 'Global', 'Group', 'Cloud', 'User', 'Role', 'Network', 'Plan' or 'Label'
 - `name` (String) A name for the policy
-- `policy_type` (Attributes) (see [below for nested schema](#nestedatt--policy_type))
+- `policy_type` (Attributes) Policy type. Accepts `{ id }` or `{ code }`. (see [below for nested schema](#nestedatt--policy_type))
 
 ### Optional
 
@@ -1134,7 +1134,7 @@ Required:
 
 Read-Only:
 
-- `id` (Number)
+- `id` (Number) Policy type ID
 - `name` (String)
 
 

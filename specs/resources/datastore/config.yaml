@@ -59,6 +59,11 @@ datastore:
     - resource_permissions.tenant
     - config_alletramp_hvm.enableransomware
   overrides:
+    id:
+      # Keep the known id in the plan across in-place updates; without this every
+      # update planned id as unknown and a dependant with a create-only *_id
+      # reference was replaced (MORPH-18309).
+      state_for_unknown: true
     # config_generic:
     #   description: Generic configuration options for the datastore, varies based on the type of datastore.
     # conflicts_with: [config_nfs, config_gfs2]

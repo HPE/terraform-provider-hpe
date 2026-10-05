@@ -220,6 +220,14 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_image`, `hpe_morpheus_datastore`, `hpe_morpheus_policy`, `hpe_morpheus_task`: an in-place update no longer replaces the resources that reference them (MORPH-18309)
+
+These four resources planned their `id` as *known after apply* on every in-place update — the one
+computed attribute that cannot change was missing the plan modifier the other resources carry. A
+dependant that references the id through a create-only attribute (an instance's
+`config_hvm.image_id`, for instance) saw it as unknown and was planned for **destroy and
+recreate**: adding `user_data` to an image would have replaced the running VM booted from it. The
+known id is now kept in the plan, so an image, datastore, policy or task update is just that.
 ### `hpe_morpheus_service_plan`: a plan created without `max_disks` no longer rejects every instance (MORPH-18341)
 
 Creating a plan with `max_disks` (or `max_cpu`, `max_cores`, `sort_order`) left out sent the

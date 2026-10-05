@@ -75,6 +75,11 @@ task:
     # - task_options.write_attributes_task_config: config_write_attributes
     - result_type.oneof0: result_type
   overrides:
+    id:
+      # Keep the known id in the plan across in-place updates; without this every
+      # update planned id as unknown and a dependant with a create-only *_id
+      # reference was replaced (MORPH-18309).
+      state_for_unknown: true
     task_type_code:
       requires_replace: true
     config_conditional_workflow.conditional_script:
