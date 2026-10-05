@@ -2,11 +2,17 @@
 page_title: "hpe_morpheus_license Resource - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus license resource.
+  Provides a Morpheus license resource: installs the licence key on the appliance and keeps it installed.
+  The resource reads the installed licences back and compares them with key: when the configured key is no longer installed -- the appliance was rebuilt, or someone installed a different key -- the next plan re-installs it. The licence's details are exposed as read-only attributes.
+  ~> Destroying this resource uninstalls the licence (the one matching key; other installed licences are kept), leaving the appliance unlicensed if it was the only one. To stop managing a licence without uninstalling it, remove it from state instead: terraform state rm hpe_morpheus_license.<name>.
 ---
 # hpe_morpheus_license (Resource)
 
-Provides a Morpheus license resource.
+Provides a Morpheus license resource: installs the licence key on the appliance and keeps it installed.
+
+The resource reads the installed licences back and compares them with `key`: when the configured key is no longer installed -- the appliance was rebuilt, or someone installed a different key -- the next plan re-installs it. The licence's details are exposed as read-only attributes.
+
+~> **Destroying this resource uninstalls the licence** (the one matching `key`; other installed licences are kept), leaving the appliance unlicensed if it was the only one. To stop managing a licence without uninstalling it, remove it from state instead: `terraform state rm hpe_morpheus_license.<name>`.
 
 ## Example Usage
 
@@ -25,12 +31,26 @@ resource "hpe_morpheus_license" "tf_example_license" {
 
 ### Read-Only
 
-- `id` (String) The ID of the license
+- `account_name` (String) The account the licence was issued to
+- `end_date` (String) When the licence expires (RFC 3339); empty for a perpetual licence
+- `free_trial` (Boolean) Whether the licence is a free trial
+- `hard_limit` (Boolean) Whether Morpheus refuses to provision beyond the licence's limits rather than warning
+- `id` (String) The licence's key id: the first eight characters of the key, which is how Morpheus identifies an installed licence (`keyId` in `GET /api/license`, `DELETE /api/license?keyId=`). Stable for as long as the same key is used -- unlike Morpheus's internal record id, which changes each time the key is re-installed.
+- `max_instances` (Number) The maximum number of instances the licence allows; 0 when unlimited
+- `max_memory` (Number) The maximum managed memory, in bytes, the licence allows; 0 when unlimited
+- `max_storage` (Number) The maximum managed storage, in bytes, the licence allows; 0 when unlimited
+- `multi_tenant` (Boolean) Whether the licence allows sub-tenants
+- `product_tier` (String) The product tier the licence grants (for example `enterprise`, `capacity`)
+- `start_date` (String) When the licence becomes valid (RFC 3339)
+- `support_level` (String) The support level the licence carries
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_license.tf_example_license 1
+# The import ID is the licence's key id: the first eight characters of the key,
+# as GET /api/license reports it under keyId. The key itself cannot be read back,
+# so the first apply after the import sets it (re-installing an installed key is a no-op).
+terraform import hpe_morpheus_license.tf_example_license 22324FEF
 ```

@@ -220,6 +220,23 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_license`: the installed licence is read back, drift is detected, and destroy is documented (MORPH-18310)
+
+The resource's read called `GET /api/license` and discarded the answer, so it never noticed when the
+configured key was no longer the installed one: after an appliance rebuild (first-time setup installs
+a trial licence) or a key installed through the UI, `terraform plan` said *No changes* and the only
+remedy was a `-replace`. Morpheus reports each installed licence's key id (the key's first eight
+characters) and the SHA-256 of its key, so the resource now matches the configured key against the
+installed licences on every read and plans an in-place re-install when it is missing. The licence's
+details are read back as new read-only attributes — `product_tier`, `account_name`, `start_date`,
+`end_date`, `max_instances`, `max_memory`, `max_storage`, `hard_limit`, `free_trial`, `multi_tenant`,
+`support_level` — and `id` is now the key id rather than the constant `1` (the key id stays the same
+for as long as the same key is used, unlike Morpheus's internal record id, which changes each time a
+key is re-installed); existing state is updated on the next refresh. Destroy uninstalls only the
+licence matching `key` (it used to deactivate every installed licence), the documentation says so,
+and gives `terraform state rm` as the way to stop managing a licence without uninstalling it. Import
+takes the key id.
+
 ### `hpe_morpheus_cluster`: destroying a cluster waits for Morpheus to finish removing it (MORPH-18379)
 
 Morpheus removes a cluster in a background job, and the resource meant to wait for that job before
@@ -229,6 +246,7 @@ raced the job and failed with *"Cluster name must be unique"*. The destroy now r
 the cluster can no longer be read, bounded by `timeouts.delete` (45 minutes by default). The
 deletes of `hpe_morpheus_image`, `hpe_morpheus_os_type` and `hpe_morpheus_task` had the same wait;
 Morpheus deletes those synchronously, so nothing changes for them in practice.
+
 ### `hpe_morpheus_setting_appliance`: the proxy bypass list can be managed (MORPH-18311)
 
 The resource configured the appliance's proxy (`proxy_host`, `proxy_port`, …) but had no attribute
