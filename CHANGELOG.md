@@ -220,6 +220,15 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_cluster`: destroying a cluster waits for Morpheus to finish removing it (MORPH-18379)
+
+Morpheus removes a cluster in a background job, and the resource meant to wait for that job before
+reporting the destroy complete — but its wait ended on the first poll whether or not the cluster
+was still there. A `-/+` replacement, or a `destroy` followed at once by an `apply`, therefore
+raced the job and failed with *"Cluster name must be unique"*. The destroy now returns only once
+the cluster can no longer be read, bounded by `timeouts.delete` (45 minutes by default). The
+deletes of `hpe_morpheus_image`, `hpe_morpheus_os_type` and `hpe_morpheus_task` had the same wait;
+Morpheus deletes those synchronously, so nothing changes for them in practice.
 ### `hpe_morpheus_setting_appliance`: the proxy bypass list can be managed (MORPH-18311)
 
 The resource configured the appliance's proxy (`proxy_host`, `proxy_port`, …) but had no attribute

@@ -3,7 +3,6 @@ package ostype
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/cenkalti/backoff/v5"
@@ -43,15 +42,13 @@ func (r *Resource) Delete(
 		return
 	}
 
+	// Wait until the OS type can no longer be read; a successful GET means it
+	// is still there and the loop tries again (see errfmt.PollDeleted).
+	what := fmt.Sprintf("os type %d", id)
 	waitForDeleted := func() (struct{}, error) {
 		_, httpResp, err := client.LibraryAPI.GetOsType(ctx, id).Execute()
-		if err != nil {
-			if httpResp == nil || httpResp.StatusCode != http.StatusNotFound {
-				return struct{}{}, backoff.Permanent(err)
-			}
-		}
 
-		return struct{}{}, nil
+		return struct{}{}, errfmt.PollDeleted(what, err, httpResp)
 	}
 
 	if _, err := backoff.Retry(

@@ -12,6 +12,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
+
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
@@ -177,5 +179,56 @@ func TestUnitRetryRefusedDelete(t *testing.T) {
 	err = errfmt.RetryRefusedDelete(cctx, "thing", 3, time.Hour, func() error { return refused })
 	if !errfmt.IsDeleteRefused(err) || !strings.Contains(err.Error(), "context canceled") {
 		t.Fatalf("expected refusal wrapped with the context error, got %v", err)
+	}
+}
+
+// TestUnitPollDeleted: the operation of the wait-for-delete loops. A
+// successful GET must be retryable (the resource is still there), only a 404
+// ends the wait, and any other failure is permanent. Returning nil on a 200
+// ended the cluster's wait on its first poll and let a replacement race the
+// deletion job (MORPH-18379).
+func TestUnitPollDeleted(t *testing.T) {
+	t.Parallel()
+
+	cases := []struct {
+		name      string
+		err       error
+		resp      *http.Response
+		wantDone  bool // nil error: the wait is over
+		wantRetry bool // StillExistsError: poll again
+		wantPerm  bool // backoff.Permanent: give up
+	}{
+		{"404 ends the wait", errors.New("404 Not Found"), resp(404, `{"success":false}`), true, false, false},
+		{"200 still exists: retry", nil, resp(200, `{"cluster":{"status":"deprovisioning"}}`), false, true, false},
+		{"transport error is permanent", errors.New("dial tcp: connection refused"), nil, false, false, true},
+		{"500 is permanent", errors.New("500"), resp(500, `{"msg":"boom"}`), false, false, true},
+		{"403 is permanent", errors.New("403"), resp(403, `{"msg":"forbidden"}`), false, false, true},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := errfmt.PollDeleted("cluster 3", tc.err, tc.resp)
+
+			var still errfmt.StillExistsError
+			var perm *backoff.PermanentError
+			gotDone := err == nil
+			gotRetry := errors.As(err, &still)
+			gotPerm := errors.As(err, &perm)
+
+			if gotDone != tc.wantDone || gotRetry != tc.wantRetry || gotPerm != tc.wantPerm {
+				t.Fatalf("PollDeleted() = %v (done=%v retry=%v permanent=%v), want done=%v retry=%v permanent=%v",
+					err, gotDone, gotRetry, gotPerm, tc.wantDone, tc.wantRetry, tc.wantPerm)
+			}
+
+			if gotRetry && !strings.Contains(err.Error(), "cluster 3 still exists") {
+				t.Errorf("retryable error %q does not name the resource", err)
+			}
+
+			if gotPerm && !strings.Contains(err.Error(), "cluster 3") {
+				t.Errorf("permanent error %q does not name the resource", err)
+			}
+		})
 	}
 }

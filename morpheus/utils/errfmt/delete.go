@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 )
 
@@ -169,6 +170,41 @@ func RefusalMessage(body map[string]any) string {
 	}
 
 	return strings.Join(parts, "; ")
+}
+
+// StillExistsError is the retryable error PollDeleted returns while the
+// resource being deleted can still be read.
+type StillExistsError struct {
+	What string
+}
+
+func (e StillExistsError) Error() string {
+	return e.What + " still exists; Morpheus is still removing it"
+}
+
+// PollDeleted judges one GET of a resource whose delete Morpheus performs in
+// the background, for the operation of a backoff.Retry loop that waits for the
+// delete to finish:
+//
+//   - a 404 is what the wait is for: nil, the loop ends;
+//   - a transport error or a non-2xx status other than 404 is permanent (it is
+//     wrapped in backoff.Permanent), so the loop ends with that error;
+//   - a successful GET means the resource is still there: a StillExistsError,
+//     which backoff.Retry treats as "try again".
+//
+// Returning nil for a successful GET -- an easy mistake -- makes the loop end
+// on its first poll, so a destroy-then-create replacement races the deletion
+// still running on the appliance (MORPH-18379).
+func PollDeleted(what string, err error, httpResp *http.Response) error {
+	if IsNotFound(httpResp) {
+		return nil
+	}
+
+	if err := CheckResponse(err, httpResp); err != nil {
+		return backoff.Permanent(fmt.Errorf("%s: GET while waiting for the delete failed: %w", what, err))
+	}
+
+	return StillExistsError{What: what}
 }
 
 // RetryRefusedDelete runs del, and when Morpheus refuses the delete tries
