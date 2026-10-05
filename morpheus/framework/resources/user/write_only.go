@@ -5,7 +5,9 @@ package user
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/wodigest"
 )
@@ -25,12 +27,26 @@ var wo = wodigest.Tracker{
 }
 
 // ModifyPlan plans an in-place update when a write-only value changed (or a
-// deprecated marker did). Nothing else the re-send changes is computed on this
-// resource, so write_only_revision is the only attribute marked unknown.
+// deprecated marker did). With require_password_change set, the re-send of
+// password_wo also marks the password expired, so the computed
+// password_expired is planned as unknown then; a write-only change leaves the
+// proposed state equal to the prior one, so the framework would otherwise
+// keep the prior value and reject the apply as inconsistent (MORPH-18374).
 func (r *Resource) ModifyPlan(
 	ctx context.Context,
 	req resource.ModifyPlanRequest,
 	resp *resource.ModifyPlanResponse,
 ) {
-	wo.ModifyPlan(ctx, req, resp)
+	var alsoUnknown []path.Path
+
+	if !req.Plan.Raw.IsNull() {
+		var require types.Bool
+		resp.Diagnostics.Append(req.Plan.GetAttribute(ctx, path.Root("require_password_change"), &require)...)
+
+		if require.ValueBool() {
+			alsoUnknown = append(alsoUnknown, path.Root("password_expired"))
+		}
+	}
+
+	wo.ModifyPlan(ctx, req, resp, alsoUnknown...)
 }

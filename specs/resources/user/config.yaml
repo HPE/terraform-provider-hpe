@@ -110,6 +110,19 @@ user:
           Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
           needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
         deprecation_message: "No longer needed: changes to password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    require_password_change:
+      bool:
+        computed_optional_required: optional
+        description: |-
+          Require the user to choose a new password at their next sign-in to the Morpheus UI. While
+          true, the password is marked as expired whenever the provider sets or re-sets it: on
+          create, when the attribute is turned on for an existing user (their current password
+          expires), and whenever password_wo changes. The next UI sign-in then redirects the user to
+          the change-password page (signing in to the API with the password is not affected). The
+          user's own change clears the flag, which the read-only password_expired reflects; this
+          attribute is not read back, so it never fights with the user's change. False, or leaving
+          it out, sends nothing: an expiry already set stays until the user changes the password
+          (clear it in the UI if it is no longer wanted).
     write_only_revision:
       int64:
         computed_optional_required: computed
@@ -143,4 +156,16 @@ user:
     - template-windows_password_wo_version: windows_password_wo_version
     - template-password_wo: password_wo
     - template-password_wo_version: password_wo_version
+    - template-require_password_change: require_password_change
     - template-write_only_revision: write_only_revision
+  overrides:
+    password_expired:
+      # The API accepts passwordExpired on create and update, but exposing it as
+      # configurable would re-expire the password on every apply once the user
+      # has changed it (the API then reports false). It stays read-only; the
+      # write side is the non-read-back require_password_change (MORPH-18374).
+      computed_optional_required: computed
+      description: |-
+        Whether the user must change their password at their next sign-in to the Morpheus UI:
+        true after a create or password change with require_password_change set, false once the
+        user has chosen a new password.

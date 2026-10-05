@@ -22,10 +22,11 @@ var clearableAttributes = clearable.Attributes{
 
 // notClearable records why each remaining optional attribute is not cleared
 // when it is removed from the configuration.
-var notClearable = clearable.NotClearable{
+var notClearable = clearable.NotClearable{ //nolint:gosec // attribute names, not credentials
 	"receive_notifications":       "boolean",
 	"tenant_id":                   "a change replaces the user; the current tenant is kept when it is removed",
 	"password_wo_version":         "version companion of a write-only value",
 	"linux_password_wo_version":   "version companion of a write-only value",
 	"windows_password_wo_version": "version companion of a write-only value",
+	"require_password_change":     "boolean; not read back, only acted on when the password is sent",
 }

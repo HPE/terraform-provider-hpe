@@ -83,7 +83,9 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				},
 			},
 			"password_expired": schema.BoolAttribute{
-				Computed: true,
+				Computed:            true,
+				Description:         "Whether the user must change their password at their next sign-in to the Morpheus UI:\ntrue after a create or password change with require_password_change set, false once the\nuser has chosen a new password.",
+				MarkdownDescription: "Whether the user must change their password at their next sign-in to the Morpheus UI:\ntrue after a create or password change with require_password_change set, false once the\nuser has chosen a new password.",
 			},
 			"password_wo": schema.StringAttribute{
 				Optional:            true,
@@ -107,6 +109,11 @@ func UserResourceSchema(ctx context.Context) schema.Schema {
 				Description:         "Receive Notifications?",
 				MarkdownDescription: "Receive Notifications?",
 				Default:             booldefault.StaticBool(true),
+			},
+			"require_password_change": schema.BoolAttribute{
+				Optional:            true,
+				Description:         "Require the user to choose a new password at their next sign-in to the Morpheus UI. While\ntrue, the password is marked as expired whenever the provider sets or re-sets it: on\ncreate, when the attribute is turned on for an existing user (their current password\nexpires), and whenever password_wo changes. The next UI sign-in then redirects the user to\nthe change-password page (signing in to the API with the password is not affected). The\nuser's own change clears the flag, which the read-only password_expired reflects; this\nattribute is not read back, so it never fights with the user's change. False, or leaving\nit out, sends nothing: an expiry already set stays until the user changes the password\n(clear it in the UI if it is no longer wanted).",
+				MarkdownDescription: "Require the user to choose a new password at their next sign-in to the Morpheus UI. While\ntrue, the password is marked as expired whenever the provider sets or re-sets it: on\ncreate, when the attribute is turned on for an existing user (their current password\nexpires), and whenever password_wo changes. The next UI sign-in then redirects the user to\nthe change-password page (signing in to the API with the password is not affected). The\nuser's own change clears the flag, which the read-only password_expired reflects; this\nattribute is not read back, so it never fights with the user's change. False, or leaving\nit out, sends nothing: an expiry already set stays until the user changes the password\n(clear it in the UI if it is no longer wanted).",
 			},
 			"role_ids": schema.SetAttribute{
 				ElementType: types.Int64Type,
@@ -177,6 +184,7 @@ type UserModel struct {
 	PasswordWo               types.String `tfsdk:"password_wo"`
 	PasswordWoVersion        types.Int64  `tfsdk:"password_wo_version"`
 	ReceiveNotifications     types.Bool   `tfsdk:"receive_notifications"`
+	RequirePasswordChange    types.Bool   `tfsdk:"require_password_change"`
 	RoleIds                  types.Set    `tfsdk:"role_ids"`
 	TenantId                 types.Int64  `tfsdk:"tenant_id"`
 	Username                 types.String `tfsdk:"username"`

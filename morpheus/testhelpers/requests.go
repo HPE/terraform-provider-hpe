@@ -5,6 +5,7 @@ package testhelpers
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -108,25 +109,47 @@ func hasKey(body map[string]any, dotted string) bool {
 // ExpectSent is a TestCheckFunc asserting that, since the last Reset, a write
 // to a path containing pathPart carried the dotted key (want=true) or that no
 // such write did (want=false). The recorded requests are reset afterwards.
+//
+// Because of that reset, a step that must assert several keys of the same
+// write(s) -- one sent, another not -- uses ExpectSentKeys: a second
+// ExpectSent in the same step would see no requests at all.
 func (r *RequestRecorder) ExpectSent(pathPart, dottedKey string, want bool) resource.TestCheckFunc {
+	return r.ExpectSentKeys(pathPart, map[string]bool{dottedKey: want})
+}
+
+// ExpectSentKeys is ExpectSent for several dotted keys at once: every key is
+// checked against the writes recorded since the last Reset, and the recorded
+// requests are reset once, afterwards.
+func (r *RequestRecorder) ExpectSentKeys(pathPart string, want map[string]bool) resource.TestCheckFunc {
 	return func(_ *terraform.State) error {
 		defer r.Reset()
 
 		writes := r.Writes(pathPart)
-		sent := false
 
-		for _, w := range writes {
-			// An empty key means "any write to the path counts" -- for values
-			// that travel in the URL rather than the body.
-			if dottedKey == "" || hasKey(w.Body, dottedKey) {
-				sent = true
+		var errs []string
 
-				break
+		for dottedKey, wantSent := range want {
+			sent := false
+
+			for _, w := range writes {
+				// An empty key means "any write to the path counts" -- for
+				// values that travel in the URL rather than the body.
+				if dottedKey == "" || hasKey(w.Body, dottedKey) {
+					sent = true
+
+					break
+				}
+			}
+
+			if sent != wantSent {
+				errs = append(errs, fmt.Sprintf("key %q sent=%v, want %v", dottedKey, sent, wantSent))
 			}
 		}
 
-		if sent != want {
-			return fmt.Errorf("%d write(s) to %q: key %q sent=%v, want %v", len(writes), pathPart, dottedKey, sent, want)
+		if len(errs) > 0 {
+			sort.Strings(errs)
+
+			return fmt.Errorf("%d write(s) to %q: %s", len(writes), pathPart, strings.Join(errs, "; "))
 		}
 
 		return nil

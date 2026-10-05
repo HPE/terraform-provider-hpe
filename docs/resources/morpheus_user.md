@@ -17,6 +17,7 @@ resource "hpe_morpheus_user" "example" {
   email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1
+  require_password_change     = true
   role_ids                    = [1]
   first_name                  = "Joe"
   last_name                   = "User"
@@ -55,6 +56,15 @@ needed and will be removed in the 2.6 release. Changing it still re-sends linux_
 - `password_wo_version` (Number, Deprecated) Deprecated. Changes to password_wo are detected automatically; this attribute is no longer
 needed and will be removed in the 2.6 release. Changing it still re-sends password_wo.
 - `receive_notifications` (Boolean) Receive Notifications?
+- `require_password_change` (Boolean) Require the user to choose a new password at their next sign-in to the Morpheus UI. While
+true, the password is marked as expired whenever the provider sets or re-sets it: on
+create, when the attribute is turned on for an existing user (their current password
+expires), and whenever password_wo changes. The next UI sign-in then redirects the user to
+the change-password page (signing in to the API with the password is not affected). The
+user's own change clears the flag, which the read-only password_expired reflects; this
+attribute is not read back, so it never fights with the user's change. False, or leaving
+it out, sends nothing: an expiry already set stays until the user changes the password
+(clear it in the UI if it is no longer wanted).
 - `tenant_id` (Number) Tenant Id (accountId) create user in a sub tenant account instead of your own. Changing this attribute forces a deletion and recreation.
 - `windows_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Windows password (Write Only)
 - `windows_password_wo_version` (Number, Deprecated) Deprecated. Changes to windows_password_wo are detected automatically; this attribute is no longer
@@ -64,7 +74,9 @@ needed and will be removed in the 2.6 release. Changing it still re-sends window
 ### Read-Only
 
 - `id` (Number) User id
-- `password_expired` (Boolean)
+- `password_expired` (Boolean) Whether the user must change their password at their next sign-in to the Morpheus UI:
+true after a create or password change with require_password_change set, false once the
+user has chosen a new password.
 - `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (password_wo,
 linux_password_wo or windows_password_wo) was last sent to Morpheus. Changes whenever one
 of those values changes; not configurable.

@@ -169,6 +169,12 @@ func (r *Resource) Create(
 	addUser.Roles = roles
 	addUser.Password = config.PasswordWo.ValueString()
 
+	// require_password_change: create the user with the password marked
+	// expired, so the first UI sign-in has to change it (MORPH-18374).
+	if plan.RequirePasswordChange.ValueBool() {
+		addUser.PasswordExpired = sdk.PtrBool(true)
+	}
+
 	// optional
 	if !plan.FirstName.IsUnknown() {
 		addUser.FirstName = plan.FirstName.ValueStringPointer()
@@ -266,6 +272,7 @@ func (r *Resource) Create(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
 	state.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
@@ -339,8 +346,22 @@ func (r *Resource) Update(
 	// to re-send the configured write-only values. See write_only.go.
 	resend := plan.WriteOnlyRevision.IsUnknown()
 
+	passwordSent := false
+
 	if resend && !config.PasswordWo.IsNull() && !config.PasswordWo.IsUnknown() {
 		updateUser.Password = config.PasswordWo.ValueStringPointer()
+		passwordSent = true
+	}
+
+	// require_password_change marks the password expired in two cases: a new
+	// password set by the administrator while the flag is on is a temporary
+	// one again, and turning the flag on for an existing user expires their
+	// current password. Nothing is sent otherwise -- not for false, not for
+	// true staying true -- so the user's own change, which clears the flag,
+	// stays cleared (MORPH-18374).
+	turnedOn := plan.RequirePasswordChange.ValueBool() && !state.RequirePasswordChange.ValueBool()
+	if plan.RequirePasswordChange.ValueBool() && (passwordSent || turnedOn) {
+		updateUser.PasswordExpired = sdk.PtrBool(true)
 	}
 
 	// nullable
@@ -448,6 +469,7 @@ func (r *Resource) Update(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
 
 	state.WriteOnlyRevision = prior.WriteOnlyRevision
 	if resend {
@@ -499,7 +521,8 @@ func (r *Resource) Read(
 	state.PasswordWoVersion = plan.PasswordWoVersion
 	state.WindowsPasswordWoVersion = plan.WindowsPasswordWoVersion
 	state.LinuxPasswordWoVersion = plan.LinuxPasswordWoVersion
-	state.WriteOnlyRevision = plan.WriteOnlyRevision // not in the API; carried from prior state
+	state.RequirePasswordChange = plan.RequirePasswordChange // not in the API
+	state.WriteOnlyRevision = plan.WriteOnlyRevision         // not in the API; carried from prior state
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 	if resp.Diagnostics.HasError() {

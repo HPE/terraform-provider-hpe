@@ -93,6 +93,18 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### `hpe_morpheus_user`: `require_password_change` issues a temporary password (MORPH-18374)
+
+A user can be created with a password they must change at their first sign-in to the Morpheus UI,
+the way an administrator hands out a temporary password. With `require_password_change = true` the
+provider marks the password expired whenever it sets it — on create, when the attribute is turned on
+for an existing user (their current password expires), and again whenever `password_wo` changes —
+and Morpheus redirects the user's next UI sign-in to the change-password page (signing in to the API
+with the password is not affected). The user's own change clears the flag, which the read-only
+`password_expired` reflects; `require_password_change` itself is not read back, so it never
+re-expires a password the user has changed. Left out or `false`, nothing is sent and the behaviour
+is as before.
+
 ### Write-only values: changes are detected automatically; the `*_version` markers are deprecated (MORPH-18005)
 
 A write-only attribute such as `password_wo` is never stored in state, so until now the provider

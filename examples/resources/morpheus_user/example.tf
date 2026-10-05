@@ -4,6 +4,7 @@ resource "hpe_morpheus_user" "example" {
   email                       = "foo@testacc.com"
   password_wo                 = "Secret123!"
   password_wo_version         = 1
+  require_password_change     = true
   role_ids                    = [1]
   first_name                  = "Joe"
   last_name                   = "User"
