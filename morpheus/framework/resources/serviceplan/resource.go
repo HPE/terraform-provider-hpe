@@ -238,6 +238,64 @@ func setProvisionTypeInUpdate(
 	return nil
 }
 
+// setOptionalScalarsInCreate copies the optional scalar attributes of the plan
+// into the create request. Every one of them is skipped when it is null OR
+// unknown: max_cores, max_cpu, max_disks and sort_order are Optional+Computed,
+// so when the configuration leaves them out their planned value is unknown,
+// not null, and ValueInt64Pointer() on an unknown value yields a pointer to 0.
+// Sending that 0 made Morpheus store maxDisks: 0 on the new plan, which its
+// minDisks (defaults to 1) then turns into "Number of volumes must be between
+// 1 and 0 for the selected plan" for every instance (MORPH-18341). Left unset,
+// Morpheus keeps the attribute null, the same as a plan created in the UI.
+func setOptionalScalarsInCreate(
+	plan *ServicePlanModel,
+	addServicePlan *sdk.AddServicePlansRequestServicePlan,
+) {
+	if !plan.Description.IsNull() && !plan.Description.IsUnknown() {
+		addServicePlan.Description = plan.Description.ValueStringPointer()
+	}
+
+	if !plan.MaxCores.IsNull() && !plan.MaxCores.IsUnknown() {
+		addServicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
+	}
+
+	if !plan.MaxCpu.IsNull() && !plan.MaxCpu.IsUnknown() {
+		addServicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
+	}
+
+	if !plan.MaxDisks.IsNull() && !plan.MaxDisks.IsUnknown() {
+		addServicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
+	}
+
+	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
+		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
+	}
+
+	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
+		addServicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
+	}
+
+	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
+		addServicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
+		addServicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
+	}
+
+	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
+		addServicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
+	}
+
+	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
+		addServicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
+	}
+
+	if !plan.SortOrder.IsNull() && !plan.SortOrder.IsUnknown() {
+		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
+	}
+}
+
 // helper function to nest schema values into config struct
 func setConfigInCreate(
 	_ context.Context,
@@ -423,49 +481,7 @@ func (r *Resource) Create(
 		addServicePlan.PriceSets = pricesets
 	}
 
-	if !plan.Description.IsNull() {
-		addServicePlan.Description = plan.Description.ValueStringPointer()
-	}
-
-	if !plan.MaxCores.IsNull() {
-		addServicePlan.MaxCores = plan.MaxCores.ValueInt64Pointer()
-	}
-
-	if !plan.MaxCpu.IsNull() {
-		addServicePlan.MaxCpu = plan.MaxCpu.ValueInt64Pointer()
-	}
-
-	if !plan.MaxDisks.IsNull() {
-		addServicePlan.MaxDisks = plan.MaxDisks.ValueInt64Pointer()
-	}
-
-	if !plan.CoresPerSocket.IsNull() && !plan.CoresPerSocket.IsUnknown() {
-		addServicePlan.CoresPerSocket = plan.CoresPerSocket.ValueInt64Pointer()
-	}
-
-	if !plan.CustomCores.IsNull() && !plan.CustomCores.IsUnknown() {
-		addServicePlan.CustomCores = plan.CustomCores.ValueBoolPointer()
-	}
-
-	if !plan.CustomCpu.IsNull() && !plan.CustomCpu.IsUnknown() {
-		addServicePlan.CustomCpu = plan.CustomCpu.ValueBoolPointer()
-	}
-
-	if !plan.CustomMaxMemory.IsNull() && !plan.CustomMaxMemory.IsUnknown() {
-		addServicePlan.CustomMaxMemory = plan.CustomMaxMemory.ValueBoolPointer()
-	}
-
-	if !plan.CustomMaxStorage.IsNull() && !plan.CustomMaxStorage.IsUnknown() {
-		addServicePlan.CustomMaxStorage = plan.CustomMaxStorage.ValueBoolPointer()
-	}
-
-	if !plan.AddVolumes.IsNull() && !plan.AddVolumes.IsUnknown() {
-		addServicePlan.AddVolumes = plan.AddVolumes.ValueBoolPointer()
-	}
-
-	if !plan.SortOrder.IsNull() {
-		addServicePlan.SortOrder = plan.SortOrder.ValueInt64Pointer()
-	}
+	setOptionalScalarsInCreate(&plan, addServicePlan)
 
 	setConfigInCreate(ctx, &plan, addServicePlan)
 

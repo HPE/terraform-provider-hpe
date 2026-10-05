@@ -220,6 +220,17 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_service_plan`: a plan created without `max_disks` no longer rejects every instance (MORPH-18341)
+
+Creating a plan with `max_disks` (or `max_cpu`, `max_cores`, `sort_order`) left out sent the
+attribute as `0`, because the create request tested only whether the value was null and an unset
+optional-and-computed attribute is *unknown* at that point. Morpheus stored `maxDisks: 0`, and with
+its default `minDisks` of 1 every instance provisioned on the plan failed with *"Number of volumes
+must be between 1 and 0 for the selected plan"*. An attribute left out of the configuration is now
+left out of the request, as the update already did, so Morpheus keeps it unset — the same as a plan
+created in the UI. Plans already created with the bad value are repaired by setting `max_disks`
+explicitly once.
+
 ### `hpe_morpheus_storage_volume`: resizing works, and a rename replaces the volume (MORPH-18280)
 
 The resource's update sent the new name and size to `PUT /api/storage-volumes/{id}`, which never

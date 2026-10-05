@@ -100,6 +100,16 @@ resource "hpe_morpheus_service_plan" "example_required" {
 			"cores_per_socket",
 			"1",
 		),
+		// max_disks is left out of the configuration, so the create request
+		// must not carry it: Morpheus then keeps maxDisks null (no disk-count
+		// limit), which reads back as an unset attribute. Before MORPH-18341
+		// the unknown planned value was sent as 0 and read back as "0", and
+		// every instance on the plan failed with "Number of volumes must be
+		// between 1 and 0 for the selected plan".
+		resource.TestCheckNoResourceAttr(
+			"hpe_morpheus_service_plan.example_required",
+			"max_disks",
+		),
 	}
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
