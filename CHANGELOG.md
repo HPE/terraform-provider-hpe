@@ -232,6 +232,21 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_instance`: destroy deletes through the instance API, so the virtual machine is removed on Morpheus 8.1.x (MORPH-18513)
+
+Since 2.0.0 the resource destroyed an instance by stopping and force-deleting its server(s) through
+the server API, then deleting the instance. On Morpheus 8.1.x that path removes the Morpheus records
+but can leave the virtual machine behind in the hypervisor: the appliance waits on the instance
+removal before queuing the VM deletion, that wait times out after two hours, and the deletion is
+never queued — while Terraform, seeing the records gone, reports the destroy complete. The destroy
+now deletes the instance through the instance API, the path the Morpheus UI uses, which tears the
+virtual machine down through the cloud's provisioning service, and then confirms the server(s) are
+gone. Because Morpheus refuses an instance delete while the instance is still provisioning, resizing,
+restarting or cloning — and honours a forced delete only for users with the *Provisioning: Force
+Delete* permission — the provider waits for the instance to settle first. The server path is kept
+as a fallback for an instance Morpheus still refuses to delete, or whose removal fails, and a warning
+says when it was used. The acceptance-test sweeper follows the same order.
+
 ### `hpe_morpheus_instance`: a volume's `controller_mount_point` is now sent to Morpheus (MORPH-18424)
 
 Setting `controller_mount_point` on a volume — for example `"-1:1:6:0"` from

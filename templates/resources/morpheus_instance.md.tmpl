@@ -132,6 +132,15 @@ resources, and by the corresponding
 and [cluster](https://registry.terraform.io/providers/HPE/hpe/latest/docs/data-sources/morpheus_cluster_affinity_group)
 data sources.
 
+-> **Destroy** deletes the instance through the Morpheus instance API — the same path as the
+Morpheus UI — and waits for it and its server(s) to disappear. Morpheus refuses to delete an instance
+that is still provisioning, resizing, restarting or cloning unless the delete is forced, and it honours
+a forced delete only for users with the **Provisioning: Force Delete** permission; the provider
+waits for the instance to settle before asking, so that permission is not required in the normal
+case. If Morpheus still refuses, or the removal fails and leaves a server behind, the provider falls
+back to stopping and force-deleting the server(s) and reports a warning. The destroy is bounded by
+`timeouts.delete` (45 minutes by default).
+
 ## HVM Instance
 
 {{ tffile "morpheus/framework/resources/instance/example.tf" }}
