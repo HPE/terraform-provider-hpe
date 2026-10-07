@@ -119,6 +119,7 @@ When `TF_ACC_CAPABILITIES` is set, tests silently return (not skip) if their req
 | Capability | Env Value | Description |
 |------------|-----------|-------------|
 | `PCE` | `pce` | A live PCE (Private Cloud Enterprise) instance reachable via GreenLake IAM. Gates the end-to-end `pce_identity` auth-flow test, which authenticates through GreenLake rather than the main appliance credentials. The test skips unless `TF_VAR_testacc_pce_identity_client_id`, `_client_secret`, `_issuer_url`, `_location`, `_space` and `TF_ACC_PCE_IDENTITY_CLOUD_NAME` are all set |
+| `Plugins` | `plugins` | Plugin install/remove -- appliance-wide, needs admin-plugins permission |
 
 ### Tenancy
 

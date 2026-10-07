@@ -136,6 +136,12 @@ const (
 	// Licensing
 	License Capability = "license"
 
+	// Plugins marks tests that install and remove appliance-wide plugins.
+	// Plugin install/remove is appliance-wide (not tenant-scoped) and needs the
+	// admin-plugins permission. Gate plugin tests on this so they skip on
+	// environments where plugin management is unavailable.
+	Plugins Capability = "plugins"
+
 	// Bare Metal
 	Metal Capability = "metal"
 

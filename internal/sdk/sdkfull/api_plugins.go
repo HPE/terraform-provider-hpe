@@ -160,6 +160,7 @@ type ApiListPluginsRequest struct {
 	direction  *string
 	phrase     *string
 	name       *string
+	code       *string
 }
 
 // Maximum number of records to return
@@ -195,6 +196,12 @@ func (r ApiListPluginsRequest) Phrase(phrase string) ApiListPluginsRequest {
 // Filter by name
 func (r ApiListPluginsRequest) Name(name string) ApiListPluginsRequest {
 	r.name = &name
+	return r
+}
+
+// If specified will return an exact match on code
+func (r ApiListPluginsRequest) Code(code string) ApiListPluginsRequest {
+	r.code = &code
 	return r
 }
 
@@ -268,6 +275,9 @@ func (a *PluginsAPIService) ListPluginsExecute(r ApiListPluginsRequest) (*ListPl
 	}
 	if r.name != nil {
 		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
+	}
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
 	}
 	// to determine the Content-Type header
 	localVarHTTPContentTypes := []string{}

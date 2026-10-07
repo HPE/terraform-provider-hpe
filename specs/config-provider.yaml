@@ -625,6 +625,26 @@ resources:
     delete:
       path: /api/library/operating-systems/os-types/{id}
       method: DELETE
+  plugin:
+    # The real create is the multipart POST /api/plugins/upload, but its body
+    # has a binary `plugin` field (an alias of `file`) that collides with the
+    # `plugin` wrapper object of the read response when the generator merges
+    # request and response properties, which drops every response attribute.
+    # The PUT body (`plugin.enabled`, `plugin.config`) is the only JSON input
+    # the resource takes, so it is the schema source; the upload itself is
+    # modelled by the hand-written jar_path/jar_url/jar_sha256 attributes.
+    create:
+      path: /api/plugins/{id}
+      method: PUT
+    read:
+      path: /api/plugins/{id}
+      method: GET
+    update:
+      path: /api/plugins/{id}
+      method: PUT
+    delete:
+      path: /api/plugins/{id}
+      method: DELETE
   policy:
     create:
       path: /api/policies
@@ -1524,6 +1544,10 @@ data_sources:
   service_plan:
     read:
       path: /api/service-plans/{id}
+      method: GET
+  plugin:
+    read:
+      path: /api/plugins/{id}
       method: GET
   policy:
     read:

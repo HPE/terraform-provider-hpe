@@ -53,6 +53,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostype"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/ostypeimage"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/plugin"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/policy"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/powerschedule"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/provisioninglicense"
@@ -158,6 +159,9 @@ func (p *MorpheusProvider) Resources(
 
 		// Multitenancy: ported from SDKv2 to the plugin framework (MORPH-16404)
 		tenant.NewResource,
+
+		// Plugin lifecycle management (Plugin Framework)
+		plugin.NewResource,
 	}
 
 	return resources

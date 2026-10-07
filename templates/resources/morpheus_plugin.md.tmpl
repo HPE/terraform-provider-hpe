@@ -1,0 +1,37 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.ProviderName}}"
+subcategory: "Morpheus"
+description: |-
+  Manages a Morpheus plugin. A plugin is a .jar uploaded to the appliance that contributes additional providers (capabilities) such as IPAM, DNS, backup or task integrations.
+---
+# {{.Name}} ({{.Type}})
+
+Manages a Morpheus plugin. A plugin is a `.jar` uploaded to the appliance that contributes additional providers (capabilities). Supply the jar from a local path (`jar_path`) or an HTTP(S) URL such as a Morpheus Exchange pull link (`jar_url`) — exactly one is required.
+
+-> Set `jar_sha256` (for example with `filesha256()` for a local jar, or the Morpheus Exchange `shaHash` for an Exchange download) to have the jar verified before upload and re-uploaded whenever its contents change. When omitted it is computed from the uploaded jar.
+
+~> A jar's plugin `code` identifies the plugin. Uploading a jar whose code differs from the one this resource manages would install a *separate* plugin rather than update this one, so such an update is rejected.
+
+## Example Usage
+
+{{ tffile "examples/resources/hpe_morpheus_plugin/resource.tf" }}
+
+{{ .SchemaMarkdown | trimspace }}
+
+## Fetching the jar from a URL
+
+A `jar_url` is downloaded by the machine running Terraform and then uploaded to the appliance, so the appliance needs no route to the source. The download honours the usual proxy environment variables (`HTTPS_PROXY`, `NO_PROXY`, …), follows up to five redirects (the Morpheus Exchange answers with one, to its CDN) and is bounded:
+
+- The jar may be at most 512 MiB; a larger download is abandoned.
+- A URL, or a redirect, that leads to a loopback, link-local (which includes the cloud metadata address `169.254.169.254`), unspecified or multicast address is refused — these are never where a plugin lives. Private networks are allowed, so an internal artifact server is fine. The check is made on the address actually connected to, not just on the name.
+- A plain `http://` URL must be paired with `jar_sha256`: without TLS the download cannot be trusted on its own, and the digest is checked before anything reaches the appliance.
+
+`jar_path` and `jar_url` are both configuration you write and carry the same trust: a jar from either is installed into the appliance and runs inside it.
+
+## Import
+
+Plugins can be imported by their numeric id, e.g.
+
+{{ codefile "shell" "examples/resources/hpe_morpheus_plugin/import.sh" }}
+
+After import, `jar_path`/`jar_url` are null and `jar_sha256` is null (the API does not return the jar). Add one of `jar_path` or `jar_url` to the configuration before the next apply so Terraform can manage — and re-upload — the jar.

@@ -23,27 +23,47 @@ var _ MappedNullable = &UploadPlugin200ResponseAllOfPlugin{}
 
 // UploadPlugin200ResponseAllOfPlugin struct for UploadPlugin200ResponseAllOfPlugin
 type UploadPlugin200ResponseAllOfPlugin struct {
-	Id                    *int64                                               `json:"id,omitempty"`
-	Name                  *string                                              `json:"name,omitempty"`
-	Code                  *string                                              `json:"code,omitempty"`
-	Description           *string                                              `json:"description,omitempty"`
-	Version               *string                                              `json:"version,omitempty"`
-	Enabled               *bool                                                `json:"enabled,omitempty"`
-	Author                NullableString                                       `json:"author,omitempty"`
-	WebsiteUrl            NullableString                                       `json:"websiteUrl,omitempty"`
-	SourceCodeLocationUrl NullableString                                       `json:"sourceCodeLocationUrl,omitempty"`
-	IssueTrackerUrl       NullableString                                       `json:"issueTrackerUrl,omitempty"`
-	Valid                 *bool                                                `json:"valid,omitempty"`
-	HasValidUpdate        *bool                                                `json:"hasValidUpdate,omitempty"`
-	IsPrepackaged         *bool                                                `json:"isPrepackaged,omitempty"`
-	Status                *string                                              `json:"status,omitempty"`
-	StatusMessage         NullableString                                       `json:"statusMessage,omitempty"`
-	Providers             []UploadPlugin200ResponseAllOfPluginProvidersInner   `json:"providers,omitempty"`
-	Config                map[string]interface{}                               `json:"config,omitempty"`
-	OptionTypes           []UploadPlugin200ResponseAllOfPluginOptionTypesInner `json:"optionTypes,omitempty"`
-	DateCreated           *time.Time                                           `json:"dateCreated,omitempty"`
-	LastUpdated           *time.Time                                           `json:"lastUpdated,omitempty"`
-	AdditionalProperties  map[string]interface{}                               `json:",remain"`
+	// The ID of the plugin.
+	Id *int64 `json:"id,omitempty"`
+	// The display name reported by the plugin.
+	Name *string `json:"name,omitempty"`
+	// The unique code reported by the plugin, for example `morpheus-infoblox-plugin`. Uploading a jar whose code matches an installed plugin updates that plugin.
+	Code *string `json:"code,omitempty"`
+	// The description reported by the plugin.
+	Description *string `json:"description,omitempty"`
+	// The version of the installed plugin jar.
+	Version *string `json:"version,omitempty"`
+	// Whether the plugin is enabled.
+	Enabled *bool `json:"enabled,omitempty"`
+	// The author reported by the plugin.
+	Author NullableString `json:"author,omitempty"`
+	// The plugin's website URL.
+	WebsiteUrl NullableString `json:"websiteUrl,omitempty"`
+	// The URL of the plugin's source code.
+	SourceCodeLocationUrl NullableString `json:"sourceCodeLocationUrl,omitempty"`
+	// The URL of the plugin's issue tracker.
+	IssueTrackerUrl NullableString `json:"issueTrackerUrl,omitempty"`
+	// Whether the plugin descriptor was valid and the plugin class could be loaded.
+	Valid *bool `json:"valid,omitempty"`
+	// Whether a newer compatible version was found on the plugin exchange by the last update check.
+	HasValidUpdate *bool `json:"hasValidUpdate,omitempty"`
+	// Indicates whether the plugin is prepackaged and bundled with the appliance.
+	IsPrepackaged *bool `json:"isPrepackaged,omitempty"`
+	// The lifecycle status of the plugin, one of `installing`, `updating`, `loaded` or `error`.
+	Status *string `json:"status,omitempty"`
+	// Details of the last load failure when the status is `error`.
+	StatusMessage NullableString `json:"statusMessage,omitempty"`
+	// The providers (integrations, task types, option sources, tabs and so on) registered by the plugin.
+	Providers []UploadPlugin200ResponseAllOfPluginProvidersInner `json:"providers,omitempty"`
+	// The plugin's configuration values, keyed by its option type field names.
+	Config map[string]interface{} `json:"config,omitempty"`
+	// The option types describing the plugin's configurable settings.
+	OptionTypes []UploadPlugin200ResponseAllOfPluginOptionTypesInner `json:"optionTypes,omitempty"`
+	// The date and time the plugin was installed.
+	DateCreated *time.Time `json:"dateCreated,omitempty"`
+	// The date and time the plugin was last updated.
+	LastUpdated          *time.Time             `json:"lastUpdated,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _UploadPlugin200ResponseAllOfPlugin UploadPlugin200ResponseAllOfPlugin

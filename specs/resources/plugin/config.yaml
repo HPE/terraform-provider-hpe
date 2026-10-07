@@ -1,0 +1,98 @@
+plugin:
+  enable_timeouts: true
+  templates:
+    jar_path:
+      string:
+        computed_optional_required: optional
+        description: Local path to the plugin .jar to upload. Exactly one of `jar_path` or `jar_url` must be set.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              stringvalidator.ExactlyOneOf(path.MatchRoot("jar_url"))
+    jar_url:
+      string:
+        computed_optional_required: optional
+        description: HTTP(S) URL of the plugin .jar to download and upload (for example a Morpheus Exchange `/api/packages/pull?code=...&version=...` link). Exactly one of `jar_path` or `jar_url` must be set.
+        validators:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            - path: github.com/hashicorp/terraform-plugin-framework/path
+            schema_definition: |-
+              stringvalidator.ExactlyOneOf(path.MatchRoot("jar_path"))
+    jar_sha256:
+      string:
+        computed_optional_required: computed_optional
+        description: Hex-encoded SHA-256 of the plugin jar. Set it (for example with `filesha256()` or the Morpheus Exchange `shaHash`) to have the jar verified before upload and re-uploaded when its contents change; computed from the uploaded jar when omitted.
+        plan_modifiers:
+          - custom:
+              schema_definition: jarSha256PlanModifier{}
+    config:
+      dynamic:
+        computed_optional_required: optional
+        description: Plugin configuration values keyed by the plugin's option type field names. Wrap secret values with `sensitive()`.
+    providers:
+      list_nested:
+        computed_optional_required: computed
+        description: The capabilities (providers) contributed by the plugin.
+        nested_object:
+          attributes:
+          - name: name
+            string:
+              computed_optional_required: computed
+              description: The display name of the provider.
+          - name: type
+            string:
+              computed_optional_required: computed
+              description: The provider type, for example `Cloud`, `IPAM` or `Task`.
+  moves:
+    - plugin: "" # unnest wrapper (components/schemas/plugin.yaml)
+    - template-jar_path: jar_path
+    - template-jar_url: jar_url
+    - template-jar_sha256: jar_sha256
+    - template-config: config
+    - template-providers: providers
+  removes:
+    - success # response envelope flag (components/schemas/plugin.yaml)
+    - option_types # UI form metadata (components/schemas/plugin.yaml)
+  overrides:
+    id:
+      computed_optional_required: computed
+      state_for_unknown: true
+    enabled:
+      computed_optional_required: computed_optional
+      description: Whether the plugin is enabled.
+      default: true
+    code:
+      computed_optional_required: computed
+    name:
+      computed_optional_required: computed
+    version:
+      computed_optional_required: computed
+    description:
+      computed_optional_required: computed
+    status:
+      computed_optional_required: computed
+    status_message:
+      computed_optional_required: computed
+    author:
+      computed_optional_required: computed
+    website_url:
+      computed_optional_required: computed
+    source_code_location_url:
+      computed_optional_required: computed
+    issue_tracker_url:
+      computed_optional_required: computed
+    valid:
+      computed_optional_required: computed
+    has_valid_update:
+      computed_optional_required: computed
+    is_prepackaged:
+      computed_optional_required: computed
+    date_created:
+      computed_optional_required: computed
+    last_updated:
+      computed_optional_required: computed

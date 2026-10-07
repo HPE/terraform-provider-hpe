@@ -22,7 +22,9 @@ var _ MappedNullable = &UpdatePlugin200ResponseAllOfPluginProvidersInner{}
 
 // UpdatePlugin200ResponseAllOfPluginProvidersInner struct for UpdatePlugin200ResponseAllOfPluginProvidersInner
 type UpdatePlugin200ResponseAllOfPluginProvidersInner struct {
-	Name                 *string                `json:"name,omitempty"`
+	// The display name of the provider.
+	Name *string `json:"name,omitempty"`
+	// The provider type, for example `Cloud`, `IPAM` or `Task`.
 	Type                 *string                `json:"type,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }

@@ -53,6 +53,37 @@ The documentation describes each block, marks the attributes that replace the ne
 validated example for the OVS port group, HVM data, NSX-T, OpenStack, Azure, Google, Amazon and
 child network types.
 
+## New resources
+
+### `hpe_morpheus_plugin` resource and data source (MORPH-18591)
+
+Morpheus plugins — the jars behind *Administration → Integrations → Plugins*, whether one of the
+appliance's prepackaged set, a release from the Morpheus Exchange or a locally built one — could
+only be installed through the UI or a hand-rolled multipart upload. The `hpe_morpheus_plugin`
+resource installs, updates, enables, configures and removes them.
+
+The jar comes from a local path (`jar_path`) or a URL (`jar_url`); exactly one is given. A URL is
+downloaded by Terraform and uploaded to the appliance, so the appliance itself needs no route to the
+exchange: `jar_url` can be an exchange `/api/packages/pull?code=…&version=…` link, which is what the
+exchange records as each release's `downloadURL`. `jar_sha256` pins the artifact: when set — from
+`filesha256()` for a local jar, or the `shaHash` the exchange publishes beside each release — the
+jar is verified before upload and a change to it re-uploads; when a local jar is rebuilt in place,
+the provider hashes it at plan time, so the rebuild shows as an update without any trigger
+attribute. An install waits for the plugin to report `loaded` and fails with the plugin's own
+message when it reports `error`. Uploading a newer jar updates the installed plugin in place
+(Morpheus matches on the plugin's `code`); a jar whose code differs from the managed plugin's is
+refused, because Morpheus would install it alongside rather than replace it. `enabled` and the
+plugin's option-type values in `config` go through the plugin update endpoint; `code`, `name`,
+`version`, `status`, `providers`, `is_prepackaged` and the plugin's URLs are read back. Destroying
+the resource uninstalls the plugin. A plugin installed by other means is imported by id.
+
+The `hpe_morpheus_plugin` data source reads one plugin by `id` or by its `code`, for configurations
+that refer to a prepackaged plugin or one installed outside Terraform.
+
+A plugin's providers come back from the API in a different order on every read, and several may
+share a type and a name (a plugin's UI tabs often do), so `providers` is a list the provider sorts
+by type, then name.
+
 ## New data sources
 
 ### `hpe_morpheus_option_source_value` and `hpe_morpheus_option_source_values` (MORPH-17643)
