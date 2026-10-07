@@ -198,7 +198,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, gdiags := getDatastoreAsState(ctx, id, plan, client)
+	state, found, gdiags := getDatastoreAsState(ctx, id, plan, client)
+	if !found && !gdiags.HasError() {
+		gdiags.AddError("failed to read datastore state", fmt.Sprintf("Datastore %d was created but could not be read", id))
+	}
 	if gdiags.HasError() {
 		resp.Diagnostics.Append(gdiags...)
 		resp.Diagnostics.AddError(

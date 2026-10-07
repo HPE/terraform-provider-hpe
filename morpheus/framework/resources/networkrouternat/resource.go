@@ -164,7 +164,10 @@ func (r *Resource) Create(
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
-	state, pdiags := getNatAsState(ctx, id, routerID, client, plan)
+	state, found, pdiags := getNatAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("NAT %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -193,26 +196,29 @@ func getNatAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterNatModel,
-) (NetworkRouterNatModel, diag.Diagnostics) {
+) (NetworkRouterNatModel, bool, diag.Diagnostics) {
 	var state NetworkRouterNatModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterNat(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("NAT %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	nat := resp.NetworkRouterNAT
 	if nat == nil {
 		diags.AddError("API returned nil", "NetworkRouterNAT is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if nat.Id != nil {
@@ -270,7 +276,7 @@ func getNatAsState(
 		state.Protocol = types.StringNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Read(
@@ -292,9 +298,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getNatAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, found, diags := getNatAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The NAT rule was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router nat %d not found, removing from state", plan.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -399,7 +414,10 @@ func (r *Resource) Update(
 		plan.WriteOnlyRevision = wodigest.NewRevision()
 	}
 
-	state, diags := getNatAsState(ctx, id, routerID, client, plan)
+	state, found, diags := getNatAsState(ctx, id, routerID, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network router nat resource", fmt.Sprintf("NAT %d not found after update", id))
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

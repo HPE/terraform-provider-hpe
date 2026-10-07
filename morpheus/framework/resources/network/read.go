@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -26,11 +27,14 @@ func getNetworkAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan NetworkModel,
-) (NetworkModel, diag.Diagnostics) {
+) (NetworkModel, bool, diag.Diagnostics) {
 	var state NetworkModel
 	var diags diag.Diagnostics
 
 	network, hresp, err := client.NetworksAPI.GetNetwork(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate network resource",
@@ -38,7 +42,7 @@ func getNetworkAsState(
 				errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	net := network.Network
@@ -48,7 +52,7 @@ func getNetworkAsState(
 			fmt.Sprintf("network %d GET returned no network payload", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(net.Id)
@@ -145,7 +149,7 @@ func getNetworkAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -256,7 +260,7 @@ func getNetworkAsState(
 			)
 			diags.Append(d...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.TenantIds = tenantSet
 		}
@@ -268,14 +272,14 @@ func getNetworkAsState(
 		resourcePermissions, d := convertResourcePermissions(ctx, net.ResourcePermission)
 		diags.Append(d...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 		state.ResourcePermissions = resourcePermissions
 	} else {
 		state.ResourcePermissions = NewResourcePermissionsValueNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func convertResourcePermissions(
@@ -341,9 +345,18 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, diags := getNetworkAsState(ctx, id, client, plan)
+	state, foundNet, diags := getNetworkAsState(ctx, id, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The network was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !foundNet {
+		tflog.Info(ctx, fmt.Sprintf("network %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

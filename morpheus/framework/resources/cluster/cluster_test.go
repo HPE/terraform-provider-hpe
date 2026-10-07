@@ -3,6 +3,7 @@
 package cluster_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -10,13 +11,16 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/cluster"
 	sdkv2morpheus "github.com/HPE/terraform-provider-hpe/morpheus/sdkv2"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/skip"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
 
@@ -197,18 +201,35 @@ data "hpe_morpheus_service_plan" "test" {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	var stashed *terraform.State
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
 		Steps: []resource.TestStep{
 			{
 				Config: providerConfig + dataSourcesConfig + resourceConfig,
-				Check:  checkFn,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkFn,
+					testhelpers.StashState(&stashed),
+				),
 			},
 			{
 				Config:             providerConfig + dataSourcesConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
 			},
+			// MORPH-18584: delete the cluster outside Terraform; the next
+			// refresh must remove it from state and plan a create, not fail.
+			testhelpers.DeleteOutOfBand(
+				t,
+				&stashed,
+				"hpe_morpheus_cluster.example_hvm",
+				func(ctx context.Context, client *sdk.APIClient, id int64) error {
+					result, hresp, err := client.ClustersAPI.DeleteCluster(ctx, id).Force("on").Execute()
+
+					return errfmt.CheckDeleted(result, err, hresp)
+				},
+			),
 		},
 	})
 }

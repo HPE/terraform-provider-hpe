@@ -3,6 +3,7 @@
 package network_test
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,9 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/config"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 )
 
 // Uses Azure
@@ -650,6 +654,8 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 	// Combine provider config and resource file content
 	configText := providerConfig + "\n" + string(resourceContent)
 
+	var ovsStashedState *terraform.State
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
@@ -660,6 +666,7 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 					// All other values use defaults
 				},
 				Check: resource.ComposeTestCheckFunc(
+					testhelpers.StashState(&ovsStashedState),
 					// Standard checks
 					resource.TestCheckResourceAttr(
 						"hpe_morpheus_network.ovs_port_group", "name", uniqueName,
@@ -736,6 +743,18 @@ func TestAccMorpheusNetworkResourceCreateOVSPortGroup(t *testing.T) {
 					),
 				),
 			},
+			// MORPH-18584: delete the network outside Terraform; the next
+			// refresh must remove it from state and plan a create, not fail.
+			testhelpers.DeleteOutOfBand(
+				t,
+				&ovsStashedState,
+				"hpe_morpheus_network.ovs_port_group",
+				func(ctx context.Context, client *sdk.APIClient, id int64) error {
+					result, hresp, err := client.NetworksAPI.DeleteNetwork(ctx, id).Execute()
+
+					return errfmt.CheckDeleted(result, err, hresp)
+				},
+			),
 		},
 	})
 }

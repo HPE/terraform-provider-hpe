@@ -224,9 +224,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := getLoadBalancerMonitorAsState(
+	state, found, diags := getLoadBalancerMonitorAsState(
 		ctx, loadBalancerID, id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer monitor", "monitor not found immediately after update")
+	}
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
 	}

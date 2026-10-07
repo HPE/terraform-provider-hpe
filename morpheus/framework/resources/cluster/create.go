@@ -262,8 +262,13 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
-	state, diag := getClusterAsState(ctx, clusterId, client, plan)
+	state, found, diag := getClusterAsState(ctx, clusterId, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError(readOperation, fmt.Sprintf("cluster %d not found after create", clusterId))
+
 		return
 	}
 

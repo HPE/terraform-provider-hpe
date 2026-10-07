@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -34,8 +35,17 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diag := getOsTypeAsState(ctx, data.Id.ValueInt64(), client)
+	state, found, diag := getOsTypeAsState(ctx, data.Id.ValueInt64(), client)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The OS type was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("os type %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -46,18 +56,21 @@ func getOsTypeAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (OsTypeModel, diag.Diagnostics) {
+) (OsTypeModel, bool, diag.Diagnostics) {
 	var state OsTypeModel
 	var diags diag.Diagnostics
 
 	osTypeResp, httpResp, err := client.LibraryAPI.GetOsType(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"error reading os type",
 			fmt.Sprintf("os type %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	osType := osTypeResp.OsType
@@ -67,7 +80,7 @@ func getOsTypeAsState(
 			fmt.Sprintf("os type %d GET returned no osType", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(osType.Id)
@@ -98,5 +111,5 @@ func getOsTypeAsState(
 		state.Owner = types.StringNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }

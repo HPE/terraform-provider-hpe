@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -62,18 +63,21 @@ func getServicePlanAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (ServicePlanModel, diag.Diagnostics) {
+) (ServicePlanModel, bool, diag.Diagnostics) {
 	var state ServicePlanModel
 	var diags diag.Diagnostics
 
 	sp, hresp, err := client.ServicePlansAPI.GetServicePlans(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK || sp == nil {
 		diags.AddError(
 			"populate service plan resource",
 			fmt.Sprintf("service plan %d GET failed", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	pricesetIDValues := []attr.Value{}
@@ -83,7 +87,7 @@ func getServicePlanAsState(
 
 	pricesetIDSet, diags := types.SetValue(types.Int64Type, pricesetIDValues)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	// config is defaulted to empty map by api
@@ -120,7 +124,7 @@ func getServicePlanAsState(
 			ConfigRangesValue{}.AttributeTypes(ctx), configRanges,
 		)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 		state.ConfigRanges = configRangesValue
 	}
@@ -147,7 +151,7 @@ func getServicePlanAsState(
 		state.ProvisionTypeCode = convert.StrToType(sp.ServicePlan.ProvisionType.Code)
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // helper function to set provisionType in addServicePlan struct
@@ -520,7 +524,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, diags := getServicePlanAsState(ctx, id, client)
+	state, found, diags := getServicePlanAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("failed to read service plan state", fmt.Sprintf("Service plan %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -685,7 +692,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	updatedState, diags := getServicePlanAsState(ctx, id, client)
+	updatedState, found, diags := getServicePlanAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update service plan resource", fmt.Sprintf("service plan %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -723,9 +733,18 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, diags := getServicePlanAsState(ctx, id, client)
+	state, found, diags := getServicePlanAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
+		return
+	}
+
+	// The service plan was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("service plan %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

@@ -2,6 +2,7 @@ package image
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -245,8 +246,16 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	state, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("image %d not found after update", plan.Id.ValueInt64()),
+		)
+
 		return
 	}
 

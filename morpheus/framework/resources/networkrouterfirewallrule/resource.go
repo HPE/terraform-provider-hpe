@@ -156,7 +156,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, absent, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, found, pdiags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("firewall rule %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -187,32 +190,35 @@ func getFirewallRuleAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterFirewallRuleModel,
-) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent, diag.Diagnostics) {
+) (NetworkRouterFirewallRuleModel, ruleFieldsAbsent, bool, diag.Diagnostics) {
 	var state NetworkRouterFirewallRuleModel
 	var absent ruleFieldsAbsent
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterFirewallRule(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, absent, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("firewall rule %d GET failed: %s", id, errfmt.ErrMsg(err, hresp)),
 		)
 
-		return state, absent, diags
+		return state, absent, false, diags
 	}
 
 	rule := resp.Rule
 	if rule == nil {
 		diags.AddError("API returned nil", "Rule is nil in the response")
 
-		return state, absent, diags
+		return state, absent, false, diags
 	}
 
 	state, absent = mapRuleToState(rule, plan)
 
-	return state, absent, diags
+	return state, absent, true, diags
 }
 
 // ruleFieldsAbsent records which optional fields the API did not return, so
@@ -321,9 +327,18 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, _, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
+	state, _, found, diags := getFirewallRuleAsState(ctx, plan.Id.ValueInt64(), plan.RouterId.ValueInt64(), client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The firewall rule was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router firewall rule %d not found, removing from state", plan.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -435,7 +450,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, absent, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	state, absent, found, diags := getFirewallRuleAsState(ctx, id, routerID, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network router firewall rule resource", fmt.Sprintf("firewall rule %d not found after update", id))
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

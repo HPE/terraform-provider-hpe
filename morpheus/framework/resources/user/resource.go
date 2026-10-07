@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -63,24 +64,27 @@ func getUserAsState(
 	id int64,
 	client *sdk.APIClient,
 	priorRoleIds types.Set,
-) (UserModel, diag.Diagnostics) {
+) (UserModel, bool, diag.Diagnostics) {
 	var state UserModel
 	var diags diag.Diagnostics
 
 	u, hresp, err := client.UsersAPI.GetUser(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate user resource",
 			fmt.Sprintf("user %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if u.User == nil {
 		diags.AddError("API returned nil", "User is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// role_ids: the API injects auto-assigned roles (e.g. a default role granted
@@ -105,7 +109,7 @@ func getUserAsState(
 		roleIDSet, d = types.SetValue(types.Int64Type, roleIDValues)
 		diags.Append(d...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 	}
 
@@ -122,7 +126,7 @@ func getUserAsState(
 	state.ReceiveNotifications = convert.BoolToType(u.User.ReceiveNotifications)
 	state.RoleIds = roleIDSet
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Create(
@@ -256,7 +260,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	state, found, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("create user resource", fmt.Sprintf("user %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -454,7 +461,10 @@ func (r *Resource) Update(
 
 	prior := state
 
-	state, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
+	state, found, pdiags := getUserAsState(ctx, newid, client, plan.RoleIds)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("update user resource", fmt.Sprintf("user %d not found after update", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -506,13 +516,22 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
+	state, found, pdiags := getUserAsState(ctx, id, client, plan.RoleIds)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
 			"read user resource",
 			fmt.Sprintf("user %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The user was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("user %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

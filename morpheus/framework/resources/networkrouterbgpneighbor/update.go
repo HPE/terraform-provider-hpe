@@ -155,7 +155,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	newState, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	newState, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(updateOperation, fmt.Sprintf("bgp neighbor %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

@@ -473,7 +473,10 @@ func (r *Resource) Update(
 
 	prior := state
 
-	state, pdiags = getCloudAsState(ctx, newid, client, plan)
+	state, found, pdiags := getCloudAsState(ctx, newid, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(updateOperation, fmt.Sprintf("cloud %d: not found after update", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

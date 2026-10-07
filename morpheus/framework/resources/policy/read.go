@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -618,18 +619,21 @@ func getPolicyAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan *PolicyModel,
-) (PolicyModel, diag.Diagnostics) {
+) (PolicyModel, bool, diag.Diagnostics) {
 	var state PolicyModel
 	var diags diag.Diagnostics
 
 	policy, hresp, err := client.PoliciesAPI.GetPolicies(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK || policy == nil {
 		diags.AddError(
 			"populate policy resource",
 			fmt.Sprintf("policy %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if policy.Policy == nil {
@@ -638,7 +642,7 @@ func getPolicyAsState(
 			fmt.Sprintf("policy %d is nil", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	p := policy.Policy
@@ -685,7 +689,7 @@ func getPolicyAsState(
 		if setDiags.HasError() {
 			diags.Append(setDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Tenants = tenantsSet
 	} else {
@@ -718,7 +722,7 @@ func getPolicyAsState(
 		if policyTypeDiags.HasError() {
 			diags.Append(policyTypeDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.PolicyType = policyTypeValue
 	}
@@ -744,7 +748,7 @@ func getPolicyAsState(
 			if configDiags.HasError() {
 				diags.Append(configDiags...)
 
-				return state, diags
+				return state, false, diags
 			}
 
 			// Don't populate dynamic config when using static fields to avoid drift
@@ -770,7 +774,7 @@ func getPolicyAsState(
 		if cloudDiags.HasError() {
 			diags.Append(cloudDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Cloud = cloudValue
 	} else {
@@ -795,7 +799,7 @@ func getPolicyAsState(
 		if groupDiags.HasError() {
 			diags.Append(groupDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Group = groupValue
 	} else {
@@ -823,7 +827,7 @@ func getPolicyAsState(
 		if ownerDiags.HasError() {
 			diags.Append(ownerDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Owner = ownerValue
 	}
@@ -846,7 +850,7 @@ func getPolicyAsState(
 		if roleDiags.HasError() {
 			diags.Append(roleDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Role = roleValue
 	} else {
@@ -871,14 +875,14 @@ func getPolicyAsState(
 		if userDiags.HasError() {
 			diags.Append(userDiags...)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.User = userValue
 	} else {
 		state.User = NewUserValueNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Read(
@@ -904,9 +908,18 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, diags := getPolicyAsState(ctx, id, client, &plan)
+	state, found, diags := getPolicyAsState(ctx, id, client, &plan)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
+
+		return
+	}
+
+	// The policy was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("policy %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

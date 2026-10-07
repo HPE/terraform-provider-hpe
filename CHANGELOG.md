@@ -263,6 +263,24 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### A resource deleted outside Terraform is recreated instead of failing the refresh (MORPH-18584)
+
+When an object this provider manages was deleted outside Terraform — through the Morpheus UI, by
+another automation, or by cleanup — the next `terraform plan` or `apply` failed with an error such
+as *"read cluster resource / cluster 4 GET failed: 404"* instead of noticing the object was gone.
+The only way forward was `terraform state rm`, which practitioners should never need to reach for.
+Twenty-five resources had this flaw: `hpe_morpheus_backup_host`, `hpe_morpheus_backup_instance`,
+`hpe_morpheus_cloud`, `hpe_morpheus_cluster`, `hpe_morpheus_datastore`, `hpe_morpheus_group`,
+`hpe_morpheus_image`, the load balancer resources (`hpe_morpheus_load_balancer`, its monitor, pool
+and profile), the network resources (`hpe_morpheus_network`, its DHCP server, and the network
+router with its BGP neighbour, firewall rule, NAT and route sub-resources), `hpe_morpheus_os_type`,
+`hpe_morpheus_os_type_image`, `hpe_morpheus_policy`, `hpe_morpheus_role`, `hpe_morpheus_service_plan`,
+`hpe_morpheus_task` and `hpe_morpheus_user`. Read now answers the API's 404 by removing the resource
+from state and logging that it did, so the next plan proposes recreating it — the behaviour the
+other resources already had. A resource vanishing immediately after create or update is still a hard
+error, since that is a genuine failure rather than drift. A unit rule test now holds every framework
+resource to this convention so the regression cannot return.
+
 ### `hpe_morpheus_cluster`: `config_hvm.overlay_interface_name` is documented (MORPH-18589)
 
 The attribute had no description. It names the host interface used for the overlay (VXLAN) Open

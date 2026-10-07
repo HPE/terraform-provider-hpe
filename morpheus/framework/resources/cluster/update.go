@@ -229,8 +229,13 @@ func (r *Resource) Update(
 		plan.WriteOnlyRevision = wodigest.NewRevision()
 	}
 
-	updatedState, diag := getClusterAsState(ctx, id, client, plan)
+	updatedState, found, diag := getClusterAsState(ctx, id, client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+	if !found {
+		resp.Diagnostics.AddError(readOperation, fmt.Sprintf("cluster %d not found after update", id))
+
 		return
 	}
 

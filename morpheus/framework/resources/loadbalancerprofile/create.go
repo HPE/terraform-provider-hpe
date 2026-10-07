@@ -79,7 +79,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, stateDiags := getLoadBalancerProfileAsState(ctx, loadBalancerID, *created.Id, client, plan)
+	state, found, stateDiags := getLoadBalancerProfileAsState(ctx, loadBalancerID, *created.Id, client, plan)
+	if !found && !stateDiags.HasError() {
+		stateDiags.AddError("read load balancer profile", "profile not found immediately after create")
+	}
 	if stateDiags.HasError() {
 		resp.Diagnostics.Append(stateDiags...)
 

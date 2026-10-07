@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -38,10 +39,19 @@ func (r *Resource) Read(
 		return
 	}
 
-	state, diags := getLoadBalancerMonitorAsState(
+	state, found, diags := getLoadBalancerMonitorAsState(
 		ctx, data.LoadBalancerId.ValueInt64(), data.Id.ValueInt64(), client,
 	)
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The monitor was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("load balancer monitor %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -98,12 +108,15 @@ func getLoadBalancerMonitorAsState(
 	loadBalancerID int64,
 	id int64,
 	client *sdk.APIClient,
-) (LoadBalancerMonitorModel, diag.Diagnostics) {
+) (LoadBalancerMonitorModel, bool, diag.Diagnostics) {
 	var state LoadBalancerMonitorModel
 	var diags diag.Diagnostics
 
 	monitorResp, httpResp, err := client.LoadBalancersAPI.
 		GetLoadBalancerMonitor(ctx, loadBalancerID, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"error reading load balancer monitor",
@@ -111,7 +124,7 @@ func getLoadBalancerMonitorAsState(
 				errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	m := monitorResp.LoadBalancerMonitor
@@ -121,7 +134,7 @@ func getLoadBalancerMonitorAsState(
 			fmt.Sprintf("load balancer monitor %d response did not contain a monitor", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(m.Id)
@@ -192,7 +205,7 @@ func getLoadBalancerMonitorAsState(
 		state.Config = NewConfigValueNull()
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // preserveUnreturnedFields restores values the API accepts on create/update but

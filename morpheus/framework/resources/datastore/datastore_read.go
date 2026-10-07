@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -34,18 +35,21 @@ func getDatastoreAsState(
 	id int64,
 	plan DatastoreModel,
 	client *sdk.APIClient,
-) (DatastoreModel, diag.Diagnostics) {
+) (DatastoreModel, bool, diag.Diagnostics) {
 	var state DatastoreModel
 	var diags diag.Diagnostics
 
 	d, hresp, err := client.DatastoresAPI.GetDatastores(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || d == nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate datastore resource",
 			fmt.Sprintf("datastore %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	datastore := d.Datastore
@@ -55,7 +59,7 @@ func getDatastoreAsState(
 			fmt.Sprintf("datastore %d not found in response", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Name = convert.StrToType(&datastore.Name)
@@ -77,7 +81,7 @@ func getDatastoreAsState(
 			fmt.Sprintf("datastore %d missing ref type in response", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 	switch *refType {
 	case cloudRefType:
@@ -122,7 +126,7 @@ func getDatastoreAsState(
 			fmt.Sprintf("datastore %d has invalid ref type '%s' in response", id, *refType),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Populate Config
@@ -201,7 +205,7 @@ func getDatastoreAsState(
 		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
 		diags = append(diags, pdiags...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigFromApi = configFromAPI
@@ -236,7 +240,7 @@ func getDatastoreAsState(
 		configFromAPI, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
 		diags = append(diags, pdiags...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigFromApi = configFromAPI
@@ -283,14 +287,14 @@ func getDatastoreAsState(
 				fmt.Sprintf("datastore %d: failed to convert config to dynamic config: %s", id, err.Error()),
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 		state.Config = configDynamic
 
 		configFromApi, pdiags := createConfigFromApiDynamic(ctx, id, datastore.Config, keysFromMap)
 		diags = append(diags, pdiags...)
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigFromApi = configFromApi
@@ -392,7 +396,7 @@ func getDatastoreAsState(
 		state.Datastores = datastoresSet
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // populateCloudDatastoreInformation gets the cloud datastore information for a datastore
@@ -689,13 +693,22 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, pdiags := getDatastoreAsState(ctx, id, plan, client)
+	state, found, pdiags := getDatastoreAsState(ctx, id, plan, client)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
 			"read datastore resource",
 			fmt.Sprintf("datastore %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The datastore was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("datastore %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -1439,23 +1440,26 @@ func getRoleAsState(
 	ctx context.Context,
 	id int64,
 	client *sdk.APIClient,
-) (RoleModel, diag.Diagnostics) {
+) (RoleModel, bool, diag.Diagnostics) {
 	var state RoleModel
 	var diags diag.Diagnostics
 
 	r, hresp, err := client.RolesAPI.GetRole(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate role resource",
 			fmt.Sprintf("role %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	permissions, diags := populateGetRoleAsStatePermissions(ctx, r)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(r.Role.Id)
@@ -1492,11 +1496,11 @@ func getRoleAsState(
 	tenantCopiesSet, tcDiags := types.SetValueFrom(ctx, TenantCopiesValue{}.Type(ctx), tenantCopies)
 	diags.Append(tcDiags...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 	state.TenantCopies = tenantCopiesSet
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Create(
@@ -1607,7 +1611,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	apiState, diags := getRoleAsState(ctx, id, client)
+	apiState, found, diags := getRoleAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("create role resource", fmt.Sprintf("role %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -1798,13 +1805,22 @@ func (r *Resource) Read(
 	}
 
 	id := state.Id.ValueInt64()
-	apiState, diags := getRoleAsState(ctx, id, client)
+	apiState, found, diags := getRoleAsState(ctx, id, client)
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
 			"read role resource",
 			fmt.Sprintf("role %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The role was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("role %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}
@@ -2093,7 +2109,10 @@ func (r *Resource) Update(
 	// will act as an override for defaults.
 
 	// 1. Perform a GET so we know which non-feature permissions to reset
-	getRole, diags := getRoleAsState(ctx, id, client)
+	getRole, found, diags := getRoleAsState(ctx, id, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update role resource", fmt.Sprintf("role %d not found", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(
@@ -2148,7 +2167,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	apiState, diags := getRoleAsState(ctx, newID, client)
+	apiState, found, diags := getRoleAsState(ctx, newID, client)
+	if !found && !diags.HasError() {
+		diags.AddError("update role resource", fmt.Sprintf("role %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

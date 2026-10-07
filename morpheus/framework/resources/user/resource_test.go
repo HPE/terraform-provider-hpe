@@ -3,6 +3,7 @@
 package user_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -15,10 +16,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/plancheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 
+	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
+
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/role"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/user"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers"
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
 	"github.com/HPE/terraform-provider-hpe/provider"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
@@ -239,14 +243,31 @@ func TestAccMorpheusUserResourceExample(t *testing.T) {
 
 	checkFn := resource.ComposeAggregateTestCheckFunc(checks...)
 
+	var stashed *terraform.State
+
 	resource.Test(t, resource.TestCase{
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:   providerConfig + dependenciesConfig + resourceConfig,
-				Check:    checkFn,
+				Config: providerConfig + dependenciesConfig + resourceConfig,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					checkFn,
+					testhelpers.StashState(&stashed),
+				),
 				PlanOnly: false,
 			},
+			// MORPH-18584: delete the user outside Terraform; the next refresh
+			// must remove it from state and plan a create, not fail.
+			testhelpers.DeleteOutOfBand(
+				t,
+				&stashed,
+				"hpe_morpheus_user.example",
+				func(ctx context.Context, client *sdk.APIClient, id int64) error {
+					_, hresp, err := client.UsersAPI.DeleteUser(ctx, id).Execute()
+
+					return errfmt.CheckDeleted(struct{}{}, err, hresp)
+				},
+			),
 		},
 	})
 }

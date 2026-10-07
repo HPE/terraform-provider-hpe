@@ -169,9 +169,15 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getNetworkDhcpServerAsState(
+	state, found, pdiags := getNetworkDhcpServerAsState(
 		ctx, dhcpServerID, serverID, client, plan,
 	)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(
+			"failed to read network dhcp server state",
+			fmt.Sprintf("Network DHCP Server %d was created but could not be read", dhcpServerID),
+		)
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

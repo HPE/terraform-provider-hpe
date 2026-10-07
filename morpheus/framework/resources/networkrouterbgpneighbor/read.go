@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -27,12 +28,15 @@ func getNetworkRouterBgpNeighborAsState(
 	routerID int64,
 	client *sdk.APIClient,
 	plan NetworkRouterBgpNeighborModel,
-) (NetworkRouterBgpNeighborModel, diag.Diagnostics) {
+) (NetworkRouterBgpNeighborModel, bool, diag.Diagnostics) {
 	var state NetworkRouterBgpNeighborModel
 	var diags diag.Diagnostics
 
 	resp, hresp, err := client.NetworksAPI.
 		GetNetworkRouterBgpNeighbor(ctx, id, routerID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
@@ -40,7 +44,7 @@ func getNetworkRouterBgpNeighborAsState(
 				errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	neighbor := resp.NetworkRouterBgpNeighbor
@@ -50,7 +54,7 @@ func getNetworkRouterBgpNeighborAsState(
 			fmt.Sprintf("bgp neighbor %d GET succeeded but response payload was missing", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(neighbor.Id)
@@ -223,7 +227,7 @@ func getNetworkRouterBgpNeighborAsState(
 		}
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Read(
@@ -251,9 +255,18 @@ func (r *Resource) Read(
 	id := plan.Id.ValueInt64()
 	routerID := plan.RouterId.ValueInt64()
 
-	state, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	state, found, diags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The BGP neighbor was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network router bgp neighbor %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

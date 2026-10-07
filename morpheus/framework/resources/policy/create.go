@@ -135,7 +135,10 @@ func (r *Resource) Create(
 	}
 
 	// Read the created policy to get full state
-	state, diags := getPolicyAsState(ctx, id, client, &plan)
+	state, found, diags := getPolicyAsState(ctx, id, client, &plan)
+	if !found && !diags.HasError() {
+		diags.AddError("failed to read policy state", fmt.Sprintf("Policy %d was created but could not be read", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

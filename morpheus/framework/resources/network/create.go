@@ -359,7 +359,10 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, pdiags := getNetworkAsState(ctx, id, client, plan)
+	state, found, pdiags := getNetworkAsState(ctx, id, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("failed to read network state", fmt.Sprintf("Network %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

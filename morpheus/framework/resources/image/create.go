@@ -343,8 +343,17 @@ func (r *Resource) Create(ctx context.Context, req resource.CreateRequest, resp 
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
-	state, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
+	state, found, diag := getImageAsState(ctx, plan.Id.ValueInt64(), client, plan)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		resp.Diagnostics.AddError(
+			"failed to read image state",
+			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),
+		)
+		taintResourceState(plan.Id.ValueInt64())
+
+		return
+	}
+	if !found {
 		resp.Diagnostics.AddError(
 			"failed to read image state",
 			fmt.Sprintf("Image %d was created but could not be read", plan.Id.ValueInt64()),

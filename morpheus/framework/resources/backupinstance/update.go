@@ -55,7 +55,10 @@ func (r *backupInstanceResource) Update(
 		return
 	}
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, found, diags := getBackupAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(updateOperation, "backup not found immediately after update")
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

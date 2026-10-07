@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -60,24 +61,27 @@ func getGroupAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan GroupModel,
-) (GroupModel, diag.Diagnostics) {
+) (GroupModel, bool, diag.Diagnostics) {
 	var state GroupModel
 	var diags diag.Diagnostics
 
 	g, hresp, err := client.GroupsAPI.GetGroups(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate group resource",
 			fmt.Sprintf("group %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if g.Group == nil {
 		diags.AddError("API returned nil", "Group is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(g.Group.Id)
@@ -106,14 +110,14 @@ func getGroupAsState(
 			if listDiags.HasError() {
 				diags.Append(listDiags...)
 
-				return state, diags
+				return state, false, diags
 			}
 
 			state.CloudIds = listVal
 		}
 	}
 
-	return state, diags
+	return state, true, diags
 }
 
 // updateClouds sets the group's clouds to exactly cloudIDs; an empty list
@@ -267,7 +271,10 @@ func (r *Resource) Create(
 		}
 	}
 
-	state, pdiags := getGroupAsState(ctx, id, client, plan)
+	state, found, pdiags := getGroupAsState(ctx, id, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("create group resource", fmt.Sprintf("group %d not found after create", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
@@ -414,7 +421,10 @@ func (r *Resource) Update(
 		}
 	}
 
-	state, sdiags := getGroupAsState(ctx, newid, client, plan)
+	state, found, sdiags := getGroupAsState(ctx, newid, client, plan)
+	if !found && !sdiags.HasError() {
+		sdiags.AddError("update group resource", fmt.Sprintf("group %d not found after update", id))
+	}
 	if sdiags.HasError() {
 		resp.Diagnostics.Append(sdiags...)
 		resp.Diagnostics.AddError(
@@ -453,13 +463,22 @@ func (r *Resource) Read(
 	}
 
 	id := plan.Id.ValueInt64()
-	state, pdiags := getGroupAsState(ctx, id, client, plan)
+	state, found, pdiags := getGroupAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
 			"read group resource",
 			fmt.Sprintf("group %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The group was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("group %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

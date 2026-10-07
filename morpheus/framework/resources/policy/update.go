@@ -128,7 +128,10 @@ func (r *Resource) Update(
 	}
 
 	// Read the updated policy to get full state
-	updatedState, diags := getPolicyAsState(ctx, id, client, &plan)
+	updatedState, found, diags := getPolicyAsState(ctx, id, client, &plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update policy resource", fmt.Sprintf("policy %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

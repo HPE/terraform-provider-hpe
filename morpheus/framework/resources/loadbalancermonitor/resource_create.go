@@ -246,9 +246,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, diags := getLoadBalancerMonitorAsState(
+	state, found, diags := getLoadBalancerMonitorAsState(
 		ctx, loadBalancerID, *created.Id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer monitor", "monitor not found immediately after create")
+	}
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		cleanup.TaintResourceState(ctx, cleanup.TaintResourceStateConfig{
 			ResourceType: "loadbalancermonitor",

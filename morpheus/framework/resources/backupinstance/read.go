@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -33,9 +34,18 @@ func (r *backupInstanceResource) Read(ctx context.Context, req resource.ReadRequ
 
 	id := priorState.Id.ValueInt64()
 
-	state, diags := getBackupAsState(ctx, id, client, priorState)
+	state, found, diags := getBackupAsState(ctx, id, client, priorState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The backup was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("backup instance %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -57,15 +67,20 @@ func getBackupAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan BackupInstanceModel,
-) (BackupInstanceModel, diag.Diagnostics) {
+) (BackupInstanceModel, bool, diag.Diagnostics) {
 	var state BackupInstanceModel
 	var diags diag.Diagnostics
 
 	result, hresp, err := client.BackupsAPI.GetBackups(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		// Signal not-found (without an error) so Read can remove the resource
+		// from state. Create/Update treat this as an error via the found flag.
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(readOperation, errfmt.ErrMsg(err, hresp))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	b := result.Backup
@@ -75,10 +90,10 @@ func getBackupAsState(
 			fmt.Sprintf("backup %d GET returned no backup", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
-	return mapBackupToState(b, plan), diags
+	return mapBackupToState(b, plan), true, diags
 }
 
 // mapBackupToState maps an SDK backup struct onto resource state, preserving

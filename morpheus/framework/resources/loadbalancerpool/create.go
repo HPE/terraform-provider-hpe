@@ -110,9 +110,12 @@ func (r *Resource) Create(
 		return
 	}
 
-	state, diags := getLoadBalancerPoolAsState(
+	state, found, diags := getLoadBalancerPoolAsState(
 		ctx, loadBalancerID, *created.Id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer pool", "pool not found immediately after create")
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 

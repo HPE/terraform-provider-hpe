@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -26,18 +27,21 @@ func getImageAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan ImageModel,
-) (ImageModel, diag.Diagnostics) {
+) (ImageModel, bool, diag.Diagnostics) {
 	var state ImageModel
 	var diags diag.Diagnostics
 
 	resp, httpResp, err := client.LibraryAPI.GetVirtualImage(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate image resource",
 			fmt.Sprintf("image %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	image := resp.VirtualImage
@@ -47,7 +51,7 @@ func getImageAsState(
 			fmt.Sprintf("image %d GET returned no virtualImage", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// auto_join_domain
@@ -103,7 +107,7 @@ func getImageAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -205,7 +209,7 @@ func getImageAsState(
 			)
 			diags.Append(d...)
 			if diags.HasError() {
-				return state, diags
+				return state, false, diags
 			}
 			state.TenantIds = tenantSet
 		}
@@ -232,7 +236,7 @@ func getImageAsState(
 	// vm_tools_installed
 	state.VmToolsInstalled = convert.BoolToType(image.VmToolsInstalled)
 
-	return state, diags
+	return state, true, diags
 }
 
 // Read implements resource.Resource.
@@ -251,8 +255,17 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state, diag := getImageAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getImageAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The image was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("image %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

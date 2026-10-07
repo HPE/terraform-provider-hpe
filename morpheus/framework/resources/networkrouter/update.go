@@ -90,7 +90,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	newState, diags := getRouterAsState(ctx, id, client, plan)
+	newState, found, diags := getRouterAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network router resource", fmt.Sprintf("network router %d not found after update", id))
+	}
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return

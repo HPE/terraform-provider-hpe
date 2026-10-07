@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -33,9 +34,18 @@ func (r *backupHostResource) Read(ctx context.Context, req resource.ReadRequest,
 
 	id := prior.Id.ValueInt64()
 
-	state, diags := getBackupAsState(ctx, id, client, prior)
+	state, found, diags := getBackupAsState(ctx, id, client, prior)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The backup was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("backup host %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -57,15 +67,20 @@ func getBackupAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan BackupHostModel,
-) (BackupHostModel, diag.Diagnostics) {
+) (BackupHostModel, bool, diag.Diagnostics) {
 	var state BackupHostModel
 	var diags diag.Diagnostics
 
 	result, hresp, err := client.BackupsAPI.GetBackups(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		// Signal not-found (without an error) so Read can remove the resource
+		// from state. Create/Update treat this as an error via the found flag.
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(readOperation, errfmt.ErrMsg(err, hresp))
 
-		return state, diags
+		return state, false, diags
 	}
 
 	b := result.Backup
@@ -75,7 +90,7 @@ func getBackupAsState(
 			fmt.Sprintf("backup %d GET returned no backup", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = convert.Int64ToType(b.Id)
@@ -125,5 +140,5 @@ func getBackupAsState(
 	state.SshPasswordWoVersion = plan.SshPasswordWoVersion
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
-	return state, diags
+	return state, true, diags
 }

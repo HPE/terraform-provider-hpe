@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -51,8 +52,17 @@ func (r *Resource) Read(ctx context.Context, req resource.ReadRequest, resp *res
 		return
 	}
 
-	state, diag := getClusterAsState(ctx, data.Id.ValueInt64(), client, data)
+	state, found, diag := getClusterAsState(ctx, data.Id.ValueInt64(), client, data)
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The cluster was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("cluster %d not found, removing from state", data.Id.ValueInt64()))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 
@@ -73,20 +83,23 @@ func getClusterAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan ClusterModel,
-) (ClusterModel, diag.Diagnostics) {
+) (ClusterModel, bool, diag.Diagnostics) {
 	var state ClusterModel
 	var diags diag.Diagnostics
 
 	importing := plan.Name.IsNull()
 
 	clusterResp, httpResp, err := client.ClustersAPI.GetCluster(ctx, id).Execute()
+	if errfmt.IsNotFound(httpResp) {
+		return state, false, diags
+	}
 	if err != nil || httpResp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cluster %d GET failed: ", id)+errfmt.ErrMsg(err, httpResp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	cluster := clusterResp.Cluster
@@ -96,7 +109,7 @@ func getClusterAsState(
 			fmt.Sprintf("cluster %d missing cluster in response", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// top-level fields
@@ -275,7 +288,7 @@ func getClusterAsState(
 		}
 
 		if diags.HasError() {
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigHvm = configHvmVal
@@ -290,7 +303,7 @@ func getClusterAsState(
 				"cluster: generic config missing from API response",
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		// Set plan config to state if it's not null.
@@ -315,7 +328,7 @@ func getClusterAsState(
 	if diags != nil {
 		diags.Append(diags...)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Server = server
@@ -329,7 +342,7 @@ func getClusterAsState(
 			"could not parse a slice of labels",
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	// Morpheus API may change the casing of the labels, to avoid Terraform
@@ -350,7 +363,7 @@ func getClusterAsState(
 	// write_only_revision is not in the API; carried from prior state.
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
-	return state, diags
+	return state, true, diags
 }
 
 func buildReadClusterServer(

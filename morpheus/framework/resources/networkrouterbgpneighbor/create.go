@@ -175,7 +175,10 @@ func (r *Resource) Create(
 		})
 	}
 
-	state, pdiags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	state, found, pdiags := getNetworkRouterBgpNeighborAsState(ctx, id, routerID, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("BGP neighbor %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

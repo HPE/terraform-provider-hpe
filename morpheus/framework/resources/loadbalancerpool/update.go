@@ -118,9 +118,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diags := getLoadBalancerPoolAsState(
+	state, found, diags := getLoadBalancerPoolAsState(
 		ctx, loadBalancerID, id, client,
 	)
+	if !found && !diags.HasError() {
+		diags.AddError("read load balancer pool", "pool not found immediately after update")
+	}
 	if resp.Diagnostics.Append(diags...); resp.Diagnostics.HasError() {
 		return
 	}

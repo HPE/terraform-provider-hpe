@@ -656,7 +656,10 @@ func (r *Resource) Create(
 	plan.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 
-	state, pdiags := getCloudAsState(ctx, id, client, plan)
+	state, found, pdiags := getCloudAsState(ctx, id, client, plan)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError(createOperation, fmt.Sprintf("Cloud %d was created but could not be read", id))
+	}
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(

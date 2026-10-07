@@ -2,6 +2,7 @@ package ostype
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -106,7 +107,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getOsTypeAsState(ctx, id, client)
+	state, found, diag := getOsTypeAsState(ctx, id, client)
+	if !found && !diag.HasError() {
+		diag.AddError("error reading os type", fmt.Sprintf("os type %d not found after update", id))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

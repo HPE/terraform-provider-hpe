@@ -79,7 +79,10 @@ func (r *backupHostResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, found, diags := getBackupAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(updateOperation, "backup not found immediately after update")
+	}
 	state.WriteOnlyRevision = priorState.WriteOnlyRevision
 	if resend {
 		state.WriteOnlyRevision = wodigest.NewRevision()

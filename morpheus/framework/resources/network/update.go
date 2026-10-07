@@ -213,7 +213,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	networkState, diags := getNetworkAsState(ctx, id, client, plan)
+	networkState, found, diags := getNetworkAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError("update network resource", fmt.Sprintf("network %d not found after update", id))
+	}
 	if diags.HasError() {
 		resp.Diagnostics.Append(diags...)
 		resp.Diagnostics.AddError(

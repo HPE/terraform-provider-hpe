@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -41,12 +42,15 @@ func getNetworkDhcpServerAsState(
 	serverID int64,
 	client *sdk.APIClient,
 	plan NetworkDhcpServerModel,
-) (NetworkDhcpServerModel, diag.Diagnostics) {
+) (NetworkDhcpServerModel, bool, diag.Diagnostics) {
 	var state NetworkDhcpServerModel
 	var diags diag.Diagnostics
 
 	dhcpResp, hresp, err := client.NetworksAPI.
 		GetNetworkDhcpServer(ctx, id, serverID).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			"populate network dhcp server resource",
@@ -54,14 +58,14 @@ func getNetworkDhcpServerAsState(
 				errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	raw := dhcpResp.NetworkDhcpServer
 	if raw == nil {
 		diags.AddError("API returned nil", "NetworkDhcpServer is nil in the response")
 
-		return state, diags
+		return state, false, diags
 	}
 
 	encoded, err := json.Marshal(raw)
@@ -74,7 +78,7 @@ func getNetworkDhcpServerAsState(
 			),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	var payload dhcpServerReadPayload
@@ -87,7 +91,7 @@ func getNetworkDhcpServerAsState(
 			),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if payload.Id == nil {
@@ -96,7 +100,7 @@ func getNetworkDhcpServerAsState(
 			fmt.Sprintf("network dhcp server %d GET response missing id", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Id = types.Int64Value(*payload.Id)
@@ -121,13 +125,13 @@ func getNetworkDhcpServerAsState(
 	configState, cfgDiags := resolveConfigState(ctx, id, payload.Config, plan)
 	diags.Append(cfgDiags...)
 	if diags.HasError() {
-		return state, diags
+		return state, false, diags
 	}
 
 	state.Config = configState.config
 	state.ConfigNsxt = configState.configNsxt
 
-	return state, diags
+	return state, true, diags
 }
 
 type configResult struct {
@@ -333,11 +337,20 @@ func (r *Resource) Read(
 	id := plan.Id.ValueInt64()
 	serverID := plan.NetworkIntegrationId.ValueInt64()
 
-	state, diags := getNetworkDhcpServerAsState(
+	state, found, diags := getNetworkDhcpServerAsState(
 		ctx, id, serverID, client, plan,
 	)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// The DHCP server was deleted out of band (Morpheus returned 404); remove
+	// it from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("network dhcp server %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
+
 		return
 	}
 

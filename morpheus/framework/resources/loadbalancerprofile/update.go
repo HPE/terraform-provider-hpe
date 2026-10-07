@@ -82,9 +82,12 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, stateDiags := getLoadBalancerProfileAsState(
+	state, found, stateDiags := getLoadBalancerProfileAsState(
 		ctx, loadBalancerID, id, client, plan,
 	)
+	if !found && !stateDiags.HasError() {
+		stateDiags.AddError("read load balancer profile", "profile not found immediately after update")
+	}
 	if resp.Diagnostics.Append(stateDiags...); resp.Diagnostics.HasError() {
 		return
 	}

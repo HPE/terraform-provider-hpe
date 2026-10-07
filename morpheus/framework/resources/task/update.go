@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -191,7 +192,10 @@ func (r *Resource) Update(
 		return
 	}
 
-	state, diag := getTaskAsState(ctx, *taskResp.Task.Id, client, plan)
+	state, found, diag := getTaskAsState(ctx, *taskResp.Task.Id, client, plan)
+	if !found && !diag.HasError() {
+		diag.AddError("read task", fmt.Sprintf("task %d not found after update", *taskResp.Task.Id))
+	}
 	if resp.Diagnostics.Append(diag...); resp.Diagnostics.HasError() {
 		return
 	}

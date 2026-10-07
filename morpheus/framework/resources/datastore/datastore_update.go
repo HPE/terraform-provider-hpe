@@ -213,7 +213,10 @@ func updateDatastore(
 		return state, diags
 	}
 
-	state, pdiags := getDatastoreAsState(ctx, id, plan, client)
+	state, found, pdiags := getDatastoreAsState(ctx, id, plan, client)
+	if !found && !pdiags.HasError() {
+		pdiags.AddError("update datastore resource", fmt.Sprintf("datastore %d not found after update", id))
+	}
 	if pdiags.HasError() {
 		diags.Append(pdiags...)
 		diags.AddError(

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
@@ -33,18 +34,21 @@ func getCloudAsState(
 	id int64,
 	client *sdk.APIClient,
 	plan CloudModel,
-) (CloudModel, diag.Diagnostics) {
+) (CloudModel, bool, diag.Diagnostics) {
 	var state CloudModel
 	var diags diag.Diagnostics
 
 	c, hresp, err := client.CloudsAPI.GetClouds(ctx, id).Execute()
+	if errfmt.IsNotFound(hresp) {
+		return state, false, diags
+	}
 	if err != nil || c == nil || hresp.StatusCode != http.StatusOK {
 		diags.AddError(
 			readOperation,
 			fmt.Sprintf("cloud %d GET failed: ", id)+errfmt.ErrMsg(err, hresp),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	if c.Zone == nil {
@@ -53,7 +57,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing zone", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	cloud := c.Zone
@@ -64,7 +68,7 @@ func getCloudAsState(
 			fmt.Sprintf("cloud %d missing config", id),
 		)
 
-		return state, diags
+		return state, false, diags
 	}
 
 	importing := plan.Name.IsNull()
@@ -322,7 +326,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode AWS configuration", id),
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigAws = configAws
@@ -360,7 +364,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode HVM configuration", id),
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigHvm = configHvm
@@ -482,7 +486,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode VMware configuration", id),
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigVmware = configVmware
@@ -569,7 +573,7 @@ func getCloudAsState(
 				fmt.Sprintf("cloud %d: failed to decode Azure configuration", id),
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		state.ConfigAzure = configAzure
@@ -583,7 +587,7 @@ func getCloudAsState(
 				"cloud: generic config missing from API response",
 			)
 
-			return state, diags
+			return state, false, diags
 		}
 
 		cfgValue := *cfg
@@ -646,7 +650,7 @@ func getCloudAsState(
 					"cloud: failed to convert generic config: "+err.Error(),
 				)
 
-				return state, diags
+				return state, false, diags
 			}
 		}
 	}
@@ -654,7 +658,7 @@ func getCloudAsState(
 	// write_only_revision is not in the API; carried from prior state.
 	state.WriteOnlyRevision = plan.WriteOnlyRevision
 
-	return state, diags
+	return state, true, diags
 }
 
 func (r *Resource) Read(
@@ -681,13 +685,22 @@ func (r *Resource) Read(
 
 	id := plan.Id.ValueInt64()
 
-	state, pdiags := getCloudAsState(ctx, id, client, plan)
+	state, found, pdiags := getCloudAsState(ctx, id, client, plan)
 	if pdiags.HasError() {
 		resp.Diagnostics.Append(pdiags...)
 		resp.Diagnostics.AddError(
 			readOperation,
 			fmt.Sprintf("cloud %d: failed to read from api", id),
 		)
+
+		return
+	}
+
+	// The cloud was deleted out of band (Morpheus returned 404); remove it
+	// from state so the next plan recreates it instead of erroring.
+	if !found {
+		tflog.Info(ctx, fmt.Sprintf("cloud %d not found, removing from state", id))
+		resp.State.RemoveResource(ctx)
 
 		return
 	}

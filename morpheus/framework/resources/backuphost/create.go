@@ -78,7 +78,10 @@ func (r *backupHostResource) Create(ctx context.Context, req resource.CreateRequ
 	}
 	id := *result.Backup.Id
 
-	state, diags := getBackupAsState(ctx, id, client, plan)
+	state, found, diags := getBackupAsState(ctx, id, client, plan)
+	if !found && !diags.HasError() {
+		diags.AddError(createOperation, "backup not found immediately after create")
+	}
 	state.WriteOnlyRevision = wodigest.NewRevision()
 	resp.Diagnostics.Append(wo.Store(ctx, resp.Private, req.Config)...)
 	resp.Diagnostics.Append(diags...)
