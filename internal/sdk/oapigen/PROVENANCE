@@ -1,10 +1,10 @@
 # How this SDK was generated. Written by the codegen pipeline; do not edit.
 # The pipeline is deterministic: the same inputs reproduce this tree byte-for-byte.
 # To reproduce: task update-spec-local GITREF=<spec_commit> && task generate-sdk && task sdk-to-provider && task prune-sdk
-spec_commit         5c080a7cb7514f6cab5c668c9cf349b526aae130
-spec_bundle_sha256  58393147d282cf99c1558dc954337e6b79ed493f7613af067d66b03331cbff14
+spec_commit         2d61ee152654be96c9d2194c442f0c7ff2d75416
+spec_bundle_sha256  9ea8d1afe1645938e5c9d58058123349863b870f3520d488c9bc802a8fe0d3a1
 generator           openapi-generator-cli 7.12.0
-sdkprune            ba501eff1b3f6004d9b959d604e8e4a1ec1ca830
+sdkprune            e257d0868c4d07eece652cd033017cfe49d1831e-dirty
 go_toolchain        go1.26.0
 goimports           v0.50.0
 redocly             1.34.3

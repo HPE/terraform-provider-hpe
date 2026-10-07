@@ -232,6 +232,14 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### `hpe_morpheus_cluster`: `config_hvm.overlay_interface_name` is documented (MORPH-18589)
+
+The attribute had no description. It names the host interface used for the overlay (VXLAN) Open
+vSwitch bridge; Morpheus treats it as optional and HVM 2.0 layouts do not use it, but on Morpheus
+9.0.x with an HVM 1.x layout omitting it makes every host fail to build at the "HVM Host Build OVS
+Interface" step. The documentation now says so and recommends setting it on 1.x layouts. The
+attribute stays optional, as in the API.
+
 ### `hpe_morpheus_instance`: destroy deletes through the instance API, so the virtual machine is removed on Morpheus 8.1.x (MORPH-18513)
 
 Since 2.0.0 the resource destroyed an instance by stopping and force-deleting its server(s) through

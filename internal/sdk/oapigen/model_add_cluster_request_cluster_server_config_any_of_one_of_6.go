@@ -29,6 +29,7 @@ type AddClusterRequestClusterServerConfigAnyOfOneOf6 struct {
 	StorageInterfaceName *string `json:"storageInterfaceName,omitempty"`
 	ComputeInterfaceName *string `json:"computeInterfaceName,omitempty"`
 	ComputeVlans         *string `json:"computeVlans,omitempty"`
+	// Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the \"HVM Host Build OVS Interface\" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.
 	OverlayInterfaceName *string `json:"overlayInterfaceName,omitempty"`
 	CreateUser           *bool   `json:"createUser,omitempty"`
 	// Sets the maximum number of VMs to migrate in parallel per host during maintenance mode.
