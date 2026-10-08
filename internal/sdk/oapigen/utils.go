@@ -493,6 +493,34 @@ func decodeUIBools(src reflect.Type, tgt reflect.Type, data any) (any, error) {
 	}
 }
 
+// decodeEmptyStringNumbers turns an empty string aimed at a numeric field into
+// nil, so the field decodes as unset rather than as 0.
+//
+// Morpheus documents many ids as "integer or string" and the SDK models them
+// as integers; mapstructure's weak typing converts a numeric string
+// correctly, but converts "" to 0 — and 0 is never a valid Morpheus id, so an
+// unset id returned as "" would otherwise land in state as 0 (MORPH-18719).
+// Only the empty string is touched: a non-numeric string still fails the
+// decode, loudly, as it should.
+func decodeEmptyStringNumbers(src reflect.Type, tgt reflect.Type, data any) (any, error) {
+	if src.Kind() != reflect.String {
+		return data, nil
+	}
+	for tgt.Kind() == reflect.Pointer {
+		tgt = tgt.Elem()
+	}
+	switch tgt.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+		reflect.Float32, reflect.Float64:
+		if strings.TrimSpace(data.(string)) == "" {
+			return nil, nil
+		}
+	}
+
+	return data, nil
+}
+
 func decodeTime(src reflect.Type, tgt reflect.Type, data any) (any, error) {
 	if tgt != reflect.TypeOf(time.Time{}) {
 		return data, nil
@@ -512,6 +540,7 @@ func mapstructDecode(data, res any, decodeFuncs ...mapstructure.DecodeHookFunc) 
 		DecodeHook: mapstructure.ComposeDecodeHookFunc(
 			decodeUnmarshaler,
 			decodeUIBools,
+			decodeEmptyStringNumbers,
 			decodeTime,
 		),
 		// WeaklyTypedInput will attempt to automatically convert certain types
