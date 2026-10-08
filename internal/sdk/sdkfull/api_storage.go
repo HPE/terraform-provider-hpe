@@ -2108,7 +2108,7 @@ type ApiListStorageVolumesRequest struct {
 	name           *string
 	uuid           *string
 	includeTenants *bool
-	tenantId       *float32
+	tenantId       *int64
 }
 
 // Maximum number of records to return
@@ -2160,7 +2160,7 @@ func (r ApiListStorageVolumesRequest) IncludeTenants(includeTenants bool) ApiLis
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListStorageVolumesRequest) TenantId(tenantId float32) ApiListStorageVolumesRequest {
+func (r ApiListStorageVolumesRequest) TenantId(tenantId int64) ApiListStorageVolumesRequest {
 	r.tenantId = &tenantId
 	return r
 }

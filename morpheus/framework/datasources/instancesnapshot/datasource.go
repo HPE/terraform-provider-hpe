@@ -90,6 +90,7 @@ func snapshotFilesAsSet(
 			DiskIndex:         diskIndex,
 			ExportPath:        convert.StrToType(f.ExportPath),
 			ExternalId:        convert.StrToType(f.ExternalId),
+			FileSize:          convert.Int64ToType(f.FileSize.Get()),
 			Id:                convert.Int64ToType(f.Id),
 			Name:              convert.StrToType(f.Name),
 			Path:              convert.StrToType(f.Path),
@@ -126,6 +127,7 @@ func snapshotAsState(
 		MemorySnapshot:  convert.BoolToType(snap.MemorySnapshot),
 		ForExport:       convert.BoolToType(snap.ForExport),
 		ForBackup:       convert.BoolToType(snap.ForBackup),
+		MaxStorage:      convert.Int64ToType(snap.MaxStorage.Get()),
 	}
 
 	if snap.Zone != nil {

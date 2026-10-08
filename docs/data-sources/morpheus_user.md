@@ -48,6 +48,7 @@ data "hpe_morpheus_user" "example" {
 - `receive_notifications` (Boolean)
 - `roles` (Attributes Set) (see [below for nested schema](#nestedatt--roles))
 - `tenant` (Attributes) (see [below for nested schema](#nestedatt--tenant))
+- `tenant_id` (Number) The ID of the tenant (account) that owns the user.
 - `windows_username` (String)
 
 <a id="nestedatt--access"></a>

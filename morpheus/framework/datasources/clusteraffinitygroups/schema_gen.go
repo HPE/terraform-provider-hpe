@@ -35,6 +35,24 @@ func ClusterAffinityGroupsDataSourceSchema(ctx context.Context) schema.Schema {
 							Description:         "The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).",
 							MarkdownDescription: "The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).",
 						},
+						"host_group": schema.SingleNestedAttribute{
+							Attributes: map[string]schema.Attribute{
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: HostGroupType{
+								ObjectType: types.ObjectType{
+									AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+								},
+							},
+							Computed:            true,
+							Description:         "The Host Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `vmGroup` is also present and `servers` is empty.",
+							MarkdownDescription: "The Host Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `vmGroup` is also present and `servers` is empty.",
+						},
 						"id": schema.Int64Attribute{
 							Computed:            true,
 							Description:         "The ID of the affinity group.",
@@ -44,6 +62,21 @@ func ClusterAffinityGroupsDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The name of the affinity group.",
 							MarkdownDescription: "The name of the affinity group.",
+						},
+						"owner": schema.SingleNestedAttribute{
+							Attributes: map[string]schema.Attribute{
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+							},
+							CustomType: OwnerType{
+								ObjectType: types.ObjectType{
+									AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+								},
+							},
+							Computed:            true,
+							Description:         "Owning tenant account",
+							MarkdownDescription: "Owning tenant account",
 						},
 						"pool": schema.SingleNestedAttribute{
 							Attributes: map[string]schema.Attribute{
@@ -134,6 +167,24 @@ func ClusterAffinityGroupsDataSourceSchema(ctx context.Context) schema.Schema {
 							Computed:            true,
 							Description:         "The visibility of the affinity group.",
 							MarkdownDescription: "The visibility of the affinity group.",
+						},
+						"vm_group": schema.SingleNestedAttribute{
+							Attributes: map[string]schema.Attribute{
+								"id": schema.Int64Attribute{
+									Computed: true,
+								},
+								"name": schema.StringAttribute{
+									Computed: true,
+								},
+							},
+							CustomType: VmGroupType{
+								ObjectType: types.ObjectType{
+									AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+								},
+							},
+							Computed:            true,
+							Description:         "The VM Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `hostGroup` is also present and `servers` is empty.",
+							MarkdownDescription: "The VM Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `hostGroup` is also present and `servers` is empty.",
 						},
 					},
 					CustomType: AffinityGroupsType{
@@ -262,6 +313,24 @@ func (t AffinityGroupsType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`affinity_type expected to be basetypes.StringValue, was: %T`, affinityTypeAttribute))
 	}
 
+	hostGroupAttribute, ok := attributes["host_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_group is missing from object`)
+
+		return nil, diags
+	}
+
+	hostGroupVal, ok := hostGroupAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_group expected to be basetypes.ObjectValue, was: %T`, hostGroupAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -296,6 +365,24 @@ func (t AffinityGroupsType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	ownerAttribute, ok := attributes["owner"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`owner is missing from object`)
+
+		return nil, diags
+	}
+
+	ownerVal, ok := ownerAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`owner expected to be basetypes.ObjectValue, was: %T`, ownerAttribute))
 	}
 
 	poolAttribute, ok := attributes["pool"]
@@ -442,6 +529,24 @@ func (t AffinityGroupsType) ValueFromObject(ctx context.Context, in basetypes.Ob
 			fmt.Sprintf(`visibility expected to be basetypes.StringValue, was: %T`, visibilityAttribute))
 	}
 
+	vmGroupAttribute, ok := attributes["vm_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vm_group is missing from object`)
+
+		return nil, diags
+	}
+
+	vmGroupVal, ok := vmGroupAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vm_group expected to be basetypes.ObjectValue, was: %T`, vmGroupAttribute))
+	}
+
 	if diags.HasError() {
 		return nil, diags
 	}
@@ -449,8 +554,10 @@ func (t AffinityGroupsType) ValueFromObject(ctx context.Context, in basetypes.Ob
 	return AffinityGroupsValue{
 		Active:              activeVal,
 		AffinityType:        affinityTypeVal,
+		HostGroup:           hostGroupVal,
 		Id:                  idVal,
 		Name:                nameVal,
+		Owner:               ownerVal,
 		Pool:                poolVal,
 		RefId:               refIdVal,
 		RefType:             refTypeVal,
@@ -459,6 +566,7 @@ func (t AffinityGroupsType) ValueFromObject(ctx context.Context, in basetypes.Ob
 		Source:              sourceVal,
 		TenantIds:           tenantIdsVal,
 		Visibility:          visibilityVal,
+		VmGroup:             vmGroupVal,
 		state:               attr.ValueStateKnown,
 	}, diags
 }
@@ -562,6 +670,24 @@ func NewAffinityGroupsValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`affinity_type expected to be basetypes.StringValue, was: %T`, affinityTypeAttribute))
 	}
 
+	hostGroupAttribute, ok := attributes["host_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`host_group is missing from object`)
+
+		return NewAffinityGroupsValueUnknown(), diags
+	}
+
+	hostGroupVal, ok := hostGroupAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`host_group expected to be basetypes.ObjectValue, was: %T`, hostGroupAttribute))
+	}
+
 	idAttribute, ok := attributes["id"]
 
 	if !ok {
@@ -596,6 +722,24 @@ func NewAffinityGroupsValue(attributeTypes map[string]attr.Type, attributes map[
 		diags.AddError(
 			"Attribute Wrong Type",
 			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	ownerAttribute, ok := attributes["owner"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`owner is missing from object`)
+
+		return NewAffinityGroupsValueUnknown(), diags
+	}
+
+	ownerVal, ok := ownerAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`owner expected to be basetypes.ObjectValue, was: %T`, ownerAttribute))
 	}
 
 	poolAttribute, ok := attributes["pool"]
@@ -742,6 +886,24 @@ func NewAffinityGroupsValue(attributeTypes map[string]attr.Type, attributes map[
 			fmt.Sprintf(`visibility expected to be basetypes.StringValue, was: %T`, visibilityAttribute))
 	}
 
+	vmGroupAttribute, ok := attributes["vm_group"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`vm_group is missing from object`)
+
+		return NewAffinityGroupsValueUnknown(), diags
+	}
+
+	vmGroupVal, ok := vmGroupAttribute.(basetypes.ObjectValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`vm_group expected to be basetypes.ObjectValue, was: %T`, vmGroupAttribute))
+	}
+
 	if diags.HasError() {
 		return NewAffinityGroupsValueUnknown(), diags
 	}
@@ -749,8 +911,10 @@ func NewAffinityGroupsValue(attributeTypes map[string]attr.Type, attributes map[
 	return AffinityGroupsValue{
 		Active:              activeVal,
 		AffinityType:        affinityTypeVal,
+		HostGroup:           hostGroupVal,
 		Id:                  idVal,
 		Name:                nameVal,
+		Owner:               ownerVal,
 		Pool:                poolVal,
 		RefId:               refIdVal,
 		RefType:             refTypeVal,
@@ -759,6 +923,7 @@ func NewAffinityGroupsValue(attributeTypes map[string]attr.Type, attributes map[
 		Source:              sourceVal,
 		TenantIds:           tenantIdsVal,
 		Visibility:          visibilityVal,
+		VmGroup:             vmGroupVal,
 		state:               attr.ValueStateKnown,
 	}, diags
 }
@@ -831,8 +996,10 @@ var _ basetypes.ObjectValuable = AffinityGroupsValue{}
 type AffinityGroupsValue struct {
 	Active              basetypes.BoolValue   `tfsdk:"active"`
 	AffinityType        basetypes.StringValue `tfsdk:"affinity_type"`
+	HostGroup           basetypes.ObjectValue `tfsdk:"host_group"`
 	Id                  basetypes.Int64Value  `tfsdk:"id"`
 	Name                basetypes.StringValue `tfsdk:"name"`
+	Owner               basetypes.ObjectValue `tfsdk:"owner"`
 	Pool                basetypes.ObjectValue `tfsdk:"pool"`
 	RefId               basetypes.Int64Value  `tfsdk:"ref_id"`
 	RefType             basetypes.StringValue `tfsdk:"ref_type"`
@@ -841,19 +1008,26 @@ type AffinityGroupsValue struct {
 	Source              basetypes.StringValue `tfsdk:"source"`
 	TenantIds           basetypes.SetValue    `tfsdk:"tenant_ids"`
 	Visibility          basetypes.StringValue `tfsdk:"visibility"`
+	VmGroup             basetypes.ObjectValue `tfsdk:"vm_group"`
 	state               attr.ValueState
 }
 
 func (v AffinityGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 12)
+	attrTypes := make(map[string]tftypes.Type, 15)
 
 	var val tftypes.Value
 	var err error
 
 	attrTypes["active"] = basetypes.BoolType{}.TerraformType(ctx)
 	attrTypes["affinity_type"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["host_group"] = basetypes.ObjectType{
+		AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["owner"] = basetypes.ObjectType{
+		AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 	attrTypes["pool"] = basetypes.ObjectType{
 		AttrTypes: PoolValue{}.AttributeTypes(ctx),
 	}.TerraformType(ctx)
@@ -870,12 +1044,15 @@ func (v AffinityGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 		ElemType: types.Int64Type,
 	}.TerraformType(ctx)
 	attrTypes["visibility"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["vm_group"] = basetypes.ObjectType{
+		AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+	}.TerraformType(ctx)
 
 	objectType := tftypes.Object{AttributeTypes: attrTypes}
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 12)
+		vals := make(map[string]tftypes.Value, 15)
 
 		val, err = v.Active.ToTerraformValue(ctx)
 		if err != nil {
@@ -891,6 +1068,13 @@ func (v AffinityGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 		vals["affinity_type"] = val
 
+		val, err = v.HostGroup.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["host_group"] = val
+
 		val, err = v.Id.ToTerraformValue(ctx)
 		if err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
@@ -904,6 +1088,13 @@ func (v AffinityGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 		}
 
 		vals["name"] = val
+
+		val, err = v.Owner.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["owner"] = val
 
 		val, err = v.Pool.ToTerraformValue(ctx)
 		if err != nil {
@@ -961,6 +1152,13 @@ func (v AffinityGroupsValue) ToTerraformValue(ctx context.Context) (tftypes.Valu
 
 		vals["visibility"] = val
 
+		val, err = v.VmGroup.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["vm_group"] = val
+
 		if err := tftypes.ValidateValue(objectType, vals); err != nil {
 			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
 		}
@@ -989,6 +1187,48 @@ func (v AffinityGroupsValue) String() string {
 
 func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
 	var diags diag.Diagnostics
+
+	var hostGroupVal basetypes.ObjectValue
+
+	if v.HostGroup.IsNull() {
+		hostGroupVal = types.ObjectNull(
+			HostGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.HostGroup.IsUnknown() {
+		hostGroupVal = types.ObjectUnknown(
+			HostGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.HostGroup.IsNull() && !v.HostGroup.IsUnknown() {
+		hostGroupVal = types.ObjectValueMust(
+			HostGroupValue{}.AttributeTypes(ctx),
+			v.HostGroup.Attributes(),
+		)
+	}
+
+	var ownerVal basetypes.ObjectValue
+
+	if v.Owner.IsNull() {
+		ownerVal = types.ObjectNull(
+			OwnerValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.Owner.IsUnknown() {
+		ownerVal = types.ObjectUnknown(
+			OwnerValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.Owner.IsNull() && !v.Owner.IsUnknown() {
+		ownerVal = types.ObjectValueMust(
+			OwnerValue{}.AttributeTypes(ctx),
+			v.Owner.Attributes(),
+		)
+	}
 
 	var poolVal basetypes.ObjectValue
 
@@ -1032,6 +1272,27 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		)
 	}
 
+	var vmGroupVal basetypes.ObjectValue
+
+	if v.VmGroup.IsNull() {
+		vmGroupVal = types.ObjectNull(
+			VmGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if v.VmGroup.IsUnknown() {
+		vmGroupVal = types.ObjectUnknown(
+			VmGroupValue{}.AttributeTypes(ctx),
+		)
+	}
+
+	if !v.VmGroup.IsNull() && !v.VmGroup.IsUnknown() {
+		vmGroupVal = types.ObjectValueMust(
+			VmGroupValue{}.AttributeTypes(ctx),
+			v.VmGroup.Attributes(),
+		)
+	}
+
 	var serversVal basetypes.SetValue
 	switch {
 	case v.Servers.IsUnknown():
@@ -1048,8 +1309,14 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		return types.ObjectUnknown(map[string]attr.Type{
 			"active":        basetypes.BoolType{},
 			"affinity_type": basetypes.StringType{},
-			"id":            basetypes.Int64Type{},
-			"name":          basetypes.StringType{},
+			"host_group": basetypes.ObjectType{
+				AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+			},
+			"id":   basetypes.Int64Type{},
+			"name": basetypes.StringType{},
+			"owner": basetypes.ObjectType{
+				AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+			},
 			"pool": basetypes.ObjectType{
 				AttrTypes: PoolValue{}.AttributeTypes(ctx),
 			},
@@ -1066,6 +1333,9 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 				ElemType: types.Int64Type,
 			},
 			"visibility": basetypes.StringType{},
+			"vm_group": basetypes.ObjectType{
+				AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+			},
 		}), diags
 	}
 
@@ -1085,8 +1355,14 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		return types.ObjectUnknown(map[string]attr.Type{
 			"active":        basetypes.BoolType{},
 			"affinity_type": basetypes.StringType{},
-			"id":            basetypes.Int64Type{},
-			"name":          basetypes.StringType{},
+			"host_group": basetypes.ObjectType{
+				AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+			},
+			"id":   basetypes.Int64Type{},
+			"name": basetypes.StringType{},
+			"owner": basetypes.ObjectType{
+				AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+			},
 			"pool": basetypes.ObjectType{
 				AttrTypes: PoolValue{}.AttributeTypes(ctx),
 			},
@@ -1103,14 +1379,23 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 				ElemType: types.Int64Type,
 			},
 			"visibility": basetypes.StringType{},
+			"vm_group": basetypes.ObjectType{
+				AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+			},
 		}), diags
 	}
 
 	attributeTypes := map[string]attr.Type{
 		"active":        basetypes.BoolType{},
 		"affinity_type": basetypes.StringType{},
-		"id":            basetypes.Int64Type{},
-		"name":          basetypes.StringType{},
+		"host_group": basetypes.ObjectType{
+			AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+		},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+		"owner": basetypes.ObjectType{
+			AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+		},
 		"pool": basetypes.ObjectType{
 			AttrTypes: PoolValue{}.AttributeTypes(ctx),
 		},
@@ -1127,6 +1412,9 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 			ElemType: types.Int64Type,
 		},
 		"visibility": basetypes.StringType{},
+		"vm_group": basetypes.ObjectType{
+			AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+		},
 	}
 
 	if v.IsNull() {
@@ -1142,8 +1430,10 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 		map[string]attr.Value{
 			"active":               v.Active,
 			"affinity_type":        v.AffinityType,
+			"host_group":           hostGroupVal,
 			"id":                   v.Id,
 			"name":                 v.Name,
+			"owner":                ownerVal,
 			"pool":                 poolVal,
 			"ref_id":               v.RefId,
 			"ref_type":             v.RefType,
@@ -1152,6 +1442,7 @@ func (v AffinityGroupsValue) ToObjectValue(ctx context.Context) (basetypes.Objec
 			"source":               v.Source,
 			"tenant_ids":           tenantIdsVal,
 			"visibility":           v.Visibility,
+			"vm_group":             vmGroupVal,
 		})
 
 	return objVal, diags
@@ -1180,11 +1471,19 @@ func (v AffinityGroupsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.HostGroup.Equal(other.HostGroup) {
+		return false
+	}
+
 	if !v.Id.Equal(other.Id) {
 		return false
 	}
 
 	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	if !v.Owner.Equal(other.Owner) {
 		return false
 	}
 
@@ -1220,6 +1519,10 @@ func (v AffinityGroupsValue) Equal(o attr.Value) bool {
 		return false
 	}
 
+	if !v.VmGroup.Equal(other.VmGroup) {
+		return false
+	}
+
 	return true
 }
 
@@ -1235,8 +1538,14 @@ func (v AffinityGroupsValue) AttributeTypes(ctx context.Context) map[string]attr
 	return map[string]attr.Type{
 		"active":        basetypes.BoolType{},
 		"affinity_type": basetypes.StringType{},
-		"id":            basetypes.Int64Type{},
-		"name":          basetypes.StringType{},
+		"host_group": basetypes.ObjectType{
+			AttrTypes: HostGroupValue{}.AttributeTypes(ctx),
+		},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+		"owner": basetypes.ObjectType{
+			AttrTypes: OwnerValue{}.AttributeTypes(ctx),
+		},
 		"pool": basetypes.ObjectType{
 			AttrTypes: PoolValue{}.AttributeTypes(ctx),
 		},
@@ -1253,6 +1562,721 @@ func (v AffinityGroupsValue) AttributeTypes(ctx context.Context) map[string]attr
 			ElemType: types.Int64Type,
 		},
 		"visibility": basetypes.StringType{},
+		"vm_group": basetypes.ObjectType{
+			AttrTypes: VmGroupValue{}.AttributeTypes(ctx),
+		},
+	}
+}
+
+var _ basetypes.ObjectTypable = HostGroupType{}
+
+type HostGroupType struct {
+	basetypes.ObjectType
+}
+
+func (t HostGroupType) Equal(o attr.Type) bool {
+	other, ok := o.(HostGroupType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t HostGroupType) String() string {
+	return "HostGroupType"
+}
+
+func (t HostGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewHostGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewHostGroupValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return HostGroupValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewHostGroupValueNull() HostGroupValue {
+	return HostGroupValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewHostGroupValueUnknown() HostGroupValue {
+	return HostGroupValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewHostGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (HostGroupValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing HostGroupValue Attribute Value",
+				"While creating a HostGroupValue value, a missing attribute value was detected. "+
+					"A HostGroupValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("HostGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid HostGroupValue Attribute Type",
+				"While creating a HostGroupValue value, an invalid attribute value was detected. "+
+					"A HostGroupValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("HostGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("HostGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra HostGroupValue Attribute Value",
+				"While creating a HostGroupValue value, an extra attribute value was detected. "+
+					"A HostGroupValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra HostGroupValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewHostGroupValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewHostGroupValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewHostGroupValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewHostGroupValueUnknown(), diags
+	}
+
+	return HostGroupValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewHostGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) HostGroupValue {
+	object, diags := NewHostGroupValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewHostGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t HostGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewHostGroupValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewHostGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewHostGroupValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewHostGroupValueMust(HostGroupValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t HostGroupType) ValueType(ctx context.Context) attr.Value {
+	return HostGroupValue{}
+}
+
+var _ basetypes.ObjectValuable = HostGroupValue{}
+
+type HostGroupValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v HostGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v HostGroupValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v HostGroupValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v HostGroupValue) String() string {
+	return "HostGroupValue"
+}
+
+func (v HostGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v HostGroupValue) Equal(o attr.Value) bool {
+	other, ok := o.(HostGroupValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v HostGroupValue) Type(ctx context.Context) attr.Type {
+	return HostGroupType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v HostGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+}
+
+var _ basetypes.ObjectTypable = OwnerType{}
+
+type OwnerType struct {
+	basetypes.ObjectType
+}
+
+func (t OwnerType) Equal(o attr.Type) bool {
+	other, ok := o.(OwnerType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t OwnerType) String() string {
+	return "OwnerType"
+}
+
+func (t OwnerType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewOwnerValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewOwnerValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return OwnerValue{
+		Id:    idVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewOwnerValueNull() OwnerValue {
+	return OwnerValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewOwnerValueUnknown() OwnerValue {
+	return OwnerValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewOwnerValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (OwnerValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing OwnerValue Attribute Value",
+				"While creating a OwnerValue value, a missing attribute value was detected. "+
+					"A OwnerValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid OwnerValue Attribute Type",
+				"While creating a OwnerValue value, an invalid attribute value was detected. "+
+					"A OwnerValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("OwnerValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra OwnerValue Attribute Value",
+				"While creating a OwnerValue value, an extra attribute value was detected. "+
+					"A OwnerValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra OwnerValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewOwnerValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewOwnerValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	if diags.HasError() {
+		return NewOwnerValueUnknown(), diags
+	}
+
+	return OwnerValue{
+		Id:    idVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewOwnerValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) OwnerValue {
+	object, diags := NewOwnerValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewOwnerValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t OwnerType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewOwnerValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewOwnerValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewOwnerValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewOwnerValueMust(OwnerValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t OwnerType) ValueType(ctx context.Context) attr.Value {
+	return OwnerValue{}
+}
+
+var _ basetypes.ObjectValuable = OwnerValue{}
+
+type OwnerValue struct {
+	Id    basetypes.Int64Value `tfsdk:"id"`
+	state attr.ValueState
+}
+
+func (v OwnerValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 1)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 1)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v OwnerValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v OwnerValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v OwnerValue) String() string {
+	return "OwnerValue"
+}
+
+func (v OwnerValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id": basetypes.Int64Type{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id": v.Id,
+		})
+
+	return objVal, diags
+}
+
+func (v OwnerValue) Equal(o attr.Value) bool {
+	other, ok := o.(OwnerValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	return true
+}
+
+func (v OwnerValue) Type(ctx context.Context) attr.Type {
+	return OwnerType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v OwnerValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id": basetypes.Int64Type{},
 	}
 }
 
@@ -2383,6 +3407,389 @@ func (v GroupsValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 	return map[string]attr.Type{
 		"default": basetypes.BoolType{},
 		"id":      basetypes.Int64Type{},
+	}
+}
+
+var _ basetypes.ObjectTypable = VmGroupType{}
+
+type VmGroupType struct {
+	basetypes.ObjectType
+}
+
+func (t VmGroupType) Equal(o attr.Type) bool {
+	other, ok := o.(VmGroupType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t VmGroupType) String() string {
+	return "VmGroupType"
+}
+
+func (t VmGroupType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewVmGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewVmGroupValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return VmGroupValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVmGroupValueNull() VmGroupValue {
+	return VmGroupValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewVmGroupValueUnknown() VmGroupValue {
+	return VmGroupValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewVmGroupValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (VmGroupValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing VmGroupValue Attribute Value",
+				"While creating a VmGroupValue value, a missing attribute value was detected. "+
+					"A VmGroupValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VmGroupValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid VmGroupValue Attribute Type",
+				"While creating a VmGroupValue value, an invalid attribute value was detected. "+
+					"A VmGroupValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("VmGroupValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("VmGroupValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra VmGroupValue Attribute Value",
+				"While creating a VmGroupValue value, an extra attribute value was detected. "+
+					"A VmGroupValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra VmGroupValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewVmGroupValueUnknown(), diags
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewVmGroupValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewVmGroupValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewVmGroupValueUnknown(), diags
+	}
+
+	return VmGroupValue{
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewVmGroupValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) VmGroupValue {
+	object, diags := NewVmGroupValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewVmGroupValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t VmGroupType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewVmGroupValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewVmGroupValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewVmGroupValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewVmGroupValueMust(VmGroupValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t VmGroupType) ValueType(ctx context.Context) attr.Value {
+	return VmGroupValue{}
+}
+
+var _ basetypes.ObjectValuable = VmGroupValue{}
+
+type VmGroupValue struct {
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v VmGroupValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 2)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 2)
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v VmGroupValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v VmGroupValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v VmGroupValue) String() string {
+	return "VmGroupValue"
+}
+
+func (v VmGroupValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v VmGroupValue) Equal(o attr.Value) bool {
+	other, ok := o.(VmGroupValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v VmGroupValue) Type(ctx context.Context) attr.Type {
+	return VmGroupType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v VmGroupValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
 	}
 }
 

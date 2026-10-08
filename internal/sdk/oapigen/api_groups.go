@@ -287,7 +287,7 @@ type ApiListGroupsRequest struct {
 	name           *string
 	labels         *string
 	includeTenants *bool
-	tenantId       *float32
+	tenantId       *int64
 }
 
 // Maximum number of records to return
@@ -339,7 +339,7 @@ func (r ApiListGroupsRequest) IncludeTenants(includeTenants bool) ApiListGroupsR
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListGroupsRequest) TenantId(tenantId float32) ApiListGroupsRequest {
+func (r ApiListGroupsRequest) TenantId(tenantId int64) ApiListGroupsRequest {
 	r.tenantId = &tenantId
 	return r
 }

@@ -15,7 +15,9 @@ import (
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
 
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/constants"
 	"github.com/HPE/terraform-provider-hpe/morpheus/utils/errfmt"
+	"github.com/HPE/terraform-provider-hpe/morpheus/utils/versioncheck"
 	"github.com/HPE/terraform-provider-hpe/utils/convert"
 	"github.com/HPE/terraform-provider-hpe/utils/schemadefaults"
 )
@@ -109,6 +111,30 @@ func getCloudAsState(
 	state.SecurityMode = convert.StrToType(cloud.SecurityMode)
 	state.TenantId = convert.Int64ToType(cloud.AccountId)
 	state.Visibility = convert.StrToType(cloud.Visibility)
+
+	// backup_provider_ids: integration ids assigned to the cloud. Morpheus
+	// defaults the set to the internal provider when none is configured, so the
+	// server's answer is authoritative — except below 9.0.2, where the zones
+	// service persists the field but the API response does not carry it; there
+	// the value cannot be read back, so the configured value is preserved. The
+	// gate is on the appliance version, not on an empty answer, so that a
+	// server-side default or a dropped value on 9.0.2+ still shows as drift.
+	// Fail open: when the version cannot be determined, trust the server's
+	// answer, as on a current appliance.
+	readable := true
+	if v, err := versioncheck.Appliance(ctx, client); err == nil {
+		if ok, err := versioncheck.Satisfies(v, constants.CloudBackupProvidersMinVersion); err == nil {
+			readable = ok
+		}
+	}
+	switch {
+	case readable:
+		state.BackupProviderIds = convert.Int64SliceToSet(cloud.BackupProviders)
+	case !plan.BackupProviderIds.IsNull() && !plan.BackupProviderIds.IsUnknown():
+		state.BackupProviderIds = plan.BackupProviderIds
+	default:
+		state.BackupProviderIds = types.SetNull(types.Int64Type)
+	}
 
 	switch {
 	case cloudType == awsCloud && (!plan.ConfigAws.IsNull() || importing):

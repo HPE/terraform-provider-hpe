@@ -44,6 +44,11 @@ provisioning_license:
     - template-write_only_revision: write_only_revision
     - template-tenantsList: tenants
     - template-virtualImagesList: virtual_images
+    # The spec models licenseType as oneOf[string, object{id,code}]. Keep the
+    # committed public shape (license_type as a plain required string) by
+    # promoting the string branch; the object branch and the response-echo
+    # id/code/name siblings are dropped below.
+    - license_type.oneof0: license_type
   removes:
     - account
     - copies
@@ -53,6 +58,11 @@ provisioning_license:
     - org_name
     - reservation_count
     - success
+    - license_type.oneof1          # object branch of the licenseType union; keep the string form
+    - license_type.code            # response echo of the resolved license type; not exposed
+    - license_type.id              # response echo; not exposed
+    - license_type.name            # response echo; not exposed
+    - tenant_permissions           # generic resource-permissions envelope; tenant association is exposed via `tenants` (matches network_group/security_group)
   overrides:
     description:
       computed_optional_required: optional

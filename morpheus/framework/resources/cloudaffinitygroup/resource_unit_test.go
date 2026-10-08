@@ -479,6 +479,58 @@ func ptr[T any](v T) *T {
 	return &v
 }
 
+// TestMapHostVmGroupOwner verifies the read mapping of the read-only rule-shape
+// state (host_group / vm_group / owner, MORPH-18721): present objects map to known
+// values, absent objects map to null.
+func TestMapHostVmGroupOwner(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+
+	t.Run("present", func(t *testing.T) {
+		t.Parallel()
+
+		ag := &sdk.GetCloudAffinityGroup200ResponseAffinityGroup{
+			Id:        ptr(int64(1)),
+			Name:      ptr("combined"),
+			HostGroup: &sdk.GetCloudAffinityGroup200ResponseAffinityGroupHostGroup{Id: ptr(int64(10)), Name: ptr("hg")},
+			VmGroup:   &sdk.GetCloudAffinityGroup200ResponseAffinityGroupVmGroup{Id: ptr(int64(20)), Name: ptr("vg")},
+			Owner:     &sdk.GetCloudAffinityGroup200ResponseAffinityGroupOwner{Id: ptr(int64(30))},
+		}
+
+		var m CloudAffinityGroupModel
+		if diags := mapGetResponseToModel(ctx, &m, ag, 99); diags.HasError() {
+			t.Fatalf("mapGetResponseToModel: %v", diags.Errors())
+		}
+
+		if m.HostGroup.IsNull() || m.HostGroup.Id.ValueInt64() != 10 || m.HostGroup.Name.ValueString() != "hg" {
+			t.Errorf("host_group = %+v, want {id:10 name:hg}", m.HostGroup)
+		}
+		if m.VmGroup.IsNull() || m.VmGroup.Id.ValueInt64() != 20 || m.VmGroup.Name.ValueString() != "vg" {
+			t.Errorf("vm_group = %+v, want {id:20 name:vg}", m.VmGroup)
+		}
+		if m.Owner.IsNull() || m.Owner.Id.ValueInt64() != 30 {
+			t.Errorf("owner = %+v, want {id:30}", m.Owner)
+		}
+	})
+
+	t.Run("absent", func(t *testing.T) {
+		t.Parallel()
+
+		ag := &sdk.GetCloudAffinityGroup200ResponseAffinityGroup{Id: ptr(int64(2)), Name: ptr("legacy")}
+
+		var m CloudAffinityGroupModel
+		if diags := mapGetResponseToModel(ctx, &m, ag, 99); diags.HasError() {
+			t.Fatalf("mapGetResponseToModel: %v", diags.Errors())
+		}
+
+		if !m.HostGroup.IsNull() || !m.VmGroup.IsNull() || !m.Owner.IsNull() {
+			t.Errorf("expected host_group/vm_group/owner all null, got %+v / %+v / %+v",
+				m.HostGroup, m.VmGroup, m.Owner)
+		}
+	})
+}
+
 // importedModelState reproduces what Read writes to state on import: the prior state
 // holds only the two IDs that ImportState set, so the response is mapped straight in
 // with no preservation.

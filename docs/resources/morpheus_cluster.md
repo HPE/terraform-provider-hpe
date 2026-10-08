@@ -304,7 +304,7 @@ Optional:
 - `no_proxy` (String) Comma-separated list of hosts that bypass the proxy. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `ntp1` (String) Primary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `ntp2` (String) Secondary NTP server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
-- `overlay_interface_name` (String)
+- `overlay_interface_name` (String) Name of the host network interface used for the overlay (VXLAN) Open vSwitch bridge, for example `ens193`. Optional: Morpheus creates the overlay bridge only when it is set, and recommends setting it whenever overlay networks will be used. Applies to HVM 1.x cluster layouts; HVM 2.0 (virtual switch) layouts do not use it. Note that on Morpheus 9.0.x with an HVM 1.x layout, omitting it makes every host fail to build at the "HVM Host Build OVS Interface" step (`build-ovs.py` exits with `KeyError: None`), so set it until the appliance fix is available.
 - `proxy` (String) Proxy server for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `search_domain` (String) DNS search domain for the HVM cluster. Requires a cluster layout with clusterVersion 2.0 or greater.
 - `storage_interface_name` (String)

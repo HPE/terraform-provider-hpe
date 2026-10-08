@@ -180,7 +180,7 @@ type ApiListHostsRequest struct {
 	externalUniquelId *string
 	stats             *string
 	includeTenants    *bool
-	tenantId          *float32
+	tenantId          *int64
 }
 
 // Filter by name
@@ -352,7 +352,7 @@ func (r ApiListHostsRequest) IncludeTenants(includeTenants bool) ApiListHostsReq
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListHostsRequest) TenantId(tenantId float32) ApiListHostsRequest {
+func (r ApiListHostsRequest) TenantId(tenantId int64) ApiListHostsRequest {
 	r.tenantId = &tenantId
 	return r
 }

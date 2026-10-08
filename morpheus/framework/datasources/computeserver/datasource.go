@@ -82,6 +82,8 @@ func serverAsState(
 		GroupId:        convert.Int64ToType(s.SiteId),
 	}
 
+	state.GuestAgentStatus = convert.StrToType(s.GuestAgentStatus.Get())
+
 	// Cloud name from Zone nested object
 	if s.Zone != nil && s.Zone.Name != nil {
 		state.CloudName = convert.StrToType(s.Zone.Name)

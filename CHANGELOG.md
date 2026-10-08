@@ -124,6 +124,43 @@ authenticate to a target system take a stored credential via `credential_id`.
 
 ## Improvements
 
+### New read-only and query attributes across several resources and data sources (MORPH-18721)
+
+Schemas were refreshed against the current Morpheus API, surfacing attributes the provider did not
+previously expose:
+
+- `hpe_morpheus_cloud_affinity_group` and `hpe_morpheus_cluster_affinity_group` (and their singular
+  and plural data sources) gain read-only `host_group`, `vm_group` and `owner` objects describing a
+  group's rule shape and owning tenant.
+- The `hpe_morpheus_compute_server` and `hpe_morpheus_compute_servers` data sources gain the computed
+  `guest_agent_status`.
+- The `hpe_morpheus_instance_snapshot` resource and data source gain the computed `max_storage`
+  (total snapshot size in bytes), and the data source's `snapshot_files` gain `file_size` (bytes).
+- The `hpe_morpheus_storage_volumes` data source gains the optional `include_tenants` and `tenant_id`
+  query inputs (master-tenant list filters).
+- The `hpe_morpheus_user` data source gains the computed `tenant_id` (the owning tenant).
+- The `hpe_morpheus_setting_whitelabel` resource gains the settable `security_banner`,
+  `external_legal_text` and `supports_themes`, and the read-only `account`.
+
+### `hpe_morpheus_cloud`: backup providers are assigned at the cloud level (MORPH-18721)
+
+Morpheus 9.x assigns backup providers to a cloud rather than through a per-cloud-type backup mode.
+The new optional-and-computed `backup_provider_ids` (a set of integration ids) is sent on create and
+update and read back; left unset, Morpheus assigns the internal backup provider by default and that
+default is read into state. On Morpheus releases before 9.0.2 the API accepts and stores the value but
+does not return it, so there the configured value is kept in state rather than read back. The existing
+`config_aws.backup_provider` (stored as `config.backupMode`)
+is **deprecated**: it has no effect on Morpheus 9.x — the provider no longer sends it, and its value
+is retained in Terraform state only. Use `backup_provider_ids` instead.
+
+### `hpe_morpheus_cluster` and `hpe_morpheus_tenant`: refreshed descriptions and currency validation (MORPH-18721)
+
+`hpe_morpheus_cluster`'s `config_hvm.overlay_interface_name` now carries a full description explaining
+when the overlay (VXLAN) Open vSwitch bridge interface is needed, which HVM layouts use it, and the
+Morpheus 9.0.x build caveat. `hpe_morpheus_tenant`'s `currency` is validated at plan time against the
+set of ISO 4217 currency codes Morpheus accepts, so an unsupported code is rejected before apply
+rather than by the API.
+
 ### `hpe_morpheus_user`: `require_password_change` issues a temporary password (MORPH-18374)
 
 A user can be created with a password they must change at their first sign-in to the Morpheus UI,

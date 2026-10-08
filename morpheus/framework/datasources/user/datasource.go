@@ -198,6 +198,14 @@ func getUserByID(
 		data.Tenant = NewTenantValueNull()
 	}
 
+	data.TenantId = convert.Int64ToType(func() *int64 {
+		if user.Account != nil {
+			return user.Account.Id
+		}
+
+		return nil
+	}())
+
 	if defaultPersona := user.DefaultPersona; defaultPersona != nil {
 		defaultPersonaValue, defaultPersonaDiags := NewDefaultPersonaValue(
 			DefaultPersonaValue{}.AttributeTypes(ctx),

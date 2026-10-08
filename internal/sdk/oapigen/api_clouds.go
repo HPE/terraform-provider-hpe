@@ -895,7 +895,7 @@ type ApiListCloudsRequest struct {
 	name           *string
 	labels         *string
 	includeTenants *bool
-	tenantId       *float32
+	tenantId       *int64
 }
 
 // Date filter, restricts query to only load resources updated more recently than the date specified (ISO 8601)
@@ -965,7 +965,7 @@ func (r ApiListCloudsRequest) IncludeTenants(includeTenants bool) ApiListCloudsR
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListCloudsRequest) TenantId(tenantId float32) ApiListCloudsRequest {
+func (r ApiListCloudsRequest) TenantId(tenantId int64) ApiListCloudsRequest {
 	r.tenantId = &tenantId
 	return r
 }

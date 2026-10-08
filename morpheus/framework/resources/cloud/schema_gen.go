@@ -53,6 +53,13 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 				MarkdownDescription: "Automatically Power on VMs",
 				Default:             booldefault.StaticBool(false),
 			},
+			"backup_provider_ids": schema.SetAttribute{
+				ElementType:         types.Int64Type,
+				Optional:            true,
+				Computed:            true,
+				Description:         "IDs of the backup provider integrations assigned to this cloud. Morpheus\ndefaults to the internal backup provider when none is supplied, so this\nattribute is server-defaulted: leave it unset to accept the default.",
+				MarkdownDescription: "IDs of the backup provider integrations assigned to this cloud. Morpheus\ndefaults to the internal backup provider when none is supplied, so this\nattribute is server-defaulted: leave it unset to accept the default.",
+			},
 			"cloud_type_code": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -91,8 +98,9 @@ func CloudResourceSchema(ctx context.Context) schema.Schema {
 					"backup_provider": schema.StringAttribute{
 						Optional:            true,
 						Computed:            true,
-						Description:         "The backup provider for the cloud",
-						MarkdownDescription: "The backup provider for the cloud",
+						Description:         "Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)\nhas no effect on Morpheus 9.x, which assigns backup providers at the\ncloud level. Use backup_provider_ids instead. The value is retained in\nTerraform state only and is no longer sent to the appliance.",
+						MarkdownDescription: "Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)\nhas no effect on Morpheus 9.x, which assigns backup providers at the\ncloud level. Use backup_provider_ids instead. The value is retained in\nTerraform state only and is no longer sent to the appliance.",
+						DeprecationMessage:  "config_aws.backup_provider has no effect on Morpheus 9.x: backup providers are assigned at the cloud level. Use backup_provider_ids instead. The value is retained in Terraform state only and is no longer sent to the appliance.",
 					},
 					"bypass_proxy": schema.BoolAttribute{
 						Optional:            true,
@@ -699,6 +707,7 @@ type CloudModel struct {
 	AgentInstallMode               types.String      `tfsdk:"agent_install_mode"`
 	ApplianceUrl                   types.String      `tfsdk:"appliance_url"`
 	AutoRecoverPowerState          types.Bool        `tfsdk:"auto_recover_power_state"`
+	BackupProviderIds              types.Set         `tfsdk:"backup_provider_ids"`
 	CloudTypeCode                  types.String      `tfsdk:"cloud_type_code"`
 	Code                           types.String      `tfsdk:"code"`
 	Config                         types.Dynamic     `tfsdk:"config"`

@@ -402,6 +402,7 @@ func serverToValue(
 			"external_id":                 convert.StrToType(srv.ExternalId.Get()),
 			"external_ip":                 convert.StrToType(srv.ExternalIp.Get()),
 			"group_id":                    convert.Int64ToType(srv.SiteId),
+			"guest_agent_status":          convert.StrToType(srv.GuestAgentStatus.Get()),
 			"hostname":                    convert.StrToType(srv.Hostname),
 			"id":                          convert.Int64ToType(srv.Id),
 			"instance_id":                 instanceId,

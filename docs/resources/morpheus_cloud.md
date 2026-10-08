@@ -187,6 +187,9 @@ resource "hpe_morpheus_cloud" "example" {
 - `agent_install_mode` (String) The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
 - `appliance_url` (String) The URL used by workloads provisioned in the cloud for interacting with the Morpheus appliance.
 - `auto_recover_power_state` (Boolean) Automatically Power on VMs
+- `backup_provider_ids` (Set of Number) IDs of the backup provider integrations assigned to this cloud. Morpheus
+defaults to the internal backup provider when none is supplied, so this
+attribute is server-defaulted: leave it unset to accept the default.
 - `cloud_type_code` (String) Cloud (zone) type code
 - `code` (String) Optional code for use with policies
 - `config` (Dynamic) Generic Cloud Configuration
@@ -230,7 +233,10 @@ Optional:
 
 - `access_key` (String) AWS access key
 - `api_proxy` (String) The API proxy to use for API calls to the cloud.
-- `backup_provider` (String) The backup provider for the cloud
+- `backup_provider` (String, Deprecated) Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)
+has no effect on Morpheus 9.x, which assigns backup providers at the
+cloud level. Use backup_provider_ids instead. The value is retained in
+Terraform state only and is no longer sent to the appliance.
 - `bypass_proxy` (Boolean) Whether to bypass the proxy for cloud API calls
 - `change_management_config` (String) The change management configuration for this cloud to use for syncing with the change management system.
 - `cmdb_config` (String) The CMDB configuration for this cloud to use for syncing with the CMDB.

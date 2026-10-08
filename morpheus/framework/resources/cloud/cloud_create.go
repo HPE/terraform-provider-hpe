@@ -162,6 +162,19 @@ func (r *Resource) Create(
 		addCloud.GroupId = plan.GroupId.ValueInt64()
 	}
 
+	// backup_provider_ids: integration ids assigned to the cloud. Server-defaulted
+	// (Morpheus uses the internal provider when none is supplied), so only send
+	// when the practitioner set it; the value is read back after apply.
+	if !plan.BackupProviderIds.IsNull() && !plan.BackupProviderIds.IsUnknown() {
+		ids, err := convert.SetToSlice[int64](ctx, plan.BackupProviderIds)
+		if err != nil {
+			resp.Diagnostics.AddError("create cloud", "invalid backup_provider_ids: "+err.Error())
+
+			return
+		}
+		addCloud.BackupProviders = ids
+	}
+
 	addCloudConfig := addCloud.Config
 
 	var cloudTypeCode string

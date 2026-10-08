@@ -54,6 +54,8 @@ data "hpe_morpheus_cloud_affinity_group" "example" {
 
 - `active` (Boolean) Whether the affinity group is active.
 - `affinity_type` (String) The affinity type (KEEP_TOGETHER or KEEP_SEPARATE).
+- `host_group` (Attributes) The Host Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `vmGroup` is also present and `servers` is empty. (see [below for nested schema](#nestedatt--host_group))
+- `owner` (Attributes) Owning tenant account (see [below for nested schema](#nestedatt--owner))
 - `pool` (Attributes) The resource pool associated with the affinity group. (see [below for nested schema](#nestedatt--pool))
 - `ref_id` (Number) The reference ID.
 - `ref_type` (String) The reference type.
@@ -62,6 +64,24 @@ data "hpe_morpheus_cloud_affinity_group" "example" {
 - `source` (String) The source of the affinity group (e.g. user, sync).
 - `tenant_ids` (Set of Number) Tenant account IDs allowed access. The Morpheus API does not currently apply tenant assignment on affinity groups, so this is typically empty regardless of what has been requested. Tracked as MORPH-15806.
 - `visibility` (String) The visibility of the affinity group.
+- `vm_group` (Attributes) The VM Group side of a combined VM-to-Host rule. Null for a legacy VM-to-VM rule. When present, `hostGroup` is also present and `servers` is empty. (see [below for nested schema](#nestedatt--vm_group))
+
+<a id="nestedatt--host_group"></a>
+### Nested Schema for `host_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
+
+Read-Only:
+
+- `id` (Number)
+
 
 <a id="nestedatt--pool"></a>
 ### Nested Schema for `pool`
@@ -86,3 +106,13 @@ Read-Only:
 
 - `default` (Boolean) Whether this is the default group.
 - `id` (Number) Group ID.
+
+
+
+<a id="nestedatt--vm_group"></a>
+### Nested Schema for `vm_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)

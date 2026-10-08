@@ -75,13 +75,16 @@ resource "hpe_morpheus_cloud_affinity_group" "example" {
 
 ### Read-Only
 
+- `host_group` (Attributes) The Host Group side of a combined VM-to-Host rule. Must be sent together with `vmGroup`, and `servers` must be empty. (see [below for nested schema](#nestedatt--host_group))
 - `id` (Number) The ID of the cloud affinity group.
+- `owner` (Attributes) Owning tenant account (see [below for nested schema](#nestedatt--owner))
 - `servers` (Set of Number) The compute servers currently in this affinity group, reported by the
 API. Read-only: membership is managed with
 hpe_morpheus_cloud_affinity_group_member, one resource per member, so
 that servers added by other means -- an instance provisioned into the
 group, or a node added to one -- are not evicted.
 - `source` (String) The source of the affinity group (e.g. user, sync).
+- `vm_group` (Attributes) The VM Group side of a combined VM-to-Host rule. Must be sent together with `hostGroup`, and `servers` must be empty. Send `null` for both group fields to clear a combined rule. (see [below for nested schema](#nestedatt--vm_group))
 
 <a id="nestedatt--resource_permissions"></a>
 ### Nested Schema for `resource_permissions`
@@ -101,6 +104,33 @@ Required:
 Optional:
 
 - `default` (Boolean) Whether this is the default group.
+
+
+
+<a id="nestedatt--host_group"></a>
+### Nested Schema for `host_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
+
+
+<a id="nestedatt--owner"></a>
+### Nested Schema for `owner`
+
+Read-Only:
+
+- `id` (Number)
+
+
+<a id="nestedatt--vm_group"></a>
+### Nested Schema for `vm_group`
+
+Read-Only:
+
+- `id` (Number)
+- `name` (String)
 
 ## Import
 

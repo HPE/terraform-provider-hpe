@@ -16,6 +16,15 @@ cloud:
       string:
         description: CHANGE ME
         computed_optional_required: optional
+    aws_backup_provider:
+      string:
+        computed_optional_required: computed_optional
+        description: |-
+          Deprecated. The per-cloud AWS backup mode (stored as config.backupMode)
+          has no effect on Morpheus 9.x, which assigns backup providers at the
+          cloud level. Use backup_provider_ids instead. The value is retained in
+          Terraform state only and is no longer sent to the appliance.
+        deprecation_message: "config_aws.backup_provider has no effect on Morpheus 9.x: backup providers are assigned at the cloud level. Use backup_provider_ids instead. The value is retained in Terraform state only and is no longer sent to the appliance."
     vmware_password_version:
       int64:
         computed_optional_required: optional
@@ -44,6 +53,7 @@ cloud:
   moves:
     - zone: "" # unnest zone
     - account_id: tenant_id
+    - backup_providers: backup_provider_ids   # rename the spec's top-level backupProviders array
     - agent_mode: agent_install_mode
     - timezone: time_zone
     - config.appliance_url: appliance_url
@@ -60,7 +70,7 @@ cloud:
     - template-bool: config_aws.cmdb_discovery
     - template-string: config_aws.credentials
     - config_aws.sts_assume_role: config_aws.role_arn
-    - config_aws.backup_mode: config_aws.backup_provider
+    - template-aws_backup_provider: config_aws.backup_provider
     - config_aws.replication_mode: config_aws.replication_provider
     - config_aws.user_data_linux: config_aws.user_data
     # HVM static config
@@ -218,6 +228,12 @@ cloud:
   overrides:
     visibility:
       description: The visibility of the cloud (private or public). Setting "public" requires the master tenant.
+    backup_provider_ids:
+      computed_optional_required: computed_optional
+      description: |-
+        IDs of the backup provider integrations assigned to this cloud. Morpheus
+        defaults to the internal backup provider when none is supplied, so this
+        attribute is server-defaulted: leave it unset to accept the default.
     agent_install_mode:
       description: The method used to install the Morpheus agent on virtual machines provisioned in the cloud (ssh, cloudInit)
       computed_optional_required: computed_optional
@@ -246,9 +262,6 @@ cloud:
       # conflicts_with: [config_aws.access_key, config_aws.secret_key]
     config_aws.replication_provider:
       description: The replication provider for the cloud
-      computed_optional_required: computed_optional
-    config_aws.backup_provider:
-      description: The backup provider for the cloud
       computed_optional_required: computed_optional
     config_hvm:
       computed_optional_required: optional

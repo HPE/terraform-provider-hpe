@@ -47,4 +47,5 @@ var notClearable = clearable.NotClearable{
 	"default_pool_sync_active":           "boolean",
 	"default_security_group_sync_active": "boolean",
 	"enabled":                            "boolean",
+	"backup_provider_ids":                "server-defaulted; omitting it reads back the appliance default rather than clearing",
 }

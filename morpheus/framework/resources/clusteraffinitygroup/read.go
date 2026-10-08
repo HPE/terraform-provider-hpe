@@ -385,6 +385,14 @@ func mapGetResponseToModel(
 		model.TenantIds = tenantSet
 	}
 
+	// host_group / vm_group / owner are read-only server state describing the
+	// rule shape (MORPH-12801): owner is the owning tenant; host_group and
+	// vm_group are the two sides of a combined VM-to-Host rule, null for the
+	// legacy VM-to-VM form this resource manages.
+	model.HostGroup = hostGroupToValue(ag.HostGroup)
+	model.VmGroup = vmGroupToValue(ag.VmGroup)
+	model.Owner = ownerToValue(ag.Owner)
+
 	// ResourcePermissions.
 	if ag.ResourcePermissions != nil {
 		groupVals := make([]GroupsValue, 0, len(ag.ResourcePermissions.Sites))
@@ -422,6 +430,44 @@ func mapGetResponseToModel(
 	}
 
 	return diags
+}
+
+// hostGroupToValue maps the read-only hostGroup echo into its schema value.
+func hostGroupToValue(hg *sdk.GetClusterAffinityGroup200ResponseAffinityGroupHostGroup) HostGroupValue {
+	if hg == nil {
+		return NewHostGroupValueNull()
+	}
+
+	return HostGroupValue{
+		Id:    convert.Int64ToType(hg.Id),
+		Name:  convert.StrToType(hg.Name),
+		state: attr.ValueStateKnown,
+	}
+}
+
+// vmGroupToValue maps the read-only vmGroup echo into its schema value.
+func vmGroupToValue(vg *sdk.GetClusterAffinityGroup200ResponseAffinityGroupVmGroup) VmGroupValue {
+	if vg == nil {
+		return NewVmGroupValueNull()
+	}
+
+	return VmGroupValue{
+		Id:    convert.Int64ToType(vg.Id),
+		Name:  convert.StrToType(vg.Name),
+		state: attr.ValueStateKnown,
+	}
+}
+
+// ownerToValue maps the read-only owner echo into its schema value.
+func ownerToValue(o *sdk.GetClusterAffinityGroup200ResponseAffinityGroupOwner) OwnerValue {
+	if o == nil {
+		return NewOwnerValueNull()
+	}
+
+	return OwnerValue{
+		Id:    convert.Int64ToType(o.Id),
+		state: attr.ValueStateKnown,
+	}
 }
 
 // fetchAffinityGroup reads one affinity group, falling back to the listing when

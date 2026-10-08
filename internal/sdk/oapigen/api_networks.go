@@ -10041,7 +10041,7 @@ type ApiListNetworksRequest struct {
 	cidr           *string
 	clusterId      *int64
 	includeTenants *bool
-	tenantId       *float32
+	tenantId       *int64
 }
 
 // Filter by name
@@ -10093,7 +10093,7 @@ func (r ApiListNetworksRequest) IncludeTenants(includeTenants bool) ApiListNetwo
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListNetworksRequest) TenantId(tenantId float32) ApiListNetworksRequest {
+func (r ApiListNetworksRequest) TenantId(tenantId int64) ApiListNetworksRequest {
 	r.tenantId = &tenantId
 	return r
 }

@@ -33,6 +33,7 @@ data "hpe_morpheus_instance_snapshot" "example" {
 - `external_id` (String) The external (cloud-provider) identifier of the snapshot.
 - `for_backup` (Boolean) Whether the snapshot was created as part of a backup operation.
 - `for_export` (Boolean) Whether the snapshot was created in an exportable form (a full, standalone disk image).
+- `max_storage` (Number) Total size of the snapshot in bytes. Null when not populated.
 - `memory_snapshot` (Boolean) Whether the snapshot includes the instance's memory.
 - `name` (String) The name of the snapshot.
 - `parent_snapshot` (String) The ID of the parent snapshot in the snapshot lineage, if any.
@@ -50,6 +51,7 @@ Read-Only:
 - `disk_index` (Number)
 - `export_path` (String)
 - `external_id` (String)
+- `file_size` (Number) Size of the snapshot file in bytes. Null when not populated.
 - `id` (Number)
 - `name` (String)
 - `path` (String)

@@ -36,7 +36,7 @@ type ApiListActivityRequest struct {
 	phrase     *string
 	name       *string
 	userId     *int64
-	tenantId   *float32
+	tenantId   *int64
 	timeframe  *string
 	start      *time.Time
 	end        *time.Time
@@ -85,7 +85,7 @@ func (r ApiListActivityRequest) UserId(userId int64) ApiListActivityRequest {
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListActivityRequest) TenantId(tenantId float32) ApiListActivityRequest {
+func (r ApiListActivityRequest) TenantId(tenantId int64) ApiListActivityRequest {
 	r.tenantId = &tenantId
 	return r
 }

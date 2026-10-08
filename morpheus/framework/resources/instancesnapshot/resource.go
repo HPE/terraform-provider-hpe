@@ -282,6 +282,7 @@ func (r *Resource) Create(
 	plan.ParentSnapshot = convert.StrToType(snap.ParentSnapshot.Get())
 	plan.CurrentlyActive = convert.BoolToType(snap.CurrentlyActive)
 	plan.ForBackup = convert.BoolToType(snap.ForBackup)
+	plan.MaxStorage = convert.Int64ToType(snap.MaxStorage.Get())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -376,6 +377,9 @@ func (r *Resource) Read(
 	state.Description = convert.StrToType(snap.Description.Get())
 	state.MemorySnapshot = convert.BoolToType(snap.MemorySnapshot)
 	state.ForExport = convert.BoolToType(snap.ForExport)
+
+	// max_storage: total snapshot size in bytes, as reported by the platform.
+	state.MaxStorage = convert.Int64ToType(snap.MaxStorage.Get())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 

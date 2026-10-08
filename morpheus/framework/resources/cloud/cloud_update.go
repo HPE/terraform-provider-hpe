@@ -56,6 +56,20 @@ func (r *Resource) Update(
 		updateCloud.GroupId = plan.GroupId.ValueInt64()
 	}
 
+	// backup_provider_ids: integration ids assigned to the cloud. The update
+	// request model does not field backupProviders, so send it via the passthrough
+	// config (AdditionalProperties is serialised as top-level keys). Server-
+	// defaulted, so only sent when configured; always read back afterwards.
+	if !plan.BackupProviderIds.IsNull() && !plan.BackupProviderIds.IsUnknown() {
+		ids, err := convert.SetToSlice[int64](ctx, plan.BackupProviderIds)
+		if err != nil {
+			resp.Diagnostics.AddError("update cloud", "invalid backup_provider_ids: "+err.Error())
+
+			return
+		}
+		updateCloud.AdditionalProperties["backupProviders"] = ids
+	}
+
 	if !plan.AutoRecoverPowerState.IsNull() && !plan.AutoRecoverPowerState.IsUnknown() {
 		updateCloud.AutoRecoverPowerState = plan.AutoRecoverPowerState.ValueBoolPointer()
 	}
@@ -161,9 +175,10 @@ func (r *Resource) Update(
 			updateCloud.Config["apiProxy"] = plan.ConfigAws.ApiProxy.ValueString()
 		}
 
-		if !plan.ConfigAws.BackupProvider.IsNull() && !plan.ConfigAws.BackupProvider.IsUnknown() {
-			updateCloud.Config["backupMode"] = plan.ConfigAws.BackupProvider.ValueString()
-		}
+		// config_aws.backup_provider (stored as config.backupMode) is deprecated and
+		// has no effect on Morpheus 9.x — backup providers are assigned at the cloud
+		// level via backup_provider_ids. Deliberately not written back; the value is
+		// retained in Terraform state only. (MORPH-18721)
 
 		if !plan.ConfigAws.BypassProxy.IsNull() && !plan.ConfigAws.BypassProxy.IsUnknown() {
 			updateCloud.Config["bypassProxyForCloud"] = convert.

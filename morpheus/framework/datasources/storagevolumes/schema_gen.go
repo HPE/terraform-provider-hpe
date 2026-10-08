@@ -22,6 +22,12 @@ import (
 func StorageVolumesDataSourceSchema(ctx context.Context) schema.Schema {
 	return schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"include_tenants": schema.BoolAttribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Optional ability to include all subtenant resources when calling from a master tenant user",
+				MarkdownDescription: "Optional ability to include all subtenant resources when calling from a master tenant user",
+			},
 			"storage_volumes": schema.SetNestedAttribute{
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -239,6 +245,12 @@ func StorageVolumesDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The list of storage volumes matching the supplied filters.",
 				MarkdownDescription: "The list of storage volumes matching the supplied filters.",
 			},
+			"tenant_id": schema.Int64Attribute{
+				Optional:            true,
+				Computed:            true,
+				Description:         "Filter by Tenant ID. Only available to the master account.",
+				MarkdownDescription: "Filter by Tenant ID. Only available to the master account.",
+			},
 		},
 		Blocks: map[string]schema.Block{
 			"filter": schema.SetNestedBlock{
@@ -276,8 +288,10 @@ func StorageVolumesDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type StorageVolumesModel struct {
-	StorageVolumes types.Set `tfsdk:"storage_volumes"`
-	Filter         types.Set `tfsdk:"filter"`
+	IncludeTenants types.Bool  `tfsdk:"include_tenants"`
+	StorageVolumes types.Set   `tfsdk:"storage_volumes"`
+	TenantId       types.Int64 `tfsdk:"tenant_id"`
+	Filter         types.Set   `tfsdk:"filter"`
 }
 
 var _ basetypes.ObjectTypable = StorageVolumesType{}

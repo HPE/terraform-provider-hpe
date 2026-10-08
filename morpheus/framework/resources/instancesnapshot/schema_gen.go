@@ -101,6 +101,11 @@ func InstanceSnapshotResourceSchema(ctx context.Context) schema.Schema {
 					int64planmodifier.RequiresReplace(),
 				},
 			},
+			"max_storage": schema.Int64Attribute{
+				Computed:            true,
+				Description:         "Total size of the snapshot in bytes. Null when not populated.",
+				MarkdownDescription: "Total size of the snapshot in bytes. Null when not populated.",
+			},
 			"memory_snapshot": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
@@ -182,6 +187,7 @@ type InstanceSnapshotModel struct {
 	ForExport       types.Bool     `tfsdk:"for_export"`
 	Id              types.Int64    `tfsdk:"id"`
 	InstanceId      types.Int64    `tfsdk:"instance_id"`
+	MaxStorage      types.Int64    `tfsdk:"max_storage"`
 	MemorySnapshot  types.Bool     `tfsdk:"memory_snapshot"`
 	Name            types.String   `tfsdk:"name"`
 	ParentSnapshot  types.String   `tfsdk:"parent_snapshot"`

@@ -98,6 +98,9 @@ func ComputeServersDataSourceSchema(ctx context.Context) schema.Schema {
 							Description:         "The ID of the group this compute server belongs to.",
 							MarkdownDescription: "The ID of the group this compute server belongs to.",
 						},
+						"guest_agent_status": schema.StringAttribute{
+							Computed: true,
+						},
 						"hostname": schema.StringAttribute{
 							Computed:            true,
 							Description:         "The hostname of the compute server.",
@@ -480,6 +483,24 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 			fmt.Sprintf(`group_id expected to be basetypes.Int64Value, was: %T`, groupIdAttribute))
 	}
 
+	guestAgentStatusAttribute, ok := attributes["guest_agent_status"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`guest_agent_status is missing from object`)
+
+		return nil, diags
+	}
+
+	guestAgentStatusVal, ok := guestAgentStatusAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`guest_agent_status expected to be basetypes.StringValue, was: %T`, guestAgentStatusAttribute))
+	}
+
 	hostnameAttribute, ok := attributes["hostname"]
 
 	if !ok {
@@ -838,6 +859,7 @@ func (t ServersType) ValueFromObject(ctx context.Context, in basetypes.ObjectVal
 		ExternalId:               externalIdVal,
 		ExternalIp:               externalIpVal,
 		GroupId:                  groupIdVal,
+		GuestAgentStatus:         guestAgentStatusVal,
 		Hostname:                 hostnameVal,
 		Id:                       idVal,
 		InstanceId:               instanceIdVal,
@@ -1122,6 +1144,24 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 			fmt.Sprintf(`group_id expected to be basetypes.Int64Value, was: %T`, groupIdAttribute))
 	}
 
+	guestAgentStatusAttribute, ok := attributes["guest_agent_status"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`guest_agent_status is missing from object`)
+
+		return NewServersValueUnknown(), diags
+	}
+
+	guestAgentStatusVal, ok := guestAgentStatusAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`guest_agent_status expected to be basetypes.StringValue, was: %T`, guestAgentStatusAttribute))
+	}
+
 	hostnameAttribute, ok := attributes["hostname"]
 
 	if !ok {
@@ -1480,6 +1520,7 @@ func NewServersValue(attributeTypes map[string]attr.Type, attributes map[string]
 		ExternalId:               externalIdVal,
 		ExternalIp:               externalIpVal,
 		GroupId:                  groupIdVal,
+		GuestAgentStatus:         guestAgentStatusVal,
 		Hostname:                 hostnameVal,
 		Id:                       idVal,
 		InstanceId:               instanceIdVal,
@@ -1580,6 +1621,7 @@ type ServersValue struct {
 	ExternalId               basetypes.StringValue `tfsdk:"external_id"`
 	ExternalIp               basetypes.StringValue `tfsdk:"external_ip"`
 	GroupId                  basetypes.Int64Value  `tfsdk:"group_id"`
+	GuestAgentStatus         basetypes.StringValue `tfsdk:"guest_agent_status"`
 	Hostname                 basetypes.StringValue `tfsdk:"hostname"`
 	Id                       basetypes.Int64Value  `tfsdk:"id"`
 	InstanceId               basetypes.Int64Value  `tfsdk:"instance_id"`
@@ -1603,7 +1645,7 @@ type ServersValue struct {
 }
 
 func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
-	attrTypes := make(map[string]tftypes.Type, 30)
+	attrTypes := make(map[string]tftypes.Type, 31)
 
 	var val tftypes.Value
 	var err error
@@ -1619,6 +1661,7 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 	attrTypes["external_id"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["external_ip"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["group_id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["guest_agent_status"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["hostname"] = basetypes.StringType{}.TerraformType(ctx)
 	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
 	attrTypes["instance_id"] = basetypes.Int64Type{}.TerraformType(ctx)
@@ -1645,7 +1688,7 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 
 	switch v.state {
 	case attr.ValueStateKnown:
-		vals := make(map[string]tftypes.Value, 30)
+		vals := make(map[string]tftypes.Value, 31)
 
 		val, err = v.AgentInstalled.ToTerraformValue(ctx)
 		if err != nil {
@@ -1723,6 +1766,13 @@ func (v ServersValue) ToTerraformValue(ctx context.Context) (tftypes.Value, erro
 		}
 
 		vals["group_id"] = val
+
+		val, err = v.GuestAgentStatus.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["guest_agent_status"] = val
 
 		val, err = v.Hostname.ToTerraformValue(ctx)
 		if err != nil {
@@ -1911,6 +1961,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"external_id":                 basetypes.StringType{},
 			"external_ip":                 basetypes.StringType{},
 			"group_id":                    basetypes.Int64Type{},
+			"guest_agent_status":          basetypes.StringType{},
 			"hostname":                    basetypes.StringType{},
 			"id":                          basetypes.Int64Type{},
 			"instance_id":                 basetypes.Int64Type{},
@@ -1947,6 +1998,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 		"external_id":                 basetypes.StringType{},
 		"external_ip":                 basetypes.StringType{},
 		"group_id":                    basetypes.Int64Type{},
+		"guest_agent_status":          basetypes.StringType{},
 		"hostname":                    basetypes.StringType{},
 		"id":                          basetypes.Int64Type{},
 		"instance_id":                 basetypes.Int64Type{},
@@ -1992,6 +2044,7 @@ func (v ServersValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue,
 			"external_id":                 v.ExternalId,
 			"external_ip":                 v.ExternalIp,
 			"group_id":                    v.GroupId,
+			"guest_agent_status":          v.GuestAgentStatus,
 			"hostname":                    v.Hostname,
 			"id":                          v.Id,
 			"instance_id":                 v.InstanceId,
@@ -2072,6 +2125,10 @@ func (v ServersValue) Equal(o attr.Value) bool {
 	}
 
 	if !v.GroupId.Equal(other.GroupId) {
+		return false
+	}
+
+	if !v.GuestAgentStatus.Equal(other.GuestAgentStatus) {
 		return false
 	}
 
@@ -2175,6 +2232,7 @@ func (v ServersValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
 		"external_id":                 basetypes.StringType{},
 		"external_ip":                 basetypes.StringType{},
 		"group_id":                    basetypes.Int64Type{},
+		"guest_agent_status":          basetypes.StringType{},
 		"hostname":                    basetypes.StringType{},
 		"id":                          basetypes.Int64Type{},
 		"instance_id":                 basetypes.Int64Type{},

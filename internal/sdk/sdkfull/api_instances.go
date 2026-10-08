@@ -5130,7 +5130,7 @@ type ApiListInstancesRequest struct {
 	tagsName        *string
 	details         *bool
 	includeTenants  *bool
-	tenantId        *float32
+	tenantId        *int64
 }
 
 // Maximum number of records to return
@@ -5314,7 +5314,7 @@ func (r ApiListInstancesRequest) IncludeTenants(includeTenants bool) ApiListInst
 }
 
 // Filter by Tenant ID. Only available to the master account.
-func (r ApiListInstancesRequest) TenantId(tenantId float32) ApiListInstancesRequest {
+func (r ApiListInstancesRequest) TenantId(tenantId int64) ApiListInstancesRequest {
 	r.tenantId = &tenantId
 	return r
 }

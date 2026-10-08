@@ -17,6 +17,12 @@ user:
     - date_created
     - account_id
   overrides:
+    # tenant_id is the spec's accountId alias query parameter. Expose it as
+    # read-only state populated from the user's owning tenant (account) id,
+    # mirroring tenant.id; lookup is still by id/username, not by tenant_id.
+    tenant_id:
+      computed_optional_required: computed
+      description: The ID of the tenant (account) that owns the user.
     id:
       description: Morpheus ID of the Object being referenced
       conflicts_with: ["username"]

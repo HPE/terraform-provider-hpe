@@ -22,6 +22,9 @@ var clearableAttributes = clearable.Attributes{
 // notClearable records why each remaining optional attribute is not cleared
 // when it is removed from the configuration.
 var notClearable = clearable.NotClearable{
-	"support_menu_links": "not sent to the API by the provider; the current links are kept when it is removed",
-	"enabled":            "boolean",
+	"support_menu_links":  "not sent to the API by the provider; the current links are kept when it is removed",
+	"enabled":             "boolean",
+	"security_banner":     "optional+computed; the appliance retains the current value when it is removed",
+	"external_legal_text": "optional+computed; the appliance retains the current value when it is removed",
+	"supports_themes":     "boolean; optional+computed, the appliance retains the current value when it is removed",
 }
