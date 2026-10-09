@@ -300,6 +300,21 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### Username and password authentication no longer fails after 24 minutes (MORPH-18753)
+
+With `username`/`password` provider configuration, any single plan or apply that ran for longer than
+about 24 minutes — a cluster build, host onboarding, a virtual switch fan-out, anything that polls a
+Morpheus process — failed part-way with *"could not authenticate with the Morpheus API using the
+username … verify that the credentials are correct: 401"*, although the credentials were fine. The
+access token the provider obtains at the start lives 24 minutes, and the provider did log in again
+when a request was refused — but the new login carried the expired token in its own `Authorization`
+header (the bundled SDK adds the cached header to every request, the token request included), and
+the Morpheus token endpoint refuses any request that carries a bearer token, valid or expired (on
+9.0 and 9.1 alike). The old token is now dropped before logging in again, concurrent requests
+refused with the same token share a single new login instead of each logging in, and a request with
+a body that is retried after the new login sends its body again. Access-token authentication was
+never affected.
+
 ### A resource deleted outside Terraform is recreated instead of failing the refresh (MORPH-18584)
 
 When an object this provider manages was deleted outside Terraform — through the Morpheus UI, by
