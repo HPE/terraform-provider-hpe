@@ -29,6 +29,7 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancenode"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancepowerstate"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/instancesnapshot"
+	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/license"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancer"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancermonitor"
 	"github.com/HPE/terraform-provider-hpe/morpheus/framework/resources/loadbalancerpool"
@@ -159,6 +160,10 @@ func (p *MorpheusProvider) Resources(
 
 		// Multitenancy: ported from SDKv2 to the plugin framework (MORPH-16404)
 		tenant.NewResource,
+
+		// Appliance licence: ported from SDKv2 to the plugin framework so the
+		// key can be write-only, with its digest kept in private state.
+		license.NewResource,
 
 		// Plugin lifecycle management (Plugin Framework)
 		plugin.NewResource,

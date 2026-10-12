@@ -22,14 +22,16 @@ var _ MappedNullable = &InstallLicense200ResponseLicenseLimitsInner{}
 
 // InstallLicense200ResponseLicenseLimitsInner struct for InstallLicense200ResponseLicenseLimitsInner
 type InstallLicense200ResponseLicenseLimitsInner struct {
-	Code                 *string                                                `json:"code,omitempty"`
-	Max                  NullableInstallLicense200ResponseLicenseLimitsInnerMax `json:"max,omitempty"`
-	Used                 *InstallLicense200ResponseLicenseLimitsInnerUsed       `json:"used,omitempty"`
-	PercentUsed          *float32                                               `json:"percentUsed,omitempty"`
-	Warning              *bool                                                  `json:"warning,omitempty"`
-	LimitReached         *bool                                                  `json:"limitReached,omitempty"`
-	Unit                 *string                                                `json:"unit,omitempty"`
-	AdditionalProperties map[string]interface{}                                 `json:",remain"`
+	Code *string `json:"code,omitempty"`
+	// Limit; null when unlimited
+	Max NullableInt64 `json:"max,omitempty"`
+	// Current usage
+	Used                 *int64                 `json:"used,omitempty"`
+	PercentUsed          *float32               `json:"percentUsed,omitempty"`
+	Warning              *bool                  `json:"warning,omitempty"`
+	LimitReached         *bool                  `json:"limitReached,omitempty"`
+	Unit                 *string                `json:"unit,omitempty"`
+	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
 type _InstallLicense200ResponseLicenseLimitsInner InstallLicense200ResponseLicenseLimitsInner

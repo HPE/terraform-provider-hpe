@@ -53,6 +53,42 @@ The documentation describes each block, marks the attributes that replace the ne
 validated example for the OVS port group, HVM data, NSX-T, OpenStack, Azure, Google, Amazon and
 child network types.
 
+### `hpe_morpheus_license` — the licence key is write-only and leaves state
+
+The appliance licence key — a few thousand characters that unlock the product — used to be stored in
+Terraform state, where anyone with access to the state file could read it. The resource is rebuilt
+on the plugin framework so that it no longer is.
+
+- **`key` is write-only.** It is sent to the appliance on create and whenever it changes, and is
+  never stored in state or plan, so an ephemeral value may be used. **Nothing changes in your
+  configuration** — the attribute keeps its name — but write-only attributes need **Terraform 1.11
+  or later, or OpenTofu 1.11 or later**.
+- **Existing state is upgraded automatically.** The first refresh after upgrading drops the stored
+  key from state and the plan is empty.
+- **A change to the key is detected without any version or trigger attribute.** Morpheus reports a
+  SHA-256 hash of each installed licence's key; the provider keeps the same digest in the resource's
+  private state and compares it with the configured key on every plan. A changed key plans an
+  in-place update that installs the new key; surrounding whitespace in the key is ignored, as it is
+  by Morpheus. The key is only re-sent when it actually changed — a non-stacking install deactivates
+  every other installed licence, so an unchanged key is never posted again.
+- **Import by key id leaves a clean plan.** `terraform import hpe_morpheus_license.x <keyId>` (the
+  first eight characters of the key) records the digest from the appliance, so the configured key is
+  recognised at once and a later change to it is detected from the first plan. No digest needs to be
+  put in the import ID.
+- **A licence uninstalled or replaced outside Terraform now plans a *create*** (the refresh removes
+  the resource from state, as every framework resource does when its object is gone), where the
+  previous resource planned an in-place update. The apply re-installs the configured key either way.
+- **A detail the licence does not specify is null, not a zero value.** The previous resource wrote
+  `""`, `0` or `false` for anything the appliance did not report; the rebuilt resource, like every
+  other framework resource, writes null. Concretely: `end_date` is null for a perpetual licence (was
+  `""`); `max_instances`, `max_memory` and `max_storage` are null when unlimited (was `0` — Morpheus
+  itself reports an unlimited legacy limit as null, and on the newer standard limits `0` means
+  *nothing allowed*); `free_trial` is null (was always `false`: current Morpheus releases do not
+  report it); `hard_limit`, `support_level` and `account_name` are null when the licence does not
+  specify them. An expression that compared one of these with `""`, `0` or `false` should compare
+  with `null`, or wrap the attribute in `coalesce()`.
+- Destroy still uninstalls the licence matching `key` and no other.
+
 ## New resources
 
 ### `hpe_morpheus_plugin` resource and data source (MORPH-18591)

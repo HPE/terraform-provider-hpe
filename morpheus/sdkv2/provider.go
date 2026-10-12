@@ -23,7 +23,6 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/identitysource"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/integration"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/job"
-	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/license"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/network"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optionlist"
 	"github.com/HPE/terraform-provider-hpe/morpheus/sdkv2/resources/optiontype"
@@ -107,7 +106,6 @@ func Provider() *schema.Provider {
 			"hpe_morpheus_job_task":                         job.ResourceJobTask(),
 			"hpe_morpheus_job_workflow":                     job.ResourceJobWorkflow(),
 			"hpe_morpheus_key_pair":                         trust.ResourceKeyPair(),
-			"hpe_morpheus_license":                          license.ResourceLicense(),
 			"hpe_morpheus_network_domain":                   network.ResourceNetworkDomain(),
 			"hpe_morpheus_node_type":                        blueprint.ResourceNodeType(),
 			"hpe_morpheus_option_list_api":                  optionlist.ResourceOptionListAPI(),

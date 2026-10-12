@@ -340,6 +340,19 @@ resources:
     update:
       path: /api/virtual-images/{virtualImageId}
       method: PUT
+  license:
+    create:
+      path: /api/license
+      method: POST
+    read:
+      path: /api/license
+      method: GET
+    update:
+      path: /api/license
+      method: POST
+    delete:
+      path: /api/license
+      method: DELETE
   load_balancer:
     create:
       path: /api/load-balancers

@@ -122,6 +122,7 @@ Release notes for earlier versions are in [HISTORY.md](https://github.com/HPE/te
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_image<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance_clone<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_instance_node<br>
+&nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_license<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_monitor<br>
 &nbsp;&nbsp;&nbsp;&nbsp;- hpe_morpheus_load_balancer_pool<br>
