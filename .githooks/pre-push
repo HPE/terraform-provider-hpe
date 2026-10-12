@@ -3,14 +3,28 @@
 # (C) Copyright 2026 Hewlett Packard Enterprise Development LP
 #
 # pre-push: run the provider's quality gates before anything leaves the
-# machine. Three gates, cheapest first:
+# machine. Four gates, cheapest first:
 #
 #   1. lint        make lint        The `Lint` CI workflow is disabled
 #                                   (manual dispatch only): golangci-lint is
 #                                   OOM-killed on a standard runner -- see
 #                                   .github/workflows/lint.yaml. This hook is
 #                                   therefore the ONLY lint gate.
-#   2. docs        make docs        The `Docs` CI workflow is disabled in
+#   2. schema      task check-schema-gen
+#                                   Committed morpheus/framework/**/schema_gen.go
+#                                   must match what the codegen pipeline
+#                                   produces from specs/**/config.yaml and the
+#                                   OpenAPI spec (pinned to the commit recorded
+#                                   in internal/sdk/oapigen/PROVENANCE). Runs
+#                                   only when the push touches those inputs
+#                                   (new branches: relative to the merge-base
+#                                   with the default branch) and
+#                                   only when the provider is cloned inside the
+#                                   tooling workspace (where `task` and the
+#                                   codegen tools live); a standalone clone
+#                                   warns and continues. There is no CI
+#                                   equivalent: this hook is the ONLY gate.
+#   3. docs        make docs        The `Docs` CI workflow is disabled in
 #                                   favour of this hook, catching failures
 #                                   before the push instead of a CI round
 #                                   later -- see .github/workflows/docs.yaml.
@@ -18,13 +32,14 @@
 #                                   whose regenerated docs are not committed;
 #                                   after a successful build this gate warns
 #                                   (does not fail) about such drift.
-#   3. unit tests  make unit-tests  The `Test` CI workflow is disabled in
+#   4. unit tests  make unit-tests  The `Test` CI workflow is disabled in
 #                                   favour of this hook, same rationale --
 #                                   see .github/workflows/test.yaml. This hook
 #                                   is therefore the ONLY unit-test gate.
 #
 # COST: with warm caches a push costs two to three minutes: lint is seconds
-# (the golangci-lint cache is content-addressed and user-global), docs is
+# (the golangci-lint cache is content-addressed and user-global), the schema
+# check is about a minute but only on pushes that touch schema inputs, docs is
 # about a minute (builds bin/render, runs go generate + tfplugindocs), and
 # the unit tests are a minute or two. The first run on a machine, or the
 # first after a toolchain upgrade, rebuilds caches and takes longer.
@@ -38,6 +53,7 @@
 # ESCAPE HATCHES:
 #     git push --no-verify      skip all pre-push hooks
 #     SKIP_LINT=1  git push     skip just the lint gate
+#     SKIP_SCHEMA=1 git push    skip just the schema gate
 #     SKIP_DOCS=1  git push     skip just the docs gate
 #     SKIP_TESTS=1 git push     skip just the unit-test gate
 #
@@ -56,9 +72,18 @@ set -euo pipefail
 zero_oid="$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')"
 refs_seen=0
 content_refs=0
-while read -r _local_ref local_sha _rest; do
+push_ranges=""
+while read -r _local_ref local_sha _remote_ref remote_sha; do
   refs_seen=$((refs_seen + 1))
-  [ "$local_sha" = "$zero_oid" ] || content_refs=$((content_refs + 1))
+  [ "$local_sha" = "$zero_oid" ] && continue
+  content_refs=$((content_refs + 1))
+  # Remember what is being pushed so gates can scope themselves to it. A new
+  # branch (all-zero remote sha) has no base; use the whole local history.
+  if [ "$remote_sha" = "$zero_oid" ]; then
+    push_ranges="$push_ranges $local_sha"
+  else
+    push_ranges="$push_ranges $remote_sha..$local_sha"
+  fi
 done
 if [ "$refs_seen" -gt 0 ] && [ "$content_refs" -eq 0 ]; then
   echo "pre-push: only ref deletions in this push -- nothing to check" >&2
@@ -127,7 +152,104 @@ EOF
 fi
 
 # --------------------------------------------------------------------------
-# Gate 2: docs
+# Gate 2: schema (generated schema_gen.go matches the codegen pipeline)
+# --------------------------------------------------------------------------
+# Relevant inputs: anything that feeds or is produced by schema generation.
+schema_paths=(specs 'morpheus/framework/*/*/schema_gen.go' internal/sdk/oapigen/PROVENANCE)
+
+# Decide whether this push touches them. Runs only when the gate is not
+# bypassed, so SKIP_SCHEMA=1 never depends on the inspection succeeding.
+#
+# For an update of an existing branch the range is remote_sha..local_sha. For a
+# new branch there is no remote sha; comparing the whole tree would always
+# match (specs/ exists on every branch), so compare against the merge-base with
+# the repo's default branch instead, falling back to the whole tree only if no
+# base can be found.
+#
+# `git diff` can fail here when the remote sha is not in the local object
+# store (a force-push over commits that were never fetched). That is handled
+# explicitly rather than aborting under `set -e`: treat the push as touching
+# schema inputs (fail safe) and say why.
+schema_touched=0
+if [ -z "${SKIP_SCHEMA:-}" ]; then
+  default_branch="$(git symbolic-ref -q --short refs/remotes/origin/HEAD 2>/dev/null || true)"
+  for range in $push_ranges; do
+    case "$range" in
+      *..*)
+        if changed="$(git diff --name-only "$range" -- "${schema_paths[@]}" 2>/dev/null)"; then :; else
+          echo "pre-push: cannot compare $range (remote commits not fetched?) -- assuming schema inputs changed" >&2
+          schema_touched=1; break
+        fi ;;
+      *)
+        base=""
+        [ -n "$default_branch" ] && base="$(git merge-base "$default_branch" "$range" 2>/dev/null || true)"
+        if [ -n "$base" ]; then
+          changed="$(git diff --name-only "$base" "$range" -- "${schema_paths[@]}" 2>/dev/null || echo unknown)"
+        else
+          changed="$(git ls-tree -r --name-only "$range" -- "${schema_paths[@]}" 2>/dev/null || echo unknown)"
+        fi ;;
+    esac
+    if [ -n "$changed" ]; then schema_touched=1; break; fi
+  done
+  # Working-tree changes count too, consistent with the other gates.
+  if [ "$schema_touched" -eq 0 ] && [ -n "$(git status --porcelain -- "${schema_paths[@]}")" ]; then
+    schema_touched=1
+  fi
+fi
+
+if [ -n "${SKIP_SCHEMA:-}" ]; then
+  echo "pre-push: SKIP_SCHEMA set -- skipping schema gate" >&2
+elif [ "$schema_touched" -eq 0 ]; then
+  echo "pre-push: no schema inputs in this push -- skipping schema gate" >&2
+else
+  # The check needs the codegen tooling, which lives in the tooling workspace
+  # the provider is normally cloned into by that workspace's init.sh -- i.e.
+  # this repo is a direct subdirectory of the workspace, so `..` is the
+  # workspace root with its Taskfile.yml. Any other layout (a standalone clone,
+  # or one placed elsewhere) is detected below and gets the warning, not a
+  # failure; set the layout up with init.sh to be gated.
+  workspace="$(cd .. && pwd)"
+  # (grep -c rather than -q: under pipefail, -q's early exit would SIGPIPE
+  # `task` and make the whole pipeline look like a failure.)
+  if [ ! -f "$workspace/Taskfile.yml" ] || ! command -v task >/dev/null 2>&1 \
+     || [ "$(task -d "$workspace" --list-all 2>/dev/null | grep -c '^\* check-schema-gen:')" -eq 0 ]; then
+    cat >&2 <<'EOF'
+
+pre-push: warning: schema gate SKIPPED -- codegen tooling not found.
+
+This push touches specs/ or schema_gen.go, but the provider is not cloned
+inside the tooling workspace (or `task` is not installed), so the committed
+schema_gen.go files cannot be checked against the codegen pipeline here.
+Run `./init.sh` in the tooling workspace to be fully gated.
+EOF
+  else
+    echo "pre-push: running 'task check-schema-gen' (about a minute)..." >&2
+    if ! task -d "$workspace" check-schema-gen PROVIDER="$PWD"; then
+      cat >&2 <<'EOF'
+
+pre-push: schema gate FAILED -- push aborted.
+
+Committed schema_gen.go files do not match what the codegen pipeline produces
+from specs/**/config.yaml and the OpenAPI spec (pinned to the commit in
+internal/sdk/oapigen/PROVENANCE). Never hand-edit schema_gen.go: change the
+config.yaml, then in the tooling workspace run
+
+    task generate
+
+and commit the regenerated files with this change. There is no CI equivalent
+of this check, so this hook is the only gate.
+
+To bypass just this gate once (only if you know why it is wrong):
+
+    SKIP_SCHEMA=1 git push
+EOF
+      exit 1
+    fi
+  fi
+fi
+
+# --------------------------------------------------------------------------
+# Gate 3: docs
 # --------------------------------------------------------------------------
 if [ -n "${SKIP_DOCS:-}" ]; then
   echo "pre-push: SKIP_DOCS set -- skipping docs gate" >&2
@@ -180,7 +302,7 @@ EOF
 fi
 
 # --------------------------------------------------------------------------
-# Gate 3: unit tests
+# Gate 4: unit tests
 # --------------------------------------------------------------------------
 if [ -n "${SKIP_TESTS:-}" ]; then
   echo "pre-push: SKIP_TESTS set -- skipping unit-test gate" >&2
