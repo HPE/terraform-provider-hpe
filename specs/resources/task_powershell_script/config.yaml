@@ -1,0 +1,181 @@
+task_powershell_script:
+  description: Manages a Morpheus PowerShell script task.
+  templates:
+    # --- file.* flattened. The oneOf union of task configs makes task_options/file
+    # awkward to flatten with moves, so (as the generic task config does) we remove
+    # them wholesale and reintroduce the SDKv2-parity attributes as templates. ---
+    source_type:
+      string:
+        computed_optional_required: required
+        description: Where the script comes from (local, url, repository).
+        validators:
+        - custom:
+            imports:
+              - path: github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator
+            schema_definition: stringvalidator.OneOf("local", "url", "repository")
+    script_content:
+      string:
+        computed_optional_required: computed_optional
+        description: The script content, when source_type is local.
+    script_path:
+      string:
+        computed_optional_required: computed_optional
+        description: The path to the script within the repository, when source_type is repository.
+    repository_id:
+      int64:
+        computed_optional_required: computed_optional
+        description: The ID of the git repository integration that holds the script, when source_type is repository.
+    version_ref:
+      string:
+        computed_optional_required: computed_optional
+        description: The git reference (branch or tag) of the script, when source_type is repository.
+    # --- taskOptions.* flattened ---
+    remote_target_host:
+      string:
+        computed_optional_required: computed_optional
+        description: The host to execute the script on, when execute_target is remote.
+    remote_target_port:
+      string:
+        computed_optional_required: computed_optional
+        description: The WinRM port to connect to on the remote host, when execute_target is remote.
+    remote_target_username:
+      string:
+        computed_optional_required: computed_optional
+        description: The username used to connect to the remote host, when execute_target is remote.
+    remote_target_password_wo:
+      string:
+        computed_optional_required: optional
+        description: |-
+          Remote target password (write-only; never stored in state). Changes are detected through a
+          private-state digest; see write_only_revision.
+        sensitive: true
+        write_only: true
+    remote_target_password_wo_version:
+      int64:
+        computed_optional_required: optional
+        description: |-
+          Deprecated. Changes to remote_target_password_wo are detected automatically; this attribute is no
+          longer needed and will be removed in the 2.6 release. Changing it still re-sends
+          remote_target_password_wo.
+        deprecation_message: "No longer needed: changes to remote_target_password_wo are detected automatically. Remove this attribute; it will be removed in the 2.6 release."
+    remote_target_password:
+      string:
+        computed_optional_required: optional
+        sensitive: true
+        description: |-
+          Deprecated. Use remote_target_password_wo, which is never stored in state. When set, the value is
+          sent on create and whenever it changes. Will be removed in the 2.6 release.
+        deprecation_message: "Use remote_target_password_wo instead; this attribute stores the password in state and will be removed in the 2.6 release."
+    write_only_revision:
+      int64:
+        computed_optional_required: computed
+        description: |-
+          The time, in seconds since the Unix epoch, at which a write-only value (remote_target_password_wo)
+          was last sent to Morpheus. Changes whenever that value changes; not configurable.
+        plan_modifiers:
+        - custom:
+            imports:
+            - path: github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier
+            schema_definition: int64planmodifier.UseStateForUnknown()
+    # winrm.elevated is the API string "on"/null; CRUD converts to/from this bool.
+    elevated_shell:
+      bool:
+        computed_optional_required: computed_optional
+        description: Whether to run the script in an elevated WinRM shell. Defaults to false.
+
+  moves:
+    - task: ""                                           # unnest wrapper (POST /api/tasks body {task: ...})
+    - result_type.oneof0: result_type                    # extract first oneOf variant
+    - template-source_type: source_type
+    - template-script_content: script_content
+    - template-script_path: script_path
+    - template-repository_id: repository_id
+    - template-version_ref: version_ref
+    - template-remote_target_host: remote_target_host
+    - template-remote_target_port: remote_target_port
+    - template-remote_target_username: remote_target_username
+    - template-remote_target_password_wo: remote_target_password_wo
+    - template-remote_target_password: remote_target_password
+    - template-remote_target_password_wo_version: remote_target_password_wo_version
+    - template-write_only_revision: write_only_revision
+    - template-elevated_shell: elevated_shell
+
+  removes:
+    - account_id
+    - credential
+    - file
+    - task_options
+    - task_type
+    - task_type_code
+    - config
+    - ansible_playbook_task_config
+    - ansible_tower_task_config
+    - chef_bootstrap_task_config
+    - conditional_workflow_task_config
+    - email_task_config
+    - groovy_task_config
+    - httptask_config
+    - java_task_config
+    - library_script_task_config
+    - library_template_task_config
+    - nested_workflow_task_config
+    - power_shell_task_config
+    - puppet_task_config
+    - python_task_config
+    - restart_task_config
+    - shell_task_config
+    - v_realize_orchestrator_task_config
+    - write_attributes_task_config
+    - success
+    - date_created
+    - last_updated
+
+  overrides:
+    remote_target_password:
+      conflicts_with: ["remote_target_password_wo"]
+    id:
+      # Keep the known id in the plan across in-place updates (MORPH-18309).
+      state_for_unknown: true
+    name:
+      description: A unique name for the task.
+      computed_optional_required: required
+    code:
+      description: The code used to reference the task programmatically.
+      computed_optional_required: computed_optional
+    labels:
+      description: An array of labels for filtering the task.
+      computed_optional_required: computed_optional
+    result_type:
+      description: The format of the task result (value, keyValue, json).
+      computed_optional_required: computed_optional
+      one_of: [value, keyValue, json]
+    execute_target:
+      description: Where the script runs (local, remote, resource). Defaults to local.
+      computed_optional_required: computed_optional
+      one_of: [local, remote, resource]
+      default: local
+    visibility:
+      description: Visibility of the task (private or public). Defaults to private.
+      computed_optional_required: computed_optional
+      one_of: [private, public]
+      default: private
+    retryable:
+      description: Whether the task should be retried on failure. Defaults to false.
+      computed_optional_required: computed_optional
+      default: false
+    retry_count:
+      description: The number of times to retry the task. Defaults to 5.
+      computed_optional_required: computed_optional
+      default: 5
+    retry_delay_seconds:
+      description: The delay, in seconds, between retries. Defaults to 10.
+      computed_optional_required: computed_optional
+      default: 10
+    allow_custom_config:
+      description: When enabled, a text area is provided during manual task execution to allow the user to pass extra variables or specify extra configuration. Defaults to false.
+      computed_optional_required: computed_optional
+      default: false
+    elevated_shell:
+      description: Whether to run the script in an elevated WinRM shell. Defaults to false.
+      computed_optional_required: computed_optional
+      default: false

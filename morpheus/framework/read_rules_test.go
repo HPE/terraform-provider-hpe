@@ -31,6 +31,11 @@ import (
 var readRemoveExemptions = map[string]string{
 	// A singleton appliance setting: there is nothing to delete, GET never 404s.
 	"settingwhitelabel": "singleton setting",
+	// Read delegates to the shared taskscript package, whose Read calls
+	// resp.State.RemoveResource on a 404; the AST walk cannot follow the
+	// cross-package call. See resources/taskscript/crud.go (Kind.Read).
+	"taskshellscript":      "Read delegates to the shared taskscript package",
+	"taskpowershellscript": "Read delegates to the shared taskscript package",
 }
 
 // funcsByName indexes a package's function and method declarations by name.

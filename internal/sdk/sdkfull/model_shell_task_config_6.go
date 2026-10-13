@@ -22,14 +22,16 @@ var _ MappedNullable = &ShellTaskConfig6{}
 
 // ShellTaskConfig6 struct for ShellTaskConfig6
 type ShellTaskConfig6 struct {
-	LocalScriptGitRef    NullableString         `json:"localScriptGitRef,omitempty"`
-	Port                 NullableString         `json:"port,omitempty"`
-	Password             NullableString         `json:"password,omitempty"`
-	PasswordHash         NullableString         `json:"passwordHash,omitempty"`
-	Username             NullableString         `json:"username,omitempty"`
-	Host                 NullableString         `json:"host,omitempty"`
-	SshKey               NullableString         `json:"sshKey,omitempty"`
-	LocalScriptGitId     NullableString         `json:"localScriptGitId,omitempty"`
+	LocalScriptGitRef NullableString `json:"localScriptGitRef,omitempty"`
+	Port              NullableString `json:"port,omitempty"`
+	Password          NullableString `json:"password,omitempty"`
+	PasswordHash      NullableString `json:"passwordHash,omitempty"`
+	Username          NullableString `json:"username,omitempty"`
+	Host              NullableString `json:"host,omitempty"`
+	SshKey            NullableString `json:"sshKey,omitempty"`
+	LocalScriptGitId  NullableString `json:"localScriptGitId,omitempty"`
+	// Run the script with sudo. The API stores the flag as the string 'on' when set.
+	ShellSudo            *string                `json:"shell.sudo,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -68,6 +70,9 @@ func (o ShellTaskConfig6) ToMap() (map[string]interface{}, error) {
 	}
 	if o.LocalScriptGitId.IsSet() {
 		toSerialize["localScriptGitId"] = o.LocalScriptGitId.Get()
+	}
+	if !IsNil(o.ShellSudo) {
+		toSerialize["shell.sudo"] = o.ShellSudo
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -2,11 +2,22 @@
 page_title: "hpe_morpheus_network_domain Resource - terraform-provider-hpe"
 subcategory: "Morpheus"
 description: |-
-  Provides a Morpheus network domain resource.
+  Manages a Morpheus network domain.
 ---
 # hpe_morpheus_network_domain (Resource)
 
-Provides a Morpheus network domain resource.
+Manages a Morpheus network domain.
+
+## Write-only password
+
+The domain password is a write-only value: `domain_password_wo` is sent to Morpheus but never
+stored in Terraform state. Changes to it are detected through a private-state digest and surface
+as a change to the computed `write_only_revision` attribute, which plans an in-place update that
+re-sends the value. The deprecated `domain_password_wo_version` marker still forces a re-send when
+it changes, but is no longer required and will be removed in the 2.6 release.
+
+Morpheus also only honours `visibility` and `tenant_id` for the master tenant; a domain owned by a
+sub-tenant is always private, whatever the configuration asks for.
 
 ## Example Usage
 
@@ -14,10 +25,17 @@ Provides a Morpheus network domain resource.
 resource "hpe_morpheus_network_domain" "example" {
   name        = "tfexampledomain"
   description = "Terraform example network domain"
-  public_zone = true
+  public_zone = false
   visibility  = "private"
-  tenant_id   = 1
   active      = true
+
+  # Write-only: never stored in state. Changes are detected through a
+  # private-state digest (see write_only_revision).
+  domain_password_wo = "Secret123!"
+  domain_username    = "joiner"
+
+  # domain_password_wo_version is deprecated: changes to domain_password_wo are
+  # detected automatically. It will be removed in the 2.6 release.
 }
 ```
 
@@ -32,26 +50,60 @@ resource "hpe_morpheus_network_domain" "example" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `active` (Boolean) The state of the network domain
-- `auto_join_domain` (Boolean, Deprecated) Whether to automatically join machines to the domain
-- `description` (String) The user friendly description of the network domain
-- `domain_controller` (Boolean) The domain controller used to facilitate an automated domain join operation
-- `domain_password` (String, Sensitive, Deprecated) The password of the account used to facilitate an automated domain join operation
-- `domain_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The account password for an automated domain join (write-only, not stored in state).
-- `domain_password_wo_version` (Number) Increment to re-send domain_password_wo; write-only values are not stored in state. Unlike the framework-based resources, this resource cannot detect a change to the write-only value itself, so the version marker remains the way to re-send it until the resource moves to the plugin framework.
-- `domain_username` (String) The username of the account used to facilitate an automated domain join operation
-- `public_zone` (Boolean) Whether the domain will be public or private
-- `tenant_id` (Number) The tenant to assign the network domain
-- `visibility` (String) Determines whether the resource is visible in sub-tenants or not
+- `active` (Boolean) Whether the network domain is active. Defaults to true.
+- `auto_join_domain` (Boolean, Deprecated) Deprecated. Has no effect; accepted for compatibility with existing configurations. Use
+domain_controller. Will be removed in the 2.6 release.
+- `description` (String) A description of the network domain
+- `domain_controller` (Boolean) Whether this domain is a domain controller (joins hosts to the domain). Defaults to false.
+- `domain_password` (String, Sensitive, Deprecated) Deprecated. Use domain_password_wo, which is never stored in state. When set, the value is sent on
+create and on every update, as before. Will be removed in the 2.6 release.
+- `domain_password_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Domain password (write-only; never stored in state). Changes are detected through a private-state
+digest; see write_only_revision.
+- `domain_password_wo_version` (Number, Deprecated) Deprecated. Changes to domain_password_wo are detected automatically; this attribute is no longer
+needed and will be removed in the 2.6 release. Changing it still re-sends domain_password_wo.
+- `domain_username` (String) The username used to join hosts to the domain.
+- `public_zone` (Boolean) Whether the domain is a public (shared) zone. Defaults to false.
+- `tenant_id` (Number) The ID of the tenant that owns the network domain.
+- `visibility` (String) Visibility of the network domain (private or public). Defaults to private.
 
 ### Read-Only
 
-- `id` (String) The ID of the network domain
+- `id` (Number) Morpheus ID of the network domain
+- `write_only_revision` (Number) The time, in seconds since the Unix epoch, at which a write-only value (domain_password_wo) was last
+sent to Morpheus. Changes whenever that value changes; not configurable.
 
 ## Import
 
 Import is supported using the following syntax:
 
 ```shell
-terraform import hpe_morpheus_network_domain.tf_example_network_domain 1
+# Import by network domain ID. The write-only value domain_password_wo is not
+# stored in state, so the import cannot tell whether the value in your
+# configuration matches the one on the appliance: it is taken as already
+# applied, the plan after import is empty, and a change to it is only detected
+# once the domain is next updated for another reason. Terraform warns about
+# this on every plan until then.
+
+terraform import hpe_morpheus_network_domain.example 38785
+
+# To have changes detected from the start, add the sha256 digest of the
+# configured write-only value to the import ID, as <attribute>=<hex>:
+
+terraform import hpe_morpheus_network_domain.example \
+  "38785#domain_password_wo=$(printf '%s' 'Secret123!' | sha256sum | cut -d' ' -f1)"
+
+# The same ID works in an import block, where Terraform's sha256() function
+# produces the digest:
+#
+#   import {
+#     to = hpe_morpheus_network_domain.example
+#     id = "38785#domain_password_wo=${sha256("Secret123!")}"
+#   }
 ```
+
+The write-only value `domain_password_wo` is not stored in state, so the import cannot tell whether
+the value in your configuration matches the appliance: it is taken as already applied, the plan
+after import is empty, and a later change to it is only detected once the resource is next updated
+for another reason (Terraform warns about this on every plan until then). To have changes detected
+from the start, append the sha256 digest of the configured write-only value to the import ID, as
+shown above.

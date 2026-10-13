@@ -156,6 +156,134 @@ func (a *NetworksAPIService) CreateNetworkDhcpServerExecute(r ApiCreateNetworkDh
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiCreateNetworkDomainRequest struct {
+	ctx                        context.Context
+	ApiService                 *NetworksAPIService
+	createNetworkDomainRequest *CreateNetworkDomainRequest
+}
+
+func (r ApiCreateNetworkDomainRequest) CreateNetworkDomainRequest(createNetworkDomainRequest CreateNetworkDomainRequest) ApiCreateNetworkDomainRequest {
+	r.createNetworkDomainRequest = &createNetworkDomainRequest
+	return r
+}
+
+func (r ApiCreateNetworkDomainRequest) Execute() (*CreateNetworkDomain200Response, *http.Response, error) {
+	return r.ApiService.CreateNetworkDomainExecute(r)
+}
+
+/*
+CreateNetworkDomain Create a Network Domain
+
+Create a Network Domain.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@return ApiCreateNetworkDomainRequest
+*/
+func (a *NetworksAPIService) CreateNetworkDomain(ctx context.Context) ApiCreateNetworkDomainRequest {
+	return ApiCreateNetworkDomainRequest{
+		ApiService: a,
+		ctx:        ctx,
+	}
+}
+
+// Execute executes the request
+//
+//	@return CreateNetworkDomain200Response
+func (a *NetworksAPIService) CreateNetworkDomainExecute(r ApiCreateNetworkDomainRequest) (*CreateNetworkDomain200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPost
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *CreateNetworkDomain200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.CreateNetworkDomain")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/domains"
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.createNetworkDomainRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiCreateNetworkFirewallRuleRequest struct {
 	ctx                              context.Context
 	ApiService                       *NetworksAPIService
@@ -2149,6 +2277,130 @@ func (a *NetworksAPIService) DeleteNetworkDhcpServerExecute(r ApiDeleteNetworkDh
 	localVarPath := localBasePath + "/api/networks/servers/{serverId}/dhcp-servers/{id}"
 	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
 	localVarPath = strings.Replace(localVarPath, "{"+"serverId"+"}", url.PathEscape(parameterValueToString(r.serverId, "serverId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiDeleteNetworkDomainRequest struct {
+	ctx        context.Context
+	ApiService *NetworksAPIService
+	id         int64
+}
+
+func (r ApiDeleteNetworkDomainRequest) Execute() (*DeleteNetworkDomain200Response, *http.Response, error) {
+	return r.ApiService.DeleteNetworkDomainExecute(r)
+}
+
+/*
+DeleteNetworkDomain Delete a Network Domain
+
+Will delete a Network Domain from the system and make it no longer usable.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiDeleteNetworkDomainRequest
+*/
+func (a *NetworksAPIService) DeleteNetworkDomain(ctx context.Context, id int64) ApiDeleteNetworkDomainRequest {
+	return ApiDeleteNetworkDomainRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return DeleteNetworkDomain200Response
+func (a *NetworksAPIService) DeleteNetworkDomainExecute(r ApiDeleteNetworkDomainRequest) (*DeleteNetworkDomain200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodDelete
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *DeleteNetworkDomain200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.DeleteNetworkDomain")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/domains/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
 
 	localVarHeaderParams := make(map[string]string)
 	localVarQueryParams := url.Values{}
@@ -10756,6 +11008,138 @@ func (a *NetworksAPIService) UpdateNetworkDhcpServerExecute(r ApiUpdateNetworkDh
 	}
 	// body params
 	localVarPostBody = r.updateNetworkDhcpServerRequest
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
+type ApiUpdateNetworkDomainRequest struct {
+	ctx                        context.Context
+	ApiService                 *NetworksAPIService
+	id                         int64
+	updateNetworkDomainRequest *UpdateNetworkDomainRequest
+}
+
+func (r ApiUpdateNetworkDomainRequest) UpdateNetworkDomainRequest(updateNetworkDomainRequest UpdateNetworkDomainRequest) ApiUpdateNetworkDomainRequest {
+	r.updateNetworkDomainRequest = &updateNetworkDomainRequest
+	return r
+}
+
+func (r ApiUpdateNetworkDomainRequest) Execute() (*GetNetworkDomain200Response, *http.Response, error) {
+	return r.ApiService.UpdateNetworkDomainExecute(r)
+}
+
+/*
+UpdateNetworkDomain Update a Network Domain
+
+Update a Network Domain.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param id Morpheus ID of the Object being referenced
+	@return ApiUpdateNetworkDomainRequest
+*/
+func (a *NetworksAPIService) UpdateNetworkDomain(ctx context.Context, id int64) ApiUpdateNetworkDomainRequest {
+	return ApiUpdateNetworkDomainRequest{
+		ApiService: a,
+		ctx:        ctx,
+		id:         id,
+	}
+}
+
+// Execute executes the request
+//
+//	@return GetNetworkDomain200Response
+func (a *NetworksAPIService) UpdateNetworkDomainExecute(r ApiUpdateNetworkDomainRequest) (*GetNetworkDomain200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodPut
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *GetNetworkDomain200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "NetworksAPIService.UpdateNetworkDomain")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/networks/domains/{id}"
+	localVarPath = strings.Replace(localVarPath, "{"+"id"+"}", url.PathEscape(parameterValueToString(r.id, "id")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{"application/json"}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	// body params
+	localVarPostBody = r.updateNetworkDomainRequest
 	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
 	if err != nil {
 		return localVarReturnValue, nil, err

@@ -511,6 +511,19 @@ resources:
     delete:
       path: /api/networks/servers/{serverId}/dhcp-servers/{id}
       method: DELETE
+  network_domain:
+    create:
+      path: /api/networks/domains
+      method: POST
+    read:
+      path: /api/networks/domains/{id}
+      method: GET
+    update:
+      path: /api/networks/domains/{id}
+      method: PUT
+    delete:
+      path: /api/networks/domains/{id}
+      method: DELETE
   network_firewall_rule:
     create:
       path: /api/networks/servers/{serverId}/firewall-rules
@@ -760,6 +773,32 @@ resources:
       path: /api/library/spec-templates/{id}
       method: DELETE
   task:
+    create:
+      path: /api/tasks
+      method: POST
+    read:
+      path: /api/tasks/{id}
+      method: GET
+    update:
+      path: /api/tasks/{id}
+      method: PUT
+    delete:
+      path: /api/tasks/{id}
+      method: DELETE
+  task_shell_script:
+    create:
+      path: /api/tasks
+      method: POST
+    read:
+      path: /api/tasks/{id}
+      method: GET
+    update:
+      path: /api/tasks/{id}
+      method: PUT
+    delete:
+      path: /api/tasks/{id}
+      method: DELETE
+  task_powershell_script:
     create:
       path: /api/tasks
       method: POST

@@ -274,12 +274,24 @@ For a migrated resource:
   deprecated marker plans the same replacement; removing it does not.
 - **`hpe_morpheus_network_router_nat`:** a change to `action`, `firewall` or `service` now plans an
   update (before, the plan was empty and the change only went out when something else changed).
-- **Not migrated:** the three SDKv2 resources with a write-only attribute — `hpe_morpheus_network_domain`
+- **The three SDKv2 resources moved too (MORPH-18860).** `hpe_morpheus_network_domain`
   (`domain_password_wo`), `hpe_morpheus_task_shell_script` and `hpe_morpheus_task_powershell_script`
-  (`remote_target_password_wo`) — cannot keep digests (the SDKv2 has no private state for provider
-  code), so their `*_wo_version` markers remain the way to re-send the value and are **not** deprecated.
-  Their descriptions say so. They will move to the digest mechanism when the resources move to the
-  plugin framework.
+  (`remote_target_password_wo`) are rebuilt on the plugin framework and use the same digest
+  mechanism; their `*_wo_version` markers are deprecated like the others. Type names and attributes
+  are unchanged, and existing state is upgraded in place: the first plan after upgrading shows one
+  `~ write_only_revision` update (and, for a task that still sets the deprecated
+  `remote_target_password`, that attribute — see below). Configurations written for the previous resources
+  keep working: the deprecated `auto_join_domain` (a no-op), `domain_password` and
+  `remote_target_password` are still accepted and honoured, and are removed in 2.6 with the markers.
+  One difference for `remote_target_password`: the previous resource read the API's password *hash*
+  back into it, which the plugin framework does not allow; it now holds the configured value, so a
+  configuration that still sets it plans one update after upgrading (sending the configured
+  password), and a configuration that has moved to `remote_target_password_wo` plans nothing. An
+  unrelated update of a network domain no longer re-sends `domain_password_wo` — the provider sends
+  the API's mask value instead, because Morpheus clears the stored password when the field is omitted
+  on update (the deprecated `domain_password` is still sent on every update, as before). A task's
+  `script_content` is still compared ignoring surrounding whitespace, so a heredoc with a trailing
+  newline does not plan a change.
 - **Behaviour corrections found on the way:** `hpe_morpheus_load_balancer_monitor` no longer
   *replaces* the monitor when `monitor_password_wo_version` changes (the marker had `RequiresReplace`
   although the API updates the password in place); `hpe_morpheus_storage_server` now actually sends

@@ -20,14 +20,16 @@ var _ MappedNullable = &PowerShellTaskConfig2{}
 
 // PowerShellTaskConfig2 struct for PowerShellTaskConfig2
 type PowerShellTaskConfig2 struct {
-	Host                 NullableString         `json:"host,omitempty"`
-	LocalScriptGitId     NullableString         `json:"localScriptGitId,omitempty"`
-	Username             NullableString         `json:"username,omitempty"`
-	Port                 NullableString         `json:"port,omitempty"`
-	LocalScriptGitRef    NullableString         `json:"localScriptGitRef,omitempty"`
-	Password             NullableString         `json:"password,omitempty"`
-	PasswordHash         NullableString         `json:"passwordHash,omitempty"`
-	SshKey               NullableString         `json:"sshKey,omitempty"`
+	Host              NullableString `json:"host,omitempty"`
+	LocalScriptGitId  NullableString `json:"localScriptGitId,omitempty"`
+	Username          NullableString `json:"username,omitempty"`
+	Port              NullableString `json:"port,omitempty"`
+	LocalScriptGitRef NullableString `json:"localScriptGitRef,omitempty"`
+	Password          NullableString `json:"password,omitempty"`
+	PasswordHash      NullableString `json:"passwordHash,omitempty"`
+	SshKey            NullableString `json:"sshKey,omitempty"`
+	// Run the script in an elevated shell. The API stores the flag as the string 'on' when set.
+	WinrmElevated        *string                `json:"winrm.elevated,omitempty"`
 	AdditionalProperties map[string]interface{} `json:",remain"`
 }
 
@@ -66,6 +68,9 @@ func (o PowerShellTaskConfig2) ToMap() (map[string]interface{}, error) {
 	}
 	if o.SshKey.IsSet() {
 		toSerialize["sshKey"] = o.SshKey.Get()
+	}
+	if !IsNil(o.WinrmElevated) {
+		toSerialize["winrm.elevated"] = o.WinrmElevated
 	}
 
 	for key, value := range o.AdditionalProperties {

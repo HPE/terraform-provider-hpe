@@ -47,8 +47,11 @@ type NetworkDomainCreate struct {
 	// Guest Username. If set, will change the instances RPC Service User after joining a Domain.
 	GuestUsername *string `json:"guestUsername,omitempty"`
 	// Guest Password
-	GuestPassword        *string                `json:"guestPassword,omitempty"`
-	AdditionalProperties map[string]interface{} `json:",remain"`
+	GuestPassword *string `json:"guestPassword,omitempty"`
+	// Visibility, private or public. Only honoured for the master tenant; a domain owned by a sub-tenant is always private.
+	Visibility           *string                     `json:"visibility,omitempty"`
+	Account              *NetworkDomainCreateAccount `json:"account,omitempty"`
+	AdditionalProperties map[string]interface{}      `json:",remain"`
 }
 
 type _NetworkDomainCreate NetworkDomainCreate
@@ -101,6 +104,12 @@ func (o NetworkDomainCreate) ToMap() (map[string]interface{}, error) {
 	}
 	if !IsNil(o.GuestPassword) {
 		toSerialize["guestPassword"] = o.GuestPassword
+	}
+	if !IsNil(o.Visibility) {
+		toSerialize["visibility"] = o.Visibility
+	}
+	if !IsNil(o.Account) {
+		toSerialize["account"] = o.Account
 	}
 
 	for key, value := range o.AdditionalProperties {

@@ -1,0 +1,18 @@
+{
+  "attributes": {
+    "active": true,
+    "auto_join_domain": true,
+    "description": "v0 state capture for upgrader test",
+    "domain_controller": true,
+    "domain_password": null,
+    "domain_password_wo": null,
+    "domain_password_wo_version": 2,
+    "domain_username": "joiner",
+    "id": "38785",
+    "name": "morph18860-v0cap.example.test",
+    "public_zone": false,
+    "tenant_id": 1,
+    "visibility": "private"
+  },
+  "schema_version": 0
+}

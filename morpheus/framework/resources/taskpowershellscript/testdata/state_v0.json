@@ -1,0 +1,30 @@
+{
+  "attributes": {
+    "allow_custom_config": true,
+    "code": "morph18860-v0cap-ps",
+    "elevated_shell": true,
+    "execute_target": "remote",
+    "id": "19778",
+    "labels": [
+      "v0cap"
+    ],
+    "name": "morph18860-v0cap-ps",
+    "remote_target_host": "10.0.0.2",
+    "remote_target_password": "example",
+    "remote_target_password_wo": null,
+    "remote_target_password_wo_version": 2,
+    "remote_target_port": "5985",
+    "remote_target_username": "Administrator",
+    "repository_id": 0,
+    "result_type": "",
+    "retry_count": 1,
+    "retry_delay_seconds": 10,
+    "retryable": true,
+    "script_content": "Write-Output \"v0 capture\"\n",
+    "script_path": "",
+    "source_type": "local",
+    "version_ref": "",
+    "visibility": "private"
+  },
+  "schema_version": 0
+}
