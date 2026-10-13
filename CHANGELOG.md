@@ -336,6 +336,18 @@ requested pool; it points at the network's type and its group and tenant visibil
 
 ## Bug fixes
 
+### A resource that fails after Morpheus created it no longer buries the real error under "invalid result object" diagnostics (MORPH-18935)
+
+When a create succeeded at the API but a later step failed — a cluster whose provisioning poll
+hit the authentication failure above, for example — the provider marked the resource tainted so
+the next apply would replace it, but left every computed attribute unknown in the state it
+returned. Terraform rejects unknown values after an apply even when the provider reports an error,
+so the practitioner saw a run of *"Provider returned invalid result object after apply …
+attribute `cluster_type_code` is unknown"* (and `cpu_placement_mode`, `service_url`, `uuid`, …) on
+top of the failure that mattered. The tainting helper used by every resource now nulls those
+values first, so the output is the real error and the "partially created, marked tainted" warning,
+and nothing else. The next plan still proposes the replacement as before.
+
 ### Username and password authentication no longer fails after 24 minutes (MORPH-18753)
 
 With `username`/`password` provider configuration, any single plan or apply that ran for longer than
