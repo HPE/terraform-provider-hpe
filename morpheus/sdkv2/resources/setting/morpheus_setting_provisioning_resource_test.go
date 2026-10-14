@@ -5,6 +5,7 @@ package setting_test
 import (
 	"os"
 	"regexp"
+	"sync"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -15,6 +16,22 @@ import (
 	"github.com/HPE/terraform-provider-hpe/morpheus/testhelpers/capabilities"
 	"github.com/HPE/terraform-provider-hpe/provider/adapter"
 )
+
+// provisioningSettingsMu serialises the tests that rewrite the appliance's single
+// provisioning-settings object. Run in parallel, one test's apply lands between
+// another's apply and its check -- show_console_keyboard_settings read back as
+// "false" because a neighbour had just written its own configuration -- so each
+// test holds the lock for its whole duration. t.Parallel() stays on them: the
+// package's other tests may still overlap with one of these.
+var provisioningSettingsMu sync.Mutex
+
+// lockProvisioningSettings takes provisioningSettingsMu for the rest of the test.
+// Call it after t.Parallel(), so a test does not hold the lock while parked.
+func lockProvisioningSettings(t *testing.T) {
+	t.Helper()
+	provisioningSettingsMu.Lock()
+	t.Cleanup(provisioningSettingsMu.Unlock)
+}
 
 func TestMain(m *testing.M) {
 	code := m.Run()
@@ -30,6 +47,7 @@ func TestAccMorpheusSettingProvisioningExampleOk(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
+	lockProvisioningSettings(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -119,6 +137,7 @@ func TestAccMorpheusProvisioningSetting_updateEnvelope(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
+	lockProvisioningSettings(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -172,6 +191,7 @@ func TestAccMorpheusProvisioningSetting_showConsoleKeyboardSettings(t *testing.T
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
+	lockProvisioningSettings(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
@@ -226,6 +246,7 @@ func TestAccMorpheusProvisioningSetting_validationEmptyCloudInitUsername(t *test
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
+	lockProvisioningSettings(t)
 
 	providerConfig := testhelpers.ProviderBlock()
 
@@ -259,6 +280,7 @@ func TestAccMorpheusProvisioningSetting_passwordOmittedWhenUnset(t *testing.T) {
 	capabilities.MustHaveOrSkip(t, capabilities.All)
 
 	t.Parallel()
+	lockProvisioningSettings(t)
 
 	if testing.Short() {
 		t.Skip("Skipping slow test in short mode")
