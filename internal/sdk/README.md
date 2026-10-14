@@ -70,20 +70,17 @@ Consequences for day-to-day work:
   no counterpart in `sdkfull/` — the next regeneration would drop them.
 - The pipeline's `check-sdk-prune` task verifies that the committed `oapigen`
   compiles everywhere (all packages and test binaries, sweepers included, on
-  Linux and Windows), is fully pruned (a prune would change nothing), that
-  `sdkfull/` is a faithful, still-non-buildable superset of it, and that the
-  provenance stamp below is present.
+  Linux and Windows), is fully pruned (a prune would change nothing), and that
+  `sdkfull/` is a faithful, still-non-buildable superset of it.
 
-## Provenance and reproducibility
+## Reproducibility
 
-`oapigen/PROVENANCE` records exactly what produced the two trees: the
-API specification commit, the sha256 of the bundled spec the generator read,
-the generator version, the pinned formatting tools, and the build of the
-pruning tool (its VCS revision and the Go toolchain whose `go/format` shaped
-every file). The pipeline is deterministic — the same inputs regenerate both
-trees byte-for-byte, which has been verified end-to-end — so that file is the
-answer to "which API spec is this SDK from?", a question the Go code itself
-cannot answer.
+The pipeline is deterministic: given the same OpenAPI spec commit and its
+pinned tools (the generator, the formatters, and the Go toolchain whose
+`go/format` shapes every file), it regenerates both trees byte-for-byte, which
+has been verified end-to-end. The trees themselves carry no record of which
+spec commit they were generated from; when that matters, it is stated in the
+pull request that regenerated them.
 
 Two properties of the prune are worth knowing when you add code:
 

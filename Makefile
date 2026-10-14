@@ -24,13 +24,10 @@ TEST_TIMEOUT ?= 120m
 build:
 	go build
 
-# Install the tracked git hooks (.githooks/pre-push): lint, schema, docs and
-# unit-test gates run before every push because the Lint/Test/Docs CI workflows
-# are disabled (see .github/workflows/{lint,test,docs}.yaml). The schema gate
-# checks committed schema_gen.go files against the codegen pipeline and needs
-# the tooling workspace the provider is normally cloned into (standalone clones
-# get a warning). init.sh in the tooling workspace runs this automatically; for
-# a standalone clone, run once:
+# Install the tracked git hooks (.githooks/pre-push): lint, docs and unit-test
+# gates run before every push because the Lint/Test/Docs CI workflows are
+# disabled (see .github/workflows/{lint,test,docs}.yaml). init.sh in the
+# tooling workspace runs this automatically; for a standalone clone, run once:
 #     make hooks
 hooks:
 	git config core.hooksPath .githooks
