@@ -58,6 +58,11 @@ func DatastoreDataSourceSchema(ctx context.Context) schema.Schema {
 				Description:         "The Cloud this datastore is associated with",
 				MarkdownDescription: "The Cloud this datastore is associated with",
 			},
+			"cluster_id": schema.Int64Attribute{
+				Optional:            true,
+				Description:         "Cluster whose datastores the lookup is limited to. Every HVM cluster has datastores of its own — `local`, `morpheus-cloud-init`, `morpheus-images` — so with two clusters on an appliance a lookup by `name` alone finds one of each and fails. Set `cluster_id` to look the name up among that cluster's datastores only; with `id`, the datastore must be one of that cluster's. A filter on the lookup, not an attribute of the datastore: it is never returned.",
+				MarkdownDescription: "Cluster whose datastores the lookup is limited to. Every HVM cluster has datastores of its own — `local`, `morpheus-cloud-init`, `morpheus-images` — so with two clusters on an appliance a lookup by `name` alone finds one of each and fails. Set `cluster_id` to look the name up among that cluster's datastores only; with `id`, the datastore must be one of that cluster's. A filter on the lookup, not an attribute of the datastore: it is never returned.",
+			},
 			"code": schema.StringAttribute{
 				Computed: true,
 			},
@@ -259,8 +264,8 @@ func DatastoreDataSourceSchema(ctx context.Context) schema.Schema {
 			"name": schema.StringAttribute{
 				Optional:            true,
 				Computed:            true,
-				Description:         "The name of the datastore. Must not be empty.",
-				MarkdownDescription: "The name of the datastore. Must not be empty.",
+				Description:         "The name of the datastore. Must not be empty. Clusters' datastores share names (`local` on every HVM cluster); see `cluster_id`.",
+				MarkdownDescription: "The name of the datastore. Must not be empty. Clusters' datastores share names (`local` on every HVM cluster); see `cluster_id`.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},
@@ -408,6 +413,7 @@ type DatastoreModel struct {
 	AssociatedResourceId   types.Int64               `tfsdk:"associated_resource_id"`
 	AssociatedResourceType types.String              `tfsdk:"associated_resource_type"`
 	Cloud                  CloudValue                `tfsdk:"cloud"`
+	ClusterId              types.Int64               `tfsdk:"cluster_id"`
 	Code                   types.String              `tfsdk:"code"`
 	Config                 types.Dynamic             `tfsdk:"config"`
 	ConfigAlletrampBmaas   ConfigAlletrampBmaasValue `tfsdk:"config_alletramp_bmaas"`

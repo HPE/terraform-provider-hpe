@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 
 	sdk "github.com/HPE/terraform-provider-hpe/internal/sdk/oapigen"
@@ -178,6 +180,18 @@ func (d *DataSource) Read(
 	data.Description = convert.StrToType(layout.Description.Get())
 	data.Version = convert.StrToType(layout.InstanceVersion)
 	data.SortOrder = convert.Int64ToType(layout.SortOrder)
+
+	// The layout's instance type, so that a layout resolved by name resolves
+	// its type with it and the two cannot be mismatched on an instance.
+	data.InstanceType = NewInstanceTypeValueNull()
+	if layout.InstanceType != nil {
+		data.InstanceType = InstanceTypeValue{
+			Id:    convert.Int64ToType(layout.InstanceType.Id),
+			Name:  convert.StrToType(layout.InstanceType.Name),
+			Code:  convert.StrToType(layout.InstanceType.Code),
+			state: attr.ValueStateKnown,
+		}
+	}
 
 	diags = resp.State.Set(ctx, &data)
 	resp.Diagnostics.Append(diags...)

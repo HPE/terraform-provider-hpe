@@ -1,11 +1,49 @@
+# Everything the instance is built from is looked up by name. Ids are allocated
+# per appliance, so a configuration that carries one only ever works on the
+# appliance it was read from; a name resolves wherever the object exists.
+
 data "hpe_morpheus_cloud" "vme_cloud" {
   name = "{{.CloudName}}"
 }
 
-data "hpe_morpheus_service_plan" "vme_512mb" {
-  name                = "{{if .PlanName}}{{.PlanName}}{{else}}1 CPU, 1GB Memory{{end}}"
+# The cluster to provision into. Its resource pool is where the instance goes
+# (config_hvm.resource_pool_id), and its networks and datastores are where the
+# names below are looked up: every HVM cluster has a Management network and a
+# local datastore, so a name alone is ambiguous as soon as a cloud has two.
+data "hpe_morpheus_cluster" "vme" {
+  name = "{{.ClusterName}}"
+}
+
+# The layout resolves its instance type with it, so the two cannot be mismatched.
+# Layout names repeat once per guest version; the version pins one down.
+data "hpe_morpheus_instance_type_layout" "vme" {
+  name    = "{{.LayoutName}}"
+  version = "{{.LayoutVersion}}"
+}
+
+data "hpe_morpheus_network" "vme" {
+  name       = "{{.NetworkName}}"
+  cluster_id = data.hpe_morpheus_cluster.vme.id
+}
+{{- if .DatastoreName}}
+
+data "hpe_morpheus_datastore" "vme" {
+  name       = "{{.DatastoreName}}"
+  cluster_id = data.hpe_morpheus_cluster.vme.id
+}
+{{- end}}
+
+data "hpe_morpheus_service_plan" "vme_plan" {
+  name                = "{{.PlanName}}"
   provision_type_code = "kvm"
 }
+{{- if .ImageName}}
+
+# The image to provision from, when the layout does not carry one.
+data "hpe_morpheus_image" "vme" {
+  name = "{{.ImageName}}"
+}
+{{- end}}
 
 data "hpe_morpheus_group" "example" {
   name = {{.GroupName}}
@@ -13,12 +51,12 @@ data "hpe_morpheus_group" "example" {
 
 resource "hpe_morpheus_instance" "example" {
   name             = "{{.Name}}"
-  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id 
-  layout_id        = {{.LayoutId}} # Single KVM VM
-  instance_type_id = {{.InstanceType}} # (HVM) mvm-cluster
+  cloud_id         = data.hpe_morpheus_cloud.vme_cloud.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.vme.id
+  instance_type_id = data.hpe_morpheus_instance_type_layout.vme.instance_type.id
 
   group_id = data.hpe_morpheus_group.example.id
-  plan_id  = data.hpe_morpheus_service_plan.vme_512mb.id # kvm-vm-512
+  plan_id  = data.hpe_morpheus_service_plan.vme_plan.id
 
   instance_context = "{{.InstanceContext}}"
 {{- if .Description}}
@@ -56,17 +94,23 @@ resource "hpe_morpheus_instance" "example" {
 {{- end}}
   network_interfaces = [
     {
-      network_id = {{.NetworkId}}
+      network_id = data.hpe_morpheus_network.vme.id
     }
   ]
 
+  # storage_type_id 1 is the seeded "standard" disk type, the same on every
+  # appliance; it is a type, not an object, and has no data source.
   volumes = [
     {
       root_volume     = true
       name            = "root"
       size            = 10
       storage_type_id = 1
-      datastore_id    = {{.DatastoreId}}
+{{- if .DatastoreName}}
+      datastore_id    = data.hpe_morpheus_datastore.vme.id
+{{- else}}
+      datastore_auto_selection = "auto"
+{{- end}}
 {{- if .StorageProfile}}
       storage_profile = "{{.StorageProfile}}"
 {{- end}}
@@ -77,7 +121,11 @@ resource "hpe_morpheus_instance" "example" {
       name            = "data"
       size            = 10
       storage_type_id = 1
-      datastore_id    = {{.DatastoreId}}
+{{- if .DatastoreName}}
+      datastore_id    = data.hpe_morpheus_datastore.vme.id
+{{- else}}
+      datastore_auto_selection = "auto"
+{{- end}}
     }
 {{- end}}
   ]
@@ -106,9 +154,12 @@ resource "hpe_morpheus_instance" "example" {
   ]
 
   config_hvm = {
-    resource_pool_id      = "{{.ResourcePool}}"
+    resource_pool_id      = "pool-${data.hpe_morpheus_cluster.vme.permissions.resource_pool.id}"
     nested_virtualization = "off"
-    no_agent              = true
+    no_agent              = {{.NoAgent}}
     create_user           = false
+{{- if .ImageName}}
+    image_id              = data.hpe_morpheus_image.vme.id
+{{- end}}
   }
 }

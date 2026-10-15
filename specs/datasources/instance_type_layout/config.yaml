@@ -19,6 +19,9 @@ instance_type_layout:
     - instance_type_layout.code
     - instance_type_layout.description
     - instance_type_layout.sort_order
+    - instance_type_layout.instance_type.id
+    - instance_type_layout.instance_type.name
+    - instance_type_layout.instance_type.code
   moves:
     - instance_type_layout: "" # unnest to root
     - template-version: version
@@ -37,3 +40,14 @@ instance_type_layout:
       description: The description of the instance layout
     sort_order:
       description: Display order of the layout higher to lower
+    instance_type:
+      description: >-
+        The instance type this layout belongs to. A layout is always one instance type's, so resolving a
+        layout by name resolves the type with it: pass `instance_type.id` as `instance_type_id` and `id` as
+        `layout_id` on `hpe_morpheus_instance` and the two cannot be mismatched.
+    instance_type.id:
+      description: Morpheus ID of the layout's instance type
+    instance_type.name:
+      description: Name of the layout's instance type
+    instance_type.code:
+      description: Code of the layout's instance type, e.g. `mvm` for HVM

@@ -1,17 +1,62 @@
-# Test fixture, not documentation: an HVM instance whose network belongs to a
-# different resource pool than the one requested. Morpheus rejects this during
-# validation, before anything is provisioned, with "Invalid network".
+# Test fixture, not documentation: an HVM instance whose network belongs to one
+# cluster's resource pool while the instance targets another cluster's pool.
+# Morpheus rejects this during validation, before anything is provisioned, with
+# "Invalid network", and the provider explains why. Both clusters, the network,
+# the layout and the plan are looked up by name.
+data "hpe_morpheus_cloud" "wrong_pool" {
+  name = "{{.CloudName}}"
+}
+
+# The cluster the network belongs to.
+data "hpe_morpheus_cluster" "network_cluster" {
+  name = "{{.ClusterName}}"
+}
+
+# The cluster whose pool the instance targets instead.
+data "hpe_morpheus_cluster" "target_cluster" {
+  name = "{{.OtherClusterName}}"
+}
+{{- if .NetworkPoolless}}
+
+# A network of the cloud that belongs to no resource pool: looked up in the
+# cloud, since no cluster has it.
+data "hpe_morpheus_network" "wrong_pool" {
+  name     = "{{.NetworkName}}"
+  cloud_id = data.hpe_morpheus_cloud.wrong_pool.id
+}
+{{- else}}
+
+data "hpe_morpheus_network" "wrong_pool" {
+  name       = "{{.NetworkName}}"
+  cluster_id = data.hpe_morpheus_cluster.network_cluster.id
+}
+{{- end}}
+
+data "hpe_morpheus_instance_type_layout" "wrong_pool" {
+  name    = "{{.LayoutName}}"
+  version = "{{.LayoutVersion}}"
+}
+
+data "hpe_morpheus_service_plan" "wrong_pool" {
+  name                = "{{.PlanName}}"
+  provision_type_code = "kvm"
+}
+
+data "hpe_morpheus_group" "wrong_pool" {
+  name = {{.GroupName}}
+}
+
 resource "hpe_morpheus_instance" "wrong_pool" {
   name             = {{.Name}}
-  cloud_id         = {{.CloudId}}
-  group_id         = {{.GroupId}}
-  instance_type_id = {{.InstanceTypeId}}
-  layout_id        = {{.LayoutId}}
-  plan_id          = {{.PlanId}}
+  cloud_id         = data.hpe_morpheus_cloud.wrong_pool.id
+  group_id         = data.hpe_morpheus_group.wrong_pool.id
+  instance_type_id = data.hpe_morpheus_instance_type_layout.wrong_pool.instance_type.id
+  layout_id        = data.hpe_morpheus_instance_type_layout.wrong_pool.id
+  plan_id          = data.hpe_morpheus_service_plan.wrong_pool.id
 
   network_interfaces = [
     {
-      network_id = {{.NetworkId}}
+      network_id = data.hpe_morpheus_network.wrong_pool.id
     }
   ]
 
@@ -26,6 +71,6 @@ resource "hpe_morpheus_instance" "wrong_pool" {
   ]
 
   config_hvm = {
-    resource_pool_id = {{.ResourcePoolId}}
+    resource_pool_id = "pool-${data.hpe_morpheus_cluster.target_cluster.permissions.resource_pool.id}"
   }
 }

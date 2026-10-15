@@ -235,6 +235,8 @@ func TestAccMorpheusInstanceResourcePlanIdChangeResizes(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	// A stock plan every appliance seeds, so the second step is a genuine
+	// plan change; TF_VAR_testacc_morpheus_hvm_plan_name must name another.
 	biggerPlan, err := instance.RenderInstanceConfig(t, map[string]string{
 		"Name":     name,
 		"PlanName": "1 CPU, 2GB Memory",
@@ -259,7 +261,7 @@ func TestAccMorpheusInstanceResourcePlanIdChangeResizes(t *testing.T) {
 				},
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttrPair(instanceResourceName, "plan_id",
-						"data.hpe_morpheus_service_plan.vme_512mb", "id"),
+						"data.hpe_morpheus_service_plan.vme_plan", "id"),
 					// A plan change is a resize, and only a resize.
 					expectCalls(t, rec, "resize"),
 				),

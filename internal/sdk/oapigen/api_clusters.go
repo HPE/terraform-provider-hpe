@@ -1616,6 +1616,225 @@ func (a *ClustersAPIService) ListClusterAffinityGroupsExecute(r ApiListClusterAf
 	return localVarReturnValue, localVarHTTPResponse, nil
 }
 
+type ApiListClusterDatastoresRequest struct {
+	ctx          context.Context
+	ApiService   *ClustersAPIService
+	clusterId    int64
+	max          *int64
+	offset       *int64
+	sort         *string
+	order        *string
+	phrase       *string
+	name         *string
+	code         *string
+	hideInactive *bool
+}
+
+// Maximum number of records to return
+func (r ApiListClusterDatastoresRequest) Max(max int64) ApiListClusterDatastoresRequest {
+	r.max = &max
+	return r
+}
+
+// Offset records, the number of records to skip, for paginating requests
+func (r ApiListClusterDatastoresRequest) Offset(offset int64) ApiListClusterDatastoresRequest {
+	r.offset = &offset
+	return r
+}
+
+// Sort order, the name of the property to sort by
+func (r ApiListClusterDatastoresRequest) Sort(sort string) ApiListClusterDatastoresRequest {
+	r.sort = &sort
+	return r
+}
+
+// Sort direction, use &#39;desc&#39; to reverse sort
+func (r ApiListClusterDatastoresRequest) Order(order string) ApiListClusterDatastoresRequest {
+	r.order = &order
+	return r
+}
+
+// Search phrase for partial matches on name or description
+func (r ApiListClusterDatastoresRequest) Phrase(phrase string) ApiListClusterDatastoresRequest {
+	r.phrase = &phrase
+	return r
+}
+
+// Filter by name
+func (r ApiListClusterDatastoresRequest) Name(name string) ApiListClusterDatastoresRequest {
+	r.name = &name
+	return r
+}
+
+// If specified will return an exact match on code
+func (r ApiListClusterDatastoresRequest) Code(code string) ApiListClusterDatastoresRequest {
+	r.code = &code
+	return r
+}
+
+// If true restricts query to only load active datastores
+func (r ApiListClusterDatastoresRequest) HideInactive(hideInactive bool) ApiListClusterDatastoresRequest {
+	r.hideInactive = &hideInactive
+	return r
+}
+
+func (r ApiListClusterDatastoresRequest) Execute() (*ListClusterDatastores200Response, *http.Response, error) {
+	return r.ApiService.ListClusterDatastoresExecute(r)
+}
+
+/*
+ListClusterDatastores Get Cluster Datastores
+
+This endpoint retrieves datastores of a specified cluster.
+
+	@param ctx context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+	@param clusterId The ID of the cluster
+	@return ApiListClusterDatastoresRequest
+*/
+func (a *ClustersAPIService) ListClusterDatastores(ctx context.Context, clusterId int64) ApiListClusterDatastoresRequest {
+	return ApiListClusterDatastoresRequest{
+		ApiService: a,
+		ctx:        ctx,
+		clusterId:  clusterId,
+	}
+}
+
+// Execute executes the request
+//
+//	@return ListClusterDatastores200Response
+func (a *ClustersAPIService) ListClusterDatastoresExecute(r ApiListClusterDatastoresRequest) (*ListClusterDatastores200Response, *http.Response, error) {
+	var (
+		localVarHTTPMethod  = http.MethodGet
+		localVarPostBody    interface{}
+		formFiles           []formFile
+		localVarReturnValue *ListClusterDatastores200Response
+	)
+
+	localBasePath, err := a.client.cfg.ServerURLWithContext(r.ctx, "ClustersAPIService.ListClusterDatastores")
+	if err != nil {
+		return localVarReturnValue, nil, &GenericOpenAPIError{err: err}
+	}
+
+	localVarPath := localBasePath + "/api/clusters/{clusterId}/datastores"
+	localVarPath = strings.Replace(localVarPath, "{"+"clusterId"+"}", url.PathEscape(parameterValueToString(r.clusterId, "clusterId")), -1)
+
+	localVarHeaderParams := make(map[string]string)
+	localVarQueryParams := url.Values{}
+	localVarFormParams := url.Values{}
+
+	if r.max != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "max", r.max, "form", "")
+	} else {
+		var defaultValue int64 = 25
+		r.max = &defaultValue
+	}
+	if r.offset != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "offset", r.offset, "form", "")
+	} else {
+		var defaultValue int64 = 0
+		r.offset = &defaultValue
+	}
+	if r.sort != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "sort", r.sort, "form", "")
+	} else {
+		var defaultValue string = "name"
+		r.sort = &defaultValue
+	}
+	if r.order != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "order", r.order, "form", "")
+	} else {
+		var defaultValue string = "asc"
+		r.order = &defaultValue
+	}
+	if r.phrase != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "phrase", r.phrase, "form", "")
+	}
+	if r.name != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "name", r.name, "form", "")
+	}
+	if r.code != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "code", r.code, "form", "")
+	}
+	if r.hideInactive != nil {
+		parameterAddToHeaderOrQuery(localVarQueryParams, "hideInactive", r.hideInactive, "form", "")
+	} else {
+		var defaultValue bool = false
+		r.hideInactive = &defaultValue
+	}
+	// to determine the Content-Type header
+	localVarHTTPContentTypes := []string{}
+
+	// set Content-Type header
+	localVarHTTPContentType := selectHeaderContentType(localVarHTTPContentTypes)
+	if localVarHTTPContentType != "" {
+		localVarHeaderParams["Content-Type"] = localVarHTTPContentType
+	}
+
+	// to determine the Accept header
+	localVarHTTPHeaderAccepts := []string{"application/json"}
+
+	// set Accept header
+	localVarHTTPHeaderAccept := selectHeaderAccept(localVarHTTPHeaderAccepts)
+	if localVarHTTPHeaderAccept != "" {
+		localVarHeaderParams["Accept"] = localVarHTTPHeaderAccept
+	}
+	req, err := a.client.prepareRequest(r.ctx, localVarPath, localVarHTTPMethod, localVarPostBody, localVarHeaderParams, localVarQueryParams, localVarFormParams, formFiles)
+	if err != nil {
+		return localVarReturnValue, nil, err
+	}
+
+	localVarHTTPResponse, err := a.client.callAPI(req)
+	if err != nil || localVarHTTPResponse == nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	localVarBody, err := io.ReadAll(localVarHTTPResponse.Body)
+	localVarHTTPResponse.Body.Close()
+	localVarHTTPResponse.Body = io.NopCloser(bytes.NewBuffer(localVarBody))
+	if err != nil {
+		return localVarReturnValue, localVarHTTPResponse, err
+	}
+
+	if localVarHTTPResponse.StatusCode >= 300 {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+		}
+		if localVarHTTPResponse.StatusCode >= 400 && localVarHTTPResponse.StatusCode < 500 {
+			var v GetAffinityGroup4XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+			return localVarReturnValue, localVarHTTPResponse, newErr
+		}
+		if localVarHTTPResponse.StatusCode >= 500 {
+			var v GetAffinityGroup5XXResponse
+			err = a.client.decode(&v, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+			if err != nil {
+				newErr.err = err
+				return localVarReturnValue, localVarHTTPResponse, newErr
+			}
+			newErr.err = errors.New(formatErrorMessage(localVarHTTPResponse.Status, &v))
+			newErr.model = v
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	err = a.client.decode(&localVarReturnValue, localVarBody, localVarHTTPResponse.Header.Get("Content-Type"))
+	if err != nil {
+		newErr := &GenericOpenAPIError{
+			body: localVarBody,
+			err:  err,
+		}
+		return localVarReturnValue, localVarHTTPResponse, newErr
+	}
+
+	return localVarReturnValue, localVarHTTPResponse, nil
+}
+
 type ApiListClusterTypesRequest struct {
 	ctx          context.Context
 	ApiService   *ClustersAPIService

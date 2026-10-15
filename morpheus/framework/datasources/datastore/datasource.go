@@ -624,7 +624,7 @@ func getDatastoreByName(
 
 		return nil, fmt.Errorf(
 			"multiple datastores found with name %s. Datastore IDs: %s. "+
-				"Please specify an ID instead",
+				"Set cluster_id to select the cluster's, or specify an ID instead",
 			name,
 			strings.Join(datastoreIDs, ", "),
 		)
@@ -690,19 +690,169 @@ func datastoreFromListEntry(
 	return &out, nil
 }
 
+// getDatastoreByNameInCluster resolves a name among one cluster's datastores.
+//
+// Every HVM cluster has datastores of its own (local, morpheus-cloud-init,
+// morpheus-images), so on an appliance with two clusters a name alone finds
+// one of each. The cluster's own listing takes the same name filter and
+// answers with that cluster's datastores only.
+func getDatastoreByNameInCluster(
+	ctx context.Context,
+	name string,
+	clusterID int64,
+	client *sdk.APIClient,
+) (*DatastoreModel, error) {
+	datastores, hresp, err := client.ClustersAPI.ListClusterDatastores(ctx, clusterID).
+		Name(name).
+		Max(listMax).
+		Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		// The cluster's listing answers 404 when the cluster itself does not
+		// exist ("Cluster not found with id N"): a cluster that is not there
+		// has no datastores, so say so rather than report a failed listing,
+		// and keep the appliance's message, which names what was missing.
+		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
+			return nil, fmt.Errorf("datastore %s not found in cluster %d: %s",
+				name, clusterID, errfmt.ErrMsg(err, hresp))
+		}
+
+		return nil, fmt.Errorf("cluster %d datastore %s list failed: %s",
+			clusterID, name, errfmt.ErrMsg(err, hresp))
+	}
+
+	// The name filter is exact on the appliances seen so far; match again
+	// client-side so a looser one cannot hand back a neighbour.
+	var matching []sdk.ListClusterDatastores200ResponseAllOfDatastoresInner
+	for _, entry := range datastores.Datastores {
+		if entry.Name != nil && *entry.Name == name {
+			matching = append(matching, entry)
+		}
+	}
+
+	if len(matching) == 0 {
+		return nil, fmt.Errorf("datastore %s not found in cluster %d", name, clusterID)
+	}
+
+	if len(matching) > 1 {
+		var datastoreIDs []string
+		for _, n := range matching {
+			if n.Id != nil {
+				datastoreIDs = append(datastoreIDs, fmt.Sprintf("%d", *n.Id))
+			}
+		}
+
+		return nil, fmt.Errorf(
+			"multiple datastores found with name %s in cluster %d. Datastore IDs: %s. "+
+				"Please specify an ID instead",
+			name, clusterID, strings.Join(datastoreIDs, ", "),
+		)
+	}
+
+	entry := matching[0]
+	if entry.Id == nil {
+		return nil, fmt.Errorf("datastore %s in cluster %d has missing ID", name, clusterID)
+	}
+
+	// As for the global listing: the single-item GET carries fields the entry
+	// may not, so it is attempted first, and the entry is the fallback.
+	model, err := getDatastoreById(ctx, *entry.Id, client)
+	if err == nil {
+		return model, nil
+	}
+
+	tflog.Debug(ctx, "cluster datastore could not be fetched by id; "+
+		"falling back to the listing entry", map[string]any{
+		"datastore_id": *entry.Id,
+		"cluster_id":   clusterID,
+		"error":        err.Error(),
+	})
+
+	datastore, err := datastoreFromClusterListEntry(&entry)
+	if err != nil {
+		return nil, err
+	}
+
+	return datastoreToModel(ctx, datastore, *entry.Id, client)
+}
+
+// datastoreFromClusterListEntry converts a cluster listing entry into the
+// single-item shape, by re-encoding as datastoreFromListEntry does and for the
+// same reason: the two are the same API object under different Go names.
+func datastoreFromClusterListEntry(
+	in *sdk.ListClusterDatastores200ResponseAllOfDatastoresInner,
+) (*sdk.GetDatastores200ResponseAllOfDatastore, error) {
+	encoded, err := json.Marshal(in)
+	if err != nil {
+		return nil, fmt.Errorf("cluster datastore could not be encoded: %w", err)
+	}
+
+	var out sdk.GetDatastores200ResponseAllOfDatastore
+	if err := json.Unmarshal(encoded, &out); err != nil {
+		return nil, fmt.Errorf("cluster datastore could not be decoded: %w", err)
+	}
+
+	return &out, nil
+}
+
+// checkDatastoreInCluster confirms that a datastore is one of a cluster's: the
+// cluster-scoped GET answers 404 for any datastore the cluster does not have,
+// shared ones included, which is the membership test the API itself applies.
+func checkDatastoreInCluster(
+	ctx context.Context,
+	id, clusterID int64,
+	client *sdk.APIClient,
+) error {
+	_, hresp, err := client.ClustersAPI.GetClusterDatastore(ctx, clusterID, id).Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		if hresp != nil && hresp.StatusCode == http.StatusNotFound {
+			return fmt.Errorf("datastore %d is not one of cluster %d's datastores", id, clusterID)
+		}
+
+		return fmt.Errorf("cluster %d datastore %d GET failed: %s", clusterID, id, errfmt.ErrMsg(err, hresp))
+	}
+
+	return nil
+}
+
 func getDatastore(
 	ctx context.Context,
 	config DatastoreModel,
 	client *sdk.APIClient,
 ) (*DatastoreModel, error) {
-	if !config.Id.IsNull() {
-		return getDatastoreById(ctx, config.Id.ValueInt64(), client)
-	}
-	if !config.Name.IsNull() {
-		return getDatastoreByName(ctx, config.Name.ValueString(), client)
+	var clusterID *int64
+	if !config.ClusterId.IsNull() && !config.ClusterId.IsUnknown() {
+		v := config.ClusterId.ValueInt64()
+		clusterID = &v
 	}
 
-	return nil, fmt.Errorf("either id or name must be specified")
+	var (
+		state *DatastoreModel
+		err   error
+	)
+
+	switch {
+	case !config.Id.IsNull():
+		state, err = getDatastoreById(ctx, config.Id.ValueInt64(), client)
+		if err == nil && clusterID != nil {
+			err = checkDatastoreInCluster(ctx, config.Id.ValueInt64(), *clusterID, client)
+		}
+	case !config.Name.IsNull() && clusterID != nil:
+		state, err = getDatastoreByNameInCluster(ctx, config.Name.ValueString(), *clusterID, client)
+	case !config.Name.IsNull():
+		state, err = getDatastoreByName(ctx, config.Name.ValueString(), client)
+	default:
+		return nil, fmt.Errorf("either id or name must be specified")
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	// cluster_id is a filter on the lookup, not a property of the datastore;
+	// it is carried through as configured.
+	state.ClusterId = config.ClusterId
+
+	return state, nil
 }
 
 func (d *DataSource) Read(

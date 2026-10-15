@@ -425,3 +425,38 @@ func TestAccMorpheusFindInstanceLayoutWithIdAndVersion(t *testing.T) {
 		},
 	})
 }
+
+// A layout belongs to one instance type, and the data source now says which,
+// so a configuration can take instance_type_id and layout_id from the one
+// lookup. The fixture is the layout the HVM instance tests provision with,
+// resolved by name and version.
+func TestAccMorpheusInstanceTypeLayoutInstanceType(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.HVM)
+
+	layoutName, layoutVersion := testhelpers.HVMLayout(t)
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + `
+data "hpe_morpheus_instance_type_layout" "hvm" {
+  name    = "` + layoutName + `"
+  version = "` + layoutVersion + `"
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.hpe_morpheus_instance_type_layout.hvm", "name", layoutName),
+					resource.TestCheckResourceAttr("data.hpe_morpheus_instance_type_layout.hvm", "version", layoutVersion),
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_instance_type_layout.hvm", "instance_type.id"),
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_instance_type_layout.hvm", "instance_type.name"),
+					resource.TestCheckResourceAttrSet("data.hpe_morpheus_instance_type_layout.hvm", "instance_type.code"),
+				),
+			},
+		},
+	})
+}

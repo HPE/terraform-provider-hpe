@@ -1118,6 +1118,22 @@ func parseContainerInterfaces(
 			networkPoolObj, d := networkPool.ToObjectValue(ctx)
 			diags = append(diags, d...)
 
+			// subnet was left unset here, and a zero ObjectValue (no attribute
+			// types) cannot be converted to the schema's object: the data
+			// source failed with "can't use tftypes.Object[] as
+			// tftypes.Object[id, name]" on any instance whose container has
+			// interfaces, which on 9.1 is every instance.
+			subnet := NewSubnetValueNull()
+			if in.Subnet != nil {
+				subnet = SubnetValue{
+					Id:    convert.Int64ToType(in.Subnet.Id),
+					Name:  convert.StrToType(in.Subnet.Name),
+					state: attr.ValueStateKnown,
+				}
+			}
+			subnetObj, d := subnet.ToObjectValue(ctx)
+			diags = append(diags, d...)
+
 			return ContainerInterfacesValue{
 				Active:           convert.BoolToType(in.Active),
 				ChildInterfaces:  childInterfaces,
@@ -1133,6 +1149,7 @@ func parseContainerInterfaces(
 				PoolAssigned:     convert.BoolToType(in.PoolAssigned),
 				PrimaryInterface: convert.BoolToType(in.PrimaryInterface),
 				PublicIpAddress:  convert.StrToType(in.PublicIpAddress),
+				Subnet:           subnetObj,
 				UniqueId:         convert.StrToType(in.UniqueId),
 				state:            attr.ValueStateKnown,
 			}

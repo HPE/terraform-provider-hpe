@@ -4,11 +4,17 @@ package instancetypelayout
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-go/tftypes"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 )
@@ -31,6 +37,33 @@ func InstanceTypeLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 				Computed:            true,
 				Description:         "Morpheus ID of the instance layout",
 				MarkdownDescription: "Morpheus ID of the instance layout",
+			},
+			"instance_type": schema.SingleNestedAttribute{
+				Attributes: map[string]schema.Attribute{
+					"code": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Code of the layout's instance type, e.g. `mvm` for HVM",
+						MarkdownDescription: "Code of the layout's instance type, e.g. `mvm` for HVM",
+					},
+					"id": schema.Int64Attribute{
+						Computed:            true,
+						Description:         "Morpheus ID of the layout's instance type",
+						MarkdownDescription: "Morpheus ID of the layout's instance type",
+					},
+					"name": schema.StringAttribute{
+						Computed:            true,
+						Description:         "Name of the layout's instance type",
+						MarkdownDescription: "Name of the layout's instance type",
+					},
+				},
+				CustomType: InstanceTypeType{
+					ObjectType: types.ObjectType{
+						AttrTypes: InstanceTypeValue{}.AttributeTypes(ctx),
+					},
+				},
+				Computed:            true,
+				Description:         "The instance type this layout belongs to. A layout is always one instance type's, so resolving a layout by name resolves the type with it: pass `instance_type.id` as `instance_type_id` and `id` as `layout_id` on `hpe_morpheus_instance` and the two cannot be mismatched.",
+				MarkdownDescription: "The instance type this layout belongs to. A layout is always one instance type's, so resolving a layout by name resolves the type with it: pass `instance_type.id` as `instance_type_id` and `id` as `layout_id` on `hpe_morpheus_instance` and the two cannot be mismatched.",
 			},
 			"name": schema.StringAttribute{
 				Optional:            true,
@@ -63,10 +96,448 @@ func InstanceTypeLayoutDataSourceSchema(ctx context.Context) schema.Schema {
 }
 
 type InstanceTypeLayoutModel struct {
-	Code        types.String `tfsdk:"code"`
-	Description types.String `tfsdk:"description"`
-	Id          types.Int64  `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	SortOrder   types.Int64  `tfsdk:"sort_order"`
-	Version     types.String `tfsdk:"version"`
+	Code         types.String      `tfsdk:"code"`
+	Description  types.String      `tfsdk:"description"`
+	Id           types.Int64       `tfsdk:"id"`
+	InstanceType InstanceTypeValue `tfsdk:"instance_type"`
+	Name         types.String      `tfsdk:"name"`
+	SortOrder    types.Int64       `tfsdk:"sort_order"`
+	Version      types.String      `tfsdk:"version"`
+}
+
+var _ basetypes.ObjectTypable = InstanceTypeType{}
+
+type InstanceTypeType struct {
+	basetypes.ObjectType
+}
+
+func (t InstanceTypeType) Equal(o attr.Type) bool {
+	other, ok := o.(InstanceTypeType)
+
+	if !ok {
+		return false
+	}
+
+	return t.ObjectType.Equal(other.ObjectType)
+}
+
+func (t InstanceTypeType) String() string {
+	return "InstanceTypeType"
+}
+
+func (t InstanceTypeType) ValueFromObject(ctx context.Context, in basetypes.ObjectValue) (basetypes.ObjectValuable, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	if in.IsUnknown() {
+		return NewInstanceTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInstanceTypeValueNull(), nil
+	}
+
+	attributes := in.Attributes()
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return nil, diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return nil, diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return nil, diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	return InstanceTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInstanceTypeValueNull() InstanceTypeValue {
+	return InstanceTypeValue{
+		state: attr.ValueStateNull,
+	}
+}
+
+func NewInstanceTypeValueUnknown() InstanceTypeValue {
+	return InstanceTypeValue{
+		state: attr.ValueStateUnknown,
+	}
+}
+
+func NewInstanceTypeValue(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) (InstanceTypeValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	// Reference: https://github.com/hashicorp/terraform-plugin-framework/issues/521
+	ctx := context.Background()
+
+	for name, attributeType := range attributeTypes {
+		attribute, ok := attributes[name]
+
+		if !ok {
+			diags.AddError(
+				"Missing InstanceTypeValue Attribute Value",
+				"While creating a InstanceTypeValue value, a missing attribute value was detected. "+
+					"A InstanceTypeValue must contain values for all attributes, even if null or unknown. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InstanceTypeValue Attribute Name (%s) Expected Type: %s", name, attributeType.String()),
+			)
+
+			continue
+		}
+
+		if !attributeType.Equal(attribute.Type(ctx)) {
+			diags.AddError(
+				"Invalid InstanceTypeValue Attribute Type",
+				"While creating a InstanceTypeValue value, an invalid attribute value was detected. "+
+					"A InstanceTypeValue must use a matching attribute type for the value. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("InstanceTypeValue Attribute Name (%s) Expected Type: %s\n", name, attributeType.String())+
+					fmt.Sprintf("InstanceTypeValue Attribute Name (%s) Given Type: %s", name, attribute.Type(ctx)),
+			)
+		}
+	}
+
+	for name := range attributes {
+		_, ok := attributeTypes[name]
+
+		if !ok {
+			diags.AddError(
+				"Extra InstanceTypeValue Attribute Value",
+				"While creating a InstanceTypeValue value, an extra attribute value was detected. "+
+					"A InstanceTypeValue must not contain values beyond the expected attribute types. "+
+					"This is always an issue with the provider and should be reported to the provider developers.\n\n"+
+					fmt.Sprintf("Extra InstanceTypeValue Attribute Name: %s", name),
+			)
+		}
+	}
+
+	if diags.HasError() {
+		return NewInstanceTypeValueUnknown(), diags
+	}
+
+	codeAttribute, ok := attributes["code"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`code is missing from object`)
+
+		return NewInstanceTypeValueUnknown(), diags
+	}
+
+	codeVal, ok := codeAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`code expected to be basetypes.StringValue, was: %T`, codeAttribute))
+	}
+
+	idAttribute, ok := attributes["id"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`id is missing from object`)
+
+		return NewInstanceTypeValueUnknown(), diags
+	}
+
+	idVal, ok := idAttribute.(basetypes.Int64Value)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`id expected to be basetypes.Int64Value, was: %T`, idAttribute))
+	}
+
+	nameAttribute, ok := attributes["name"]
+
+	if !ok {
+		diags.AddError(
+			"Attribute Missing",
+			`name is missing from object`)
+
+		return NewInstanceTypeValueUnknown(), diags
+	}
+
+	nameVal, ok := nameAttribute.(basetypes.StringValue)
+
+	if !ok {
+		diags.AddError(
+			"Attribute Wrong Type",
+			fmt.Sprintf(`name expected to be basetypes.StringValue, was: %T`, nameAttribute))
+	}
+
+	if diags.HasError() {
+		return NewInstanceTypeValueUnknown(), diags
+	}
+
+	return InstanceTypeValue{
+		Code:  codeVal,
+		Id:    idVal,
+		Name:  nameVal,
+		state: attr.ValueStateKnown,
+	}, diags
+}
+
+func NewInstanceTypeValueMust(attributeTypes map[string]attr.Type, attributes map[string]attr.Value) InstanceTypeValue {
+	object, diags := NewInstanceTypeValue(attributeTypes, attributes)
+
+	if diags.HasError() {
+		// This could potentially be added to the diag package.
+		diagsStrings := make([]string, 0, len(diags))
+
+		for _, diagnostic := range diags {
+			diagsStrings = append(diagsStrings, fmt.Sprintf(
+				"%s | %s | %s",
+				diagnostic.Severity(),
+				diagnostic.Summary(),
+				diagnostic.Detail()))
+		}
+
+		panic("NewInstanceTypeValueMust received error(s): " + strings.Join(diagsStrings, "\n"))
+	}
+
+	return object
+}
+
+func (t InstanceTypeType) ValueFromTerraform(ctx context.Context, in tftypes.Value) (attr.Value, error) {
+	if in.Type() == nil {
+		return NewInstanceTypeValueNull(), nil
+	}
+
+	if !in.Type().Equal(t.TerraformType(ctx)) {
+		return nil, fmt.Errorf("expected %s, got %s", t.TerraformType(ctx), in.Type())
+	}
+
+	if !in.IsKnown() {
+		return NewInstanceTypeValueUnknown(), nil
+	}
+
+	if in.IsNull() {
+		return NewInstanceTypeValueNull(), nil
+	}
+
+	attributes := map[string]attr.Value{}
+
+	val := map[string]tftypes.Value{}
+
+	err := in.As(&val)
+	if err != nil {
+		return nil, err
+	}
+
+	for k, v := range val {
+		a, err := t.AttrTypes[k].ValueFromTerraform(ctx, v)
+		if err != nil {
+			return nil, err
+		}
+
+		attributes[k] = a
+	}
+
+	return NewInstanceTypeValueMust(InstanceTypeValue{}.AttributeTypes(ctx), attributes), nil
+}
+
+func (t InstanceTypeType) ValueType(ctx context.Context) attr.Value {
+	return InstanceTypeValue{}
+}
+
+var _ basetypes.ObjectValuable = InstanceTypeValue{}
+
+type InstanceTypeValue struct {
+	Code  basetypes.StringValue `tfsdk:"code"`
+	Id    basetypes.Int64Value  `tfsdk:"id"`
+	Name  basetypes.StringValue `tfsdk:"name"`
+	state attr.ValueState
+}
+
+func (v InstanceTypeValue) ToTerraformValue(ctx context.Context) (tftypes.Value, error) {
+	attrTypes := make(map[string]tftypes.Type, 3)
+
+	var val tftypes.Value
+	var err error
+
+	attrTypes["code"] = basetypes.StringType{}.TerraformType(ctx)
+	attrTypes["id"] = basetypes.Int64Type{}.TerraformType(ctx)
+	attrTypes["name"] = basetypes.StringType{}.TerraformType(ctx)
+
+	objectType := tftypes.Object{AttributeTypes: attrTypes}
+
+	switch v.state {
+	case attr.ValueStateKnown:
+		vals := make(map[string]tftypes.Value, 3)
+
+		val, err = v.Code.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["code"] = val
+
+		val, err = v.Id.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["id"] = val
+
+		val, err = v.Name.ToTerraformValue(ctx)
+		if err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		vals["name"] = val
+
+		if err := tftypes.ValidateValue(objectType, vals); err != nil {
+			return tftypes.NewValue(objectType, tftypes.UnknownValue), err
+		}
+
+		return tftypes.NewValue(objectType, vals), nil
+	case attr.ValueStateNull:
+		return tftypes.NewValue(objectType, nil), nil
+	case attr.ValueStateUnknown:
+		return tftypes.NewValue(objectType, tftypes.UnknownValue), nil
+	default:
+		panic(fmt.Sprintf("unhandled Object state in ToTerraformValue: %s", v.state))
+	}
+}
+
+func (v InstanceTypeValue) IsNull() bool {
+	return v.state == attr.ValueStateNull
+}
+
+func (v InstanceTypeValue) IsUnknown() bool {
+	return v.state == attr.ValueStateUnknown
+}
+
+func (v InstanceTypeValue) String() string {
+	return "InstanceTypeValue"
+}
+
+func (v InstanceTypeValue) ToObjectValue(ctx context.Context) (basetypes.ObjectValue, diag.Diagnostics) {
+	var diags diag.Diagnostics
+
+	attributeTypes := map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
+
+	if v.IsNull() {
+		return types.ObjectNull(attributeTypes), diags
+	}
+
+	if v.IsUnknown() {
+		return types.ObjectUnknown(attributeTypes), diags
+	}
+
+	objVal, diags := types.ObjectValue(
+		attributeTypes,
+		map[string]attr.Value{
+			"code": v.Code,
+			"id":   v.Id,
+			"name": v.Name,
+		})
+
+	return objVal, diags
+}
+
+func (v InstanceTypeValue) Equal(o attr.Value) bool {
+	other, ok := o.(InstanceTypeValue)
+
+	if !ok {
+		return false
+	}
+
+	if v.state != other.state {
+		return false
+	}
+
+	if v.state != attr.ValueStateKnown {
+		return true
+	}
+
+	if !v.Code.Equal(other.Code) {
+		return false
+	}
+
+	if !v.Id.Equal(other.Id) {
+		return false
+	}
+
+	if !v.Name.Equal(other.Name) {
+		return false
+	}
+
+	return true
+}
+
+func (v InstanceTypeValue) Type(ctx context.Context) attr.Type {
+	return InstanceTypeType{
+		basetypes.ObjectType{
+			AttrTypes: v.AttributeTypes(ctx),
+		},
+	}
+}
+
+func (v InstanceTypeValue) AttributeTypes(ctx context.Context) map[string]attr.Type {
+	return map[string]attr.Type{
+		"code": basetypes.StringType{},
+		"id":   basetypes.Int64Type{},
+		"name": basetypes.StringType{},
+	}
 }

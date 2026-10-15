@@ -261,6 +261,17 @@ Exit codes:
 | `TF_VAR_testacc_morpheus_affinity_cloud_id` | ID of a cloud that supports affinity groups. Required by the `affinity_group` + `vmware` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_cluster_id` | ID of an HVM cluster that supports affinity groups. Required by the `affinity_group` + `hvm` tests, which skip without it |
 | `TF_VAR_testacc_morpheus_affinity_pool_id` | ID of a resource pool of type Cluster on the cloud above. Morpheus rejects a cloud affinity group created without a pool, so the `affinity_group` + `vmware` resource tests skip without it |
+| `TF_VAR_testacc_morpheus_hvm_cloud_name` | Name of the Morpheus private cloud an HVM cluster is in. The HVM fixture (`testhelpers/hvm_fixture.go`): the objects the HVM/KVM instance and data-source tests provision against, **by name**, resolved by data sources inside the test configuration — never by id. Tests skip when a variable they need is unset |
+| `TF_VAR_testacc_morpheus_hvm_cluster_name` | Name of the HVM cluster to provision into; its resource pool, networks and datastores are what the other names are looked up in |
+| `TF_VAR_testacc_morpheus_hvm_network_name` | Name of a network of that cluster (`GET /api/networks?clusterId=`) |
+| `TF_VAR_testacc_morpheus_hvm_datastore_name` | Name of a datastore of that cluster (`GET /api/clusters/{id}/datastores`); optional for the instance tests, which fall back to automatic datastore selection |
+| `TF_VAR_testacc_morpheus_hvm_layout_name`, `TF_VAR_testacc_morpheus_hvm_layout_version` | The instance type layout to provision with (its instance type comes with it); the version pins one of the same-named layouts |
+| `TF_VAR_testacc_morpheus_hvm_plan_name` | A small kvm service plan for the test VMs, e.g. `1 CPU, 1GB Memory` |
+| `TF_VAR_testacc_morpheus_hvm_image_name` | A virtual image to provision from when the layout carries none; optional for the instance tests |
+| `TF_VAR_testacc_morpheus_hvm_growing_image_name` | A virtual image whose raw size is just over its minimum disk (10 GB requested -> 11 GB after provisioning), for the volume `actual_size` test; it skips without one |
+| `TF_VAR_testacc_morpheus_hvm_no_agent` | `true` to provision the test VMs without the Morpheus agent (default: with it). Without the agent Morpheus SSHes from the appliance into the guest to report its address and apply environment variables, so set this only where the appliance can reach the test VMs |
+| `TF_VAR_testacc_morpheus_hvm_other_cluster_name` | A second HVM cluster in the same cloud, for the wrong-pool test (an instance targeting one cluster's pool with a network of the other's) |
+| `TF_VAR_testacc_morpheus_hvm_poolless_network_name` | A network of the HVM cloud that belongs to no resource pool (a docker bridge, say), for the test that lists the networks Morpheus would accept instead |
 | `TF_VAR_testacc_pce_identity_client_id` | GreenLake API client ID. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_client_secret` | GreenLake API client secret. Required by the `pce` test |
 | `TF_VAR_testacc_pce_identity_issuer_url` | GreenLake IAM issuer URL used to mint access tokens. Required by the `pce` test |

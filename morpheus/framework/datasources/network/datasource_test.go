@@ -283,3 +283,105 @@ data "hpe_morpheus_network" "wrong" {
 		},
 	})
 }
+
+// Each HVM cluster has networks of its own, so two clusters in one cloud can
+// both have a network of one name -- the Management network Morpheus creates
+// with every cluster is the standing case -- and name plus cloud_id cannot
+// tell them apart. cluster_id limits the lookup to one cluster's networks.
+// The fixture is the HVM cluster the instance tests use, resolved by name.
+func TestAccNetworkDataSourceClusterIDScopesLookup(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.HVM)
+
+	clusterName := testhelpers.HVMClusterName(t)
+	networkName := testhelpers.HVMNetworkName(t)
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				// By name within the cluster: found, and the filter is carried
+				// through as configured.
+				Config: providerConfig + `
+data "hpe_morpheus_cluster" "hvm" {
+  name = "` + clusterName + `"
+}
+
+data "hpe_morpheus_network" "scoped" {
+  name       = "` + networkName + `"
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("data.hpe_morpheus_network.scoped", "name", networkName),
+					resource.TestCheckResourceAttrPair(
+						"data.hpe_morpheus_network.scoped", "cluster_id",
+						"data.hpe_morpheus_cluster.hvm", "id",
+					),
+					resource.TestCheckResourceAttrPair(
+						"data.hpe_morpheus_network.scoped", "cloud_id",
+						"data.hpe_morpheus_cluster.hvm", "cloud.id",
+					),
+				),
+			},
+			{
+				// By id with the cluster: the same network, accepted.
+				Config: providerConfig + `
+data "hpe_morpheus_cluster" "hvm" {
+  name = "` + clusterName + `"
+}
+
+data "hpe_morpheus_network" "scoped" {
+  name       = "` + networkName + `"
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+}
+
+data "hpe_morpheus_network" "by_id" {
+  id         = data.hpe_morpheus_network.scoped.id
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+}
+`,
+				Check: resource.TestCheckResourceAttrPair(
+					"data.hpe_morpheus_network.by_id", "id",
+					"data.hpe_morpheus_network.scoped", "id",
+				),
+			},
+			{
+				// A cluster that does not exist has no networks: not found, and
+				// the error names the cluster.
+				Config: providerConfig + `
+data "hpe_morpheus_network" "elsewhere" {
+  name       = "` + networkName + `"
+  cluster_id = 2147483647
+}
+`,
+				ExpectError: regexp.MustCompile(`not\s+found\s+in\s+cluster\s+2147483647`),
+			},
+			{
+				// By id against a cluster that does not have it: refused, and
+				// the error names both. The membership check lists the
+				// cluster's networks of this network's name, so this is the
+				// listing coming back empty.
+				Config: providerConfig + `
+data "hpe_morpheus_cluster" "hvm" {
+  name = "` + clusterName + `"
+}
+
+data "hpe_morpheus_network" "scoped" {
+  name       = "` + networkName + `"
+  cluster_id = data.hpe_morpheus_cluster.hvm.id
+}
+
+data "hpe_morpheus_network" "misplaced" {
+  id         = data.hpe_morpheus_network.scoped.id
+  cluster_id = 2147483647
+}
+`,
+				ExpectError: regexp.MustCompile(`is\s+not\s+one\s+of\s+cluster\s+2147483647's\s+networks`),
+			},
+		},
+	})
+}

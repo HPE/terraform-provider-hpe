@@ -18,4 +18,13 @@ Instance type layouts are attached to instance types. An instance type layout ca
 
 {{ tffile "examples/data-sources/morpheus_instance_type_layout/example-name-version.tf" }}
 
+### The layout's instance type
+
+A layout belongs to exactly one instance type, and the data source returns it as
+`instance_type` (`id`, `name`, `code`). Taking both `layout_id` and `instance_type_id`
+from the one lookup keeps an instance from pairing a layout with the wrong type, and
+spares a second lookup by name.
+
+{{ tffile "examples/data-sources/morpheus_instance_type_layout/example-instance-type.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}

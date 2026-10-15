@@ -48,7 +48,9 @@ func (d *DataSource) Schema(
 // getNetwork finds the network by id or by name. Morpheus keeps one network
 // record per cloud, so a name may match a record in each of several clouds
 // that cover the same account; cloud_id selects among them, and with an id it
-// is checked.
+// is checked. Within a cloud, each cluster has networks of its own, so a name
+// may also match one network per cluster; cluster_id limits the lookup to one
+// cluster's networks, and with an id it is checked the same way.
 func getNetwork(
 	ctx context.Context,
 	config NetworkModel,
@@ -58,6 +60,12 @@ func getNetwork(
 	if !config.CloudId.IsNull() && !config.CloudId.IsUnknown() {
 		v := config.CloudId.ValueInt64()
 		cloudID = &v
+	}
+
+	var clusterID *int64
+	if !config.ClusterId.IsNull() && !config.ClusterId.IsUnknown() {
+		v := config.ClusterId.ValueInt64()
+		clusterID = &v
 	}
 
 	if !config.Id.IsNull() {
@@ -71,14 +79,67 @@ func getNetwork(
 				config.Id.ValueInt64(), state.CloudId.String(), *cloudID)
 		}
 
+		if clusterID != nil {
+			if err := checkNetworkInCluster(ctx, config.Id.ValueInt64(), state.Name.ValueString(), *clusterID, client); err != nil {
+				return nil, err
+			}
+		}
+
+		// cluster_id is a filter on the lookup, not a property of the network;
+		// it is carried through as configured.
+		state.ClusterId = config.ClusterId
+
 		return state, nil
 	}
 
 	if !config.Name.IsNull() {
-		return getNetworkByName(ctx, config.Name.ValueString(), cloudID, client)
+		state, err := getNetworkByName(ctx, config.Name.ValueString(), cloudID, clusterID, client)
+		if err != nil {
+			return nil, err
+		}
+
+		state.ClusterId = config.ClusterId
+
+		return state, nil
 	}
 
 	return nil, fmt.Errorf("either id or name must be specified")
+}
+
+// checkNetworkInCluster confirms that a network is one of a cluster's, by
+// listing the cluster's networks: the network record itself does not name its
+// cluster, only the cluster's resource pool.
+//
+// The listing is a page of 25 by default and the networks API takes no page
+// size or offset, so the cluster's networks are narrowed to those with the
+// network's own name (an exact match on the appliance side) and the network
+// is looked for among them. A cluster would need more than a page of networks
+// of one name for the check to miss. Only an unnamed network falls back to the
+// first page of the whole cluster.
+func checkNetworkInCluster(
+	ctx context.Context,
+	id int64,
+	name string,
+	clusterID int64,
+	client *sdk.APIClient,
+) error {
+	request := client.NetworksAPI.ListNetworks(ctx).ClusterId(clusterID)
+	if name != "" {
+		request = request.Name(name)
+	}
+
+	networks, hresp, err := request.Execute()
+	if err != nil || hresp.StatusCode != http.StatusOK {
+		return fmt.Errorf("cluster %d network list failed: %s", clusterID, errfmt.ErrMsg(err, hresp))
+	}
+
+	for _, network := range networks.Networks {
+		if network.Id != nil && *network.Id == id {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("network %d is not one of cluster %d's networks", id, clusterID)
 }
 
 func getNetworkByID(
@@ -119,12 +180,15 @@ func getNetworkByID(
 func getNetworkByName(
 	ctx context.Context,
 	name string,
-	cloudID *int64,
+	cloudID, clusterID *int64,
 	client *sdk.APIClient,
 ) (*NetworkModel, error) {
 	request := client.NetworksAPI.ListNetworks(ctx).Name(name)
 	if cloudID != nil {
 		request = request.ZoneId(*cloudID)
+	}
+	if clusterID != nil {
+		request = request.ClusterId(*clusterID)
 	}
 
 	networks, hresp, err := request.Execute()
@@ -140,7 +204,12 @@ func getNetworkByName(
 	}
 
 	if len(matchingNetworks) == 0 {
-		if cloudID != nil {
+		switch {
+		case clusterID != nil && cloudID != nil:
+			return nil, fmt.Errorf("network %s not found in cluster %d (cloud %d)", name, *clusterID, *cloudID)
+		case clusterID != nil:
+			return nil, fmt.Errorf("network %s not found in cluster %d", name, *clusterID)
+		case cloudID != nil:
 			return nil, fmt.Errorf("network %s not found in cloud %d", name, *cloudID)
 		}
 
@@ -166,7 +235,7 @@ func getNetworkByName(
 
 		return nil, fmt.Errorf(
 			"multiple networks found with name %s: %s. "+
-				"Set cloud_id to select the cloud, or use id",
+				"Set cloud_id to select the cloud, cluster_id to select the cluster, or use id",
 			name,
 			strings.Join(found, ", "),
 		)

@@ -7,7 +7,7 @@ package instance_test
 import (
 	"os"
 	"regexp"
-	"strings"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -56,13 +56,9 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 	providerConfig := testhelpers.ProviderBlock()
 
 	name := acctest.RandomWithPrefix(t.Name())
-	instanceTypeID := "34"
-	resourcePool := "pool-1"
 
 	resourceConfig, err := instance.RenderInstanceConfig(t, map[string]string{
-		"Name":         name,
-		"InstanceType": instanceTypeID,
-		"ResourcePool": resourcePool,
+		"Name": name,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -88,24 +84,25 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 			"name",
 			name,
 		),
+		// Whether the VM has the agent follows the HVM fixture.
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance.example",
 			"config.noAgent",
-			"true",
+			strconv.FormatBool(testhelpers.HVMNoAgent()),
 		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance.example",
-			"config.resourcePoolId",
-			resourcePool,
+		// The pool is the cluster's, resolved by the configuration's data
+		// source; the instance type is the layout's.
+		testhelpers.CheckResourceAttrEqual(
+			"data.hpe_morpheus_instance.example", "config.resourcePoolId",
+			"hpe_morpheus_instance.example", "config_hvm.resource_pool_id",
 		),
 		testhelpers.CheckResourceAttrEqual(
 			"data.hpe_morpheus_instance.example", "instance_type.id",
 			"hpe_morpheus_instance.example", "instance_type_id",
 		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance.example",
-			"instance_type.id",
-			instanceTypeID,
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_instance.example", "instance_type.id",
+			"data.hpe_morpheus_instance_type_layout.vme", "instance_type.id",
 		),
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance.example",
@@ -115,12 +112,12 @@ func TestAccMorpheusInstanceDatasourceByIdAndName(t *testing.T) {
 		resource.TestCheckResourceAttr(
 			"data.hpe_morpheus_instance.example",
 			"container_details.0.server.agent_installed",
-			"false",
+			strconv.FormatBool(!testhelpers.HVMNoAgent()),
 		),
-		resource.TestCheckResourceAttr(
-			"data.hpe_morpheus_instance.example",
-			"container_details.0.server.resource_pool_id",
-			strings.TrimPrefix(resourcePool, "pool-"),
+		// The server's pool is the bare id of the cluster's pool.
+		resource.TestCheckResourceAttrPair(
+			"data.hpe_morpheus_instance.example", "container_details.0.server.resource_pool_id",
+			"data.hpe_morpheus_cluster.vme", "permissions.resource_pool.id",
 		),
 		testhelpers.CheckResourceAttrEqual(
 			"data.hpe_morpheus_instance.example", "container_details.0.server.container_plan.id",

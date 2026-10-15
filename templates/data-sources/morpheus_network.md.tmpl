@@ -33,4 +33,16 @@ in the cloud, whichever cloud's record it is.
 
 {{ tffile "examples/data-sources/morpheus_network/example-name-cloud.tf" }}
 
+### One network name, several clusters
+
+Within a cloud, each HVM cluster has networks of its own: the `Management` network
+Morpheus creates with every cluster, and the port-group networks on the cluster's
+virtual switches. Two clusters in one cloud can therefore each have a network of the
+same name, which `name` and `cloud_id` together cannot tell apart. Set `cluster_id`
+to look the name up among that cluster's networks only — `GET /api/networks?clusterId=`
+is the listing it uses. `cluster_id` is a filter on the lookup rather than a property
+of the network, so it is carried through as configured and never read back.
+
+{{ tffile "examples/data-sources/morpheus_network/example-name-cluster.tf" }}
+
 {{ .SchemaMarkdown | trimspace }}

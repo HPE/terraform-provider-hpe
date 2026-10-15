@@ -1,0 +1,12 @@
+# A layout belongs to one instance type, and the lookup says which: take both
+# ids from it and an instance can never pair a layout with the wrong type.
+data "hpe_morpheus_instance_type_layout" "example" {
+  name    = "Single HVM"
+  version = "1.0"
+}
+
+resource "hpe_morpheus_instance" "example" {
+  # ...
+  layout_id        = data.hpe_morpheus_instance_type_layout.example.id
+  instance_type_id = data.hpe_morpheus_instance_type_layout.example.instance_type.id
+}
