@@ -4,6 +4,7 @@ package setting_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -71,10 +72,11 @@ func snapshotAndRestoreApplianceSettings(t *testing.T) {
 // applianceRestoreBody converts appliance settings read from the API into the
 // map shape accepted by the appliance-settings PUT. Empty strings are preserved
 // on purpose so that fields set by the test (for example a proxy host) are
-// cleared again on restore. Role IDs are only included when registration is
-// enabled, mirroring the RequiredWith constraints. Password fields are omitted
-// because the API only returns password hashes, which cannot be replayed as
-// plaintext.
+// cleared again on restore. The two default role ids are replayed whenever the
+// appliance had them, whether or not registration is enabled: the appliance
+// keeps them either way, and a test may have moved them with registration
+// off. Password fields are omitted because the API only returns password
+// hashes, which cannot be replayed as plaintext.
 func applianceRestoreBody(s *sdklegacy.ApplianceSettings) map[string]any {
 	m := map[string]any{
 		"applianceUrl":         s.ApplianceURL,
@@ -98,8 +100,11 @@ func applianceRestoreBody(s *sdklegacy.ApplianceSettings) map[string]any {
 		"currencyKey":          s.CurrencyKey,
 	}
 
-	if s.RegistrationEnabled {
+	if s.DefaultRoleID != "" {
 		m["defaultRoleId"] = s.DefaultRoleID
+	}
+
+	if s.DefaultUserRoleID != "" {
 		m["defaultUserRoleId"] = s.DefaultUserRoleID
 	}
 
@@ -295,6 +300,151 @@ func TestAccMorpheusSettingApplianceExampleOk(t *testing.T) {
 				Config:             providerConfig + resourceConfig,
 				ExpectNonEmptyPlan: false,
 				PlanOnly:           true,
+			},
+		},
+	})
+}
+
+const applianceUpdateEnvelopeAddr = "hpe_morpheus_setting_appliance.update_envelope"
+
+// settingApplianceOriginsConfig renders a minimal appliance-settings resource
+// that sets only api_allowed_origins, so the create and update payloads carry
+// that one field and nothing else on the shared appliance changes.
+func settingApplianceOriginsConfig(origins string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_setting_appliance" "update_envelope" {
+  api_allowed_origins = %q
+}
+`, origins)
+}
+
+// TestAccMorpheusSettingAppliance_updateEnvelope is the regression for the
+// appliance-settings update path: PUT /api/appliance-settings returns only a
+// success envelope (no applianceSettings object), which the create path already
+// tolerated but the update path did not, so every in-place change was applied
+// on the appliance and then failed with "Not found in response:
+// ApplianceSettings", leaving state stale. This create-then-update test asserts
+// the second apply completes cleanly and reads the new value back.
+func TestAccMorpheusSettingAppliance_updateEnvelope(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// api_allowed_origins is a global appliance setting: put it back afterwards.
+	// Not parallel: another test restoring its own snapshot of these shared
+	// settings at the same time would overwrite the value under test.
+	snapshotAndRestoreApplianceSettings(t)
+
+	providerConfig := testhelpers.ProviderBlock()
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + settingApplianceOriginsConfig("https://tf-acc-create.example.com"),
+				Check: resource.TestCheckResourceAttr(
+					applianceUpdateEnvelopeAddr, "api_allowed_origins", "https://tf-acc-create.example.com",
+				),
+			},
+			// The update path is the regression target: it must apply cleanly
+			// and state must carry the new value.
+			{
+				Config: providerConfig + settingApplianceOriginsConfig("https://tf-acc-update.example.com"),
+				Check: resource.TestCheckResourceAttr(
+					applianceUpdateEnvelopeAddr, "api_allowed_origins", "https://tf-acc-update.example.com",
+				),
+			},
+			// And the plan after the update is empty.
+			{
+				Config:   providerConfig + settingApplianceOriginsConfig("https://tf-acc-update.example.com"),
+				PlanOnly: true,
+			},
+		},
+	})
+}
+
+const applianceRoleIDsAddr = "hpe_morpheus_setting_appliance.role_ids"
+
+// settingApplianceRoleIDsConfig renders two roles created for the run and an
+// appliance-settings resource that names them as the default tenant and user
+// roles with registration left off. The roles' addresses carry the pair label,
+// so a step that renders another pair creates new roles (new ids) rather than
+// renaming the first pair in place.
+func settingApplianceRoleIDsConfig(name, pair string) string {
+	return fmt.Sprintf(`
+resource "hpe_morpheus_role" "tenant_%[2]s" {
+  name      = "%[1]s-tenant-%[2]s"
+  role_type = "tenant"
+}
+
+resource "hpe_morpheus_role" "user_%[2]s" {
+  name      = "%[1]s-user-%[2]s"
+  role_type = "user"
+}
+
+resource "hpe_morpheus_setting_appliance" "role_ids" {
+  registration_enabled = false
+  default_role_id      = hpe_morpheus_role.tenant_%[2]s.id
+  default_user_role_id = hpe_morpheus_role.user_%[2]s.id
+}
+`, name, pair)
+}
+
+// TestAccMorpheusSettingAppliance_roleIds asserts that the two default role ids
+// reach the appliance and round-trip into state while registration is off, on
+// create and on an in-place change. The schema requires both ids alongside
+// registration_enabled whatever its value, so this is an ordinary
+// configuration; dropping them while registration was off left the appliance's
+// own ids in state and the configuration in a perpetual diff. Registration
+// stays off: enabling it opens the appliance to sign-ups for the duration, and
+// the role ids take the same path either way.
+func TestAccMorpheusSettingAppliance_roleIds(t *testing.T) {
+	defer testhelpers.RecordResult(t)
+
+	capabilities.MustHaveOrSkip(t, capabilities.Settings)
+
+	if testing.Short() {
+		t.Skip("Skipping slow test in short mode")
+	}
+
+	// The default roles are global appliance settings: put them back
+	// afterwards (the roles created here are destroyed with the config). Not
+	// parallel, for the same reason as the update-envelope test.
+	snapshotAndRestoreApplianceSettings(t)
+
+	providerConfig := testhelpers.ProviderBlock()
+	name := acctest.RandomWithPrefix(t.Name())
+
+	rolesMatch := func(pair string) resource.TestCheckFunc {
+		return resource.ComposeAggregateTestCheckFunc(
+			resource.TestCheckResourceAttr(applianceRoleIDsAddr, "registration_enabled", "false"),
+			resource.TestCheckResourceAttrPair(
+				applianceRoleIDsAddr, "default_role_id", "hpe_morpheus_role.tenant_"+pair, "id"),
+			resource.TestCheckResourceAttrPair(
+				applianceRoleIDsAddr, "default_user_role_id", "hpe_morpheus_role.user_"+pair, "id"),
+		)
+	}
+
+	resource.Test(t, resource.TestCase{
+		ProtoV6ProviderFactories: testhelpers.GetAccTestFactories(t, adapter.NewMorpheus(), sdkv2morpheus.Provider()),
+		Steps: []resource.TestStep{
+			{
+				Config: providerConfig + settingApplianceRoleIDsConfig(name, "a"),
+				Check:  rolesMatch("a"),
+			},
+			// A fresh pair of roles: the ids change in place (registration_enabled
+			// is unchanged, so no replacement) and must be sent, not dropped.
+			{
+				Config: providerConfig + settingApplianceRoleIDsConfig(name, "b"),
+				Check:  rolesMatch("b"),
+			},
+			{
+				Config:   providerConfig + settingApplianceRoleIDsConfig(name, "b"),
+				PlanOnly: true,
 			},
 		},
 	})
