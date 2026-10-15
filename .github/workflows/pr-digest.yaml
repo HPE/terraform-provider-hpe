@@ -2,7 +2,10 @@
 
 name: Open PR digest
 
-# Posts a daily digest of this repo's open pull requests to Slack.
+# Posts a daily digest of this repo's open pull requests to Slack. Approved
+# PRs are marked with a ✅. PRs that are approved AND labelled "Needs QA" are
+# left out: they are waiting only on QA sign-off, and the companion QA PR
+# Digest workflow (qa-pr-digest.yaml) reports those instead.
 #
 # Delivery is via a Slack Workflow Builder *webhook trigger* (a
 # https://hooks.slack.com/triggers/... URL), which needs no Slack app.
@@ -33,6 +36,8 @@ concurrency:
 env:
   TZ_NAME: Europe/Dublin
   MAX_PRS: '20'
+  # Exact label name; the same string the needs-qa workflow matches on.
+  QA_LABEL: 'Needs QA'
 
 jobs:
   digest:
@@ -62,21 +67,42 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Drop drafts only. Bot PRs (dependabot, renovate, ...) are included
+          # Drop drafts, and PRs that are approved AND labelled Needs QA: those
+          # are waiting only on QA sign-off and belong to the QA PR Digest
+          # (qa-pr-digest.yaml), which applies the complementary rule, so every
+          # open PR is listed by exactly one of the two workflows. Change the
+          # two rules together. Bot PRs (dependabot, renovate, ...) are included
           # deliberately: a dependency bump still needs a human to review and
           # merge it, and those are exactly the ones that rot unnoticed.
+          #
+          # "approved" is GitHub's own merge-gate verdict. reviewDecision is
+          # APPROVED only when the required approvals are present, nothing is
+          # CHANGES_REQUESTED and - because the dev-* ruleset requires
+          # conversation resolution - no review thread is unresolved (it is
+          # null, printed as "", while one is). A PR whose approval is stale or
+          # blocked by an open thread therefore counts as not approved, which
+          # is right: the developers still have to act on it.
           prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
-                  --json title,url,isDraft \
-                | jq -c '[ .[] | select(.isDraft | not) ]')
+                  --json title,url,isDraft,labels,reviewDecision \
+                | jq -c --arg label "$QA_LABEL" '
+                    [ .[] | select(.isDraft | not)
+                      | { title, url,
+                          approved: (.reviewDecision == "APPROVED"),
+                          needs_qa: any(.labels[]; .name == $label) }
+                      | select((.approved and .needs_qa) | not) ]')
 
           count=$(jq -r 'length' <<<"$prs")
 
           if [ "$count" -eq 0 ]; then
             body='None open'
           else
+            # Approved PRs get a ✅ after the title. A labelled PR that is not
+            # yet approved is listed here, without one, until it is.
             body=$(jq -r --argjson max "${MAX_PRS}" '
                      length as $n
-                     | (.[:$max] | map("• \(.title) — \(.url)") | join("\n"))
+                     | (.[:$max]
+                        | map("• \(.title)\(if .approved then " ✅" else "" end) — \(.url)")
+                        | join("\n"))
                        + (if $n > $max
                           then "\n• …and \($n - $max) more"
                           else "" end)
@@ -88,7 +114,8 @@ jobs:
           # a variable: *bold*, _italic_, <url|label>, <url> and > blockquote
           # all render as literal characters when passed through one. Only the
           # PR lines travel as variables, so they must stay plain text with
-          # bare URLs. Do not reintroduce mrkdwn here.
+          # bare URLs. Unicode such as • — ✅ is fine; :emoji: shortcodes are
+          # not. Do not reintroduce mrkdwn here.
           #
           # Slack rejects the request if a variable declared on the trigger is
           # missing from the body, so these keys must match the trigger exactly:
@@ -124,6 +151,9 @@ jobs:
               ;;
           esac
 
-          curl -sS --fail-with-body -X POST \
+          # Retry transient failures (curl retries 429 and 5xx). Workflow
+          # Builder webhooks accept one request per second, and other digests
+          # sharing this trigger may post at the same moment.
+          curl -sS --fail-with-body --retry 3 -X POST \
                -H 'Content-Type: application/json' \
                --data "$payload" "$SLACK_WEBHOOK_URL"

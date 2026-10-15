@@ -1,0 +1,157 @@
+# Copyright 2026 Hewlett Packard Enterprise Development LP
+
+name: QA PR Digest
+
+# Posts a daily "Pending QA" message to Slack listing this repo's open pull
+# requests that are approved AND labelled "Needs QA" - the ones waiting only
+# on QA sign-off. The companion Open PR digest workflow (pr-digest.yaml)
+# applies the complementary rule and leaves exactly those out, so every open
+# PR is listed by one workflow or the other. Change the two rules together.
+#
+# It runs at 08:00 India Standard Time, the start of the QA team's working
+# day; the Open PR digest keeps its own 08:00 Europe/Dublin schedule for the
+# developers.
+#
+# The message is posted even when nothing is pending ("No PRs currently
+# require QA"), so its arrival every morning doubles as a heartbeat that the
+# workflow ran. Do not add an early exit for the empty case.
+#
+# The GitHub label stays "Needs QA" (it is also the merge lock enforced by
+# the needs-qa workflow); "Pending QA - Approved PRs with the "Needs QA"
+# label:" is only the title line of the Slack message.
+#
+# Delivery reuses the Open PR digest's Slack Workflow Builder *webhook
+# trigger* (the SLACK_WEBHOOK_URL secret, a https://hooks.slack.com/triggers/...
+# URL), which needs no Slack app. That trigger's message heading is fixed on
+# the Slack side and shared with the digest, which is why this message's title
+# travels as the first line of the list variable. Note that a
+# https://slack.com/shortcuts/... link trigger will NOT work: link triggers
+# can only be started from inside Slack.
+
+on:
+  schedule:
+    # 08:00 India Standard Time (Asia/Kolkata, UTC+5:30), Monday to Friday.
+    # India does not observe daylight saving time, so unlike the Open PR
+    # digest (08:00 Europe/Dublin) one UTC cron entry is exact all year and
+    # no local-time guard step is needed. A guard would in fact do harm here:
+    # GitHub starts scheduled runs late, sometimes by more than an hour, and
+    # a guard would then skip the message - when a late heartbeat is far
+    # better than none.
+    - cron: '30 2 * * 1-5'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the message instead of posting to Slack'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: qa-pr-digest
+  cancel-in-progress: false
+
+env:
+  MAX_PRS: '20'
+  # Exact label name; the same string the needs-qa workflow matches on.
+  QA_LABEL: 'Needs QA'
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build and post the Pending QA message
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          # github.event.inputs (not inputs) so this also resolves on schedule
+          # runs, where the workflow_dispatch input is absent; || false pins the
+          # scheduled default rather than leaving it empty.
+          DRY_RUN: ${{ github.event.inputs.dry_run || false }}
+        run: |
+          set -euo pipefail
+
+          # Keep the open, non-draft PRs that are approved AND labelled Needs
+          # QA. "approved" is GitHub's own merge-gate verdict: reviewDecision
+          # is APPROVED only when the required approvals are present, nothing
+          # is CHANGES_REQUESTED and - because the dev-* ruleset requires
+          # conversation resolution - no review thread is unresolved (it is
+          # null, printed as "", while one is). A labelled PR that is not yet
+          # approved stays in the Open PR digest until it is.
+          prs=$(gh pr list --repo "$GITHUB_REPOSITORY" --state open --limit 100 \
+                  --json title,url,isDraft,labels,reviewDecision \
+                | jq -c --arg label "$QA_LABEL" '
+                    [ .[] | select((.isDraft | not)
+                                   and .reviewDecision == "APPROVED"
+                                   and any(.labels[]; .name == $label)) ]')
+
+          count=$(jq -r 'length' <<<"$prs")
+
+          # The title is the first line of the list because the shared
+          # trigger's heading is fixed on the Slack side (see the header
+          # comment); it names the label via $label so the two never drift
+          # apart. Every PR here is approved by definition, so unlike the
+          # Open PR digest there are no ✅ marks.
+          body=$(jq -r --argjson max "${MAX_PRS}" --arg label "$QA_LABEL" '
+                   "Pending QA - Approved PRs with the \"\($label)\" label:\n"
+                   + (if length == 0 then "No PRs currently require QA" else
+                        length as $n
+                        | (.[:$max] | map("• \(.title) — \(.url)") | join("\n"))
+                          + (if $n > $max
+                             then "\n• …and \($n - $max) more"
+                             else "" end)
+                      end)
+                 ' <<<"$prs")
+
+          # All headings, bold and blockquotes live in the Slack "Send a
+          # message" composer, because Workflow Builder ESCAPES the contents of
+          # a variable: *bold*, _italic_, <url|label>, <url> and > blockquote
+          # all render as literal characters when passed through one. Only the
+          # title and PR lines travel as variables, so they must stay plain
+          # text with bare URLs. Unicode such as • — is fine; :emoji:
+          # shortcodes are not. Do not reintroduce mrkdwn here.
+          #
+          # Slack rejects the request if a variable declared on the trigger is
+          # missing from the body, so these keys must match the trigger exactly:
+          # prs_repo, prs_list, prs_count. The repo travels as a variable, so a
+          # single Slack webhook/trigger can serve every repo that posts to it.
+          payload=$(jq -n \
+                      --arg repo  "$GITHUB_REPOSITORY" \
+                      --arg list  "$body" \
+                      --arg count "$count" \
+                      '{prs_repo: $repo, prs_list: $list, prs_count: $count}')
+
+          jq -r 'to_entries[] | "\(.key):\n\(.value)\n"' <<<"$payload"
+
+          if [ "${DRY_RUN:-false}" = 'true' ]; then
+            echo 'Dry run - not posting to Slack.'
+            exit 0
+          fi
+
+          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
+            echo '::error::SLACK_WEBHOOK_URL is not set. Add it under' \
+                 'Settings > Secrets and variables > Actions.'
+            exit 1
+          fi
+
+          case "$SLACK_WEBHOOK_URL" in
+            https://hooks.slack.com/triggers/*) ;;
+            *)
+              echo '::error::SLACK_WEBHOOK_URL must be a Workflow Builder webhook' \
+                   'trigger (https://hooks.slack.com/triggers/...). A' \
+                   'https://slack.com/shortcuts/... link trigger cannot be' \
+                   'started from outside Slack.'
+              exit 1
+              ;;
+          esac
+
+          # Retry transient failures (curl retries 429 and 5xx). Workflow
+          # Builder webhooks accept one request per second; the Open PR digest
+          # posts to this trigger hours later (08:00 Dublin), so the two will
+          # not collide, but anything else sharing the trigger could still land
+          # alongside.
+          curl -sS --fail-with-body --retry 3 -X POST \
+               -H 'Content-Type: application/json' \
+               --data "$payload" "$SLACK_WEBHOOK_URL"
